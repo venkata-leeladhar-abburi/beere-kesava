@@ -1,16 +1,15 @@
 import React from "react";
-import { CheckCircle2, Eye, IndianRupee, MapPin, Building2 } from "lucide-react";
+import { CheckCircle2, Eye, IndianRupee, MapPin } from "lucide-react";
 import { motion } from "motion/react";
 
 import { F, T } from "../../theme";
 import { BulkOrder } from "@/features/production";
 import { Invoice } from "../../types";
-import { AnimBar } from "../common/motion";
-import { INV_STATUS_CFG, InvBadge } from "./InvBadge";
+import { InvBadge } from "./InvBadge";
 import { Button } from "../../../../shared/ui/primitives";
 import { rupees } from "@/lib/domain/money";
 import { formatRecordedBy } from "@/lib/domain/actor";
-import { EntityCode, Money, StatusPill } from "@/shared/ui/domain";
+import { Money } from "@/shared/ui/domain";
 
 const TopDivider = () => (
   <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginBottom: 12 }}>
@@ -22,9 +21,12 @@ const TopDivider = () => (
     <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
     <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
       <g transform="translate(30, 10)">
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
         <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
       </g>
     </svg>
@@ -47,9 +49,12 @@ const BottomDivider = () => (
     <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
     <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
       <g transform="translate(30, 10)">
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
         <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
       </g>
     </svg>
@@ -62,10 +67,9 @@ const BottomDivider = () => (
   </div>
 );
 
-export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef, bulkOrderData }: { inv: Invoice, onViewInvoice?: () => void, onRecordPayment?: () => void, bulkOrderRef?: string, bulkOrderData?: BulkOrder }) {
+export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef: _bulkOrderRef, bulkOrderData: _bulkOrderData }: { inv: Invoice, onViewInvoice?: () => void, onRecordPayment?: () => void, bulkOrderRef?: string, bulkOrderData?: BulkOrder }) {
   const remaining = inv.total - inv.paid;
   const pct = Math.round((inv.paid / inv.total) * 100);
-  const cfg = INV_STATUS_CFG[inv.status];
   const isPaid = inv.status === "Paid";
   // Backend returns payments newest-first, so [0] is whoever recorded the
   // most recent collection — the settling payment once fully paid.
@@ -183,15 +187,13 @@ export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef
           size="sm"
           iconLeft={Eye}
           onClick={onViewInvoice}
-          className="flex-1 rounded-[10px] border border-[#EAE3D5] bg-white hover:bg-[#F9F7F4] text-[#6E0F2D] font-semibold min-w-[120px]"
-          style={{ height: 40 }}
+          className="flex-1 h-10 rounded-[10px] border border-[#EAE3D5] bg-white hover:bg-[#F9F7F4] text-[#6E0F2D] font-semibold min-w-[120px]"
         >
           View Invoice
         </Button>
         {isPaid ? (
           <Button variant="secondary" size="sm" iconLeft={CheckCircle2} disabled
-            className="flex-1 rounded-[10px] border border-[rgba(30,102,64,0.18)] bg-[rgba(30,102,64,0.07)] text-[#1E6640] min-w-[120px]"
-            style={{ height: 40 }}
+            className="flex-1 h-10 rounded-[10px] border border-[rgba(30,102,64,0.18)] bg-[rgba(30,102,64,0.07)] text-[#1E6640] min-w-[120px]"
           >
             Fully Paid
           </Button>
@@ -201,8 +203,7 @@ export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef
             size="sm"
             iconLeft={IndianRupee}
             onClick={onRecordPayment}
-            className="flex-1 rounded-[10px] bg-[#6E0F2D] hover:bg-[#4A0A1D] text-white font-semibold min-w-[120px]"
-            style={{ height: 40 }}
+            className="flex-1 h-10 rounded-[10px] bg-[#6E0F2D] hover:bg-[#4A0A1D] text-white font-semibold min-w-[120px]"
           >
             Record Pay
           </Button>

@@ -14,7 +14,7 @@ import { SupplierPaymentDetailModal } from "./SupplierPaymentDetailModal";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Money, EntityCode } from "@/shared/ui/domain";
+import { Money } from "@/shared/ui/domain";
 
 type SupplierStatusKey = "Paid" | "Pending" | "Overdue";
 
@@ -52,9 +52,12 @@ const TopDivider = () => (
     <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
     <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
       <g transform="translate(30, 10)">
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
         <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
       </g>
     </svg>
@@ -77,9 +80,12 @@ const BottomDivider = () => (
     <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
     <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
       <g transform="translate(30, 10)">
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
         <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
       </g>
     </svg>
@@ -426,7 +432,7 @@ export function SupplierPaymentsSection() {
 
         {view === "card" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 items-stretch">
-            {filtered.map((r, i) => {
+            {filtered.map((r) => {
               const isPaidRow = r.outstanding === 0 && r.totalPurchased > 0;
               return (
               <motion.div

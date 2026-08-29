@@ -4,7 +4,7 @@ import {
   Printer, PackageCheck, RotateCcw, Building2, ShoppingBag, Camera, CheckCircle2, Search, X,
 } from "lucide-react";
 
-import { C, F, Card, Chip, SectionCard } from "./theme";
+import { C, F, Chip, SectionCard } from "./theme";
 import { salesApi, type ReturnStockItem } from "../../../../shared/api/sales";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
 import { Button, IconButton, Input, MultiSelect } from "../../../../shared/ui/primitives";

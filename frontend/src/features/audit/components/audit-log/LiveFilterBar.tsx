@@ -93,10 +93,23 @@ export function LiveFilterBar({
             <SelectItem value="MATERIALS">MATERIALS</SelectItem>
             <SelectItem value="WEAVERS">WEAVERS</SelectItem>
             <SelectItem value="RATES">RATES</SelectItem>
+            <SelectItem value="RATE_REQUESTS">RATE REQUESTS</SelectItem>
             <SelectItem value="SALES">SALES</SelectItem>
-            <SelectItem value="PRODUCTION">PRODUCTION</SelectItem>
+            <SelectItem value="BATCHES">BATCHES</SelectItem>
             <SelectItem value="APPROVALS">APPROVALS</SelectItem>
+            <SelectItem value="PURCHASE">PURCHASE</SelectItem>
+            <SelectItem value="PURCHASE_REQUESTS">PURCHASE REQUESTS</SelectItem>
             <SelectItem value="CUSTOMERS">CUSTOMERS</SelectItem>
+            <SelectItem value="VENDORS">VENDORS</SelectItem>
+            <SelectItem value="SUPPLIERS">SUPPLIERS</SelectItem>
+            <SelectItem value="SUPPLIER_RETURNS">SUPPLIER RETURNS</SelectItem>
+            <SelectItem value="PAYMENTS">PAYMENTS</SelectItem>
+            <SelectItem value="DISPATCH">DISPATCH</SelectItem>
+            <SelectItem value="FINISHING">FINISHING</SelectItem>
+            <SelectItem value="QC">QC</SelectItem>
+            <SelectItem value="BULK_ORDERS">BULK ORDERS</SelectItem>
+            <SelectItem value="WARP_REQUESTS">WARP REQUESTS</SelectItem>
+            <SelectItem value="REPORTS">REPORTS</SelectItem>
           </Select>
           {/* Action */}
           <Select value={actionFilter} onValueChange={setActionFilter} placeholder="All Actions">

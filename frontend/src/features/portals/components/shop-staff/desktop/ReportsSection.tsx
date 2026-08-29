@@ -8,7 +8,6 @@ import { C, F, PageHero, PortalStatsStrip, type PortalStat } from "../theme";
 import { DSH } from "./DSH";
 import { Button } from "../../../../../shared/ui/primitives";
 import { LoadingState, ErrorState } from "../../../../../shared/ui/state";
-import { semantic } from "../../../../../design-system/tokens";
 import { ChartFigure } from "../../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
@@ -214,7 +213,7 @@ export function ReportsSection({
                     <Tooltip contentStyle={{ fontFamily: F.u, fontSize: 13, border: `1px solid ${C.bdr}`, borderRadius: 10 }} formatter={(v: number) => [`${v} sarees`, "Sold"]} />
                     <Bar dataKey="count" radius={10} barSize={28}>
                       {designData.map((entry, i) => {
-                        let fill = C.burg;
+                        let fill: string = C.burg;
                         if (entry.design === "Wholesale Sales") fill = C.gold;
                         else if (entry.design === "Returns") fill = C.gold;
                         else if (i % 2 === 1) fill = C.gold;

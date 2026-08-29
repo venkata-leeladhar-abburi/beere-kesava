@@ -332,6 +332,7 @@ export function BatchCreationPage() {
             generated={generated}
             incompleteRows={incompleteRows}
             isEditing={!!editingBatchId}
+              rowCount={rows.length}
               batchStatus={editingBatchId ? batches.find(b => b.batchId === editingBatchId)?.status : undefined}
             />
           </div>

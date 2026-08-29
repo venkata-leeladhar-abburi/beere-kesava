@@ -78,7 +78,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
       actualReshamG: r.receivedReshamG ? Number(r.receivedReshamG) : null,
       actualJariReels: r.receivedJariReels ? Number(r.receivedJariReels) : null,
       tallied: r.tallied,
-      talliedBy: r.talliedByName,
+      talliedBy: r.talliedBy,
       talliedAt: r.talliedAt,
     }));
 
@@ -96,7 +96,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
     const key = `${item.batchId}-${item.serial}`;
     setBusyKey(key);
     try {
-      await tallyRow(item.batchId, item.serial, true, correction);
+      await tallyRow(item.batchId, item.serial, true, undefined, correction);
     } finally {
       setBusyKey(null);
     }

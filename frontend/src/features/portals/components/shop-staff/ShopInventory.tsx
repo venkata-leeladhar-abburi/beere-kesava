@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Truck, Package, ChevronDown, ChevronRight, Printer, X, CheckCircle } from "lucide-react";
 
-import { C, F, TEAL, Card, Chip, PortalStatsStrip, type PortalStat, PageHero, SectionCard } from "./theme";
+import { C, F, TEAL, Chip, PortalStatsStrip, PageHero, SectionCard } from "./theme";
 import { sareeTypeName, sareeTypeText } from "./stock-format";
 import { inventoryApi, type ShopStockItem } from "../../../../shared/api/inventory";
 import { Button, Input, IconButton, MultiSelect } from "../../../../shared/ui/primitives";

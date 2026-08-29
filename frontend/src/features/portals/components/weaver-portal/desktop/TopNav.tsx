@@ -8,6 +8,7 @@ import { useAuth, type Role } from "../../../../../contexts/AuthContext";
 
 import { useCurrentWeaver } from "../useCurrentWeaver";
 import { toInitials } from "@/shared/lib/initials";
+import { useNotificationBell } from "@/features/notifications";
 
 function initialsOf(name: string): string {
   return name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "—";
@@ -34,6 +35,7 @@ export function TopNav({
   navigate: (path: string) => void;
 }) {
   const { user, logout } = useAuth();
+  const { unreadCount } = useNotificationBell();
   const { weaver } = useCurrentWeaver();
   const name = weaver?.name || user?.name || "—";
   const code = weaver?.code || user?.empId || "Handloom";
@@ -98,7 +100,9 @@ export function TopNav({
               variant="ghost"
               className={"rounded-[10px] !text-[#F5E8D0] hover:!bg-[rgba(245,232,208,0.10)] hover:!text-[#E7C983] " + (showNotifs ? "bg-[rgba(200,155,71,0.16)]" : "")}
             />
-            <span style={{ position: "absolute" as const, top: 4, right: 4, width: 9, height: 9, background: "#F47B72", borderRadius: "50%", border: "1.5px solid #3D0E1A", pointerEvents: "none" as const }} />
+            {unreadCount > 0 && (
+              <span style={{ position: "absolute" as const, top: 4, right: 4, width: 9, height: 9, background: "#F47B72", borderRadius: "50%", border: "1.5px solid #3D0E1A", pointerEvents: "none" as const }} />
+            )}
           </div>
           <DropdownMenu open={showProfile} onOpenChange={setShowProfile}>
             <DropdownMenuTrigger asChild>

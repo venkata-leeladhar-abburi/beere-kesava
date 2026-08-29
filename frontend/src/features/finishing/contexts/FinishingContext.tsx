@@ -26,6 +26,10 @@ const DISPATCHES_KEY = ["finishing", "dispatches"] as const;
 /** Shop-floor stock (GET /inventory/shop) — owned by the shop portal, but a
  *  dispatch from here is what changes it, so it is invalidated from here too. */
 const SHOP_STOCK_KEY = ["shop-stock"] as const;
+/** Factory stock (GET /inventory) — owned by the Inventory > All Stock page,
+ *  but a dispatch is what flips a saree out of "available", so it too has to
+ *  be invalidated from here or that page shows stale rows until a hard reload. */
+const STOCK_LIST_KEY = ["stock-list"] as const;
 const QUOTATIONS_KEY = ["finishing", "quotations"] as const;
 
 const DAMAGE_SEVERITY_TO_BACKEND: Record<"Minor" | "Moderate" | "Severe", BackendDamageSeverity> = {
@@ -396,6 +400,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       // portal's inventory and its New Sale picker both have to pick it up
       // rather than waiting out their own staleTime.
       void qc.invalidateQueries({ queryKey: SHOP_STOCK_KEY });
+      void qc.invalidateQueries({ queryKey: STOCK_LIST_KEY });
     },
   });
 

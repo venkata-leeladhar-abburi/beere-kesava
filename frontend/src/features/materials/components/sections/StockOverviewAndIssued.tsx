@@ -3,7 +3,7 @@ import { motion, useInView } from "motion/react";
 import { BarChart2, ClipboardList, Layers, Tag, Sparkles, ArrowRight, Package, Undo2 } from "lucide-react";
 import { useMaterialIssue } from "../../contexts/MaterialIssueContext";
 import { useMaterialReturn } from "../../contexts/MaterialReturnContext";
-import { T, F, EASE, G_GOLD, MobileCtx } from "../theme";
+import { T, F, EASE, MobileCtx } from "../theme";
 import { MAT_CARDS_TEMPLATE } from "../materialConfig";
 import { SectionCard, FadeUp } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";

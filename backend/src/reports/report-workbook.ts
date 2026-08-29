@@ -21,7 +21,7 @@ function toCell(value: unknown): string | number | boolean | Date | null {
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
     return value;
   }
-  return String(value);
+  return typeof value === "function" || typeof value === "symbol" ? value.toString() : JSON.stringify(value);
 }
 
 /** "totalOutstanding" → "Total Outstanding" */
@@ -44,7 +44,9 @@ function autoFitColumns(sheet: ExcelJS.Worksheet): void {
   sheet.columns.forEach((column) => {
     let widest = 10;
     column.eachCell?.({ includeEmpty: false }, (cell) => {
-      widest = Math.max(widest, String(cell.value ?? "").length + 2);
+      const value = cell.value;
+      const text = value === null || value === undefined ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
+      widest = Math.max(widest, text.length + 2);
     });
     column.width = Math.min(widest, 60);
   });

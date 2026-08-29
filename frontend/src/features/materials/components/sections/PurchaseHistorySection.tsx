@@ -1,6 +1,6 @@
 import React, { useContext, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { PieChart, Pie, Cell, RadialBarChart, RadialBar } from "recharts";
+import { RadialBarChart, RadialBar } from "recharts";
 import { Layers, Tag, Sparkles, Calculator, Users, IndianRupee, Download, History, LayoutGrid, List } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { T, F, MobileCtx } from "../theme";
@@ -445,7 +445,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
                   startAngle={90} 
                   endAngle={-270}
                 >
-                  <RadialBar minAngle={15} background={{ fill: 'rgba(110,15,45,0.05)' }} clockWise={true} dataKey="pct" cornerRadius={10} />
+                  <RadialBar minPointSize={15} background={{ fill: 'rgba(110,15,45,0.05)' }} dataKey="pct" cornerRadius={10} />
                 </RadialBarChart>
                 <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", borderRadius: "50%", boxShadow: "inset 0 4px 20px rgba(0,0,0,0.02)" }} />
               </div>

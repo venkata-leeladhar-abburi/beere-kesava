@@ -11,6 +11,7 @@ import { weaversApi } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { ratesApi } from "../../../shared/api/rates";
 import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
+import { formatRecordedBy } from "@/lib/domain/actor";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface SareeRow {
@@ -50,6 +51,8 @@ export interface SareeRow {
   // originally passed QC.
   finishedAt?: string | null;
   receivedAt: string | null;     // set once Worker Staff receives the finished saree from the weaver/loom
+  /** Worker Staff who physically received this saree — null on endpoints that don't select it. */
+  receivedBy: string | null;
   receivedWeight: string | null;
   receivedColor: string | null;
   receivedPhotoUrl: string | null;
@@ -180,6 +183,7 @@ function backendBatchToRecord(
         finished: r.finishingAssignment?.status === "RETURNED",
         finishedAt: r.finishingAssignment?.status === "RETURNED" ? r.finishingAssignment.updatedAt : null,
         receivedAt: r.receivedAt,
+        receivedBy: r.receivedByUser ? formatRecordedBy(r.receivedByUser) : null,
         receivedWeight: r.receivedWeight,
         receivedColor: r.receivedColor,
         receivedPhotoUrl: r.receivedPhotoUrl,
@@ -187,7 +191,7 @@ function backendBatchToRecord(
         receivedReshamG: r.receivedReshamG,
         receivedJariReels: r.receivedJariReels,
         tallied: r.tallied,
-        talliedBy: r.talliedBy,
+        talliedBy: r.talliedByUser ? formatRecordedBy(r.talliedByUser) : null,
         talliedAt: r.talliedAt,
       };
     }),
@@ -316,9 +320,11 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   });
 
   const tallyRowMutation = useMutation({
+    // talliedBy isn't sent to the backend — it derives the actor from the
+    // authenticated request, same as receivedByUser on receive.
     mutationFn: (args: { batchId: string; serial: number; tallied: boolean; talliedBy?: string; weight?: number; warpG?: number; reshamG?: number; jariReels?: number }) =>
       batchesApi.tallyRow(args.batchId, args.serial, {
-        tallied: args.tallied, talliedBy: args.talliedBy,
+        tallied: args.tallied,
         weight: args.weight, warpG: args.warpG, reshamG: args.reshamG, jariReels: args.jariReels,
       }),
     onSuccess: () => {

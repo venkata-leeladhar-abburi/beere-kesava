@@ -4,7 +4,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { AnimatePresence, motion } from "motion/react";
 import { useIsMobile } from "../../../hooks/useResponsive";
 import {
-  SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE, MOBILE_NAV_H, getSectionsForPage,
+  SectionNavigator, SECTION_NAV_GLOBAL_STYLE, MOBILE_NAV_H, getSectionsForPage,
 } from "../../../shared/ui/SectionNavigator";
 
 import { PackageCheck, History } from "lucide-react";
@@ -231,8 +231,6 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       default: return <SAOverviewPage setNav={navigate} />;
     }
   }
-
-  const sections = PAGE_SECTIONS[nav];
 
   return (
     <div id="main-content" style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>

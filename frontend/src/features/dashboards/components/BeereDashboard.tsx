@@ -80,7 +80,7 @@ import { WORKER_SCOPE, SHOP_SCOPE } from "@/features/users";
 import { TabLoadingFallback } from './TabLoadingFallback';
 import { ErrorBoundary } from '../../../components/ErrorBoundary';
 import {
-  SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE,
+  SectionNavigator, SECTION_NAV_GLOBAL_STYLE,
   MOBILE_NAV_H, getSectionsForPage,
 } from "../../../shared/ui/SectionNavigator";
 import { PackageCheck, History } from "lucide-react";

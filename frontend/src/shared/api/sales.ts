@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import type { BackendActorSummary } from "./batches";
 
 export type SalesChannel = "RETAIL" | "WHOLESALE";
 
@@ -21,6 +22,8 @@ interface RawSaleRecord {
     sareeType: { type: string } | null;
   } | null;
   customer?: { id: string; name: string } | null;
+  /** Shop Staff / Accountant who rang up this sale. */
+  soldBy?: BackendActorSummary | null;
 }
 
 interface RawReturnRecord {
@@ -52,6 +55,8 @@ export interface BackendSaleRecord {
     sareeType: { type: string } | null;
   } | null;
   customer?: { id: string; name: string } | null;
+  /** Shop Staff / Accountant who rang up this sale. */
+  soldBy?: BackendActorSummary | null;
 }
 
 export interface BackendSaleReturn {

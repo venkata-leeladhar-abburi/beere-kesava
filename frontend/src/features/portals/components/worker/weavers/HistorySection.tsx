@@ -84,7 +84,7 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
         bulkOrder: r.bulkOrderLabel ?? undefined,
         loomNumber: row?.weaverLoom ?? undefined,
         photoUrl: row?.receivedPhotoUrl ?? undefined,
-        receivedBy: row?.receivedByName ?? undefined,
+        receivedBy: row?.receivedBy ?? undefined,
       };
     }),
   [qcRecords, rowLookup]);

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { motion } from "motion/react";
 import { Search, PhoneCall, UserPlus, Pencil, Check, MapPin, ArrowLeft } from "lucide-react";
-import { C, F, Card } from "./theme";
+import { C, F } from "./theme";
 import { StepHeader, StepBody, FlowActions, ACCENT_SALE } from "./flow-kit";
 import { Button, Input, Textarea } from "../../../../shared/ui/primitives";
 import { toInitials } from "@/shared/lib/initials";

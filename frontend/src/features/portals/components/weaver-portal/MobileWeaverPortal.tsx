@@ -12,6 +12,7 @@ import { Button, IconButton } from '../../../../shared/ui/primitives';
 import { Drawer } from '../../../../shared/ui/overlay';
 import { MobileNav, type MobileNavItem } from '../../../../shared/ui/nav/MobileNav';
 import { imgBKLogo } from '../../../../shared/constants/weaverImages';
+import { useNotificationBell } from '@/features/notifications';
 
 import { MyBatchesPage } from './MyBatchesPage';
 import { ConfirmMaterialPage } from './ConfirmMaterialPage';
@@ -138,6 +139,7 @@ export function MobileWeaverPortal({ active, setActive, onProfile }: { onBack?: 
   const [showProfile, setShowProfile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const { unreadCount } = useNotificationBell();
   const { getRecordsForWeaver } = useMaterialIssue();
   const { weaverId } = useCurrentWeaver();
   const pendingConfirmCount = weaverId ? getRecordsForWeaver(weaverId).filter(r => r.status === 'pending-signature').length : 0;
@@ -197,7 +199,9 @@ export function MobileWeaverPortal({ active, setActive, onProfile }: { onBack?: 
               variant="ghost"
               className="!size-9 !rounded-[10px] border border-[rgba(110,15,45,0.12)] bg-transparent hover:bg-[rgba(0,0,0,0.04)] text-[#1A0A0F]"
             />
-            <div style={{ position: "absolute", top: 4, right: 4, width: 8, height: 8, borderRadius: "50%", background: "#F47B72", border: `1.5px solid #FFFDF9`, pointerEvents: "none" }} />
+            {unreadCount > 0 && (
+              <div style={{ position: "absolute", top: 4, right: 4, width: 8, height: 8, borderRadius: "50%", background: "#F47B72", border: `1.5px solid #FFFDF9`, pointerEvents: "none" }} />
+            )}
           </div>
 
           <div style={{ position: "relative" }}>

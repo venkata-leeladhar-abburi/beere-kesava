@@ -24,9 +24,12 @@ const TopDivider = () => (
     <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
     <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
       <g transform="translate(30, 10)">
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
         <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
       </g>
     </svg>
@@ -44,9 +47,12 @@ const MiddleDivider = () => (
     <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6 }} />
     <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
       <g transform="translate(30, 10)">
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
         <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
       </g>
     </svg>
@@ -64,15 +70,19 @@ const BottomDivider = () => (
     <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
     <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
       <g transform="translate(30, 10)">
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
         <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
       </g>
     </svg>
     <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
     <div style={{ paddingRight: 4, display: "flex", alignItems: "center" }}>
       <svg width="14" height="14" viewBox="0 0 16 16">
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <path d="M8,0 C9,3 11,5 16,8 C11,11 9,13 8,16 C7,13 5,11 0,8 C5,5 7,3 8,0 Z" fill={T.antiqueGold} />
         <circle cx="8" cy="8" r="2" fill="#FFFDF9" />
       </svg>
@@ -369,9 +379,7 @@ export function POTrackerSection({
                           icon={Trash2}
                           label="Delete purchase order"
                           variant="ghost"
-                          style={{
-                            color: "#C0392B", background: "rgba(192,57,43,0.06)",
-                          }}
+                          className="text-[#C0392B] bg-[rgba(192,57,43,0.06)]"
                         />
                       )}
                     </div>

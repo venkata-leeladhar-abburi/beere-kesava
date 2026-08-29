@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {
   useSuppliers, SareeTag, Purchase,
   totalPieces, parseINR,
@@ -37,6 +37,11 @@ export function ExternalPurchasesPage() {
   // Purchases live in the shared supplier context so the Suppliers page sees the
   // same inventory, spend and payment history that gets entered here.
   const { purchases, payments, addPurchase, updatePurchase, deletePurchase, getPurchaseDetail, isLoading, isError, refetch } = useSuppliers();
+  // getPurchaseDetail is redefined every SupplierProvider render, so it can't
+  // sit in a dependency array without re-firing this effect on every render —
+  // a ref sidesteps that without missing a real formModal change.
+  const getPurchaseDetailRef = useRef(getPurchaseDetail);
+  getPurchaseDetailRef.current = getPurchaseDetail;
   const confirm = useConfirm();
   const [detailRow, setDetailRow] = useState<Purchase | null>(null);
   const [search, setSearch] = useState("");
@@ -73,7 +78,7 @@ export function ExternalPurchasesPage() {
     }
     let cancelled = false;
     setEditingFull(null);
-    getPurchaseDetail(formModal.editId)
+    getPurchaseDetailRef.current(formModal.editId)
       .then((full) => { if (!cancelled) setEditingFull(full); })
       .catch(() => { /* falls back to the summary row below */ });
     return () => { cancelled = true; };

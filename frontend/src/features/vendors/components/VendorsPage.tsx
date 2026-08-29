@@ -177,8 +177,7 @@ export function VendorsPage() {
             <VendorDirectorySection
               vendors={vendorsWithRollup}
               onSelectVendor={setSelectedVendor}
-              onEditVendor={(v) => { setSelectedVendor(v); setDrawerMode("edit"); setShowAddForm(true); }}
-              onAddClick={() => { setDrawerMode("add"); setShowAddForm(true); }}
+              onAddClick={() => setShowAddForm(true)}
               loading={vendorsLoading}
               error={vendorsError}
               onRetry={loadVendors}

@@ -37,9 +37,12 @@ const TopDivider = () => (
     <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
     <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
       <g transform="translate(30, 10)">
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
         <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
       </g>
     </svg>
@@ -62,9 +65,12 @@ const BottomDivider = () => (
     <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
     <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
       <g transform="translate(30, 10)">
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
         <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
       </g>
     </svg>

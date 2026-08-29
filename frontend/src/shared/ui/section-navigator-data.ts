@@ -36,15 +36,6 @@ export const PAGE_SECTIONS: Record<string, SectionNavItem[]> = {
     { id: "prod-analytics", label: "Analytics" },
     { id: "prod-history", label: "Production History" },
   ],
-  Materials: [
-    { id: "mat-alerts", label: "Stock Alerts" },
-    { id: "mat-po-tracker", label: "Purchase Orders" },
-    { id: "mat-stock-overview", label: "Current Stock" },
-    { id: "mat-issued", label: "Issued to Weavers" },
-    { id: "mat-purchase-history", label: "Purchase History" },
-    { id: "mat-recent", label: "Recently Received" },
-    { id: "mat-movement", label: "Movement History" },
-  ],
   Payments: [
     { id: "pay-summary", label: "Financial Summary" },
     { id: "pay-making-charges", label: "Making Charges" },

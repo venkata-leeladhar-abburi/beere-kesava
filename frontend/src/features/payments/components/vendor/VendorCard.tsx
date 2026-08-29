@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { PurchaseOrder } from "@/features/purchasing";
 import { F, T } from "../../theme";
 import { VendorPayment } from "../../types";
-import { VENDOR_STATUS_CFG, VendorBadge } from "./VendorBadge";
+import { VendorBadge } from "./VendorBadge";
 import { Button } from "../../../../shared/ui/primitives";
 import { rupees } from "@/lib/domain/money";
 import { EntityCode, Money } from "@/shared/ui/domain";
@@ -28,9 +28,12 @@ const TopDivider = () => (
     <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
     <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
       <g transform="translate(30, 10)">
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
         <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
       </g>
     </svg>
@@ -53,9 +56,12 @@ const BottomDivider = () => (
     <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
     <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
       <g transform="translate(30, 10)">
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
         <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
         <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
       </g>
     </svg>
@@ -71,7 +77,6 @@ const BottomDivider = () => (
 export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoice, selected }: { vp: VendorPayment; matchedPO?: PurchaseOrder; onPay: (id: string) => void; onView?: () => void; onViewPO?: () => void; onAddInvoice?: () => void; selected: boolean }) {
   const balance = vp.invoiceAmt - vp.paidAmt;
   const isPaid = vp.status === "Paid";
-  const cfg = VENDOR_STATUS_CFG[vp.status];
   const vendorName = matchedPO?.vendor ?? vp.vendor;
 
   const MAT_TAG_PO: Record<string, { col: string; bg: string }> = {

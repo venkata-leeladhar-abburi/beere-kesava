@@ -2,7 +2,6 @@ import { XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { BarChart, Bar, ResponsiveContainer } from "recharts";
 import { SectionTitle } from "./theme";
 import { FileText, Check } from "lucide-react";
-import { semantic } from "../../../../design-system/tokens";
 
 
 import React, { useState, useMemo } from 'react';
@@ -237,7 +236,7 @@ function SalesReport() {
                 />
                 <Bar dataKey="count" radius={10} barSize={24}>
                   {designData.map((entry, i) => {
-                    let fill = C.burg;
+                    let fill: string = C.burg;
                     if (entry.design === "Wholesale Sales") fill = C.gold;
                     else if (entry.design === "Returns") fill = C.gold;
                     else if (i % 2 === 1) fill = C.gold;

@@ -206,7 +206,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           actualReshamG: row?.receivedReshamG ? Number(row.receivedReshamG) : null,
           actualJariReels: row?.receivedJariReels ? Number(row.receivedJariReels) : null,
           tallied: row?.tallied ?? false,
-          talliedBy: row?.talliedByName ?? null,
+          talliedBy: row?.talliedBy ?? null,
           talliedAt: row?.talliedAt ?? null,
         };
       }),
@@ -229,7 +229,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     const key = `${item.batchId}-${item.serial}`;
     setTallyBusyKey(key);
     try {
-      await tallyRow(item.batchId, item.serial, true, correction);
+      await tallyRow(item.batchId, item.serial, true, undefined, correction);
     } finally {
       setTallyBusyKey(null);
     }

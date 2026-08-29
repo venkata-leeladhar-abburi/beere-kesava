@@ -296,6 +296,7 @@ export function PaymentAnalyticsSection() {
                     <YAxis         key="cf-yaxis"    tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v), { compact: true })} width={46} />
                     <Tooltip       key="cf-tooltip"  content={<CashFlowTooltip />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
                     <Bar           key="cf-income"   dataKey="income"   name="Income"   fill={T.royalBurgundy}  radius={[100,100,100,100] as [number, number, number, number]} maxBarSize={24} />
+                    {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
                     <Bar           key="cf-expenses" dataKey="expenses" name="Expenses" fill={T.antiqueGold} radius={[100,100,100,100] as [number, number, number, number]} opacity={0.9} maxBarSize={24} />
                   </BarChart>
                 </ResponsiveContainer>

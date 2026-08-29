@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import { T, F } from "../theme";
 import {
-  FadeUp, ChartCard, SumCard, SilkSumCard, SectionCard, ReportDLBar, ChartTip, AnimBar,
+  FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, ChartTip, AnimBar,
   TablePager, StatusPill,
 } from "../common/primitives";
 import { batchesApi } from "../../../../shared/api/batches";
