@@ -76,7 +76,7 @@ export function ReturnHistorySection({ returnLog, canSeePrices, isLoading, isErr
       ) : returnLog.length === 0 ? (
         <EmptyState title="No returns processed yet" description="Returns recorded here will show up in this history." compact />
       ) : returnLog.map((r) => (
-        <div key={r.id} style={{ background: C.white, border: `1px solid rgba(200,155,71,0.4)`, borderRadius: 14, padding: "16px 18px", marginBottom: 12, boxShadow: "0 2px 10px rgba(74,6,27,0.02)" }}>
+        <div key={r.id} style={{ background: C.white, border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 14, padding: "16px 18px", marginBottom: 12, boxShadow: "0 2px 10px rgba(74,6,27,0.02)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
             <span style={{ background: r.type === "retail" ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.15)", color: r.type === "retail" ? C.burg : "#8B6520", borderRadius: 999, padding: "4px 10px", fontFamily: F.m, fontSize: 12, fontWeight: 700 }}>{r.id}</span>
             <span style={{ background: r.type === "retail" ? "rgba(110,15,45,0.05)" : "rgba(200,155,71,0.10)", color: r.type === "retail" ? C.burg : "#8B6520", borderRadius: 999, padding: "4px 10px", fontFamily: F.u, fontSize: 12, fontWeight: 700 }}>{r.type === "retail" ? "Retail" : "Wholesale"}</span>

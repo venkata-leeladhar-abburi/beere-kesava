@@ -231,7 +231,7 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
             const totalWeight = rows.reduce((sum, r) => sum + (r.detail?.weightG ?? 0), 0);
 
             return (
-              <div key={q.id} style={{ border: `1px solid rgba(110,15,45,0.12)`, borderRadius: 16, overflow: "hidden", background: "#FFF" }}>
+              <div key={q.id} style={{ border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 16, overflow: "hidden", background: "#FFF", boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)" }}>
                 {/* Header */}
                 <div className="flex items-start gap-3 p-3 sm:p-4 bg-[rgba(110,15,45,0.03)] border-b border-[rgba(110,15,45,0.08)] w-full">
                   <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
