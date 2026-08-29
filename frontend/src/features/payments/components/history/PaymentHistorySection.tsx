@@ -378,15 +378,28 @@ export function PaymentHistorySection() {
         <div style={{ background: T.warmIvory, borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 20, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
 
-            {/* View toggle */}
-            <div className="flex" style={{ alignItems: "center", gap: 3, background: T.warmCream, borderRadius: 9, padding: 3, border: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
-              {viewOptions.map(({ key, Icon: Ico, label }) => (
-                <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Ico}
-                  onClick={() => setView(key)}
-                  className={view === key ? "rounded-[7px] bg-[#6E0F2D] text-[#FFFDF9]" : "rounded-[7px] bg-transparent text-[var(--text-tertiary)]"}>
-                  {label}
-                </Button>
-              ))}
+            {/* View toggle matching Pic 1 design */}
+            <div className="flex items-center border border-[rgba(110,15,45,0.22)] rounded-[12px] bg-white overflow-hidden shrink-0 shadow-xs">
+              {viewOptions.map(({ key, Icon: Ico, label }, idx) => {
+                const active = view === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setView(key)}
+                    className={`flex items-center gap-2 px-4 py-2 text-[13px] font-bold transition-all duration-150 cursor-pointer ${
+                      idx > 0 ? "border-l border-[rgba(110,15,45,0.15)]" : ""
+                    } ${
+                      active
+                        ? "bg-[#6E0F2D] text-[#FFFDF9]"
+                        : "bg-white text-[#3B2314] hover:bg-[#FAF4EB]"
+                    }`}
+                  >
+                    <Ico size={15} color={active ? "#FFFDF9" : "#6E0F2D"} />
+                    <span>{label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
@@ -540,19 +553,49 @@ export function PaymentHistorySection() {
         {/* ── TABLE VIEW ──────────────────────────────────────── */}
         {view === "table" && (
           <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-            <div className="overflow-x-auto w-full">
-              <div className="min-w-[1600px]">
-                <DataTable responsive={false} columns={tableColumns} data={filtered} getRowId={r => r.id} emptyTitle="No transactions match your filters" pagination />
-              </div>
-            </div>
+            <DataTable responsive={false} columns={tableColumns} data={filtered} getRowId={r => r.id} emptyTitle="No transactions match your filters" pagination />
             {filtered.length > 0 && (
-              <div style={{ background: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 14px" }}>
-                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9" }}>TOTALS FOR SELECTED PERIOD</span>
-                <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.50)" }}>{filtered.length} rows</span>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.goldLight }}>+<Money value={rupees(totalIn)} /></span>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: "#F47B72"  }}>−<Money value={rupees(totalOut)} /></span>
-                  <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold }}><Money value={rupees(totalAmt)} /></span>
+              <div style={{
+                background: "linear-gradient(135deg, #3B0818 0%, #5D1027 60%, #2A040E 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 16,
+                padding: "16px 22px",
+                borderTop: `1px solid ${T.borderDef}`,
+              }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 800, color: "#FFFFFF", letterSpacing: "1.2px", textTransform: "uppercase" }}>
+                    Totals For Selected Period
+                  </span>
+                  <div>
+                    <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: "#FFFFFF", background: "rgba(255,255,255,0.18)", padding: "3px 10px", borderRadius: 99, border: "1px solid rgba(255,255,255,0.3)" }}>
+                      {filtered.length} {filtered.length === 1 ? "row" : "rows"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Numbers stacked under each other — pure white text */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase" }}>Inflows:</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 800, color: "#FFFFFF" }}>
+                      +<Money value={rupees(totalIn)} className="!text-white" />
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase" }}>Outflows:</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 800, color: "#FFFFFF" }}>
+                      −<Money value={rupees(totalOut)} className="!text-white" />
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, borderTop: "1px solid rgba(255,255,255,0.25)", paddingTop: 6, marginTop: 2 }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, color: "#FFFFFF", textTransform: "uppercase" }}>Total Volume:</span>
+                    <span style={{ fontFamily: F.display, fontSize: 19, fontWeight: 900, color: "#FFFFFF" }}>
+                      <Money value={rupees(totalAmt)} className="!text-white" />
+                    </span>
+                  </div>
                 </div>
               </div>
             )}

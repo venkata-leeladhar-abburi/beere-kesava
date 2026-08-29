@@ -356,11 +356,11 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
                           padding: "4px 10px", borderRadius: 20,
                           background: isIn ? "rgba(24,78,52,0.08)" : "rgba(110,15,45,0.08)",
                           border: `1px solid ${isIn ? "rgba(24,78,52,0.20)" : "rgba(110,15,45,0.18)"}`,
-                          color: isIn ? T.darkGreen : T.royalBurgundy,
+                          color: isIn ? T.green : T.royalBurgundy,
                           fontFamily: F.ui, fontSize: 11, fontWeight: 700, letterSpacing: "0.4px",
                           flexShrink: 0,
                         }}>
-                          {isIn ? <ArrowDownLeft size={13} color={T.darkGreen} /> : <ArrowUpRight size={13} color={T.royalBurgundy} />}
+                          {isIn ? <ArrowDownLeft size={13} color={T.green} /> : <ArrowUpRight size={13} color={T.royalBurgundy} />}
                           <span>{isIn ? "RECEIVED" : "GIVEN"}</span>
                         </div>
                         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>{entry.time}</span>

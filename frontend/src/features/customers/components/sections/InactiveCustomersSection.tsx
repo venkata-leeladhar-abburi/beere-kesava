@@ -140,10 +140,9 @@ export function InactiveCustomersSection({
           <Button
             key={t.key}
             onClick={() => setInactiveTimelineFilter(t.key)}
-            variant={inactiveTimelineFilter === t.key ? "default" : "tertiary"}
+            variant={inactiveTimelineFilter === t.key ? "primary" : "tertiary"}
             size="sm"
-            className="rounded-full"
-            style={inactiveTimelineFilter === t.key ? { backgroundColor: T.royalBurgundy, color: "#FFFFFF", borderColor: T.royalBurgundy } : undefined}
+            className={`rounded-full ${inactiveTimelineFilter === t.key ? "bg-[#6E0F2D] text-[#FFFDF9]" : ""}`}
           >
             {t.label}
           </Button>

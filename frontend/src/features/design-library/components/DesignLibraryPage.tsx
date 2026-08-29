@@ -314,7 +314,7 @@ export function DesignLibraryPage() {
                               padding: "12px 16px",
                               wordBreak: "break-word",
                             }}>
-                              <span style={{ fontFamily: F.m, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px", display: "block", marginBottom: 4 }}>
+                              <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px", display: "block", marginBottom: 4 }}>
                                 INSTRUCTIONS:
                               </span>
                               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.55 }}>

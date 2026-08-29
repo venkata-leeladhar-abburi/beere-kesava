@@ -205,6 +205,13 @@
     font-size: var(--text-base);
     font-weight: var(--font-weight-medium);
     line-height: 1.5;
+    border-radius: 10px !important;
+  }
+
+  .btn,
+  [data-slot="button"],
+  [data-slot="icon-button"]:not([data-shape="circle"]) {
+    border-radius: 10px !important;
   }
 
   input {

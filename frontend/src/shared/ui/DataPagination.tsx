@@ -74,27 +74,30 @@ export function Pagination({ page, pageCount, total, pageSize, start, onPageChan
   };
 
   const btn: React.CSSProperties = {
-    width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center",
-    borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "#FFF", color: T.royalBurgundy,
-    cursor: "pointer",
+    width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
+    borderRadius: 12, border: `1.5px solid rgba(110,15,45,0.14)`, background: "#FFFDF9", color: T.royalBurgundy,
+    cursor: "pointer", transition: "all 0.15s ease", boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
   };
-  const btnDisabled: React.CSSProperties = { ...btn, opacity: 0.35, cursor: "not-allowed", color: T.taupe };
+  const btnDisabled: React.CSSProperties = {
+    ...btn, opacity: 0.35, cursor: "not-allowed", color: T.taupe, border: `1.5px solid rgba(110,15,45,0.08)`, boxShadow: "none",
+  };
 
   return (
-    <div ref={containerRef} className="flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4 w-full max-w-full py-3 px-2">
+    <div ref={containerRef} className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full max-w-full py-3 px-2">
       {/* Heading Line */}
-      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }} className="w-full sm:w-auto text-center sm:text-left">
+      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }} className="w-full sm:w-auto text-center sm:text-left">
         Showing <strong style={{ color: T.luxuryBrown }}>{start + 1}–{end}</strong> of <strong style={{ color: T.luxuryBrown }}>{total}</strong> {itemLabel}
       </div>
 
       {/* Controls & Buttons Lines */}
-      <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-2.5 w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-3 w-full sm:w-auto">
         {onPageSizeChange && (
           <div className="flex items-center justify-center w-full sm:w-auto">
             <Select
               size="sm"
               value={String(pageSize)}
               onValueChange={val => { onPageSizeChange(Number(val)); handlePageChange(1); }}
+              className="rounded-xl border-[1.5px] border-[rgba(110,15,45,0.14)] bg-[#FFFDF9] font-bold text-[#3B2314]"
             >
               {PAGE_SIZE_OPTIONS.map(n => (
                 <SelectItem key={n} value={String(n)}>{n} / page</SelectItem>
@@ -103,14 +106,14 @@ export function Pagination({ page, pageCount, total, pageSize, start, onPageChan
           </div>
         )}
 
-        <div className="flex items-center justify-center gap-1 w-full sm:w-auto shrink-0">
-          <button onClick={() => handlePageChange(1)} disabled={page === 1} style={page === 1 ? btnDisabled : btn} title="First page"><ChevronsLeft size={14} /></button>
-          <button onClick={() => handlePageChange(page - 1)} disabled={page === 1} style={page === 1 ? btnDisabled : btn} title="Previous page"><ChevronLeft size={14} /></button>
-          <div style={{ display: "flex", alignItems: "center", padding: "0 8px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, fontWeight: 700 }}>
+        <div className="flex items-center justify-center gap-1.5 w-full sm:w-auto shrink-0">
+          <button onClick={() => handlePageChange(1)} disabled={page === 1} style={page === 1 ? btnDisabled : btn} title="First page"><ChevronsLeft size={15} /></button>
+          <button onClick={() => handlePageChange(page - 1)} disabled={page === 1} style={page === 1 ? btnDisabled : btn} title="Previous page"><ChevronLeft size={15} /></button>
+          <div style={{ display: "flex", alignItems: "center", padding: "0 10px", fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 700 }}>
             {page} / {pageCount}
           </div>
-          <button onClick={() => handlePageChange(page + 1)} disabled={page === pageCount} style={page === pageCount ? btnDisabled : btn} title="Next page"><ChevronRight size={14} /></button>
-          <button onClick={() => handlePageChange(pageCount)} disabled={page === pageCount} style={page === pageCount ? btnDisabled : btn} title="Last page"><ChevronsRight size={14} /></button>
+          <button onClick={() => handlePageChange(page + 1)} disabled={page === pageCount} style={page === pageCount ? btnDisabled : btn} title="Next page"><ChevronRight size={15} /></button>
+          <button onClick={() => handlePageChange(pageCount)} disabled={page === pageCount} style={page === pageCount ? btnDisabled : btn} title="Last page"><ChevronsRight size={15} /></button>
         </div>
       </div>
     </div>
