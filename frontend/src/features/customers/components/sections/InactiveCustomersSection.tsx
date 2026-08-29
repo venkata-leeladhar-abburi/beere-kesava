@@ -97,7 +97,7 @@ export function InactiveCustomersSection({
   ];
 
   return (
-    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80 }}>
     <SectionCard
       icon={UserX}
       title="Inactive Customers — No Purchase in 6 Months"

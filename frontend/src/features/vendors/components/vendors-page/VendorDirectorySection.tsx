@@ -49,7 +49,7 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick, lo
   const pag = usePagination(filtered, 25);
 
   return (
-    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80 }}>
       <FadeUp>
       <SectionCard
         icon={Building2}
@@ -75,7 +75,6 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick, lo
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search by vendor name, city, or contact…"
-              className="bg-[var(--bk-cream-50,#FBF4E7)]"
             />
           </div>
           <div style={{ display: "flex", gap: 8 }}>
