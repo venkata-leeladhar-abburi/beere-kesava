@@ -125,23 +125,27 @@ function clearSession() {
  * established or has already been cleared elsewhere.
  *
  * Deliberately does NOT nuke the session just because *a* request 401'd
- * while a token IS present. A hard refresh fires a dozen queries in
- * parallel (weavers, batches, payments, QC, …); a single transient 401 on
- * any one of them (backend cold-start reconnecting to the DB, a brief race,
- * a role-scoped endpoint) used to clear localStorage and redirect
+ * while a token IS present. A hard refresh (and a fresh login) fires a dozen
+ * queries in parallel (weavers, batches, payments, QC, …); a single
+ * transient 401 on any one of them (backend cold-start reconnecting to the
+ * DB, a brief race between storing the token and the first request reading
+ * it, a role-scoped endpoint) used to clear localStorage and redirect
  * immediately, logging the user out and wiping every other query's data
- * with it — indistinguishable from "my details got erased on refresh".
- * With a token present, that one request is left to fail as an ApiError
- * (the caller's own error/retry UI handles it) instead of tearing down the
- * whole session. Kept dependency-free (no useAuth import) since this
- * module is used outside React component trees.
+ * with it — indistinguishable from "my details got erased on refresh", and
+ * (confirmed the hard way) capable of bouncing a just-completed login
+ * straight back out before the portal ever rendered. With a token present,
+ * that one request is left to fail as an ApiError (the caller's own
+ * error/retry UI handles it) instead of tearing down the whole session.
+ * Kept dependency-free (no useAuth import) since this module is used
+ * outside React component trees.
  *
- * The one exception is AUTH_SESSION_EXPIRED, which the backend now reports
- * distinctly (jwt-auth.guard.ts): the token is *known* expired, not merely
- * rejected once, so there is no ambiguity to protect against. That case
- * tears the session down and routes to /session-expired — a screen that
- * says what happened and returns the user where they were, rather than a
- * bare login form that looks like they were signed out at random.
+ * The one exception is AUTH_SESSION_EXPIRED, which the backend reports
+ * distinctly (jwt-auth.guard.ts) only for a token passport's own JWT
+ * verification recognises as *expired* — never for a race, a cold start, or
+ * a role check. That case tears the session down and routes to
+ * /session-expired — a screen that says what happened and returns the user
+ * where they were, rather than a bare login form that looks like they were
+ * signed out at random.
  */
 function handleUnauthorized(code: ErrorCode) {
   if (typeof window === "undefined") return;

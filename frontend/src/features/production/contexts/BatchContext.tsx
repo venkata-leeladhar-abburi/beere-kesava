@@ -7,7 +7,7 @@ import type { BackendQcResult } from "../../../shared/api/qc";
 // Type-only: QcContext imports from this module's sibling API layer, so a
 // value import here would close a cycle at runtime.
 import type { QcResult } from "@/features/qc";
-import { weaversApi } from "../../../shared/api/weavers";
+import { weaversApi, WEAVERS_LIST_QUERY_KEY } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { ratesApi } from "../../../shared/api/rates";
 import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
@@ -232,8 +232,14 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       const batchesRes = await batchesApi.list();
       // The three lookups only decorate rows with display names, so a
       // failure there degrades labels rather than hiding real batches.
+      // Weavers goes through the shared ["weavers", "list"] cache (see
+      // WEAVERS_LIST_QUERY_KEY) instead of its own weaversApi.list() call —
+      // this provider, WeaverPaymentsContext, and useCurrentWeaver each used
+      // to fire an independent uncached fetch of the full roster on every
+      // portal load; queryClient.fetchQuery() dedupes concurrent callers and
+      // reuses the cached result within its staleTime.
       const [weaversRes, loomsRes, ratesRes] = await Promise.all([
-        weaversApi.list().catch(() => ({ items: [] })),
+        queryClient.fetchQuery({ queryKey: WEAVERS_LIST_QUERY_KEY, queryFn: () => weaversApi.list(), staleTime: 60_000 }).catch(() => ({ items: [] })),
         canReadFactoryLooms ? factoryLoomsApi.list().catch(() => ({ items: [] })) : Promise.resolve({ items: [] }),
         canReadRates ? ratesApi.list().catch(() => ({ items: [] })) : Promise.resolve({ items: [] }),
       ]);

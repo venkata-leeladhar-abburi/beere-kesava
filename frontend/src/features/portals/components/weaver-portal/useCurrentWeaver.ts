@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../../contexts/AuthContext";
-import { weaversApi, BackendWeaver } from "../../../../shared/api/weavers";
+import { weaversApi, BackendWeaver, WEAVERS_LIST_QUERY_KEY } from "../../../../shared/api/weavers";
 import { useBatches } from "@/features/production";
 
 export function useCurrentWeaver() {
@@ -11,8 +11,12 @@ export function useCurrentWeaver() {
   // a hard refresh, brief network blip) must self-heal instead of
   // permanently blanking every batch-row filter that depends on weaverId.
   const { data: weaversList, isLoading: listLoading, isError: listError } = useQuery({
-    queryKey: ["weavers"],
+    // Shared with BatchContext / WeaverPaymentsContext — see
+    // WEAVERS_LIST_QUERY_KEY — so the portal's full roster fetch happens
+    // once and is reused, not three times in parallel.
+    queryKey: WEAVERS_LIST_QUERY_KEY,
     queryFn: () => weaversApi.list(),
+    staleTime: 60_000,
     retry: 2,
   });
 

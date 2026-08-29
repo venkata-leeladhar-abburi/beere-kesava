@@ -1,5 +1,17 @@
 import { apiClient } from "./client";
 
+/**
+ * Shared React Query key for the unfiltered weaver roster (the full-list
+ * lookup used to decorate ids with name/code/village, not a paginated
+ * directory view). Several contexts on the weaver portal — BatchContext,
+ * WeaverPaymentsContext, useCurrentWeaver — each need this same roster
+ * purely as a lookup table; routing all of them through
+ * queryClient.fetchQuery(WEAVERS_LIST_QUERY_KEY, ...) lets React Query
+ * dedupe concurrent requests and share one cached result instead of each
+ * firing its own independent GET /weavers on every portal load.
+ */
+export const WEAVERS_LIST_QUERY_KEY = ["weavers", "list"] as const;
+
 export type BackendWeaverStatus = "ACTIVE" | "INACTIVE";
 
 export interface BackendWeaver {
