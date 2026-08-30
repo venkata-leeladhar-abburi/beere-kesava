@@ -1,11 +1,14 @@
 import React, { useMemo, useState } from "react";
 import { semantic } from "../../../../design-system/tokens";
 import { useQuery } from "@tanstack/react-query";
-import { UsersRound, CheckCircle2, TrendingUp, ShieldAlert } from "lucide-react";
+import { UsersRound, CheckCircle2, TrendingUp, ShieldAlert, BarChart2, PieChart as PieChartIcon } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, ChartTip, AnimBar, StatusPill } from "../common/primitives";
+import { FadeUp, SumCard, SectionCard, ReportDLBar, ChartTip, StatusPill } from "../common/primitives";
+import {
+  ChartCard, ChartBand, TrackBar, BAND
+} from "../../../production/components/sections/chart-primitives";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
 import { invoicesApi } from "../../../../shared/api/invoices";
@@ -269,7 +272,9 @@ export function CustomerReport() {
       <ReportDLBar />
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3" style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}>
-        <ChartCard title="Top Customers by Total Purchase Value" sub="All-time wholesale + retail combined">
+        <ChartCard>
+          <ChartBand tone="weavers" icon={<UsersRound size={19} color={BAND.weavers.icon} />} title="Top Customers by Total Purchase Value" sub="All-time wholesale + retail combined" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 11, padding: "8px 0" }}>
             {isError && (
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, padding: "8px 0", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
@@ -286,13 +291,16 @@ export function CustomerReport() {
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{c.name}</span>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{formatMoney(rupees(c.total))}</span>
                 </div>
-                <AnimBar pct={Math.round((c.total / maxTop) * 100)} color={T.antiqueGold} height={7} delay={i * 0.07} />
+                <TrackBar pct={Math.round((c.total / maxTop) * 100)} fill={T.antiqueGold} height={9} delay={i * 0.08} />
               </div>
             ))}
           </div>
+          </div>
         </ChartCard>
 
-        <ChartCard title="New vs Returning Customers Each Month" sub="Monthly customer growth">
+        <ChartCard>
+          <ChartBand tone="output" icon={<BarChart2 size={19} color={BAND.output.icon} />} title="New vs Returning Customers Each Month" sub="Monthly customer growth" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {custMonthly.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
               No customer records yet.
@@ -309,9 +317,12 @@ export function CustomerReport() {
               </BarChart>
             </ResponsiveContainer>
           )}
+          </div>
         </ChartCard>
 
-        <ChartCard title="Retail vs Wholesale Revenue Split" sub="Revenue contribution">
+        <ChartCard>
+          <ChartBand tone="pipeline" icon={<PieChartIcon size={19} color={BAND.pipeline.icon} />} title="Retail vs Wholesale Revenue Split" sub="Revenue contribution" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {isError ? (
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson, padding: "16px 8px" }}>Failed to load revenue split.</div>
           ) : (
@@ -340,6 +351,7 @@ export function CustomerReport() {
           </div>
           </>
           )}
+          </div>
         </ChartCard>
       </div>
 
