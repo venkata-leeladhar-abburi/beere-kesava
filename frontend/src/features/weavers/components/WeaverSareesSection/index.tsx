@@ -14,6 +14,7 @@ import { Select, TabsBar } from "./WeaverSareesControls";
 import { useWeaverSareeRows } from "./useWeaverSareeRows";
 import { useExternalPurchaseRows } from "./useExternalPurchaseRows";
 import { usePrintSareeTags } from "./SareeTagPrint";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 
 
@@ -322,23 +323,158 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
                     : tab === "external" ? "Purchase Date"
                       : tab === "dispatched" ? "Dispatched On"
                         : "In Stock Since";
+  const categoryTabGroup = {
+    id: "tabCategory",
+    label: "Category / View",
+    value: tab,
+    defaultValue: "assigned",
+    options: TABS.map(t => ({
+      value: t.key,
+      label: `${t.label} (${counts[t.key] ?? 0})`,
+    })),
+    onChange: (v: string) => setTab(v as TabKey),
+  };
+
+  const mobileFilterGroups = [
+    categoryTabGroup,
+    {
+      id: "time",
+      label: "Time Period",
+      value: dateFilter.mode,
+      defaultValue: "all",
+      options: [
+        { value: "all", label: "All Time" },
+        { value: "day", label: "Specific Date" },
+        { value: "range", label: "Date Range" },
+        { value: "month", label: "Monthly" },
+        { value: "year", label: "Yearly" },
+      ],
+      onChange: (m: string) => {
+        const mode = m as DateFilterState["mode"];
+        if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+        else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+        else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+        else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+      },
+    },
+    ...(isExternalTab ? [
+      {
+        id: "supplier",
+        label: "Supplier",
+        value: fSupplier,
+        options: opts.supplier.map(s => ({ value: s, label: s === "all" ? "All Suppliers" : s })),
+        onChange: (v: string) => { setFSupplier(v); setFPurchaseOrder("all"); setFSerial("all"); },
+      },
+      {
+        id: "po",
+        label: "Purchase Order",
+        value: fPurchaseOrder,
+        options: supplierPoOpts.map(p => ({ value: p, label: p === "all" ? "All POs" : p })),
+        onChange: (v: string) => { setFPurchaseOrder(v); setFSerial("all"); },
+      },
+      {
+        id: "type",
+        label: "Saree Type",
+        value: fType,
+        options: opts.type.map(t => ({ value: t, label: t === "all" ? "All Types" : t })),
+        onChange: setFType,
+      },
+      {
+        id: "color",
+        label: "Colour",
+        value: fColor,
+        options: opts.color.map(c => ({ value: c, label: c === "all" ? "All Colours" : c })),
+        onChange: setFColor,
+      },
+      {
+        id: "payment",
+        label: "Payment",
+        value: fPayment,
+        options: ["all", "Paid", "Partial", "Pending"].map(p => ({ value: p, label: p === "all" ? "All Payments" : p })),
+        onChange: setFPayment,
+      },
+    ] : [
+      {
+        id: "batch",
+        label: "Batch",
+        value: fBatch,
+        options: opts.batch.map(b => ({ value: b, label: b === "all" ? "All Batches" : b })),
+        onChange: setFBatch,
+      },
+      ...(isAll ? [{
+        id: "weaver",
+        label: "Weaver",
+        value: fOwnerWeaver,
+        options: opts.ownerWeaver.map(w => ({ value: w, label: w === "all" ? "All Weavers" : w })),
+        onChange: (v: string) => { setFOwnerWeaver(v); setFLoom("all"); },
+      }] : []),
+      {
+        id: "order",
+        label: "Bulk Order",
+        value: fOrder,
+        options: opts.order.map(o => ({ value: o, label: o === "all" ? "All Orders" : o })),
+        onChange: setFOrder,
+      },
+      {
+        id: "type",
+        label: "Saree Type",
+        value: fType,
+        options: opts.type.map(t => ({ value: t, label: t === "all" ? "All Types" : t })),
+        onChange: setFType,
+      },
+      {
+        id: "color",
+        label: "Colour",
+        value: fColor,
+        options: opts.color.map(c => ({ value: c, label: c === "all" ? "All Colours" : c })),
+        onChange: setFColor,
+      },
+      {
+        id: "qc",
+        label: "QC Status",
+        value: fQc,
+        options: opts.qc.map(q => ({ value: q, label: q === "all" ? "All QC Statuses" : q })),
+        onChange: setFQc,
+      },
+      {
+        id: "finishing",
+        label: "Finishing",
+        value: fFinishing,
+        options: opts.finishing.map(f => ({ value: f, label: f === "all" ? "All Finishing Statuses" : f })),
+        onChange: setFFinishing,
+      },
+    ]),
+  ];
 
   return (
     <div>
-      {/* Tabs & Date range */}
-      <TabsBar
-        TABS={TABS}
-        tab={tab}
-        setTab={setTab}
-        counts={counts}
-        dateFilter={dateFilter}
-        setDateFilter={setDateFilter}
-      />
+      {/* Desktop Tabs & Date range (Hidden on mobile where Category tabs are inside the filter bar) */}
+      <div className="hidden md:block">
+        <TabsBar
+          TABS={TABS}
+          tab={tab}
+          setTab={setTab}
+          counts={counts}
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+        />
+      </div>
 
-      {/* Attribute filters */}
-      <div style={{
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search saree ID, batch, type, weaver…"
+          filterGroups={mobileFilterGroups}
+          onResetAll={resetFilters}
+        />
+      </div>
+
+      {/* Desktop Attribute filters */}
+      <div className="hidden md:flex" style={{
         background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px",
-        marginBottom: 24, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap",
+        marginBottom: 24, gap: 14, alignItems: "center", flexWrap: "wrap",
         boxShadow: "0 2px 10px rgba(74,6,27,0.05)"
       }}>
         <div style={{ flex: "1 1 280px" }}>
@@ -402,34 +538,6 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
         </div>
       </div>
 
-      {/* View mode toggle buttons (Card View / Table View) — mobile only */}
-      <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
-        <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
-          <Button
-            onClick={() => setViewMode("card")}
-            variant="ghost"
-            className={`h-auto rounded-none gap-1.5 py-2 px-3 text-[12px] sm:text-[13px] font-bold ${
-              viewMode === "card"
-                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-            }`}
-          >
-            <LayoutGrid size={15} /> Card View
-          </Button>
-          <Button
-            onClick={() => setViewMode("table")}
-            variant="ghost"
-            className={`h-auto rounded-none gap-1.5 py-2 px-3 text-[12px] sm:text-[13px] font-bold ${
-              viewMode === "table"
-                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-            }`}
-          >
-            <List size={15} /> Table View
-          </Button>
-        </div>
-      </div>
-
       {/* Table */}
       {visible.length === 0 ? (
         <div style={{
@@ -441,7 +549,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
             : `No sarees match this view${filtersActive ? " with the current filters." : "."}`}
         </div>
       ) : isExternalTab ? (
-        <ExternalSareesTable pageRows={pageRows} canSeeMoney={canSeeMoney} pag={pag} responsive={viewMode === "card"} />
+        <ExternalSareesTable pageRows={pageRows} canSeeMoney={canSeeMoney} pag={pag} responsive={false} />
       ) : (
         <MainSareesTable
           pageRows={pageRows}
@@ -457,7 +565,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           showQcMoney={showQcMoney}
           showMoney={showMoney}
           pag={pag}
-          responsive={viewMode === "card"}
+          responsive={false}
           onPrintTag={r => printTags([r])}
         />
       )}

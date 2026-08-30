@@ -12,6 +12,7 @@ import { rupees, formatMoney, paise } from "@/lib/domain/money";
 import { Money } from "../../../../shared/ui/domain/Money";
 import { VisitingCardUploadField } from "../../../../shared/ui/VisitingCardUploadField";
 import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 interface WholesaleFormState {
   name: string;
@@ -67,6 +68,8 @@ export function WholesaleCustomersSection({
   const [cardUrl, setCardUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "dues" | "inactive">("all");
 
   const listColumns: ColumnDef<WholesaleCustomer>[] = [
     { id: "code", header: "Code", accessor: w => w.displayCode || w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy, fontSize: 13 }}>{w.displayCode || w.id}</span> },
@@ -315,13 +318,46 @@ export function WholesaleCustomersSection({
         ))}
       </div>
 
-      {/* Toolbar */}
-      <div className="flex flex-col gap-5 mb-8">
+      {/* Mobile Flipkart-style Collapsible Filter Bar */}
+      <div className="md:hidden bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs mb-4">
+        <MobileFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search business name, city..."
+          filterGroups={[
+            {
+              id: "status",
+              label: "Status",
+              value: statusFilter,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: `All Wholesale (${wholesaleList.length})` },
+                { value: "active", label: `Active (${wholesaleList.length})` },
+                { value: "dues", label: "Has Dues (0)" },
+                { value: "inactive", label: "Inactive (0)" },
+              ],
+              onChange: (v: string) => setStatusFilter(v as any),
+            },
+          ]}
+          onResetAll={() => {
+            setSearch("");
+            setStatusFilter("all");
+          }}
+        />
+      </div>
+
+      {/* Desktop Toolbar */}
+      <div className="hidden md:flex flex-col gap-5 mb-6">
         {/* Top row: search + sort/view */}
         <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
           {/* Search bar */}
           <div className="w-full md:w-[280px] lg:w-[400px] relative">
-            <SearchInput aria-label="Search by business name, city..." placeholder="Search by business name, city..." />
+            <SearchInput
+              aria-label="Search by business name, city..."
+              placeholder="Search by business name, city..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
           <div className="flex flex-wrap items-center justify-between md:justify-end gap-3 w-full md:w-auto">
             <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 4 }}>Sort By: Outstanding <ChevronDown size={14} /></span>
@@ -378,10 +414,10 @@ export function WholesaleCustomersSection({
 
         {/* Filter pills row */}
         <div className="flex flex-wrap gap-2.5 items-center">
-          <Pill active={true}>All Wholesale ({wholesaleList.length})</Pill>
-          <Pill active={false}>Active ({wholesaleList.length})</Pill>
-          <Pill active={false}>Has Dues (0)</Pill>
-          <Pill active={false}>Inactive (0)</Pill>
+          <Pill active={statusFilter === "all"} onClick={() => setStatusFilter("all")}>All Wholesale ({wholesaleList.length})</Pill>
+          <Pill active={statusFilter === "active"} onClick={() => setStatusFilter("active")}>Active ({wholesaleList.length})</Pill>
+          <Pill active={statusFilter === "dues"} onClick={() => setStatusFilter("dues")}>Has Dues (0)</Pill>
+          <Pill active={statusFilter === "inactive"} onClick={() => setStatusFilter("inactive")}>Inactive (0)</Pill>
         </div>
       </div>
 

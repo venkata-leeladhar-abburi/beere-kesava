@@ -13,6 +13,7 @@ import { Button, SearchInput, Select, SelectItem, Checkbox, IconButton } from ".
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney, addMoney, type Paise } from "@/lib/domain/money";
 import { EntityCode } from "@/shared/ui/domain";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 const PIP_COLORS = ["#7C3AED", T.royalBurgundy, T.taupe, "#B45309"];
 
@@ -40,8 +41,9 @@ function HistoryDropBtn({ label, icon }: { label: string; icon?: React.ReactNode
 
 export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
   const { getSareeTypeByName } = useRatesPricing();
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const [search, setSearch] = useState("");
+  const [sareeTypeFilter, setSareeTypeFilter] = useState("All Saree Types");
+  const [weaverFilter, setWeaverFilter] = useState("All Weavers");
   const [currentPage, setCurrentPage] = useState(1);
   const { batches } = useBatches();
   const { data: qcRecords = [], isLoading: qcLoading, isError: qcError, refetch: refetchQc } = useQuery({
@@ -240,44 +242,52 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center gap-2.5 p-3.5 sm:px-6 bg-white border-x border-[rgba(110,15,45,0.10)] w-full overflow-x-auto">
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden bg-white p-3.5 border-x border-[rgba(110,15,45,0.10)]">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search batch number, saree type..."
+            filterGroups={[
+              {
+                id: "type",
+                label: "Saree Type",
+                value: sareeTypeFilter,
+                defaultValue: "All Saree Types",
+                options: [
+                  { value: "All Saree Types", label: "All Saree Types" },
+                  ...Array.from(new Set(HISTORY_BATCHES.map(b => b.sareeType))).map(t => ({ value: t, label: t })),
+                ],
+                onChange: setSareeTypeFilter,
+              },
+              {
+                id: "weaver",
+                label: "Weaver",
+                value: weaverFilter,
+                defaultValue: "All Weavers",
+                options: [
+                  { value: "All Weavers", label: "All Weavers" },
+                  ...Array.from(new Set(HISTORY_BATCHES.flatMap(b => b.weavers.map(w => w.initials)))).map(w => ({ value: w, label: w })),
+                ],
+                onChange: setWeaverFilter,
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setSareeTypeFilter("All Saree Types");
+              setWeaverFilter("All Weavers");
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter Bar */}
+        <div className="hidden md:flex flex-row md:items-center gap-2.5 p-3.5 sm:px-6 bg-white border-x border-[rgba(110,15,45,0.10)] w-full overflow-x-auto">
           <SearchInput aria-label="Search batches" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search batches..." className="w-full md:w-[240px] shrink-0" />
           <div className="flex items-center gap-2.5 flex-nowrap overflow-x-auto shrink-0 w-full md:w-auto pb-1 md:pb-0">
             <HistoryDropBtn label="30 Apr 2026 – 30 Apr 2026" icon={<Calendar size={14} style={{ color: T.royalBurgundy }} />} />
             <HistoryDropBtn label="All Saree Types" />
             <HistoryDropBtn label="All Weavers" icon={<Users size={14} style={{ color: T.royalBurgundy }} />} />
             <HistoryDropBtn label="All Orders" />
-          </div>
-          <div className="w-full sm:flex-1 sm:min-w-[180px]">
-            <SearchInput aria-label="Search batches" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search batches..." />
-          </div>
-        </div>
-
-        {/* View mode toggle buttons — placed just below search bar */}
-        <div className="p-3 sm:px-6 bg-white border-x border-[rgba(110,15,45,0.10)] border-t border-t-[rgba(110,15,45,0.06)] flex items-center justify-start">
-          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
-            <Button
-              onClick={() => setViewMode("card")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-2 px-3 text-[12px] sm:text-[13px] font-bold ${
-                viewMode === "card"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
-              }`}
-            >
-              <LayoutGrid size={15} /> Card View
-            </Button>
-            <Button
-              onClick={() => setViewMode("table")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-2 px-3 text-[12px] sm:text-[13px] font-bold ${
-                viewMode === "table"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
-              }`}
-            >
-              <List size={15} /> Table View
-            </Button>
           </div>
         </div>
 
@@ -301,7 +311,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
 
         <div style={{ overflowX: "auto", border: `1px solid ${T.borderDef}`, borderTop: "none", borderRadius: "0 0 12px 12px", boxShadow: "0 4px 16px rgba(74,6,27,0.07)", background: T.warmIvory }}>
           <DataTable
-            responsive={viewMode === "card"}
+            responsive={false}
             columns={columns}
             data={filteredBatches}
             getRowId={b => b.id}

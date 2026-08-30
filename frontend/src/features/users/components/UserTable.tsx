@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Edit2, ShieldOff, ShieldCheck, Eye, Trash2, ChevronLeft, ChevronRight, Users, LayoutGrid, LayoutList } from "lucide-react";
-import { DateFilterBar, DateFilterState } from "../../../shared/ui/DateFilterBar";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
 import { T, F, ROLES } from "./theme";
 import { TableRow } from "./utils";
 import { SectionCard, RoleBadge, AccessBadge, StatusBadge } from "./UserBadges";
@@ -185,7 +186,57 @@ export function UserTable({
         </>
       }
     >
-      <div style={{ marginBottom: 16 }}>
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={searchQ}
+          onSearchChange={s => { setSearchQ(s); setPage(1); }}
+          searchPlaceholder="Search name, phone, email..."
+          filterGroups={[
+            {
+              id: "time",
+              label: "Time Period",
+              value: dateFilter.mode,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Time" },
+                { value: "day", label: "Specific Date" },
+                { value: "range", label: "Date Range" },
+                { value: "month", label: "Monthly" },
+                { value: "year", label: "Yearly" },
+              ],
+              onChange: (m: string) => {
+                const mode = m as DateFilterState["mode"];
+                if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                setPage(1);
+              },
+            },
+            {
+              id: "role",
+              label: "User Role",
+              value: roleFilter,
+              defaultValue: "All Roles",
+              options: [
+                { value: "All Roles", label: "All Roles" },
+                ...ROLES.map(r => ({ value: r, label: r })),
+              ],
+              onChange: (r: string) => { setRoleFilter(r); setPage(1); },
+            },
+          ]}
+          onResetAll={() => {
+            setSearchQ("");
+            setRoleFilter("All Roles");
+            setDateFilter(DEFAULT_DATE_FILTER);
+            setPage(1);
+          }}
+        />
+      </div>
+
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:block mb-4">
         <DateFilterBar filter={dateFilter} onChange={f => { setDateFilter(f); setPage(1); }} />
       </div>
 

@@ -11,6 +11,7 @@ import { Button, Checkbox, SearchInput, Select, SelectItem } from "../../../../s
 import { SectionCard } from "../common/primitives";
 import type { BulkOrder } from "@/features/bulk-orders";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 // Photo captured by Worker Staff at Receive Sarees — same source as the
 // worker portal's Received History. Null until the saree is actually
@@ -126,10 +127,64 @@ export function BatchTable({
         )
       }
     >
-      {/* Filters — side-by-side single row */}
-      <div className="-mx-2.5 sm:-mx-5 md:-mx-6 -mt-2.5 sm:-mt-5 md:-mt-6 px-3.5 sm:px-5 md:px-6 py-3.5 sm:py-4 flex flex-col md:flex-row md:items-center gap-2.5 border-b border-[#E8DCC4]">
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden -mx-2.5 sm:-mx-5 md:-mx-6 -mt-2.5 sm:-mt-5 md:-mt-6 p-3.5 border-b border-[#E8DCC4] bg-white">
+        <MobileFilterBar
+          search={searchFilter}
+          onSearchChange={setSearchFilter}
+          searchPlaceholder="Search saree ID, weaver, loom..."
+          filterGroups={[
+            {
+              id: "weaver",
+              label: "Weaver",
+              value: weaverFilter,
+              defaultValue: "All",
+              options: weaverOptions.map(w => ({ value: w as string, label: w === "All" ? "All Weavers" : w as string })),
+              onChange: setWeaverFilter,
+            },
+            {
+              id: "type",
+              label: "Saree Type",
+              value: sareeTypeFilter,
+              defaultValue: "All",
+              options: sareeTypeOptions.map(w => ({ value: w as string, label: w === "All" ? "All Saree Types" : w as string })),
+              onChange: setSareeTypeFilter,
+            },
+            {
+              id: "order",
+              label: "Bulk Order",
+              value: orderFilter,
+              defaultValue: "All",
+              options: orderOptions.map(o => ({ value: o as string, label: o === "All" ? "All Orders" : o as string })),
+              onChange: setOrderFilter,
+            },
+            {
+              id: "sort",
+              label: "Sort By",
+              value: sortBy,
+              defaultValue: "serial",
+              options: [
+                { value: "serial", label: "Default (#)" },
+                { value: "weaver", label: "Weaver" },
+                { value: "factoryLoom", label: "Factory Loom" },
+              ],
+              onChange: (v: string) => setSortBy(v as typeof sortBy),
+            },
+          ]}
+          onResetAll={() => {
+            setSearchFilter("");
+            setWeaverFilter("All");
+            setSareeTypeFilter("All");
+            setOrderFilter("All");
+            setSortBy("serial");
+          }}
+        />
+      </div>
+
+      {/* Desktop Filters — side-by-side single row */}
+      <div className="hidden md:flex -mx-2.5 sm:-mx-5 md:-mx-6 -mt-2.5 sm:-mt-5 md:-mt-6 px-3.5 sm:px-5 md:px-6 py-3.5 sm:py-4 flex-row items-center gap-2.5 border-b border-[#E8DCC4]">
         <SearchInput aria-label="Search saree ID or weaver" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} placeholder="Search Saree ID, Weaver..." className="w-full md:w-[240px] shrink-0" />
-        <div className="flex items-center gap-2 flex-nowrap overflow-x-auto shrink-0 w-[calc(100%+0.5rem)] md:w-auto -mx-1 px-1 md:mx-0 md:px-0 pb-1 md:pb-0 scrollbar-none">
+        <div className="flex items-center gap-2 flex-nowrap overflow-x-auto shrink-0 w-auto pb-0 scrollbar-none">
           <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm" className="w-auto min-w-[125px] shrink-0">
             {weaverOptions.map(w => <SelectItem key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</SelectItem>)}
           </Select>

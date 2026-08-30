@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Trash2, ShoppingCart, PackageCheck, RefreshCw, FileText, Plus } from "lucide-react";
 import { usePO, PurchaseOrder } from "@/features/purchasing";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
 import { ApiError } from "../../../../shared/api/client";
 import { T, F, MobileCtx } from "../theme";
@@ -161,21 +162,74 @@ export function POTrackerSection({
         </Button>
       }
     >
-      <div style={{ marginBottom: 16 }}>
-        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search=""
+          onSearchChange={() => {}}
+          searchPlaceholder="Search purchase orders..."
+          filterGroups={[
+            {
+              id: "time",
+              label: "Time Period",
+              value: dateFilter.mode,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Time" },
+                { value: "day", label: "Specific Date" },
+                { value: "range", label: "Date Range" },
+                { value: "month", label: "Monthly" },
+                { value: "year", label: "Yearly" },
+              ],
+              onChange: (m: string) => {
+                const mode = m as DateFilterState["mode"];
+                if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+              },
+            },
+            {
+              id: "status",
+              label: "PO Status",
+              value: filter,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: `All POs (${counts.all})` },
+                { value: "pending", label: `Pending (${counts.pending})` },
+                { value: "approved", label: `Approved (${counts.approved})` },
+                { value: "received", label: `Received (${counts.received})` },
+                { value: "rejected", label: `Rejected (${counts.rejected})` },
+              ],
+              onChange: (f: string) => { setFilter(f as POFilter); pag.setPage(1); },
+            },
+          ]}
+          onResetAll={() => {
+            setFilter("all");
+            setDateFilter(DEFAULT_DATE_FILTER);
+            pag.setPage(1);
+          }}
+        />
       </div>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
-        {PILL_LABELS.map(p => (
-          <Button
-            key={p.key}
-            onClick={() => { setFilter(p.key); pag.setPage(1); }}
-            variant={filter === p.key ? "primary" : "secondary"}
-            size="sm"
-            className="rounded-[10px]"
-          >
-            {p.label}
-          </Button>
-        ))}
+
+      {/* Desktop Filter Bar & Pills */}
+      <div className="hidden md:block mb-4">
+        <div style={{ marginBottom: 16 }}>
+          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+          {PILL_LABELS.map(p => (
+            <Button
+              key={p.key}
+              onClick={() => { setFilter(p.key); pag.setPage(1); }}
+              variant={filter === p.key ? "primary" : "secondary"}
+              size="sm"
+              className="rounded-[10px]"
+            >
+              {p.label}
+            </Button>
+          ))}
+        </div>
       </div>
 
       {isError ? (

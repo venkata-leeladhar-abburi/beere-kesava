@@ -7,6 +7,7 @@ import { Purchase, purchaseTotals, totalPieces, parseINR } from "../../contexts/
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 /** Pieces actually recorded on the purchase's lines, falling back to the
  * stored aggregate when a purchase has no line detail. */
@@ -87,7 +88,40 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
         title="External Purchase History"
         subtitle="Every raw-material purchase recorded from every supplier, with bill status and invoice reference."
       >
-        <div style={{ marginBottom: 16 }}>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search=""
+            onSearchChange={() => {}}
+            searchPlaceholder="Search external purchases..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: filter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day") setFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                  else if (mode === "month") setFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                  else if (mode === "year") setFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                  else setFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                },
+              },
+            ]}
+            onResetAll={() => setFilter(DEFAULT_DATE_FILTER)}
+          />
+        </div>
+
+        {/* Desktop Filter Bar */}
+        <div className="hidden md:block mb-4">
           <DateFilterBar filter={filter} onChange={setFilter} />
         </div>
 

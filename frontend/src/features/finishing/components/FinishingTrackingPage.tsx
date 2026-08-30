@@ -8,6 +8,7 @@ import { FinishingStaffSection, StaffRow } from "./FinishingStaffSection";
 import { LuxuryStatsCard } from "../../../shared/ui/LuxuryStatsCard";
 import { TableError } from "../../../shared/ui/data/TableStates";
 import { LoadingState } from "../../../shared/ui/state";
+import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -142,30 +143,78 @@ export function FinishingTrackingPage() {
           <>
             {/* Filters */}
             <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.06)", padding: 16 }}>
-              <div style={{ marginBottom: 14 }}>
-                <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+              {/* Mobile Flipkart-style Filter Bar */}
+              <div className="md:hidden">
+                <MobileFilterBar
+                  search={search}
+                  onSearchChange={setSearch}
+                  searchPlaceholder="Search saree code, weaver, saree type..."
+                  filterGroups={[
+                    {
+                      id: "time",
+                      label: "Time Period",
+                      value: dateFilter.mode,
+                      defaultValue: "all",
+                      options: [
+                        { value: "all", label: "All Time" },
+                        { value: "day", label: "Specific Date" },
+                        { value: "range", label: "Date Range" },
+                        { value: "month", label: "Monthly" },
+                        { value: "year", label: "Yearly" },
+                      ],
+                      onChange: (m: string) => {
+                        const mode = m as DateFilterState["mode"];
+                        if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                        else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                        else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                        else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                      },
+                    },
+                    {
+                      id: "status",
+                      label: "Return Status",
+                      value: statusFilter,
+                      defaultValue: "all",
+                      options: [
+                        { value: "all", label: "All" },
+                        { value: "awaiting", label: "Awaiting Return" },
+                        { value: "perfect", label: "Received · Perfect" },
+                        { value: "damaged", label: "Received · Damaged" },
+                      ],
+                      onChange: (v: string) => setStatusFilter(v as any),
+                    },
+                  ]}
+                  onResetAll={() => {
+                    setSearch("");
+                    setStatusFilter("all");
+                    setDateFilter(DEFAULT_DATE_FILTER);
+                  }}
+                />
               </div>
-              <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-                <div style={{ flex: "1 1 260px" }}>
-                  <SearchInput aria-label="Search saree code, weaver, saree type, finishing staff" value={search} onChange={e => setSearch(e.target.value)}
-                    placeholder="Search saree code, weaver, saree type, finishing staff…" />
+
+              {/* Desktop Filter Bar */}
+              <div className="hidden md:block">
+                <div style={{ marginBottom: 14 }}>
+                  <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
                 </div>
-                <div style={{ display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
-                  {[
-                    { key: "all", label: "All" },
-                    { key: "awaiting", label: "Awaiting Return" },
-                    { key: "perfect", label: "Received · Perfect" },
-                    { key: "damaged", label: "Received · Damaged" },
-                  ].map(f => (
-                    <Button key={f.key} variant={statusFilter === f.key ? "primary" : "secondary"} size="sm"
-                      onClick={() => setStatusFilter(f.key as typeof statusFilter)}>
-                      {f.label}
-                    </Button>
-                  ))}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", background: T.warmCream, borderRadius: 10, padding: "8px 14px" }}>
-                  <Users size={15} color={T.taupe} />
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.taupe, fontWeight: 600 }}>{filteredRows.length} finishing staff</span>
+                <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                  <div style={{ flex: "1 1 260px" }}>
+                    <SearchInput aria-label="Search saree code, weaver, saree type, finishing staff" value={search} onChange={e => setSearch(e.target.value)}
+                      placeholder="Search saree code, weaver, saree type, finishing staff…" />
+                  </div>
+                  <div style={{ display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
+                    {[
+                      { key: "all", label: "All" },
+                      { key: "awaiting", label: "Awaiting Return" },
+                      { key: "perfect", label: "Received · Perfect" },
+                      { key: "damaged", label: "Received · Damaged" },
+                    ].map(f => (
+                      <Button key={f.key} variant={statusFilter === f.key ? "primary" : "secondary"} size="sm"
+                        onClick={() => setStatusFilter(f.key as any)}>
+                        {f.label}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

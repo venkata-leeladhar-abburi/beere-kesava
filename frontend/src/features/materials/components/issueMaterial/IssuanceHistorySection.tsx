@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { CheckCircle2, Clock, History, LayoutGrid, List } from "lucide-react";
 import { MaterialIssueRecord, useMaterialIssue } from "../../contexts/MaterialIssueContext";
-import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilterBar";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { F, T } from "./theme";
 import { SectionCard } from "./primitives";
 import { renderIssuedMaterials } from "./materialFormatters";
@@ -116,17 +117,63 @@ export function IssuanceHistorySection({
 
   return (
     <SectionCard icon={History} title="Material Issuance History" subtitle="Every material issued to a weaver or factory loom, with signature status.">
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const, marginBottom: 20 }}>
-        <div style={{ flex: "1 1 260px" }}>
-          <SearchInput aria-label="Search weaver, MIR ID, or GRN batch" value={histSearch} onChange={e => setHistSearch(e.target.value)} placeholder="Search weaver, MIR ID, or GRN batch…" className="w-full" />
-        </div>
-        <Select value={histWeaverFilter} onValueChange={setHistWeaverFilter} align="end">
-          {weaverNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
-        </Select>
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={histSearch}
+          onSearchChange={setHistSearch}
+          searchPlaceholder="Search weaver, MIR ID, or GRN batch..."
+          filterGroups={[
+            {
+              id: "time",
+              label: "Time Period",
+              value: histDateFilter.mode,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Time" },
+                { value: "day", label: "Specific Date" },
+                { value: "range", label: "Date Range" },
+                { value: "month", label: "Monthly" },
+                { value: "year", label: "Yearly" },
+              ],
+              onChange: (m: string) => {
+                const mode = m as DateFilterState["mode"];
+                if (mode === "day") setHistDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                else if (mode === "month") setHistDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                else if (mode === "year") setHistDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                else setHistDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+              },
+            },
+            {
+              id: "weaver",
+              label: "Weaver / Loom",
+              value: histWeaverFilter,
+              defaultValue: weaverNames[0] ?? "All Weavers",
+              options: weaverNames.map(n => ({ value: n, label: n })),
+              onChange: setHistWeaverFilter,
+            },
+          ]}
+          onResetAll={() => {
+            setHistSearch("");
+            setHistWeaverFilter(weaverNames[0] ?? "All Weavers");
+            setHistDateFilter(DEFAULT_DATE_FILTER);
+          }}
+        />
       </div>
 
-      <div style={{ marginBottom: 16 }}>
-        <DateFilterBar filter={histDateFilter} onChange={setHistDateFilter} />
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:block mb-4">
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const, marginBottom: 20 }}>
+          <div style={{ flex: "1 1 260px" }}>
+            <SearchInput aria-label="Search weaver, MIR ID, or GRN batch" value={histSearch} onChange={e => setHistSearch(e.target.value)} placeholder="Search weaver, MIR ID, or GRN batch…" className="w-full" />
+          </div>
+          <Select value={histWeaverFilter} onValueChange={setHistWeaverFilter} align="end">
+            {weaverNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+          </Select>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <DateFilterBar filter={histDateFilter} onChange={setHistDateFilter} />
+        </div>
       </div>
 
       <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 mb-4 w-fit">

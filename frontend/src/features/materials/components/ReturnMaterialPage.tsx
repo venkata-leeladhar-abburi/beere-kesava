@@ -234,7 +234,7 @@ export function ReturnMaterialPage() {
         </div>
       </header>
 
-      <div style={{ padding: "40px 56px 80px", width: "100%" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32, paddingBottom: 80, width: "100%" }}>
 
         {/* Success banner */}
         <AnimatePresence>

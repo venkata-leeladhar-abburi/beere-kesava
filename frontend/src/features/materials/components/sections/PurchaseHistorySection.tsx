@@ -15,6 +15,7 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 import { Button } from "../../../../shared/ui/primitives";
 import { jariToReels } from "../../../../shared/lib/weightUnits";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 interface VendorRow {
   name: string;
@@ -347,7 +348,40 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
       }
     >
       <FadeUp>
-        <div style={{ marginBottom: 16 }}>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search=""
+            onSearchChange={() => {}}
+            searchPlaceholder="Search vendor purchase history..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: dateFilter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                  else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                  else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                  else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                },
+              },
+            ]}
+            onResetAll={() => setDateFilter(DEFAULT_DATE_FILTER)}
+          />
+        </div>
+
+        {/* Desktop Filter Bar */}
+        <div className="hidden md:block mb-4">
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
         </div>
       </FadeUp>

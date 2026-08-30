@@ -12,6 +12,7 @@ import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/prim
 import { useUrlFilters } from "../../../shared/ui/filter";
 import { ErrorState } from "../../../shared/ui/state";
 import { toInitials } from "@/shared/lib/initials";
+import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
 
 // ── Design tokens ─────────────────────────────────────────────────────────
 const T = {
@@ -234,8 +235,62 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
       </section>
 
       {/* ── FILTER + SEARCH BAR ── */}
-      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "relative", zIndex: 10, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, height: 60, minWidth: "max-content" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "relative", zIndex: 10 }}>
+        {/* Mobile Flipkart-style Collapsible Filter Bar */}
+        <div className="md:hidden py-3">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search by name, village, ID..."
+            filterGroups={[
+              {
+                id: "status",
+                label: "Weaver Status",
+                value: statusFilter,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: `All Weavers (${ALL_WEAVERS.length})` },
+                  { value: "active", label: `Currently Weaving (${activeCount})` },
+                  { value: "qc", label: `Pending QC (${qcCount})` },
+                  { value: "idle", label: `No Active Batch (${idleCount})` },
+                ],
+                onChange: (v: string) => setStatusFilter(v as any),
+              },
+              {
+                id: "village",
+                label: "Village",
+                value: villageFilter,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Villages" },
+                  ...villages.map(v => ({ value: v, label: v })),
+                ],
+                onChange: setVillageFilter,
+              },
+              {
+                id: "sort",
+                label: "Sort By",
+                value: sortBy,
+                defaultValue: "name",
+                options: [
+                  { value: "name", label: "Sort: Name" },
+                  { value: "output", label: "Sort: Total Sarees Woven" },
+                  { value: "looms", label: "Sort: Looms" },
+                ],
+                onChange: (v: string) => setSortBy(v as any),
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setStatusFilter("all");
+              setVillageFilter("all");
+              setSortBy("name");
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter Bar */}
+        <div className="hidden md:flex items-center gap-3 h-[60px] min-w-max">
           {/* Status filters */}
           {([
             { key: "all",    label: "All Weavers",       count: ALL_WEAVERS.length },

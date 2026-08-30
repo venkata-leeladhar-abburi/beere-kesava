@@ -72,7 +72,7 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
       )}
 
       {row.materialType === "Jari" && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-4">
           <div>
             <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Jari Type</span>
             <PillTab options={["Polyester", "Silk Fast"]} value={row.jariType} onChange={v => patch({ jariType: v as ReturnRowState["jariType"] })} />
@@ -92,7 +92,7 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
       )}
 
       {/* Description + Quantity */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-3.5">
         <div>
           <label htmlFor="return-row-description" style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
             Description (Optional)

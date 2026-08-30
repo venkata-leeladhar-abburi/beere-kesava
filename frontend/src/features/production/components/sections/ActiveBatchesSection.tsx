@@ -13,6 +13,7 @@ import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../
 import { BatchCardGrid, BatchListView, BatchTableView } from "./batches/BatchViews";
 import { rowComplete } from "./batches/ContextBatchCard";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?: (tab: string) => void; onOpenTally?: (batchId: string) => void } & CodeCallbacks) {
   const { batches, setPendingOpenBatchId, isLoading, isError, error, refetch } = useBatches();
@@ -169,7 +170,46 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
           </div>
 
         <div className="p-3.5 sm:p-6 md:p-7">
-        <div className="flex items-center gap-2 mt-2 sm:mt-3.5 mb-4 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap">
+        {/* Mobile Flipkart-style Collapsible Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search batch ID, design, weaver..."
+            filterGroups={[
+              {
+                id: "stage",
+                label: "Batch Stage",
+                value: filter ?? "all",
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Batches" },
+                  ...FILTER_PILLS.filter(f => f.stage !== null).map(f => ({ value: f.stage!, label: f.label })),
+                ],
+                onChange: (v: string) => setFilter(v === "all" ? null : (v as BatchStage)),
+              },
+              {
+                id: "sort",
+                label: "Sort By",
+                value: sortBy,
+                defaultValue: "Most Recent First",
+                options: [
+                  { value: "Most Recent First", label: "Most Recent First" },
+                  { value: "Oldest First", label: "Oldest First" },
+                ],
+                onChange: setSortBy,
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setFilter(null);
+              setSortBy("Most Recent First");
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter Bar */}
+        <div className="hidden md:flex items-center gap-2 mt-2 sm:mt-3.5 mb-4 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap">
           {FILTER_PILLS.map(f => (
             <Button key={f.label} onClick={() => setFilter(f.stage)} variant={filter === f.stage ? "primary" : "tertiary"} size="sm"
               className={`rounded-[10px] shrink-0 whitespace-nowrap text-[12px] ${filter === f.stage ? "" : "border border-[rgba(110,15,45,0.18)] text-[var(--text-tertiary)]"}`}>

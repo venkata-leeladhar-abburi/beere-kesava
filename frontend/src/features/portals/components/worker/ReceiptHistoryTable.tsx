@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, LayoutGrid, AlignJustify, Printer } from "lucide-react";
 import { C, F, card } from "./tokens";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { Button, Input } from "../../../../shared/ui/primitives";
 import { rawMaterialsApi, GrnReceiptItem } from "../../../../shared/api/rawMaterials";
 import { jariToReels } from "../../../../shared/lib/weightUnits";
@@ -189,18 +190,57 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <Input
-          value={historySearch}
-          onChange={e => { setHistorySearch(e.target.value); pag.setPage(1); }}
-          placeholder="Search by GRN ID, PO number, or vendor..."
-          iconLeft={Search}
-          containerClassName={compact ? "h-10" : "h-[42px]"}
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={historySearch}
+          onSearchChange={s => { setHistorySearch(s); pag.setPage(1); }}
+          searchPlaceholder="Search by GRN ID, PO number, or vendor..."
+          filterGroups={[
+            {
+              id: "time",
+              label: "Time Period",
+              value: historyDateFilter.mode,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Time" },
+                { value: "day", label: "Specific Date" },
+                { value: "range", label: "Date Range" },
+                { value: "month", label: "Monthly" },
+                { value: "year", label: "Yearly" },
+              ],
+              onChange: (m: string) => {
+                const mode = m as DateFilterState["mode"];
+                if (mode === "day") setHistoryDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                else if (mode === "month") setHistoryDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                else if (mode === "year") setHistoryDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                else setHistoryDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                pag.setPage(1);
+              },
+            },
+          ]}
+          onResetAll={() => {
+            setHistorySearch("");
+            setHistoryDateFilter(DEFAULT_DATE_FILTER);
+            pag.setPage(1);
+          }}
         />
       </div>
 
-      <div>
-        <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); pag.setPage(1); }} />
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:flex flex-col gap-4 mb-4">
+        <div>
+          <Input
+            value={historySearch}
+            onChange={e => { setHistorySearch(e.target.value); pag.setPage(1); }}
+            placeholder="Search by GRN ID, PO number, or vendor..."
+            iconLeft={Search}
+            containerClassName={compact ? "h-10" : "h-[42px]"}
+          />
+        </div>
+        <div>
+          <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); pag.setPage(1); }} />
+        </div>
       </div>
 
       <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 w-fit">

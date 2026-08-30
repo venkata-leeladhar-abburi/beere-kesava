@@ -5,6 +5,7 @@ import {
   Filter, ChevronDown, ChevronUp, Check, LayoutList, LayoutGrid, QrCode,
 } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { T, F, MobileCtx } from "../theme";
 import { STATUS_CFG, MAT_TAG, MAT_FILTERS, STATUS_FILTERS, STATUS_FILTER_MAP } from "../materialConfig";
 import type { BatchRow, StatusType } from "../types";
@@ -260,90 +261,146 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
         </Button>
       }
     >
-      <div style={{ marginBottom: 16 }}>
-        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search batch / vendor..."
+          filterGroups={[
+            {
+              id: "time",
+              label: "Time Period",
+              value: dateFilter.mode,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Time" },
+                { value: "day", label: "Specific Date" },
+                { value: "range", label: "Date Range" },
+                { value: "month", label: "Monthly" },
+                { value: "year", label: "Yearly" },
+              ],
+              onChange: (m: string) => {
+                const mode = m as DateFilterState["mode"];
+                if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+              },
+            },
+            {
+              id: "material",
+              label: "Material",
+              value: matFilter,
+              defaultValue: "All Materials",
+              options: MAT_FILTERS.map(f => ({ value: f, label: f })),
+              onChange: setMatFilter,
+            },
+            {
+              id: "status",
+              label: "Batch Status",
+              value: statusFilter,
+              defaultValue: "All Status",
+              options: STATUS_FILTERS.map(f => ({ value: f, label: f })),
+              onChange: setStatusFilter,
+            },
+          ]}
+          onResetAll={() => {
+            setSearch("");
+            setMatFilter("All Materials");
+            setStatusFilter("All Status");
+            setDateFilter(DEFAULT_DATE_FILTER);
+          }}
+        />
       </div>
 
-      <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", alignItems: isMobile ? "stretch" : "center", marginBottom: 16, gap: 12 }}>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {MAT_FILTERS.map(f => (
-            <Button
-              key={f}
-              onClick={() => setMatFilter(f)}
-              variant={matFilter === f ? "primary" : "secondary"}
-              size="sm"
-              className="rounded-full"
-            >
-              {f}
-            </Button>
-          ))}
+      {/* Desktop Filter Bar & Controls */}
+      <div className="hidden md:block mb-4">
+        <div style={{ marginBottom: 16 }}>
+          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
         </div>
 
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-          <div style={{ flex: isMobile ? 1 : "none", width: isMobile ? "100%" : 240 }}>
-            <SearchInput
-              aria-label="Search by batch number or vendor name"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              onSearch={setSearch}
-              placeholder={isMobile ? "Search batch / vendor..." : "Search by batch number or vendor name..."}
-            />
+        <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 12 }}>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {MAT_FILTERS.map(f => (
+              <Button
+                key={f}
+                onClick={() => setMatFilter(f)}
+                variant={matFilter === f ? "primary" : "secondary"}
+                size="sm"
+                className="rounded-full"
+              >
+                {f}
+              </Button>
+            ))}
           </div>
 
-          <DropdownMenu open={statusDropOpen} onOpenChange={setStatusDropOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant={statusFilter !== "All Status" ? "primary" : "secondary"}
-                size="sm"
-                iconLeft={Filter}
-                iconRight={statusDropOpen ? ChevronUp : ChevronDown}
-              >
-                {statusFilter}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="!min-w-[160px] !p-0 !rounded-[10px] !overflow-hidden" style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}` }}>
-              {STATUS_FILTERS.map(f => {
-                const colors: Record<string, string> = { "In Stock": T.green, "Running Low": "#7A5E1C", "Very Low": T.crimson, "All Used Up": T.taupe, "All Status": T.luxuryBrown };
-                return (
-                  <DropdownMenuItem
-                    key={f}
-                    onClick={() => setStatusFilter(f)}
-                    className={`!rounded-none ${statusFilter === f ? "!font-bold" : "!font-medium"}`}
-                  >
-                    {f !== "All Status" && (
-                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: colors[f], flexShrink: 0 }} />
-                    )}
-                    <span style={{ color: statusFilter === f ? colors[f] : T.luxuryBrown }}>{f}</span>
-                    {statusFilter === f && <Check size={13} color={colors[f]} style={{ marginLeft: "auto" }} />}
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ width: 240 }}>
+              <SearchInput
+                aria-label="Search by batch number or vendor name"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                onSearch={setSearch}
+                placeholder="Search by batch number or vendor name..."
+              />
+            </div>
 
-          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
-            <Button
-              onClick={() => setView("card")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-                view === "card"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-              }`}
-            >
-              <LayoutGrid size={14} /> Card View
-            </Button>
-            <Button
-              onClick={() => setView("table")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-                view === "table"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-              }`}
-            >
-              <LayoutList size={14} /> Table View
-            </Button>
+            <DropdownMenu open={statusDropOpen} onOpenChange={setStatusDropOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant={statusFilter !== "All Status" ? "primary" : "secondary"}
+                  size="sm"
+                  iconLeft={Filter}
+                  iconRight={statusDropOpen ? ChevronUp : ChevronDown}
+                >
+                  {statusFilter}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="!min-w-[160px] !p-0 !rounded-[10px] !overflow-hidden" style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}` }}>
+                {STATUS_FILTERS.map(f => {
+                  const colors: Record<string, string> = { "In Stock": T.green, "Running Low": "#7A5E1C", "Very Low": T.crimson, "All Used Up": T.taupe, "All Status": T.luxuryBrown };
+                  return (
+                    <DropdownMenuItem
+                      key={f}
+                      onClick={() => setStatusFilter(f)}
+                      className={`!rounded-none ${statusFilter === f ? "!font-bold" : "!font-medium"}`}
+                    >
+                      {f !== "All Status" && (
+                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: colors[f], flexShrink: 0 }} />
+                      )}
+                      <span style={{ color: statusFilter === f ? colors[f] : T.luxuryBrown }}>{f}</span>
+                      {statusFilter === f && <Check size={13} color={colors[f]} style={{ marginLeft: "auto" }} />}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+              <Button
+                onClick={() => setView("card")}
+                variant="ghost"
+                className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                  view === "card"
+                    ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                    : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                }`}
+              >
+                <LayoutGrid size={14} /> Card View
+              </Button>
+              <Button
+                onClick={() => setView("table")}
+                variant="ghost"
+                className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                  view === "table"
+                    ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                    : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                }`}
+              >
+                <LayoutList size={14} /> Table View
+              </Button>
+            </div>
           </div>
         </div>
       </div>

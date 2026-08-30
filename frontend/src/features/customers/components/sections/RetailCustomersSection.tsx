@@ -17,6 +17,7 @@ import { salesApi } from "../../../../shared/api/sales";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, StatusPill } from "@/shared/ui/domain";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 interface RetailFormState {
   name: string;
@@ -311,8 +312,60 @@ export function RetailCustomersSection({
       <RetailChartsRow1 />
       <RetailChartsRow2 />
 
-      {/* Toolbar */}
-      <div className="flex flex-col gap-5 mb-6">
+      {/* Mobile Flipkart-style Collapsible Filter Bar */}
+      <div className="md:hidden bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs mb-4">
+        <MobileFilterBar
+          search={retailSearch}
+          onSearchChange={setRetailSearch}
+          searchPlaceholder="Search customer name or phone..."
+          filterGroups={[
+            {
+              id: "status",
+              label: "Status",
+              value: retailStatusFilter,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: `All Retail (${filteredRetail.length})` },
+                { value: "regular", label: `Regular Buyers (${filteredRetail.filter(r => r.regular).length})` },
+                { value: "inactive", label: `Inactive (${filteredRetail.filter(r => r.inactive).length})` },
+              ],
+              onChange: (v: string) => setRetailStatusFilter(v as any),
+            },
+            {
+              id: "city",
+              label: "City",
+              value: retailCityFilter,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Cities" },
+                ...retailCities.map(c => ({ value: c, label: c })),
+              ],
+              onChange: setRetailCityFilter,
+            },
+            {
+              id: "sort",
+              label: "Sort By",
+              value: retailSort,
+              defaultValue: "spend",
+              options: [
+                { value: "spend", label: "Sort: Total Spend" },
+                { value: "purchases", label: "Sort: Total Purchases" },
+                { value: "recent", label: "Sort: Most Recent Visit" },
+              ],
+              onChange: (v: string) => setRetailSort(v as any),
+            },
+          ]}
+          onResetAll={() => {
+            setRetailSearch("");
+            setRetailStatusFilter("all");
+            setRetailCityFilter("all");
+            setRetailSort("spend");
+          }}
+        />
+      </div>
+
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:flex flex-col gap-5 mb-6">
         {/* Top row: search + sort/filters */}
         <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
           {/* Search bar */}

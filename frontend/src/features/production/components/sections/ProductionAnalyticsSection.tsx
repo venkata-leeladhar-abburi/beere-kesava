@@ -25,6 +25,7 @@ import { computeBulkOrderProducedSareeIds } from "@/features/bulk-orders";
 import { rowComplete } from "./batches/ContextBatchCard";
 import { FadeUp, Pip, ProductionDialog } from "../common/primitives";
 import { Button, CheckboxField } from "../../../../shared/ui/primitives";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { pipColor } from "../batch-creation/PickerModals";
 function formatMonthLabel(month: string): string {
   const [year, m] = month.split("-").map(Number);
@@ -188,7 +189,28 @@ export function ProductionAnalyticsSection() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap relative shrink-0">
+            {/* Mobile Flipkart-style Filter Bar */}
+            <div className="md:hidden p-3.5 bg-white border-b border-[var(--border-default)]">
+              <MobileFilterBar
+                search=""
+                onSearchChange={() => {}}
+                searchPlaceholder="Search analytics..."
+                filterGroups={[
+                  {
+                    id: "period",
+                    label: "Time Period",
+                    value: period,
+                    defaultValue: "This Month",
+                    options: ANALYTICS_PERIODS.map(p => ({ value: p, label: p })),
+                    onChange: setPeriod,
+                  },
+                ]}
+                onResetAll={() => setPeriod("This Month")}
+              />
+            </div>
+
+            {/* Desktop Period Selector */}
+            <div className="hidden md:flex items-center gap-2 flex-wrap relative shrink-0">
               <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-0.5 scrollbar-none whitespace-nowrap" style={{ WebkitOverflowScrolling: "touch" }}>
                 {ANALYTICS_PERIODS.map(p => (
                   <Button key={p} onClick={() => setPeriod(p)} variant={period === p ? "primary" : "secondary"} size="sm" className="shrink-0 whitespace-nowrap text-[12px]">

@@ -3,6 +3,7 @@ import { Truck } from "lucide-react";
 import { DispatchRecord } from "@/features/finishing";
 import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
+import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
 
 const T = {
   silkCream: "#F7F2EA",
@@ -140,9 +141,73 @@ export function BulkOrderSareesTab({
     },
   ];
 
+  const resetFilters = () => {
+    setStatusFilter("All");
+    setBatchFilter("All");
+    setDispatchFilter("All");
+    setWeaverFilter("All");
+    setSareeTypeFilter("All");
+  };
+
+  const mobileFilterGroups = [
+    {
+      id: "status",
+      label: "Status",
+      value: statusFilter,
+      options: ["All", "QC Passed", "Finishing complete", "Dispatched", "Damaged — Review Needed"].map(s => ({
+        value: s,
+        label: s === "All" ? "All Statuses" : s,
+      })),
+      onChange: setStatusFilter,
+    },
+    {
+      id: "batch",
+      label: "Batch",
+      value: batchFilter,
+      options: batchOptions.map(b => ({ value: b, label: b === "All" ? "All Batches" : b })),
+      onChange: setBatchFilter,
+    },
+    {
+      id: "dispatch",
+      label: "Dispatch Status",
+      value: dispatchFilter,
+      options: ["All", "Dispatched", "Not Dispatched"].map(s => ({
+        value: s,
+        label: s === "All" ? "All Dispatch" : s,
+      })),
+      onChange: setDispatchFilter,
+    },
+    {
+      id: "weaver",
+      label: "Weaver",
+      value: weaverFilter,
+      options: weaverOptions.map(w => ({ value: w, label: w === "All" ? "All Weavers" : w })),
+      onChange: setWeaverFilter,
+    },
+    {
+      id: "sareeType",
+      label: "Saree Type",
+      value: sareeTypeFilter,
+      options: sareeTypeOptions.map(t => ({ value: t, label: t === "All" ? "All Saree Types" : t })),
+      onChange: setSareeTypeFilter,
+    },
+  ];
+
   return (
     <div>
-      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-[var(--border-default)] shadow-sm mb-5 flex-wrap">
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3 sm:p-4 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search saree ID, design, weaver…"
+          filterGroups={mobileFilterGroups}
+          onResetAll={resetFilters}
+        />
+      </div>
+
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:flex flex-row items-center gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-[var(--border-default)] shadow-sm mb-5 flex-wrap">
         <div className="flex-1 min-w-[220px]">
           <SearchInput aria-label="Search saree ID, design, or weaver" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, design, or weaver…" />
         </div>
@@ -165,6 +230,7 @@ export function BulkOrderSareesTab({
         </div>
       </div>
 
+      {/* Table View (No card view, responsive horizontal scroll) */}
       <div className="bg-white rounded-2xl border border-[var(--border-default)] overflow-x-auto shadow-sm">
         <div className="min-w-[700px]">
           <DataTable

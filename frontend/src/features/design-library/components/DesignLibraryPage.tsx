@@ -8,6 +8,7 @@ import {
 
 import { useDesignLibrary, DesignEntry } from "../contexts/DesignLibraryContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
 import { weaversApi } from "../../../shared/api/weavers";
 
 import { T, F } from "./theme";
@@ -220,16 +221,50 @@ export function DesignLibraryPage() {
               {/* History Side */}
               <div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  {/* Search bar */}
-                  <div style={{ position: "relative" }}>
-                    <SearchInput aria-label="Search sent history by design code, recipient, or text" value={historySearch} onChange={e => setHistorySearch(e.target.value)} placeholder="Search sent history by design code, recipient, or text…" />
-                  </div>
-
                   <h3 style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginTop: 4, display: "flex", alignItems: "center", gap: 8 }}>
                     <FileText size={18} color={T.royalBurgundy} /> Sent History Log
                   </h3>
 
-                  <DateFilterBar filter={historyDateFilter} onChange={setHistoryDateFilter} />
+                  {/* Mobile Flipkart-style Filter Bar */}
+                  <div className="md:hidden">
+                    <MobileFilterBar
+                      search={historySearch}
+                      onSearchChange={setHistorySearch}
+                      searchPlaceholder="Search recipient or instructions..."
+                      filterGroups={[
+                        {
+                          id: "time",
+                          label: "Time Period",
+                          value: historyDateFilter.mode,
+                          defaultValue: "all",
+                          options: [
+                            { value: "all", label: "All Time" },
+                            { value: "day", label: "Specific Date" },
+                            { value: "range", label: "Date Range" },
+                            { value: "month", label: "Monthly" },
+                            { value: "year", label: "Yearly" },
+                          ],
+                          onChange: (m: string) => {
+                            const mode = m as DateFilterState["mode"];
+                            if (mode === "day") setHistoryDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                            else if (mode === "month") setHistoryDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                            else if (mode === "year") setHistoryDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                            else setHistoryDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                          },
+                        },
+                      ]}
+                      onResetAll={() => {
+                        setHistorySearch("");
+                        setHistoryDateFilter(DEFAULT_DATE_FILTER);
+                      }}
+                    />
+                  </div>
+
+                  {/* Desktop Search & Date Filter Bar */}
+                  <div className="hidden md:flex flex-col gap-3">
+                    <SearchInput aria-label="Search sent history by design code, recipient, or text" value={historySearch} onChange={e => setHistorySearch(e.target.value)} placeholder="Search sent history by design code, recipient, or text…" />
+                    <DateFilterBar filter={historyDateFilter} onChange={setHistoryDateFilter} />
+                  </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: 14, maxHeight: "calc(100dvh - 360px)", overflowY: "auto", paddingRight: 4 }}>
                     {(() => {

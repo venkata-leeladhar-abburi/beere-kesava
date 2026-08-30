@@ -176,12 +176,23 @@ export function WholesaleDetailSection({
               <button
                 key={t.key}
                 type="button"
-                onClick={() => setWholesaleTab(t.key)}
+                onClick={() => {
+                  setWholesaleTab(t.key);
+                  setTimeout(() => {
+                    const el = document.getElementById("customer-tab-content");
+                    if (el) {
+                      const isMobile = window.innerWidth <= 768;
+                      const topNavOffset = isMobile ? 80 : 120;
+                      const rect = el.getBoundingClientRect();
+                      const absoluteTop = window.scrollY + rect.top - topNavOffset;
+                      window.scrollTo({ top: Math.max(0, absoluteTop), behavior: "smooth" });
+                    }
+                  }, 40);
+                }}
                 className={
-                  "flex-1 justify-center px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm cursor-pointer flex items-center gap-2 transition-all duration-200 font-bold " +
-                  (isActive
-                    ? "bg-[#6E0F2D] text-[#FFFDF9] shadow-md shadow-[#6E0F2D]/20 scale-[1.01]"
-                    : "bg-transparent text-[#7A6859] hover:text-[#6E0F2D]")
+                  isActive
+                    ? "flex-1 inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2.5 rounded-full font-bold text-xs sm:text-sm bg-[#6E0F2D] text-[#FFFDF9] shadow-md transition-all shrink-0"
+                    : "flex-1 inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2.5 rounded-full font-medium text-xs sm:text-sm text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#3B2314] transition-all shrink-0 bg-transparent"
                 }
               >
                 {t.icon}
@@ -192,7 +203,7 @@ export function WholesaleDetailSection({
         </div>
       </div>
 
-      {/* Tab Content inside SectionCard */}
+      <div id="customer-tab-content">{/* Tab Content inside SectionCard */}
       {wholesaleTab === "Overview" && (
         <SectionCard
           icon={Boxes}
@@ -262,6 +273,7 @@ export function WholesaleDetailSection({
           <EditProfileTab customer={customer} setWholesaleTab={setWholesaleTab} onSave={onSave} />
         </SectionCard>
       )}
+      </div>
     </div>
   );
 }

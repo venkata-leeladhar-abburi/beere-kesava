@@ -78,7 +78,8 @@ export function Pagination({ page, pageCount, total, pageSize, start, onPageChan
         }
       }
       if (targetEl) {
-        const topNavOffset = 130;
+        const isMobile = window.innerWidth <= 768;
+        const topNavOffset = isMobile ? 80 : 130;
         const rect = targetEl.getBoundingClientRect();
         const absoluteTop = window.scrollY + rect.top - topNavOffset;
         window.scrollTo({ top: Math.max(0, absoluteTop), behavior: "smooth" });

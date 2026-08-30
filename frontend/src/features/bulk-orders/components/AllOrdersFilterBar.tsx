@@ -25,6 +25,8 @@ interface AllOrdersFilterBarProps {
   resetFilters: () => void;
 }
 
+import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
+
 export function AllOrdersFilterBar({
   search,
   setSearch,
@@ -36,9 +38,68 @@ export function AllOrdersFilterBar({
   setDateFilter,
   resetFilters,
 }: AllOrdersFilterBarProps) {
+  const mobileFilterGroups = [
+    {
+      id: "time",
+      label: "Timeline",
+      value: dateFilter.mode,
+      defaultValue: "all",
+      options: [
+        { value: "all", label: "All Time" },
+        { value: "day", label: "Specific Date" },
+        { value: "range", label: "Date Range" },
+        { value: "month", label: "Monthly" },
+        { value: "year", label: "Yearly" },
+      ],
+      onChange: (m: string) => {
+        const mode = m as DateFilterState["mode"];
+        if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+        else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+        else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+        else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+      },
+    },
+    {
+      id: "status",
+      label: "Production Status",
+      value: statusFilter,
+      options: [
+        { value: "all", label: "All Statuses" },
+        { value: "on-track", label: "On Track" },
+        { value: "at-risk", label: "At Risk / Delayed" },
+        { value: "completed", label: "Completed" },
+      ],
+      onChange: (v: string) => setStatusFilter(v as any),
+    },
+    {
+      id: "payment",
+      label: "Payment Status",
+      value: paymentFilter,
+      options: [
+        { value: "all", label: "All Payments" },
+        { value: "paid", label: "Paid" },
+        { value: "partial", label: "Partial" },
+        { value: "pending", label: "Pending" },
+      ],
+      onChange: (v: string) => setPaymentFilter(v as any),
+    },
+  ];
+
   return (
     <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 28 }}>
-      <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "22px 24px", boxShadow: "0 4px 18px rgba(74,6,27,0.03)", display: "flex", flexDirection: "column", gap: 16 }}>
+      {/* Mobile Flipkart-style Collapsible Filter Bar */}
+      <div className="md:hidden bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs mb-4">
+        <MobileFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search order ref, customer, saree type..."
+          filterGroups={mobileFilterGroups}
+          onResetAll={resetFilters}
+        />
+      </div>
+
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:flex flex-col gap-4 bg-white rounded-[18px] border border-[var(--border-default)] p-5 sm:p-6 shadow-sm">
         {/* Top row: search & reset */}
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: 280 }}>
