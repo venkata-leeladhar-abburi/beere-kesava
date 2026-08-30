@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
@@ -50,6 +50,8 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   // looking in from their dashboard is identified by `adminViewingAs`, which is
   // set when they enter from the Staff Portals menu — not by `role`.
   const canSeePrices = role === "admin" || role === "superadmin" || adminViewingAs !== null;
+  // Reports are admin/superadmin only — real shop staff never see this tab.
+  const canSeeReports = role === "admin" || role === "superadmin";
 
   const handleLogout = () => {
     logout();
@@ -60,7 +62,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   if (pathname.includes("/sale")) active = "sale";
   else if (pathname.includes("/inventory")) active = "inventory";
   else if (pathname.includes("/customers")) active = "customers";
-  else if (pathname.includes("/reports")) active = "reports";
+  else if (pathname.includes("/reports")) active = canSeeReports ? "reports" : "home";
 
   const showReturn = pathname.includes("/return");
   const showNotifications = pathname.includes("/notifications");
@@ -94,12 +96,18 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
 
   const [selectedCustomer, setSelectedCustomer] = useState<ShopCustomer | null>(null);
 
+  useEffect(() => {
+    if (pathname.includes("/reports") && !canSeeReports) {
+      routerNavigate("/shop/home");
+    }
+  }, [pathname, canSeeReports, routerNavigate]);
+
   const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
     { id: "home", label: "Home", icon: <Home size={20} /> },
     { id: "sale", label: "New Sale", icon: <ShoppingBag size={20} /> },
     { id: "inventory", label: "Inventory", icon: <Package size={20} /> },
     { id: "customers", label: "Customers", icon: <Users size={20} /> },
-    { id: "reports", label: "Reports", icon: <BarChart2 size={20} /> },
+    ...(canSeeReports ? [{ id: "reports" as TabId, label: "Reports", icon: <BarChart2 size={20} /> }] : []),
   ];
 
   const PAGE_TITLES: Record<TabId, string> = {
@@ -118,7 +126,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
       // shop every saree in the factory, including ones still on the loom.
       case "inventory": return <ShopInventory />;
       case "customers": return <CustomerProfiles />;
-      case "reports": return <SalesReport />;
+      case "reports": return canSeeReports ? <SalesReport /> : null;
     }
   };
 
@@ -164,7 +172,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
               <CustomersSection bp={bp} isTablet={isTablet} canSeePrices={canSeePrices} setSelectedCustomer={setSelectedCustomer} />
             )}
 
-            {!showNotifications && !showReturn && active === "reports" && (
+            {!showNotifications && !showReturn && active === "reports" && canSeeReports && (
               <ReportsSection bp={bp} isTablet={isTablet} canSeePrices={canSeePrices} />
             )}
 

@@ -29,20 +29,21 @@ export function MobileHeader({
   selectRole: (role: Role) => void;
   routerNavigate: (path: string) => void;
 }) {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const { adminViewingAs } = useAdminStaffView();
   const name = user?.name || "Shop Staff";
   const initials = name === "Shop Staff" ? "SS" : name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const [openDrawer, setOpenDrawer] = useState(false);
   const { notifications, unreadCount, markAllRead, markRead } = useShopNotifications(20);
   const recent = notifications.slice(0, 8);
+  const canSeeReports = role === "admin" || role === "superadmin";
 
   const NAV_ITEMS = [
     { id: "home" as TabId, label: "Home", icon: Home },
     { id: "sale" as TabId, label: "New Sale", icon: ShoppingBag },
     { id: "inventory" as TabId, label: "Shop Inventory", icon: Package },
     { id: "customers" as TabId, label: "Customers", icon: Users },
-    { id: "reports" as TabId, label: "Sales Reports", icon: BarChart2 },
+    ...(canSeeReports ? [{ id: "reports" as TabId, label: "Sales Reports", icon: BarChart2 }] : []),
   ];
 
   return (
