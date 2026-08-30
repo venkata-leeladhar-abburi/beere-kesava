@@ -339,14 +339,14 @@ export function WholesaleCustomersSection({
         {/* Mobile Flipkart-style Collapsible Filter Bar */}
         <div className="md:hidden bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs mb-4">
           <MobileFilterBar
-            search={search}
-            onSearchChange={setSearch}
+            search={wholesaleSearch}
+            onSearchChange={setWholesaleSearch}
             searchPlaceholder="Search business name, city..."
             filterGroups={[
               {
                 id: "status",
                 label: "Status",
-                value: statusFilter,
+                value: wholesaleFilter,
                 defaultValue: "all",
                 options: [
                   { value: "all", label: `All Wholesale (${wholesaleList.length})` },
@@ -354,12 +354,12 @@ export function WholesaleCustomersSection({
                   { value: "dues", label: "Has Dues (0)" },
                   { value: "inactive", label: "Inactive (0)" },
                 ],
-                onChange: (v: string) => setStatusFilter(v as any),
+                onChange: (v: string) => setWholesaleFilter(v as any),
               },
             ]}
             onResetAll={() => {
-              setSearch("");
-              setStatusFilter("all");
+              setWholesaleSearch("");
+              setWholesaleFilter("all");
             }}
           />
         </div>
