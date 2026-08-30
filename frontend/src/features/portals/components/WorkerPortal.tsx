@@ -103,62 +103,98 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
         {/* Notifications Icon Button */}
         <Popover open={showNotif} onOpenChange={o => { setShowNotif(o); if (o) setShowProfileDropdown(false); }}>
           <Popover.Trigger asChild>
-            <div style={{ position: "relative" }}>
+            <motion.div
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.94 }}
+              style={{ position: "relative", cursor: "pointer" }}
+            >
               <IconButton
                 icon={Bell}
                 label="Notifications"
                 variant="ghost"
-                className="!size-9 !rounded-[10px] border border-[rgba(110,15,45,0.12)] bg-transparent hover:bg-[rgba(0,0,0,0.04)] text-[#1A0A0F]"
+                className="!size-9 !rounded-[10px] border border-[rgba(110,15,45,0.16)] bg-[rgba(110,15,45,0.04)] hover:!bg-[rgba(110,15,45,0.10)] text-[#6E0F2D] hover:!text-[#6E0F2D] transition-all duration-200"
               />
               {unreadCount > 0 && (
-                <div style={{ position: "absolute", top: 4, right: 4, width: 8, height: 8, borderRadius: "50%", background: "#F47B72", border: `1.5px solid #FFFDF9`, pointerEvents: "none" }} />
+                <div style={{ position: "absolute", top: 4, right: 4, width: 8, height: 8, borderRadius: "50%", background: "#6E0F2D", border: `1.5px solid #FFFDF9`, pointerEvents: "none" }} />
               )}
-            </div>
+            </motion.div>
           </Popover.Trigger>
-          <Popover.Content align="end" sideOffset={8} className="!w-[300px] !max-w-[calc(100vw-32px)] !p-0 !overflow-hidden !z-[200]">
-            <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FFFDF9" }}>
-              <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: C.dark }}>
-                Notifications{unreadCount > 0 ? ` · ${unreadCount} new` : ""}
-              </span>
-              <Button
-                variant="link"
-                size="sm"
+          <Popover.Content align="end" sideOffset={8} className="!w-[360px] !max-w-[calc(100vw-32px)] !p-0 !rounded-[16px] !overflow-hidden !z-[200]" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.14)`, boxShadow: "0 10px 36px rgba(44,24,16,0.18)" }}>
+            <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FFFDF9" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: C.dark }}>Notifications</span>
+                <span style={{ background: "#6E0F2D", color: "#FFFFFF", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, borderRadius: 999, minWidth: 22, height: 22, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0 6px" }}>
+                  {unreadCount > 0 ? unreadCount : notifications.length}
+                </span>
+              </div>
+              <button
+                type="button"
                 onClick={markAllRead}
-                disabled={unreadCount === 0}
-                className={`h-auto p-0 text-[12px] ${unreadCount > 0 ? "text-[#C89B47]" : "text-[#69635E]"}`}
+                disabled={notifications.length === 0}
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  fontFamily: F.u,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: notifications.length > 0 ? "#C89B47" : "#A39E98",
+                  cursor: notifications.length > 0 ? "pointer" : "default",
+                  transition: "color 0.15s ease",
+                }}
+                onMouseEnter={e => { if (notifications.length > 0) e.currentTarget.style.color = "#A87B27"; }}
+                onMouseLeave={e => { if (notifications.length > 0) e.currentTarget.style.color = "#C89B47"; }}
               >
                 Mark all read
-              </Button>
+              </button>
             </div>
-            <div style={{ background: "#FFF" }}>
-              {notifications.length === 0 ? (
-                <div style={{ padding: "20px 16px", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>No notifications.</div>
-              ) : notifications.map((n, i) => {
-                const isUnread = n.readAt === null;
-                return (
-                  <div
-                    key={n.id}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`${notificationTitle(n)}${isUnread ? " (unread)" : ""}`}
-                    onClick={() => markRead(n.id)}
-                    onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); markRead(n.id); } }}
-                    style={{ padding: "10px 16px", borderBottom: i < notifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer", background: isUnread ? "rgba(200,155,71,0.07)" : "transparent" }}
-                  >
-                    <span style={{ fontSize: 14, flexShrink: 0 }}>{notifEmoji(n.type)}</span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: isUnread ? 700 : 500, color: C.dark, marginBottom: 2 }}>
-                        {notificationTitle(n)}
+            {notifications.length === 0 ? (
+              <div style={{ padding: "28px 20px", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
+                No new notifications.
+              </div>
+            ) : (
+              <div style={{ maxHeight: 360, overflowY: "auto", background: "#FFF" }}>
+                {notifications.map((n, i) => {
+                  const isUnread = n.readAt === null;
+                  return (
+                    <div
+                      key={n.id}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`${notificationTitle(n)}${isUnread ? " (unread)" : ""}`}
+                      onClick={() => markRead(n.id)}
+                      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); markRead(n.id); } }}
+                      style={{
+                        padding: "12px 18px",
+                        borderBottom: i < notifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none",
+                        display: "flex",
+                        gap: 12,
+                        alignItems: "flex-start",
+                        cursor: "pointer",
+                        background: isUnread ? "rgba(200,155,71,0.07)" : "transparent",
+                        transition: "background 0.15s ease",
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.03)"}
+                      onMouseLeave={e => e.currentTarget.style.background = isUnread ? "rgba(200,155,71,0.07)" : "transparent"}
+                    >
+                      <span style={{ fontSize: 15, flexShrink: 0, marginTop: 1 }}>{notifEmoji(n.type)}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: isUnread ? 700 : 500, color: C.dark, marginBottom: 2 }}>
+                          {notificationTitle(n)}
+                        </div>
+                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, lineHeight: 1.4 }}>
+                          {notificationBody(n)}
+                        </div>
                       </div>
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, lineHeight: 1.4 }}>
-                        {notificationBody(n)}
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
+                        <span style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>{formatRelativeTime(n.createdAt)}</span>
+                        {isUnread && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#6E0F2D" }} />}
                       </div>
                     </div>
-                    <span style={{ fontFamily: F.m, fontSize: 11, color: C.muted, flexShrink: 0 }}>{formatRelativeTime(n.createdAt)}</span>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </Popover.Content>
         </Popover>
 

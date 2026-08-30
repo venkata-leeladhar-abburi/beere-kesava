@@ -194,41 +194,58 @@ export function DesktopTopNav({
                 )}
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="!w-[300px] !max-w-[300px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.12)`, zIndex: 2000 }}>
-              <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: C.dark }}>Notifications</span>
+            <DropdownMenuContent align="end" className="!w-[360px] !max-w-[calc(100vw-32px)] !p-0 !rounded-[16px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.14)`, boxShadow: "0 10px 36px rgba(44,24,16,0.18)", zIndex: 2000 }}>
+              <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(196,146,58,0.04)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontFamily: F.d, fontSize: 15, fontWeight: 700, color: C.dark }}>Notifications</span>
+                  <span style={{ background: "#6E0F2D", color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, borderRadius: 999, padding: "2px 8px", minWidth: 20, textAlign: "center" }}>{markedRead ? 0 : unreadCount}</span>
+                </div>
                 <Button
                   variant="link"
                   size="sm"
                   onClick={handleMarkAllRead}
-                  disabled={unreadCount === 0}
-                  className={`p-0 h-auto text-[12px] ${unreadCount > 0 ? "text-[#C89B47]" : "text-[#69635E]"}`}
+                  disabled={unreadCount === 0 || markedRead}
+                  className={`p-0 h-auto text-[12px] font-semibold ${unreadCount > 0 && !markedRead ? "text-[#C89B47] hover:text-[#A87B27]" : "text-[#A39E98] cursor-not-allowed opacity-60"}`}
                 >
                   Mark all read
                 </Button>
               </div>
               {liveNotifications.length === 0 || markedRead ? (
-                <div style={{ padding: "20px 16px", textAlign: "center" as const, fontFamily: F.u, fontSize: 13, color: C.muted }}>
-                  No notifications.
+                <div style={{ padding: "28px 20px", textAlign: "center" as const, fontFamily: F.u, fontSize: 13, color: C.muted }}>
+                  No new notifications.
                 </div>
               ) : (
-                liveNotifications.map((n, i) => (
-                  <div
-                    key={n.id}
-                    role="button"
-                    tabIndex={0}
-                    style={{ padding: "10px 16px", borderBottom: i < liveNotifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.03)"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                  >
-                    <span style={{ fontSize: 14, flexShrink: 0 }}>{notifEmoji(n.type)}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.dark, marginBottom: 2 }}>{n.title}</div>
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{n.desc}</div>
+                <div style={{ maxHeight: 360, overflowY: "auto" }}>
+                  {liveNotifications.map((n, i) => (
+                    <div
+                      key={n.id}
+                      role="button"
+                      tabIndex={0}
+                      style={{
+                        padding: "12px 18px",
+                        borderBottom: i < liveNotifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none",
+                        display: "flex",
+                        gap: 12,
+                        alignItems: "flex-start",
+                        cursor: "pointer",
+                        background: n.unread ? "rgba(200,155,71,0.07)" : "transparent",
+                        transition: "background 0.15s ease",
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.03)"}
+                      onMouseLeave={e => e.currentTarget.style.background = n.unread ? "rgba(200,155,71,0.07)" : "transparent"}
+                    >
+                      <span style={{ fontSize: 15, flexShrink: 0, marginTop: 1 }}>{notifEmoji(n.type)}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: n.unread ? 700 : 500, color: C.dark, marginBottom: 2 }}>{n.title}</div>
+                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, lineHeight: 1.4 }}>{n.desc}</div>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
+                        <span style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>{n.time}</span>
+                        {n.unread && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#6E0F2D" }} />}
+                      </div>
                     </div>
-                    <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted, flexShrink: 0 }}>{n.time}</span>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </DropdownMenuContent>
           </DropdownMenu>

@@ -263,13 +263,6 @@ export function CustomersPage() {
         />
       ) : (
         <>
-        <div id="cust-analytics">
-          <CustomerAnalyticsSection
-            analyticsDateFilter={analyticsDateFilter}
-            setAnalyticsDateFilter={setAnalyticsDateFilter}
-          />
-        </div>
-
         <div id="cust-wholesale-list">
           <WholesaleCustomersSection
             wholesaleList={wholesaleList}
@@ -300,6 +293,13 @@ export function CustomersPage() {
             filteredRetail={filteredRetail}
             onViewHistory={setModalRetail}
             onDownloadConfirm={setDownloadConfirmRetail}
+          />
+        </div>
+
+        <div id="cust-analytics">
+          <CustomerAnalyticsSection
+            analyticsDateFilter={analyticsDateFilter}
+            setAnalyticsDateFilter={setAnalyticsDateFilter}
           />
         </div>
 
