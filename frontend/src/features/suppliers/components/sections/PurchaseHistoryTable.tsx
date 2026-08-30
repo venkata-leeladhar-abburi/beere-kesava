@@ -13,7 +13,7 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const { updatePurchase } = useSuppliers();
+  const { updatePurchaseSarees } = useSuppliers();
 
   function toggle(id: string) {
     setExpandedIds(prev => {
@@ -93,10 +93,12 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
         <div style={{ padding: "6px 16px 16px", background: "rgba(247,242,234,0.7)" }}>
           <SareeInventoryTable
             rows={p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier }))}
-            onUploadPhoto={(row: SareeRow, dataUrl: string) =>
-              updatePurchase(p.id, { sarees: p.sarees.map(s => s.id === row.id ? { ...s, imageUrl: dataUrl } : s) })}
-            onUploadPieceImage={(row: SareeRow, pieceNo: number, dataUrl: string) =>
-              updatePurchase(p.id, { sarees: p.sarees.map(s => s.id === row.id ? withPieceImage(s, pieceNo, dataUrl) : s) })}
+            onUploadPhoto={(row: SareeRow, url: string) =>
+              void updatePurchaseSarees(p.id, sarees =>
+                sarees.map(s => s.id === row.id ? { ...s, imageUrl: url } : s))}
+            onUploadPieceImage={(row: SareeRow, pieceNo: number, url: string) =>
+              void updatePurchaseSarees(p.id, sarees =>
+                sarees.map(s => s.id === row.id ? withPieceImage(s, pieceNo, url) : s))}
           />
         </div>
       )}

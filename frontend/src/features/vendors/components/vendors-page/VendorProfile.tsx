@@ -5,12 +5,14 @@ import {
   MapPin, Phone, FileText, MessageSquare, Landmark, StickyNote,
   AlertTriangle, Package, Trash2, ChevronLeft, UserRound, Boxes, ShoppingBag, CreditCard, UserCheck, Edit3 } from "lucide-react";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { useScrollTopOnView } from "@/shared/ui/ScrollToTop";
 import { SectionCard } from "@/shared/ui/SectionCard";
 import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "./theme";
 import { Vendor, VendorBill, VendorPaymentTxn } from "./types";
 import { PAY_MODE_FILL } from "./data";
+import { matchGrnItemCodes } from "./grnMatching";
 import { StarRating } from "./SharedBits";
 import { StatusPill as DomainStatusPill, EntityCode } from "../../../../shared/ui/domain";
 import type { StatusValueOf } from "../../../../lib/domain/status";
@@ -42,6 +44,8 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
   useEffect(() => {
     recordView({ key: `vendor:${vendor.id}`, label: vendor.name, path: "/admin/vendors", kind: "Vendor" });
   }, [vendor.id, vendor.name]);
+
+  useScrollTopOnView(vendor.id);
   const tabs = [
     { key: "overview", label: "Overview", icon: <Boxes size={18} /> },
     { key: "orders", label: "Order History", icon: <ShoppingBag size={18} /> },
@@ -122,23 +126,33 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
     () => (poRes?.items ?? []).filter(p => p.vendorId === vendor.id || p.vendor?.id === vendor.id),
     [poRes, vendor.id]
   );
-  const orders: PurchaseOrderHistoryRow[] = React.useMemo(() => vendorPos.map(p => ({
-    id: p.poNumber || `PO-${p.id.slice(0, 8).toUpperCase()}`,
-    date: p.createdAt ? p.createdAt.split("T")[0] : "",
-    materials: (p.items ?? []).map(item => ({
-      type: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
-      description: item.name,
-      qty: `${item.quantity} ${item.unit}`,
-      invoiceAmount: item.invoicedAmount ? formatMoney(rupees(Number(item.invoicedAmount))) : undefined,
-    })),
-    totalAmount: formatMoney(rupees(Number(p.totalValue || 0))),
-    amount: Number(p.totalValue || 0),
-    grnId: p.grnId || undefined,
-    firmName: p.grnId ? "Beere Kesava Silks (Head Firm)" : undefined,
-    receivedDate: undefined as string | undefined,
-    status: (p.status === "RECEIVED" ? "Delivered" : p.status === "APPROVED" ? "Approved" : p.status === "REJECTED" ? "Cancelled" : "Pending") as "Delivered" | "Approved" | "Cancelled" | "Pending",
-    receiveStatus: undefined as string | undefined,
-  })), [vendorPos]);
+  const orders: PurchaseOrderHistoryRow[] = React.useMemo(() => vendorPos.map(p => {
+    const poItems = p.items ?? [];
+    const grnItemCodes = matchGrnItemCodes(poItems, p.grnReceipt?.items ?? []);
+    // Prefer the linked receipt's own id; `grnId` is a display string that
+    // predates the FK and can exist without a receipt behind it.
+    const grnId = p.grnReceipt?.id ?? p.grnId ?? undefined;
+    return {
+      id: p.poNumber || `PO-${p.id.slice(0, 8).toUpperCase()}`,
+      date: p.createdAt ? p.createdAt.split("T")[0] : "",
+      materials: poItems.map((item, i) => ({
+        type: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
+        description: item.name,
+        qty: `${item.quantity} ${item.unit}`,
+        invoiceAmount: item.invoicedAmount ? formatMoney(rupees(Number(item.invoicedAmount))) : undefined,
+        grnItemCode: grnItemCodes[i],
+      })),
+      totalAmount: formatMoney(rupees(Number(p.totalValue || 0))),
+      amount: Number(p.totalValue || 0),
+      grnId,
+      // The firm that actually received the goods — falls back to the firm the
+      // order was raised under for receipts recorded before firms were tracked.
+      firmName: grnId ? (p.grnReceipt?.firm?.firmName ?? p.firm?.firmName ?? undefined) : undefined,
+      receivedDate: p.grnReceipt?.receivedDate ? p.grnReceipt.receivedDate.split("T")[0] : undefined,
+      status: (p.status === "RECEIVED" ? "Delivered" : p.status === "APPROVED" ? "Approved" : p.status === "REJECTED" ? "Cancelled" : "Pending") as "Delivered" | "Approved" | "Cancelled" | "Pending",
+      receiveStatus: undefined as string | undefined,
+    };
+  }), [vendorPos]);
 
   const lastOrderDate = orders.length ? orders[0].date : null;
   const overdueBills = ledger.bills.filter(b => b.status === "Overdue" || b.daysOverdue > 0);

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {
   useSuppliers, SareeTag, Purchase,
-  totalPieces, parseINR,
+  totalPieces, parseINR, serialFromLineCode,
 } from "@/features/suppliers";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 
@@ -117,7 +117,7 @@ export function ExternalPurchasesPage() {
     if (!p) return ["All Serial No.s"];
     const s = new Set<string>();
     p.sarees.forEach(x => {
-      const serial = x.id.match(/^[A-Za-z]+-(\d{3,4})-/)?.[1];
+      const serial = serialFromLineCode(x.id);
       if (serial) s.add(serial);
     });
     return ["All Serial No.s", ...Array.from(s).sort()];
@@ -159,8 +159,7 @@ export function ExternalPurchasesPage() {
     const matchType = fType === "All Saree Types" || p.sarees.some(s => s.sareeType === fType);
     const matchColor = fColor === "All Colours" || p.sarees.some(s => s.color === fColor);
     const matchSerial = fSerial === "All Serial No.s" || p.sarees.some(s => {
-      const serial = s.id.match(/^[A-Za-z]+-(\d{3,4})-/)?.[1];
-      return serial === fSerial;
+      return serialFromLineCode(s.id) === fSerial;
     });
 
     return matchSearch && matchDate && matchSupplier && matchPO && matchType && matchColor && matchSerial;

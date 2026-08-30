@@ -3,7 +3,7 @@ import { useAuth } from "../../../../contexts/AuthContext";
 import { motion } from "motion/react";
 import {
   User, Bell, ChevronLeft, LogOut,
-  Home, Search, Users, Sparkles, Truck,
+  Home, Search, Users, Sparkles, Truck, Activity,
 } from "lucide-react";
 import { C, F } from "./tokens";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
@@ -14,8 +14,8 @@ import { formatRelativeTime, notificationBody, notificationTitle, useNotificatio
 import { roleLabel, staffIdentitySubtitle, useAdminStaffView } from "@/shared/ui/portal/AdminStaffView";
 import { toInitials } from "@/shared/lib/initials";
 
-type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
-type NavTab = "home" | "qc" | "weavers" | "finishing" | "dispatch";
+type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "activity" | "profile";
+type NavTab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "activity";
 
 function topNavItems(pendingQcCount: number): { id: NavTab; Icon: IconComponent; label: string; badge?: number }[] {
   return [
@@ -24,6 +24,7 @@ function topNavItems(pendingQcCount: number): { id: NavTab; Icon: IconComponent;
     { id: "weavers",   Icon: Users,    label: "Receive Sarees" },
     { id: "finishing", Icon: Sparkles, label: "Finishing" },
     { id: "dispatch",  Icon: Truck,    label: "Dispatch" },
+    { id: "activity",  Icon: Activity, label: "Activity" },
   ];
 }
 

@@ -1,4 +1,5 @@
-import React, { useEffect, useState, lazy, Suspense } from "react";
+import React, { useEffect, useState, Suspense } from "react";
+import { lazyWithRetry as lazy } from "@/app/lazyWithRetry";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useNavigate, useParams } from "react-router";
 import { motion } from "motion/react";

@@ -28,13 +28,31 @@ export interface BackendPurchaseOrder {
     /** Set once the vendor's real bill splits an amount to this material line. */
     invoicedAmount: string | null;
   }[];
+  /** Real FK to the GrnReceipt this order was received against — `grnId` is a
+   *  display string that may predate the link. Null until goods arrive. */
+  grnReceiptId?: string | null;
   grnReceipt?: {
+    /** The receipt's own human-facing id, e.g. "GRN-SreeVignesh-004-002". */
+    id: string;
+    receivedDate?: string | null;
     receivedBy?: { id: string; firstName: string; lastName: string } | null;
+    /** The firm the goods were actually received for — previously hardcoded
+     *  to "Beere Kesava Silks (Head Firm)" on the vendor screen. */
+    firm?: { id: string; firmName: string } | null;
     /** Real prices actually paid at receipt — the fallback source when a PO
      *  line was raised without a price entered. */
     items?: {
+      id: string;
+      /** Per-line receipt id, e.g. "GRN-SreeVignesh-004-002-1" — the id printed
+       *  on this material's barcode label. Null on pre-per-line-code rows. */
+      itemCode?: string | null;
+      /** The ordered line this arrived against — the exact link, recorded at the
+       *  receiving desk. Null for ad-hoc receipts and rows predating the column. */
+      poItemId?: string | null;
       materialType: string;
+      name: string;
       quantity: number;
+      unit?: string | null;
       unitPrice: string;
       totalPrice: string;
     }[];

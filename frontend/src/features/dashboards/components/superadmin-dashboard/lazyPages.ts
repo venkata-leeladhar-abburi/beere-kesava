@@ -1,4 +1,4 @@
-import { lazy } from "react";
+import { lazyWithRetry as lazy } from "@/app/lazyWithRetry";
 
 // Lazily loaded so the initial dashboard bundle doesn't pay for every tab's
 // page — only the active tab's chunk is fetched, on first navigation to it.

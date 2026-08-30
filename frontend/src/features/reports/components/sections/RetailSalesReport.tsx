@@ -13,6 +13,7 @@ import { batchesApi } from "../../../../shared/api/batches";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { useReportPeriod, useRegisterExport } from "../PeriodContext";
 
 interface RetailSaleRow {
   id: string;
@@ -56,9 +57,11 @@ export function RetailSalesReport() {
   const isError = salesError || returnsError || customersError;
   const refetchAll = () => { void refetchSales(); void refetchReturns(); void refetchCustomers(); };
 
+  const { inCurrent, label: periodLabel } = useReportPeriod();
+
   const retailSales = useMemo(() => {
-    return (salesRes?.items ?? []).filter(s => s.channel === "RETAIL");
-  }, [salesRes]);
+    return (salesRes?.items ?? []).filter(s => s.channel === "RETAIL" && inCurrent(s.saleDate));
+  }, [salesRes, inCurrent]);
 
   const customerById = useMemo(() => {
     return new Map((customersRes?.items ?? []).map(c => [c.id, c]));
@@ -101,9 +104,15 @@ export function RetailSalesReport() {
   }, [retailSales, returnBySareeId, customerById]);
 
   const totalRevenue = retailRows.filter(r => r.price > 0).reduce((s, r) => s + r.price, 0);
+  const refundTotal = retailRows.filter(r => r.price < 0).reduce((s, r) => s - r.price, 0);
+  const netRevenue = totalRevenue - refundTotal;
   const returnsTotal = retailRows.filter(r => r.price < 0).length;
   const avgSale = retailRows.length - returnsTotal > 0 ? totalRevenue / (retailRows.length - returnsTotal) : 0;
 
+  // Day-of-month buckets over whatever period is selected. These used to
+  // match every sale ever recorded on those days regardless of month or year,
+  // so the chart and its summary strip showed all-time figures under a
+  // current-month heading.
   const retailWeeklyData = useMemo(() => {
     const weeks = [
       { label: "Week 1 (1–7)", from: 1, to: 7 },
@@ -139,6 +148,9 @@ export function RetailSalesReport() {
     const colors = semantic.chart.series;
 
     for (const sale of retailSales) {
+      // A returned saree brought in no revenue, so it must not inflate its
+      // type's slice — the headline revenue figure already nets refunds out.
+      if (returnBySareeId.has(sale.sareeId)) continue;
       const info = sareeInfoMap.get(sale.sareeId);
       const type = info?.sareeTypeCode ?? "Silk Saree";
       typeMap[type] = (typeMap[type] || 0) + Number(sale.amount);
@@ -151,9 +163,15 @@ export function RetailSalesReport() {
       value,
       color: colors[i % colors.length],
     }));
-  }, [retailSales, sareeInfoMap]);
+  }, [retailSales, sareeInfoMap, returnBySareeId]);
 
   const maxDesignCount = Math.max(1, ...(retailDesignSales.map(d => d.count)));
+
+  useRegisterExport(useMemo(() => ({
+    name: "Retail Sales Report",
+    headers: ["Sale ID", "Sale Date", "Customer", "Phone", "Saree ID", "Retail Price"],
+    rows: retailRows.map(r => [r.id, r.date, r.customer, r.phone, r.sarId, r.price]),
+  }), [retailRows]));
 
   const retailColumns: ColumnDef<RetailSaleRow>[] = [
     {
@@ -199,16 +217,16 @@ export function RetailSalesReport() {
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "20px 24px", marginBottom: 24, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 12 }}>
             <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>Sarees Sold Each Week This Month</div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>Current Month — weekly breakdown</div>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>Sarees Sold Each Week</div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>{periodLabel} — weekly breakdown</div>
             </div>
             <div style={{ display: "flex", gap: 24 }}>
               <div>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Sarees This Month</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Sarees Sold</div>
                 <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{retailWeeklyData.reduce((s, w) => s + w.sarees, 0)}</div>
               </div>
               <div>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Revenue This Month</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Revenue</div>
                 <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}><Money value={rupees(retailWeeklyData.reduce((s, w) => s + w.revenue, 0))} /></div>
               </div>
             </div>
@@ -225,7 +243,7 @@ export function RetailSalesReport() {
         </div>
       </FadeUp>
 
-      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 20, marginBottom: 24 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}>
         <ChartCard title="Which Designs Sold Most at Retail" sub="Top 5 designs by saree count">
           {retailDesignSales.length === 0 ? (
             <div style={{ padding: "30px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
@@ -278,10 +296,10 @@ export function RetailSalesReport() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4" style={{ gap: 22, marginBottom: 28, alignItems: "stretch" }}>
-        <SilkSumCard icon={<Tag size={22} color={T.antiqueGold} />} label="Total Sarees Sold at Shop" value={`${retailRows.length - returnsTotal} sarees`} sub="All recorded retail sales" gid="rsr-s" />
-        <SilkSumCard icon={<Banknote size={22} color={T.antiqueGold} />} label="Total Retail Revenue" value={formatMoney(rupees(totalRevenue))} sub="All-time" gid="rsr-r" />
+        <SilkSumCard icon={<Tag size={22} color={T.antiqueGold} />} label="Total Sarees Sold at Shop" value={`${retailRows.length - returnsTotal} sarees`} sub="Retail sales in the selected period" gid="rsr-s" />
+        <SilkSumCard icon={<Banknote size={22} color={T.antiqueGold} />} label="Total Retail Revenue" value={formatMoney(rupees(netRevenue))} sub={refundTotal > 0 ? `After ${formatMoney(rupees(refundTotal))} refunded` : "All-time, net of returns"} gid="rsr-r" />
         <SilkSumCard icon={<Percent size={22} color={T.antiqueGold} />} label="Average Sale Value" value={avgSale > 0 ? formatMoney(rupees(avgSale)) : "—"} sub="Per saree" gid="rsr-a" />
-        <SilkSumCard icon={<RefreshCcw size={22} color={T.antiqueGold} />} label="Total Returns at Shop" value={`${returnsTotal} sarees`} sub="All-time" gid="rsr-t" />
+        <SilkSumCard icon={<RefreshCcw size={22} color={T.antiqueGold} />} label="Total Returns at Shop" value={`${returnsTotal} sarees`} sub={refundTotal > 0 ? `${formatMoney(rupees(refundTotal))} refunded` : "All-time"} gid="rsr-t" />
       </div>
 
       <FadeUp>

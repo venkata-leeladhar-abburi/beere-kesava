@@ -220,6 +220,10 @@ export function WorkerGRN({
         const inputtedUnit = receivedUnit[i] || m.unit;
         const isRejected = itemApproval[i] === "rejected";
         return {
+          // The ordered line this row is receiving against. This screen is the
+          // only place the pairing is unambiguous — `name` below is rewritten
+          // to the subtype, so nothing downstream could recover it afterwards.
+          poItemId: m.id,
           materialType: m.materialType === "Warp" ? "WARP" : m.materialType === "Resham" ? "RESHAM" : "JARI",
           name: m.subtype || "General",
           description: m.description || undefined,

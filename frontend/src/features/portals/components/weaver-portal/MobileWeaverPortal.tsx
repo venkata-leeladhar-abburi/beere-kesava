@@ -256,7 +256,7 @@ export function MobileWeaverPortal({ active, setActive, onProfile }: { onBack?: 
       />
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto' as const, paddingBottom: 'calc(68px + env(safe-area-inset-bottom, 0px))' }}>
+      <div id="main-content" style={{ flex: 1, overflowY: 'auto' as const, paddingBottom: 'calc(68px + env(safe-area-inset-bottom, 0px))' }}>
         <AnimatePresence mode="wait">
           {showNotifs || active === 'notifications' ? (
             <motion.div key="notifs" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>

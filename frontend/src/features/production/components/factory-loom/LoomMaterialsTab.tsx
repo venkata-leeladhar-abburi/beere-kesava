@@ -1,6 +1,7 @@
 import React from "react";
 import { MaterialIssueRecord } from "@/features/materials";
 import { T, F } from "./theme";
+import { GrnLineCode } from "@/shared/ui/domain";
 
 const fmtIssueDate = (iso: string) => {
   const d = new Date(iso);
@@ -14,19 +15,39 @@ function SectionPill({ label }: { label: string }) {
 export function LoomMaterialsTab({ materialRecords }: { materialRecords: MaterialIssueRecord[] }) {
   return (
     <div>
-      <SectionPill label="Materials Issued — Batch Wise" />
+      <SectionPill label="Materials Issued — Loom & Batch Wise" />
       {materialRecords.length === 0 ? (
         <div style={{ background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center" as const, color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic" as const, marginTop: 12 }}>
           No materials issued to this loom yet. Use the Issue Material page to record material handovers.
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column" as const, gap: 18, marginTop: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column" as const, gap: 26, marginTop: 12 }}>
+          {/* Materials are issued against a loom + batch pair, so records are grouped by
+              loom first and then by batch. Records saved before loom capture group under
+              "Loom not recorded". */}
           {Array.from(materialRecords.reduce((m, r) => {
+            const key = typeof r.loomNumber === "number" ? String(r.loomNumber) : "unassigned";
+            if (!m.has(key)) m.set(key, [] as typeof materialRecords);
+            m.get(key)!.push(r);
+            return m;
+          }, new Map<string, typeof materialRecords>()).entries())
+            .sort(([a], [z]) => (a === "unassigned" ? Number.MAX_SAFE_INTEGER : Number(a)) - (z === "unassigned" ? Number.MAX_SAFE_INTEGER : Number(z)))
+            .map(([loomKey, loomRecs]) => {
+          const loomLabel = loomKey === "unassigned" ? "Loom not recorded" : `Loom ${loomKey}`;
+          const batchEntries = Array.from(loomRecs.reduce((m, r) => {
             const key = r.batchId || "Unassigned";
             if (!m.has(key)) m.set(key, [] as typeof materialRecords);
             m.get(key)!.push(r);
             return m;
-          }, new Map<string, typeof materialRecords>()).entries()).map(([batchId, recs]) => {
+          }, new Map<string, typeof materialRecords>()).entries());
+          return (
+            <div key={loomKey}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" as const }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, color: "#FFFFFF", background: T.royalBurgundy, borderRadius: 8, padding: "6px 14px" }}>{loomLabel}</span>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{batchEntries.length} batch{batchEntries.length !== 1 ? "es" : ""}</span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 18 }}>
+          {batchEntries.map(([batchId, recs]) => {
             let warpKg = 0;
             let reshamKg = 0;
             let jariReels = 0;
@@ -42,7 +63,7 @@ export function LoomMaterialsTab({ materialRecords }: { materialRecords: Materia
             }));
 
             return (
-              <div key={batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 20 }}>
+              <div key={`${loomKey}-${batchId}`} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 22px", background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}` }}>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 7, padding: "5px 12px" }}>{batchId}</span>
                   <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>{recs.length} issuance{recs.length > 1 ? "s" : ""}</span>
@@ -71,12 +92,13 @@ export function LoomMaterialsTab({ materialRecords }: { materialRecords: Materia
                         </div>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-                        {r.materials.map((m) => (
-                          <div key={`${m.grnBatchId}-${m.materialType}-${m.quantity}-${m.unit}`} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px", flexWrap: "wrap" as const }}>
+                        {r.materials.map((m, mi) => (
+                          // eslint-disable-next-line react/no-array-index-key -- issued lines have no client-side id; order is fixed per record
+                          <div key={`${m.grnItemCode ?? m.grnBatchId}-${m.materialType}-${mi}`} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px", flexWrap: "wrap" as const }}>
                             <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{m.materialType}</span>
                             {m.description && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{m.description}</span>}
                             <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, marginLeft: "auto" }}>{m.quantity} {m.unit}</span>
-                            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.10)", borderRadius: 5, padding: "2px 8px" }}>{m.grnBatchId}</span>
+                            <GrnLineCode batchId={m.grnBatchId} itemCode={m.grnItemCode} />
                           </div>
                         ))}
                       </div>
@@ -87,6 +109,10 @@ export function LoomMaterialsTab({ materialRecords }: { materialRecords: Materia
               </div>
             );
           })}
+              </div>
+            </div>
+          );
+        })}
         </div>
       )}
     </div>

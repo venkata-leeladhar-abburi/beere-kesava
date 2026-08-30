@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, lazy, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import { lazyWithRetry as lazy } from "@/app/lazyWithRetry";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJari as _imgJariLocal } from "../../../shared/constants/imageData";
 import { useAuth } from "../../../contexts/AuthContext";

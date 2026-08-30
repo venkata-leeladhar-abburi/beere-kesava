@@ -49,7 +49,7 @@ export function OverviewTab({
   paymentStatusBreakdown: { name: string; value: number; fill: string }[];
   myRequests: PurchaseRequest[];
 }) {
-  const { updatePurchase } = useSuppliers();
+  const { updatePurchaseSarees } = useSuppliers();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {/* Time-range controls drive every number and the inventory below. */}
@@ -187,16 +187,12 @@ export function OverviewTab({
         </div>
         <SareeInventoryTable
           rows={filteredSarees}
-          onUploadPhoto={(row, dataUrl) => {
-            const p = rangePurchases.find(x => x.id === row.purchaseId);
-            if (!p) return;
-            updatePurchase(p.id, { sarees: p.sarees.map(s => s.id === row.id ? { ...s, imageUrl: dataUrl } : s) });
-          }}
-          onUploadPieceImage={(row, pieceNo, dataUrl) => {
-            const p = rangePurchases.find(x => x.id === row.purchaseId);
-            if (!p) return;
-            updatePurchase(p.id, { sarees: p.sarees.map(s => s.id === row.id ? withPieceImage(s, pieceNo, dataUrl) : s) });
-          }}
+          onUploadPhoto={(row, url) =>
+            void updatePurchaseSarees(row.purchaseId, sarees =>
+              sarees.map(s => s.id === row.id ? { ...s, imageUrl: url } : s))}
+          onUploadPieceImage={(row, pieceNo, url) =>
+            void updatePurchaseSarees(row.purchaseId, sarees =>
+              sarees.map(s => s.id === row.id ? withPieceImage(s, pieceNo, url) : s))}
         />
       </div>
 
