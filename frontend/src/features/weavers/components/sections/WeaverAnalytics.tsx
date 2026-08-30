@@ -18,6 +18,7 @@ import { resolveAssetUrl } from "../../../../shared/api/uploads";
 import { semantic } from "../../../../design-system/tokens";
 import { ChartFigure } from "../../../../shared/ui/data";
 import { Button } from "../../../../shared/ui/primitives";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 function CardBloom() {
   return (
@@ -81,6 +82,7 @@ const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "
 
 export function WeaverAnalytics() {
   const periodLabel = "All Time";
+  const [search, setSearch] = React.useState("");
 
   const { data: weaversRes, isLoading: rosterLoading, isError: rosterError } = useQuery({
     queryKey: ["weaver-analytics-roster"],
@@ -205,6 +207,25 @@ export function WeaverAnalytics() {
           </div>
         }
       >
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search weaver analytics..."
+            filterGroups={[
+              {
+                id: "period",
+                label: "Period",
+                value: "All Time",
+                defaultValue: "All Time",
+                options: ANALYTICS_PERIODS.map(p => ({ value: p, label: p })),
+                onChange: () => {},
+              },
+            ]}
+            onResetAll={() => setSearch("")}
+          />
+        </div>
         <div style={{ width: "100%", marginBottom: 20 }}>
           <div className="grid grid-cols-3 gap-2 sm:gap-6 w-full items-stretch">
             {[

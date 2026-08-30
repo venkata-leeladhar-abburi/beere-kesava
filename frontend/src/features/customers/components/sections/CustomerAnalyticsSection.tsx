@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { semantic } from "../../../../design-system/tokens";
 import {
   Download, Star, IndianRupee, Users, Calendar, AlertTriangle, MapPin, BarChart3 as ChartBar,
@@ -8,6 +8,7 @@ import {
   PieChart, Pie, Cell, Legend
 } from "recharts";
 import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { SectionCard, SectionDownloadAction } from "../common/primitives";
@@ -114,7 +115,11 @@ function SlimBar({ pct, color, height = 5 }: { pct: number; color: string; heigh
 }
 
 // ── SECTION 3: CUSTOMER ANALYTICS ───────────────────────────────────────────
-export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDateFilter }: CustomerAnalyticsSectionProps) {
+export function CustomerAnalyticsSection({
+  analyticsDateFilter, setAnalyticsDateFilter,
+}: CustomerAnalyticsSectionProps) {
+  const [search, setSearch] = useState("");
+
   const { data: revSplitRes, isLoading: revSplitLoading, isError: revSplitError } = useQuery({
     queryKey: ["analytics-revenue-split"],
     queryFn: () => analyticsApi.getRevenueSplit(),
@@ -180,8 +185,8 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
         purchases: custSales.length, spend,
         dates: custSales.map(s => s.saleDate).sort(),
       };
-    });
-  }, [customersRes, invoicesRes, salesRes]);
+    }).filter(c => !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.city.toLowerCase().includes(search.toLowerCase()));
+  }, [customersRes, invoicesRes, salesRes, search]);
 
   // Top 10 customers by total spend.
   const top10Customers = useMemo(
@@ -267,7 +272,43 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
       subtitle="Overview of customer behaviour — who spends the most, who buys most frequently, who has not bought recently, and where your customers are from."
       actions={<SectionDownloadAction label="Download Analytics Report" />}
     >
-      <div style={{ marginBottom: 32 }}>
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search customer analytics..."
+          filterGroups={[
+            {
+              id: "time",
+              label: "Time Period",
+              value: analyticsDateFilter.mode,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Time" },
+                { value: "day", label: "Specific Date" },
+                { value: "range", label: "Date Range" },
+                { value: "month", label: "Monthly" },
+                { value: "year", label: "Yearly" },
+              ],
+              onChange: (m: string) => {
+                const mode = m as DateFilterState["mode"];
+                if (mode === "day") setAnalyticsDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                else if (mode === "month") setAnalyticsDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                else if (mode === "year") setAnalyticsDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                else setAnalyticsDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+              },
+            },
+          ]}
+          onResetAll={() => {
+            setSearch("");
+            setAnalyticsDateFilter({ mode: "all", day: "", from: "", to: "", month: "", year: "" });
+          }}
+        />
+      </div>
+
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:block mb-6">
         <DateFilterBar filter={analyticsDateFilter} onChange={setAnalyticsDateFilter} />
       </div>
 

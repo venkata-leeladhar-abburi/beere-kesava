@@ -9,17 +9,27 @@ import { FadeUp, ActionDialog, SectionCard } from "../common/primitives";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { warpRequestsApi, BackendWarpRequest } from "../../../../shared/api/warpRequests";
-import { Button, Textarea } from "../../../../shared/ui/primitives";
+import { Button, SearchInput, Textarea } from "../../../../shared/ui/primitives";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 export function WarpRequestsSection() {
   const queryClient = useQueryClient();
   const [decision, setDecision] = useState<{ type: "approve" | "reject"; req: BackendWarpRequest } | null>(null);
+  const [search, setSearch] = useState("");
+  const [warpTypeFilter, setWarpTypeFilter] = useState("All Types");
 
   const { data: res, isLoading } = useQuery({
     queryKey: ["warp-requests-pending"],
     queryFn: () => warpRequestsApi.list("PENDING"),
   });
   const requests = res?.items ?? [];
+
+  const filteredRequests = requests.filter(r => {
+    const q = search.toLowerCase();
+    const matchSearch = !q || r.weaver.name.toLowerCase().includes(q) || (r.weaver.village && r.weaver.village.toLowerCase().includes(q)) || r.warpType.toLowerCase().includes(q);
+    const matchType = warpTypeFilter === "All Types" || r.warpType.toLowerCase() === warpTypeFilter.toLowerCase();
+    return matchSearch && matchType;
+  });
 
   const approveMutation = useMutation({
     mutationFn: (id: string) => warpRequestsApi.approve(id),
@@ -59,13 +69,36 @@ export function WarpRequestsSection() {
           </div>
         }
       >
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search weaver, loom, material..."
+            filterGroups={[
+              {
+                id: "type",
+                label: "Material Type",
+                value: warpTypeFilter,
+                defaultValue: "All Types",
+                options: ["All Types", "Warp", "Resham", "Jari"].map(t => ({ value: t, label: t })),
+                onChange: setWarpTypeFilter,
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setWarpTypeFilter("All Types");
+            }}
+          />
+        </div>
+
           {isLoading ? (
             <div style={{ padding: "16px 0", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading warp requests…</div>
-          ) : requests.length === 0 ? (
-            <div style={{ padding: "16px 0", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No warp requests waiting for approval.</div>
+          ) : filteredRequests.length === 0 ? (
+            <div style={{ padding: "16px 0", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No warp requests match your filters.</div>
           ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 22, alignItems: "stretch" }}>
-            {requests.map((r, idx) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
+            {filteredRequests.map((r, idx) => (
               <motion.div
                 key={r.id}
                 initial={{ opacity: 0, y: 20 }}

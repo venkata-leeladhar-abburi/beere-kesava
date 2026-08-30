@@ -24,6 +24,7 @@ import { qcApi } from "../../../shared/api/qc";
 import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../shared/ui/state";
+import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
 import { LuxuryStatsCard } from "../../../shared/ui/LuxuryStatsCard";
 import { MaterialsFooter } from "@/features/materials";
 
@@ -268,8 +269,34 @@ export function FactoryLoomPage() {
                 </div>
               )}
 
-              {/* Controls */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, gap: 16, flexWrap: "wrap" }}>
+              {/* Mobile Flipkart-style Filter Bar */}
+              <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+                <MobileFilterBar
+                  search={search}
+                  onSearchChange={setSearch}
+                  searchPlaceholder="Search loom #, operator..."
+                  filterGroups={[
+                    {
+                      id: "status",
+                      label: "Status",
+                      value: sf,
+                      defaultValue: "all",
+                      options: (["all", "active", "idle", "maintenance"] as const).map(st => ({
+                        value: st,
+                        label: `${st.charAt(0).toUpperCase() + st.slice(1)} (${st === "all" ? looms.length : looms.filter(l => l.status === st).length})`,
+                      })),
+                      onChange: (v: string) => setSf(v as any),
+                    },
+                  ]}
+                  onResetAll={() => {
+                    setSearch("");
+                    setSf("all");
+                  }}
+                />
+              </div>
+
+              {/* Desktop Filter Bar */}
+              <div className="hidden md:flex items-center justify-between gap-4 mb-6 flex-wrap">
                 <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 280 }}>
                   <div style={{ width: 280 }}>
                     <SearchInput aria-label="Search loom number or operator" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search loom #, operator..." />

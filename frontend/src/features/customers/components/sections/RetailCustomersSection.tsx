@@ -206,7 +206,7 @@ export function RetailCustomersSection({
         </FadeUp>
       )}
 
-      <div style={{ marginBottom: 24 }}>
+      <div className="hidden md:block mb-6">
         <DateFilterBar filter={retailOverviewDateFilter} onChange={setRetailOverviewDateFilter} />
       </div>
 
@@ -320,6 +320,26 @@ export function RetailCustomersSection({
           searchPlaceholder="Search customer name or phone..."
           filterGroups={[
             {
+              id: "time",
+              label: "Time Period",
+              value: retailOverviewDateFilter.mode,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Time" },
+                { value: "day", label: "Specific Date" },
+                { value: "range", label: "Date Range" },
+                { value: "month", label: "Monthly" },
+                { value: "year", label: "Yearly" },
+              ],
+              onChange: (m: string) => {
+                const mode = m as DateFilterState["mode"];
+                if (mode === "day") setRetailOverviewDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                else if (mode === "month") setRetailOverviewDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                else if (mode === "year") setRetailOverviewDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                else setRetailOverviewDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+              },
+            },
+            {
               id: "status",
               label: "Status",
               value: retailStatusFilter,
@@ -360,6 +380,7 @@ export function RetailCustomersSection({
             setRetailStatusFilter("all");
             setRetailCityFilter("all");
             setRetailSort("spend");
+            setRetailOverviewDateFilter({ mode: "all", day: "", from: "", to: "", month: "", year: "" });
           }}
         />
       </div>

@@ -13,6 +13,7 @@ import { useBulkOrders } from "@/features/bulk-orders";
 import { BulkOrder } from "@/features/production";
 import { useFirms } from "@/features/firms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { Invoice } from "../../types";
 import { AnimCount, FadeUp } from "../common/motion";
 import { ActionModal, DropBtn, SectionCard } from "../common/primitives";
@@ -365,7 +366,70 @@ export function WholesaleCollectionsSection() {
           </div>
         )}
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search invoice or customer..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: dateFilter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                  else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                  else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                  else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                },
+              },
+              {
+                id: "state",
+                label: "Location",
+                value: filterState,
+                defaultValue: "All States",
+                options: ["All States", "Varanasi", "Surat", "Mumbai", "Hyderabad", "Chennai", "Bengaluru"].map(s => ({ value: s, label: s })),
+                onChange: setFilterState,
+              },
+              {
+                id: "customer",
+                label: "Customer",
+                value: filterCust,
+                defaultValue: "All Customers",
+                options: ["All Customers", "Lakshmi Silks", "Padmavathi Textiles", "Vijaya Silk House", "Narayana Silk Emporium", "Meenakshi Silks"].map(c => ({ value: c, label: c })),
+                onChange: setFilterCust,
+              },
+              {
+                id: "type",
+                label: "Invoice Type",
+                value: filterType,
+                defaultValue: "All Invoice Types",
+                options: ["All Invoice Types", "Wholesale", "Retail", "Export"].map(t => ({ value: t, label: t })),
+                onChange: setFilterType,
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setFilterState("All States");
+              setFilterCust("All Customers");
+              setFilterType("All Invoice Types");
+              setDateFilter(DEFAULT_DATE_FILTER);
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter Bar & Controls */}
+        <div className="hidden md:flex items-center gap-2.5 mb-5 flex-wrap">
           <ViewSelector options={viewOptions} activeView={view} onViewChange={setView} />
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           <DropBtn value={filterState} options={["All States", "Varanasi", "Surat", "Mumbai", "Hyderabad", "Chennai", "Bengaluru"]} onChange={setFilterState} />

@@ -8,6 +8,7 @@ import { Supplier, useSuppliers } from "../../contexts/SupplierContext";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { SupplierCard, type SupplierCardProps } from "@/shared/ui/domain";
 import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { rupees } from "@/lib/domain/money";
 
 // SupplierCard's shared taxonomy is person-only (design-system/06-DOMAIN.md
@@ -49,7 +50,40 @@ export function SupplierDirectorySection({
           </Button>
         }
       >
-        <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 24, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search supplier name, city, contact..."
+            filterGroups={[
+              {
+                id: "status",
+                label: "Status",
+                value: statusFilter,
+                defaultValue: "All",
+                options: ["All", "Active", "Overdue", "Inactive"].map(s => ({ value: s, label: s })),
+                onChange: setStatusFilter,
+              },
+              {
+                id: "rating",
+                label: "Rating",
+                value: ratingFilter,
+                defaultValue: "All Ratings",
+                options: ["All Ratings", "5 Stars", "4 Stars", "3 Stars", "2 Stars", "1 Star"].map(r => ({ value: r, label: r })),
+                onChange: setRatingFilter,
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setStatusFilter("All");
+              setRatingFilter("All Ratings");
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter Bar & Controls */}
+        <div className="hidden md:flex items-center gap-3.5 mb-6 flex-wrap" style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px", boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
           <div style={{ flex: "1 1 280px" }}>
             <SearchInput aria-label="Search by supplier name, city, or contact" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by supplier name, city, or contact…" />
           </div>

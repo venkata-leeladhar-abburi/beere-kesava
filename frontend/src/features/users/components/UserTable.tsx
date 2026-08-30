@@ -164,27 +164,6 @@ export function UserTable({
       icon={Users}
       title="All Users"
       subtitle={`${allRows.length} user${allRows.length === 1 ? "" : "s"} registered across all roles and portals.`}
-      actions={
-        <>
-          {/* Quick-filter pills */}
-          <div style={{ display: "flex", gap: 6 }}>
-            {["All Roles", "Finishing Staff"].map(pill => (
-              <Button key={pill} size="sm"
-                variant={roleFilter === pill ? "secondary" : "tertiary"}
-                onClick={() => { setRoleFilter(pill); setPage(1); }}
-                className={roleFilter === pill ? "" : "bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white"}
-              >{pill}</Button>
-            ))}
-          </div>
-          {/* Search */}
-          <SearchInput aria-label="Search users" value={searchQ} onChange={e => { setSearchQ(e.target.value); setPage(1); }} placeholder="Search users…" containerClassName="w-[220px]" />
-          {/* Role filter dropdown */}
-          <Select value={roleFilter} onValueChange={v => { setRoleFilter(v); setPage(1); }} className="w-[170px]">
-            <SelectItem value="All Roles">All Roles</SelectItem>
-            {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-          </Select>
-        </>
-      }
     >
       {/* Mobile Flipkart-style Filter Bar */}
       <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
@@ -237,6 +216,22 @@ export function UserTable({
 
       {/* Desktop Filter Bar */}
       <div className="hidden md:block mb-4">
+        <div className="flex flex-wrap items-center gap-3 mb-3">
+          <SearchInput aria-label="Search users" value={searchQ} onChange={e => { setSearchQ(e.target.value); setPage(1); }} placeholder="Search users by name, phone, email…" containerClassName="flex-1 min-w-[260px]" />
+          <Select value={roleFilter} onValueChange={v => { setRoleFilter(v); setPage(1); }} className="w-[170px]">
+            <SelectItem value="All Roles">All Roles</SelectItem>
+            {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+          </Select>
+          <div style={{ display: "flex", gap: 6 }}>
+            {["All Roles", "Finishing Staff"].map(pill => (
+              <Button key={pill} size="sm"
+                variant={roleFilter === pill ? "primary" : "tertiary"}
+                onClick={() => { setRoleFilter(pill); setPage(1); }}
+                className={roleFilter === pill ? "rounded-full bg-[#6E0F2D] text-[#FFFDF9]" : "rounded-full"}
+              >{pill}</Button>
+            ))}
+          </div>
+        </div>
         <DateFilterBar filter={dateFilter} onChange={f => { setDateFilter(f); setPage(1); }} />
       </div>
 

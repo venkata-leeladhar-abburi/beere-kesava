@@ -328,7 +328,7 @@ export function ReturnMaterialPage() {
             histSearch={histSearch} setHistSearch={v => { setHistSearch(v); setHistPage(1); }}
             histWeaverFilter={histWeaverFilter} setHistWeaverFilter={v => { setHistWeaverFilter(v); setHistPage(1); }}
             histDateFilter={histDateFilter} setHistDateFilter={f => { setHistDateFilter(f); setHistPage(1); }}
-            pagedHistory={pagedHistory} histPage={histPage} setHistPage={setHistPage} totalPages={totalPages}
+            pagedHistory={pagedHistory} histPage={histPage} setHistPage={setHistPage} totalPages={totalPages} totalCount={filteredHistory.length}
             setViewRecord={setViewRecord}
           />
         </div>

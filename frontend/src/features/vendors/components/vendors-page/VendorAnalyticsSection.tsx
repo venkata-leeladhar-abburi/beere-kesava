@@ -11,6 +11,7 @@ import {
   RadialBarChart, RadialBar,
 } from "recharts";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { T, F, MONTH_ABBR } from "./theme";
 import { Vendor } from "./types";
 import { FadeUp } from "./FadeUp";
@@ -78,6 +79,7 @@ const MATERIAL_FILL: Record<string, string> = { Warp: T.royalBurgundy, Resham: T
 
 export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
   const [analyticsFilter, setAnalyticsFilter] = React.useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [search, setSearch] = React.useState("");
 
   // ---- Derived analytics -------------------------------------------------
   const numPaise = (s: string) => toPaise(Number(s.replace(/,/g, "")) || 0);
@@ -97,8 +99,8 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
     }));
   }, [poRes]);
   const rows = React.useMemo(
-    () => ledger.filter(r => matchesDateFilter(r.date, analyticsFilter)),
-    [ledger, analyticsFilter]
+    () => ledger.filter(r => matchesDateFilter(r.date, analyticsFilter) && (!search || vendors.find(v => v.id === r.vendorId)?.name.toLowerCase().includes(search.toLowerCase()))),
+    [ledger, analyticsFilter, search, vendors]
   );
 
   const periodLabel = React.useMemo(() => {
@@ -225,8 +227,43 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "#FFFDF9", background: "rgba(255,255,255,0.14)", padding: "6px 14px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
         }
       >
-        {/* Timeline scope */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const, marginBottom: 10 }}>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search vendor analytics..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: analyticsFilter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day") setAnalyticsFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                  else if (mode === "month") setAnalyticsFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                  else if (mode === "year") setAnalyticsFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                  else setAnalyticsFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                },
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setAnalyticsFilter(DEFAULT_DATE_FILTER);
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter Bar */}
+        <div className="hidden md:flex items-center justify-between gap-4 mb-4 flex-wrap">
           <DateFilterBar filter={analyticsFilter} onChange={setAnalyticsFilter} />
           <div style={{ display: "flex", gap: 20, marginBottom: 16 }}>
             <div>

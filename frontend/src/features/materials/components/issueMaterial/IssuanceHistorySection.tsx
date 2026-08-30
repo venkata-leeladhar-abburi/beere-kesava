@@ -10,6 +10,7 @@ import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/p
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { EntityCode } from "@/shared/ui/domain";
 import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
+import { Pagination } from "../../../../shared/ui/DataPagination";
 
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
   signed: { label: "Signed", color: T.green, bg: "rgba(30,102,64,0.10)" },
@@ -20,7 +21,7 @@ const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }>
 export function IssuanceHistorySection({
   weaverNames, histSearch, setHistSearch, histWeaverFilter, setHistWeaverFilter,
   histDateFilter, setHistDateFilter, pagedHistory, histPage, setHistPage, totalPages,
-  setViewRecord,
+  setViewRecord, totalCount,
 }: {
   weaverNames: string[];
   histSearch: string; setHistSearch: (v: string) => void;
@@ -30,6 +31,7 @@ export function IssuanceHistorySection({
   histPage: number; setHistPage: (fn: (p: number) => number) => void;
   totalPages: number;
   setViewRecord: (r: MaterialIssueRecord) => void;
+  totalCount?: number;
 }) {
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const { isLoading, isError, error, refetch } = useMaterialIssue();
@@ -280,7 +282,7 @@ export function IssuanceHistorySection({
             </div>
           )
         ) : (
-          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+          <div id="issuance-history-table-mobile" style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
             <DataTable
               columns={columns}
               data={pagedHistory}
@@ -291,14 +293,14 @@ export function IssuanceHistorySection({
               isFiltered={!!(histSearch.trim() || histWeaverFilter !== "All Weavers")}
               onClearFilters={() => { setHistSearch(""); setHistWeaverFilter("All Weavers"); }}
               emptyTitle="No issuance records match your filters"
-              pagination
+              pagination={false}
             />
           </div>
         )}
       </div>
 
       {/* Desktop View — always Table View */}
-      <div className="hidden md:block" style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+      <div id="issuance-history-table" className="hidden md:block" style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
         <DataTable
           columns={columns}
           data={pagedHistory}
@@ -309,15 +311,22 @@ export function IssuanceHistorySection({
           isFiltered={!!(histSearch.trim() || histWeaverFilter !== "All Weavers")}
           onClearFilters={() => { setHistSearch(""); setHistWeaverFilter("All Weavers"); }}
           emptyTitle="No issuance records match your filters"
-          pagination
+          pagination={false}
         />
       </div>
 
       {totalPages > 0 && (
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 10, marginTop: 20 }}>
-          <Button variant="secondary" size="sm" disabled={histPage === 1} onClick={() => setHistPage(p => p - 1)}>← Prev</Button>
-          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Page {histPage} of {totalPages}</span>
-          <Button variant="secondary" size="sm" disabled={histPage === totalPages} onClick={() => setHistPage(p => p + 1)}>Next →</Button>
+        <div className="mt-3 p-2 bg-white rounded-xl border border-[var(--border-default)]">
+          <Pagination
+            targetId="issuance-history-table"
+            page={histPage}
+            pageCount={totalPages}
+            total={totalCount ?? (totalPages * 15)}
+            pageSize={15}
+            start={(histPage - 1) * 15}
+            onPageChange={p => setHistPage(() => p)}
+            itemLabel="issuance records"
+          />
         </div>
       )}
     </SectionCard>

@@ -8,6 +8,7 @@ import { ViewSelector } from "@/shared/ui/ViewSelector";
 import { Supplier, Purchase } from "@/features/suppliers";
 import { F, T, EASE } from "../../theme";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { FadeUp } from "../common/motion";
 import { DropBtn, SectionCard } from "../common/primitives";
 import { SupplierPayNowModal } from "./SupplierPayNowModal";
@@ -387,7 +388,61 @@ export function SupplierPaymentsSection() {
           ))}
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search supplier..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: dateFilter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                  else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                  else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                  else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                },
+              },
+              {
+                id: "supplier",
+                label: "Supplier",
+                value: supplierFilter,
+                defaultValue: "All Suppliers",
+                options: ["All Suppliers", ...suppliers.map(s => s.name)].map(s => ({ value: s, label: s })),
+                onChange: setSupplierFilter,
+              },
+              {
+                id: "status",
+                label: "Bill Status",
+                value: statusFilter,
+                defaultValue: "All Bill Status",
+                options: ["All Bill Status", "Paid", "Pending", "Overdue"].map(s => ({ value: s, label: s })),
+                onChange: setStatusFilter,
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setSupplierFilter("All Suppliers");
+              setStatusFilter("All Bill Status");
+              setDateFilter(DEFAULT_DATE_FILTER);
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter Bar & Controls */}
+        <div className="hidden md:flex items-center gap-2.5 mb-5 flex-wrap">
           <ViewSelector
             options={[
               { key: "card", Icon: LayoutGrid, label: "Card View" },

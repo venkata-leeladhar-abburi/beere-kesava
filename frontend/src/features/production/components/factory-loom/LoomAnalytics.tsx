@@ -8,6 +8,7 @@ import {
 } from "recharts";
 import { FactoryLoom, loomLabel } from "../../data/factoryLooms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { T, F, FadeUp } from "./theme";
 import { SectionCard } from "../common/primitives";
 import { LoomBatch, LoomMaterial, LoomSaree, MAT_TAG, LOOM_STATUS_TO_CONDITION } from "./types";
@@ -38,14 +39,15 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
   looms: FactoryLoom[]; batches: LoomBatch[]; materials: LoomMaterial[]; sarees: LoomSaree[];
 }) {
   const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [search, setSearch] = useState("");
 
   const doneSarees = React.useMemo(
-    () => sarees.filter(s => s.status === "complete" && matchesDateFilter(s.completedDate, filter)),
-    [sarees, filter]
+    () => sarees.filter(s => s.status === "complete" && matchesDateFilter(s.completedDate, filter) && (!search || s.sareeId.toLowerCase().includes(search.toLowerCase()) || s.sareeType.toLowerCase().includes(search.toLowerCase()) || s.loomId.toLowerCase().includes(search.toLowerCase()))),
+    [sarees, filter, search]
   );
   const periodMaterials = React.useMemo(
-    () => materials.filter(m => matchesDateFilter(m.date, filter)),
-    [materials, filter]
+    () => materials.filter(m => matchesDateFilter(m.date, filter) && (!search || m.materialType.toLowerCase().includes(search.toLowerCase()) || m.description.toLowerCase().includes(search.toLowerCase()) || m.loomId.toLowerCase().includes(search.toLowerCase()))),
+    [materials, filter, search]
   );
 
   const periodLabel = React.useMemo(() => {
@@ -174,16 +176,52 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
           <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "#FFFDF9", background: "rgba(255,255,255,0.14)", padding: "6px 14px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
         }
       >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const }}>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search loom analytics..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: filter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day") setFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                  else if (mode === "month") setFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                  else if (mode === "year") setFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                  else setFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                },
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setFilter(DEFAULT_DATE_FILTER);
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter Bar */}
+        <div className="hidden md:flex items-center justify-between gap-4 mb-4 flex-wrap">
           <DateFilterBar filter={filter} onChange={setFilter} />
           <div style={{ display: "flex", gap: 20, flexWrap: "wrap" as const, marginBottom: 16 }}>
             {[
-              { label: "SAREES WOVEN", value: String(produced), color: T.royalBurgundy },
-              { label: "QC PASS RATE", value: `${passRate}%`, color: T.royalBurgundy },
+              { label: "TOTAL OUTPUT", value: `${produced} sarees`, color: T.royalBurgundy },
+              { label: "QC PASS RATE", value: `${passRate}%`, color: laQcColor(passRate) },
               { label: "LOOM UTILISATION", value: `${utilRate}%`, color: T.royalBurgundy },
             ].map(k => (
-              <div key={k.label} style={{ minWidth: 90 }}>
-                <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, whiteSpace: "nowrap" as const }}>{k.label}</div>
+              <div key={k.label}>
+                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
                 <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.color }}>{k.value}</div>
               </div>
             ))}
