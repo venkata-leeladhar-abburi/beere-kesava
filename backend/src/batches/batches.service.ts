@@ -36,6 +36,8 @@ const rowsInclude = {
       talliedByUser: { select: { id: true, firstName: true, lastName: true, role: true } },
     },
   },
+  createdBy: { select: { id: true, firstName: true, lastName: true, role: true } },
+  talliedBy: { select: { id: true, firstName: true, lastName: true, role: true } },
 } satisfies Prisma.BatchInclude;
 
 @Injectable()
@@ -55,6 +57,7 @@ export class BatchesService {
         id,
         totalCount: dto.totalCount,
         dueDate: new Date(dto.dueDate),
+        createdById: dto.actorId,
         rows: {
           // Rows start fully unassigned — matches the real draft-batch
           // workflow, where each row is assigned a recipient/design/type
@@ -62,7 +65,7 @@ export class BatchesService {
           create: Array.from({ length: dto.totalCount }, (_, i) => ({ serial: i + 1 })),
         },
       },
-      include: { rows: { orderBy: { serial: "asc" } } },
+      include: { rows: { orderBy: { serial: "asc" } }, createdBy: { select: { id: true, firstName: true, lastName: true } } },
     });
 
     await this.auditLog.recordAction({

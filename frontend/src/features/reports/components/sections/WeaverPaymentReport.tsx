@@ -6,7 +6,10 @@ import { useWeaverPayments } from "@/features/weavers";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { qcApi } from "../../../../shared/api/qc";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, AnimBar } from "../common/primitives";
+import { FadeUp, SilkSumCard, SectionCard, ReportDLBar } from "../common/primitives";
+import {
+  ChartCard, ChartBand, ChartHint, TrackBar, BAND, CHART, NUM, CountUp
+} from "../../../production/components/sections/chart-primitives";
 import { DataTable } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -158,7 +161,9 @@ export function WeaverPaymentReport() {
       <ReportDLBar />
 
       <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}>
-        <ChartCard title="Total Making Charges Paid Each Month" sub="Monthly breakdown from live payments" icon={<IndianRupee size={22} color={T.antiqueGold} />}>
+        <ChartCard>
+          <ChartBand tone="weavers" icon={<IndianRupee size={19} color={BAND.weavers.icon} />} title="Total Making Charges Paid Each Month" sub="Monthly breakdown from live payments" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {weaverPayMonthly.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
               No payments recorded yet.
@@ -178,9 +183,12 @@ export function WeaverPaymentReport() {
               </BarChart>
             </ResponsiveContainer>
           )}
+          </div>
         </ChartCard>
 
-        <ChartCard title="What Caused Deductions This Period" sub="Live deduction breakdown" icon={<TrendingDown size={22} color={T.crimson} />}>
+        <ChartCard>
+          <ChartBand tone="pipeline" icon={<TrendingDown size={19} color={BAND.pipeline.icon} />} title="What Caused Deductions This Period" sub="Live deduction breakdown" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {payments.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
               No payments recorded yet.
@@ -210,12 +218,13 @@ export function WeaverPaymentReport() {
                       </div>
                       <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: d.color }}>{d.value}</span>
                     </div>
-                    <AnimBar pct={Math.round((d.value / (payments.length || 1)) * 100)} color={d.color} height={5} />
+                    <TrackBar pct={Math.round((d.value / (payments.length || 1)) * 100)} fill={d.color} height={9} delay={deductionBreakdown.indexOf(d) * 0.08} />
                   </div>
                 ))}
               </div>
             </div>
           )}
+          </div>
         </ChartCard>
       </div>
 

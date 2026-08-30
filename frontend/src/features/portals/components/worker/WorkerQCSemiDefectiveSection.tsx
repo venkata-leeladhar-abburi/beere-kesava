@@ -89,7 +89,7 @@ function SemiDefectiveCard({ d, onView, onViewPhoto }: { d: DefectiveLogItem; on
               <span style={{ fontFamily: F.u }}>{d.date}</span>
             </div>
             <div style={{ fontFamily: F.u }} className="mt-0.5 truncate text-[11.5px] font-medium text-[#89837E]">
-              by {d.inspectedBy || "Worker Staff"}
+              Defected by {d.inspectedBy || "Worker Staff"}
             </div>
           </div>
 
@@ -202,7 +202,7 @@ export function WorkerQCSemiDefectiveSection({
     },
     {
       id: "inspectedBy",
-      header: "Inspected By",
+      header: "Defected By",
       accessor: d => d.inspectedBy ?? "—",
       priority: 3,
       cell: (_v, d) => <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted }}>{d.inspectedBy ?? "—"}</span>,

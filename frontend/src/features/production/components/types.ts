@@ -30,6 +30,7 @@ export interface BulkOrder {
   tallied?: boolean;
   talliedBy?: string;
   talliedDate?: string;
+  createdBy?: { id: string; name: string } | null;
 }
 
 export type BatchStage = "weaving" | "submitted" | "qc-passed" | "finishing";
@@ -41,7 +42,7 @@ export interface Batch {
   design: string; designName: string; weavers: WeaverRef[];
   materials: string; started: string; expected?: string; submitted?: string;
   done: number; total: number; late?: number; qcPassed?: number; finishingDone?: number; rejected?: number;
-  isLive?: boolean;
+  isLive?: boolean; createdBy?: string | null;
 }
 
 export type HistoryStatus = "Printing Completed" | "Printing In Process" | "Challenge in Progress";

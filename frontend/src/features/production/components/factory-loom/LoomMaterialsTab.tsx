@@ -2,6 +2,7 @@ import React from "react";
 import { MaterialIssueRecord } from "@/features/materials";
 import { T, F } from "./theme";
 import { GrnLineCode } from "@/shared/ui/domain";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "@/shared/ui/DateFilterBar";
 
 const fmtIssueDate = (iso: string) => {
   const d = new Date(iso);
@@ -12,42 +13,79 @@ function SectionPill({ label }: { label: string }) {
   return <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.taupe, letterSpacing: "1.2px", textTransform: "uppercase" as const, marginBottom: 4 }}>{label}</div>;
 }
 
+function FilterPill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.5px",
+        borderRadius: 8, padding: "6px 12px", border: `1px solid ${active ? T.antiqueGold : T.borderDef}`,
+        background: active ? T.antiqueGold : "#FFFFFF", color: active ? "#FFFFFF" : T.luxuryBrown,
+        cursor: "pointer",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function LoomMaterialsTab({ materialRecords }: { materialRecords: MaterialIssueRecord[] }) {
+  const [dateFilter, setDateFilter] = React.useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [batchFilter, setBatchFilter] = React.useState<string>("all");
+
+  const dateFiltered = React.useMemo(
+    () => materialRecords.filter(r => matchesDateFilter(r.issuedAt, dateFilter)),
+    [materialRecords, dateFilter]
+  );
+
+  const batchOptions = React.useMemo(
+    () => Array.from(new Set(dateFiltered.map(r => r.batchId || "Unassigned"))).sort(),
+    [dateFiltered]
+  );
+
+  React.useEffect(() => {
+    if (batchFilter !== "all" && !batchOptions.includes(batchFilter)) setBatchFilter("all");
+  }, [batchOptions, batchFilter]);
+
+  const filterActive = dateFilter.mode !== "all";
+  const filteredRecords = batchFilter === "all" ? dateFiltered : dateFiltered.filter(r => (r.batchId || "Unassigned") === batchFilter);
+
   return (
     <div>
-      <SectionPill label="Materials Issued — Loom & Batch Wise" />
+      <SectionPill label="Materials Issued — Batch Wise" />
+      <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+      {batchOptions.length > 0 && (
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const, marginTop: 12 }}>
+          <FilterPill active={batchFilter === "all"} onClick={() => setBatchFilter("all")}>All Batches</FilterPill>
+          {batchOptions.map(id => (
+            <FilterPill key={id} active={batchFilter === id} onClick={() => setBatchFilter(id)}>{id}</FilterPill>
+          ))}
+        </div>
+      )}
+      {materialRecords.length > 0 && (
+        <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 12 }}>
+          Showing <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.luxuryBrown }}>{filteredRecords.length}</span> of{" "}
+          <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.luxuryBrown }}>{materialRecords.length}</span> handover{materialRecords.length !== 1 ? "s" : ""}
+          {filterActive || batchFilter !== "all" ? " for the selected filters" : ""}
+        </div>
+      )}
       {materialRecords.length === 0 ? (
         <div style={{ background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center" as const, color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic" as const, marginTop: 12 }}>
           No materials issued to this loom yet. Use the Issue Material page to record material handovers.
         </div>
+      ) : filteredRecords.length === 0 ? (
+        <div style={{ background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center" as const, color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic" as const, marginTop: 12 }}>
+          No material handovers match the selected filters.
+        </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column" as const, gap: 26, marginTop: 12 }}>
-          {/* Materials are issued against a loom + batch pair, so records are grouped by
-              loom first and then by batch. Records saved before loom capture group under
-              "Loom not recorded". */}
-          {Array.from(materialRecords.reduce((m, r) => {
-            const key = typeof r.loomNumber === "number" ? String(r.loomNumber) : "unassigned";
-            if (!m.has(key)) m.set(key, [] as typeof materialRecords);
-            m.get(key)!.push(r);
-            return m;
-          }, new Map<string, typeof materialRecords>()).entries())
-            .sort(([a], [z]) => (a === "unassigned" ? Number.MAX_SAFE_INTEGER : Number(a)) - (z === "unassigned" ? Number.MAX_SAFE_INTEGER : Number(z)))
-            .map(([loomKey, loomRecs]) => {
-          const loomLabel = loomKey === "unassigned" ? "Loom not recorded" : `Loom ${loomKey}`;
-          const batchEntries = Array.from(loomRecs.reduce((m, r) => {
+        <div style={{ display: "flex", flexDirection: "column" as const, gap: 18, marginTop: 12 }}>
+          {Array.from(filteredRecords.reduce((m, r) => {
             const key = r.batchId || "Unassigned";
-            if (!m.has(key)) m.set(key, [] as typeof materialRecords);
+            if (!m.has(key)) m.set(key, [] as typeof filteredRecords);
             m.get(key)!.push(r);
             return m;
-          }, new Map<string, typeof materialRecords>()).entries());
-          return (
-            <div key={loomKey}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" as const }}>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, color: "#FFFFFF", background: T.royalBurgundy, borderRadius: 8, padding: "6px 14px" }}>{loomLabel}</span>
-                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{batchEntries.length} batch{batchEntries.length !== 1 ? "es" : ""}</span>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column" as const, gap: 18 }}>
-          {batchEntries.map(([batchId, recs]) => {
+          }, new Map<string, typeof filteredRecords>()).entries()).map(([batchId, recs]) => {
             let warpKg = 0;
             let reshamKg = 0;
             let jariReels = 0;
@@ -63,7 +101,7 @@ export function LoomMaterialsTab({ materialRecords }: { materialRecords: Materia
             }));
 
             return (
-              <div key={`${loomKey}-${batchId}`} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 20 }}>
+              <div key={batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 22px", background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}` }}>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 7, padding: "5px 12px" }}>{batchId}</span>
                   <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>{recs.length} issuance{recs.length > 1 ? "s" : ""}</span>
@@ -109,10 +147,6 @@ export function LoomMaterialsTab({ materialRecords }: { materialRecords: Materia
               </div>
             );
           })}
-              </div>
-            </div>
-          );
-        })}
         </div>
       )}
     </div>

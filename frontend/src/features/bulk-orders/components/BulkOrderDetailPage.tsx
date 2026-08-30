@@ -427,6 +427,18 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                   </div>
                 </div>
               </div>
+
+              {live.createdBy && (
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl px-4 py-3 min-w-[150px] flex-1 sm:flex-none">
+                  <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.20)] flex items-center justify-center shrink-0">
+                    <Boxes size={20} color={T.antiqueGold} />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Created By</div>
+                    <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{live.createdBy.name}</div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -268,6 +268,26 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
               <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{b.dueDate || "Not Set"}</div>
             </div>
 
+            {(b.createdBy || b.talliedBy) && (
+              <>
+                <div style={{ height: 1, background: "rgba(110,15,45,0.06)" }} />
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 24 }}>
+                  {b.createdBy && (
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Created By</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{b.createdBy}</div>
+                    </div>
+                  )}
+                  {b.talliedBy && (
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Tallied By</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{b.talliedBy}</div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
             <div style={{ height: 1, background: "rgba(110,15,45,0.06)" }} />
 
             <div>

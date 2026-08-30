@@ -308,6 +308,8 @@ export function SareeWeightTallyList({
                       <span className="flex items-center gap-1 text-xs font-bold text-rose-700">
                         <AlertTriangle size={13} /> Shortfall
                       </span>
+                    ) : item.tallied && item.talliedBy ? (
+                      <span className="text-xs text-[#8B7060]">Tallied by {item.talliedBy}</span>
                     ) : null}
                   </div>
 

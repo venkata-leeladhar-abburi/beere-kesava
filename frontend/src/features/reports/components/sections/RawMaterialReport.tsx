@@ -382,10 +382,10 @@ export function RawMaterialReport() {
                         </div>
                       </div>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 5, flexShrink: 0 }}>
-                        <span style={{ fontFamily: F.display, fontSize: 21, fontWeight: 400, color: T.luxuryBrown, ...NUM }}>
+                        <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 600, color: T.luxuryBrown, ...NUM }}>
                           <CountUp value={d.current} />
                         </span>
-                        <span style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: T.taupe }}>
                           {d.material === "Jari" ? "reels" : "kg"}
                         </span>
                       </div>

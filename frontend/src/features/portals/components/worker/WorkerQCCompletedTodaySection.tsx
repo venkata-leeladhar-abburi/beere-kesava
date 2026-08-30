@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { CheckCircle2, LayoutGrid, LayoutList } from "lucide-react";
 import { T, F, PassedLogItem } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";
@@ -7,6 +7,8 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { EntityCode } from "../../../../shared/ui/domain";
 import { Button } from "../../../../shared/ui/primitives";
+import { StaffFilterSelect } from "../../../../shared/ui/StaffFilterSelect";
+import { useAuth } from "../../../../contexts/AuthContext";
 
 interface WorkerQCCompletedTodaySectionProps {
   items: PassedLogItem[];
@@ -15,10 +17,19 @@ interface WorkerQCCompletedTodaySectionProps {
 }
 
 export function WorkerQCCompletedTodaySection({ items, isDesktop, isTablet }: WorkerQCCompletedTodaySectionProps) {
+  const { role } = useAuth();
+  const canFilterByStaff = role === "admin" || role === "superadmin";
+  const [staffFilter, setStaffFilter] = useState("");
+  const staffNames = useMemo(
+    () => Array.from(new Set(items.map(p => p.inspectedBy).filter((n): n is string => !!n))).sort(),
+    [items],
+  );
+  const filteredItems = items.filter(p => !canFilterByStaff || !staffFilter || p.inspectedBy === staffFilter);
+
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const cols = isDesktop ? "repeat(auto-fill, minmax(280px, 1fr))" : isTablet ? "repeat(2, 1fr)" : "1fr";
   const ITEMS_PER_PAGE = isDesktop ? 20 : isTablet ? 10 : 5;
-  const pag = usePagination(items, ITEMS_PER_PAGE);
+  const pag = usePagination(filteredItems, ITEMS_PER_PAGE);
 
   const columns: ColumnDef<PassedLogItem>[] = [
     {
@@ -84,12 +95,12 @@ export function WorkerQCCompletedTodaySection({ items, isDesktop, isTablet }: Wo
         subtitle="Sarees passed quality check today."
         actions={
           <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
-            {items.length} passed
+            {filteredItems.length} of {items.length} passed
           </span>
         }
       >
         {items.length > 0 && (
-          <div className="flex items-center justify-start mb-4">
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
             <div className="flex items-center border border-[#E8DCC4] rounded-[12px] overflow-hidden bg-white shrink-0">
               <Button
                 type="button"
@@ -116,10 +127,13 @@ export function WorkerQCCompletedTodaySection({ items, isDesktop, isTablet }: Wo
                 <LayoutList size={14} /> Table View
               </Button>
             </div>
+            {canFilterByStaff && (
+              <StaffFilterSelect names={staffNames} value={staffFilter} onChange={(v) => { setStaffFilter(v); pag.setPage(1); }} />
+            )}
           </div>
         )}
 
-        {items.length === 0 ? (
+        {filteredItems.length === 0 ? (
           <div style={{ padding: "32px 0", textAlign: "center" }}>
             <div style={{ fontFamily: F.u, fontSize: 14, color: T.muted }}>No sarees passed today yet.</div>
           </div>

@@ -193,6 +193,10 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
           </div>
         )}
 
+        {o.createdBy && (
+          <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>Created by {o.createdBy.name}</div>
+        )}
+
       </div>
 
       <div style={{ padding: "0 16px" }}>
@@ -225,7 +229,7 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
   const [showCreate, setShowCreate] = useState(false);
   const [successRef, setSuccessRef] = useState<string | null>(null);
   const { bulkOrders, addBulkOrder, nextOrderRef, isLoading, isError, error, refetch } = useBulkOrders();
-  const pag = usePagination(bulkOrders, 8);
+  const pag = usePagination(bulkOrders, 10);
   const atRiskCount = bulkOrders.filter(o => o.status === "at-risk" || o.status === "overdue").length;
   return (
     <div id="prod-bulk-orders" className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36 }}>

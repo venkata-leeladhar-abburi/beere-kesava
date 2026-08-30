@@ -5,8 +5,11 @@ import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 import { useBulkOrders } from "@/features/bulk-orders";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, AnimBar } from "../common/primitives";
+import { FadeUp, SilkSumCard, SectionCard, ReportDLBar } from "../common/primitives";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
+import {
+  ChartCard, ChartBand, ChartHint, TrackBar, BAND, CHART, NUM, CountUp
+} from "../../../production/components/sections/chart-primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import type { BulkOrder } from "@/features/bulk-orders";
@@ -220,12 +223,10 @@ export function WholesaleSalesReport() {
 
       {/* Weekly sarees dispatched — summary strip + bar chart */}
       <FadeUp>
-        <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "20px 24px", marginBottom: 24, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 12 }}>
-            <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>Wholesale Sarees Dispatched Each Week</div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>{periodLabel} — weekly breakdown</div>
-            </div>
+        <ChartCard style={{ marginBottom: 24 }}>
+          <ChartBand tone="output" icon={<Boxes size={19} color={BAND.output.icon} />} title="Wholesale Sarees Dispatched Each Week" sub={`${periodLabel} — weekly breakdown`} />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 14, flexWrap: "wrap", gap: 12 }}>
             <div style={{ display: "flex", gap: 24 }}>
               <div>
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Sarees Dispatched</div>
@@ -246,11 +247,14 @@ export function WholesaleSalesReport() {
               <Bar key="wsw-bar" dataKey="sarees" name="Sarees Dispatched" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </div>
+          </div>
+        </ChartCard>
       </FadeUp>
 
-      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 24 }}>
-        <ChartCard title="Wholesale Revenue — Last 6 Months" sub="Monthly invoiced amount">
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}>
+        <ChartCard>
+          <ChartBand tone="pipeline" icon={<Banknote size={19} color={BAND.pipeline.icon} />} title="Wholesale Revenue — Last 6 Months" sub="Monthly invoiced amount" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {wsMonthlyRev.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
               No wholesale orders recorded yet.
@@ -268,9 +272,12 @@ export function WholesaleSalesReport() {
               </BarChart>
             </ResponsiveContainer>
           )}
+          </div>
         </ChartCard>
 
-        <ChartCard title="How Much Each Customer Still Owes" sub="Outstanding balance per customer">
+        <ChartCard>
+          <ChartBand tone="weavers" icon={<ReceiptText size={19} color={BAND.weavers.icon} />} title="How Much Each Customer Still Owes" sub="Outstanding balance per customer" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 11, padding: "8px 0" }}>
             {wsOutstanding.length === 0 && (
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bulk orders recorded yet.</div>
@@ -281,13 +288,16 @@ export function WholesaleSalesReport() {
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{d.customer}</span>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: d.color }}>{d.amt === 0 ? "Paid ✓" : formatMoney(rupees(d.amt))}</span>
                 </div>
-                <AnimBar pct={d.amt === 0 ? 100 : Math.round((d.amt / maxOutstanding) * 100)} color={d.color} height={6} delay={i * 0.06} />
+                <TrackBar pct={d.amt === 0 ? 100 : Math.round((d.amt / maxOutstanding) * 100)} fill={d.color} height={9} delay={i * 0.08} />
               </div>
             ))}
           </div>
+          </div>
         </ChartCard>
 
-        <ChartCard title="Invoice Status — All Bulk Orders" sub="Live payment status breakdown">
+        <ChartCard>
+          <ChartBand tone="orders" icon={<CheckCircle2 size={19} color={BAND.orders.icon} />} title="Invoice Status — All Bulk Orders" sub="Live payment status breakdown" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {wsInvStatus.length === 0 ? (
             <div style={{ padding: "20px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bulk orders recorded yet.</div>
           ) : (
@@ -313,6 +323,7 @@ export function WholesaleSalesReport() {
           </div>
           </>
           )}
+          </div>
         </ChartCard>
       </div>
 

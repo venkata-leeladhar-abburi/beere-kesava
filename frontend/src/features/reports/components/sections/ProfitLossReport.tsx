@@ -8,7 +8,10 @@ import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SectionCard, ReportDLBar, AnimBar } from "../common/primitives";
+import { FadeUp, SectionCard, ReportDLBar } from "../common/primitives";
+import {
+  ChartCard, ChartBand, TrackBar, BAND
+} from "../../../production/components/sections/chart-primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { useReportPeriod, useRegisterExport } from "../PeriodContext";
@@ -205,8 +208,10 @@ export function ProfitLossReport() {
     >
       <ReportDLBar />
 
-      <div className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr]" style={{ gap: 20, marginBottom: 28 }}>
-        <ChartCard title="Income vs Expenses — Monthly" sub="Green = income · Crimson = expenses">
+      <div className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr]" style={{ gap: 20, marginBottom: 28, alignItems: "stretch" }}>
+        <ChartCard>
+          <ChartBand tone="pipeline" icon={<BarChart2 size={19} color={BAND.pipeline.icon} />} title="Income vs Expenses — Monthly" sub="Green = income · Crimson = expenses" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {pnlMonthlyData.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
               No financial entries recorded yet. Add ledger entries in Firms & Vendor Management.
@@ -223,9 +228,12 @@ export function ProfitLossReport() {
               </BarChart>
             </ResponsiveContainer>
           )}
+          </div>
         </ChartCard>
 
-        <ChartCard title="Where Did the Money Go" sub="Expense breakdown by category">
+        <ChartCard>
+          <ChartBand tone="weavers" icon={<FileText size={19} color={BAND.weavers.icon} />} title="Where Did the Money Go" sub="Expense breakdown by category" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {expenseDonut.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
               No expenses recorded yet.
@@ -241,7 +249,7 @@ export function ProfitLossReport() {
                 </PieChart>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 8px" }}>
-                {expenseDonut.map(d => (
+                {expenseDonut.map((d, i) => (
                   <div key={d.name}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -250,13 +258,14 @@ export function ProfitLossReport() {
                       </div>
                       <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: d.color }}>{inr(d.value)}</span>
                     </div>
-                    <AnimBar pct={totalExpenses > 0 ? Math.round((d.value / totalExpenses) * 100) : 0} color={d.color} height={5} />
+                    <TrackBar pct={totalExpenses > 0 ? Math.round((d.value / totalExpenses) * 100) : 0} fill={d.color} height={9} delay={i * 0.08} />
                   </div>
                 ))}
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.crimson, textAlign: "right", marginTop: 4 }}>Total: {inr(totalExpenses)}</div>
               </div>
             </>
           )}
+          </div>
         </ChartCard>
       </div>
 

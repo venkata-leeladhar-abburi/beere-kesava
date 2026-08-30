@@ -260,8 +260,8 @@ export function StatFooter({ stats }: { stats: { num: React.ReactNode; label: st
             flex: 1, textAlign: "center", padding: "0 6px",
             borderRight: i < stats.length - 1 ? `1px solid ${T.borderDef}` : "none",
           }}>
-            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 24, color: T.luxuryBrown, lineHeight: 1.1, ...NUM }}>{s.num}</div>
-            <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 9.5, color: T.taupe, marginTop: 3, textTransform: "uppercase", letterSpacing: "1.1px" }}>{s.label}</div>
+            <div style={{ fontFamily: F.display, fontWeight: 500, fontSize: 26, color: T.luxuryBrown, lineHeight: 1.1, ...NUM }}>{s.num}</div>
+            <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 11, color: T.taupe, marginTop: 4, textTransform: "uppercase", letterSpacing: "1.2px" }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -392,7 +392,7 @@ export function GroupedBarChart({ data, height = 168 }: { data: GroupedBarPoint[
 export interface SingleBarPoint { label: string; value: number; unit?: string }
 
 export function SingleBarChart({ data, height = 168, fillId = "prodBarA" }: { data: SingleBarPoint[]; height?: number; fillId?: string }) {
-  const W = 420, H = 162, PB = 30, PT = 10, PL = 30;
+  const W = 420, H = 162, PB = 30, PT = 32, PL = 30;
   const iW = W - PL, iH = H - PB - PT;
   const rawMax = Math.max(1, ...data.map(d => d.value));
   const step = Math.max(1, Math.ceil(rawMax / 3 / 5) * 5);
@@ -446,12 +446,12 @@ export function SingleBarChart({ data, height = 168, fillId = "prodBarA" }: { da
                 transition={{ duration: 0.9, delay: 0.25 + i * 0.08, ease: EASE }}
               />
               <text
-                x={gx} y={Math.max(PT + 8, baseY - hV - 5)} textAnchor="middle"
-                fontFamily={F.ui} fontSize={9.5} fontWeight="700" fill={T.luxuryBrown} style={NUM}
+                x={gx} y={baseY - hV - 8} textAnchor="middle"
+                fontFamily={F.ui} fontSize={15} fontWeight="700" fill={T.luxuryBrown} style={NUM}
               >
                 {d.value}
               </text>
-              <text x={gx} y={H - (d.unit ? 13 : 5)} textAnchor="middle" fontFamily={F.ui} fontSize={9} fontWeight="500" fill={T.taupe} letterSpacing="0.6">
+              <text x={gx} y={H - (d.unit ? 15 : 6)} textAnchor="middle" fontFamily={F.ui} fontSize={12} fontWeight="600" fill={T.taupe} letterSpacing="0.6">
                 {d.label}
               </text>
               {d.unit && (
