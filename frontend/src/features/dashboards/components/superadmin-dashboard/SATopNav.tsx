@@ -158,9 +158,9 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
                         onClick={() => {
                           set(p.key);
                           setOpenGroup(null);
-                          try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { window.scrollTo(0, 0); }
-                          document.documentElement.scrollTop = 0;
-                          document.body.scrollTop = 0;
+                          if (active !== p.key) {
+                            try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { /* ignore */ }
+                          }
                         }}
                         className={`!h-auto !justify-between !py-[13px] !px-3.5 !mb-0.5 !rounded-[10px] !text-sm ${
                           pActive
@@ -289,9 +289,9 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
                     key={p.key}
                     onClick={() => {
                       set(p.key);
-                      try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { window.scrollTo(0, 0); }
-                      document.documentElement.scrollTop = 0;
-                      document.body.scrollTop = 0;
+                      if (active !== p.key) {
+                        try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { /* ignore */ }
+                      }
                     }}
                     variant="tertiary"
                     className={`!relative !gap-1.5 !rounded-[10px] !py-[9px] !px-[22px] !whitespace-nowrap !border-none !bg-transparent !text-[13px] ${

@@ -76,7 +76,56 @@ export function Modal({ open, onOpenChange, size = "md", children, onBeforeClose
   );
 }
 
-function Header({ title, subtitle, onClose }: { title: string; subtitle?: string; onClose?: () => void }) {
+function Header({
+  title,
+  subtitle,
+  onClose,
+  banner = false,
+  bannerGradient = "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
+  icon: Icon,
+}: {
+  title: string;
+  subtitle?: string;
+  onClose?: () => void;
+  banner?: boolean;
+  bannerGradient?: string;
+  icon?: React.ComponentType<{ size?: number | string; className?: string; color?: string }>;
+}) {
+  if (banner) {
+    return (
+      <div style={{ background: bannerGradient, padding: "24px 28px 22px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+          {Icon && (
+            <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(255,255,255,0.15)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid rgba(255,255,255,0.22)" }}>
+              <Icon size={20} color="#FFFDF9" />
+            </div>
+          )}
+          <div className="min-w-0">
+            <Dialog.Title style={{ fontFamily: "'Cinzel', serif", fontWeight: 700, fontSize: 19, color: "#FFFDF9", margin: 0, lineHeight: 1.2 }}>{title}</Dialog.Title>
+            {subtitle ? (
+              <Dialog.Description asChild>
+                <div style={{ fontFamily: "var(--font-sans)", fontSize: 13, color: "rgba(255,253,249,0.75)", marginTop: 3 }}>
+                  {subtitle}
+                </div>
+              </Dialog.Description>
+            ) : (
+              <Dialog.Description className="sr-only">{title}</Dialog.Description>
+            )}
+          </div>
+        </div>
+        <Dialog.Close asChild>
+          <IconButton
+            icon={X}
+            label="Close"
+            onClick={onClose}
+            shape="circle"
+            className="bg-white/14 text-white border border-white/25 hover:bg-white/22 transition-colors"
+          />
+        </Dialog.Close>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4 flex-shrink-0">
       <div className="min-w-0">
@@ -86,10 +135,6 @@ function Header({ title, subtitle, onClose }: { title: string; subtitle?: string
             {subtitle}
           </Dialog.Description>
         ) : (
-          // Radix requires a Dialog.Description to wire aria-describedby;
-          // without one it logs a console warning on every modal that has
-          // no subtitle. Falling back to the title itself (screen-reader-only,
-          // no visual change) satisfies that without inventing filler copy.
           <Dialog.Description className="sr-only">{title}</Dialog.Description>
         )}
       </div>

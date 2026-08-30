@@ -73,7 +73,6 @@ export function ActionModal({ open, onClose, title, desc, actionLabel, icon: Ico
         <>
           <div style={{
             background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`,
-            borderTop: `3px solid ${T.antiqueGold}`,
             padding: "20px 24px",
             display: "flex",
             alignItems: "center",

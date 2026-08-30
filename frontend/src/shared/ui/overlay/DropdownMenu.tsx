@@ -13,7 +13,9 @@ import * as RadixDropdown from "@radix-ui/react-dropdown-menu";
 import { ChevronRight, Check, Circle } from "lucide-react";
 import { cn } from "../utils";
 
-export const DropdownMenu = RadixDropdown.Root;
+export function DropdownMenu({ modal = false, ...props }: React.ComponentProps<typeof RadixDropdown.Root>) {
+  return <RadixDropdown.Root modal={modal} {...props} />;
+}
 export const DropdownMenuTrigger = RadixDropdown.Trigger;
 export const DropdownMenuGroup = RadixDropdown.Group;
 export const DropdownMenuRadioGroup = RadixDropdown.RadioGroup;
