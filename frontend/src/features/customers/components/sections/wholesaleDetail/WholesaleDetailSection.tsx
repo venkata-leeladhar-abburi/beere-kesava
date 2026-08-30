@@ -162,7 +162,7 @@ export function WholesaleDetailSection({
       </div>
 
       {/* Sub-tab strip */}
-      <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b border-[var(--border-default)]">
+      <div className="w-full overflow-x-auto section-nav-scroll pt-1.5 pb-2 mb-6 border-b border-[var(--border-default)]">
         <div className="flex items-center justify-between w-full min-w-max md:min-w-0 gap-1 sm:gap-2">
           {[
             { key: "Overview" as const, label: "Overview", icon: <Boxes size={18} /> },
