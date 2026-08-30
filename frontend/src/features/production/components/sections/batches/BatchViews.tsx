@@ -216,6 +216,12 @@ export function BatchCard({ b, onView }: { b: Batch; expandedId: string | null; 
                 )}
               </div>
             )}
+
+            {b.createdBy && (
+              <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 12 }}>
+                Created by {b.createdBy}
+              </div>
+            )}
           </div>
         </div>
 

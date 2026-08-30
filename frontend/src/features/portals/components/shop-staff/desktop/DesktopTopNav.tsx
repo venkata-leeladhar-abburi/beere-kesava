@@ -1,5 +1,6 @@
 import React from "react";
-import { Bell, ChevronLeft, ChevronRight, LogOut, RotateCcw, UserRound } from "lucide-react";
+import { motion } from "motion/react";
+import { Bell, ChevronLeft, ChevronRight, LogOut, RotateCcw, UserRound, ChevronDown } from "lucide-react";
 import { imgBKLogo } from "../../../../../shared/constants/weaverImages";
 import { C, F } from "../theme";
 import { staffIdentitySubtitle, useAdminStaffView } from "@/shared/ui/portal/AdminStaffView";

@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import type { BackendActorSummary } from "./batches";
 
 export type BackendBulkOrderStatus = "ON_TRACK" | "AT_RISK" | "OVERDUE";
 export type BackendDispatchStatus = "PENDING" | "DISPATCHED" | "INVOICED";
@@ -27,6 +28,8 @@ export interface BackendBulkOrder {
   tallied: boolean;
   talliedBy: string | null;
   talliedDate: string | null;
+  /** Who created this order — undefined on endpoints that don't select it. */
+  createdBy?: BackendActorSummary | null;
 }
 
 interface PaginatedResponse<T> {
@@ -48,6 +51,7 @@ export interface CreateBulkOrderPayload {
   phone?: string;
   visitingCardUrl?: string;
   photoUrls?: string[];
+  actorId?: string;
 }
 
 export interface UpdateBulkOrderPayload {

@@ -11,6 +11,11 @@ import { UpdateBulkOrderDto } from "./dto/update-bulk-order.dto";
 
 const ORDER_ID_PREFIX_BASE = "ORD";
 
+const bulkOrderInclude = {
+  customer: true,
+  createdBy: { select: { id: true, firstName: true, lastName: true } },
+} satisfies Prisma.BulkOrderInclude;
+
 @Injectable()
 export class BulkOrdersService {
   constructor(
@@ -44,7 +49,9 @@ export class BulkOrdersService {
         phone: dto.phone,
         visitingCardUrl: dto.visitingCardUrl,
         photoUrls: dto.photoUrls ?? [],
+        createdById: dto.actorId,
       },
+      include: bulkOrderInclude,
     });
 
     await this.auditLog.recordAction({
@@ -61,7 +68,9 @@ export class BulkOrdersService {
 
   async findAll(
     query: ListBulkOrdersQueryDto,
-  ): Promise<PaginatedResult<Prisma.BulkOrderGetPayload<{ include: { customer: true } }>>> {
+  ): Promise<
+    PaginatedResult<Prisma.BulkOrderGetPayload<{ include: typeof bulkOrderInclude }>>
+  > {
     const where: Prisma.BulkOrderWhereInput = {
       status: query.status,
       customerId: query.customerId,
@@ -73,7 +82,7 @@ export class BulkOrdersService {
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
         orderBy: { createdDate: "desc" },
-        include: { customer: true },
+        include: bulkOrderInclude,
       }),
       this.prisma.bulkOrder.count({ where }),
     ]);
@@ -84,7 +93,7 @@ export class BulkOrdersService {
   async findOne(ref: string) {
     const order = await this.prisma.bulkOrder.findUnique({
       where: { ref },
-      include: { customer: true },
+      include: bulkOrderInclude,
     });
     if (!order) {
       throw new NotFoundException(`Bulk order ${ref} not found`);
@@ -101,7 +110,7 @@ export class BulkOrdersService {
         ...rest,
         talliedDate: dto.tallied ? new Date() : undefined,
       },
-      include: { customer: true },
+      include: bulkOrderInclude,
     });
 
     await this.auditLog.recordAction({

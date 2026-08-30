@@ -83,6 +83,9 @@ export interface BatchRecord {
   status: "draft" | "active" | "completed";
   createdAt: string;
   updatedAt: string;
+  createdBy?: string | null;
+  /** Batch-level tally attribution — currently always null, no batch-level tally action exists yet (only per-row SareeRow.talliedBy is wired). */
+  talliedBy?: string | null;
 }
 
 // ─── Saree ID generation ──────────────────────────────────────────────────────
@@ -151,6 +154,8 @@ function backendBatchToRecord(
     status: b.status === "DRAFT" ? "draft" : b.status === "ACTIVE" ? "active" : "completed",
     createdAt: b.createdAt,
     updatedAt: b.updatedAt,
+    createdBy: b.createdBy ? formatRecordedBy(b.createdBy) : null,
+    talliedBy: b.talliedBy ? formatRecordedBy(b.talliedBy) : null,
     rows: b.rows.map((r): SareeRow => {
       const weaver = r.weaverId ? weaverLookup.get(r.weaverId) : undefined;
       const qcResult = r.qcRecords?.[0] ? QC_RESULT_FROM_BACKEND[r.qcRecords[0].result] : undefined;
@@ -206,7 +211,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   // (this provider is also mounted in WeaverLayout) would always 403 on
   // both, so skip each call for roles that can't read it rather than firing
   // a guaranteed-403 request just to fall back to an empty lookup.
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
   const canReadRates = role === "accountant" || role === "admin" || role === "superadmin";
   // GET /batches is WORKER/WEAVER-only on the backend (ADMIN/SUPERADMIN
@@ -266,7 +271,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
 
       const realBatchId = existing
         ? batch.batchId
-        : (await batchesApi.create({ totalCount: batch.totalCount, dueDate: batch.dueDate })).id;
+        : (await batchesApi.create({ totalCount: batch.totalCount, dueDate: batch.dueDate, actorId: user?.id })).id;
 
       // One bulk request for every assignable row, instead of one
       // PATCH-per-row round trip — a 50-row batch used to mean 50 sequential

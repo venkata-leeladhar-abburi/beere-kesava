@@ -9,7 +9,7 @@ import {
   bulkOrdersApi,
 } from "../../../shared/api/bulk-orders";
 import { customersApi } from "../../../shared/api/customers";
-import { useAuthGate } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 import { useRatesPricing } from "@/features/pricing";
 import { type SareeTypeRecord } from "@/features/pricing";
 import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
@@ -49,6 +49,7 @@ export interface BulkOrder {
   tallied?: boolean;
   talliedBy?: string;
   talliedDate?: string;
+  createdBy?: { id: string; name: string } | null;
 }
 
 // ─── Backend <-> frontend enum mapping ─────────────────────────────────────────
@@ -110,6 +111,7 @@ function backendOrderToFrontend(
     tallied: o.tallied,
     talliedBy: o.talliedBy ?? undefined,
     talliedDate: o.talliedDate ?? undefined,
+    createdBy: o.createdBy ? { id: o.createdBy.id, name: `${o.createdBy.firstName} ${o.createdBy.lastName}`.trim() } : null,
   };
 }
 
@@ -135,6 +137,7 @@ const QUERY_KEY = ["bulkOrders"] as const;
 
 export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const { getSareeTypeByCode } = useRatesPricing();
   // /bulk-orders itself is open to WORKER too, but this query also fetches
   // GET /customers in the same Promise.all, which is SHOP/ACCOUNTANT-only
@@ -175,6 +178,7 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
         phone: order.phone,
         visitingCardUrl: toStoredAssetPath(order.visitingCardUrl) ?? undefined,
         photoUrls: order.photoUrls?.map(u => toStoredAssetPath(u) ?? u),
+        actorId: user?.id,
       });
     },
     onSuccess: () => {

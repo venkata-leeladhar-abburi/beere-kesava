@@ -99,6 +99,7 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
       // Not editable once every assigned saree has been produced (finished) —
       // the batch is locked at that point.
       isLive: producedCount < br.totalCount,
+      createdBy: br.createdBy,
     };
   });
 
@@ -126,7 +127,7 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
     return a.id.localeCompare(b.id);
   });
 
-  const pag = usePagination(visible, 8);
+  const pag = usePagination(visible, 10);
 
   const handleEditBatch = (b: Batch) => {
     setPendingOpenBatchId(b.id);

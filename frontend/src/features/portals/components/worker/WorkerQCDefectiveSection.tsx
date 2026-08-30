@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Eye, ShieldAlert, AlertTriangle, ImageOff, Calendar, Tag, Package, LayoutGrid, LayoutList } from "lucide-react";
 import { T, F, DefectiveLogItem } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";
@@ -9,6 +9,8 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { EntityCode } from "../../../../shared/ui/domain";
 import { Button } from "../../../../shared/ui/primitives";
+import { StaffFilterSelect } from "../../../../shared/ui/StaffFilterSelect";
+import { useAuth } from "../../../../contexts/AuthContext";
 
 interface WorkerQCDefectiveSectionProps {
   defLog: DefectiveLogItem[];
@@ -93,7 +95,7 @@ function DefectiveCard({ d, onView, onViewPhoto }: { d: DefectiveLogItem; onView
               <span style={{ fontFamily: F.u }}>{d.date}</span>
             </div>
             <div style={{ fontFamily: F.u }} className="mt-0.5 truncate text-[11.5px] font-medium text-[#89837E]">
-              by {d.inspectedBy || "Worker Staff"}
+              Defected by {d.inspectedBy || "Worker Staff"}
             </div>
           </div>
 
@@ -153,9 +155,19 @@ export function WorkerQCDefectiveSection({
   isDesktop,
   isTablet,
 }: WorkerQCDefectiveSectionProps) {
+  const { role } = useAuth();
+  const canFilterByStaff = role === "admin" || role === "superadmin";
+  const [staffFilter, setStaffFilter] = useState("");
+  const staffNames = useMemo(
+    () => Array.from(new Set(defLog.map(d => d.inspectedBy).filter((n): n is string => !!n))).sort(),
+    [defLog],
+  );
+
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const cols = isDesktop ? "repeat(4, 1fr)" : isTablet ? "repeat(2, 1fr)" : "1fr";
-  const filteredDefLog = defLog.filter(d => matchesDateFilter(d.isoDate || d.date, defFilter));
+  const filteredDefLog = defLog.filter(d =>
+    matchesDateFilter(d.isoDate || d.date, defFilter) && (!canFilterByStaff || !staffFilter || d.inspectedBy === staffFilter),
+  );
   const [viewing, setViewing] = useState<DefectiveLogItem | null>(null);
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
   const ITEMS_PER_PAGE = isDesktop ? 20 : isTablet ? 10 : 5;
@@ -210,7 +222,7 @@ export function WorkerQCDefectiveSection({
     },
     {
       id: "inspectedBy",
-      header: "Inspected By",
+      header: "Defected By",
       accessor: d => d.inspectedBy ?? "—",
       priority: 3,
       cell: (_v, d) => <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted }}>{d.inspectedBy ?? "—"}</span>,
@@ -284,7 +296,12 @@ export function WorkerQCDefectiveSection({
             </Button>
           </div>
 
-          <DateFilterBar filter={defFilter} onChange={(f) => { setDefFilter(f); pag.setPage(1); }} />
+          <div className="flex items-center gap-2 flex-wrap">
+            <DateFilterBar filter={defFilter} onChange={(f) => { setDefFilter(f); pag.setPage(1); }} />
+            {canFilterByStaff && (
+              <StaffFilterSelect names={staffNames} value={staffFilter} onChange={(v) => { setStaffFilter(v); pag.setPage(1); }} />
+            )}
+          </div>
         </div>
 
         {filteredDefLog.length === 0 ? (
