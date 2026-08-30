@@ -121,11 +121,18 @@ export function BulkOrderSareesTab({
       id: "dispatch", header: "Dispatch", accessor: s => s.dispatch,
       cell: (_v, s) => (
         s.dispatch ? (
-          <span style={{ display: "inline-block", background: T.greenBg, color: T.greenMid, borderRadius: 8 }}>
-            <Button onClick={() => setDispatchPanel(s.dispatch!)} variant="tertiary" size="sm" iconLeft={Truck}>
-              {s.dispatch.lrNumber || "View"}
-            </Button>
-          </span>
+          <div className="flex flex-col gap-1.5">
+            <span style={{ display: "inline-block", background: T.greenBg, color: T.greenMid, borderRadius: 8, width: "max-content" }}>
+              <Button onClick={() => setDispatchPanel(s.dispatch!)} variant="tertiary" size="sm" iconLeft={Truck}>
+                {s.dispatch.lrNumber || "View"}
+              </Button>
+            </span>
+            {s.dispatch.dispatchedByName && (
+              <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
+                by {s.dispatch.dispatchedByName}
+              </span>
+            )}
+          </div>
         ) : (
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Not dispatched</span>
         )
