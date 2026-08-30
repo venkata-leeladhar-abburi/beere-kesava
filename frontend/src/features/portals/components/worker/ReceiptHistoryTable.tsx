@@ -7,6 +7,7 @@ import { Button, Input } from "../../../../shared/ui/primitives";
 import { rawMaterialsApi, GrnReceiptItem } from "../../../../shared/api/rawMaterials";
 import { jariToReels } from "../../../../shared/lib/weightUnits";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { Modal } from "../../../../shared/ui/overlay";
 import { GRNPrintView } from "./GRNSuccessPrint";
 import type { ReconResult } from "@/lib/domain/status";
@@ -83,7 +84,6 @@ interface ReceiptHistoryTableProps {
 export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compact = false }: ReceiptHistoryTableProps) {
   const [historySearch, setHistorySearch] = useState("");
   const [historyDateFilter, setHistoryDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
-  const [historyPage, setHistoryPage] = useState(1);
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const [tagsRecord, setTagsRecord] = useState<ReceiptRecord | null>(null);
 
@@ -149,8 +149,7 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
         || m.description.toLowerCase().includes(q));
   });
 
-  const totalPages = Math.max(1, Math.ceil(filteredHistory.length / PAGE_SIZE));
-  const pagedHistory = filteredHistory.slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE);
+  const pag = usePagination(filteredHistory, 10);
 
   const columns: ColumnDef<ReceiptRecord>[] = [
     { id: "grnId", header: "GRN Batch ID", accessor: r => r.grnId, priority: 1, cell: (_v, r) => <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.burg, whiteSpace: "nowrap" }}>{r.grnId}</span> },
@@ -193,7 +192,7 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
       <div>
         <Input
           value={historySearch}
-          onChange={e => { setHistorySearch(e.target.value); setHistoryPage(1); }}
+          onChange={e => { setHistorySearch(e.target.value); pag.setPage(1); }}
           placeholder="Search by GRN ID, PO number, or vendor..."
           iconLeft={Search}
           containerClassName={compact ? "h-10" : "h-[42px]"}
@@ -201,7 +200,7 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
       </div>
 
       <div>
-        <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); setHistoryPage(1); }} />
+        <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); pag.setPage(1); }} />
       </div>
 
       <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 w-fit">
@@ -229,35 +228,27 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
         </Button>
       </div>
 
-      <div style={{ ...card, overflow: "hidden", border: `1.5px solid ${C.bdr}` }}>
+      <div id="goods-receipt-history-table" style={{ ...card, overflow: "hidden", border: `1.5px solid ${C.bdr}` }}>
         <div className={viewMode === "table" ? "w-full overflow-x-auto" : ""}>
           <DataTable
             responsive={viewMode === "card"}
             columns={columns}
-            data={pagedHistory}
+            data={pag.pageItems}
             getRowId={r => r.grnId}
             emptyTitle="No receipts found."
           />
         </div>
-        {totalPages > 0 && (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: compact ? "10px 14px" : "12px 16px", borderTop: `1px solid ${C.bdr}` }}>
-            <span style={{ fontFamily: F.u, fontSize: compact ? 11.5 : 12.5, color: C.muted }}>Page {historyPage} of {totalPages}</span>
-            <div style={{ display: "flex", gap: compact ? 6 : 8 }}>
-              <Button
-                onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
-                disabled={historyPage === 1}
-                size="sm"
-                className={"h-auto rounded-md border border-[rgba(110,15,45,0.12)] bg-white text-[#1A0A0F] " + (compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs")}
-              >Prev</Button>
-              <Button
-                onClick={() => setHistoryPage(p => Math.min(totalPages, p + 1))}
-                disabled={historyPage === totalPages}
-                size="sm"
-                className={"h-auto rounded-md border border-[rgba(110,15,45,0.12)] bg-white text-[#1A0A0F] " + (compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs")}
-              >Next</Button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          targetId="goods-receipt-history-table"
+          page={pag.page}
+          pageCount={pag.pageCount}
+          total={pag.total}
+          pageSize={pag.pageSize}
+          start={pag.start}
+          onPageChange={pag.setPage}
+          onPageSizeChange={pag.setPageSize}
+          itemLabel="receipts"
+        />
       </div>
 
       <Modal open={!!tagsRecord} onOpenChange={open => { if (!open) setTagsRecord(null); }} size="md">

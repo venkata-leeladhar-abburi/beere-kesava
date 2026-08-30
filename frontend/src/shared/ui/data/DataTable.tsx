@@ -356,7 +356,7 @@ export function DataTable<T>({
   );
 
   return (
-    <>
+    <div data-pagination-target className="bk-data-table-container">
       {table}
       {responsive && (
         <CardList
@@ -389,7 +389,7 @@ export function DataTable<T>({
           itemLabel={itemLabel}
         />
       )}
-    </>
+    </div>
   );
 }
 

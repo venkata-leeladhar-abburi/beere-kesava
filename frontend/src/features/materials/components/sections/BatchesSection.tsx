@@ -104,10 +104,10 @@ export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: 
   ];
 
   return (
-    <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.05)", overflowX: "auto" }}>
+    <div id="all-material-batches-table" style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.05)", overflowX: "auto" }}>
       <DataTable columns={columns} data={pag.pageItems} getRowId={r => r.rowKey} />
       <div className="p-3 border-t border-[rgba(110,15,45,0.10)]">
-        <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="batches" />
+        <Pagination targetId="all-material-batches-table" page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="batches" />
       </div>
     </div>
   );
@@ -117,7 +117,7 @@ export function BatchCardView({ rows, onViewDetails, onPrintBarcode }: { rows: B
   const { isMobile } = useContext(MobileCtx);
   const pag = usePagination(rows, 8);
   return (
-    <div>
+    <div id="all-material-batches-cards">
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: isMobile ? 14 : 20, alignItems: "stretch", marginBottom: 20 }}>
         {pag.pageItems.map((r, i) => {
           const sc = STATUS_CFG[r.statusType];
@@ -197,7 +197,7 @@ export function BatchCardView({ rows, onViewDetails, onPrintBarcode }: { rows: B
           );
         })}
       </div>
-      <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="batches" />
+      <Pagination targetId="all-material-batches-cards" page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="batches" />
     </div>
   );
 }

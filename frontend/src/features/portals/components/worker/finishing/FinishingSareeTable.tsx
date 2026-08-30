@@ -2,6 +2,7 @@ import React from "react";
 import { CheckSquare, Square } from "lucide-react";
 import { C, F } from "../tokens";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { Pagination, usePagination } from "../../../../../shared/ui/DataPagination";
 import { EntityCode } from "@/shared/ui/domain";
 import { formatWeight, type SareeDetail } from "./sareeDetails";
 
@@ -250,6 +251,8 @@ export function FinishingSareeTable({
   error?: boolean;
   onRetry?: () => void;
 }) {
+  const pag = usePagination(rows, 10);
+
   const columns = React.useMemo(
     () => buildColumns(showStaff, dateHeader, fmtDate),
     [showStaff, dateHeader, fmtDate],
@@ -268,10 +271,20 @@ export function FinishingSareeTable({
     }
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {rows.map(r => (
+        {pag.pageItems.map(r => (
           <SareeCard key={r.key} r={r} selected={selected.has(r.key)} onToggle={() => onToggle(r.key)}
             accent={accent} fmtDate={fmtDate} dateHeader={dateHeader} />
         ))}
+        <Pagination
+          page={pag.page}
+          pageCount={pag.pageCount}
+          total={pag.total}
+          pageSize={pag.pageSize}
+          start={pag.start}
+          onPageChange={pag.setPage}
+          onPageSizeChange={pag.setPageSize}
+          itemLabel="sarees"
+        />
       </div>
     );
   }
@@ -282,7 +295,7 @@ export function FinishingSareeTable({
         <div className="min-w-[980px]">
           <DataTable
             columns={columns}
-            data={rows}
+            data={pag.pageItems}
             getRowId={r => r.key}
             selectedIds={selected}
             onSelectionChange={onSelectionChange}
@@ -298,6 +311,16 @@ export function FinishingSareeTable({
           />
         </div>
       </div>
+      <Pagination
+        page={pag.page}
+        pageCount={pag.pageCount}
+        total={pag.total}
+        pageSize={pag.pageSize}
+        start={pag.start}
+        onPageChange={pag.setPage}
+        onPageSizeChange={pag.setPageSize}
+        itemLabel="sarees"
+      />
       <style>{`.bk-finishing-row-selected { background: ${accent}0D !important; }`}</style>
     </div>
   );

@@ -9,6 +9,7 @@ import { StaffPickerModal } from "./StaffPickerModal";
 import { useSareeDetails, formatDate, formatWeight, type SareeDetail } from "./sareeDetails";
 import { Button } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { Pagination, usePagination } from "../../../../../shared/ui/DataPagination";
 import { EntityCode, Money } from "@/shared/ui/domain";
 import { rupees } from "@/lib/domain/money";
 import { useAuth } from "../../../../../contexts/AuthContext";
@@ -169,10 +170,8 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
     });
   };
 
-  const active = useMemo(
-    () => quotations.filter(q => q.status !== "dispatched").sort((a, b) => b.createdAt - a.createdAt),
-    [quotations]
-  );
+  const active = useMemo(() => quotations.filter(q => q.status !== "dispatched").sort((a, b) => b.createdAt - a.createdAt), [quotations]);
+  const pag = usePagination(active, 5);
 
   const handleAssign = (staff: { id: string; name: string }) => {
     if (pickerFor) {
@@ -334,6 +333,16 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
               </div>
             );
           })}
+          <Pagination
+            page={pag.page}
+            pageCount={pag.pageCount}
+            total={pag.total}
+            pageSize={pag.pageSize}
+            start={pag.start}
+            onPageChange={pag.setPage}
+            onPageSizeChange={pag.setPageSize}
+            itemLabel="quotations"
+          />
         </div>
       )}
 

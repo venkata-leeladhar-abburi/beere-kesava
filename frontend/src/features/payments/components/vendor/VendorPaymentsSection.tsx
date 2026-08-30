@@ -518,7 +518,7 @@ export function VendorPaymentsSection() {
 
 
         {view === "card" && (
-          <div>
+          <div data-pagination-target>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6 items-stretch">
               {pag.pageItems.map((vp, i) => (
                 <motion.div key={vp.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.07, ease: EASE }} style={{ display: "flex", flexDirection: "column" }}>
@@ -533,7 +533,7 @@ export function VendorPaymentsSection() {
         )}
 
         {view === "list" && (
-          <div className="overflow-x-auto w-full mb-8">
+          <div data-pagination-target className="overflow-x-auto w-full mb-8">
             <div className="min-w-[600px]" style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
               {pag.pageItems.map((vp, i) => {
                 const balance = vp.invoiceAmt - vp.paidAmt;
@@ -568,7 +568,7 @@ export function VendorPaymentsSection() {
         )}
 
         {view === "table" && (
-          <div className="flex flex-col lg:flex-row gap-5 items-start w-full">
+          <div data-pagination-target className="flex flex-col lg:flex-row gap-5 items-start w-full">
             <div className="w-full lg:flex-1 min-w-0">
               <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
                 <div style={{ overflowX: "auto" }} className="w-full">

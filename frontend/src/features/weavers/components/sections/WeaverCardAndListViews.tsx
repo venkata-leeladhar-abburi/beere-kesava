@@ -87,7 +87,7 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches }: { onSelect: (w: 
   }
 
   return (
-    <div>
+    <div data-pagination-target>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-stretch mb-6">
         {pag.pageItems.map((w, i) => {
           return (

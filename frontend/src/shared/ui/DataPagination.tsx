@@ -62,7 +62,7 @@ export function Pagination({ page, pageCount, total, pageSize, start, onPageChan
         targetEl = document.getElementById(targetId);
       }
       if (!targetEl && containerRef.current) {
-        targetEl = (containerRef.current.closest(".overflow-x-auto, section, [id^='prod-'], [id^='section-'], .grid, table") as HTMLElement) || containerRef.current.parentElement;
+        targetEl = (containerRef.current.closest("[data-pagination-target], [id$='-table'], [id^='every-'], .overflow-x-auto, table, .bk-table-card") as HTMLElement) || containerRef.current.parentElement;
       }
       if (targetEl) {
         const topNavOffset = 130;

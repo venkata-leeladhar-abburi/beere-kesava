@@ -407,7 +407,7 @@ export function SupplierPaymentsSection() {
         </div>
 
         {view === "card" && (
-          <div>
+          <div data-pagination-target>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6 items-stretch">
               {pag.pageItems.map((r, i) => {
                 const isPaid = r.status === "Paid";
@@ -609,7 +609,7 @@ export function SupplierPaymentsSection() {
         )}
 
         {view === "table" && (
-          <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
+          <div data-pagination-target style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
             <div style={{ overflowX: "auto" }} className="w-full">
               <div className="min-w-[1100px]">
                 <DataTable
