@@ -275,16 +275,33 @@ export function PaymentsTab({ weaver, weaverPayments, filteredWeaverPayments, pa
   );
 }
 
-export function MaterialsTab({ materialRecords, materialByBatch }: {
+export function MaterialsTab({ materialRecords, materialByBatch, totalRecordCount, materialDateFilter, setMaterialDateFilter }: {
+  /** Handover records already narrowed to the active date window. */
   materialRecords: MaterialIssueRecord[];
+  /** Batch summaries for the batches represented in {@link materialRecords}. */
   materialByBatch: BatchMaterialSummary[];
+  /** Unfiltered handover count, so the results line can read "N of M". */
+  totalRecordCount: number;
+  materialDateFilter: DateFilterState;
+  setMaterialDateFilter: (f: DateFilterState) => void;
 }) {
+  const filterActive = materialDateFilter.mode !== "all";
   return (
-            <div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               <SectionPill label="Materials Issued — Batch Wise" />
+              <DateFilterBar filter={materialDateFilter} onChange={setMaterialDateFilter} />
+              {totalRecordCount > 0 && (
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                  Showing <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.luxuryBrown }}>{materialRecords.length}</span> of{" "}
+                  <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.luxuryBrown }}>{totalRecordCount}</span> handover{totalRecordCount !== 1 ? "s" : ""}
+                  {filterActive ? " in the selected period" : ""} · issued/returned/outstanding figures below are batch lifetime totals.
+                </div>
+              )}
               {materialRecords.length === 0 ? (
                 <div style={{ background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic" }}>
-                  No materials issued to this weaver yet. Use the Issue Material page to record material handovers.
+                  {filterActive
+                    ? "No material handovers to this weaver in the selected period. Widen the date filter to see more."
+                    : "No materials issued to this weaver yet. Use the Issue Material page to record material handovers."}
                 </div>
               ) : (() => {
                 const fmtKg = (g: number) => `${(g / 1000).toFixed(2)} kg`;

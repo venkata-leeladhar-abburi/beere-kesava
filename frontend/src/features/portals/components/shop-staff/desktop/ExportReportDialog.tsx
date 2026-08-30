@@ -5,13 +5,51 @@ import { C, F } from "../theme";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
 import { Modal } from "../../../../../shared/ui/overlay";
 
+export type ExportFormat = "pdf" | "csv" | "excel";
+
+const ALL_FORMATS: { key: ExportFormat; label: string; icon: string; desc: string }[] = [
+  { key: "pdf", label: "PDF", icon: "📄", desc: "Print-ready" },
+  { key: "csv", label: "CSV", icon: "📊", desc: "Spreadsheet" },
+  { key: "excel", label: "Excel", icon: "📗", desc: "Advanced" },
+];
+
+const DEFAULT_INCLUDES = [
+  "Sale ID, customer name, design code",
+  "Payment method and amount",
+  "Timestamp and date",
+  "Running totals and subtotals",
+];
+
 export function ExportReportDialog({
   dialog, onClose, format, setFormat, done, setDone,
+  formats, includes = DEFAULT_INCLUDES, onExport,
 }: {
   dialog: { label: string } | null; onClose: () => void;
-  format: "pdf" | "csv" | "excel"; setFormat: (f: "pdf" | "csv" | "excel") => void;
+  format: ExportFormat; setFormat: (f: ExportFormat) => void;
   done: boolean; setDone: (v: boolean) => void;
+  /** Offered formats — defaults to all three. Pass a subset where only some
+   *  are genuinely produced (the reports export writes CSV/XLSX, not PDF). */
+  formats?: ExportFormat[];
+  /** Bullet list under "Includes" — describe the columns actually written. */
+  includes?: string[];
+  /** Performs the real export. Without it the dialog only reports success,
+   *  which is the pre-existing placeholder behaviour of the other sections. */
+  onExport?: (format: ExportFormat) => void | Promise<void>;
 }) {
+  const [busy, setBusy] = React.useState(false);
+  const shownFormats = ALL_FORMATS.filter(f => !formats || formats.includes(f.key));
+
+  async function handleExport() {
+    if (!onExport) { setDone(true); return; }
+    setBusy(true);
+    try {
+      await onExport(format);
+      setDone(true);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <Modal open={!!dialog} onOpenChange={o => { if (!o) onClose(); }} size="sm">
       {dialog && (
@@ -56,11 +94,7 @@ export function ExportReportDialog({
                   <div style={{ marginBottom: 24 }}>
                     <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 14 }}>Export format</div>
                     <div style={{ display: "flex", gap: 12 }}>
-                      {([
-                        { key: "pdf" as const, label: "PDF", icon: "📄", desc: "Print-ready" },
-                        { key: "csv" as const, label: "CSV", icon: "📊", desc: "Spreadsheet" },
-                        { key: "excel" as const, label: "Excel", icon: "📗", desc: "Advanced" },
-                      ]).map(f => (
+                      {shownFormats.map(f => (
                         <Button
                           key={f.key}
                           onClick={() => setFormat(f.key)}
@@ -80,8 +114,8 @@ export function ExportReportDialog({
                   {/* What's included */}
                   <div style={{ background: "#F8F4F0", borderRadius: 14, padding: "16px 18px", marginBottom: 24 }}>
                     <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 10 }}>Includes</div>
-                    {["Sale ID, customer name, design code", "Payment method and amount", "Timestamp and date", "Running totals and subtotals"].map((item, i) => (
-                      <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: i < 3 ? 8 : 0 }}>
+                    {includes.map((item, i) => (
+                      <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: i < includes.length - 1 ? 8 : 0 }}>
                         <Check size={14} color={C.green} />
                         <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{item}</span>
                       </div>
@@ -90,8 +124,8 @@ export function ExportReportDialog({
                   {/* Actions */}
                   <div style={{ display: "flex", gap: 12 }}>
                     <Button onClick={onClose} variant="ghost" className="flex-1 h-[52px] rounded-[14px] border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.06)] font-semibold text-sm text-[#69635E] hover:text-[#1A0A0F]">Cancel</Button>
-                    <Button variant="primary" onClick={() => setDone(true)} className="flex-[2] h-[52px] rounded-[14px] border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
-                      <FileText size={17} /> Export as {format.toUpperCase()}
+                    <Button variant="primary" onClick={() => void handleExport()} disabled={busy} className="flex-[2] h-[52px] rounded-[14px] border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
+                      <FileText size={17} /> {busy ? "Exporting…" : `Export as ${format.toUpperCase()}`}
                     </Button>
                   </div>
                 </>

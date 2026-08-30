@@ -9,8 +9,10 @@ import { Button } from "../../../../shared/ui/primitives";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { useBatches } from "@/features/production";
 import { useQc } from "@/features/qc";
+import { buildWorkerActivity, formatActivityTime } from "./activityFeed";
+import { Skeleton, StatusPill } from "../../../../shared/ui/primitives";
 
-type Tab = "home" | "qc" | "weavers";
+type Tab = "home" | "qc" | "weavers" | "activity";
 type WeaversSubPage = "menu" | "design" | "issue" | "receive-sarees";
 
 interface WorkerHomeDesktopProps {
@@ -55,21 +57,24 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
 
   const totalTasks = (pendingReceiptCount > 0 ? 1 : 0) + (pendingQcCount > 0 ? 1 : 0);
 
-  const activities = qcRecords.slice(0, 5).map(r => ({
-    // Gold never encodes state (design-system/01-FOUNDATIONS.md) — pass/fail
-    // reads as the semantic success/danger pair, same as admin.
-    dot: r.result === "passed" ? C.green : C.crim,
-    desc: `Saree ${r.sareeId} ${r.result === "passed" ? "passed" : "failed"} quality check`,
-    time: new Date(r.qcDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
-    // r.id (the QC record's own id) is the React key — batchId repeats
-    // across every saree in the same batch and isn't unique per row.
-    key: r.id,
-    id: r.batchId || "QC",
-  }));
+  // Sorted, de-duplicated and labelled by the shared builder — the old inline
+  // map took the API's own order (so "recent" wasn't), called a `semi` result
+  // "failed", and repeated a saree re-inspected within the same minute.
+  const activities = React.useMemo(
+    () => buildWorkerActivity(qcRecords, batches).slice(0, 6),
+    [qcRecords, batches],
+  );
 
   const today = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  const activityLoading = qcLoading || batchesLoading;
+  const activityError = !activityLoading && (qcError || batchesError);
+  const retryActivity = () => {
+    if (qcError) refetchQc();
+    if (batchesError) refetchBatches();
+  };
 
   const batchesUnavailable = batchesLoading || batchesError;
   const qcUnavailable = qcLoading || qcError;
@@ -149,20 +154,55 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
           <FadeUp delay={0.2}>
             <SectionHeading
               title="Recent Activity"
-              right={<span style={{ fontFamily: F.u, fontSize: 13, color: C.gold, fontWeight: 600 }}>View All →</span>}
+              right={
+                <Button
+                  variant="link"
+                  onClick={() => onNavigate("activity")}
+                  className="p-0 h-auto"
+                >
+                  <span style={{ fontFamily: F.u, fontSize: 13, color: C.gold, fontWeight: 600 }}>View All →</span>
+                </Button>
+              }
             />
             <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: "hidden", boxShadow: "0 6px 32px rgba(74,6,27,0.08)" }}>
-              {activities.map((a, i) => (
+              {activityLoading && (
+                <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
+                  {[0, 1, 2, 3].map(i => <Skeleton key={i} className="h-10 w-full" />)}
+                </div>
+              )}
+
+              {!activityLoading && activityError && (
+                <div style={{ padding: "28px 20px", textAlign: "center" }}>
+                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.dark, marginBottom: 10 }}>
+                    Couldn't load recent activity.
+                  </div>
+                  <Button variant="secondary" onClick={retryActivity}>Try again</Button>
+                </div>
+              )}
+
+              {!activityLoading && !activityError && activities.length === 0 && (
+                <div style={{ padding: "28px 20px", textAlign: "center" }}>
+                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.dark, marginBottom: 4 }}>No activity yet</div>
+                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
+                    Quality checks and saree receipts will show up here as you record them.
+                  </div>
+                </div>
+              )}
+
+              {!activityLoading && !activityError && activities.map((a, i) => (
                 <div
-                  key={a.key}
+                  key={a.id}
                   style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 20px", borderBottom: i < activities.length - 1 ? `1px solid rgba(110,15,45,0.07)` : "none" }}
                 >
-                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: a.dot, marginTop: 5, flexShrink: 0, boxShadow: `0 0 8px ${a.dot}60` }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: F.u, fontSize: 14, color: C.dark, lineHeight: 1.5, marginBottom: 3 }}>{a.desc}</div>
-                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{a.time}</div>
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: dotColor(a.tone), marginTop: 5, flexShrink: 0, boxShadow: `0 0 8px ${dotColor(a.tone)}60` }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: F.u, fontSize: 14, color: C.dark, lineHeight: 1.5, marginBottom: 3 }}>{a.description}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{formatActivityTime(a.isoDate)}</span>
+                      <StatusPill tone={a.tone} label={a.label} size="sm" />
+                    </div>
                   </div>
-                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 8px", borderRadius: 6 }}>{a.id}</div>
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 8px", borderRadius: 6 }}>{a.batchId || "—"}</div>
                 </div>
               ))}
             </div>
@@ -172,4 +212,14 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
 
     </div>
   );
+}
+
+/** Feed dot colour. Gold never encodes state, so `warning` uses the amber the
+ *  StatusPill uses rather than the brand gold (design-system/01-FOUNDATIONS.md). */
+function dotColor(tone: "success" | "warning" | "danger" | "brand" | "neutral"): string {
+  if (tone === "success") return C.green;
+  if (tone === "danger") return C.crim;
+  if (tone === "warning") return "#B45309";
+  if (tone === "brand") return C.burg;
+  return C.muted;
 }

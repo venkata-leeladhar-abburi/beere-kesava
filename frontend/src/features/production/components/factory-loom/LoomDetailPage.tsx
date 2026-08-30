@@ -4,6 +4,7 @@ import {
   Edit2, FileText, Factory, Package, Layers, Sparkles,
   CheckCircle2, ChevronLeft, UserRound } from "lucide-react";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { useScrollTopOnView } from "@/shared/ui/ScrollToTop";
 import { SectionCard } from "@/shared/ui/SectionCard";
 import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 import { useBatches } from "../../contexts/BatchContext";
@@ -64,6 +65,8 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
   useEffect(() => {
     recordView({ key: `loom:${loom.id}`, label: loomLabel(loom), path: "/admin/production", kind: "Loom" });
   }, [loom]);
+
+  useScrollTopOnView(loom.id);
 
   const { batches } = useBatches();
   const { dispatches } = useDesignLibrary();

@@ -1,7 +1,7 @@
 import React from "react";
 import { WorkerHomeDesktop } from "./WorkerHomeDesktop";
 
-type Tab = "home" | "qc" | "weavers" | "finishing";
+type Tab = "home" | "qc" | "weavers" | "finishing" | "activity";
 
 interface WorkerHomeProps {
   onNavigate: (tab: Tab) => void;

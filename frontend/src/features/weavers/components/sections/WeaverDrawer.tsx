@@ -15,6 +15,7 @@ import { useWeaverPayments } from "../../contexts/WeaverPaymentsContext";
 import { useMaterialIssue } from "@/features/materials";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { useScrollTopOnView } from "@/shared/ui/ScrollToTop";
 import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 import { useBatches } from "@/features/production";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
@@ -22,6 +23,8 @@ import { useDesignLibrary, DispatchRecord } from "@/features/design-library";
 import { DispatchDetailsModal } from "@/features/production";
 import { BatchesTab, DispatchesTab, PaymentsTab, MaterialsTab } from "./weaverDrawer/WeaverDrawerTabs";
 import { EntityCode } from "../../../../shared/ui/domain";
+import { SUB_NAV_H, MOBILE_NAV_H } from "@/shared/ui/section-navigator-data";
+import { useResponsive } from "@/hooks/useResponsive";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { weaversApi, type UpdateWeaverPayload } from "../../../../shared/api/weavers";
@@ -105,9 +108,11 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
       ifsc: editForm.ifsc,
     });
   };
+  const { isMobile } = useResponsive();
   const [batchDateFilter, setBatchDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [paymentDateFilter, setPaymentDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [dispatchDateFilter, setDispatchDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [materialDateFilter, setMaterialDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [zoomImage, setZoomImage] = useState<{ url: string; label: string } | null>(null);
 
   // Escape closes the image zoom overlay — Part C.3's focus contract applies
@@ -134,6 +139,8 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
     recordView({ key: `weaver:${weaver.id}`, label: weaver.name, path: "/admin/weavers", kind: "Weaver" });
   }, [weaver]);
 
+  useScrollTopOnView(weaver?.id);
+
   if (!weaver) return null;
   const weaverPayments = getPaymentsForWeaver(weaver.id);
   const materialRecords = getRecordsForWeaver(weaver.id);
@@ -156,6 +163,16 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
   }).filter(b => matchesDateFilter(b.createdAt, batchDateFilter));
   const filteredWeaverPayments = weaverPayments.filter(p => matchesDateFilter(p.paymentDate, paymentDateFilter));
 
+  // Materials Received — the date filter scopes the individual handover
+  // records (issuedAt). A batch card is shown only when at least one of its
+  // handovers falls inside the window; the card's issued/returned/outstanding
+  // figures stay batch-lifetime totals, which is what the weaver actually owes.
+  const filteredMaterialRecords = materialRecords.filter(r => matchesDateFilter(r.issuedAt, materialDateFilter));
+  const materialBatchIdsInWindow = new Set(filteredMaterialRecords.map(r => r.batchId || "Unassigned"));
+  const filteredMaterialByBatch = materialDateFilter.mode === "all"
+    ? materialByBatch
+    : materialByBatch.filter(b => materialBatchIdsInWindow.has(b.batchId));
+
   // Design dispatches sent to this weaver, grouped by batch
   const weaverDispatches = dispatches.filter(d => d.recipientType === "weaver" && d.recipientId === weaver.id && matchesDateFilter(d.sentAt, dispatchDateFilter));
   const dispatchGroups: { batchId: string; records: DispatchRecord[] }[] = [];
@@ -174,7 +191,15 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
         style={{ width: "100%", background: T.silkCream, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
 
         {/* Sticky Header Navigation Bar */}
-        <div className="px-3 sm:px-7 xl:px-12 py-3 sm:py-4 flex items-center justify-between border-b border-[var(--border-default)] bg-white sticky top-0 z-10 gap-2 flex-wrap">
+        <div
+          className="px-3 sm:px-7 xl:px-12 py-3 sm:py-4 flex items-center justify-between border-b border-[var(--border-default)] bg-white sticky z-10 gap-2 flex-wrap"
+          // When a sub-nav is present the desktop TopNav/SATopNav switches
+          // itself from sticky to relative and scrolls away, leaving only the
+          // sub-nav bar (SUB_NAV_H) pinned at top:0 — this bar must match
+          // that, not the full topbar+subnav stack, or it floats mid-page
+          // with a gap where the scrolled-away topbar used to be.
+          style={{ top: isMobile ? MOBILE_NAV_H : SUB_NAV_H }}
+        >
           <Button
             onClick={onClose}
             variant="secondary"
@@ -504,7 +529,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
 
           {tab === "materials" && (
             <SectionCard icon={PackageCheck} title="Raw Materials Received" subtitle={`Yarn issue records and GRN allocations for ${weaver.name}`}>
-              <MaterialsTab materialRecords={materialRecords} materialByBatch={materialByBatch} />
+              <MaterialsTab materialRecords={filteredMaterialRecords} materialByBatch={filteredMaterialByBatch} totalRecordCount={materialRecords.length} materialDateFilter={materialDateFilter} setMaterialDateFilter={setMaterialDateFilter} />
             </SectionCard>
           )}
         </div>

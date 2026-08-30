@@ -57,6 +57,12 @@ export interface DataTableProps<T> {
    *  existing consumer already renders, so nothing else is affected. */
   responsive?: boolean;
 
+  /** Forces one presentation regardless of viewport. "auto" (the default)
+   *  keeps the breakpoint behaviour above: table from `md` up, cards below
+   *  when `responsive` is set. "table" and "cards" are for consumers that
+   *  offer the reader an explicit view toggle. */
+  view?: "auto" | "table" | "cards";
+
   /** Row expansion (drill-down detail / inline-edit-row patterns). Opt-in —
    *  omitting `renderExpandedRow` renders no extra markup at all. The
    *  expand trigger itself (a button in one of the columns) is the
@@ -93,6 +99,7 @@ export function DataTable<T>({
   onRowClick, rowClassName,
   selectedIds, onSelectionChange,
   responsive,
+  view = "auto",
   expandedIds, renderExpandedRow,
   pageSize = 10, pagination = false, itemLabel = "items",
   className,
@@ -210,8 +217,15 @@ export function DataTable<T>({
     </tr>
   ) : null;
 
+  // "auto": the table owns md-and-up, cards own below it (when `responsive`).
+  // A forced view drops the breakpoint classes and renders one branch only.
+  const showTable = view !== "cards";
+  const showCards = view === "cards" || (view === "auto" && responsive);
+  const tableVisibility = view === "auto" && responsive ? "hidden md:block" : undefined;
+  const cardVisibility = view === "auto" ? "md:hidden" : undefined;
+
   const table = (
-    <div className={cn("relative w-full overflow-x-auto", responsive && "hidden md:block")}>
+    <div className={cn("relative w-full overflow-x-auto", tableVisibility)}>
       <table className="w-full border-collapse" style={{ fontSize: "var(--text-body-md, 14px)" }}>
         {caption && <caption className="sr-only">{caption}</caption>}
         <thead>
@@ -335,7 +349,7 @@ export function DataTable<T>({
                           width: col.width === "auto" ? undefined : col.width,
                         }}
                       >
-                        {col.cell ? col.cell(value, row) : defaultCell(col, value)}
+                        {col.cell ? col.cell(value, row, sortedData.indexOf(row)) : defaultCell(col, value)}
                       </td>
                     );
                   })}
@@ -357,9 +371,10 @@ export function DataTable<T>({
 
   return (
     <>
-      {table}
-      {responsive && (
+      {showTable && table}
+      {showCards && (
         <CardList
+          visibilityClass={cardVisibility}
           columns={columns}
           data={displayData}
           getRowId={getRowId}
@@ -401,7 +416,7 @@ function CardList<T>({
   columns, data, getRowId, loading, error, onRetry,
   isFiltered, onClearFilters, emptyTitle, emptyDescription,
   onRowClick, selectable, selectedIds, onToggleRow,
-  className,
+  className, visibilityClass,
 }: {
   columns: ColumnDef<T>[]; data: T[]; getRowId: (row: T) => string;
   loading?: boolean; error?: boolean; onRetry?: () => void;
@@ -409,6 +424,8 @@ function CardList<T>({
   onRowClick?: (row: T) => void;
   selectable: boolean; selectedIds?: Set<string>; onToggleRow: (id: string) => void;
   className?: string;
+  /** Breakpoint gate — "md:hidden" in auto mode, absent when the view is forced. */
+  visibilityClass?: string;
 }) {
   const titleCol = columns.find(c => c.priority === 1);
   // A consumer-defined `id: "select"` column (a manual checkbox column, used
@@ -421,11 +438,11 @@ function CardList<T>({
   const selectCol = columns.find(c => c.id === "select");
   const bodyCols = columns.filter(c => (c.priority ?? 2) === 2 && c !== titleCol && c !== selectCol);
 
-  if (loading) return <div className="md:hidden" style={{ padding: "var(--pad-cell-y, 12px) 0" }}><TableSkeleton columns={1} /></div>;
-  if (error) return <div className="md:hidden"><TableError onRetry={onRetry ?? (() => {})} /></div>;
+  if (loading) return <div className={visibilityClass} style={{ padding: "var(--pad-cell-y, 12px) 0" }}><TableSkeleton columns={1} /></div>;
+  if (error) return <div className={visibilityClass}><TableError onRetry={onRetry ?? (() => {})} /></div>;
   if (data.length === 0) {
     return (
-      <div className="md:hidden">
+      <div className={visibilityClass}>
         {isFiltered
           ? <TableFilteredEmpty onClearFilters={onClearFilters ?? (() => {})} />
           : <TableEmpty title={emptyTitle} description={emptyDescription} />}
@@ -434,7 +451,7 @@ function CardList<T>({
   }
 
   return (
-    <div className={cn("md:hidden flex flex-col gap-3", className)}>
+    <div className={cn(visibilityClass, "flex flex-col gap-3", className)}>
       {data.map(row => {
           const id = getRowId(row);
           const cardClassName = cn("rounded-[var(--radius-md,8px)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4", onRowClick && "cursor-pointer");
@@ -456,7 +473,7 @@ function CardList<T>({
                 {selectCol ? (
                   // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- this span only stops click bubbling to the row; it wraps an already-interactive cell/checkbox that has its own keyboard handling.
                   <span onClick={e => e.stopPropagation()}>
-                    {selectCol.cell ? selectCol.cell(selectCol.accessor(row), row) : defaultCell(selectCol, selectCol.accessor(row))}
+                    {selectCol.cell ? selectCol.cell(selectCol.accessor(row), row, data.indexOf(row)) : defaultCell(selectCol, selectCol.accessor(row))}
                   </span>
                 ) : selectable && (
                   // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- this span only stops click bubbling to the row; the nested Checkbox is the real interactive control.
@@ -466,7 +483,7 @@ function CardList<T>({
                 )}
                 {titleCol && (
                   <div className="flex-1 min-w-0" style={{ fontWeight: 600, color: "var(--text-primary)" }}>
-                    {titleCol.cell ? titleCol.cell(titleCol.accessor(row), row) : defaultCell(titleCol, titleCol.accessor(row))}
+                    {titleCol.cell ? titleCol.cell(titleCol.accessor(row), row, data.indexOf(row)) : defaultCell(titleCol, titleCol.accessor(row))}
                   </div>
                 )}
               </div>
@@ -474,7 +491,7 @@ function CardList<T>({
                 {bodyCols.map(col => (
                   <div key={col.id} className="flex items-center justify-between gap-3" style={{ fontSize: "var(--text-body-sm, 13px)" }}>
                     <span style={{ color: "var(--text-tertiary)" }}>{col.header}</span>
-                    <span style={{ color: "var(--text-primary)" }}>{col.cell ? col.cell(col.accessor(row), row) : defaultCell(col, col.accessor(row))}</span>
+                    <span style={{ color: "var(--text-primary)" }}>{col.cell ? col.cell(col.accessor(row), row, data.indexOf(row)) : defaultCell(col, col.accessor(row))}</span>
                   </div>
                 ))}
               </div>
@@ -488,7 +505,7 @@ function CardList<T>({
                 {selectCol ? (
                   // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- this span only stops click bubbling to the row; it wraps an already-interactive cell/checkbox that has its own keyboard handling.
                   <span onClick={e => e.stopPropagation()}>
-                    {selectCol.cell ? selectCol.cell(selectCol.accessor(row), row) : defaultCell(selectCol, selectCol.accessor(row))}
+                    {selectCol.cell ? selectCol.cell(selectCol.accessor(row), row, data.indexOf(row)) : defaultCell(selectCol, selectCol.accessor(row))}
                   </span>
                 ) : selectable && (
                   // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- this span only stops click bubbling to the row; the nested Checkbox is the real interactive control.
@@ -498,7 +515,7 @@ function CardList<T>({
                 )}
                 {titleCol && (
                   <div className="flex-1 min-w-0" style={{ fontWeight: 600, color: "var(--text-primary)" }}>
-                    {titleCol.cell ? titleCol.cell(titleCol.accessor(row), row) : defaultCell(titleCol, titleCol.accessor(row))}
+                    {titleCol.cell ? titleCol.cell(titleCol.accessor(row), row, data.indexOf(row)) : defaultCell(titleCol, titleCol.accessor(row))}
                   </div>
                 )}
               </div>
@@ -506,7 +523,7 @@ function CardList<T>({
                 {bodyCols.map(col => (
                   <div key={col.id} className="flex items-center justify-between gap-3" style={{ fontSize: "var(--text-body-sm, 13px)" }}>
                     <span style={{ color: "var(--text-tertiary)" }}>{col.header}</span>
-                    <span style={{ color: "var(--text-primary)" }}>{col.cell ? col.cell(col.accessor(row), row) : defaultCell(col, col.accessor(row))}</span>
+                    <span style={{ color: "var(--text-primary)" }}>{col.cell ? col.cell(col.accessor(row), row, data.indexOf(row)) : defaultCell(col, col.accessor(row))}</span>
                   </div>
                 ))}
               </div>

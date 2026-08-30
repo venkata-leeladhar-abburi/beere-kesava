@@ -15,6 +15,7 @@ import { Button } from "../../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { useScrollTopOnView } from "@/shared/ui/ScrollToTop";
 import { SectionCard } from "@/shared/ui/SectionCard";
 
 export interface WholesaleDetailSectionProps {
@@ -36,6 +37,8 @@ export function WholesaleDetailSection({
   wholesaleOrderDateFilter, setWholesaleOrderDateFilter, wholesalePaymentDateFilter, setWholesalePaymentDateFilter,
 }: WholesaleDetailSectionProps) {
   const { bulkOrders } = useBulkOrders();
+
+  useScrollTopOnView(customer.id);
 
   // ── Bulk orders belonging to the open wholesale customer ───────────────────
   // Matched on customerId where the order carries one, else on business name.

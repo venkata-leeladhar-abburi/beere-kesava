@@ -4,7 +4,7 @@ import { scrollToTop } from "@/shared/ui/ScrollToTop";
 import { useAuth } from "../../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Home, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck, LogOut } from "lucide-react";
+import { Home, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck, LogOut, Activity } from "lucide-react";
 import { C, F } from "./worker/tokens";
 import { Drawer, Popover } from "../../../shared/ui/overlay";
 import { formatRelativeTime, notificationBody, notificationTitle, useNotificationBell } from "@/features/notifications";
@@ -14,6 +14,7 @@ import { WorkerWeavers } from "./worker/WorkerWeavers";
 import { WorkerQC } from "./worker/WorkerQC";
 import { WorkerFinishing } from "./worker/WorkerFinishing";
 import { WorkerDispatch } from "./worker/WorkerDispatch";
+import { WorkerActivity } from "./worker/WorkerActivity";
 import { WorkerPortalDesktop } from "./WorkerPortalDesktop";
 import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE, WORKER_SECTION_NAV_H,
@@ -25,7 +26,7 @@ import { Button, IconButton } from "../../../shared/ui/primitives";
 import { imgBKLogo } from "../../../shared/constants/weaverImages";
 import { toInitials } from "@/shared/lib/initials";
 
-type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
+type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "activity" | "profile";
 
 function notifEmoji(type: string): string {
   if (type.includes("qc")) return "🔍";
@@ -297,6 +298,7 @@ function HamburgerMenu({ open, onOpenChange, onProfile, activeTab, onSelectTab }
     { id: "weavers", label: "Receive Sarees", Icon: Users },
     { id: "finishing", label: "Finishing", Icon: Sparkles },
     { id: "dispatch", label: "Dispatch Details", Icon: Truck },
+    { id: "activity", label: "Activity Log", Icon: Activity },
     { id: "profile", label: "My Profile", Icon: UserRound },
   ];
 
@@ -432,6 +434,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
             {activeTab === "weavers"  && <WorkerWeavers />}
             {activeTab === "finishing"&& <WorkerFinishing />}
             {activeTab === "dispatch" && <WorkerDispatch />}
+            {activeTab === "activity" && <WorkerActivity isDesktop={false} />}
             {activeTab === "profile"  && <MobileProfile />}
           </motion.div>
         </AnimatePresence>
@@ -501,6 +504,7 @@ export function WorkerPortal({ onBack }: WorkerPortalProps) {
   else if (pathname.includes("/weavers")) activeTab = "weavers";
   else if (pathname.includes("/finishing")) activeTab = "finishing";
   else if (pathname.includes("/dispatch")) activeTab = "dispatch";
+  else if (pathname.includes("/activity")) activeTab = "activity";
   else if (pathname.includes("/profile")) activeTab = "profile";
 
   const setActiveTab = (tab: Tab) => {
@@ -510,6 +514,7 @@ export function WorkerPortal({ onBack }: WorkerPortalProps) {
       weavers: "/worker/weavers",
       finishing: "/worker/finishing",
       dispatch: "/worker/dispatch",
+      activity: "/worker/activity",
       profile: "/worker/profile",
     };
     const path = routeMap[tab] || "/worker/home";

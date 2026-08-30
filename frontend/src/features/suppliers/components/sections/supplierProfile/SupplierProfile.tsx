@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { MapPin, Package, Send, Trash2, Wallet, ChevronLeft, UserRound, Boxes, ShoppingBag, CreditCard, UserCheck, Edit3 } from "lucide-react";
 import { toast } from "sonner";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { useScrollTopOnView } from "@/shared/ui/ScrollToTop";
 import { SectionCard } from "@/shared/ui/SectionCard";
 import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 import { SupplierPayNowModal } from "@/features/payments";
@@ -44,6 +45,8 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   useEffect(() => {
     recordView({ key: `supplier:${supplier.id}`, label: supplier.name, path: "/admin/suppliers", kind: "Supplier" });
   }, [supplier.id, supplier.name]);
+
+  useScrollTopOnView(supplier.id);
   const tabs = [
     { key: "overview", label: "Overview", icon: <Boxes size={18} /> },
     { key: "orders",   label: "Order History", icon: <ShoppingBag size={18} /> },
