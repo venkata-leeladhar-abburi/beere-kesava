@@ -10,9 +10,12 @@ import {
 } from "recharts";
 import { T, F } from "../theme";
 import {
-  FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, ChartTip, AnimBar,
+  FadeUp, SilkSumCard, SectionCard, ReportDLBar, ChartTip,
   StatusPill,
 } from "../common/primitives";
+import {
+  ChartCard, ChartBand, ChartHint, TrackBar, BAND, CHART, NUM, CountUp
+} from "../../../production/components/sections/chart-primitives";
 import { batchesApi } from "../../../../shared/api/batches";
 import { qcApi } from "../../../../shared/api/qc";
 import { weaversApi } from "../../../../shared/api/weavers";
@@ -368,7 +371,9 @@ export function SareeProductionReport() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4" style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}>
         {/* Weekly production trend — computed from real batch createdAt */}
-        <ChartCard title="Sarees Produced Each Week" sub="Current vs prior period" icon={<TrendingUp size={22} color={T.royalBurgundy} />}>
+        <ChartCard>
+          <ChartBand tone="output" icon={<TrendingUp size={19} color={BAND.output.icon} />} title="Sarees Produced Each Week" sub="Current vs prior period" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {prodWeeklyData.length === 0 ? (
             <div style={{ padding: "24px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
               {isLoading ? "Loading…" : "No batch data yet."}
@@ -393,10 +398,13 @@ export function SareeProductionReport() {
               </div>
             ))}
           </div>
+          </div>
         </ChartCard>
 
         {/* Pipeline stage counts — computed from real batch + QC + finishing data */}
-        <ChartCard title="Where Sarees Are Right Now" sub="Pipeline by stage — finishing rows are live, not period-scoped" icon={<Factory size={22} color={T.antiqueGold} />}>
+        <ChartCard>
+          <ChartBand tone="pipeline" icon={<Factory size={19} color={BAND.pipeline.icon} />} title="Where Sarees Are Right Now" sub="Pipeline by stage — finishing rows are live, not period-scoped" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {isLoading ? (
             <div style={{ padding: "24px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading…</div>
           ) : (
@@ -407,15 +415,18 @@ export function SareeProductionReport() {
                     <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{s.stage}</span>
                     <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: s.color }}>{s.count}</span>
                   </div>
-                  <AnimBar pct={Math.round((s.count / maxPipelineCount) * 100)} color={s.color} height={7} delay={prodStageData.indexOf(s) * 0.06} />
+                  <TrackBar pct={Math.round((s.count / maxPipelineCount) * 100)} fill={s.color} height={9} delay={prodStageData.indexOf(s) * 0.08} />
                 </div>
               ))}
             </div>
           )}
+          </div>
         </ChartCard>
 
         {/* QC donut — live from GET /reports/production-summary */}
-        <ChartCard title="Quality Check This Period" sub="Pass / reject breakdown" icon={<CheckCircle2 size={22} color={T.green} />}>
+        <ChartCard>
+          <ChartBand tone="orders" icon={<CheckCircle2 size={19} color={BAND.orders.icon} />} title="Quality Check This Period" sub="Pass / reject breakdown" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {isError ? (
             <div style={{ padding: "20px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load QC data.</div>
           ) : (
@@ -452,19 +463,13 @@ export function SareeProductionReport() {
           </div>
           </>
           )}
+          </div>
         </ChartCard>
 
         {/* Own Factory vs Outsourced — computed from live batch rows */}
-        <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 20 }}>
-            <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Boxes size={24} color={T.royalBurgundy} />
-            </div>
-            <div>
-              <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0" }}>Own Factory vs Outsourced</h3>
-              <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Production source split — all batches</p>
-            </div>
-          </div>
+        <ChartCard>
+          <ChartBand tone="weavers" icon={<Boxes size={19} color={BAND.weavers.icon} />} title="Own Factory vs Outsourced" sub="Production source split — all batches" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {isLoading ? (
             <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading…</div>
           ) : totalSourceSarees === 0 ? (
@@ -498,7 +503,8 @@ export function SareeProductionReport() {
               </div>
             </>
           )}
-        </div>
+          </div>
+        </ChartCard>
       </div>
 
       {/* 4 summary cards — live from GET /reports/production-summary */}

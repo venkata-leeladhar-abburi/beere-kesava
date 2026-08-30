@@ -17,6 +17,24 @@ import { WeaverPaymentRecord } from "../../../contexts/WeaverPaymentsContext";
 import { WeaverCardEntry } from "../../data";
 import { DateFilterState } from "../../../../../shared/ui/DateFilterBar";
 
+function FilterPill({ active, onClick, tone = "primary", children }: { active: boolean; onClick: () => void; tone?: "primary" | "secondary"; children: React.ReactNode }) {
+  const activeBg = tone === "primary" ? T.royalBurgundy : T.antiqueGold;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.5px",
+        borderRadius: 8, padding: "6px 12px", border: `1px solid ${active ? activeBg : T.borderDef}`,
+        background: active ? activeBg : "#FFFFFF", color: active ? "#FFFFFF" : T.luxuryBrown,
+        cursor: "pointer",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDateFilter, setBatchDateFilter, setViewDispatches, onNavigate }: {
   sortedAllWeaverBatches: BatchRecord[];
   dispatches: DispatchRecord[];
@@ -287,10 +305,60 @@ export function MaterialsTab({ materialRecords, materialByBatch, totalRecordCoun
   setMaterialDateFilter: (f: DateFilterState) => void;
 }) {
   const filterActive = materialDateFilter.mode !== "all";
+  const [loomFilter, setLoomFilter] = React.useState<string>("all");
+  const [batchFilter, setBatchFilter] = React.useState<string>("all");
+
+  // Loom options for the filter pills, derived from whichever records survived the date
+  // filter — independent of the loom/batch selection below so switching loom doesn't
+  // hide other looms from the picker.
+  const loomOptions = React.useMemo(() => {
+    const looms = new Set<number>();
+    let hasUnassigned = false;
+    materialRecords.forEach(r => {
+      if (typeof r.loomNumber === "number") looms.add(r.loomNumber);
+      else hasUnassigned = true;
+    });
+    const opts = Array.from(looms).sort((a, z) => a - z).map(n => ({ key: String(n), label: `Loom ${n}` }));
+    if (hasUnassigned) opts.push({ key: "unassigned", label: "Loom not recorded" });
+    return opts;
+  }, [materialRecords]);
+
+  const batchOptions = React.useMemo(() => {
+    const ids = new Set<string>();
+    materialRecords.forEach(r => {
+      if (loomFilter === "all") { ids.add(r.batchId || "Unassigned"); return; }
+      const key = typeof r.loomNumber === "number" ? String(r.loomNumber) : "unassigned";
+      if (key === loomFilter) ids.add(r.batchId || "Unassigned");
+    });
+    return Array.from(ids).sort();
+  }, [materialRecords, loomFilter]);
+
+  React.useEffect(() => {
+    if (batchFilter !== "all" && !batchOptions.includes(batchFilter)) setBatchFilter("all");
+  }, [batchOptions, batchFilter]);
+
   return (
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               <SectionPill label="Materials Issued — Batch Wise" />
               <DateFilterBar filter={materialDateFilter} onChange={setMaterialDateFilter} />
+              {loomOptions.length > 0 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <FilterPill active={loomFilter === "all"} onClick={() => setLoomFilter("all")}>All Looms</FilterPill>
+                    {loomOptions.map(o => (
+                      <FilterPill key={o.key} active={loomFilter === o.key} onClick={() => setLoomFilter(o.key)}>{o.label}</FilterPill>
+                    ))}
+                  </div>
+                  {batchOptions.length > 0 && (
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <FilterPill active={batchFilter === "all"} onClick={() => setBatchFilter("all")} tone="secondary">All Batches</FilterPill>
+                      {batchOptions.map(id => (
+                        <FilterPill key={id} active={batchFilter === id} onClick={() => setBatchFilter(id)} tone="secondary">{id}</FilterPill>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
               {totalRecordCount > 0 && (
                 <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
                   Showing <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.luxuryBrown }}>{materialRecords.length}</span> of{" "}
@@ -327,8 +395,19 @@ export function MaterialsTab({ materialRecords, materialByBatch, totalRecordCoun
                     loomGroups.get(k)!.batches.push(b);
                   });
                 });
+                const loomKeyOf = (g: { loom?: number }) => (g.loom === undefined ? "unassigned" : String(g.loom));
                 const orderedLoomGroups = Array.from(loomGroups.values())
+                  .filter(g => loomFilter === "all" || loomKeyOf(g) === loomFilter)
+                  .map(g => ({ ...g, batches: batchFilter === "all" ? g.batches : g.batches.filter(b => b.batchId === batchFilter) }))
+                  .filter(g => g.batches.length > 0)
                   .sort((a, z) => (a.loom ?? Number.MAX_SAFE_INTEGER) - (z.loom ?? Number.MAX_SAFE_INTEGER));
+                if (orderedLoomGroups.length === 0) {
+                  return (
+                    <div style={{ background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic" }}>
+                      No material handovers match the selected loom/batch filters.
+                    </div>
+                  );
+                }
                 return (
                   <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
                     {orderedLoomGroups.map(g => (

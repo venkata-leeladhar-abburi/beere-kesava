@@ -6,7 +6,10 @@ import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 import { T, F } from "../theme";
 import { semantic } from "../../../../design-system/tokens";
-import { FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, AnimBar } from "../common/primitives";
+import { FadeUp, SilkSumCard, SectionCard, ReportDLBar } from "../common/primitives";
+import {
+  ChartCard, ChartBand, ChartHint, TrackBar, BAND, CHART, NUM, CountUp
+} from "../../../production/components/sections/chart-primitives";
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
 import { batchesApi } from "../../../../shared/api/batches";
@@ -214,12 +217,10 @@ export function RetailSalesReport() {
       <ReportDLBar />
 
       <FadeUp>
-        <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "20px 24px", marginBottom: 24, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 12 }}>
-            <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>Sarees Sold Each Week</div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>{periodLabel} — weekly breakdown</div>
-            </div>
+        <ChartCard style={{ marginBottom: 24 }}>
+          <ChartBand tone="output" icon={<Store size={19} color={BAND.output.icon} />} title="Sarees Sold Each Week" sub={`${periodLabel} — weekly breakdown`} />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 14, flexWrap: "wrap", gap: 12 }}>
             <div style={{ display: "flex", gap: 24 }}>
               <div>
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Sarees Sold</div>
@@ -240,11 +241,14 @@ export function RetailSalesReport() {
               <Bar key="retw-bar" dataKey="sarees" name="Sarees Sold" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </div>
+          </div>
+        </ChartCard>
       </FadeUp>
 
       <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}>
-        <ChartCard title="Which Designs Sold Most at Retail" sub="Top 5 designs by saree count">
+        <ChartCard>
+          <ChartBand tone="pipeline" icon={<Tag size={19} color={BAND.pipeline.icon} />} title="Which Designs Sold Most at Retail" sub="Top 5 designs by saree count" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {retailDesignSales.length === 0 ? (
             <div style={{ padding: "30px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
               No retail sales recorded yet.
@@ -257,14 +261,17 @@ export function RetailSalesReport() {
                     <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{d.design}</span>
                     <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{d.count} sarees</span>
                   </div>
-                  <AnimBar pct={Math.round((d.count / maxDesignCount) * 100)} color={T.royalBurgundy} height={7} delay={i * 0.07} />
+                  <TrackBar pct={Math.round((d.count / maxDesignCount) * 100)} fill={T.royalBurgundy} height={9} delay={i * 0.08} />
                 </div>
               ))}
             </div>
           )}
+          </div>
         </ChartCard>
 
-        <ChartCard title="Revenue by Saree Type" sub="Retail revenue split">
+        <ChartCard>
+          <ChartBand tone="orders" icon={<Percent size={19} color={BAND.orders.icon} />} title="Revenue by Saree Type" sub="Retail revenue split" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {retailRevenueDonut.length === 0 ? (
             <div style={{ padding: "30px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
               No retail sales recorded yet.
@@ -292,6 +299,7 @@ export function RetailSalesReport() {
               </div>
             </>
           )}
+          </div>
         </ChartCard>
       </div>
 
