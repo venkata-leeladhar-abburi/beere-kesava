@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { T, F } from "./rates-pricing/theme";
 import { MakingChargesSection } from "./rates-pricing/MakingChargesSection";
-import { DeductionRatesSection } from "./rates-pricing/DeductionRatesSection";
 import { WholesaleTermsSection } from "./rates-pricing/WholesaleTermsSection";
-import { JariSettingsSection } from "./rates-pricing/JariSettingsSection";
 import { RateHistorySection } from "./rates-pricing/RateHistorySection";
 import { SareeTypeCard } from "./rates-pricing/SareeTypeCard";
 import type { SareeTypeRecord } from "./rates-pricing/sareeTypeData";
@@ -157,16 +155,10 @@ export function RatesPricingPage() {
         />
       )}
 
-      {/* 4. SECTION B — RAW MATERIAL DEDUCTION RATES */}
-      <DeductionRatesSection />
-
-      {/* 5. SECTION C — WHOLESALE PAYMENT TERMS */}
+      {/* 4. SECTION C — WHOLESALE PAYMENT TERMS */}
       <WholesaleTermsSection />
 
-      {/* 6. SECTION D — JARI MEASUREMENT SETTINGS */}
-      <JariSettingsSection />
-
-      {/* 7. SECTION E — RATE CHANGE HISTORY */}
+      {/* 5. SECTION E — RATE CHANGE HISTORY */}
       <RateHistorySection />
 
       {/* ══════════════════════════════════════════════════════════════════ */}

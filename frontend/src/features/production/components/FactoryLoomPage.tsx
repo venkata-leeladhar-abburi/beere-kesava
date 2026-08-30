@@ -19,8 +19,8 @@ import { SectionCard } from "./common/primitives";
 import { ApiError } from "../../../shared/api/client";
 import { BackendFactoryLoom, BackendLoomStatus, factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { batchesApi } from "../../../shared/api/batches";
-import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 import { qcApi } from "../../../shared/api/qc";
+import { useMaterialIssue } from "@/features/materials";
 import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../shared/ui/state";
@@ -56,7 +56,8 @@ export function FactoryLoomPage() {
   const [looms, setLooms] = useState<FactoryLoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [_saveError, setSaveError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [view, setView] = useState<"card"|"table">("card");
   const [search, setSearch] = useState("");
   const [sf, setSf] = useState<"all"|"active"|"idle"|"maintenance">("all");
@@ -69,23 +70,25 @@ export function FactoryLoomPage() {
     queryFn: () => batchesApi.list(),
   });
 
-  const { data: stockRes } = useQuery({
-    queryKey: ["factory-loom-materials"],
-    queryFn: () => rawMaterialsApi.listStock(),
-  });
-
   const { data: qcRes } = useQuery({
     queryKey: ["factory-loom-qc"],
     queryFn: () => qcApi.list(500),
   });
 
+  const { issueRecords } = useMaterialIssue();
+
   const batches = useMemo<LoomBatch[]>(() => {
     if (!batchesRes?.items) return [];
-    return batchesRes.items.map(b => {
+    // Only batches with a real FACTORY_LOOM row belong to a loom — a batch
+    // with no such row isn't loom work at all, so it's excluded rather than
+    // dumped onto a fake placeholder loom.
+    return batchesRes.items.flatMap(b => {
+      const loomId = b.rows.find(r => r.recipientType === "FACTORY_LOOM")?.factoryLoomId;
+      if (!loomId) return [];
       const completedCount = b.rows.filter(r => r.qcPassed).length;
-      return {
+      return [{
         batchId: b.id,
-        loomId: b.rows.find(r => r.recipientType === "FACTORY_LOOM")?.factoryLoomId ?? "FL-001",
+        loomId,
         sareeCount: b.totalCount,
         completedCount,
         dueDate: new Date(b.dueDate).toLocaleDateString("en-IN"),
@@ -94,25 +97,34 @@ export function FactoryLoomPage() {
         orderRef: b.id,
         status: b.status.toLowerCase() as LoomBatch["status"],
         startDate: new Date(b.createdAt).toLocaleDateString("en-IN"),
-      };
+      }];
     });
   }, [batchesRes]);
 
+  // Real per-loom material issuance — one row per material line of every
+  // non-cancelled MaterialIssueRecord addressed to a factory loom, mirroring
+  // the exact filter LoomDetailPage.tsx uses for its own materialRecords.
   const materials = useMemo<LoomMaterial[]>(() => {
-    if (!stockRes?.items) return [];
-    return stockRes.items.map(item => ({
-      batchId: `RM-${item.id.slice(-6).toUpperCase()}`,
-      loomId: "FL-001",
-      mirId: `MIR-${item.id.slice(-4).toUpperCase()}`,
-      date: new Date(item.updatedAt).toLocaleDateString("en-IN"),
-      materialType: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
-      description: item.name,
-      quantity: Number(item.currentStock),
-      unit: item.unit,
-      grnBatch: `GRN-${item.id.slice(-6).toUpperCase()}`,
-      issuedBy: "Admin",
-    }));
-  }, [stockRes]);
+    const list: LoomMaterial[] = [];
+    for (const r of issueRecords) {
+      if (!r.factoryLoomId || r.status === "cancelled") continue;
+      for (const m of r.materials) {
+        list.push({
+          batchId: r.batchId ?? "",
+          loomId: r.factoryLoomId,
+          mirId: r.id,
+          date: new Date(r.issuedAt).toLocaleDateString("en-IN"),
+          materialType: m.materialType,
+          description: m.description || m.materialType,
+          quantity: m.quantity,
+          unit: m.unit,
+          grnBatch: m.grnBatchId,
+          issuedBy: r.issuedBy,
+        });
+      }
+    }
+    return list;
+  }, [issueRecords]);
 
   const sarees = useMemo<LoomSaree[]>(() => {
     if (!batchesRes?.items) return [];
@@ -121,11 +133,11 @@ export function FactoryLoomPage() {
 
     for (const b of batchesRes.items) {
       for (const r of b.rows) {
-        if (r.recipientType === "FACTORY_LOOM" && r.sareeId) {
+        if (r.recipientType === "FACTORY_LOOM" && r.sareeId && r.factoryLoomId) {
           const qc = qcMap.get(r.sareeId);
           list.push({
             sareeId: r.sareeId,
-            loomId: r.factoryLoomId ?? "FL-001",
+            loomId: r.factoryLoomId,
             batchId: b.id,
             sareeType: r.sareeTypeCode ?? r.designCode ?? "Silk Saree",
             status: qc ? "complete" : r.sareeId ? "in-progress" : "pending",
@@ -160,6 +172,7 @@ export function FactoryLoomPage() {
 
   const handleAddOrEdit = async (l: FactoryLoom) => {
     setSaveError(null);
+    setSaving(true);
     try {
       if (editLoom) {
         const updated = await factoryLoomsApi.update(l.id, {
@@ -190,6 +203,8 @@ export function FactoryLoomPage() {
       setEditLoom(null);
     } catch (err) {
       setSaveError(err instanceof ApiError ? err.message : "Could not save the loom.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -431,6 +446,8 @@ export function FactoryLoomPage() {
         onClose={() => { setShowModal(false); setEditLoom(null); setSaveError(null); }}
         onAdd={handleAddOrEdit}
         editLoom={editLoom}
+        saving={saving}
+        saveError={saveError}
       />
       <div style={{ marginTop: "auto" }}>
         <MaterialsFooter />

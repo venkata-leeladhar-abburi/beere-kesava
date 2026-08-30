@@ -133,6 +133,26 @@ export const weaverPaymentsApi = {
     apiClient.get<PaginatedResponse<BackendWeaverPayment>>(
       `/payments/weavers?pageSize=100${weaverId ? `&weaverId=${weaverId}` : ""}`,
     ),
+  /**
+   * Every payment row, walking past the single capped page `list` returns.
+   * Callers that total money (per-weaver "Total Paid") must use this — a
+   * capped page silently under-reports the total once there are more than
+   * `pageSize` payments on record.
+   */
+  listAll: async (weaverId?: string, pageSize = 200): Promise<BackendWeaverPayment[]> => {
+    const q = (page: number) =>
+      `/payments/weavers?page=${page}&pageSize=${pageSize}${weaverId ? `&weaverId=${weaverId}` : ""}`;
+    const first = await apiClient.get<PaginatedResponse<BackendWeaverPayment>>(q(1));
+    const items = [...first.items];
+    let page = 1;
+    while (items.length < first.total) {
+      page += 1;
+      const next = await apiClient.get<PaginatedResponse<BackendWeaverPayment>>(q(page));
+      if (next.items.length === 0) break;
+      items.push(...next.items);
+    }
+    return items;
+  },
   earnings: (weaverId?: string) =>
     apiClient.get<WeaverEarnings[]>(`/payments/weavers/earnings${weaverId ? `?weaverId=${weaverId}` : ""}`),
   productionRows: () => apiClient.get<WeaverProductionRow[]>("/payments/weavers/production-rows"),

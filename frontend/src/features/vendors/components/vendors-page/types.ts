@@ -12,6 +12,7 @@ export interface Vendor {
   status: "active" | "inactive" | "overdue";
   totalOrders: number; totalSpend: string; outstanding: string;
   lastOrder: string; rating: number;
+  createdAt?: string;
 }
 
 export interface PurchaseTxn { vendorId: string; date: string; amount: number; material: string; }

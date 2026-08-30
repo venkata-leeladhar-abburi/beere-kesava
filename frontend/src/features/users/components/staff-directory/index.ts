@@ -1,2 +1,3 @@
 export { StaffDirectoryPage } from "./StaffDirectoryPage";
-export { WORKER_SCOPE, SHOP_SCOPE, moduleLabel, type PortalScope } from "./portalScopes";
+export { AccountantDirectoryPage } from "./accountant/AccountantDirectoryPage";
+export { WORKER_SCOPE, SHOP_SCOPE, ACCOUNTANT_SCOPE, moduleLabel, type PortalScope } from "./portalScopes";

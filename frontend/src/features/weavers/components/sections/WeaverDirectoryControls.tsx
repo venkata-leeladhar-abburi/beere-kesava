@@ -6,11 +6,19 @@ import { T, F } from "../theme";
 import { FILTER_PILLS, VIEW_OPTIONS } from "../data";
 import { FadeUp, SectionCard } from "../common/primitives";
 import { Button, Input } from "../../../../shared/ui/primitives";
-import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
+import { useRealWeavers } from "./WeaverCardAndListViews";
 
 export function AllWeaversControls({ view, setView, filter, setFilter, search, setSearch, onAddWeaver, onViewAll, onImport, children }: {
   view: string; setView: (v: string) => void; filter: string; setFilter: (f: string) => void; search: string; setSearch: (s: string) => void; onAddWeaver: () => void; onViewAll: () => void; onImport: () => void; children?: ReactNode;
 }) {
+  // The subtitle used to read a hardcoded "350 weavers registered · 84
+  // currently active" regardless of the roster.
+  const allWeavers = useRealWeavers();
+  const activeCount = allWeavers.filter(w => w.status === "active").length;
+  const subtitle = allWeavers.isLoading
+    ? "Loading roster…"
+    : `${allWeavers.length} weaver${allWeavers.length === 1 ? "" : "s"} registered · ${activeCount} currently working`;
+
   return (
     <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40 }}>
       <FadeUp>
@@ -18,7 +26,7 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
         id="weav-all-weavers"
         icon={Users}
         title="All Weavers"
-        subtitle="350 weavers registered · 84 currently active"
+        subtitle={subtitle}
         actions={
           <>
             <Button
@@ -106,29 +114,39 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
             </div>
           </div>
 
-          {/* Filter pills row */}
-          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", paddingBottom: 32 }}>
-            {FILTER_PILLS.map(f => (
-              <Button
-                key={f} onClick={() => setFilter(f)}
-                variant={filter === f ? "primary" : "secondary"}
-                size="sm"
-                className={
-                  filter === f
-                    ? "rounded-full bg-[#6E0F2D] border-none shadow-[0_4px_14px_rgba(110,15,45,0.22)]"
-                    : "rounded-full bg-white text-[#3B2314] border-[1.5px] border-[rgba(110,15,45,0.16)]"
-                }
-              >
-                {f}
-              </Button>
-            ))}
-            <Button variant="secondary" size="sm" className="rounded-[14px] bg-white text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.16)]">
-              <PhMapPin size={16} /> Filter by Village <CaretDown size={14} />
+        {/* Filter pills row */}
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", paddingBottom: 32 }}>
+          {FILTER_PILLS.map(f => (
+            <Button
+              key={f} onClick={() => setFilter(f)}
+              variant={filter === f ? "primary" : "secondary"}
+              size="sm"
+              className={
+                filter === f
+                  ? "rounded-full bg-[#6E0F2D] border-none shadow-[0_4px_14px_rgba(110,15,45,0.22)]"
+                  : "rounded-full bg-white text-[#3B2314] border-[1.5px] border-[rgba(110,15,45,0.16)]"
+              }
+            >
+              {f}
             </Button>
-            <Button variant="secondary" size="sm" className="rounded-[14px] bg-white text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.16)]">
-              Sort: Most Sarees This Month <CaretDown size={14} />
-            </Button>
-          </div>
+          ))}
+          {/* Village filter and sort order have no handlers behind them here —
+              both live (and work) on the full "View All Weavers" page. Marked
+              disabled rather than left looking clickable and inert. */}
+          <Button
+            variant="secondary" size="sm" disabled
+            title="Filter by village on the View All Weavers page"
+            className="rounded-[14px] bg-white text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.16)] opacity-60"
+          >
+            <PhMapPin size={16} /> Filter by Village <CaretDown size={14} />
+          </Button>
+          <Button
+            variant="secondary" size="sm" disabled
+            title="Sort weavers on the View All Weavers page"
+            className="rounded-[14px] bg-white text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.16)] opacity-60"
+          >
+            Sort: Most Sarees <CaretDown size={14} />
+          </Button>
         </div>
 
         {children}

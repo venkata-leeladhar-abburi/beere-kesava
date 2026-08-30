@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
-import { UserRole } from "../generated/prisma/client";
+import { ReportFrequency, UserRole } from "../generated/prisma/client";
 import { ReportsService, CreateScheduleDto, UpdateScheduleDto, RecordDownloadDto } from "./reports.service";
 
 // Financial/business reporting — ACCOUNTANT access only.
@@ -27,6 +27,22 @@ export class ReportsController {
   @Get("schedules")
   listSchedules() {
     return this.reportsService.listSchedules();
+  }
+
+  // Powers the "you'll receive it on…" preview in the Add Schedule form, so
+  // the dates shown before saving are produced by the same code that will
+  // later fire the delivery.
+  @Get("schedules/preview")
+  previewSchedule(
+    @Query("frequency") frequency: ReportFrequency,
+    @Query("deliveryTime") deliveryTime?: string,
+    @Query("count") count?: string,
+  ) {
+    return this.reportsService.previewUpcomingRuns(
+      frequency,
+      deliveryTime,
+      count ? Number(count) : undefined,
+    );
   }
 
   @Post("schedules")

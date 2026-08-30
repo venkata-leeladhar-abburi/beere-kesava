@@ -43,7 +43,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
 
   const { data: rawPos, isLoading: posLoading, isError: posError, refetch: refetchPos } = useQuery({
     queryKey: ["purchase-orders"],
-    queryFn: () => purchaseOrdersApi.list(100),
+    queryFn: () => purchaseOrdersApi.list(undefined, 100),
   });
 
   const { data: rawVendors, isLoading: vendorsLoading, isError: vendorsError, refetch: refetchVendors } = useQuery({

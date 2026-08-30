@@ -105,6 +105,12 @@ exports[`authz matrix / route inventory matches the committed authorization snap
   },
   {
     "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "POST /auth/logout",
+  },
+  {
+    "permissions": [],
     "public": true,
     "roles": [],
     "route": "GET /auth/testing/otp",
@@ -593,6 +599,66 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "permissions": [],
     "public": false,
     "roles": [],
+    "route": "GET /firms/retail-sales/active-firm",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "SUPERADMIN",
+    ],
+    "route": "DELETE /firms/retail-sales/active-firm",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /firms/retail-sales/connectable",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /firms/:id/retail-sales",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /firms/:id/retail-sales/options",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "SUPERADMIN",
+    ],
+    "route": "POST /firms/:id/retail-sales/active-firm",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "SUPERADMIN",
+    ],
+    "route": "POST /firms/:id/retail-sales",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "SUPERADMIN",
+    ],
+    "route": "DELETE /firms/:id/retail-sales/:saleRef",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
     "route": "GET /firms/:id",
   },
   {
@@ -909,6 +975,24 @@ exports[`authz matrix / route inventory matches the committed authorization snap
       "ACCOUNTANT",
     ],
     "route": "GET /payments/summary",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "GET /payments/staff-ledger",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "GET /payments/staff-summary",
   },
   {
     "permissions": [],
@@ -1383,6 +1467,14 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "roles": [
       "ACCOUNTANT",
     ],
+    "route": "GET /reports/schedules/preview",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
     "route": "POST /reports/schedules",
   },
   {
@@ -1842,6 +1934,18 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "public": false,
     "roles": [],
     "route": "GET /weavers/production-leaderboard",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /weavers/stats",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /weavers/production-series",
   },
   {
     "permissions": [],

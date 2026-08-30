@@ -1,7 +1,6 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
 import { T, F } from "./tokens";
-import { Button } from "../../../../shared/ui/primitives";
 
 // Section banner card — dark maroon gradient header (icon + title + subtitle
 // + actions) atop a white padded body, matching the pattern used across the
@@ -159,26 +158,5 @@ export function StatCol({
         </div>
       </div>
     </div>
-  );
-}
-
-export function PaginationBtn({
-  children,
-  active = false,
-  disabled = false,
-}: {
-  children: React.ReactNode;
-  active?: boolean;
-  disabled?: boolean;
-}) {
-  return (
-    <Button
-      variant={active ? "primary" : "secondary"}
-      size="sm"
-      disabled={disabled}
-      className="min-w-[30px] h-[30px] px-1.5 font-mono"
-    >
-      {children}
-    </Button>
   );
 }

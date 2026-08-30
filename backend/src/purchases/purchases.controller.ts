@@ -27,11 +27,13 @@ export class PurchasesController {
   }
 
   @Get()
+  @RequireRoles(UserRole.ACCOUNTANT, UserRole.SHOP)
   findAll(@Query() query: ListPurchasesQueryDto) {
     return this.purchasesService.findAll(query);
   }
 
   @Get(":id")
+  @RequireRoles(UserRole.ACCOUNTANT, UserRole.SHOP)
   findOne(@Param("id") id: string) {
     return this.purchasesService.findOne(id);
   }

@@ -34,6 +34,7 @@ describe("ScanService.lookup — sale eligibility", () => {
       inventoryRecord: { findUnique: jest.fn().mockResolvedValue(null) },
       dispatchSaree: { findMany: jest.fn().mockResolvedValue([]) },
       saleRecord: { findFirst: jest.fn().mockResolvedValue(null) },
+      returnRecord: { findFirst: jest.fn().mockResolvedValue(null) },
     };
     service = new ScanService(prisma);
   });

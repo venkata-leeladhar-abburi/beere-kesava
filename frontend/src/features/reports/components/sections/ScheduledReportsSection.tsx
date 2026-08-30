@@ -1,29 +1,148 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { Users, Scissors, BarChart3, BellRing, UsersRound, Plus, Pause, Play, Trash2, X, CalendarClock } from "lucide-react";
+import {
+  Users,
+  Scissors,
+  BarChart3,
+  BellRing,
+  UsersRound,
+  Plus,
+  Pause,
+  Play,
+  Trash2,
+  X,
+  CalendarClock,
+  CalendarDays,
+  ChevronDown,
+  Clock,
+  MessageCircle,
+} from "lucide-react";
 import { T, F } from "../theme";
 import { FadeUp, SectionCard } from "../common/primitives";
 import { Button, IconButton, Select, SelectItem, Input } from "../../../../shared/ui/primitives";
 
-// Wired to real backend: GET/POST /reports/schedules, PATCH/DELETE /reports/schedules/:id.
-// ReportSchedulerService polls these rows every 15 minutes, generates the due
-// ones as .xlsx and delivers them on WhatsApp through `bk_report_share_` to
-// ADMIN_WHATSAPP_NUMBERS. Recipients are that env list, not this form's email
-// field — the schedule row has no phone column of its own.
+// Wired to real backend: GET/POST /reports/schedules, PATCH/DELETE /reports/schedules/:id,
+// GET /reports/schedules/preview.
+//
+// Delivery is WhatsApp-only. Each schedule carries its own recipient number —
+// prefilled with the signed-in admin's mobile and editable — and
+// ReportSchedulerService pushes the generated .xlsx to exactly that number
+// through AiSensy's `bk_report_share_` template at the schedule's chosen IST
+// time. Every date shown here comes from the backend's own occurrence maths
+// (report-schedule-timing.ts), never recomputed in the browser, so what the
+// admin reads is what the scheduler will do.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { reportsApi } from "../../../../shared/api/reports";
+import { reportsApi, type ReportFrequency, type ScheduledReportItem } from "../../../../shared/api/reports";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { useConfirm } from "../../../../shared/ui/overlay";
 
+const REPORT_TYPES = [
+  "Raw Material Report",
+  "Saree Production Report",
+  "Weaver Payment Report",
+  "Retail Sales Report",
+  "Wholesale Sales Report",
+  "Profit & Loss Report",
+  "Customer Report",
+  "Overdue & Alerts Report",
+];
+
+const FREQUENCY_OPTIONS: { value: ReportFrequency; label: string; hint: string }[] = [
+  { value: "DAILY", label: "Daily", hint: "Every day" },
+  { value: "WEEKLY", label: "Weekly", hint: "Same weekday, every week" },
+  { value: "MONTHLY", label: "Monthly", hint: "Same date, every month" },
+  { value: "QUARTERLY", label: "Quarterly", hint: "Same date, every 3 months" },
+];
+
+const FREQUENCY_LABEL: Record<ReportFrequency, string> = {
+  DAILY: "Daily",
+  WEEKLY: "Weekly",
+  MONTHLY: "Monthly",
+  QUARTERLY: "Quarterly",
+};
+
+/** Everything the loom office runs on is IST — pin it rather than trusting the browser's zone. */
+const IST = "Asia/Kolkata";
+
+/** "Mon, 07 Sep 2026" */
+function formatRunDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-IN", {
+    timeZone: IST,
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+/** "09:00 AM" */
+function formatRunTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-IN", {
+    timeZone: IST,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+/** "in 3 days" / "tomorrow" / "today" — the bit an admin actually scans for. */
+function relativeToNow(iso: string): string {
+  const days = Math.round((new Date(iso).getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+  if (days <= 0) return "today";
+  if (days === 1) return "tomorrow";
+  if (days < 30) return `in ${days} days`;
+  const months = Math.round(days / 30);
+  return months === 1 ? "in about a month" : `in about ${months} months`;
+}
+
+/** 9876543210 → "98765 43210". Display only; the API always gets bare digits. */
+function prettyPhone(value: string | null | undefined): string {
+  const digits = (value ?? "").replace(/\D/g, "").slice(-10);
+  return digits.length === 10 ? `${digits.slice(0, 5)} ${digits.slice(5)}` : (value ?? "—");
+}
+
+function digitsOnly(value: string): string {
+  return value.replace(/\D/g, "").slice(-10);
+}
+
+function isValidPhone(value: string): boolean {
+  return /^[6-9]\d{9}$/.test(digitsOnly(value));
+}
+
+/** "09:00" → "09:00 AM", for the summary line under the form. */
+function formatClock(hhmm: string): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return hhmm;
+  const suffix = h < 12 ? "AM" : "PM";
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${String(hour12).padStart(2, "0")}:${String(m).padStart(2, "0")} ${suffix}`;
+}
+
 export function ScheduledReportsSection() {
   const [showForm, setShowForm] = useState(false);
-  const [reportType, setReportType] = useState("Raw Material Report");
-  const [frequency, setFrequency] = useState<"Daily" | "Weekly" | "Monthly" | "Quarterly">("Daily");
-  const [recipientEmail, setRecipientEmail] = useState("");
+  const [reportType, setReportType] = useState(REPORT_TYPES[0]);
+  const [frequency, setFrequency] = useState<ReportFrequency>("DAILY");
+  const [deliveryTime, setDeliveryTime] = useState("09:00");
+  const [recipientPhone, setRecipientPhone] = useState("");
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const confirm = useConfirm();
+
+  const myNumber = digitsOnly(user?.mobile ?? "");
+
+  // The signed-in admin's own number is the default recipient — they are who
+  // these reports are for. Re-applied each time the form opens so a cancelled
+  // edit never leaves a stale number behind, but never while it is open, which
+  // would fight the admin mid-typing.
+  useEffect(() => {
+    if (showForm) {
+      setRecipientPhone(myNumber);
+      setPhoneTouched(false);
+    }
+  }, [showForm, myNumber]);
 
   const { data: schedRes, isLoading, isError } = useQuery({
     queryKey: ["reports-schedules-list"],
@@ -31,21 +150,39 @@ export function ScheduledReportsSection() {
   });
   const schedules = schedRes?.items ?? [];
 
+  // Live "you'll receive it on…" dates for the schedule being composed.
+  const { data: previewRes, isFetching: previewLoading } = useQuery({
+    queryKey: ["reports-schedule-preview", frequency, deliveryTime],
+    queryFn: () => reportsApi.previewSchedule(frequency, deliveryTime, 5),
+    enabled: showForm,
+    staleTime: 60_000,
+  });
+  const previewRuns = previewRes?.runs ?? [];
+
+  const phoneValid = isValidPhone(recipientPhone);
+  const showPhoneError = phoneTouched && recipientPhone.length > 0 && !phoneValid;
+  const usingOwnNumber = myNumber.length === 10 && digitsOnly(recipientPhone) === myNumber;
+
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["reports-schedules-list"] });
 
   const createMutation = useMutation({
     mutationFn: () =>
       reportsApi.createSchedule({
         reportName: reportType,
-        frequency: (frequency.toUpperCase() as "DAILY" | "WEEKLY" | "MONTHLY") || "DAILY",
-        recipientEmail: recipientEmail || "admin@example.com",
+        frequency,
+        recipientPhone: digitsOnly(recipientPhone),
+        deliveryTime,
         actorId: user?.id,
       }),
-    onSuccess: () => {
+    onSuccess: (created) => {
       invalidate();
       setShowForm(false);
-      setRecipientEmail("");
-      toast.success("Report schedule created");
+      const next = created?.nextRunAt;
+      toast.success(
+        next
+          ? `Schedule created — first delivery ${formatRunDate(next)} at ${formatRunTime(next)}`
+          : "Report schedule created",
+      );
     },
     onError: (err: unknown) => {
       toast.error(err instanceof Error ? err.message : "Failed to create report schedule");
@@ -55,7 +192,16 @@ export function ScheduledReportsSection() {
   const toggleMutation = useMutation({
     mutationFn: (vars: { id: string; active: boolean }) =>
       reportsApi.updateSchedule(vars.id, { active: vars.active, actorId: user?.id }),
-    onSuccess: invalidate,
+    onSuccess: (updated) => {
+      invalidate();
+      toast.success(
+        updated?.active
+          ? updated.nextRunAt
+            ? `Resumed — next delivery ${formatRunDate(updated.nextRunAt)}`
+            : "Schedule resumed"
+          : "Schedule paused — no reports will be sent until you resume it",
+      );
+    },
     onError: (err: unknown) => {
       toast.error(err instanceof Error ? err.message : "Failed to update report schedule");
     },
@@ -80,13 +226,18 @@ export function ScheduledReportsSection() {
     <UsersRound key="users-round" size={26} color={T.antiqueGold} />,
   ];
 
+  const frequencyHint = useMemo(
+    () => FREQUENCY_OPTIONS.find((o) => o.value === frequency)?.hint ?? "",
+    [frequency],
+  );
+
   return (
     <div id="rep-scheduled" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36, paddingBottom: 16 }}>
       <FadeUp>
       <SectionCard
         icon={CalendarClock}
         title="Scheduled Reports — Automatic Delivery"
-        subtitle="These reports are generated automatically and sent to the admin team on WhatsApp as a spreadsheet at the scheduled time. No manual action needed."
+        subtitle="Each report is generated on its own and sent as a WhatsApp spreadsheet to the number you choose, at the day and time you set. No manual action needed."
         actions={
           <Button
             variant="ghost"
@@ -115,65 +266,25 @@ export function ScheduledReportsSection() {
             </div>
           ) : (
             schedules.map((s, i) => (
-              <div key={s.id} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                {/* Top color bar — Royal Burgundy Brown */}
-                <div style={{ height: 5, background: T.royalBurgundy }} />
-
-                {/* Card content */}
-                <div style={{ padding: "20px 22px", flex: 1, display: "flex", flexDirection: "column", gap: 14 }}>
-                  {/* Header: icon + title */}
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-                    <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(200,155,71,0.12)" }}>
-                      {scheduleIcons[i % scheduleIcons.length]}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.3, marginBottom: 7 }}>{s.reportName}</div>
-                      <span style={{ display: "inline-block", padding: "3px 12px", borderRadius: 99, background: "rgba(200,155,71,0.13)", color: T.antiqueGold, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.4px" }}>{s.frequency}</span>
-                    </div>
-                  </div>
-
-                  {/* Details */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-                      <span style={{ fontWeight: 700, color: T.luxuryBrown }}>Send to: </span>{s.recipientEmail}
-                    </div>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
-                      <span style={{ padding: "3px 11px", borderRadius: 6, background: "rgba(110,15,45,0.07)", color: T.royalBurgundy, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700 }}>{s.format}</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: s.active ? T.green : T.taupe }} />
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: s.active ? T.green : T.taupe }}>{s.active ? "Active" : "Paused"}</span>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8, borderTop: `1px solid ${T.borderDef}` }}>
-                    <IconButton
-                      variant="ghost"
-                      size="sm"
-                      icon={s.active ? Pause : Play}
-                      label={s.active ? "Pause" : "Resume"}
-                      disabled={toggleMutation.isPending}
-                      onClick={() => toggleMutation.mutate({ id: s.id, active: !s.active })}
-                    />
-                    <IconButton
-                      variant="ghost"
-                      size="sm"
-                      icon={Trash2}
-                      label="Delete"
-                      disabled={deleteMutation.isPending}
-                      onClick={async () => {
-                        const confirmed = await confirm({
-                          title: `Delete scheduled report "${s.reportName}"?`,
-                          description: "This stops future deliveries of this report. You can set up a new schedule again later.",
-                          confirmLabel: "Delete",
-                        });
-                        if (confirmed) deleteMutation.mutate(s.id);
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
+              <ScheduleCard
+                key={s.id}
+                schedule={s}
+                icon={scheduleIcons[i % scheduleIcons.length]}
+                myNumber={myNumber}
+                expanded={expandedId === s.id}
+                onToggleExpand={() => setExpandedId(expandedId === s.id ? null : s.id)}
+                onToggleActive={() => toggleMutation.mutate({ id: s.id, active: !s.active })}
+                toggleDisabled={toggleMutation.isPending}
+                deleteDisabled={deleteMutation.isPending}
+                onDelete={async () => {
+                  const confirmed = await confirm({
+                    title: `Delete scheduled report "${s.reportName}"?`,
+                    description: "This stops future deliveries of this report. You can set up a new schedule again later.",
+                    confirmLabel: "Delete",
+                  });
+                  if (confirmed) deleteMutation.mutate(s.id);
+                }}
+              />
             ))
           )}
         </div>
@@ -186,45 +297,134 @@ export function ScheduledReportsSection() {
               <div style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown }}>Add New Schedule</div>
               <IconButton variant="ghost" size="sm" icon={X} label="Close" onClick={() => setShowForm(false)} />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 18 }}>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4" style={{ gap: 18 }}>
               <div>
-                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Select Report Type</span>
+                <FieldLabel>Select Report Type</FieldLabel>
                 <Select size="sm" value={reportType} onValueChange={setReportType}>
-                  {["Raw Material Report","Saree Production Report","Weaver Payment Report","Retail Sales Report","Wholesale Sales Report","Profit & Loss Report","Customer Report","Overdue & Alerts Report"].map((o) => (
+                  {REPORT_TYPES.map((o) => (
                     <SelectItem key={o} value={o}>{o}</SelectItem>
                   ))}
                 </Select>
               </div>
+
               <div>
-                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Frequency</span>
-                <Select size="sm" value={frequency} onValueChange={(v: string) => setFrequency(v as "Daily" | "Weekly" | "Monthly" | "Quarterly")}>
-                  {["Daily","Weekly","Monthly","Quarterly"].map((o) => (
-                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                <FieldLabel>Frequency</FieldLabel>
+                <Select size="sm" value={frequency} onValueChange={(v: string) => setFrequency(v as ReportFrequency)}>
+                  {FREQUENCY_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                   ))}
                 </Select>
+                <FieldHint>{frequencyHint}</FieldHint>
               </div>
+
               <div>
-                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Recipient Email</span>
+                <FieldLabel>Delivery Time (IST)</FieldLabel>
                 <Input
                   size="sm"
-                  type="email"
-                  placeholder="admin@example.com"
-                  value={recipientEmail}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRecipientEmail(e.target.value)}
+                  type="time"
+                  value={deliveryTime}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeliveryTime(e.target.value || "09:00")}
                 />
+                <FieldHint>The report lands within 15 minutes of this time.</FieldHint>
+              </div>
+
+              <div>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+                  <FieldLabel>Recipient WhatsApp Number</FieldLabel>
+                  {!usingOwnNumber && myNumber.length === 10 && (
+                    <button
+                      type="button"
+                      onClick={() => { setRecipientPhone(myNumber); setPhoneTouched(false); }}
+                      style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.antiqueGold, background: "none", border: "none", cursor: "pointer", padding: 0, marginBottom: 6 }}
+                    >
+                      Use my number
+                    </button>
+                  )}
+                </div>
+                <Input
+                  size="sm"
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={10}
+                  addonLeft="+91"
+                  placeholder="98765 43210"
+                  invalid={showPhoneError}
+                  value={recipientPhone}
+                  onBlur={() => setPhoneTouched(true)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setRecipientPhone(e.target.value.replace(/\D/g, "").slice(0, 10));
+                    setPhoneTouched(true);
+                  }}
+                />
+                {showPhoneError ? (
+                  <FieldHint tone="error">Enter a valid 10-digit mobile number.</FieldHint>
+                ) : usingOwnNumber ? (
+                  <FieldHint>Your own number — change it to send to someone else.</FieldHint>
+                ) : (
+                  <FieldHint>This number receives the spreadsheet on WhatsApp.</FieldHint>
+                )}
               </div>
             </div>
-            {createMutation.isError && (
-              <div style={{ marginTop: 12, fontFamily: F.ui, fontSize: 13, color: T.royalBurgundy }}>
-                Failed to save schedule. Please try again.
+
+            {/* Live delivery preview — the dates this schedule will actually fire on */}
+            <div style={{ marginTop: 20, background: "rgba(200,155,71,0.07)", border: `1px solid rgba(200,155,71,0.28)`, borderRadius: 12, padding: "16px 18px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <CalendarDays size={16} color={T.antiqueGold} />
+                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>
+                  Upcoming deliveries
+                </span>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                  · {FREQUENCY_LABEL[frequency]} at {formatClock(deliveryTime)}
+                </span>
               </div>
-            )}
+
+              {previewLoading && previewRuns.length === 0 ? (
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Working out the dates…</div>
+              ) : previewRuns.length === 0 ? (
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                  Dates will appear once a frequency and time are selected.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {previewRuns.map((run, idx) => (
+                    <span
+                      key={run}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        padding: "6px 12px", borderRadius: 99,
+                        background: idx === 0 ? T.royalBurgundy : "#FFFFFF",
+                        color: idx === 0 ? "#FFFDF9" : T.luxuryBrown,
+                        border: `1px solid ${idx === 0 ? T.royalBurgundy : T.borderDef}`,
+                        fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700,
+                      }}
+                    >
+                      {formatRunDate(run)}
+                      <span style={{ opacity: 0.7, fontWeight: 600 }}>· {formatRunTime(run)}</span>
+                      {idx === 0 && <span style={{ opacity: 0.85, fontWeight: 600 }}>({relativeToNow(run)})</span>}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 12, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+                <MessageCircle size={14} color={T.green} />
+                <span>
+                  Sent on WhatsApp to{" "}
+                  <strong style={{ color: T.luxuryBrown }}>
+                    +91 {prettyPhone(recipientPhone)}
+                  </strong>
+                  {usingOwnNumber ? " (you)" : ""}
+                </span>
+              </div>
+            </div>
+
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20, borderTop: `1px solid ${T.borderDef}`, paddingTop: 16 }}>
               <Button variant="secondary" size="sm" onClick={() => setShowForm(false)}>Cancel</Button>
               <Button
                 variant="primary"
                 size="sm"
-                disabled={createMutation.isPending || !recipientEmail}
+                disabled={createMutation.isPending || !phoneValid}
                 onClick={() => createMutation.mutate()}
               >
                 {createMutation.isPending ? "Saving…" : "💾 Save Schedule"}
@@ -238,3 +438,163 @@ export function ScheduledReportsSection() {
   );
 }
 
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>
+      {children}
+    </span>
+  );
+}
+
+function FieldHint({ children, tone }: { children: React.ReactNode; tone?: "error" }) {
+  return (
+    <span style={{ display: "block", marginTop: 6, fontFamily: F.ui, fontSize: 11.5, color: tone === "error" ? T.royalBurgundy : T.taupe }}>
+      {children}
+    </span>
+  );
+}
+
+function ScheduleCard({
+  schedule: s,
+  icon,
+  myNumber,
+  expanded,
+  onToggleExpand,
+  onToggleActive,
+  toggleDisabled,
+  onDelete,
+  deleteDisabled,
+}: {
+  schedule: ScheduledReportItem;
+  icon: React.ReactNode;
+  myNumber: string;
+  expanded: boolean;
+  onToggleExpand: () => void;
+  onToggleActive: () => void;
+  toggleDisabled: boolean;
+  onDelete: () => void;
+  deleteDisabled: boolean;
+}) {
+  const upcoming = s.upcomingRuns ?? [];
+  const nextRun = upcoming[0] ?? s.nextRunAt ?? null;
+  // Pre-WhatsApp rows carry only an email; show whatever the row actually has
+  // rather than an empty "Send to:".
+  const destination = s.recipientPhone
+    ? `+91 ${prettyPhone(s.recipientPhone)}${digitsOnly(s.recipientPhone) === myNumber ? " (you)" : ""}`
+    : (s.recipientEmail ?? "—");
+
+  return (
+    <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      {/* Top color bar — Royal Burgundy Brown */}
+      <div style={{ height: 5, background: s.active ? T.royalBurgundy : T.taupe }} />
+
+      <div style={{ padding: "20px 22px", flex: 1, display: "flex", flexDirection: "column", gap: 14 }}>
+        {/* Header: icon + title */}
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+          <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(200,155,71,0.12)" }}>
+            {icon}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.3, marginBottom: 7 }}>{s.reportName}</div>
+            <span style={{ display: "inline-block", padding: "3px 12px", borderRadius: 99, background: "rgba(200,155,71,0.13)", color: T.antiqueGold, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.4px" }}>
+              {FREQUENCY_LABEL[s.frequency] ?? s.frequency}
+              {" · "}
+              {formatClock(`${String(s.deliveryHour).padStart(2, "0")}:${String(s.deliveryMinute).padStart(2, "0")}`)}
+            </span>
+          </div>
+        </div>
+
+        {/* Details */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+            <MessageCircle size={14} color={T.green} />
+            <span><span style={{ fontWeight: 700, color: T.luxuryBrown }}>Send to: </span>{destination}</span>
+          </div>
+
+          {/* Next delivery — the single most useful line on the card */}
+          <div style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+            <Clock size={14} color={T.antiqueGold} />
+            {s.active && nextRun ? (
+              <span>
+                <span style={{ fontWeight: 700, color: T.luxuryBrown }}>Next: </span>
+                {formatRunDate(nextRun)}, {formatRunTime(nextRun)}{" "}
+                <span style={{ color: T.antiqueGold, fontWeight: 700 }}>({relativeToNow(nextRun)})</span>
+              </span>
+            ) : (
+              <span><span style={{ fontWeight: 700, color: T.luxuryBrown }}>Next: </span>paused — no deliveries scheduled</span>
+            )}
+          </div>
+
+          {s.lastRunAt && (
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+              Last sent {formatRunDate(s.lastRunAt)}, {formatRunTime(s.lastRunAt)}
+            </div>
+          )}
+
+          {/* Collapsed by default: three cards side by side stay scannable, and
+              the full date list is one click away for whoever needs it. */}
+          {upcoming.length > 1 && (
+            <div>
+              <button
+                type="button"
+                onClick={onToggleExpand}
+                aria-expanded={expanded}
+                style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy }}
+              >
+                <CalendarDays size={14} />
+                {expanded ? "Hide upcoming dates" : `See next ${upcoming.length} delivery dates`}
+                <ChevronDown size={14} style={{ transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+              </button>
+
+              {expanded && (
+                <motion.ul
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  style={{ overflow: "hidden", listStyle: "none", margin: "10px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: 6 }}
+                >
+                  {upcoming.map((run, idx) => (
+                    <li
+                      key={run}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "6px 10px", borderRadius: 8, background: idx === 0 ? "rgba(110,15,45,0.06)" : "rgba(0,0,0,0.02)", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}
+                    >
+                      <span>{formatRunDate(run)}</span>
+                      <span style={{ color: T.taupe, fontWeight: 600 }}>{formatRunTime(run)}</span>
+                    </li>
+                  ))}
+                </motion.ul>
+              )}
+            </div>
+          )}
+
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const, alignItems: "center" }}>
+            <span style={{ padding: "3px 11px", borderRadius: 6, background: "rgba(110,15,45,0.07)", color: T.royalBurgundy, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700 }}>{s.format}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: s.active ? T.green : T.taupe }} />
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: s.active ? T.green : T.taupe }}>{s.active ? "Active" : "Paused"}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8, borderTop: `1px solid ${T.borderDef}` }}>
+          <IconButton
+            variant="ghost"
+            size="sm"
+            icon={s.active ? Pause : Play}
+            label={s.active ? "Pause" : "Resume"}
+            disabled={toggleDisabled}
+            onClick={onToggleActive}
+          />
+          <IconButton
+            variant="ghost"
+            size="sm"
+            icon={Trash2}
+            label="Delete"
+            disabled={deleteDisabled}
+            onClick={onDelete}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

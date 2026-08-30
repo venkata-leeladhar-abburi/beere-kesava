@@ -70,6 +70,11 @@ export interface OutstandingMaterialGroup {
   jariType: string | null;
   jariGrade: BackendJariGrade | null;
   jariColor: string | null;
+  grnBatchId: string | null;
+  grnItemCode: string | null;
+  description: string | null;
+  unit: string;
+  issueIds: string[];
   issuedGrams: number;
   returnedGrams: number;
   outstandingGrams: number;
@@ -115,10 +120,15 @@ export const materialReturnsApi = {
 
   remove: (id: string) => apiClient.delete<void>(`/material-returns/${id}`),
 
-  getOutstanding: (params: { weaverId?: string; factoryLoomId?: string }) => {
+  // loomNumber/batchId narrow the balance to one loom or one batch of the
+  // selected recipient — both sides (issued and returned) are scoped, so the
+  // figures stay internally consistent at every zoom level.
+  getOutstanding: (params: { weaverId?: string; factoryLoomId?: string; loomNumber?: string; batchId?: string }) => {
     const query = new URLSearchParams();
     if (params.weaverId) query.set("weaverId", params.weaverId);
     if (params.factoryLoomId) query.set("factoryLoomId", params.factoryLoomId);
+    if (params.loomNumber) query.set("loomNumber", params.loomNumber);
+    if (params.batchId) query.set("batchId", params.batchId);
     return apiClient.get<OutstandingMaterialGroup[]>(`/material-returns/outstanding?${query.toString()}`);
   },
 };

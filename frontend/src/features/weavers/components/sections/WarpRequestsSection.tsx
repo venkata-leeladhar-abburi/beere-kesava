@@ -44,10 +44,12 @@ export function WarpRequestsSection() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (id: string) => warpRequestsApi.reject(id),
+    mutationFn: ({ id, notes }: { id: string; notes?: string }) =>
+      warpRequestsApi.reject(id, undefined, notes),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] });
       setDecision(null);
+      setRejectReason("");
       toast.success("Warp request rejected");
     },
     onError: (err: unknown) => {
@@ -179,14 +181,21 @@ export function WarpRequestsSection() {
       </FadeUp>
       <AnimatePresence>
         {decision && (
-          <ActionDialog open={!!decision} title={decision.type === "approve" ? "Approve warp request" : "Reject warp request"} tone={decision.type === "approve" ? "green" : "red"} onClose={() => setDecision(null)}>
+          <ActionDialog open={!!decision} title={decision.type === "approve" ? "Approve warp request" : "Reject warp request"} tone={decision.type === "approve" ? "green" : "red"} onClose={() => { setDecision(null); setRejectReason(""); }}>
             <div style={{ fontFamily: F.ui, color: T.luxuryBrown, fontSize: 16, lineHeight: 1.65 }}>
               {decision.type === "approve" ? <Check size={32} color={T.green} /> : <XOctagon size={32} color={T.crimson} />}
               Confirm {decision.type} for <b>{decision.req.weaver?.name || decision.req.weaverId}</b> ({decision.req.id}) requesting <b>{decision.req.warpType} ({decision.req.lengthMeters}m)</b> {decision.req.loomNumber ? `for Loom ${decision.req.loomNumber}` : ""}.
             </div>
-            {decision.type === "reject" && <Textarea placeholder="Reason for rejection" className="mt-[18px] min-h-[94px]" />}
+            {decision.type === "reject" && (
+              <Textarea
+                value={rejectReason}
+                onChange={e => setRejectReason(e.target.value)}
+                placeholder="Reason for rejection"
+                className="mt-[18px] min-h-[94px]"
+              />
+            )}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 22 }}>
-              <Button onClick={() => setDecision(null)} variant="secondary" className="rounded-xl">Cancel</Button>
+              <Button onClick={() => { setDecision(null); setRejectReason(""); }} variant="secondary" className="rounded-xl">Cancel</Button>
               <Button
                 disabled={approveMutation.isPending || rejectMutation.isPending}
                 loading={approveMutation.isPending || rejectMutation.isPending}
@@ -194,7 +203,7 @@ export function WarpRequestsSection() {
                   if (decision.type === "approve") {
                     approveMutation.mutate(decision.req.id);
                   } else {
-                    rejectMutation.mutate(decision.req.id);
+                    rejectMutation.mutate({ id: decision.req.id, notes: rejectReason.trim() || undefined });
                   }
                 }}
                 variant={decision.type === "approve" ? "primary" : "danger"}

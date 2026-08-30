@@ -85,8 +85,11 @@ interface PaginatedResponse<T> {
 }
 
 export const purchaseOrdersApi = {
-  list: (pageSize = 100) =>
-    apiClient.get<PaginatedResponse<BackendPurchaseOrder>>(`/purchase-orders?pageSize=${pageSize}`),
+  list: (vendorId?: string, pageSize = 100) => {
+    const params = new URLSearchParams({ pageSize: String(pageSize) });
+    if (vendorId) params.set("vendorId", vendorId);
+    return apiClient.get<PaginatedResponse<BackendPurchaseOrder>>(`/purchase-orders?${params.toString()}`);
+  },
   create: (payload: CreatePurchaseOrderPayload) =>
     apiClient.post<BackendPurchaseOrder>("/purchase-orders", payload),
   approve: (id: string, actorId?: string) =>

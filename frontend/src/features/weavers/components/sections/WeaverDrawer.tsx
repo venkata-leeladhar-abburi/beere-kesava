@@ -12,7 +12,7 @@ import { WEAVERS } from "../data";
 import { Avatar, SectionCard } from "../common/primitives";
 import { WeaverSareesSection } from "../WeaverSareesSection";
 import { useWeaverPayments } from "../../contexts/WeaverPaymentsContext";
-import { useMaterialIssue } from "@/features/materials";
+import { useMaterialIssue, useMaterialReturn } from "@/features/materials";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
 import { useScrollTopOnView } from "@/shared/ui/ScrollToTop";
@@ -126,6 +126,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
 
   const { getPaymentsForWeaver } = useWeaverPayments();
   const { getRecordsForWeaver, getMaterialSummaryByBatch } = useMaterialIssue();
+  const { getRecordsForWeaver: getReturnRecordsForWeaver } = useMaterialReturn();
   const { batches } = useBatches();
   const { dispatches } = useDesignLibrary();
   const [viewDispatches, setViewDispatches] = useState<{ weaverName: string; records: DispatchRecord[] } | null>(null);
@@ -146,6 +147,18 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
   const materialRecords = getRecordsForWeaver(weaver.id);
   const materialByBatch = getMaterialSummaryByBatch(weaver.id);
   const cfg = STATUS_CFG[weaver.status];
+
+  // Deductions noted on material returns (e.g. short-returned material) are
+  // only recorded on the return itself — nothing currently marks them as
+  // "settled" when a payment is made. Sum what's been recorded against what
+  // WeaverPayment.deduction already reflects as paid, so the Payments tab can
+  // show what's still owed back to the weaver and why, before the next payout.
+  const returnDeductions = getReturnRecordsForWeaver(weaver.id)
+    .filter(r => r.status !== "cancelled" && (r.deductionAmount ?? 0) > 0)
+    .map(r => ({ id: r.id, amount: r.deductionAmount ?? 0, reason: r.deductionReason || "No reason recorded", date: r.receivedAt }));
+  const totalDeductedFromReturns = returnDeductions.reduce((sum, d) => sum + d.amount, 0);
+  const totalDeductedInPayments = weaverPayments.reduce((sum, p) => sum + (p.deduction ?? 0), 0);
+  const pendingDeductionTotal = Math.max(0, totalDeductedFromReturns - totalDeductedInPayments);
 
   const getBatchNum = (id: string) => {
     const match = id.match(/BATCH-(\d+)/);
@@ -410,10 +423,19 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                   {[
                     { icon: <Smartphone size={18} color={T.royalBurgundy} />, label: "Mobile Number", value: weaver.mobile || "—" },
                     { icon: <MapPin size={18} color={T.royalBurgundy} />, label: "Village / Location", value: weaver.village || "—" },
-                    { icon: <Home size={18} color={T.royalBurgundy} />, label: "Address", value: `14-2, Main Handloom Street, ${weaver.village}` },
+                    // Address, bank and IFSC were hardcoded here and rendered the
+                    // same invented street/account for every weaver. The Weaver
+                    // record carries cluster/bankName/accountNo/ifsc — show those,
+                    // and "—" where the record is genuinely blank.
+                    { icon: <Home size={18} color={T.royalBurgundy} />, label: "Cluster", value: weaver.cluster || "—" },
                     { icon: <Activity size={18} color={T.royalBurgundy} />, label: "Number of Looms", value: `${weaver.looms} Active Looms` },
-                    { icon: <Landmark size={18} color={T.royalBurgundy} />, label: "Bank Account", value: "State Bank of India — ×××× 8990" },
-                    { icon: <CreditCard size={18} color={T.royalBurgundy} />, label: "IFSC Code", value: "SBIN0001234" },
+                    {
+                      icon: <Landmark size={18} color={T.royalBurgundy} />, label: "Bank Account",
+                      value: weaver.bankName || weaver.accountNo
+                        ? [weaver.bankName, weaver.accountNo ? `×××× ${weaver.accountNo.slice(-4)}` : null].filter(Boolean).join(" — ")
+                        : "—",
+                    },
+                    { icon: <CreditCard size={18} color={T.royalBurgundy} />, label: "IFSC Code", value: weaver.ifsc || "—" },
                   ].map(r => (
                     <div key={r.label} style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12 }}>
                       <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -523,7 +545,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
 
           {tab === "payments" && (
             <SectionCard icon={FileText} title="Payments Ledger" subtitle={`Financial payout records and transaction statement for ${weaver.name}`}>
-              <PaymentsTab weaver={weaver} weaverPayments={weaverPayments} filteredWeaverPayments={filteredWeaverPayments} paymentDateFilter={paymentDateFilter} setPaymentDateFilter={setPaymentDateFilter} />
+              <PaymentsTab weaver={weaver} weaverPayments={weaverPayments} filteredWeaverPayments={filteredWeaverPayments} paymentDateFilter={paymentDateFilter} setPaymentDateFilter={setPaymentDateFilter} pendingDeductions={returnDeductions} pendingDeductionTotal={pendingDeductionTotal} />
             </SectionCard>
           )}
 

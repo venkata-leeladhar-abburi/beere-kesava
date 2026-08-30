@@ -41,7 +41,7 @@ export interface UpdateFactoryLoomPayload extends Omit<CreateFactoryLoomPayload,
 }
 
 export const factoryLoomsApi = {
-  list: (pageSize = 100) =>
+  list: (pageSize = 500) =>
     apiClient.get<PaginatedResponse<BackendFactoryLoom>>(`/factory-looms?pageSize=${pageSize}`),
 
   create: (payload: CreateFactoryLoomPayload) =>

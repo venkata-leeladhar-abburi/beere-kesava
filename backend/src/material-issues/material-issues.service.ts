@@ -2,8 +2,9 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { PaginatedResult } from "../common/pagination";
 import { StorageService } from "../common/storage/storage.service";
 import { fromGrams, toGrams } from "../common/weight-units.util";
-import { MaterialIssueStatus, Prisma } from "../generated/prisma/client";
+import { MaterialIssueStatus, NotificationTargetType, Prisma, SignatureMethod } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment, nameSegment } from "../id-generator/id-generator.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateMaterialIssueDto } from "./dto/create-material-issue.dto";
 import { ListMaterialIssuesQueryDto } from "./dto/list-material-issues-query.dto";
@@ -35,6 +36,7 @@ export class MaterialIssuesService {
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
     private readonly storage: StorageService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateMaterialIssueDto) {
@@ -116,6 +118,21 @@ export class MaterialIssuesService {
       },
       include: includeItems,
     });
+
+    // Remote signature: no phone/SMS involved — the weaver approves this
+    // in-app, on their own portal's Confirm Materials page. Push them an
+    // in-app notification pointing at the record instead of texting anyone.
+    if (dto.signatureMethod === SignatureMethod.REMOTE && dto.weaverId) {
+      const linkedUser = await this.prisma.user.findUnique({ where: { linkedWeaverId: dto.weaverId } });
+      if (linkedUser) {
+        await this.notifications.create({
+          targetType: NotificationTargetType.USER,
+          userId: linkedUser.id,
+          type: "material_signature_request",
+          payload: { recordId: record.id, recordKind: "ISSUE" },
+        });
+      }
+    }
 
     // Pulls the request out of the Issue Material page's "Approved Warp
     // Requests" queue now that it's been fulfilled.

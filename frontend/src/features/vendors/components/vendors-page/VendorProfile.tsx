@@ -58,7 +58,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
 
   const { data: poRes, isLoading: posLoading, isError: posError } = useQuery({
     queryKey: ["vendor-pos", vendor.id],
-    queryFn: () => purchaseOrdersApi.list(),
+    queryFn: () => purchaseOrdersApi.list(vendor.id),
   });
   const { data: billsRes, isLoading: billsLoading, isError: billsError } = useQuery({
     queryKey: ["vendor-bills", vendor.id],
@@ -157,7 +157,9 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
   const lastOrderDate = orders.length ? orders[0].date : null;
   const overdueBills = ledger.bills.filter(b => b.status === "Overdue" || b.daysOverdue > 0);
   const moneyVisible = useMoneyVisible();
-  const realTotalSpend = orders.reduce((a, o) => a + o.amount, 0);
+  // Rejected orders never actually cost anything — exclude them from spend,
+  // same as the vendor rollup / analytics dashboard.
+  const realTotalSpend = orders.filter(o => o.status !== "Cancelled").reduce((a, o) => a + o.amount, 0);
 
   const filteredBills = ledger.bills.filter(b => matchesDateFilter(b.date, payFilter));
   const filteredTxns = ledger.txns.filter(t => matchesDateFilter(t.date, payFilter));

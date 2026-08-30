@@ -134,7 +134,7 @@ export function OverdueAlertsReport() {
     .filter(inv => inv.status === "OVERDUE")
     .map(inv => ({
       customer: inv.customer?.name ?? customerNameById.get(inv.customerId) ?? "Unknown Customer",
-      inv: inv.id,
+      inv: inv.code ?? inv.id,
       total: Number(inv.total),
       paid: Number(inv.paid),
       overdue: Number(inv.total) - Number(inv.paid),

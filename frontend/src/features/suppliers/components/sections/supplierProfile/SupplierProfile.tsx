@@ -34,7 +34,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   onBack: () => void;
   onRaiseRequest: (supplierId: string) => void;
 }) {
-  const { statsFor, purchases, payments, requests, updateSupplier, deleteSupplier, addPayment } = useSuppliers();
+  const { statsFor, payments, requests, updateSupplier, deleteSupplier, addPayment } = useSuppliers();
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
   const confirm = useConfirm();
   const [payModalOpen, setPayModalOpen] = useState(false);
@@ -109,13 +109,20 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   const myRequests = requests.filter(r => r.supplierId === supplier.id);
 
   // Spend trend by month, derived from this supplier's actual purchases.
+  // `p.date` is an ISO "YYYY-MM-DD" string — bucket by the "YYYY-MM" prefix
+  // and sort chronologically, rather than splitting on a space that never
+  // occurs (which used to dump every purchase into one "—" bucket).
   const spendByMonth = useMemo(() => {
     const buckets = new Map<string, number>();
     myPurchases.forEach(p => {
-      const month = (p.date || "").split(" ").slice(1).join(" ") || "—";
-      buckets.set(month, (buckets.get(month) || 0) + parseINR(p.billAmount));
+      const key = (p.date || "").slice(0, 7) || "—";
+      buckets.set(key, (buckets.get(key) || 0) + parseINR(p.billAmount));
     });
-    return Array.from(buckets, ([month, spend]) => ({ month, spend })).reverse();
+    return Array.from(buckets, ([key, spend]) => {
+      const [y, m] = key.split("-");
+      const month = y && m ? new Date(Number(y), Number(m) - 1, 1).toLocaleDateString("en-IN", { month: "short", year: "numeric" }) : key;
+      return { key, month, spend };
+    }).sort((a, b) => a.key.localeCompare(b.key));
   }, [myPurchases]);
 
   // Billed amount grouped by payment status.
@@ -427,7 +434,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
         <SupplierPayNowModal
           supplier={supplier}
           outstanding={stats.outstanding}
-          openPurchases={purchases.filter(p => p.supplierId === supplier.id && p.status !== "Paid")}
+          openPurchases={myPurchases.filter(p => p.status !== "Paid")}
           saving={savingPayment}
           onClose={() => setPayModalOpen(false)}
           onSave={payload => {

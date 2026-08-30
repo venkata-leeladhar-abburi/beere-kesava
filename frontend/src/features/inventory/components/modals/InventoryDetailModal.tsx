@@ -1,6 +1,6 @@
 import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Package, X, Hash, FileText, Truck, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
+import { Package, X, Hash, FileText, Truck, AlertTriangle, Clock, CheckCircle2, ShoppingBag } from "lucide-react";
 import { FinishingReturn, DispatchRecord } from "@/features/finishing";
 import { T, F } from "../theme";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
@@ -8,6 +8,9 @@ import { InventoryRecord } from "../types";
 import { getSareeColor } from "../utils";
 import { StatusBadge } from "../common/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { formatMoney, rupees } from "@/lib/domain/money";
+
+const inr = (n: number) => formatMoney(rupees(n));
 
 // ── Inventory Detail Modal ────────────────────────────────────────────────────
 export function InventoryDetailModal({
@@ -20,6 +23,8 @@ export function InventoryDetailModal({
 }) {
   const disp = dispatches.find(d => d.sareeIds.includes(item.id));
   const ret  = returns.find(r => r.sareeId === item.id);
+  const isExternal = item.rawType === 'external';
+  const ext = item.external;
 
   const infoCell = (label: string, value: React.ReactNode) => (
     <div>
@@ -73,10 +78,43 @@ export function InventoryDetailModal({
           {/* Core info */}
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             {infoCell('Saree Type', item.sareeType)}
-            {infoCell('Saree Color', getSareeColor(item.id))}
-            {infoCell('Weaver', item.weaverName)}
-            {infoCell(item.rawType === 'readySaree' ? 'QC Passed Date' : 'Received Date', <span style={{ fontFamily: "var(--font-mono)" }}>{item.date}</span>)}
+            {/* An external piece has its colour recorded on the purchase line;
+                only a woven saree needs the id-derived fallback. */}
+            {infoCell('Saree Color', isExternal ? (ext?.color || '—') : getSareeColor(item.id))}
+            {infoCell(isExternal ? 'Supplier' : 'Weaver', item.weaverName)}
+            {infoCell(item.rawType === 'readySaree' ? 'QC Passed Date' : isExternal ? 'Purchase Date' : 'Received Date', <span style={{ fontFamily: "var(--font-mono)" }}>{item.date || '—'}</span>)}
           </div>
+
+          {/* External purchase */}
+          {isExternal && (
+            <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 18 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <ShoppingBag size={14} /> External Purchase
+              </div>
+              <div style={{ background: 'rgba(200,155,71,0.06)', border: '1px solid rgba(200,155,71,0.18)', borderRadius: 12, padding: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {ext?.photoUrl && (
+                  <img
+                    src={ext.photoUrl}
+                    alt={`Saree ${item.id}`}
+                    style={{ width: '100%', maxHeight: 220, objectFit: 'cover' as const, borderRadius: 10, border: `1px solid ${T.borderDef}` }}
+                  />
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12 }}>
+                  {infoCell('Supplier', item.supplier || '—')}
+                  {infoCell('Location', ext?.supplierLocation || '—')}
+                  {infoCell('Purchase Order', <span style={{ fontFamily: "var(--font-mono)" }}>{ext?.purchaseId || '—'}</span>)}
+                  {infoCell('Invoice No.', <span style={{ fontFamily: "var(--font-mono)" }}>{ext?.invoiceNumber || '—'}</span>)}
+                  {infoCell('GST No.', <span style={{ fontFamily: "var(--font-mono)" }}>{ext?.gstNumber || '—'}</span>)}
+                  {infoCell('Serial No.', <span style={{ fontFamily: "var(--font-mono)" }}>{ext?.serialCode || '—'}{ext?.pieceNo && ext?.lineQuantity && ext.lineQuantity > 1 ? ` · piece ${ext.pieceNo}/${ext.lineQuantity}` : ''}</span>)}
+                  {infoCell('Weight', ext?.weight || '—')}
+                  {infoCell('Payment', <span style={{ color: ext?.paymentStatus === 'Paid' ? T.green : ext?.paymentStatus === 'Partial' ? '#C07A18' : T.crimson }}>{ext?.paymentStatus || '—'}</span>)}
+                  {infoCell('Cost Price', <span style={{ fontFamily: "var(--font-mono)" }}>{ext?.costPrice != null ? inr(ext.costPrice) : '—'}</span>)}
+                  {infoCell('Markup', ext?.sellPercent != null ? `${ext.sellPercent}%` : '—')}
+                  {infoCell('Selling Price', <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy, fontWeight: 700 }}>{ext?.finalAmount != null ? inr(ext.finalAmount) : '—'}</span>)}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Dispatched */}
           {item.status === 'Dispatched' && disp && (
@@ -134,7 +172,7 @@ export function InventoryDetailModal({
           )}
 
           {/* Finishing complete */}
-          {item.status === 'Finishing complete' && (
+          {item.status === 'Finishing complete' && !isExternal && (
             <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 18 }}>
               <div style={{ background: 'rgba(30,102,64,0.04)', border: '1px solid rgba(30,102,64,0.12)', borderRadius: 12, padding: 16, textAlign: 'center' as const }}>
                 <CheckCircle2 size={22} color={T.green} style={{ marginBottom: 8 }} />

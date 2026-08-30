@@ -17,6 +17,11 @@ export function VendorsHeroStats({ vendors, onAddClick }: { vendors: Vendor[]; o
     return formatMoney(rupees(fromPaise(totalPaise)), { compact: true });
   }, [vendors]);
 
+  const newThisYearCount = React.useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    return vendors.filter(v => v.createdAt && new Date(v.createdAt).getFullYear() === currentYear).length;
+  }, [vendors]);
+
   return (
     <>
       {/* Hero Header */}
@@ -59,7 +64,7 @@ export function VendorsHeroStats({ vendors, onAddClick }: { vendors: Vendor[]; o
           { label: "Active Vendors", value: String(vendors.filter(v => v.status === "active").length), sub: "Currently supplying materials", icon: <CheckCircle2 size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
           { label: "Total Spend", value: totalSpendVal, sub: "This year · All material types", icon: <IndianRupee size={20} color="rgba(231,201,131,0.95)" />, highlight: true },
           { label: "Overdue Payments", value: String(vendors.filter(v => v.status === "overdue").length), sub: "Vendors awaiting settlement", icon: <AlertTriangle size={20} color="#FCA5A5" />, highlight: false, crimson: vendors.some(v => v.status === "overdue") },
-          { label: "New This Year", value: "2", sub: "Recently onboarded vendors", icon: <TrendingUp size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
+          { label: "New This Year", value: String(newThisYearCount), sub: "Recently onboarded vendors", icon: <TrendingUp size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
         ]} />
       </div>
     </>

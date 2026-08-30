@@ -65,7 +65,7 @@ export function SuppliersPage() {
       const match = ratingFilter.match(/(\d)/);
       if (match) {
         const r = parseInt(match[1]);
-        mRating = Math.round(s.rating || 3) === r;
+        mRating = Math.round(s.rating || 0) === r;
       }
     }
 

@@ -97,10 +97,19 @@ export function RetailChartsRow1() {
     queryKey: ["retail-charts-batches"],
     queryFn: () => batchesApi.list(),
   });
+  const { data: returnsRes } = useQuery({
+    queryKey: ["retail-charts-returns"],
+    queryFn: () => salesApi.listReturns(200),
+  });
+
+  const returnedSareeIds = useMemo(
+    () => new Set((returnsRes?.items ?? []).map(r => r.sareeId)),
+    [returnsRes],
+  );
 
   const retailSales = useMemo(() => {
-    return (salesRes?.items ?? []).filter(s => s.channel === "RETAIL");
-  }, [salesRes]);
+    return (salesRes?.items ?? []).filter(s => s.channel === "RETAIL" && !returnedSareeIds.has(s.sareeId));
+  }, [salesRes, returnedSareeIds]);
 
   const customerMap = useMemo(() => {
     return new Map((customersRes?.items ?? []).map(c => [c.id, c]));
@@ -298,10 +307,19 @@ export function RetailChartsRow2() {
     queryKey: ["retail-charts-row2-sales"],
     queryFn: () => salesApi.list(),
   });
+  const { data: returnsRes } = useQuery({
+    queryKey: ["retail-charts-row2-returns"],
+    queryFn: () => salesApi.listReturns(200),
+  });
+
+  const returnedSareeIds = useMemo(
+    () => new Set((returnsRes?.items ?? []).map(r => r.sareeId)),
+    [returnsRes],
+  );
 
   const retailSales = useMemo(() => {
-    return (salesRes?.items ?? []).filter(s => s.channel === "RETAIL");
-  }, [salesRes]);
+    return (salesRes?.items ?? []).filter(s => s.channel === "RETAIL" && !returnedSareeIds.has(s.sareeId));
+  }, [salesRes, returnedSareeIds]);
 
   const customerMap = useMemo(() => {
     return new Map((customersRes?.items ?? []).map(c => [c.id, c]));

@@ -10,12 +10,56 @@ export class AuditLogService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Records one login-lifecycle event. Called by the auth module once it exists
-   * (JWT/OTP login is still deferred project-wide — see users.controller.ts's
-   * RBAC-guard notes for the same reason). No other module should call this.
+   * Records one login-lifecycle event. Written by the auth module on
+   * verify-otp and logout. No other module should call this.
    */
   record(params: { userId?: string; status: AuditStatus; device?: string; duration?: number; failReason?: string }) {
     return this.prisma.auditLog.create({ data: params });
+  }
+
+  /**
+   * Closes the session opened by this user's most recent LOGIN, recording a
+   * LOGOUT with the minutes elapsed.
+   *
+   * Duration is stored in whole minutes because that is the unit
+   * `formatDuration` on the Login History screen reads it in. A session shorter
+   * than a minute rounds to 0, which renders as "0 minutes" — accurate, and
+   * better than inventing a floor.
+   *
+   * Never throws: logging out must succeed even when the audit write cannot,
+   * so a failure here is swallowed rather than surfaced to the user.
+   */
+  async recordLogout(userId: string, device?: string) {
+    try {
+      // AuditLog.userId is an FK to User. A weaver-fallback session carries a
+      // Weaver.id instead, so writing it would violate that FK — checked up
+      // front rather than left to the catch below, which exists for real
+      // failures, not for an expected case.
+      const exists = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+      if (!exists) return null;
+
+      const lastLogin = await this.prisma.auditLog.findFirst({
+        where: { userId, status: AuditStatus.LOGIN },
+        orderBy: { createdAt: "desc" },
+      });
+
+      // A LOGOUT already newer than that LOGIN means the session was closed
+      // before — don't pair the same login twice.
+      const alreadyClosed = lastLogin
+        ? await this.prisma.auditLog.findFirst({
+            where: { userId, status: AuditStatus.LOGOUT, createdAt: { gt: lastLogin.createdAt } },
+          })
+        : null;
+
+      const duration =
+        lastLogin && !alreadyClosed
+          ? Math.max(0, Math.round((Date.now() - lastLogin.createdAt.getTime()) / 60_000))
+          : undefined;
+
+      return await this.record({ userId, status: AuditStatus.LOGOUT, device, duration });
+    } catch {
+      return null;
+    }
   }
 
   /**

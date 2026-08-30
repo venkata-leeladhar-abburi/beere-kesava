@@ -1,16 +1,15 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  Monitor, Smartphone, AlignLeft, Table2, ChevronLeft, ChevronRight, LogIn,
-} from "lucide-react";
+import { Monitor, Smartphone, AlignLeft, Table2, LogIn } from "lucide-react";
 import { F, T } from "./tokens";
 import { LoginEvent } from "./data";
-import { PaginationBtn, SectionCard } from "./shared";
+import { SectionCard } from "./shared";
 import { Button } from "../../../../shared/ui/primitives";
 import { auditLogApi, BackendAuditLog } from "../../../../shared/api/audit-log";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 function formatTime(iso: string): string {
   const d = new Date(iso);
@@ -46,7 +45,7 @@ function toLoginEvent(log: BackendAuditLog): LoginEvent {
   };
 }
 
-export function LoginHistorySection() {
+export function LoginHistorySection({ staffUserId }: { staffUserId?: string } = {}) {
   const [loginView, setLoginView] = useState<"timeline"|"table">("timeline");
 
   const columns: ColumnDef<LoginEvent>[] = [
@@ -108,12 +107,13 @@ export function LoginHistorySection() {
   ];
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["audit-log", "logins"],
-    queryFn: () => auditLogApi.list(),
+    queryKey: ["audit-log", "logins", staffUserId],
+    queryFn: () => auditLogApi.list({ userId: staffUserId }),
   });
 
   const entries: LoginEvent[] = (data?.items ?? []).map(toLoginEvent);
-  const total = data?.total ?? 0;
+  // The timeline had no paging at all — every fetched session in one scroll.
+  const pag = usePagination(entries, 10);
 
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
@@ -176,7 +176,7 @@ export function LoginHistorySection() {
               <EmptyState title="No login history yet" description="Logins, logouts, and failed attempts will show up here." />
             )}
 
-            {entries.map(entry => {
+            {pag.pageItems.map(entry => {
               const circleColor = entry.event === "login" ? T.green : entry.event === "logout" ? T.taupe : T.crimson;
               const circleInitial = entry.event === "login" ? "IN" : entry.event === "logout" ? "OUT" : "!";
               return (
@@ -261,6 +261,21 @@ export function LoginHistorySection() {
                 </div>
               );
             })}
+
+            {entries.length > 0 && (
+              <div style={{ marginTop: 8 }}>
+                <Pagination
+                  page={pag.page}
+                  pageCount={pag.pageCount}
+                  total={pag.total}
+                  pageSize={pag.pageSize}
+                  start={pag.start}
+                  onPageChange={pag.setPage}
+                  onPageSizeChange={pag.setPageSize}
+                  itemLabel="sessions"
+                />
+              </div>
+            )}
           </motion.div>
         ) : (
           <motion.div
@@ -287,25 +302,9 @@ export function LoginHistorySection() {
                 emptyTitle="No login history yet"
                 emptyDescription="Logins, logouts, and failed attempts will show up here."
                 pagination
+                itemLabel="sessions"
               />
 
-              {/* Pagination */}
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "16px 18px",
-                borderTop: `1px solid ${T.borderDef}`,
-              }}>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
-                  Showing {entries.length} of {total} session{total !== 1 ? "s" : ""}
-                </span>
-                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <PaginationBtn disabled><ChevronLeft size={13} /></PaginationBtn>
-                  <PaginationBtn active>1</PaginationBtn>
-                  <PaginationBtn disabled><ChevronRight size={13} /></PaginationBtn>
-                </div>
-              </div>
             </div>
           </motion.div>
         )}

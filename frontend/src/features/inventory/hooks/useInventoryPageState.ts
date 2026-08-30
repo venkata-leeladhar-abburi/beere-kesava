@@ -119,6 +119,22 @@ export function useInventoryPageState() {
         rawType: "external",
         originalId: r.stock?.purchaseId ?? r.sareeId,
         supplier: r.stock?.supplier ?? undefined,
+        external: {
+          supplierLocation: r.stock?.supplierLocation ?? undefined,
+          purchaseId: r.stock?.purchaseId ?? undefined,
+          invoiceNumber: r.stock?.invoiceNumber ?? undefined,
+          gstNumber: r.external?.gstNumber ?? undefined,
+          color: r.color ?? undefined,
+          weight: r.stock?.weight || undefined,
+          costPrice: r.stock?.costPrice,
+          sellPercent: r.stock?.sellPercent,
+          finalAmount: r.stock?.finalAmount,
+          paymentStatus: r.external?.paymentStatus,
+          photoUrl: r.receivedPhotoUrl ?? r.external?.linePhotoUrl ?? undefined,
+          serialCode: r.external?.lineCode,
+          pieceNo: r.external?.pieceNo,
+          lineQuantity: r.external?.lineQuantity,
+        },
       });
     });
 

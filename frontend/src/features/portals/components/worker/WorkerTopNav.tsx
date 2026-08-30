@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import {
   User, Bell, ChevronLeft, LogOut,
   Home, Search, Users, Sparkles, Truck, Activity,
+  PackageCheck, ShieldCheck, ShieldAlert, CircleAlert, ArrowRight,
 } from "lucide-react";
 import { C, F } from "./tokens";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
@@ -28,11 +29,13 @@ function topNavItems(pendingQcCount: number): { id: NavTab; Icon: IconComponent;
   ];
 }
 
-function notifEmoji(type: string): string {
-  if (type.includes("qc")) return "🔍";
-  if (type.includes("receive") || type.includes("weaver")) return "🧵";
-  if (type.includes("pass") || type.includes("complete")) return "✅";
-  return "🔔";
+function notifIconInfo(type: string): { Icon: IconComponent; color: string; bg: string } {
+  if (type.includes("overdue")) return { Icon: CircleAlert, color: "#C0392B", bg: "rgba(192,57,43,0.12)" };
+  if (type.includes("qc") && (type.includes("fail") || type.includes("defect"))) return { Icon: ShieldAlert, color: "#C0392B", bg: "rgba(192,57,43,0.12)" };
+  if (type.includes("qc")) return { Icon: Search, color: "#6E0F2D", bg: "rgba(110,15,45,0.10)" };
+  if (type.includes("receive") || type.includes("stock") || type.includes("weaver")) return { Icon: PackageCheck, color: "#C89B47", bg: "rgba(200,155,71,0.14)" };
+  if (type.includes("pass") || type.includes("complete")) return { Icon: ShieldCheck, color: "#2E7D32", bg: "rgba(46,125,50,0.12)" };
+  return { Icon: Bell, color: "#C89B47", bg: "rgba(200,155,71,0.14)" };
 }
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -210,7 +213,14 @@ export function WorkerTopNav({ active, onSelect, bp, pendingQcCount = 0 }: Worke
                       onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.03)"}
                       onMouseLeave={e => e.currentTarget.style.background = isUnread ? "rgba(200,155,71,0.07)" : "transparent"}
                     >
-                      <span style={{ fontSize: 15, flexShrink: 0, marginTop: 1 }}>{notifEmoji(n.type)}</span>
+                      {(() => {
+                        const { Icon: NotifIcon, color, bg } = notifIconInfo(n.type);
+                        return (
+                          <span style={{ width: 28, height: 28, borderRadius: 8, background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <NotifIcon size={14} color={color} />
+                          </span>
+                        );
+                      })()}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: isUnread ? 700 : 500, color: C.dark, marginBottom: 2 }}>
                           {notificationTitle(n)}
@@ -228,6 +238,34 @@ export function WorkerTopNav({ active, onSelect, bp, pendingQcCount = 0 }: Worke
                 })}
               </div>
             )}
+            <button
+              type="button"
+              onClick={() => { setShowNotif(false); onSelect("activity"); }}
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                padding: "12px 18px",
+                borderTop: `1px solid rgba(110,15,45,0.08)`,
+                background: "#FFFDF9",
+                border: "none",
+                borderTopWidth: 1,
+                borderTopStyle: "solid",
+                borderTopColor: "rgba(110,15,45,0.08)",
+                fontFamily: F.u,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#C89B47",
+                cursor: "pointer",
+                transition: "background 0.15s ease",
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(200,155,71,0.08)"}
+              onMouseLeave={e => e.currentTarget.style.background = "#FFFDF9"}
+            >
+              View All Activity <ArrowRight size={13} />
+            </button>
           </Popover.Content>
         </Popover>
 

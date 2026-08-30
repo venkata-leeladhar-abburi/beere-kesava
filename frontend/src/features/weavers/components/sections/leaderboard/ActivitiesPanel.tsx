@@ -1,18 +1,61 @@
 // ── Weaver activity feed panel (row 2 of the leaderboard section) ──────────
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { Bell, Activity as ActivityIcon } from "lucide-react";
 import { BarChart3 as ChartBar } from "lucide-react";
 import { T, F } from "../../theme";
-import { ACTIVITIES, ACTIVITY_ICONS } from "../../data";
+import { ACTIVITY_ICONS } from "../../data";
+import { auditLogApi } from "../../../../../shared/api/audit-log";
+import type { WeaverActivity } from "../../data";
 import { FadeUp, SectionCard } from "../../common/primitives";
 import { Button } from "../../../../../shared/ui/primitives";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
+import { Pagination, usePagination } from "../../../../../shared/ui/DataPagination";
+
+/** Modules whose action-log entries are genuinely weaver activity. */
+const WEAVER_ACTIVITY_MODULES = ["WEAVERS", "WARP_REQUESTS", "QC", "MATERIALS", "BATCHES", "PAYMENTS"];
+
+/** Rough icon/category mapping onto the existing ACTIVITY_ICONS keys. */
+function iconForModule(module: string): string {
+  if (module === "QC") return "✅";
+  if (module === "MATERIALS" || module === "WARP_REQUESTS") return "📦";
+  if (module === "PAYMENTS") return "💰";
+  return "🔄";
+}
 
 export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) {
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
-  const filteredActivities = ACTIVITIES.filter(a => matchesDateFilter(a.date ?? a.timestamp, dateFilter));
+
+  // This feed was reading the ACTIVITIES export from ../../data, which is a
+  // hardcoded empty array — the panel could only ever render its empty state.
+  // Weaver-related entries from the real action log drive it now.
+  const { data: actionsRes, isLoading, isError } = useQuery({
+    queryKey: ["weaver-activities", WEAVER_ACTIVITY_MODULES],
+    queryFn: () => auditLogApi.listActions({ modules: WEAVER_ACTIVITY_MODULES, pageSize: 500 }),
+  });
+
+  const activities: WeaverActivity[] = React.useMemo(
+    () => (actionsRes?.items ?? []).map(a => ({
+      timestamp: a.createdAt,
+      // The action log records what already happened; nothing in it is a
+      // pending task, so no row claims to need action.
+      needsAction: false,
+      icon: iconForModule(a.module),
+      action: a.action,
+      category: a.module.replace(/_/g, " "),
+      detail: [a.recordLabel, a.user ? `by ${a.user.firstName} ${a.user.lastName}` : null]
+        .filter(Boolean).join(" · ") || "—",
+      time: new Date(a.createdAt).toLocaleString("en-IN", {
+        day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+      }),
+    })),
+    [actionsRes],
+  );
+
+  const filteredActivities = activities.filter(a => matchesDateFilter(a.date ?? a.timestamp, dateFilter));
   const activitiesNeedingAction = filteredActivities.filter(a => a.needsAction).length;
+  const pag = usePagination(filteredActivities, 10);
   return (
       <FadeUp delay={0.12}>
       <SectionCard
@@ -33,7 +76,7 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
           </>
         }
       >
-        <div style={{ margin: "-24px -28px 0" }}>
+        <div style={{ margin: "-24px -28px 0" }} data-pagination-target>
           <div style={{ padding: "18px 32px", borderBottom: `1px solid ${T.borderDef}` }}>
             <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           </div>
@@ -42,11 +85,19 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
               actionable items called out with an amber rail + a way to act on
               them right there rather than needing to guess what to do next. */}
           <div style={{ display: "flex", flexDirection: "column" }}>
-            {filteredActivities.length === 0 ? (
+            {isLoading ? (
+              <div style={{ padding: "40px 32px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+                Loading weaver activities…
+              </div>
+            ) : isError ? (
+              <div style={{ padding: "40px 32px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.crimson }}>
+                Couldn't load weaver activities.
+              </div>
+            ) : filteredActivities.length === 0 ? (
               <div style={{ padding: "40px 32px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
                 No activities recorded for this period.
               </div>
-            ) : filteredActivities.map((a, i) => {
+            ) : pag.pageItems.map((a, i) => {
               const cfg = ACTIVITY_ICONS[a.icon] ?? { PhIcon: ChartBar, bg: "rgba(110,15,45,0.07)", color: T.taupe };
               const PhIcon = cfg.PhIcon as React.ElementType;
               return (
@@ -62,7 +113,7 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
                   whileHover={{ background: "rgba(247,242,234,0.55)" }}
                   style={{
                     padding: "20px 32px",
-                    borderBottom: i < filteredActivities.length - 1 ? `1px solid ${T.borderDef}` : "none",
+                    borderBottom: i < pag.pageItems.length - 1 ? `1px solid ${T.borderDef}` : "none",
                     borderLeft: a.needsAction ? `3px solid ${T.antiqueGold}` : "3px solid transparent",
                     display: "flex", alignItems: "flex-start", gap: 16,
                     background: a.needsAction ? "rgba(200,155,71,0.05)" : "#FFFFFF",
@@ -95,6 +146,21 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
               );
             })}
           </div>
+
+          {!isLoading && !isError && filteredActivities.length > 0 && (
+            <div className="p-3 border-t" style={{ borderColor: T.borderDef }}>
+              <Pagination
+                page={pag.page}
+                pageCount={pag.pageCount}
+                total={pag.total}
+                pageSize={pag.pageSize}
+                start={pag.start}
+                onPageChange={pag.setPage}
+                onPageSizeChange={pag.setPageSize}
+                itemLabel="activities"
+              />
+            </div>
+          )}
 
         </div>
       </SectionCard>

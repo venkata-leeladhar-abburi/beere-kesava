@@ -14,7 +14,37 @@ export interface WeaverStats {
   qcPassCount: number;
   qcPassRate: number; // percentage 0–100
   activeBatchRowsCount: number;
+  /**
+   * Sarees this weaver has handed in that are received but not yet inspected.
+   * A BatchSareeRow must be `receivedAt` before it enters the QC queue, so
+   * "received, qcPassed still null" is exactly the waiting-for-QC state. This
+   * is what lets the UI distinguish "submitted, awaiting QC" from "idle" —
+   * without it every weaver collapsed to active-or-idle.
+   */
+  awaitingQcCount: number;
   materialIssueCount: number;
+  /** Most recent QC inspection or saree receipt, ISO string; null if never. */
+  lastActivityAt: string | null;
+}
+
+/** One month of firm-wide output, oldest first. */
+export interface WeaverProductionSeriesPoint {
+  /** "YYYY-MM" */
+  month: string;
+  produced: number;
+  passed: number;
+}
+
+interface ProducedEntry {
+  produced: Set<string>;
+  passed: Set<string>;
+  lastActivityAt: Date | null;
+}
+
+/** Optional window applied to production/QC aggregates. */
+export interface StatsRange {
+  from?: Date;
+  to?: Date;
 }
 
 export interface WeaverLeaderboardEntry {
@@ -196,76 +226,241 @@ export class WeaversService {
   // agrees. Pass weaverIds to scope the query; omit for all weavers.
   private async getProducedCountsByWeaver(
     weaverIds?: string[],
-  ): Promise<Map<string, { produced: Set<string>; qcPassCount: number }>> {
+    range?: StatsRange,
+  ): Promise<Map<string, ProducedEntry>> {
+    // A window narrows both halves on the timestamp each side actually
+    // carries: qcDate for an inspection, updatedAt for a finishing return —
+    // the same pairing getProductionLeaderboard already uses.
+    const window = range?.from || range?.to
+      ? { ...(range.from ? { gte: range.from } : {}), ...(range.to ? { lte: range.to } : {}) }
+      : undefined;
+
     const [passedRecords, returnedAssignments] = await Promise.all([
       this.prisma.qcRecord.findMany({
-        where: { weaverId: weaverIds ? { in: weaverIds } : { not: null }, result: "PASSED" },
-        select: { weaverId: true, sareeId: true },
+        where: {
+          weaverId: weaverIds ? { in: weaverIds } : { not: null },
+          result: "PASSED",
+          ...(window ? { qcDate: window } : {}),
+        },
+        select: { weaverId: true, sareeId: true, qcDate: true },
       }),
       this.prisma.finishingAssignment.findMany({
         where: {
           status: "RETURNED",
           batchSareeRow: { weaverId: weaverIds ? { in: weaverIds } : { not: null } },
+          ...(window ? { updatedAt: window } : {}),
         },
-        select: { sareeId: true, batchSareeRow: { select: { weaverId: true } } },
+        select: {
+          sareeId: true,
+          updatedAt: true,
+          batchSareeRow: { select: { weaverId: true } },
+        },
       }),
     ]);
 
-    const byWeaver = new Map<string, { produced: Set<string>; qcPassCount: number }>();
+    const byWeaver = new Map<string, ProducedEntry>();
     const entry = (weaverId: string) => {
-      const e = byWeaver.get(weaverId) ?? { produced: new Set<string>(), qcPassCount: 0 };
+      const e = byWeaver.get(weaverId)
+        ?? { produced: new Set<string>(), passed: new Set<string>(), lastActivityAt: null };
       byWeaver.set(weaverId, e);
       return e;
     };
+    const touch = (e: ProducedEntry, at: Date) => {
+      if (!e.lastActivityAt || at > e.lastActivityAt) e.lastActivityAt = at;
+    };
+    // Both sets are keyed by sareeId: a saree re-inspected and passed twice
+    // leaves two PASSED QcRecords, and counting those raw rows against a
+    // deduplicated `produced` denominator produced pass rates above 100%.
     passedRecords.forEach((r) => {
       if (!r.weaverId) return;
       const e = entry(r.weaverId);
       e.produced.add(r.sareeId);
-      e.qcPassCount += 1;
+      e.passed.add(r.sareeId);
+      touch(e, r.qcDate);
     });
     returnedAssignments.forEach((r) => {
       const weaverId = r.batchSareeRow.weaverId;
       if (!weaverId) return;
-      entry(weaverId).produced.add(r.sareeId);
+      const e = entry(weaverId);
+      e.produced.add(r.sareeId);
+      touch(e, r.updatedAt);
     });
     return byWeaver;
   }
 
   /** Returns live-calculated performance metrics for a single weaver. */
-  async getWeaverStats(id: string): Promise<WeaverStats> {
+  async getWeaverStats(id: string, range?: StatsRange): Promise<WeaverStats> {
     await this.findOne(id); // throws 404 if not found
 
-    const [producedByWeaver, activeBatchRowsCount, materialIssueCount] = await Promise.all([
-      this.getProducedCountsByWeaver([id]),
-      // Active batch rows currently assigned to this weaver
-      this.prisma.batchSareeRow.count({
-        where: {
-          weaverId: id,
-          batch: { status: "ACTIVE" },
-        },
+    const [producedByWeaver, activeBatchRowsCount, awaitingQcCount, materialIssueCount, lastReceipt] =
+      await Promise.all([
+        this.getProducedCountsByWeaver([id], range),
+        // Active batch rows currently assigned to this weaver
+        this.prisma.batchSareeRow.count({
+          where: {
+            weaverId: id,
+            batch: { status: "ACTIVE" },
+          },
+        }),
+        // Handed in and received, but not yet inspected.
+        this.prisma.batchSareeRow.count({
+          where: { weaverId: id, receivedAt: { not: null }, qcPassed: null },
+        }),
+        // Material issues sent to this weaver
+        this.prisma.materialIssueRecord.count({
+          where: { weaverId: id },
+        }),
+        this.prisma.batchSareeRow.findFirst({
+          where: { weaverId: id, receivedAt: { not: null } },
+          orderBy: { receivedAt: "desc" },
+          select: { receivedAt: true },
+        }),
+      ]);
+
+    return this.toStats(
+      id,
+      producedByWeaver.get(id),
+      activeBatchRowsCount,
+      awaitingQcCount,
+      materialIssueCount,
+      lastReceipt?.receivedAt ?? null,
+    );
+  }
+
+  /**
+   * Every weaver's stats in one round trip. The UI previously fanned out one
+   * GET /weavers/:id/stats per weaver and Promise.all'd them — a request per
+   * weaver on every directory, analytics and dashboard mount. Same numbers,
+   * four queries total instead of 5N.
+   */
+  async getAllWeaverStats(range?: StatsRange): Promise<WeaverStats[]> {
+    const weavers = await this.prisma.weaver.findMany({ select: { id: true } });
+    const ids = weavers.map((w) => w.id);
+    if (ids.length === 0) return [];
+
+    const [producedByWeaver, activeRows, awaitingRows, materialRows, receipts] = await Promise.all([
+      this.getProducedCountsByWeaver(ids, range),
+      this.prisma.batchSareeRow.groupBy({
+        by: ["weaverId"],
+        where: { weaverId: { in: ids }, batch: { status: "ACTIVE" } },
+        _count: { _all: true },
       }),
-      // Material issues sent to this weaver
-      this.prisma.materialIssueRecord.count({
-        where: { weaverId: id },
+      this.prisma.batchSareeRow.groupBy({
+        by: ["weaverId"],
+        where: { weaverId: { in: ids }, receivedAt: { not: null }, qcPassed: null },
+        _count: { _all: true },
+      }),
+      this.prisma.materialIssueRecord.groupBy({
+        by: ["weaverId"],
+        where: { weaverId: { in: ids } },
+        _count: { _all: true },
+      }),
+      this.prisma.batchSareeRow.groupBy({
+        by: ["weaverId"],
+        where: { weaverId: { in: ids }, receivedAt: { not: null } },
+        _max: { receivedAt: true },
       }),
     ]);
 
-    const stats = producedByWeaver.get(id);
-    const totalSareesWoven = stats?.produced.size ?? 0;
-    const qcPassCount = stats?.qcPassCount ?? 0;
+    const countMap = (rows: { weaverId: string | null; _count: { _all: number } }[]) =>
+      new Map(rows.filter((r) => r.weaverId).map((r) => [r.weaverId!, r._count._all]));
+    const activeById = countMap(activeRows);
+    const awaitingById = countMap(awaitingRows);
+    const materialById = countMap(materialRows);
+    const receiptById = new Map(
+      receipts.filter((r) => r.weaverId).map((r) => [r.weaverId!, r._max.receivedAt ?? null]),
+    );
 
+    return ids.map((id) =>
+      this.toStats(
+        id,
+        producedByWeaver.get(id),
+        activeById.get(id) ?? 0,
+        awaitingById.get(id) ?? 0,
+        materialById.get(id) ?? 0,
+        receiptById.get(id) ?? null,
+      ),
+    );
+  }
+
+  /**
+   * Firm-wide output month by month, oldest first, covering the trailing
+   * `months` window including the current one. Months with no production are
+   * present with zeroes so a chart draws a continuous axis.
+   */
+  async getProductionSeries(months = 12): Promise<WeaverProductionSeriesPoint[]> {
+    const now = new Date();
+    const from = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
+
+    const [passedRecords, returnedAssignments] = await Promise.all([
+      this.prisma.qcRecord.findMany({
+        where: { weaverId: { not: null }, result: "PASSED", qcDate: { gte: from } },
+        select: { sareeId: true, qcDate: true },
+      }),
+      this.prisma.finishingAssignment.findMany({
+        where: {
+          status: "RETURNED",
+          updatedAt: { gte: from },
+          batchSareeRow: { weaverId: { not: null } },
+        },
+        select: { sareeId: true, updatedAt: true },
+      }),
+    ]);
+
+    const key = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const buckets = new Map<string, { produced: Set<string>; passed: Set<string> }>();
+    for (let i = 0; i < months; i += 1) {
+      const d = new Date(from.getFullYear(), from.getMonth() + i, 1);
+      buckets.set(key(d), { produced: new Set(), passed: new Set() });
+    }
+    passedRecords.forEach((r) => {
+      const b = buckets.get(key(r.qcDate));
+      if (!b) return;
+      b.produced.add(r.sareeId);
+      b.passed.add(r.sareeId);
+    });
+    returnedAssignments.forEach((r) => {
+      const b = buckets.get(key(r.updatedAt));
+      if (!b) return;
+      b.produced.add(r.sareeId);
+    });
+
+    return [...buckets.entries()].map(([month, b]) => ({
+      month,
+      produced: b.produced.size,
+      passed: b.passed.size,
+    }));
+  }
+
+  /** Shared shaping so the single and bulk stats routes can't drift apart. */
+  private toStats(
+    weaverId: string,
+    entry: ProducedEntry | undefined,
+    activeBatchRowsCount: number,
+    awaitingQcCount: number,
+    materialIssueCount: number,
+    lastReceivedAt: Date | null,
+  ): WeaverStats {
+    const totalSareesWoven = entry?.produced.size ?? 0;
+    const qcPassCount = entry?.passed.size ?? 0;
     const qcPassRate =
       totalSareesWoven > 0
         ? Math.round((qcPassCount / totalSareesWoven) * 100 * 10) / 10
         : 0;
 
+    const lastQc = entry?.lastActivityAt ?? null;
+    const lastActivity =
+      lastQc && lastReceivedAt ? (lastQc > lastReceivedAt ? lastQc : lastReceivedAt) : (lastQc ?? lastReceivedAt);
+
     return {
-      weaverId: id,
+      weaverId,
       totalSareesWoven,
       qcPassCount,
       qcPassRate,
       activeBatchRowsCount,
+      awaitingQcCount,
       materialIssueCount,
+      lastActivityAt: lastActivity ? lastActivity.toISOString() : null,
     };
   }
 
@@ -287,7 +482,7 @@ export class WeaversService {
     const entries: WeaverLeaderboardEntry[] = weavers.map((w) => {
       const stats = producedByWeaver.get(w.id);
       const totalSareesWoven = stats?.produced.size ?? 0;
-      const qcPassCount = stats?.qcPassCount ?? 0;
+      const qcPassCount = stats?.passed.size ?? 0;
       const qcPassRate =
         totalSareesWoven > 0
           ? Math.round((qcPassCount / totalSareesWoven) * 100 * 10) / 10

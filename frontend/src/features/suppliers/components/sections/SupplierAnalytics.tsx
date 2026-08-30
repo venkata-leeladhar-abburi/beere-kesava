@@ -139,24 +139,10 @@ export function SupplierAnalytics() {
     const m = new Map<string, number>();
     pays.forEach(p => m.set(p.mode || "Bank Transfer", (m.get(p.mode || "Bank Transfer") || 0) + p.amount));
 
-    // If dataset currently only has 1 mode recorded, provide full multi-mode breakdown for analytics view
-    if (m.size <= 1 && settled > 0) {
-      const bank = Math.round(settled * 0.52);
-      const upi = Math.round(settled * 0.28);
-      const cash = Math.round(settled * 0.12);
-      const cheque = Math.max(0, settled - bank - upi - cash);
-      return [
-        { mode: "Bank Transfer", amount: bank, fill: T.royalBurgundy },
-        { mode: "UPI", amount: upi, fill: T.antiqueGold },
-        { mode: "Cash", amount: cash, fill: T.greenMid },
-        { mode: "Cheque", amount: cheque, fill: "#5A3E6B" },
-      ].filter(d => d.amount > 0);
-    }
-
     return [...m.entries()]
       .map(([mode, amount]) => ({ mode, amount, fill: MODE_FILLS[mode] ?? T.taupe }))
       .sort((a, b) => b.amount - a.amount);
-  }, [pays, settled]);
+  }, [pays]);
 
   const L = (n: number) => formatMoney(rupees(n), { compact: true });
   const card: React.CSSProperties = {

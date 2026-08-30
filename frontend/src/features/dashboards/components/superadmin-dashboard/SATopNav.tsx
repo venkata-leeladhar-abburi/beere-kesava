@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Bell, ChevronDown, ChevronLeft, UserRound, LogOut, Users, Store, Eye } from "lucide-react";
+import { Bell, ChevronDown, ChevronLeft, UserRound, LogOut, Users, Store, Eye, IndianRupee } from "lucide-react";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import {
   SectionNavigator, MAIN_NAV_H, SUB_NAV_H, SectionNavItem, getSectionsForPage,
@@ -237,6 +237,9 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => set("ShopStaff")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
                   <Store size={15} color={T.taupe} /> Shop Staff
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => set("AccountantStaff")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                  <IndianRupee size={15} color={T.taupe} /> Accountant Staff
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {/* Opens the staff portal as yourself — not impersonation.

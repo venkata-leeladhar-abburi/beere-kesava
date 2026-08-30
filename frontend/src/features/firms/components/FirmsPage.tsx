@@ -332,6 +332,7 @@ const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; onEdit: () => vo
 FirmCard.displayName = "FirmCard";
 
 import { FirmFormModal } from "./FirmModals";
+import { ConnectRetailSalesSection } from "./retailSales/ConnectRetailSalesSection";
 import { FirmDetailPage } from "./FirmDetailPage";
 const BLANK = { firmName: "", gstNumber: "", address: "", accountNumber: "", ifscCode: "", bankName: "", contactPersonName: "", contactPersonPhone: "", purchaseAmount: undefined };
 
@@ -349,6 +350,10 @@ export function FirmsPage() {
   // about it.
   const [searchParams, setSearchParams] = useSearchParams();
   const openFirmId = searchParams.get("firm");
+  // Which sub-tab the firm page opens on. Lives in the URL beside ?firm= so a
+  // link into a firm's retail sales is shareable and survives a refresh —
+  // without it every route into the firm landed on Financial Tracking.
+  const openFirmTab = searchParams.get("tab");
   const openFirm = openFirmId ? firms.find(f => f.id === openFirmId) ?? null : null;
 
   const [search, setSearch] = useState("");
@@ -386,8 +391,8 @@ export function FirmsPage() {
   const totalPurchase = firmExpenseTotals.reduce((s, v) => s + v, 0);
   const firmsWithBalanceCount = firmExpenseTotals.filter(v => v > 0).length;
 
-  function openFirmView(firmId: string) {
-    setSearchParams({ firm: firmId });
+  function openFirmView(firmId: string, tab?: string) {
+    setSearchParams(tab ? { firm: firmId, tab } : { firm: firmId });
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }
 
@@ -424,6 +429,7 @@ export function FirmsPage() {
       <>
         <FirmDetailPage
           firm={openFirm}
+          initialTab={openFirmTab === "retail" || openFirmTab === "info" ? openFirmTab : "finance"}
           onBack={closeFirmView}
           onEdit={() => setModal({ type: "edit", firm: openFirm })}
           onGoToPayments={goToPayments}
@@ -481,6 +487,9 @@ export function FirmsPage() {
 
       {/* Business Overview */}
       <BusinessOverview onGoToFirm={openFirmView} />
+
+      {/* Connect retail sales to a firm */}
+      <ConnectRetailSalesSection firms={firms} onGoToRetailSales={id => openFirmView(id, "retail")} />
 
       {/* Firms directory */}
       <div id="firm-directory" className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80 }}>

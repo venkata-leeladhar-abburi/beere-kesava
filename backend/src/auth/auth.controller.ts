@@ -1,6 +1,8 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Headers, Post } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
+import { CurrentUser } from "./decorators/current-user.decorator";
 import { Public } from "./decorators/public.decorator";
+import type { AuthenticatedUser } from "./strategies/jwt.strategy";
 import { AuthService } from "./auth.service";
 import { RequestOtpDto } from "./dto/request-otp.dto";
 import { VerifyOtpDto } from "./dto/verify-otp.dto";
@@ -27,7 +29,15 @@ export class AuthController {
   @Public()
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Post("verify-otp")
-  verifyOtp(@Body() dto: VerifyOtpDto) {
-    return this.authService.verifyOtp(dto);
+  verifyOtp(@Body() dto: VerifyOtpDto, @Headers("user-agent") userAgent?: string) {
+    return this.authService.verifyOtp(dto, userAgent);
+  }
+
+  // Not @Public(): a logout has to name the session it is closing, which
+  // means it needs the token. Sessions have no expiry (see auth.module.ts),
+  // so this is the only thing that ever ends one in the login history.
+  @Post("logout")
+  logout(@CurrentUser() user: AuthenticatedUser, @Headers("user-agent") userAgent?: string) {
+    return this.authService.logout(user.id, userAgent);
   }
 }

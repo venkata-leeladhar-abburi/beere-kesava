@@ -54,7 +54,7 @@ export interface BackendReadyForFinishingRecord extends BackendQcRecord {
 }
 
 export const qcApi = {
-  list: (pageSize = 100) => apiClient.get<PaginatedResponse<BackendQcRecord>>(`/qc?pageSize=${pageSize}`),
+  list: (pageSize = 500) => apiClient.get<PaginatedResponse<BackendQcRecord>>(`/qc?pageSize=${pageSize}`),
 
   findOne: (sareeId: string) => apiClient.get<BackendQcRecord>(`/qc/${sareeId}`),
 

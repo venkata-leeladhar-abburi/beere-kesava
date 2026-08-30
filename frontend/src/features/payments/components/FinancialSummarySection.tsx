@@ -78,14 +78,14 @@ export function FinancialSummarySection() {
   const supplierTotal = Number(summary?.supplierTotal) || 0;
 
   const dynamicComingIn = [
-    { label: "Retail & Wholesale Sales", value: formatMoney(rupees(totalIn)) },
-    { label: "Advance Collections", value: formatMoney(rupees(0)) },
+    { label: "Retail & Wholesale Sales", value: formatMoney(rupees(totalIn), { compact: true }) },
+    { label: "Advance Collections", value: formatMoney(rupees(0), { compact: true }) },
   ];
 
   const dynamicGoingOut = [
-    { label: "Weavers Paid", value: formatMoney(rupees(weaverTotal)) },
-    { label: "Vendors Paid", value: formatMoney(rupees(vendorTotal)) },
-    { label: "Raw Material Suppliers", value: formatMoney(rupees(supplierTotal)) },
+    { label: "Weavers Paid", value: formatMoney(rupees(weaverTotal), { compact: true }) },
+    { label: "Vendors Paid", value: formatMoney(rupees(vendorTotal), { compact: true }) },
+    { label: "Raw Material Suppliers", value: formatMoney(rupees(supplierTotal), { compact: true }) },
   ];
 
   const pctIn  = Math.min(100, Math.round(((totalIn) / ((totalIn) + 1841000 || 1)) * 100)) || 0;
@@ -122,7 +122,7 @@ export function FinancialSummarySection() {
           {/* Card 1 — Total Received This Month */}
           <ArchCard>
             <ArchCardHead label="Received" icon={ArrowDownCircle} />
-            <ArchCardValue>{formatMoney(rupees(totalIn))}</ArchCardValue>
+            <ArchCardValue>{formatMoney(rupees(totalIn), { compact: true })}</ArchCardValue>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
               {dynamicComingIn.map(item => (
                 <div key={item.label} style={{ display: "flex", alignItems: "center", gap: "2cqw", fontFamily: F.ui, fontSize: "clamp(11px, 4cqw, 14px)", color: T.luxuryBrown }}>
@@ -150,7 +150,7 @@ export function FinancialSummarySection() {
           {/* Card 2 — Total Paid Out This Month */}
           <ArchCard>
             <ArchCardHead label="Paid Out" icon={ArrowUpCircle} />
-            <ArchCardValue>{formatMoney(rupees(totalOut))}</ArchCardValue>
+            <ArchCardValue>{formatMoney(rupees(totalOut), { compact: true })}</ArchCardValue>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
               {dynamicGoingOut.map(item => (
                 <div key={item.label} style={{ display: "flex", alignItems: "center", gap: "2cqw", fontFamily: F.ui, fontSize: "clamp(11px, 4cqw, 14px)", color: T.luxuryBrown }}>
@@ -178,7 +178,7 @@ export function FinancialSummarySection() {
           {/* Card 3 — Net Cash Flow */}
           <ArchCard>
             <ArchCardHead label="Net Income" icon={Wallet} />
-            <ArchCardValue>{formatMoney(rupees(netCash))}</ArchCardValue>
+            <ArchCardValue>{formatMoney(rupees(netCash), { compact: true })}</ArchCardValue>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.8, margin: 0 }}>
               This is the remaining cash in hand after settling all weaver making charges and vendor raw material bills this month.
             </p>
@@ -187,7 +187,7 @@ export function FinancialSummarySection() {
           {/* Card 4 — Outstanding (If All Collected) */}
           <ArchCard>
             <ArchCardHead label="Projected Total" icon={CalendarClock} />
-            <ArchCardValue>{formatMoney(rupees(totalIn + (summary?.outstandingAmount ?? 0)))}</ArchCardValue>
+            <ArchCardValue>{formatMoney(rupees(totalIn + (summary?.outstandingAmount ?? 0)), { compact: true })}</ArchCardValue>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.8, margin: 0 }}>
               The total potential revenue for this month, calculated if all outstanding wholesale invoices are paid in full.
             </p>
