@@ -50,9 +50,9 @@ export function CustomerModals({
                 <IconButton icon={X} label="Close" variant="ghost" className="ml-auto shrink-0 rounded-full bg-white/10 text-white hover:bg-white/20 hover:text-white" />
               </Dialog.Close>
             </div>
-            <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, background: T.silkCream, padding: "0 32px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", borderBottom: `1px solid ${T.borderDef}`, background: T.silkCream, padding: "0 32px" }}>
               {["Overview", "Order History", "Payment History", "Contact Details", "Edit Profile"].map((t, i) => (
-                <div key={t} style={{ padding: "16px 24px", fontFamily: F.ui, fontSize: 14, fontWeight: i===0?600:500, color: i===0?T.royalBurgundy:T.taupe, borderBottom: i===0?`2px solid ${T.royalBurgundy}`:"2px solid transparent", cursor: "pointer" }}>{t}</div>
+                <div key={t} style={{ flex: 1, textAlign: "center", padding: "16px 12px", fontFamily: F.ui, fontSize: 14, fontWeight: i===0?600:500, color: i===0?T.royalBurgundy:T.taupe, borderBottom: i===0?`2px solid ${T.royalBurgundy}`:"2px solid transparent", cursor: "pointer" }}>{t}</div>
               ))}
             </div>
             <div style={{ padding: 32, overflowY: "auto", display: "flex", gap: 32 }}>

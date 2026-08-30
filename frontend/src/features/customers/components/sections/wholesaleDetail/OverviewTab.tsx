@@ -90,8 +90,8 @@ export function OverviewTab({
 
       {/* Live production progress on every open bulk order */}
       {custActiveOrders.length > 0 && (
-        <div className="bg-[#6E0F2D] p-4 sm:p-6 rounded-2xl text-white shadow-md border border-[rgba(200,155,71,0.25)] min-w-0 max-w-full w-full">
-          <div className="text-xs sm:text-sm font-medium text-white/70 mb-4 flex items-center justify-between">
+        <div className="p-4 sm:p-6 rounded-2xl border border-[var(--border-default)] bg-transparent min-w-0 max-w-full w-full">
+          <div className="text-xs sm:text-sm font-bold text-[#4A061B] mb-4 flex items-center justify-between">
             <span>Active Orders in Production ({custActiveOrders.length})</span>
           </div>
 
@@ -106,12 +106,12 @@ export function OverviewTab({
                   role="button" tabIndex={0}
                   aria-label={`Open bulk order ${o.ref}`}
                   onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onViewBulkOrder(o, "overview"); } }}
-                  className="bg-black/20 hover:bg-black/30 p-3.5 sm:p-4 rounded-xl border border-white/10 transition-all cursor-pointer space-y-2.5"
+                  className="bg-[#F7F2EA] hover:bg-[#F0E8DC] p-3.5 sm:p-4 rounded-xl border border-[var(--border-default)] transition-all cursor-pointer space-y-2.5"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono font-bold text-sm text-[#E8DCC4]">{o.ref}</span>
-                      <span className="text-xs text-white/80">
+                      <span className="font-mono font-bold text-sm text-[#6E0F2D]">{o.ref}</span>
+                      <span className="text-xs text-[#524438] font-medium">
                         {o.done} of {o.total} sarees {o.design ? `· ${o.design}` : ""}
                       </span>
                     </div>
@@ -124,16 +124,16 @@ export function OverviewTab({
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="h-2 w-full bg-white/15 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-[rgba(110,15,45,0.12)] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#E8DCC4] rounded-full transition-all duration-500"
+                      className="h-full bg-[#6E0F2D] rounded-full transition-all duration-500"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-white/60 pt-0.5">
+                  <div className="flex items-center justify-between text-xs text-[#7A6859] pt-0.5">
                     <span>Due {o.due}</span>
-                    <span className="font-mono font-bold text-[#E8DCC4]">{pct}% complete</span>
+                    <span className="font-mono font-bold text-[#6E0F2D]">{pct}% complete</span>
                   </div>
                 </div>
               );
@@ -258,8 +258,10 @@ export function OverviewTab({
                 <DataTable
                   responsive={false}
                   columns={orderColumns}
-                  data={custOrders.slice(0, 4)}
+                  data={custOrders}
                   getRowId={o => o.ref}
+                  pageSize={5}
+                  pagination={true}
                   onRowClick={o => onViewBulkOrder(o, "payments")}
                 />
               </div>

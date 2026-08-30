@@ -159,8 +159,8 @@ export function WholesaleDetailSection({
       </div>
 
       {/* Sub-tab strip */}
-      <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b-2 border-[var(--border-default)]">
-        <div className="flex items-center gap-1 min-w-max">
+      <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b border-[var(--border-default)]">
+        <div className="flex items-center justify-between w-full min-w-max md:min-w-0 gap-1 sm:gap-2">
           {[
             { key: "Overview" as const, label: "Overview", icon: <Boxes size={18} /> },
             { key: "Order History" as const, label: "Order History", icon: <ShoppingBag size={18} /> },
@@ -170,20 +170,20 @@ export function WholesaleDetailSection({
           ].map(t => {
             const isActive = wholesaleTab === t.key;
             return (
-              <Button
+              <button
                 key={t.key}
-                variant="tertiary"
+                type="button"
                 onClick={() => setWholesaleTab(t.key)}
                 className={
-                  "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base cursor-pointer flex items-center gap-2.5 transition-all " +
+                  "flex-1 justify-center px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm cursor-pointer flex items-center gap-2 transition-all duration-200 font-bold " +
                   (isActive
-                    ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
-                    : "border-b-[3px] border-transparent text-[#9C8672] hover:text-[#6E0F2D] font-medium")
+                    ? "bg-[#6E0F2D] text-[#FFFDF9] shadow-md shadow-[#6E0F2D]/20 scale-[1.01]"
+                    : "bg-transparent text-[#7A6859] hover:text-[#6E0F2D]")
                 }
               >
                 {t.icon}
                 <span>{t.label}</span>
-              </Button>
+              </button>
             );
           })}
         </div>

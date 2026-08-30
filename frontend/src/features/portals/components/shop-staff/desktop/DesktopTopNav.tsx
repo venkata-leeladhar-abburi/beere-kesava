@@ -1,6 +1,7 @@
 import { formatMoney, rupees } from "@/lib/domain/money";
 import React, { useState } from "react";
-import { Bell, ChevronLeft, LogOut, RotateCcw, UserRound } from "lucide-react";
+import { motion } from "motion/react";
+import { Bell, ChevronDown, ChevronLeft, LogOut, RotateCcw, UserRound } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { imgBKLogo } from "../../../../../shared/constants/weaverImages";
 import { C, F } from "../theme";
@@ -252,22 +253,31 @@ export function DesktopTopNav({
 
           <DropdownMenu open={showProfile} onOpenChange={setShowProfile}>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className={
-                  "flex items-center gap-3 h-auto px-2.5 py-1.5 rounded-full border transition-all " +
-                  (showProfile ? "bg-[rgba(245,232,208,0.12)] border-[rgba(200,155,71,0.45)]" : "bg-[rgba(255,255,255,0.04)] border-[rgba(200,155,71,0.22)] hover:bg-[rgba(245,232,208,0.08)]")
-                }
+              <motion.div
+                initial={{ backgroundColor: "rgba(245,232,208,0.04)" }}
+                whileHover={{ scale: 1.02, backgroundColor: "rgba(245,232,208,0.12)" }}
+                whileTap={{ scale: 0.98 }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  cursor: "pointer",
+                  padding: "5px 12px 5px 6px",
+                  borderRadius: 12,
+                  border: `1px solid ${showProfile ? "#C89B47" : "rgba(200,155,71,0.25)"}`,
+                  backgroundColor: showProfile ? "rgba(245,232,208,0.12)" : "rgba(245,232,208,0.04)",
+                  transition: "border-color 0.2s, background-color 0.2s",
+                }}
               >
-                <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#6E0F2D", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ fontFamily: F.d, fontSize: 13, fontWeight: 700, color: "#FFFFFF" }}>{toInitials(initials)}</span>
+                <div style={{ width: 32, height: 32, borderRadius: 9, background: "linear-gradient(135deg, #6E0F2D 0%, #8B1A30 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(0,0,0,0.30)", flexShrink: 0 }}>
+                  <span style={{ fontFamily: F.d, fontSize: 13, fontWeight: 700, color: "#FFFDF9" }}>{toInitials(initials)}</span>
                 </div>
-                <div style={{ textAlign: "left" as const, paddingRight: 4 }}>
-                  <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: "#FFFDF9", lineHeight: 1.1 }}>{name}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.60)", marginTop: 2 }}>Shop Staff</div>
+                <div style={{ textAlign: "left" as const, paddingRight: 2 }}>
+                  <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", lineHeight: 1.1 }}>{name}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 11, color: "rgba(245,232,208,0.70)", marginTop: 2 }}>Shop Staff</div>
                 </div>
-                <ChevronLeft size={14} color="rgba(255,255,255,0.70)" style={{ transform: "rotate(-90deg)", transition: "transform 0.2s" }} />
-              </Button>
+                <ChevronDown size={13} color="rgba(245,232,208,0.75)" style={{ transform: showProfile ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+              </motion.div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="!min-w-[240px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: C.white, border: `1px solid ${C.bdr}`, zIndex: "var(--z-tooltip)" }}>
               <div style={{ padding: "16px 18px", background: "rgba(200,155,71,0.08)", borderBottom: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", gap: 12 }}>

@@ -87,34 +87,39 @@ export function OrderHistoryTab({
 
   return (
     <div className="flex flex-col min-w-0 max-w-full w-full">
-      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-        {/* Mobile Capsule View Mode Switcher */}
-        <div className="flex sm:hidden mb-2">
-          <div className="inline-flex items-center rounded-full border border-[#E8DCC4] bg-white p-0.5 shadow-xs overflow-hidden">
-            <button
-              onClick={() => setViewMode("card")}
-              className={`px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
-                viewMode === "card"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] shadow-xs"
-                  : "bg-transparent text-[#3B2314] hover:bg-slate-50"
-              }`}
-            >
-              <LayoutGrid size={15} /> Card View
-            </button>
-            <button
-              onClick={() => setViewMode("table")}
-              className={`px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
-                viewMode === "table"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] shadow-xs"
-                  : "bg-transparent text-[#3B2314] hover:bg-slate-50"
-              }`}
-            >
-              <List size={15} /> Table View
-            </button>
-          </div>
+      {/* Mobile Capsule View Mode Switcher */}
+      <div className="flex sm:hidden mb-3">
+        <div className="inline-flex items-center rounded-full border border-[#E8DCC4] bg-white p-0.5 shadow-xs overflow-hidden">
+          <button
+            onClick={() => setViewMode("card")}
+            className={`px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
+              viewMode === "card"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] shadow-xs"
+                : "bg-transparent text-[#3B2314] hover:bg-slate-50"
+            }`}
+          >
+            <LayoutGrid size={15} /> Card View
+          </button>
+          <button
+            onClick={() => setViewMode("table")}
+            className={`px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
+              viewMode === "table"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] shadow-xs"
+                : "bg-transparent text-[#3B2314] hover:bg-slate-50"
+            }`}
+          >
+            <List size={15} /> Table View
+          </button>
+        </div>
+      </div>
+
+      {/* DateFilterBar and Stats Strip on the SAME line */}
+      <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+        <div className="flex-1 min-w-[280px]">
+          <DateFilterBar filter={wholesaleOrderDateFilter} onChange={setWholesaleOrderDateFilter} />
         </div>
 
-        <div style={{ display: "flex", gap: 22, flexWrap: "wrap", width: "100%", justifyContent: "flex-end" }}>
+        <div style={{ display: "flex", gap: 20, flexWrap: "wrap", alignItems: "center" }}>
           {[
             { label: "ORDERS", value: String(rows.length) },
             { label: "SAREES", value: `${rowsDone}/${rowsOrdered}` },
@@ -122,14 +127,12 @@ export function OrderHistoryTab({
             { label: "OUTSTANDING", value: inr(rowsDue) },
           ].map(k => (
             <div key={k.label}>
-              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
-              <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, letterSpacing: "0.5px", color: T.taupe }}>{k.label}</div>
+              <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
             </div>
           ))}
         </div>
       </div>
-
-      <DateFilterBar filter={wholesaleOrderDateFilter} onChange={setWholesaleOrderDateFilter} />
 
       {rows.length === 0 ? (
         <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "40px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
@@ -192,7 +195,7 @@ export function OrderHistoryTab({
                 style={{ WebkitOverflowScrolling: "touch" }}
               >
                 <div className="min-w-[650px]">
-                  <DataTable responsive={false} columns={columns} data={rows} getRowId={o => o.ref} />
+                  <DataTable responsive={false} columns={columns} data={rows} getRowId={o => o.ref} pageSize={5} pagination={true} />
                 </div>
               </div>
             )}
@@ -204,7 +207,7 @@ export function OrderHistoryTab({
             style={{ WebkitOverflowScrolling: "touch" }}
           >
             <div className="min-w-[650px]">
-              <DataTable responsive={false} columns={columns} data={rows} getRowId={o => o.ref} />
+              <DataTable responsive={false} columns={columns} data={rows} getRowId={o => o.ref} pageSize={5} pagination={true} />
             </div>
           </div>
         </>
