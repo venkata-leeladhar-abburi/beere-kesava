@@ -457,7 +457,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
           })}
         </div>
       ) : (
-        <div style={{ border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 10, overflow: "hidden" }}>
+        <div data-pagination-target style={{ border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 10, overflow: "hidden" }}>
           <DataTable
             columns={staffColumns}
             data={outerPag.pageItems}

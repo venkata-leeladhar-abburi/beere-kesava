@@ -191,45 +191,43 @@ export function SectionBFiltered({ isMobile, isDesktop, isTablet }: { isMobile?:
         </div>
       )}
 
-      {/* Scan + search + filters */}
-      <div className="flex flex-col gap-4 w-full mb-2">
-        <ScanBar value={scanValue} onChange={setScanValue} onSubmit={submitScan} onDetected={submitDetected} tone="green" inputRef={scanRef} />
-        <ScanFeedback msg={scanMsg} tone={scanTone} />
+      {/* Scan + search + filters in a single inline flex toolbar */}
+      <div className="flex flex-wrap items-center gap-2.5 w-full mb-2">
+        <ScanBar value={scanValue} onChange={setScanValue} onSubmit={submitScan} onDetected={submitDetected} tone="green" inputRef={scanRef} className="flex items-center gap-2 flex-1 min-w-[260px] sm:min-w-[300px]" />
 
         <SearchInput
           aria-label="Search sarees out for finishing"
           value={search}
           onChange={e => setSearch(e.target.value)}
           onSearch={setSearch}
-          placeholder="Search by saree ID, staff, weaver, loom, batch, quotation…"
-          className="w-full"
+          placeholder="Search by saree ID, staff, weaver..."
+          className="flex-1 min-w-[180px] sm:min-w-[220px]"
         />
 
-        <div className="flex flex-wrap items-center gap-2 w-full">
-          <Select value={filterStaff} onValueChange={setFilterStaff} className="w-[190px] max-w-full">
-            <SelectItem value="all">All Staff</SelectItem>
-            {uniqueStaff.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-          </Select>
-          <Select value={filterBatch} onValueChange={setFilterBatch} className="w-[170px] max-w-full">
-            <SelectItem value="all">All Batches</SelectItem>
-            {uniqueBatches.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-          </Select>
-          <Select value={filterType} onValueChange={setFilterType} className="w-[170px] max-w-full">
-            <SelectItem value="all">All Saree Types</SelectItem>
-            {uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-          </Select>
-          {isFiltered && (
-            <Button variant="link" onClick={clearFilters} className="whitespace-nowrap text-sm">Clear filters</Button>
-          )}
+        <Select value={filterStaff} onValueChange={setFilterStaff} className="w-[170px] shrink-0">
+          <SelectItem value="all">All Staff</SelectItem>
+          {uniqueStaff.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+        </Select>
+        <Select value={filterBatch} onValueChange={setFilterBatch} className="w-[150px] shrink-0">
+          <SelectItem value="all">All Batches</SelectItem>
+          {uniqueBatches.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+        </Select>
+        <Select value={filterType} onValueChange={setFilterType} className="w-[160px] shrink-0">
+          <SelectItem value="all">All Saree Types</SelectItem>
+          {uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+        </Select>
+        {isFiltered && (
+          <Button variant="link" onClick={clearFilters} className="whitespace-nowrap text-sm shrink-0">Clear filters</Button>
+        )}
 
-          {displayRows !== null && displayRows.length > 0 && (
-            <Button variant="link" onClick={toggleAll} className="gap-2 p-0 px-2 py-1 text-sm text-[#69635E] whitespace-nowrap ml-auto">
-              {allChecked ? <CheckSquare size={16} color={GREEN} /> : <Square size={16} color={C.muted} />}
-              {allChecked ? "Deselect All" : `Select All (${displayRows.length})`}
-            </Button>
-          )}
-        </div>
+        {displayRows !== null && displayRows.length > 0 && (
+          <Button variant="link" onClick={toggleAll} className="gap-2 p-0 px-2 py-1 text-sm text-[#69635E] whitespace-nowrap ml-auto shrink-0">
+            {allChecked ? <CheckSquare size={16} color={GREEN} /> : <Square size={16} color={C.muted} />}
+            {allChecked ? "Deselect All" : `Select All (${displayRows.length})`}
+          </Button>
+        )}
       </div>
+      <ScanFeedback msg={scanMsg} tone={scanTone} />
 
       {/* Assigned-date filter */}
       {awaiting.length > 0 && <DateFilterBar filter={dateFilter} onChange={setDateFilter} />}

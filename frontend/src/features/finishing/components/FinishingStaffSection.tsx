@@ -216,7 +216,7 @@ export function FinishingStaffSection({
           <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe }}>No finishing assignments match the current filters.</div>
         </div>
       ) : (
-        <div>
+        <div data-pagination-target>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {pag.pageItems.map(r => {
             const isOpen = open === r.name;

@@ -62,7 +62,20 @@ export function Pagination({ page, pageCount, total, pageSize, start, onPageChan
         targetEl = document.getElementById(targetId);
       }
       if (!targetEl && containerRef.current) {
-        targetEl = (containerRef.current.closest("[data-pagination-target], [id$='-table'], [id^='every-'], .overflow-x-auto, table, .bk-table-card") as HTMLElement) || containerRef.current.parentElement;
+        const parent = containerRef.current.parentElement;
+        if (parent) {
+          const localTarget = parent.querySelector("[data-pagination-target], [id$='-table'], [id$='-cards'], [id^='every-'], table, .overflow-x-auto");
+          if (localTarget && localTarget !== containerRef.current) {
+            targetEl = localTarget as HTMLElement;
+          } else if (parent.hasAttribute("data-pagination-target") || parent.id?.endsWith("-table") || parent.classList.contains("bk-table-card")) {
+            targetEl = parent;
+          } else {
+            targetEl = containerRef.current.closest("[data-pagination-target], [id$='-table'], [id$='-cards'], [id^='every-'], .overflow-x-auto, table, .bk-table-card") as HTMLElement;
+          }
+        }
+        if (!targetEl) {
+          targetEl = containerRef.current.parentElement;
+        }
       }
       if (targetEl) {
         const topNavOffset = 130;

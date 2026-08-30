@@ -193,7 +193,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
   ];
 
   return (
-    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
+    <div id="dispatch-history-table" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
       {editingCustomer && (
         <EditWholesaleCustomerModal customer={editingCustomer} onClose={() => setEditingCustomerId(null)} />
       )}
@@ -349,6 +349,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
             error={isError}
             onRetry={refetch}
             emptyTitle="No dispatches yet."
+            pagination={false}
           />
         </div>
       </div>
@@ -356,6 +357,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
       {rows.length > 0 && (
         <div style={{ padding: "0 14px" }}>
           <Pagination
+            targetId="dispatch-history-table"
             page={pag.page}
             pageCount={pag.pageCount}
             total={pag.total}

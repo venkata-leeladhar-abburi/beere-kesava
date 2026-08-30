@@ -111,7 +111,7 @@ export function MakingChargesSection({
       actions={<GoldLink><BarChart2 size={13} /> View Rate Change History →</GoldLink>}
     >
       {/* Rates Table */}
-      <div style={cardStyle}>
+      <div id="making-charges-rates-table" style={cardStyle}>
         <DataTable
           columns={columns}
           data={rates}

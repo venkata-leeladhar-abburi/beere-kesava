@@ -290,7 +290,7 @@ export function FinishingSareeTable({
   }
 
   return (
-    <div style={{ border: `1px solid ${C.bdr}`, borderRadius: 14, overflow: "hidden", background: "#FFF" }}>
+    <div data-pagination-target style={{ border: `1px solid ${C.bdr}`, borderRadius: 14, overflow: "hidden", background: "#FFF" }}>
       <div className="overflow-x-auto section-nav-scroll">
         <div className="min-w-[980px]">
           <DataTable
@@ -308,6 +308,7 @@ export function FinishingSareeTable({
             onClearFilters={onClearFilters}
             emptyTitle={emptyTitle}
             emptyDescription={emptyDescription}
+            pagination={false}
           />
         </div>
       </div>

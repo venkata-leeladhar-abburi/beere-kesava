@@ -95,7 +95,7 @@ export function AwaitingDispatchTable({ sarees, loading, error, onRetry }: {
   ];
 
   return (
-    <div style={{ border: `1px solid ${C.bdr}`, borderRadius: 12, background: C.ivory, boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
+    <div id="sarees-awaiting-dispatch-table" style={{ border: `1px solid ${C.bdr}`, borderRadius: 12, background: C.ivory, boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 p-3">
         <div className="relative w-full sm:max-w-[320px]">
           <Search size={15} color={C.muted} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)" }} />
@@ -125,12 +125,14 @@ export function AwaitingDispatchTable({ sarees, loading, error, onRetry }: {
           onClearFilters={() => setQuery("")}
           emptyTitle="No sarees awaiting dispatch."
           emptyDescription="Sarees appear here once finishing hands them back."
+          pagination={false}
         />
       </div>
 
       {rows.length > 0 && (
         <div style={{ padding: "0 14px" }}>
           <Pagination
+            targetId="sarees-awaiting-dispatch-table"
             page={pag.page}
             pageCount={pag.pageCount}
             total={pag.total}
