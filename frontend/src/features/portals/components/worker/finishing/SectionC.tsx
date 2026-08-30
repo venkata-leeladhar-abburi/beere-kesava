@@ -150,6 +150,8 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
     }).sort((a, b) => parseDMYDate(b.lastAssignmentDate) - parseDMYDate(a.lastAssignmentDate));
   }, [filteredAssignments, returns]);
 
+  const outerPag = usePagination(rows, 10);
+
   const TD: CSSProperties = { fontFamily: F.u, fontSize: 12, color: C.text, padding: "10px 10px", verticalAlign: "middle" as const };
 
   const staffColumns: ColumnDef<StaffTrackingRow>[] = [
@@ -391,7 +393,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
         </div>
       ) : isMobile && viewMode === "card" ? (
         <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-          {rows.map(r => {
+          {outerPag.pageItems.map(r => {
             const pending = r.assignedSareeIds.length - r.returnedSareeIds.length;
             const isOpen = expanded === r.name;
             return (
@@ -455,10 +457,10 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
           })}
         </div>
       ) : (
-        <div style={{ border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 10, overflow: "hidden" }}>
+        <div data-pagination-target style={{ border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 10, overflow: "hidden" }}>
           <DataTable
             columns={staffColumns}
-            data={rows}
+            data={outerPag.pageItems}
             getRowId={r => r.name}
             expandedIds={expanded ? new Set([expanded]) : undefined}
             renderExpandedRow={r => (
@@ -476,6 +478,16 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
           />
         </div>
       )}
+      <Pagination
+        page={outerPag.page}
+        pageCount={outerPag.pageCount}
+        total={outerPag.total}
+        pageSize={outerPag.pageSize}
+        start={outerPag.start}
+        onPageChange={outerPag.setPage}
+        onPageSizeChange={outerPag.setPageSize}
+        itemLabel="staff members"
+      />
       <ImageZoomModal image={zoomImage} onClose={() => setZoomImage(null)} />
     </SectionCard>
   );

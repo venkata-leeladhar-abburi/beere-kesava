@@ -6,6 +6,7 @@ import { Button } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 import { SectionCard } from "./common/primitives";
 import { ImageZoomModal, type ZoomImage } from "../../../shared/ui/ImageZoomModal";
+import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -201,6 +202,7 @@ export function FinishingStaffSection({
 }: FinishingStaffSectionProps) {
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
+  const pag = usePagination(filteredRows, 10);
 
   return (
     <SectionCard
@@ -214,8 +216,9 @@ export function FinishingStaffSection({
           <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe }}>No finishing assignments match the current filters.</div>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {filteredRows.map(r => {
+        <div data-pagination-target>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {pag.pageItems.map(r => {
             const isOpen = open === r.name;
             return (
               <div key={r.name} style={{ border: `1px solid rgba(110,15,45,0.3)`, borderRadius: 14, overflow: "hidden" }}>
@@ -301,6 +304,17 @@ export function FinishingStaffSection({
               </div>
             );
           })}
+          </div>
+          <Pagination
+            page={pag.page}
+            pageCount={pag.pageCount}
+            total={pag.total}
+            pageSize={pag.pageSize}
+            start={pag.start}
+            onPageChange={pag.setPage}
+            onPageSizeChange={pag.setPageSize}
+            itemLabel="staff members"
+          />
         </div>
       )}
       <ImageZoomModal image={zoomImage} onClose={() => setZoomImage(null)} />

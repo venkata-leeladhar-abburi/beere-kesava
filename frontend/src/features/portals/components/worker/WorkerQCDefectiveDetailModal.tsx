@@ -32,6 +32,8 @@ export function WorkerQCDefectiveDetailModal({ item, onClose }: WorkerQCDefectiv
     <>
     <Modal open onOpenChange={o => !o && onClose()} size="sm">
       <Modal.Header
+        banner
+        icon={AlertTriangle}
         title={item.id}
         subtitle={isSemi ? "Semi-Approved — sent back for rework" : "Defective — rejected"}
         onClose={onClose}

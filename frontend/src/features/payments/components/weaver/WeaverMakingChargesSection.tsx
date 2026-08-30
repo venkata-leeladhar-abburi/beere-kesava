@@ -668,7 +668,7 @@ export function WeaverMakingChargesSection() {
             <>
             {/* ── Card view grid ───────────────────────────────────── */}
             {view === "card" && (
-              <div>
+              <div data-pagination-target>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-4">
                   {pag.pageItems.map((w, i) => (
                     <motion.div key={w.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05, ease: EASE }}>
@@ -689,7 +689,7 @@ export function WeaverMakingChargesSection() {
 
             {/* ── Table / List view ────────────────────────────────── */}
             {(view === "list" || view === "table") && (
-              <div className="w-full mb-8">
+              <div data-pagination-target className="w-full mb-8">
                 <div className="overflow-x-auto w-full">
                   <div className="min-w-[1450px]">
                     <DataTable

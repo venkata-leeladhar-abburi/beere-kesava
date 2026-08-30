@@ -11,6 +11,7 @@ import { T, F } from "../theme";
 import { FadeUp, ChartCard, SectionCard, ReportDLBar, AnimBar } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { useReportPeriod, useRegisterExport } from "../PeriodContext";
 
 // Same shape as reports/common/primitives.tsx's ChartTip, but routes the
 // value through the Money system (formatMoney/rupees) instead of a raw "₹"
@@ -33,8 +34,19 @@ function MoneyChartTip({ active, payload, label, moneyVisible }: TooltipProps<Va
 }
 
 export function ProfitLossReport() {
-  const { firms, financials, isLoading, error, refetch } = useFirms();
+  const { firms, financials: allFinancials, isLoading, error, refetch } = useFirms();
+  const { inCurrent, exportCsv, canExport } = useReportPeriod();
   const moneyVisible = useMoneyVisible();
+
+  // Ledger entries are filtered to the selected period before anything is
+  // summed, so the totals, the ledger, the per-firm table and the charts all
+  // describe the same window.
+  const financials = useMemo(() => allFinancials.map(f => ({
+    ...f,
+    income: f.income.filter(e => inCurrent(e.date)),
+    expenses: f.expenses.filter(e => inCurrent(e.date)),
+    misc: f.misc.filter(m => inCurrent(m.date)),
+  })), [allFinancials, inCurrent]);
   const inr = (n: number) => (moneyVisible ? formatMoney(rupees(n)) : "—");
 
   const hasData = financials.some(f => f.income.length > 0 || f.expenses.length > 0 || f.misc.length > 0);
@@ -63,7 +75,7 @@ export function ProfitLossReport() {
 
   type LedgerRow = { id: string; label: string; amount: number | null; kind: "section" | "item" | "subtotal" | "net"; color: string; bg: string };
 
-  const ledgerRows: LedgerRow[] = [
+  const ledgerRows: LedgerRow[] = useMemo(() => [
     { id: "income-section", label: "▼ INCOME", amount: null, kind: "section", color: T.green, bg: T.greenBg },
     { id: "wholesale", label: "Wholesale Sales", amount: wholesaleSales, kind: "item", color: T.green, bg: "transparent" },
     { id: "retail", label: "Retail Sales", amount: retailSales, kind: "item", color: T.green, bg: "transparent" },
@@ -81,7 +93,13 @@ export function ProfitLossReport() {
       id: "net", label: netProfit >= 0 ? "Net Profit" : "Net Loss", amount: Math.abs(netProfit), kind: "net",
       color: netProfit >= 0 ? T.antiqueGold : T.crimson, bg: "rgba(200,155,71,0.12)",
     },
-  ];
+  ], [wholesaleSales, retailSales, otherIncome, totalIncome, weaverPayments, materialPurchases, shopMaintenance, factoryMaintenance, salaries, otherExpenses, totalExpenses, netProfit]);
+
+  useRegisterExport(useMemo(() => ({
+    name: "Profit and Loss Report",
+    headers: ["Line", "Amount"],
+    rows: ledgerRows.filter(r => r.amount != null).map(r => [r.label, r.amount ?? 0]),
+  }), [ledgerRows]));
 
   const ledgerColumns: ColumnDef<LedgerRow>[] = [
     {
@@ -139,34 +157,29 @@ export function ProfitLossReport() {
 
   // Dynamic monthly income vs expenses aggregated from real firm financial entries
   const pnlMonthlyData = useMemo(() => {
-    const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const incomeMap: Record<string, number> = {};
-    const expenseMap: Record<string, number> = {};
+    // Keyed by year+month: a bare month name merged the same month across
+    // years and forced calendar order instead of chronological order.
+    const map = new Map<string, { month: string; income: number; expenses: number }>();
+    const bucket = (d: Date) => {
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const label = d.toLocaleString("en-US", { month: "short", year: "2-digit" }).replace(" ", " '");
+      const entry = map.get(key) ?? { month: label, income: 0, expenses: 0 };
+      map.set(key, entry);
+      return entry;
+    };
 
     for (const f of financials) {
       for (const e of f.income) {
         const d = new Date(e.date);
-        if (!isNaN(d.getTime())) {
-          const m = d.toLocaleString("en-US", { month: "short" });
-          incomeMap[m] = (incomeMap[m] || 0) + e.amount;
-        }
+        if (!isNaN(d.getTime())) bucket(d).income += e.amount;
       }
       for (const e of f.expenses) {
         const d = new Date(e.date);
-        if (!isNaN(d.getTime())) {
-          const m = d.toLocaleString("en-US", { month: "short" });
-          expenseMap[m] = (expenseMap[m] || 0) + e.amount;
-        }
+        if (!isNaN(d.getTime())) bucket(d).expenses += e.amount;
       }
     }
 
-    const activeMonths = monthOrder.filter(m => incomeMap[m] !== undefined || expenseMap[m] !== undefined);
-    if (activeMonths.length === 0) return [];
-    return activeMonths.map(m => ({
-      month: m,
-      income: incomeMap[m] || 0,
-      expenses: expenseMap[m] || 0,
-    }));
+    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([, v]) => v);
   }, [financials]);
 
   // Dynamic expense breakdown pie chart
@@ -308,15 +321,14 @@ export function ProfitLossReport() {
               loading={isLoading}
               error={!!error}
               onRetry={refetch}
-              pagination
             />
           </div>
 
           <DownloadGate>
             <div style={{ padding: "12px 20px", background: "rgba(200,155,71,0.06)", borderTop: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", gap: 10 }}>
               <FileText size={13} color={T.antiqueGold} />
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Download this report as PDF for your monthly records and year-end accounting.</span>
-              <Button variant="primary" size="sm" className="ml-auto">Download PDF</Button>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Download the ledger as a spreadsheet for your monthly records and year-end accounting.</span>
+              <Button variant="primary" size="sm" className="ml-auto" onClick={exportCsv} disabled={!canExport}>Download Ledger CSV</Button>
             </div>
           </DownloadGate>
         </div>

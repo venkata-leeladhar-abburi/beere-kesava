@@ -139,8 +139,6 @@ export function SuppliersPage() {
             onAddSupplier={() => setShowAdd(true)}
           />
 
-          <div id="supp-analytics"><SupplierAnalytics /></div>
-
           <div id="supp-directory">
             <SupplierDirectorySection
             filtered={filtered}
@@ -154,6 +152,8 @@ export function SuppliersPage() {
             onViewSupplier={setSelected}
           />
           </div>
+
+          <div id="supp-analytics"><SupplierAnalytics /></div>
 
           <div id="supp-history"><ExternalPurchaseHistorySection purchases={purchases} /></div>
 

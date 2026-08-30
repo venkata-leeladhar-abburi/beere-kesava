@@ -93,26 +93,34 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   };
 
   // ── Filter options, derived from the rows actually available ────────────────
+  // Saree Type and Colour are the only two dropdowns shown on *both* the
+  // external tab and the production tabs, so their options are narrowed to
+  // whichever side is on screen — otherwise the external tab offered ST- codes
+  // no purchased piece can ever carry (and vice versa), and picking one
+  // emptied the table with no way to tell why.
   const opts = useMemo(() => {
     const uniq = (vals: (string | null)[]) =>
       ["all", ...Array.from(new Set(vals.filter((v): v is string => !!v))).sort()];
+    const externalRowsOnly = rows.filter(r => r.stock?.origin === "external");
+    const productionRows = rows.filter(r => r.stock?.origin !== "external");
+    const typeSource = isExternalTab ? externalRowsOnly : productionRows;
     return {
-      batch: uniq(rows.map(r => r.batchId)),
-      loom: uniq(rows.map(r => (r.loomNumber != null ? `Loom ${r.loomNumber}` : null))),
-      order: uniq(rows.map(r => r.bulkOrderLabel ?? (r.isAssigned ? "General Stock" : null))),
+      batch: uniq(productionRows.map(r => r.batchId)),
+      loom: uniq(productionRows.map(r => (r.loomNumber != null ? `Loom ${r.loomNumber}` : null))),
+      order: uniq(productionRows.map(r => r.bulkOrderLabel ?? (r.isAssigned ? "General Stock" : null))),
       // External purchases record a free-text saree type with no ST- code, so
       // the plain name is the label there — without this they could never
       // match the Saree Type filter and the dropdown looked broken.
-      type: uniq(rows.map(sareeTypeLabel)),
-      color: uniq(rows.map(r => r.color)),
+      type: uniq(typeSource.map(sareeTypeLabel)),
+      color: uniq(typeSource.map(r => r.color)),
       qc: ["all", "QC Passed", "Semi-Approved", "Defective", "In Production"],
       finishing: ["all", "Completed", "In Finishing", "Not Assigned", "Rejected"],
-      ownerWeaver: uniq(rows.filter(r => r.ownerKind === "weaver").map(r => r.ownerLabel)),
-      ownerLoom: uniq(rows.filter(r => r.ownerKind === "loom").map(r => r.ownerLabel)),
-      supplier: uniq(rows.filter(r => r.stock?.origin === "external").map(r => r.stock?.supplier ?? null)),
-      purchaseOrder: uniq(rows.filter(r => r.stock?.origin === "external").map(r => r.stock?.purchaseId ?? null)),
+      ownerWeaver: uniq(productionRows.filter(r => r.ownerKind === "weaver").map(r => r.ownerLabel)),
+      ownerLoom: uniq(productionRows.filter(r => r.ownerKind === "loom").map(r => r.ownerLabel)),
+      supplier: uniq(externalRowsOnly.map(r => r.stock?.supplier ?? null)),
+      purchaseOrder: uniq(externalRowsOnly.map(r => r.stock?.purchaseId ?? null)),
     };
-  }, [rows]);
+  }, [rows, isExternalTab]);
 
   // Purchase orders belonging only to the currently selected supplier (cascading filter).
   const supplierPoOpts = useMemo(() => {
@@ -142,6 +150,39 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       .map(r => (r.loomNumber != null ? `Loom ${r.loomNumber}` : null)));
   }, [rows, isAll, fOwnerWeaver]);
 
+  // Saree Type and Colour are the one pair of controls shared by both filter
+  // bars, and the two sides have disjoint vocabularies (ST- codes on the
+  // production side, the free text an external purchase records on the other).
+  // Carrying a selection across that boundary can only ever match nothing, so
+  // it is dropped on the way over rather than silently emptying the table.
+  useEffect(() => { setFType("all"); setFColor("all"); }, [isExternalTab]);
+
+  // A filter still holding a value that no longer exists in its options — the
+  // supplier whose last purchase was deleted, the batch that finished while
+  // the page was open — filters everything out while the dropdown shows a
+  // choice that is no longer offered. Drop those back to "all" as the options
+  // change so the table can never be emptied by an unselectable value.
+  useEffect(() => {
+    if (!opts.supplier.includes(fSupplier)) setFSupplier("all");
+    if (!opts.batch.includes(fBatch)) setFBatch("all");
+    if (!opts.order.includes(fOrder)) setFOrder("all");
+    if (!opts.ownerWeaver.includes(fOwnerWeaver)) setFOwnerWeaver("all");
+    if (!opts.ownerLoom.includes(fOwnerLoom)) setFOwnerLoom("all");
+  }, [opts, fSupplier, fBatch, fOrder, fOwnerWeaver, fOwnerLoom]);
+
+  useEffect(() => {
+    if (!supplierPoOpts.includes(fPurchaseOrder)) setFPurchaseOrder("all");
+  }, [supplierPoOpts, fPurchaseOrder]);
+
+  useEffect(() => {
+    if (!poSerialOpts.includes(fSerial)) setFSerial("all");
+  }, [poSerialOpts, fSerial]);
+
+  useEffect(() => {
+    const looms = isAll ? weaverLoomOpts : opts.loom;
+    if (!looms.includes(fLoom)) setFLoom("all");
+  }, [isAll, weaverLoomOpts, opts.loom, fLoom]);
+
   const matchesSearch = (r: WeaverSareeRow) => {
     const q = search.trim().toLowerCase();
     if (!q) return true;
@@ -153,21 +194,37 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     return hay.includes(q);
   };
 
-  const passesFilters = (r: WeaverSareeRow) => {
+  // A filter only ever applies to the tab whose filter bar actually shows it.
+  //
+  // The two filter bars are disjoint — supplier / purchase order / serial /
+  // payment belong to External Purchases, batch / loom / owner / bulk order /
+  // QC / finishing belong to the production tabs — but the state behind them
+  // is shared and survives a tab switch. Applying all of it everywhere meant a
+  // supplier picked on External Purchases silently emptied every production
+  // tab (and a QC status picked on a production tab silently emptied External
+  // Purchases), with no control on screen to undo it. Scoping by tab is what
+  // makes the tab counts agree with the rows the table actually lists.
+  const passesFilters = (r: WeaverSareeRow, t: TabKey) => {
     if (!matchesSearch(r)) return false;
+    // Shown on both filter bars.
+    if (fType !== "all" && sareeTypeLabel(r) !== fType) return false;
+    if (fColor !== "all" && r.color !== fColor) return false;
+
+    if (t === "external") {
+      if (fSupplier !== "all" && r.stock?.supplier !== fSupplier) return false;
+      if (fPurchaseOrder !== "all" && r.stock?.purchaseId !== fPurchaseOrder) return false;
+      if (fPurchaseOrder !== "all" && fSerial !== "all" && externalSerialOf(r.sareeId) !== fSerial) return false;
+      if (fPayment !== "all" && (r.external?.paymentStatus ?? null) !== fPayment) return false;
+      return true;
+    }
+
     if (fBatch !== "all" && r.batchId !== fBatch) return false;
     if (fLoom !== "all" && (r.loomNumber == null || `Loom ${r.loomNumber}` !== fLoom)) return false;
     if (fOrder !== "all" && (r.bulkOrderLabel ?? (r.isAssigned ? "General Stock" : null)) !== fOrder) return false;
-    if (fType !== "all" && sareeTypeLabel(r) !== fType) return false;
-    if (fPayment !== "all" && (r.external?.paymentStatus ?? null) !== fPayment) return false;
-    if (fColor !== "all" && r.color !== fColor) return false;
     if (fQc !== "all" && QC_CFG[r.qcStatus].label !== fQc) return false;
     if (fFinishing !== "all" && FIN_CFG[r.finishingStatus].label !== fFinishing) return false;
     if (isAll && fOwnerWeaver !== "all" && (r.ownerKind !== "weaver" || r.ownerLabel !== fOwnerWeaver)) return false;
     if (isAll && fOwnerLoom !== "all" && (r.ownerKind !== "loom" || r.ownerLabel !== fOwnerLoom)) return false;
-    if (fSupplier !== "all" && r.stock?.supplier !== fSupplier) return false;
-    if (fPurchaseOrder !== "all" && r.stock?.purchaseId !== fPurchaseOrder) return false;
-    if (fPurchaseOrder !== "all" && fSerial !== "all" && externalSerialOf(r.sareeId) !== fSerial) return false;
     return true;
   };
 
@@ -182,14 +239,14 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     const c = {} as Record<TabKey, number>;
     (["assigned", "produced", "qcpassed", "semi", "defective", "finishing", "sold", "outstanding", "shortage", "external", "dispatched"] as TabKey[])
       .forEach(t => {
-        c[t] = rowsForTab(t).filter(r => inTab(r, t) && passesFilters(r) && matchesDateFilter(tabDate(r, t), dateFilter)).length;
+        c[t] = rowsForTab(t).filter(r => inTab(r, t) && passesFilters(r, t) && matchesDateFilter(tabDate(r, t), dateFilter)).length;
       });
     return c;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, selectable, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment]);
 
   const visible = useMemo(() => rowsForTab(tab)
-    .filter(r => inTab(r, tab) && passesFilters(r) && matchesDateFilter(tabDate(r, tab), dateFilter))
+    .filter(r => inTab(r, tab) && passesFilters(r, tab) && matchesDateFilter(tabDate(r, tab), dateFilter))
     .sort((a, b) => {
       const da = tabDate(a, tab), db = tabDate(b, tab);
       if (da && db) return new Date(db).getTime() - new Date(da).getTime();
@@ -230,10 +287,15 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     ...(isAll ? [{ key: "external" as TabKey, label: "External Purchases", color: T.taupe }] : []),
   ];
 
-  const filtersActive = search.trim() !== "" || fBatch !== "all" || fLoom !== "all" || fOrder !== "all"
-    || fType !== "all" || fColor !== "all" || fQc !== "all" || fFinishing !== "all"
-    || fOwnerWeaver !== "all" || fOwnerLoom !== "all" || fSupplier !== "all" || fPurchaseOrder !== "all"
-    || fSerial !== "all" || fPayment !== "all" || dateFilter.mode !== "all";
+  // Only counts filters that are on screen for this tab — the ones passesFilters
+  // is actually applying — so "Clear filters" never appears for a control the
+  // user cannot see and the empty state doesn't blame invisible filters.
+  const filtersActive = search.trim() !== "" || dateFilter.mode !== "all"
+    || fType !== "all" || fColor !== "all"
+    || (isExternalTab
+      ? (fSupplier !== "all" || fPurchaseOrder !== "all" || fSerial !== "all" || fPayment !== "all")
+      : (fBatch !== "all" || fLoom !== "all" || fOrder !== "all" || fQc !== "all" || fFinishing !== "all"
+        || fOwnerWeaver !== "all" || fOwnerLoom !== "all"));
 
   const resetFilters = () => {
     setSearch("");
@@ -291,7 +353,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
         {isExternalTab ? (
           <>
             <Select label="Supplier" value={fSupplier} options={opts.supplier}
-              onChange={v => { setFSupplier(v); setFPurchaseOrder("all"); }} />
+              onChange={v => { setFSupplier(v); setFPurchaseOrder("all"); setFSerial("all"); }} />
             <Select label="Purchase Order" value={fPurchaseOrder} options={supplierPoOpts}
               onChange={v => { setFPurchaseOrder(v); setFSerial("all"); }} />
             {fPurchaseOrder !== "all" && (

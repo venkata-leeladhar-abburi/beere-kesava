@@ -138,14 +138,16 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
           // Material line items carry no unique id — grnBatchId + materialType + index
           // distinguishes rows within this record (multiple lines can share a GRN batch).
           // eslint-disable-next-line react/no-array-index-key
-          <div key={`${m.grnBatchId}-${m.materialType}-${i}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 14px" }}>
+          <div key={`${m.grnItemCode ?? m.grnBatchId}-${m.materialType}-${i}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 14px" }}>
             <div>
               <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: C.text }}>{m.materialType}{m.materialType === "Warp" && m.warpSubtype ? ` — ${m.warpSubtype}` : ""}</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{m.materialType === "Jari" ? `${m.jariType} · ${m.jariGrade} · ${m.jariColor}` : (m.description || "")}</div>
             </div>
             <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
               <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{m.quantity} {m.unit}</div>
-              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, background: C.cream, borderRadius: 6, padding: "1px 6px", marginTop: 3, display: "inline-block" }}>{m.grnBatchId}</div>
+              {/* The weaver's own label reads the per-line code, so show that
+                  and not the parent receipt — those are different ids. */}
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, background: C.cream, borderRadius: 6, padding: "1px 6px", marginTop: 3, display: "inline-block" }}>{m.grnItemCode || m.grnBatchId}</div>
             </div>
           </div>
         ))}

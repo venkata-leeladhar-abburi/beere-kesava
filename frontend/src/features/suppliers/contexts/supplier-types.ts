@@ -169,6 +169,23 @@ export function pieceCodeFromLineCode(lineCode: string, pieceNo: number): string
   return `${lineCode}-${String(pieceNo).padStart(2, "0")}`;
 }
 
+/**
+ * The serial number inside a purchase-line code.
+ *
+ * A line code is `PREFIX-INVOICE-SERIAL` and the invoice number is free text
+ * that routinely contains its own dashes and digits ("INV-2026-12"), so the
+ * serial can only be read from the *end* of the code, never by counting
+ * segments from the front. Returns null when the code isn't in that shape.
+ */
+export function serialFromLineCode(lineCode: string): string | null {
+  return lineCode.match(/-(\d{3,4})$/)?.[1] ?? null;
+}
+
+/** The same serial, read from a physical piece code (line code + `-<pieceNo>`). */
+export function serialFromPieceCode(pieceCode: string): string | null {
+  return pieceCode.match(/-(\d{3,4})-\d{2,}$/)?.[1] ?? null;
+}
+
 export function computeFinalAmount(price: number, sellPercent: number, quantity = 1): number {
   const qty = quantity > 0 ? quantity : 1;
   return (price + (price * sellPercent) / 100) * qty;

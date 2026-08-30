@@ -10,6 +10,7 @@ import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { materialItemToGrams, BUNS_PER_REEL, MaterialIssueRecord, BatchMaterialSummary } from "@/features/materials";
 import { formatBunsReels } from "@/shared/lib/weightUnits";
+import { GrnLineCode } from "@/shared/ui/domain";
 import { BatchRecord, SareeRow } from "@/features/production";
 import { DispatchRecord } from "@/features/design-library";
 import { WeaverPaymentRecord } from "../../../contexts/WeaverPaymentsContext";
@@ -311,11 +312,36 @@ export function MaterialsTab({ materialRecords, materialByBatch, totalRecordCoun
                   if (!recordsByBatch.has(key)) recordsByBatch.set(key, []);
                   recordsByBatch.get(key)!.push(r);
                 });
+                // Materials are issued against a loom + batch pair, so the batch cards are
+                // grouped under the loom they were issued on. A batch's loom comes from its
+                // issue records; records saved before loom capture fall under "Loom not recorded",
+                // and a batch worked across looms appears under each with only its own records.
+                const loomGroups = new Map<string, { label: string; loom?: number; batches: BatchMaterialSummary[] }>();
+                materialByBatch.forEach(b => {
+                  const looms = Array.from(new Set((recordsByBatch.get(b.batchId) ?? [])
+                    .map(r => r.loomNumber)
+                    .filter((n): n is number => typeof n === "number")));
+                  const keys = looms.length > 0 ? looms.map(String) : ["unassigned"];
+                  keys.forEach(k => {
+                    if (!loomGroups.has(k)) loomGroups.set(k, { label: k === "unassigned" ? "Loom not recorded" : `Loom ${k}`, loom: k === "unassigned" ? undefined : Number(k), batches: [] });
+                    loomGroups.get(k)!.batches.push(b);
+                  });
+                });
+                const orderedLoomGroups = Array.from(loomGroups.values())
+                  .sort((a, z) => (a.loom ?? Number.MAX_SAFE_INTEGER) - (z.loom ?? Number.MAX_SAFE_INTEGER));
                 return (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                    {materialByBatch.map(b => {
+                  <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+                    {orderedLoomGroups.map(g => (
+                      <div key={g.label}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
+                          <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", color: "#FFFFFF", background: T.royalBurgundy, borderRadius: 8, padding: "6px 14px" }}>{g.label}</span>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{g.batches.length} batch{g.batches.length !== 1 ? "es" : ""}</span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                    {g.batches.map(b => {
                       const outColor = b.outstandingGrams > 0 ? T.crimson : T.green;
-                      const records = recordsByBatch.get(b.batchId) ?? [];
+                      const records = (recordsByBatch.get(b.batchId) ?? [])
+                        .filter(r => (g.loom === undefined ? typeof r.loomNumber !== "number" : r.loomNumber === g.loom));
 
                       // Break down issued/outstanding by material type. Returns are only
                       // weighed in aggregate per batch (no per-material split at receipt),
@@ -340,7 +366,7 @@ export function MaterialsTab({ materialRecords, materialByBatch, totalRecordCoun
                       }));
 
                       return (
-                        <div key={b.batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+                        <div key={`${g.label}-${b.batchId}`} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
                           {/* Batch header */}
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, flexWrap: "wrap", gap: 10 }}>
                             <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 7, padding: "5px 12px" }}>{b.batchId}</span>
@@ -408,6 +434,7 @@ export function MaterialsTab({ materialRecords, materialByBatch, totalRecordCoun
                                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                     <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 9px", fontWeight: 700 }}>{r.id}</span>
                                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                                    {typeof r.loomNumber === "number" && <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.antiqueGold }}>Loom {r.loomNumber}</span>}
                                   </div>
                                   {r.signatureCaptured ? (
                                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 5 }}><Check size={12} /> Signed</span>
@@ -416,17 +443,19 @@ export function MaterialsTab({ materialRecords, materialByBatch, totalRecordCoun
                                   )}
                                 </div>
                                 <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
-                                  {r.materials.map((m) => (
-                                    // Material rows carry no persisted id; grnBatchId + materialType uniquely
-                                    // identifies each row within a handover record's material list.
-                                    <div key={`${m.grnBatchId}-${m.materialType}`} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px", flexWrap: "wrap" }}>
+                                  {r.materials.map((m, mi) => (
+                                    // Material rows carry no persisted id. The GRN line code is unique
+                                    // per row where present; legacy rows without one fall back to the
+                                    // batch id plus position, which is stable for a fixed material list.
+                                    // eslint-disable-next-line react/no-array-index-key -- issued lines have no client-side id; order is fixed per record
+                                    <div key={`${m.grnItemCode ?? m.grnBatchId}-${m.materialType}-${mi}`} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px", flexWrap: "wrap" }}>
                                       <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>
                                         {m.materialType}{m.materialType === "Warp" && m.warpSubtype ? ` — ${m.warpSubtype}` : ""}
                                       </span>
                                       {m.description && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{m.description}</span>}
                                       {m.materialType === "Jari" && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{m.jariType} · {m.jariGrade} · {m.jariColor}</span>}
                                       <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, marginLeft: "auto" }}>{m.quantity} {m.unit}</span>
-                                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.10)", borderRadius: 5, padding: "2px 8px" }}>{m.grnBatchId}</span>
+                                      <GrnLineCode batchId={m.grnBatchId} itemCode={m.grnItemCode} />
                                     </div>
                                   ))}
                                 </div>
@@ -437,6 +466,9 @@ export function MaterialsTab({ materialRecords, materialByBatch, totalRecordCoun
                         </div>
                       );
                     })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 );
               })()}

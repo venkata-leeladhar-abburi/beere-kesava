@@ -13,6 +13,7 @@ import { IconButton, Button } from "../../../../shared/ui/primitives";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { EntityCode } from "@/shared/ui/domain";
 import { exportTable, type ColumnDef } from "../../../../shared/ui/data";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 function parseKg(quantity: number | string | null | undefined, unit?: string | null): number {
   const q = Number(quantity || 0);
@@ -171,6 +172,8 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
     };
   }, [rawGrns, rawIssues, rawStock]);
 
+  const pag = usePagination(stats.entries, 10);
+
   return (
     <section id="mat-movement" style={{ padding: `44px ${px}px 48px` }}>
     <SectionCard
@@ -322,7 +325,7 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
                 No material movement entries recorded yet.
               </div>
             ) : (
-              <div>
+              <div id="every-movement-table">
                 {/* Table Header */}
                 <div className="hidden sm:grid grid-cols-12 gap-4 px-6 py-3.5 border-b border-[rgba(110,15,45,0.10)] bg-[#FAF8F5]" style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>
                   <div className="col-span-3">Movement & Date</div>
@@ -333,7 +336,7 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
                 </div>
 
                 {/* Table Rows */}
-                {stats.entries.map((entry, i) => {
+                {pag.pageItems.map((entry, i) => {
                   const parts = entry.desc.split(" — ");
                   const party = parts[0] || entry.desc;
                   const items = parts[1] || "";
@@ -395,6 +398,17 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
                     </motion.div>
                   );
                 })}
+                <Pagination
+                  targetId="every-movement-table"
+                  page={pag.page}
+                  pageCount={pag.pageCount}
+                  total={pag.total}
+                  pageSize={pag.pageSize}
+                  start={pag.start}
+                  onPageChange={pag.setPage}
+                  onPageSizeChange={pag.setPageSize}
+                  itemLabel="entries"
+                />
               </div>
             )}
           </div>

@@ -416,7 +416,7 @@ export function PaymentHistorySection() {
         <>
         {/* ── CARD VIEW ───────────────────────────────────────── */}
         {view === "card" && (
-          <div className="mb-8">
+          <div data-pagination-target className="mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6 items-stretch">
               {pag.pageItems.map((r, i) => (
                 <motion.div key={r.id} style={{ display: "flex", flexDirection: "column" }}
@@ -440,7 +440,7 @@ export function PaymentHistorySection() {
 
         {/* ── LIST VIEW ────────────────────────────────────────── */}
         {view === "list" && (
-          <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 32, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
+          <div data-pagination-target style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 32, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
             {filtered.length === 0 ? (
               <div style={{ padding: "60px 0", textAlign: "center" as const }}>
                 <Receipt size={40} color={T.borderDef} style={{ marginBottom: 12 }} />

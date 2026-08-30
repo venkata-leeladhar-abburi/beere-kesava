@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useInView } from "motion/react";
 import { ArrowRight, Check, Inbox } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import { Button, IconButton } from "../../../shared/ui/primitives";
+import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
 import { UnifiedNotif, Priority, T, F, PRIORITY, CATEGORIES } from "./notifTypes";
 import { NotificationStatStrip } from "./NotificationStatStrip";
 import { NotificationDetailPanel } from "./NotificationDetailPanel";
@@ -160,7 +161,9 @@ export function NotificationsPage() {
   };
 
   const grouped: Record<string, UnifiedNotif[]> = {};
-  filtered.forEach(n => {
+  const pag = usePagination(filtered, 10);
+
+  pag.pageItems.forEach(n => {
     const grp = getDateGroup(n.time);
     if (!grouped[grp]) grouped[grp] = [];
     grouped[grp].push(n);
@@ -403,6 +406,19 @@ export function NotificationsPage() {
               </div>
             );
           })}
+
+          {!isLoading && !isError && filtered.length > 0 && (
+            <Pagination
+              page={pag.page}
+              pageCount={pag.pageCount}
+              total={pag.total}
+              pageSize={pag.pageSize}
+              start={pag.start}
+              onPageChange={pag.setPage}
+              onPageSizeChange={pag.setPageSize}
+              itemLabel="notifications"
+            />
+          )}
 
           {isLoading && (
             <div style={{ textAlign: "center", padding: "80px 40px", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>

@@ -1,3 +1,4 @@
+import { serialFromPieceCode } from "@/features/suppliers";
 import { T } from "./theme";
 import type { QcResult } from "@/features/qc";
 import { FinishingStatus, WeaverSareeRow } from "./types";
@@ -5,12 +6,11 @@ import { formatMoney, rupees } from "../../../../lib/domain/money";
 
 export const inr = (n: number): string => formatMoney(rupees(n));
 
-/** External saree IDs follow SupplierContext.buildSareeCode: PREFIX-###-INVOICE.
- *  Pulls out the 3-digit serial so it reads as its own field rather than being
- *  buried inside the compound saree ID. */
+/** External saree IDs are piece codes built by SupplierContext:
+ *  `PREFIX-INVOICE-SERIAL-PIECE`. Pulls out the serial so it reads as its own
+ *  field rather than being buried inside the compound saree ID. */
 export function externalSerialOf(sareeId: string): string | null {
-  const m = sareeId.match(/^[A-Za-z]+-(d{3,4})-/);
-  return m ? m[1] : null;
+  return serialFromPieceCode(sareeId);
 }
 
 /** Whether a saree may be ticked for a quotation or a dispatch.

@@ -9,8 +9,16 @@ import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 import type { ReportTabKey, ReportTab } from "../types";
+import { PERIODS, type CustomDates, type PeriodKey } from "../period";
+import { useReportPeriod } from "../PeriodContext";
+import { DatePicker } from "../../../../shared/ui/date";
 
-const REPORT_TABS: ReportTab[] = [
+/** Local-date ISO (yyyy-mm-dd) — toISOString() would shift across the UTC boundary. */
+function toISODate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+export const REPORT_TABS: ReportTab[] = [
   { key: "raw-material",   Icon: Package,       label: "Raw Material",     desc: "Stock & flow",      iconColor: "#FFFDF9",        iconBg: "rgba(224,82,82,0.20)"  },
   { key: "production",     Icon: Scissors,      label: "Saree Production", desc: "Output & batches",  iconColor: "#FFFDF9",        iconBg: "rgba(224,82,82,0.20)" },
   { key: "outstanding",    Icon: Boxes,         label: "Outstanding Stock", desc: "Unsold by source", iconColor: "#FFFDF9",        iconBg: "rgba(224,82,82,0.20)"  },
@@ -23,14 +31,19 @@ const REPORT_TABS: ReportTab[] = [
   { key: "overdue",        Icon: BellRing,      label: "Overdue & Alerts", desc: "Pending actions",   iconColor: "#FFFDF9",        iconBg: "rgba(224,82,82,0.20)"   },
 ];
 
-const PERIODS = ["Today", "This Week", "This Month", "This Quarter", "This Year", "Custom Dates"];
+// Tabs that show a live snapshot of "right now" — there is nothing dated to
+// filter, so the period selector is disabled rather than silently ignored.
+const LIVE_ONLY_TABS: ReportTabKey[] = ["overdue", "outstanding-payments", "outstanding"];
 
-export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActivePeriod, compareOn, setCompareOn }: {
+export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActivePeriod, custom, setCustom, compareOn, setCompareOn, periodLabel, priorLabel }: {
   activeTab: ReportTabKey; setActiveTab: (k: ReportTabKey) => void;
-  activePeriod: string; setActivePeriod: (p: string) => void;
+  activePeriod: PeriodKey; setActivePeriod: (p: PeriodKey) => void;
+  custom: CustomDates; setCustom: (c: CustomDates) => void;
   compareOn: boolean; setCompareOn: (v: boolean) => void;
+  periodLabel: string; priorLabel: string | null;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { exportCsv, exportPdf, canExport } = useReportPeriod();
   const activeReportTab = REPORT_TABS.find(t => t.key === activeTab) ?? REPORT_TABS[0];
 
   return (
@@ -251,8 +264,8 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
             <Select
               size="sm"
               value={activePeriod}
-              onValueChange={setActivePeriod}
-              disabled={activeTab === "overdue"}
+              onValueChange={v => setActivePeriod(v as PeriodKey)}
+              disabled={LIVE_ONLY_TABS.includes(activeTab)}
               containerClassName="w-auto shrink-0"
               className="w-[145px] font-semibold text-[13px] rounded-[10px] bg-white border-[rgba(110,15,45,0.18)] shadow-xs"
             >
@@ -262,7 +275,26 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
             </Select>
           </div>
 
-          {activeTab === "overdue" && (
+          {activePeriod === "Custom Dates" && !LIVE_ONLY_TABS.includes(activeTab) && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
+              <DatePicker
+                placeholder="Start date"
+                value={custom.from ? new Date(custom.from) : null}
+                onChange={d => setCustom({ ...custom, from: d ? toISODate(d) : undefined })}
+              />
+              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>to</span>
+              <DatePicker
+                placeholder="End date"
+                value={custom.to ? new Date(custom.to) : null}
+                onChange={d => setCustom({ ...custom, to: d ? toISODate(d) : undefined })}
+              />
+              {(!custom.from || !custom.to) && (
+                <span style={{ fontFamily: F.ui, fontSize: 12, fontStyle: "italic", color: T.antiqueGold }}>Pick both dates — showing all time until then.</span>
+              )}
+            </div>
+          )}
+
+          {LIVE_ONLY_TABS.includes(activeTab) && (
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <AlertTriangle size={15} color={T.antiqueGold} />
               <span style={{ fontFamily: F.ui, fontSize: 14, color: T.antiqueGold, fontStyle: "italic" }}>Live status — no period filter applies.</span>
@@ -283,9 +315,9 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
             </div>
             {compareOn && (
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "6px 14px", borderRadius: 99, fontWeight: 600 }}>May 2026</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "6px 14px", borderRadius: 99, fontWeight: 600 }}>{periodLabel}</span>
                 <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>vs</span>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, background: "rgba(200,155,71,0.13)", color: "#8B6018", padding: "6px 14px", borderRadius: 99, fontWeight: 600 }}>April 2026</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, background: "rgba(200,155,71,0.13)", color: "#8B6018", padding: "6px 14px", borderRadius: 99, fontWeight: 600 }}>{priorLabel ?? "no prior period"}</span>
               </div>
             )}
           </div>
@@ -296,10 +328,10 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
 
             {/* Download buttons */}
             <div style={{ display: "flex", gap: 9, flexShrink: 0 }}>
-              <Button variant="secondary" iconLeft={FileText}>
+              <Button variant="secondary" iconLeft={FileText} onClick={exportPdf}>
                 Download PDF
               </Button>
-              <Button variant="primary" iconLeft={Download}>
+              <Button variant="primary" iconLeft={Download} onClick={exportCsv} disabled={!canExport}>
                 Download Excel
               </Button>
             </div>

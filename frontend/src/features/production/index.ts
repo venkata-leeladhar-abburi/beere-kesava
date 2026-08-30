@@ -13,3 +13,4 @@ export * from "./contexts/BatchContext";
 export * from "./components/sections/batches/SareeWeightTallyList";
 export * from "./data/factoryLooms";
 export * from "./components/DispatchDetailsModal";
+export * from "./components/sections/chart-primitives";

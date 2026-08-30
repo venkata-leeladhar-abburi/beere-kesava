@@ -552,8 +552,28 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+const FALLBACK_FINISHING: FinishingContextValue = {
+  readySarees: [],
+  assignments: [],
+  returns: [],
+  dispatches: [],
+  quotations: [],
+  assignSarees: () => {},
+  addReadySaree: () => {},
+  receiveReturn: () => {},
+  dispatchSarees: async () => ({ id: "", invoiceNumber: "" }),
+  updateDispatch: () => {},
+  deleteDispatch: () => {},
+  raiseQuotation: async () => ({ id: "", quotationNumber: "" }),
+  assignQuotationFinishing: () => {},
+  receiveQuotationSarees: () => {},
+  markQuotationDispatched: () => {},
+  isError: false,
+  error: null,
+  isLoading: false,
+  refetch: () => {},
+};
+
 export function useFinishing(): FinishingContextValue {
-  const ctx = useContext(FinishingContext);
-  if (!ctx) throw new Error("useFinishing must be used inside FinishingProvider");
-  return ctx;
+  return useContext(FinishingContext) ?? FALLBACK_FINISHING;
 }

@@ -171,8 +171,6 @@ export function VendorsPage() {
             )}
           </AnimatePresence>
 
-          <div id="vend-analytics"><VendorAnalyticsSection vendors={vendorsWithRollup} /></div>
-
           <div id="vend-directory">
             <VendorDirectorySection
               vendors={vendorsWithRollup}
@@ -183,6 +181,8 @@ export function VendorsPage() {
               onRetry={loadVendors}
             />
           </div>
+
+          <div id="vend-analytics"><VendorAnalyticsSection vendors={vendorsWithRollup} /></div>
         </>
       )}
       <div style={{ marginTop: "auto" }}>

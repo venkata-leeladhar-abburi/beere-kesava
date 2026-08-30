@@ -1,5 +1,7 @@
 /** shared/ui/domain barrel — design-system/06-DOMAIN.md Part I Step 2. */
 export { EntityCode, type EntityCodeProps } from "./EntityCode";
+export { GrnLineCode, type GrnLineCodeProps } from "./GrnLineCode";
+export { ScannableCode, type ScannableCodeProps } from "./ScannableCode";
 export { Money, type MoneyProps } from "./Money";
 export { Quantity, type QuantityProps } from "./Quantity";
 export { Percent, type PercentProps } from "./Percent";

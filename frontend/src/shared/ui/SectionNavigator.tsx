@@ -212,8 +212,6 @@ export function SectionNavigator({
       } catch {
         window.scrollTo(0, targetY);
       }
-      document.documentElement.scrollTop = targetY;
-      document.body.scrollTop = targetY;
       return;
     }
 

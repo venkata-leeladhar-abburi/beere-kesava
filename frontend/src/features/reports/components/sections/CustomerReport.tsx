@@ -5,7 +5,7 @@ import { UsersRound, CheckCircle2, TrendingUp, ShieldAlert } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill } from "../common/primitives";
+import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, ChartTip, AnimBar, StatusPill } from "../common/primitives";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
 import { invoicesApi } from "../../../../shared/api/invoices";
@@ -14,6 +14,7 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { PAYMENT_STATUS, type StatusValueOf } from "@/lib/domain/status";
+import { useReportPeriod, useRegisterExport } from "../PeriodContext";
 
 interface CustomerRow {
   id: string;
@@ -62,7 +63,9 @@ function downloadCustomerData(r: CustomerRow) {
 
 export function CustomerReport() {
   const [filter, setFilter] = useState("All Customers");
+  const [search, setSearch] = useState("");
   const filters = ["All Customers", "Retail Only", "Wholesale Only", "Has Outstanding Dues", "No Purchases This Month"];
+  const { inCurrent } = useReportPeriod();
 
   const { data: customersRes, isLoading, isError: customersError, refetch: refetchCustomers } = useQuery({
     queryKey: ["reports", "customers-roster"],
@@ -81,13 +84,16 @@ export function CustomerReport() {
 
   const custRows: CustomerRow[] = useMemo(() => {
     const customers = customersRes?.items ?? [];
-    const invoices = invoicesRes?.items ?? [];
-    const sales = (salesRes?.items ?? []).filter(s => s.channel === "RETAIL");
+    const invoices = (invoicesRes?.items ?? []).filter(i => inCurrent(i.invoiceDate));
+    const sales = (salesRes?.items ?? []).filter(s => s.channel === "RETAIL" && inCurrent(s.saleDate));
 
     return customers.map((c: BackendCustomer) => {
       if (c.type === "WHOLESALE") {
         const custInvoices = invoices.filter(i => i.customerId === c.id);
-        const spend = custInvoices.reduce((s, i) => s + Number(i.paid), 0);
+        // "Total Spend" is what the customer bought, i.e. the invoiced value.
+        // Summing `paid` instead reported only what they had settled so far,
+        // so a customer's spend shrank as their dues grew.
+        const spend = custInvoices.reduce((s, i) => s + Number(i.total), 0);
         const due = custInvoices.reduce((s, i) => s + (Number(i.total) - Number(i.paid)), 0);
         const dates = custInvoices.map(i => i.invoiceDate).sort();
         return {
@@ -109,42 +115,109 @@ export function CustomerReport() {
         status: "paid" as const,
       };
     });
-  }, [customersRes, invoicesRes, salesRes]);
+  }, [customersRes, invoicesRes, salesRes, inCurrent]);
 
   // Dynamic monthly New vs Returning customer acquisition
   const custMonthly = useMemo(() => {
+    // "Returning" was hard-coded to an always-empty series, so the second bar
+    // never rendered under its own legend. It is now real: customers who
+    // bought in a month but joined before it. Buckets are keyed by year+month
+    // so the same month in different years no longer merges.
     const customers = customersRes?.items ?? [];
-    const monthsOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const newMap: Record<string, number> = {};
-    const retMap: Record<string, number> = {};
+    const invoices = invoicesRes?.items ?? [];
+    const sales = salesRes?.items ?? [];
 
+    const keyOf = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const labelOf = (d: Date) => d.toLocaleString("en-US", { month: "short", year: "2-digit" }).replace(" ", " '");
+    const map = new Map<string, { month: string; newC: number; ret: number }>();
+    const bucket = (d: Date) => {
+      const entry = map.get(keyOf(d)) ?? { month: labelOf(d), newC: 0, ret: 0 };
+      map.set(keyOf(d), entry);
+      return entry;
+    };
+
+    const joinedKeyById = new Map<string, string>();
     for (const c of customers) {
       const d = new Date(c.createdAt);
-      if (!isNaN(d.getTime())) {
-        const m = d.toLocaleString("en-US", { month: "short" });
-        newMap[m] = (newMap[m] || 0) + 1;
-      }
+      if (isNaN(d.getTime())) continue;
+      joinedKeyById.set(c.id, keyOf(d));
+      bucket(d).newC += 1;
     }
 
-    const activeMonths = monthsOrder.filter(m => newMap[m] !== undefined);
-    if (activeMonths.length === 0) return [];
-    return activeMonths.map(m => ({
-      month: m,
-      newC: newMap[m] || 0,
-      ret: retMap[m] || 0,
-    }));
-  }, [customersRes]);
+    // One "returning" tick per customer per month they transacted in, counted
+    // only for months after the one they joined in.
+    const seen = new Set<string>();
+    const purchases: { customerId: string | null | undefined; date: string }[] = [
+      ...invoices.map(i => ({ customerId: i.customerId, date: i.invoiceDate })),
+      ...sales.map(sale => ({ customerId: sale.customerId, date: sale.saleDate })),
+    ];
+    for (const pr of purchases) {
+      if (!pr.customerId) continue;
+      const d = new Date(pr.date);
+      if (isNaN(d.getTime())) continue;
+      const k = keyOf(d);
+      const joined = joinedKeyById.get(pr.customerId);
+      if (!joined || joined >= k) continue;
+      const dedupe = `${pr.customerId}::${k}`;
+      if (seen.has(dedupe)) continue;
+      seen.add(dedupe);
+      bucket(d).ret += 1;
+    }
 
-  const topCustomers = [...custRows].sort((a, b) => b.spend - a.spend).slice(0, 5).map(c => ({ name: c.name, total: c.spend }));
+    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([, v]) => v);
+  }, [customersRes, invoicesRes, salesRes]);
+
+  // Last purchase per customer, from *unfiltered* transactions: the
+  // "No Purchases This Month" filter asks about this calendar month
+  // regardless of which period the page is scoped to.
+  const lastPurchaseDateById = useMemo(() => {
+    const map = new Map<string, Date>();
+    const note = (id: string | null | undefined, raw: string) => {
+      if (!id) return;
+      const d = new Date(raw);
+      if (isNaN(d.getTime())) return;
+      const prev = map.get(id);
+      if (!prev || d > prev) map.set(id, d);
+    };
+    for (const i of invoicesRes?.items ?? []) note(i.customerId, i.invoiceDate);
+    for (const sale of salesRes?.items ?? []) note(sale.customerId, sale.saleDate);
+    return map;
+  }, [invoicesRes, salesRes]);
+
+  // The dropdown's value was stored but never read, and the search box had no
+  // value/onChange at all — the table always rendered every customer.
+  const visibleRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const now = new Date();
+    return custRows.filter(r => {
+      if (filter === "Retail Only" && r.type !== "Retail") return false;
+      if (filter === "Wholesale Only" && r.type !== "Wholesale") return false;
+      if (filter === "Has Outstanding Dues" && r.due <= 0) return false;
+      if (filter === "No Purchases This Month") {
+        const last = lastPurchaseDateById.get(r.id);
+        if (last && last.getFullYear() === now.getFullYear() && last.getMonth() === now.getMonth()) return false;
+      }
+      if (!q) return true;
+      return r.name.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q);
+    });
+  }, [custRows, filter, search, lastPurchaseDateById]);
+
+  useRegisterExport(useMemo(() => ({
+    name: "Customer Report",
+    headers: ["Customer Name", "Type", "Phone", "City", "GST Code", "Total Purchases", "Total Spend", "Outstanding Due", "Last Purchase", "Status"],
+    rows: visibleRows.map(r => [r.name, r.type, r.phone, r.city, r.gstCode, r.purchases, r.spend, r.due, r.lastPurchase, PAYMENT_STATUS[r.status].label]),
+  }), [visibleRows]));
+
+  const topCustomers = [...visibleRows].sort((a, b) => b.spend - a.spend).slice(0, 5).map(c => ({ name: c.name, total: c.spend }));
   const maxTop = topCustomers[0]?.total || 1;
-  const wholesaleSpend = custRows.filter(c => c.type === "Wholesale").reduce((s, c) => s + c.spend, 0);
-  const retailSpend = custRows.filter(c => c.type === "Retail").reduce((s, c) => s + c.spend, 0);
+  const wholesaleSpend = visibleRows.filter(c => c.type === "Wholesale").reduce((s, c) => s + c.spend, 0);
+  const retailSpend = visibleRows.filter(c => c.type === "Retail").reduce((s, c) => s + c.spend, 0);
   const custSplitDonut = [
     { name: "Wholesale", value: wholesaleSpend, color: T.royalBurgundy },
     { name: "Retail",    value: retailSpend,    color: T.antiqueGold },
   ].filter(d => d.value > 0);
-  const activeCount = custRows.filter(c => c.purchases > 0).length;
-  const overdueCount = custRows.filter(c => c.status === "overdue").length;
+  const activeCount = visibleRows.filter(c => c.purchases > 0).length;
+  const overdueCount = visibleRows.filter(c => c.status === "overdue").length;
   const now = new Date();
   const newThisMonthCount = (customersRes?.items ?? []).filter(c => {
     const d = new Date(c.createdAt);
@@ -195,7 +268,7 @@ export function CustomerReport() {
     >
       <ReportDLBar />
 
-      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 24 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3" style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}>
         <ChartCard title="Top Customers by Total Purchase Value" sub="All-time wholesale + retail combined">
           <div style={{ display: "flex", flexDirection: "column", gap: 11, padding: "8px 0" }}>
             {isError && (
@@ -271,8 +344,8 @@ export function CustomerReport() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 22, alignItems: "stretch" }}>
-        <SumCard icon={<UsersRound size={22} color={T.royalBurgundy} />} label="Total Customers (All Time)" value={`${custRows.length} customers`} sub="Retail + wholesale" />
-        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Active (All Time)" value={`${activeCount} customers`} sub="Made at least one purchase" greenHi />
+        <SumCard icon={<UsersRound size={22} color={T.royalBurgundy} />} label="Customers Shown" value={`${visibleRows.length} customers`} sub="Retail + wholesale" />
+        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Active" value={`${activeCount} customers`} sub="Made at least one purchase" greenHi />
         <SumCard icon={<TrendingUp size={22} color={T.antiqueGold} />} label="New This Month" value={`${newThisMonthCount} customers`} sub="Added to the roster" hi />
         <SumCard icon={<ShieldAlert size={22} color={T.crimson} />} label="Customers with Dues" value={`${overdueCount} customers`} sub="Outstanding balance" crimsonHi />
       </div>
@@ -290,7 +363,12 @@ export function CustomerReport() {
           ))}
         </Select>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <SearchInput aria-label="Search by customer name or phone number..." placeholder="Search by customer name or phone number..." />
+          <SearchInput
+            aria-label="Search by customer name or phone number..."
+            placeholder="Search by customer name or phone number..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
         </div>
       </div>
 
@@ -301,7 +379,7 @@ export function CustomerReport() {
               <DataTable
                 responsive={false}
                 columns={customerColumns}
-                data={custRows}
+                data={visibleRows}
                 getRowId={r => r.id}
                 loading={isLoading}
                 error={!!isError}
@@ -319,7 +397,7 @@ export function CustomerReport() {
         <div style={{ marginTop: 24 }}>
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 12 }}>Customer Details</div>
           <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 16 }}>
-            {custRows.map(r => (
+            {visibleRows.map(r => (
               <div key={r.id} style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                   <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{r.name}</div>

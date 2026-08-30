@@ -1,9 +1,13 @@
 import React, { useState } from "react";
-import { History } from "lucide-react";
+import { History, LayoutGrid, LayoutList, CheckCircle2 } from "lucide-react";
 import { T, F, PassedLogItem } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";
 import { WorkerQCPassedCard } from "./WorkerQCPassedCard";
 import { DateFilterBar, type DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { EntityCode } from "../../../../shared/ui/domain";
+import { Button } from "../../../../shared/ui/primitives";
 
 interface WorkerQCHistorySectionProps {
   items: PassedLogItem[];
@@ -14,13 +18,67 @@ interface WorkerQCHistorySectionProps {
 }
 
 export function WorkerQCHistorySection({ items, historyFilter, setHistoryFilter, isDesktop, isTablet }: WorkerQCHistorySectionProps) {
+  const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const cols = isDesktop ? "repeat(4, 1fr)" : isTablet ? "repeat(2, 1fr)" : "1fr";
   const filtered = items.filter(p => matchesDateFilter(p.isoDate, historyFilter));
-  const [page, setPage] = useState(1);
   const ITEMS_PER_PAGE = isDesktop ? 20 : isTablet ? 10 : 5;
+  const pag = usePagination(filtered, ITEMS_PER_PAGE);
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const pageItems = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+  const columns: ColumnDef<PassedLogItem>[] = [
+    {
+      id: "sareeId",
+      header: "Saree ID",
+      accessor: p => p.id,
+      priority: 1,
+      cell: (_v, p) => <EntityCode type="saree" value={p.id} size="sm" />,
+    },
+    {
+      id: "weaver",
+      header: "Weaver",
+      accessor: p => p.weaver,
+      priority: 2,
+      cell: (_v, p) => <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: T.brown }}>{p.weaver}</span>,
+    },
+    {
+      id: "sareeType",
+      header: "Saree Type",
+      accessor: p => p.sareeType,
+      priority: 2,
+      cell: (_v, p) => <span style={{ fontFamily: F.u, fontSize: 13, color: T.brown }}>{p.sareeType}</span>,
+    },
+    {
+      id: "date",
+      header: "Completed Date",
+      accessor: p => p.date,
+      priority: 3,
+      cell: (_v, p) => <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>{p.date}</span>,
+    },
+    {
+      id: "payable",
+      header: "Payable",
+      accessor: p => p.payable,
+      priority: 2,
+      cell: (_v, p) => <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: T.burg }}>{p.payable}</span>,
+    },
+    {
+      id: "inspectedBy",
+      header: "Inspected By",
+      accessor: p => p.inspectedBy ?? "—",
+      priority: 3,
+      cell: (_v, p) => <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted }}>{p.inspectedBy ?? "—"}</span>,
+    },
+    {
+      id: "status",
+      header: "Status",
+      accessor: () => "Passed",
+      type: "status",
+      cell: () => (
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#1E6640", background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.20)", borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>
+          <CheckCircle2 size={12} /> Passed ✓
+        </span>
+      ),
+    },
+  ];
 
   return (
     <div id="wqc-history" style={{ margin: isDesktop ? "40px 0 0" : "32px 16px 0" }}>
@@ -34,8 +92,35 @@ export function WorkerQCHistorySection({ items, historyFilter, setHistoryFilter,
           </span>
         }
       >
-        <div style={{ marginBottom: 20 }}>
-          <DateFilterBar filter={historyFilter} onChange={(f) => { setHistoryFilter(f); setPage(1); }} />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+          <div className="flex items-center border border-[#E8DCC4] rounded-[12px] overflow-hidden bg-white shrink-0">
+            <Button
+              type="button"
+              onClick={() => setViewMode("card")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3.5 text-[12px] font-bold ${
+                viewMode === "card"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <LayoutGrid size={14} /> Card View
+            </Button>
+            <Button
+              type="button"
+              onClick={() => setViewMode("table")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3.5 text-[12px] font-bold ${
+                viewMode === "table"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <LayoutList size={14} /> Table View
+            </Button>
+          </div>
+
+          <DateFilterBar filter={historyFilter} onChange={(f) => { setHistoryFilter(f); pag.setPage(1); }} />
         </div>
 
         {filtered.length === 0 ? (
@@ -44,54 +129,36 @@ export function WorkerQCHistorySection({ items, historyFilter, setHistoryFilter,
           </div>
         ) : (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: cols, gap: 16 }}>
-              {pageItems.map((p) => (
-                <WorkerQCPassedCard key={p.recordId || p.id} id={p.id} weaver={p.weaver} date={p.date} sareeType={p.sareeType} payable={p.payable} inspectedBy={p.inspectedBy} />
-              ))}
-            </div>
-
-            {totalPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t border-[#EAE5E1]">
-                <div style={{ fontFamily: F.u }} className="text-[13px] text-[#69635E]">
-                  Showing <span className="font-semibold text-[#1D1814]">{(page - 1) * ITEMS_PER_PAGE + 1}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)}</span> of <span className="font-semibold text-[#1D1814]">{filtered.length}</span> sarees
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    disabled={page <= 1}
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                    className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                  >
-                    ‹ Prev
-                  </button>
-
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setPage(p)}
-                      className={`w-8 h-8 rounded-lg text-[12px] font-bold cursor-pointer transition-colors ${
-                        page === p
-                          ? "bg-[#6E0F2D] text-white"
-                          : "border border-[#EAE5E1] bg-white text-[#4F4A45] hover:bg-[#FAF8F6]"
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  ))}
-
-                  <button
-                    type="button"
-                    disabled={page >= totalPages}
-                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                    className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                  >
-                    Next ›
-                  </button>
-                </div>
+            {viewMode === "card" ? (
+              <div style={{ display: "grid", gridTemplateColumns: cols, gap: 16 }}>
+                {pag.pageItems.map((p) => (
+                  <WorkerQCPassedCard key={p.recordId || p.id} id={p.id} weaver={p.weaver} date={p.date} sareeType={p.sareeType} payable={p.payable} inspectedBy={p.inspectedBy} />
+                ))}
+              </div>
+            ) : (
+              <div className="w-full overflow-x-auto" style={{ border: `1.5px solid ${T.bdr}`, borderRadius: 12, overflow: "hidden" }}>
+                <DataTable
+                  columns={columns}
+                  data={pag.pageItems}
+                  getRowId={p => p.recordId || p.id}
+                  pagination={false}
+                />
               </div>
             )}
+
+            <div className="mt-6 pt-4 border-t border-[#EAE5E1]">
+              <Pagination
+                targetId="wqc-history"
+                page={pag.page}
+                pageCount={pag.pageCount}
+                total={pag.total}
+                pageSize={pag.pageSize}
+                start={pag.start}
+                onPageChange={pag.setPage}
+                onPageSizeChange={pag.setPageSize}
+                itemLabel="sarees"
+              />
+            </div>
           </>
         )}
       </SectionCard>

@@ -2,12 +2,17 @@ import React from "react";
 import { T, F } from "./theme";
 import { MAT_TAG_PO } from "./data";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { GrnLineCode } from "@/shared/ui/domain";
 
 interface PurchaseOrderMaterial {
   type: string;
   description: string;
   qty: string;
   invoiceAmount?: string;
+  /** Per-line goods-receipt id for this material, e.g.
+   *  "GRN-SreeVignesh-004-002-1" — the id on its barcode label. Set once the
+   *  order has been received and this line matched to a receipt line. */
+  grnItemCode?: string;
 }
 
 export interface PurchaseOrderHistoryRow {
@@ -46,6 +51,11 @@ export function PurchaseOrderHistoryTable({ orders }: { orders: PurchaseOrderHis
                 <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{m.description}</span>
                   {m.invoiceAmount && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice: <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600 }}>{m.invoiceAmount}</span></span>}
+                  {m.grnItemCode && (
+                    <span style={{ marginTop: 3 }}>
+                      <GrnLineCode itemCode={m.grnItemCode} batchId={o.grnId} hideParent />
+                    </span>
+                  )}
                 </div>
                 <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 6px", borderRadius: 4, marginTop: 1 }}>{m.qty}</span>
               </div>
@@ -62,9 +72,9 @@ export function PurchaseOrderHistoryTable({ orders }: { orders: PurchaseOrderHis
       id: "receipt", header: "Receipt Details", accessor: o => o.grnId, priority: 3,
       cell: (_v, o) => o.grnId ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{o.grnId}</div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{o.firmName}</div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{o.receivedDate}</div>
+          <GrnLineCode batchId={o.grnId} />
+          {o.firmName && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{o.firmName}</div>}
+          {o.receivedDate && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{o.receivedDate}</div>}
         </div>
       ) : (
         <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</div>

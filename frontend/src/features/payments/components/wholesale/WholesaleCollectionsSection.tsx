@@ -377,7 +377,7 @@ export function WholesaleCollectionsSection() {
         </div>
 
         {view === "card" && (
-          <div>
+          <div data-pagination-target>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6 items-stretch">
               {pag.pageItems.map((inv, i) => {
                 const matchingOrder = matchBulkOrder(inv.id);

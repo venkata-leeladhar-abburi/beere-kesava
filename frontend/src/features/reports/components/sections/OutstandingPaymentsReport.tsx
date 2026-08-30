@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Wallet, Receipt, ShoppingBag, Clock, LayoutGrid, List } from "lucide-react";
 import { T, F } from "../theme";
@@ -9,6 +9,7 @@ import { Button } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, StatusPill } from "@/shared/ui/domain";
 import type { StatusValueOf } from "@/lib/domain/status";
+import { useRegisterExport } from "../PeriodContext";
 
 const SOURCE_LABEL: Record<string, string> = { invoice: "Invoice", bulk_order: "Bulk Order" };
 
@@ -28,9 +29,17 @@ export function OutstandingPaymentsReport() {
     queryFn: () => reportsApi.outstandingPayments(),
   });
 
-  const items = data?.items ?? [];
+  const items = useMemo(() => data?.items ?? [], [data]);
   const invoiceCount = items.filter(i => i.source === "invoice").length;
   const bulkOrderCount = items.filter(i => i.source === "bulk_order").length;
+
+  // A live snapshot of what is unpaid right now — there is no period to scope
+  // it to, so the toolbar export mirrors exactly what the table shows.
+  useRegisterExport(useMemo(() => ({
+    name: "Outstanding Payments Report",
+    headers: ["Source", "Reference", "Customer", "Total", "Paid", "Outstanding", "Due Date", "Status"],
+    rows: items.map(r => [SOURCE_LABEL[r.source] ?? r.source, r.id, r.customerName, r.total, r.paid, r.outstanding, r.dueDate ?? "", r.status]),
+  }), [items]));
 
   const columns: ColumnDef<OutstandingPaymentItem>[] = [
     {
@@ -41,6 +50,7 @@ export function OutstandingPaymentsReport() {
     { id: "customer", header: "Customer", accessor: r => r.customerName, priority: 1, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customerName}</span> },
     { id: "total", header: "Total", accessor: r => r.total, align: "end", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}><Money value={rupees(r.total)} /></span> },
     { id: "paid", header: "Paid", accessor: r => r.paid, align: "end", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", color: T.green }}><Money value={rupees(r.paid)} /></span> },
+    { id: "outstanding", header: "Outstanding", accessor: r => r.outstanding, align: "end", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.crimson }}><Money value={rupees(r.outstanding)} /></span> },
     { id: "outstanding", header: "Outstanding", accessor: r => r.outstanding, align: "end", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.crimson }}><Money value={rupees(r.outstanding)} /></span> },
     {
       id: "dueDate", header: "Due Date", accessor: r => r.dueDate,
