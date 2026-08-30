@@ -76,6 +76,8 @@ const SuppliersPage = lazy(() => import("../../suppliers/components/SuppliersPag
 const FactoryLoomPage = lazy(() => import("../../production/components/FactoryLoomPage").then(m => ({ default: m.FactoryLoomPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const StaffDirectoryPage = lazy(() => import("../../users/components/staff-directory/StaffDirectoryPage").then(m => ({ default: m.StaffDirectoryPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
+const AccountantDirectoryPage = lazy(() => import("../../users/components/staff-directory/accountant/AccountantDirectoryPage").then(m => ({ default: m.AccountantDirectoryPage })));
 
 import { WORKER_SCOPE, SHOP_SCOPE } from "@/features/users";
 import { TabLoadingFallback } from './TabLoadingFallback';
@@ -153,6 +155,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "add-user") nav = "AddUser";
   else if (tab === "worker-staff") nav = "WorkerStaff";
   else if (tab === "shop-staff") nav = "ShopStaff";
+  else if (tab === "accountant-staff") nav = "AccountantStaff";
   else if (tab === "external-purchases") nav = "ExternalPurchases";
   else if (tab === "supplier-returns") nav = "SupplierReturns";
   else if (tab === "batches") nav = "Batches";
@@ -196,6 +199,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       AddUser: "/admin/add-user",
       WorkerStaff: "/admin/worker-staff",
       ShopStaff: "/admin/shop-staff",
+      AccountantStaff: "/admin/accountant-staff",
       ExternalPurchases: "/admin/external-purchases",
       SupplierReturns: "/admin/supplier-returns",
       Batches: "/admin/batches",
@@ -263,6 +267,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <StaffDirectoryPage scope={WORKER_SCOPE} />
       ) : mobileTab === "ShopStaff" ? (
         <StaffDirectoryPage scope={SHOP_SCOPE} />
+      ) : mobileTab === "AccountantStaff" ? (
+        <AccountantDirectoryPage />
       ) : mobileTab === "ExternalPurchases" ? (
         <ExternalPurchasesPage />
       ) : mobileTab === "SupplierReturns" ? (
@@ -512,6 +518,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <StaffDirectoryPage scope={WORKER_SCOPE} />
       ) : nav === "ShopStaff" ? (
         <StaffDirectoryPage scope={SHOP_SCOPE} />
+      ) : nav === "AccountantStaff" ? (
+        <AccountantDirectoryPage />
       ) : nav === "ExternalPurchases" ? (
         <ExternalPurchasesPage />
       ) : nav === "SupplierReturns" ? (

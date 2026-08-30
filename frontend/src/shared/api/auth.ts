@@ -30,4 +30,7 @@ export const authApi = {
     apiClient.post<RequestOtpResponse>("/auth/request-otp", { phone }),
   verifyOtp: (phone: string, code: string) =>
     apiClient.post<VerifyOtpResponse>("/auth/verify-otp", { phone, code }),
+  /** Closes the session in the login history. Needs the token, so it must be
+   *  called before local credentials are cleared. */
+  logout: () => apiClient.post<{ ok: boolean }>("/auth/logout", {}),
 };

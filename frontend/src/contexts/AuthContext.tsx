@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { authApi } from "@/shared/api/auth";
 
 export type Role = "admin" | "superadmin" | "worker" | "weaver" | "shop" | "accountant";
 
@@ -144,6 +145,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    // Fired before the token is cleared, since the endpoint authenticates
+    // with it — and deliberately not awaited: signing out must be instant and
+    // must still work offline or with the API down. The login history losing
+    // one logout row is a better failure than a user stuck on a spinner, so
+    // the rejection is swallowed rather than surfaced.
+    void authApi.logout().catch(() => { /* logout is local-first */ });
+
     setState({ isAuthenticated: false, role: null, phone: null });
     localStorage.removeItem(STORAGE_KEY);
     try {

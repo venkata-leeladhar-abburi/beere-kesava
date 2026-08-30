@@ -67,8 +67,9 @@ export function RatingCard({
   suppliers: Supplier[];
 }) {
   const data = Object.entries(suppliers.reduce((acc, s) => {
-    const r = Math.round(s.rating || 3);
-    acc[r] = (acc[r] || 0) + 1;
+    // Unrated suppliers (rating 0) don't belong in any star bucket.
+    const r = Math.round(s.rating);
+    if (r >= 1 && r <= 5) acc[r] = (acc[r] || 0) + 1;
     return acc;
   }, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as Record<number, number>))
     .map(([k, v]) => ({ rating: `${k} Stars`, count: v }))

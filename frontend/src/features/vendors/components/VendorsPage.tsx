@@ -47,6 +47,7 @@ function toVendor(v: BackendVendor): Vendor {
     outstanding: "0",
     lastOrder: "—",
     rating: v.rating ?? 0,
+    createdAt: v.createdAt,
   };
 }
 
@@ -67,6 +68,10 @@ function useVendorRollup() {
 
     const byVendor = new Map<string, { totalOrders: number; totalSpend: number; outstanding: number; lastOrder: string }>();
     pos.forEach(po => {
+      // Rejected orders never actually cost anything — exclude them from
+      // spend/order-count rollups (they still surface on the vendor's own
+      // order history, just not counted as real business done).
+      if (po.status === "rejected") return;
       const entry = byVendor.get(po.vendorId) ?? { totalOrders: 0, totalSpend: 0, outstanding: 0, lastOrder: "" };
       entry.totalOrders += 1;
       entry.totalSpend += po.totalValue;

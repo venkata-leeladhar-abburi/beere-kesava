@@ -45,7 +45,7 @@ export function OverviewTab({
   purchaseFilter: string;
   setPurchaseFilter: (v: string) => void;
   purchaseOptions: Purchase[];
-  spendByMonth: { month: string; spend: number }[];
+  spendByMonth: { key: string; month: string; spend: number }[];
   paymentStatusBreakdown: { name: string; value: number; fill: string }[];
   myRequests: PurchaseRequest[];
 }) {

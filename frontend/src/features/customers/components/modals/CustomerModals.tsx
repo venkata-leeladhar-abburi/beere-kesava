@@ -74,17 +74,17 @@ export function CustomerModals({
               <div style={{ flex: "45%", borderLeft: `1px solid ${T.borderDef}`, paddingLeft: 32 }}>
                 <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.luxuryBrown, marginBottom: 20 }}>Contact Details</h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Owner</div><div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Ramesh Rao</div></div>
-                  <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone</div><div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>+91 98480 12345</div></div>
-                  <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>City & State</div><div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{modalWholesale.city}</div></div>
+                  <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Owner</div><div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{modalWholesale.contactName || "—"}</div></div>
+                  <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone</div><div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{modalWholesale.phone || "—"}</div></div>
+                  <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>City & State</div><div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{modalWholesale.city}{modalWholesale.state ? `, ${modalWholesale.state}` : ""}</div></div>
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>Bank Details</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>HDFC Bank · 4872 1938 8901</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{modalWholesale.bankName ? `${modalWholesale.bankName}${modalWholesale.accountNumber ? ` · ${modalWholesale.accountNumber}` : ""}` : "—"}</div>
                     <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>🔒 Visible to Superadmin only</div>
                   </div>
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>Special Terms / Credit Notes</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>Extended 45-day terms approved · FY2026</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{modalWholesale.notes || "—"}</div>
                     <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 4 }}>🔒 Superadmin only</div>
                   </div>
                 </div>

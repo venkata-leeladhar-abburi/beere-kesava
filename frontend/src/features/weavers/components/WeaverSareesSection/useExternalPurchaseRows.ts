@@ -27,7 +27,8 @@ export function useExternalPurchaseRows(enabled: boolean): {
 } {
   // GET /purchases is ACCOUNTANT-only (ADMIN/SUPERADMIN bypass every role
   // check), so other portals would just 403 on this.
-  const allowed = useAuthGate("accountant", "admin", "superadmin");
+  // check), but we now allow SHOP so inventory can load external purchases.
+  const allowed = useAuthGate("accountant", "admin", "superadmin", "shop");
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["purchases", "external-inventory"],

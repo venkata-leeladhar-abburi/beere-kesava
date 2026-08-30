@@ -24,7 +24,7 @@ import {
   WeaversPage, ProductionPage, PaymentsPage, ReportsPage, CustomersPage, VendorsPage,
   SuppliersPage, FactoryLoomPage, FirmsPage, InventoryPage, QcHistoryPage, NotificationsPage,
   WorkerGRN, AllWeaversPage, AllStockPage, AllOrdersPage, ProductionHistoryPage,
-  FinishingTrackingPage, StaffDirectoryPage,
+  FinishingTrackingPage, StaffDirectoryPage, AccountantDirectoryPage,
 } from "./superadmin-dashboard/lazyPages";
 
 export { UserProfileModal };
@@ -61,6 +61,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "add-user") nav = "AddUser";
   else if (tab === "worker-staff") nav = "WorkerStaff";
   else if (tab === "shop-staff") nav = "ShopStaff";
+  else if (tab === "accountant-staff") nav = "AccountantStaff";
   else if (tab === "external-purchases") nav = "ExternalPurchases";
   else if (tab === "supplier-returns") nav = "SupplierReturns";
   else if (tab === "batches") nav = "Batches";
@@ -114,6 +115,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       AddUser: "/superadmin/add-user",
       WorkerStaff: "/superadmin/worker-staff",
       ShopStaff: "/superadmin/shop-staff",
+      AccountantStaff: "/superadmin/accountant-staff",
       ExternalPurchases: "/superadmin/external-purchases",
       SupplierReturns: "/superadmin/supplier-returns",
       Batches: "/superadmin/batches",
@@ -158,6 +160,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       case "AddUser": return <AddUserPage />;
       case "WorkerStaff": return <StaffDirectoryPage scope={WORKER_SCOPE} />;
       case "ShopStaff": return <StaffDirectoryPage scope={SHOP_SCOPE} />;
+      case "AccountantStaff": return <AccountantDirectoryPage />;
       case "LabelSettings": return <LabelSettingsPage />;
       case "ExternalPurchases": return <ExternalPurchasesPage />;
       case "SupplierReturns": return <SupplierReturnsPage />;

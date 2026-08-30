@@ -41,8 +41,7 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick, lo
     const mSearch = !q || v.name.toLowerCase().includes(q) || v.city.toLowerCase().includes(q) || (v.code || v.id).toLowerCase().includes(q) || v.contactName.toLowerCase().includes(q);
     const mType = typeFilter === "All Types" || v.type.includes(typeFilter);
     const mStatus = statusFilter === "All" || v.status === statusFilter.toLowerCase();
-    const vendorRating = v.rating || 3;
-    const mRating = ratingFilter === "All Ratings" || vendorRating === parseInt(ratingFilter, 10);
+    const mRating = ratingFilter === "All Ratings" || v.rating === parseInt(ratingFilter, 10);
     return mSearch && mType && mStatus && mRating;
   });
 

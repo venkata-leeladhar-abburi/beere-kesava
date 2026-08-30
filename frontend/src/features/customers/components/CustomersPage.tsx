@@ -15,7 +15,8 @@ import { RetailCustomersSection } from "./sections/RetailCustomersSection";
 import { InactiveCustomersSection } from "./sections/InactiveCustomersSection";
 import { CustomerModals } from "./modals/CustomerModals";
 import { monthsSinceLabel } from "./utils";
-import { retailData, inactiveData } from "./data";
+import { retailData } from "./data";
+import type { InactiveCustomerRow } from "./sections/InactiveCustomersSection";
 import { WholesaleCustomer, RetailCustomer, WholesaleTab } from "./types";
 import { useCustomers } from "../contexts/CustomersContext";
 import { useUrlFilters } from "../../../shared/ui/filter";
@@ -181,7 +182,20 @@ export function CustomersPage() {
       });
   }, [retailList, retailSearch, retailStatusFilter, retailCityFilter, retailSort]);
 
-  const inactiveCities = React.useMemo(() => Array.from(new Set(inactiveData.map(r => r.city))).sort(), []);
+  // Real inactive customers — no order/visit in 6+ months — built from the
+  // same live `wholesaleList`/`retailList` aggregates the other sections use,
+  // instead of the dead hardcoded `inactiveData` mock.
+  const inactiveData: InactiveCustomerRow[] = React.useMemo(() => {
+    const wholesaleInactive = wholesaleList
+      .filter(w => monthsSinceLabel(w.lastOrder) >= 6)
+      .map(w => ({ name: w.name, type: "Wholesale", city: w.city, last: w.lastOrder, spend: w.spend }));
+    const retailInactive = retailList
+      .filter(r => monthsSinceLabel(r.lastVisit) >= 6)
+      .map(r => ({ name: r.name, type: "Retail", city: r.city, last: r.lastVisit, spend: r.spend }));
+    return [...wholesaleInactive, ...retailInactive];
+  }, [wholesaleList, retailList]);
+
+  const inactiveCities = React.useMemo(() => Array.from(new Set(inactiveData.map(r => r.city))).sort(), [inactiveData]);
   const filteredInactive = React.useMemo(() => {
     return inactiveData
       .filter(r => {
@@ -194,7 +208,7 @@ export function CustomersPage() {
         return matchSearch && matchType && matchCity && matchTimeline;
       })
       .sort((a, b) => monthsSinceLabel(b.last) - monthsSinceLabel(a.last));
-  }, [inactiveSearch, inactiveTypeFilter, inactiveCityFilter, inactiveTimelineFilter]);
+  }, [inactiveData, inactiveSearch, inactiveTypeFilter, inactiveCityFilter, inactiveTimelineFilter]);
 
   if (viewingBulkOrder) {
     return (

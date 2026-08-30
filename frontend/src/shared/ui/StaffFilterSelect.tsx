@@ -1,10 +1,9 @@
 import * as React from "react";
-import { ChevronDown } from "lucide-react";
+import { Select, SelectItem } from "./primitives";
 
 // Admin/superadmin-only "filter by staff" dropdown, styled to sit next to
-// DateFilterBar. Plain native <select> — no dedicated select primitive
-// exists yet in shared/ui, so this mirrors DateFilterBar's own button
-// styling instead of inventing a new component.
+// DateFilterBar. Built on the shared Select primitive so it matches every
+// other filter pill in the app instead of a plain native <select>.
 export function StaffFilterSelect({
   names,
   value,
@@ -18,21 +17,13 @@ export function StaffFilterSelect({
 }) {
   if (names.length === 0) return null;
   return (
-    <div className="relative inline-flex items-center shrink-0">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-10 appearance-none rounded-[10px] border pl-3 pr-8 text-[13px]"
-        style={{ borderColor: "var(--border-default)", background: "var(--surface-raised)", color: "var(--text-primary)" }}
-      >
-        <option value="">All {label}</option>
-        {names.map((n) => (
-          <option key={n} value={n}>
-            {n}
-          </option>
-        ))}
-      </select>
-      <ChevronDown size={14} style={{ color: "var(--text-tertiary)", position: "absolute", right: 10, pointerEvents: "none" }} />
-    </div>
+    <Select size="sm" value={value || "all"} onValueChange={(v) => onChange(v === "all" ? "" : v)}>
+      <SelectItem value="all">All {label}</SelectItem>
+      {names.map((n) => (
+        <SelectItem key={n} value={n}>
+          {n}
+        </SelectItem>
+      ))}
+    </Select>
   );
 }

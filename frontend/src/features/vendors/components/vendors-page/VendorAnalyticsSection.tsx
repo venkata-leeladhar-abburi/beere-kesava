@@ -88,12 +88,17 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
   });
 
   const ledger = React.useMemo(() => {
-    const items = poRes?.items ?? [];
+    // Rejected orders never actually cost anything — exclude them from
+    // every spend/order-count aggregation below.
+    const items = (poRes?.items ?? []).filter(p => p.status !== "REJECTED");
     return items.map(p => ({
       vendorId: p.vendorId || p.vendor?.id || "",
       date: p.createdAt ? p.createdAt.split("T")[0] : "",
       amount: Number(p.totalValue || 0),
-      material: UNSPECIFIED_MATERIAL,
+      materials: (p.items ?? []).map(item => ({
+        type: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : item.materialType === "JARI" ? "Jari" : UNSPECIFIED_MATERIAL,
+        amount: Number(item.totalPrice ?? (Number(item.unitPrice ?? 0) * item.quantity)),
+      })),
     }));
   }, [poRes]);
   const rows = React.useMemo(
@@ -136,7 +141,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
 
   const spendByType = React.useMemo(() => {
     const m = new Map<string, number>();
-    rows.forEach(r => m.set(r.material, (m.get(r.material) || 0) + r.amount));
+    rows.forEach(r => r.materials.forEach(item => m.set(item.type, (m.get(item.type) || 0) + item.amount)));
     return [...m.entries()]
       .map(([name, value]) => ({ name, value, fill: MATERIAL_FILL[name] ?? T.taupe }))
       .filter(d => d.value > 0);

@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import {
   ChevronLeft, ChevronDown, Bell,
-  LogOut, UserRound, Users, Store, Eye
+  LogOut, UserRound, Users, Store, Eye, IndianRupee
 } from 'lucide-react';
 import { useResponsive } from "../../../../../hooks/useResponsive";
 import { imgBKLogo } from '../../../../../shared/constants/weaverImages';
@@ -373,6 +373,9 @@ export function TopNav({
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => set("ShopStaff")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
                   <Store size={15} color={T.taupe} /> Shop Staff
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => set("AccountantStaff")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                  <IndianRupee size={15} color={T.taupe} /> Accountant Staff
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {/* Opens the staff portal as yourself — not impersonation.
