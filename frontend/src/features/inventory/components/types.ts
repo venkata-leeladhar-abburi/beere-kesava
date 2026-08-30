@@ -30,4 +30,25 @@ export interface InventoryRecord {
   quotationRef?: string;
   /** Supplier name, for an externally purchased piece. */
   supplier?: string;
+  /**
+   * Everything the External Purchases form recorded about an "external" piece.
+   * It has no weaver, design, QC or finishing history, so the detail modal has
+   * nothing to show it without these — see useInventoryPageState.
+   */
+  external?: {
+    supplierLocation?: string;
+    purchaseId?: string;
+    invoiceNumber?: string;
+    gstNumber?: string;
+    color?: string;
+    weight?: string;
+    costPrice?: number;
+    sellPercent?: number;
+    finalAmount?: number;
+    paymentStatus?: "Paid" | "Pending" | "Partial";
+    photoUrl?: string;
+    serialCode?: string;
+    pieceNo?: number;
+    lineQuantity?: number;
+  };
 }
