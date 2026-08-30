@@ -37,6 +37,13 @@ export interface WeaverCardEntry {
   totalEver: number;
   totalPaid: string;
   lastActive: string;
+  // Real contact/bank details straight off the Weaver record. The drawer's
+  // "Personal & Bank Details" panel used to render a hardcoded address, bank
+  // and IFSC for every weaver alike — these carry the actual values through.
+  email?: string;
+  bankName?: string | null;
+  accountNo?: string | null;
+  ifsc?: string | null;
 }
 
 export const WEAVERS: WeaverCardEntry[] = [];

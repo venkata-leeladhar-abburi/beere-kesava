@@ -7,4 +7,5 @@
 export * from "./components/IssueMaterialPage";
 export * from "./components/MaterialsPage";
 export * from "./contexts/MaterialIssueContext";
+export * from "./contexts/MaterialReturnContext";
 export * from "./components/sections/MaterialsFooter";

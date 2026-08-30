@@ -45,7 +45,7 @@ function toLoginEvent(log: BackendAuditLog): LoginEvent {
   };
 }
 
-export function LoginHistorySection() {
+export function LoginHistorySection({ staffUserId }: { staffUserId?: string } = {}) {
   const [loginView, setLoginView] = useState<"timeline"|"table">("timeline");
 
   const columns: ColumnDef<LoginEvent>[] = [
@@ -107,8 +107,8 @@ export function LoginHistorySection() {
   ];
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["audit-log", "logins"],
-    queryFn: () => auditLogApi.list(),
+    queryKey: ["audit-log", "logins", staffUserId],
+    queryFn: () => auditLogApi.list({ userId: staffUserId }),
   });
 
   const entries: LoginEvent[] = (data?.items ?? []).map(toLoginEvent);

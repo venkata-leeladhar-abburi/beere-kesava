@@ -387,7 +387,7 @@ export function IssueMaterialPage() {
           <div style={{ marginTop: 32 }}>
             <SectionPill label="Step 4 · Collect Weaver Signature" />
             <SignatureBlock
-              weaverName={selectedWeaver?.name ?? "the weaver"} weaverPhone={selectedWeaver?.phone ?? "—"}
+              weaverName={selectedWeaver?.name ?? "the weaver"}
               sigMethod={sigMethod} setSigMethod={setSigMethod}
               signed={signed} setSigned={setSigned}
               remoteSent={remoteSent} setRemoteSent={setRemoteSent}

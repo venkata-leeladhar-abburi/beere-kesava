@@ -63,6 +63,31 @@ export class SalesService {
     private readonly auditLog: AuditLogService,
   ) {}
 
+
+  /**
+   * The firm fields a new sale carries, from the active retail-firm rule.
+   *
+   * Retail sales are booked to whichever firm is currently marked as the retail
+   * firm, at the moment they are rung up — shop staff never choose a firm, and
+   * an accountant no longer has to tick sales after the fact. Wholesale is
+   * untouched: it reaches a firm through its dispatch invoice instead. When no
+   * firm is active the sale is simply left unconnected, exactly as before.
+   */
+  private async retailFirmLink(channel: SalesChannel) {
+    if (channel !== SalesChannel.RETAIL) return {};
+    const firm = await this.prisma.firm.findFirst({
+      where: { isRetailSalesFirm: true },
+      select: { id: true },
+    });
+    if (!firm) return {};
+    return {
+      firmId: firm.id,
+      firmLinkedAt: new Date(),
+      firmLinkedAuto: true,
+      firmLinkNote: "Booked automatically — active retail firm at time of sale",
+    };
+  }
+
   async createSale(dto: CreateSaleDto) {
     // The real production pipeline (BatchSareeRow → QcRecord) never writes a
     // `Saree` row — that table only exists to satisfy SaleRecord/ReturnRecord's
@@ -146,6 +171,7 @@ export class SalesService {
         : customer.code ?? nameSegment(customer.name, "Customer");
     const saleRef = await this.idGenerator.nextScoped(salePrefix, saleSegment);
     const sareeStatus = dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL";
+    const firmLink = await this.retailFirmLink(dto.channel);
 
     await this.prisma.$transaction([
       // Upsert rather than update: this is the first time this sareeId ever
@@ -174,6 +200,7 @@ export class SalesService {
           paymentMethod: dto.paymentMethod,
           paymentRef: dto.paymentRef,
           soldById: dto.actorId,
+          ...firmLink,
         },
       }),
       // Pulls the saree out of the shop-stock browse list
@@ -240,6 +267,7 @@ export class SalesService {
         : customer.code ?? nameSegment(customer.name, "Customer");
     const saleRef = await this.idGenerator.nextScoped(salePrefix, saleSegment);
     const sareeStatus = dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL";
+    const firmLink = await this.retailFirmLink(dto.channel);
 
     await this.prisma.$transaction([
       this.prisma.saree.update({ where: { id: dto.sareeId }, data: { status: sareeStatus } }),
@@ -253,6 +281,7 @@ export class SalesService {
           paymentMethod: dto.paymentMethod,
           paymentRef: dto.paymentRef,
           soldById: dto.actorId,
+          ...firmLink,
         },
       }),
       this.prisma.inventoryRecord.upsert({

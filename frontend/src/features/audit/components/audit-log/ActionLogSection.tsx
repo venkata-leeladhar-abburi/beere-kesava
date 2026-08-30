@@ -75,6 +75,7 @@ function withinPeriod(iso: string, period: string): boolean {
 export function ActionLogSection({
   search = "",
   roleFilter = "All Roles",
+  staffUserId,
   moduleFilter = "All Modules",
   actionFilter = "All Actions",
   periodFilter = "All Time",
@@ -83,6 +84,7 @@ export function ActionLogSection({
 }: {
   search?: string;
   roleFilter?: string;
+  staffUserId?: string;
   moduleFilter?: string;
   actionFilter?: string;
   periodFilter?: string;
@@ -92,8 +94,8 @@ export function ActionLogSection({
   const [actionView, setActionView] = useState<"timeline"|"table">("timeline");
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["audit-log", "actions", moduleFilter],
-    queryFn: () => auditLogApi.listActions({ pageSize: 200, module: moduleFilter }),
+    queryKey: ["audit-log", "actions", moduleFilter, staffUserId],
+    queryFn: () => auditLogApi.listActions({ pageSize: 200, module: moduleFilter, userId: staffUserId }),
   });
 
   const allEntries: ActionEntry[] = (data?.items ?? []).map(toActionEntry);

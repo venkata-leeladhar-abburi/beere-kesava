@@ -13,23 +13,17 @@ import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
 import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 import {
   JARI_GRADE_FROM_BACKEND,
-  JARI_GRADE_TO_BACKEND,
   MATERIAL_TYPE_FROM_BACKEND,
   MATERIAL_TYPE_TO_BACKEND,
   WARP_SUBTYPE_FROM_BACKEND,
-  WARP_SUBTYPE_TO_BACKEND,
 } from "./MaterialIssueContext";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface ReturnedMaterialItem {
   materialType: "Warp" | "Resham" | "Jari";
-  warpSubtype?: "Resham Warp" | "Jari Warp";
   description?: string;
   quantity: number;
   unit: string;
-  jariType?: "Polyester" | "Silk Fast";
-  jariGrade?: "1G" | "2G" | "3G" | "4G" | "5G";
-  jariColor?: string;
 }
 
 export interface MaterialReturnRecord {
@@ -59,18 +53,32 @@ export interface WeaverOutstandingLine {
   jariType?: string;
   jariGrade?: "1G" | "2G" | "3G" | "4G" | "5G";
   jariColor?: string;
+  // Where the still-outstanding material came from — the GRN receipt and the
+  // exact line within it. Undefined for material issued before GRN linkage
+  // was recorded.
+  grnBatchId?: string;
+  grnItemCode?: string;
+  description?: string;
+  /** Unit the material was issued in ("KG", "REELS", …). */
+  unit: string;
+  /** Material-issue record ids (MIR-…) that contributed to this line. */
+  issueIds: string[];
+  issuedGrams: number;
+  returnedGrams: number;
   outstandingGrams: number;
+}
+
+/** Narrows an outstanding lookup to one loom and/or one batch of the recipient. */
+export interface OutstandingScope {
+  loomNumber?: number | string;
+  batchId?: string;
 }
 
 function backendItemToFrontend(item: BackendMaterialReturnRecord["items"][number]): ReturnedMaterialItem {
   return {
     materialType: MATERIAL_TYPE_FROM_BACKEND[item.materialType],
-    warpSubtype: item.warpSubtype ? WARP_SUBTYPE_FROM_BACKEND[item.warpSubtype] : undefined,
     quantity: Number(item.quantity),
     unit: item.unit,
-    jariType: item.jariType === "Polyester" || item.jariType === "Silk Fast" ? item.jariType : undefined,
-    jariGrade: item.jariGrade ? JARI_GRADE_FROM_BACKEND[item.jariGrade] : undefined,
-    jariColor: item.jariColor ?? undefined,
   };
 }
 
@@ -104,12 +112,8 @@ function backendRecordToFrontend(
 function frontendItemToPayload(m: ReturnedMaterialItem): CreateMaterialReturnPayload["items"][number] {
   return {
     materialType: MATERIAL_TYPE_TO_BACKEND[m.materialType],
-    warpSubtype: m.warpSubtype ? WARP_SUBTYPE_TO_BACKEND[m.warpSubtype] : undefined,
     quantity: m.quantity,
     unit: m.unit,
-    jariType: m.jariType,
-    jariGrade: m.jariGrade ? JARI_GRADE_TO_BACKEND[m.jariGrade] : undefined,
-    jariColor: m.jariColor,
   };
 }
 
@@ -120,6 +124,13 @@ function outstandingGroupToLine(g: OutstandingMaterialGroup): WeaverOutstandingL
     jariType: g.jariType ?? undefined,
     jariGrade: g.jariGrade ? JARI_GRADE_FROM_BACKEND[g.jariGrade] : undefined,
     jariColor: g.jariColor ?? undefined,
+    grnBatchId: g.grnBatchId ?? undefined,
+    grnItemCode: g.grnItemCode ?? undefined,
+    description: g.description ?? undefined,
+    unit: g.unit,
+    issueIds: g.issueIds ?? [],
+    issuedGrams: g.issuedGrams,
+    returnedGrams: g.returnedGrams,
     outstandingGrams: g.outstandingGrams,
   };
 }
@@ -145,7 +156,7 @@ interface MaterialReturnContextValue {
   addReturnRecord: (input: AddReturnRecordInput) => Promise<MaterialReturnRecord>;
   deleteReturnRecord: (id: string) => Promise<void>;
   getRecordsForWeaver: (weaverId: string) => MaterialReturnRecord[];
-  getOutstandingForRecipient: (weaverId?: string, factoryLoomId?: string) => Promise<WeaverOutstandingLine[]>;
+  getOutstandingForRecipient: (weaverId?: string, factoryLoomId?: string, scope?: OutstandingScope) => Promise<WeaverOutstandingLine[]>;
   isError: boolean;
   error: unknown;
   isLoading: boolean;
@@ -234,9 +245,14 @@ export function MaterialReturnProvider({ children }: { children: React.ReactNode
     return returnRecords.filter(r => r.weaverId === weaverId);
   }, [returnRecords]);
 
-  const getOutstandingForRecipient = useCallback(async (weaverId?: string, factoryLoomId?: string) => {
+  const getOutstandingForRecipient = useCallback(async (weaverId?: string, factoryLoomId?: string, scope?: OutstandingScope) => {
     if (!weaverId && !factoryLoomId) return [];
-    const groups = await materialReturnsApi.getOutstanding({ weaverId, factoryLoomId });
+    const groups = await materialReturnsApi.getOutstanding({
+      weaverId,
+      factoryLoomId,
+      loomNumber: scope?.loomNumber !== undefined && scope.loomNumber !== "" ? String(scope.loomNumber) : undefined,
+      batchId: scope?.batchId || undefined,
+    });
     return groups.map(outstandingGroupToLine);
   }, []);
 

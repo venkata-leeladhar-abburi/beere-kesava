@@ -1,11 +1,13 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Rows3 as Rows, Eye as PhEye, MapPin as PhMapPin } from "lucide-react";
 import { T, F } from "../theme";
 import { STATUS_CFG } from "../types";
 import { WEAVERS } from "../data";
 import { qcColor, getTwoLetterInitials } from "../common/primitives";
-import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
+import { BackendWeaverStats } from "../../../../shared/api/weavers";
+import { useWeaverRosterStats, weaverStatusFromStats, formatLastActive } from "../../hooks/useWeaverRosterStats";
+import { weaverPaymentsApi } from "../../../../shared/api/payments";
+import { rupees, formatMoney } from "@/lib/domain/money";
 import { Button } from "../../../../shared/ui/primitives";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -14,21 +16,23 @@ import { WeaverCardMockupStyle } from "./WeaverCardMockupStyle";
 import { toInitials } from "@/shared/lib/initials";
 
 export function useRealWeavers() {
-  const { data: weaversRes, isLoading: rosterLoading, isError: rosterError } = useQuery({
-    queryKey: ["weavers-card-roster"],
-    queryFn: () => weaversApi.list(),
+  const { roster, statsById, isLoading, isError } = useWeaverRosterStats();
+
+  // Actual payouts recorded per weaver (GET /payments/weavers). Every weaver
+  // row used to show a literal "—" for Total Paid even though this endpoint
+  // has the figures.
+  const { data: payments } = useQuery({
+    queryKey: ["weavers-card-payments"],
+    queryFn: () => weaverPaymentsApi.listAll(),
   });
-  const roster = weaversRes?.items ?? [];
-  const { data: statsList, isLoading: statsLoading, isError: statsError } = useQuery({
-    queryKey: ["weavers-card-stats", roster.map(w => w.id)],
-    queryFn: () => Promise.all(roster.map(w => weaversApi.getStats(w.id))),
-    enabled: roster.length > 0,
+  const paidById = new Map<string, number>();
+  (payments ?? []).forEach(p => {
+    paidById.set(p.weaverId, (paidById.get(p.weaverId) ?? 0) + Number(p.amountPaid ?? 0));
   });
-  const statsById = new Map((statsList ?? []).map(s => [s.weaverId, s]));
 
   const realWeavers = roster.map(w => {
     const s: BackendWeaverStats | undefined = statsById.get(w.id);
-    const status = (s && s.activeBatchRowsCount > 0 ? "active" : "idle") as "active" | "idle" | "qc";
+    const status = weaverStatusFromStats(s);
     return {
       id: w.id,
       code: w.code,
@@ -40,29 +44,62 @@ export function useRealWeavers() {
       mobile: w.phone || "—",
       looms: w.looms,
       status,
-      batch: s && s.activeBatchRowsCount > 0 ? `${s.activeBatchRowsCount} active` : "",
+      batch: s && s.activeBatchRowsCount > 0
+        ? `${s.activeBatchRowsCount} active`
+        : s && s.awaitingQcCount > 0 ? `${s.awaitingQcCount} awaiting QC` : "",
       design: "—",
       photo: resolveAssetUrl(w.photoUrl),
+      // All-time, not this month: the stats endpoint exposes no dated ledger.
+      // The column that renders this is labelled "Total Woven" to match.
       thisMonth: s?.totalSareesWoven ?? 0,
       passRate: s?.qcPassRate ?? 0,
       totalEver: s?.totalSareesWoven ?? 0,
-      totalPaid: "—",
-      lastActive: "—",
+      totalPaid: paidById.has(w.id) ? formatMoney(rupees(paidById.get(w.id)!)) : "—",
+      lastActive: formatLastActive(s?.lastActivityAt),
+      email: w.email,
+      bankName: w.bankName,
+      accountNo: w.accountNo,
+      ifsc: w.ifsc,
     };
   });
 
 
 
   const combined = realWeavers;
-  return Object.assign(combined, {
-    isLoading: rosterLoading || (roster.length > 0 && statsLoading),
-    isError: rosterError || statsError,
+  return Object.assign(combined, { isLoading, isError });
+}
+
+/**
+ * The directory's search box and filter pills were previously wired only to
+ * WeaversPage state — nothing ever read them, so typing a name or picking a
+ * pill changed nothing on screen. Every view now narrows through this.
+ */
+export const WEAVER_FILTER_STATUS: Record<string, "active" | "idle" | "qc" | undefined> = {
+  "Currently Working": "active",
+  "Submitted — Waiting Quality Check": "qc",
+  "Idle — No Active Batch": "idle",
+};
+
+export function filterWeavers<W extends { name: string; village: string; code?: string; id: string; status: string }>(
+  list: W[],
+  search: string,
+  filter: string,
+): W[] {
+  const q = search.trim().toLowerCase();
+  const wanted = WEAVER_FILTER_STATUS[filter];
+  return list.filter(w => {
+    const matchesSearch = !q
+      || w.name.toLowerCase().includes(q)
+      || w.village.toLowerCase().includes(q)
+      || (w.code ?? w.id).toLowerCase().includes(q);
+    return matchesSearch && (!wanted || w.status === wanted);
   });
 }
 
-export function WeaverCardGrid({ onSelect, onEdit, onBatches }: { onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void }) {
+export function WeaverCardGrid({ onSelect, onEdit, onBatches, search = "", filter = "All Weavers" }: { onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void; search?: string; filter?: string }) {
   const allWeavers = useRealWeavers();
-  const pag = usePagination(allWeavers, 8);
+  const visible = filterWeavers(allWeavers, search, filter);
+  const pag = usePagination(visible, 8);
 
   if (allWeavers.isLoading) {
     return (
@@ -78,10 +115,10 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches }: { onSelect: (w: 
       </div>
     );
   }
-  if (allWeavers.length === 0) {
+  if (visible.length === 0) {
     return (
       <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "60px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, fontStyle: "italic" }}>
-        No weavers yet.
+        {allWeavers.length === 0 ? "No weavers yet." : "No weavers match this search or filter."}
       </div>
     );
   }
@@ -118,9 +155,10 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches }: { onSelect: (w: 
   );
 }
 
-export function WeaverListView({ onSelect }: { onSelect: (w: typeof WEAVERS[0]) => void }) {
+export function WeaverListView({ onSelect, search = "", filter = "All Weavers" }: { onSelect: (w: typeof WEAVERS[0]) => void; search?: string; filter?: string }) {
   const allWeavers = useRealWeavers();
-  const pag = usePagination(allWeavers, 10);
+  const visible = filterWeavers(allWeavers, search, filter);
+  const pag = usePagination(visible, 10);
 
   if (allWeavers.isLoading) {
     return (
@@ -136,10 +174,10 @@ export function WeaverListView({ onSelect }: { onSelect: (w: typeof WEAVERS[0]) 
       </div>
     );
   }
-  if (allWeavers.length === 0) {
+  if (visible.length === 0) {
     return (
       <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "60px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, fontStyle: "italic" }}>
-        No weavers yet.
+        {allWeavers.length === 0 ? "No weavers yet." : "No weavers match this search or filter."}
       </div>
     );
   }
@@ -187,7 +225,7 @@ export function WeaverListView({ onSelect }: { onSelect: (w: typeof WEAVERS[0]) 
       },
     },
     {
-      id: "thisMonth", header: "This Month", accessor: w => w.thisMonth, type: "number", sortable: true,
+      id: "thisMonth", header: "Total Woven", accessor: w => w.thisMonth, type: "number", sortable: true,
       cell: (_v, w) => <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.antiqueGold }}>{w.thisMonth} <span style={{ fontSize: 13, fontFamily: F.ui, color: T.taupe }}>sarees</span></div>,
     },
     {

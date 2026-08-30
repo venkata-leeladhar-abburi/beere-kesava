@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
-  ArrowLeft, Edit, TrendingUp, TrendingDown, Building2, CreditCard,
+  ArrowLeft, Edit, TrendingUp, TrendingDown, Building2, CreditCard, ShoppingBag,
   User, FileText, Package, Receipt, Truck, Wallet, Link2,
   AlertTriangle, ArrowUpRight,
 } from "lucide-react";
@@ -14,6 +14,7 @@ import type {
 import { T, F } from "./theme";
 import { fmtFull, initials } from "./utils";
 import { FinSection, MiscSection } from "./FirmFinanceSections";
+import { FirmRetailSalesTab } from "./retailSales/FirmRetailSalesTab";
 import { Button, Select, SelectItem, StatusPill, type StatusTone } from "../../../shared/ui/primitives";
 import { LoadingState, ErrorState, EmptyState } from "../../../shared/ui/state";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
@@ -42,6 +43,7 @@ const PAYMENT_LABEL: Record<FirmPayment["type"], string> = {
   VENDOR: "Vendor Payment",
   SUPPLIER: "Supplier Payment",
   INVOICE: "Customer Receipt",
+  RETAIL_SALE: "Retail Sale",
 };
 
 type DirectionFilter = "all" | "INCOME" | "EXPENSE";
@@ -111,22 +113,24 @@ function SummaryStrip({ income, expense, net, pendingIncome, pendingExpense, quo
   );
 }
 
-export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
+export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments, initialTab = "finance" }: {
   firm: Firm;
   onBack: () => void;
   onEdit: () => void;
+  /** Which sub-tab to open on — driven by the ?tab= URL param. */
+  initialTab?: "finance" | "retail" | "info";
   /** Jumps to the Payments page — payment entry stays owned by that one screen. */
   onGoToPayments?: () => void;
 }) {
   const {
-    getFirmFinancials, addIncomeEntry, addExpenseEntry, addMiscEntry,
+    firms, getFirmFinancials, addIncomeEntry, addExpenseEntry, addMiscEntry,
     bulkAddIncome, bulkAddExpenses, updateEntry, deleteEntry,
   } = useFirms();
   const confirm = useConfirm();
   const { documents, payments, isLoading, isError, error, refetch } = useFirmActivity(firm.id);
   const fin = getFirmFinancials(firm.id);
 
-  const [tab, setTab] = useState<"finance" | "info">("finance");
+  const [tab, setTab] = useState<"finance" | "retail" | "info">(initialTab);
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [direction, setDirection] = useState<DirectionFilter>("all");
   const [status, setStatus] = useState<"all" | FirmActivityStatus>("all");
@@ -406,6 +410,7 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
         <RoyalSubTabStrip
           tabs={[
             { key: "finance" as const, label: "Financial Tracking", icon: <CreditCard size={18} /> },
+            { key: "retail" as const, label: "Retail Sales", icon: <ShoppingBag size={18} /> },
             { key: "info" as const, label: "Firm Info", icon: <Building2 size={18} /> },
           ]}
           activeTab={tab}
@@ -419,7 +424,9 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
         className="w-full"
         style={{ paddingTop: 24, paddingBottom: 72 }}
       >
-        {tab === "info" ? (
+        {tab === "retail" ? (
+          <FirmRetailSalesTab firm={firm} firms={firms} />
+        ) : tab === "info" ? (
           <div className="w-full mb-6 rounded-2xl border border-[#E8DCC4] overflow-hidden bg-white shadow-sm">
             <div className="bg-[#6E0F2D] p-5 sm:px-6 sm:py-5 text-white flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3.5">

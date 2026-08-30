@@ -259,6 +259,7 @@ enum ReportFrequency {
   DAILY
   WEEKLY
   MONTHLY
+  QUARTERLY
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -357,6 +358,7 @@ model User {
   talliedBatches           Batch[]                  @relation("BatchTalliedBy")
   createdBulkOrders        BulkOrder[]              @relation("BulkOrderCreatedBy")
   soldSales                SaleRecord[]             @relation("SaleSoldBy")
+  firmLinkedSales          SaleRecord[]             @relation("SaleFirmLinkedBy")
   recordedSupplierPayments SupplierPayment[]        @relation("SupplierPaymentRecordedBy")
   recordedWeaverPayments   WeaverPayment[]          @relation("WeaverPaymentRecordedBy")
   recordedVendorPayments   VendorPayment[]          @relation("VendorPaymentRecordedBy")
@@ -1052,8 +1054,26 @@ model SaleRecord {
   // hold either role, so the role alone doesn't say who actually sold it.
   soldById      String?
   soldBy        User?        @relation("SaleSoldBy", fields: [soldById], references: [id])
+  // Firm this sale's revenue is booked against. Null = not yet connected to a
+  // firm; an accountant links retail sales to a firm from the Firms page, and
+  // FirmActivityService then counts them as realized income for that firm.
+  // A sale belongs to at most one firm — re-linking moves it.
+  firmId        String?
+  firm          Firm?        @relation("FirmRetailSales", fields: [firmId], references: [id])
+  // When and by whom the link was made — the link is an accounting decision,
+  // not a property of the sale, so it carries its own audit trail.
+  firmLinkedAt  DateTime?
+  firmLinkedById String?
+  firmLinkedBy  User?        @relation("SaleFirmLinkedBy", fields: [firmLinkedById], references: [id])
+  // Free-text note the accountant attaches when connecting the sale.
+  firmLinkNote  String?
+  // True when the link was made by the active-firm rule at sale time rather
+  // than by a person picking the sale. Keeps "the system did this" separate
+  // from "someone decided this" in the audit trail.
+  firmLinkedAuto Boolean     @default(false)
 
   @@index([sareeId])
+  @@index([firmId])
 }
 
 model ReturnRecord {
@@ -1395,9 +1415,15 @@ model Firm {
   bankName           String?
   contactPersonName  String?
   contactPersonPhone String?
+  // The one firm every new retail sale is booked to automatically. At most one
+  // firm carries this at a time — FirmsService.setRetailSalesFirm clears the
+  // others in the same transaction. Nullable-by-flag rather than a settings
+  // row so the rule is queryable from the firm itself.
+  isRetailSalesFirm  Boolean  @default(false)
   createdAt          DateTime @default(now())
 
   financialEntries FirmFinancialEntry[]
+  retailSales      SaleRecord[]         @relation("FirmRetailSales")
   weaverPayments   WeaverPayment[]
   vendorPayments   VendorPayment[]
   supplierPayments SupplierPayment[]
@@ -1406,6 +1432,8 @@ model Firm {
   dispatchRecords  DispatchRecord[]
   grnReceipts      GrnReceipt[]
   purchaseOrders   PurchaseOrder[]
+
+  @@index([isRetailSalesFirm])
 }
 
 model FirmFinancialEntry {
@@ -1757,15 +1785,33 @@ model RateChangeRequest {
 // ─────────────────────────────────────────────────────────────────────────
 
 model ScheduledReport {
-  id             String          @id @default(uuid())
-  reportName     String
-  frequency      ReportFrequency
-  format         String          @default("PDF")
-  recipientEmail String
-  active         Boolean         @default(true)
-  lastRunAt      DateTime?
-  nextRunAt      DateTime?
-  createdAt      DateTime        @default(now())
+  id         String          @id @default(uuid())
+  reportName String
+  frequency  ReportFrequency
+  // Delivery is always a spreadsheet — a cron has no browser to rasterise a
+  // PDF in (see ReportSchedulerService.generateReport).
+  format     String          @default("XLSX")
+
+  // Delivery is WhatsApp-only (ReportSchedulerService pushes the workbook
+  // through AiSensy), so the phone number is the real recipient field.
+  // Stored as the user typed it; WhatsAppService.normalise() turns it into
+  // E.164 at send time, exactly as it does for every other number in the DB.
+  recipientPhone String?
+  // Kept nullable for the rows created before delivery moved to WhatsApp.
+  // Nothing writes it any more.
+  recipientEmail String?
+
+  // Wall-clock delivery time in IST, so "next run" is a date the office can
+  // actually predict rather than "24h after whenever the last poll fired".
+  // The recurrence phase (weekday / day-of-month) comes off createdAt —
+  // see report-schedule-timing.ts.
+  deliveryHour   Int @default(9)
+  deliveryMinute Int @default(0)
+
+  active    Boolean   @default(true)
+  lastRunAt DateTime?
+  nextRunAt DateTime?
+  createdAt DateTime  @default(now())
 }
 
 model ReportDownloadHistory {

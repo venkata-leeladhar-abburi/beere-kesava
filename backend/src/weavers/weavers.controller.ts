@@ -5,6 +5,7 @@ import { UserRole } from "../generated/prisma/client";
 import { CreateWeaverDto } from "./dto/create-weaver.dto";
 import { ListWeaversQueryDto } from "./dto/list-weavers-query.dto";
 import { UpdateWeaverDto } from "./dto/update-weaver.dto";
+import { WeaverStatsQueryDto } from "./dto/weaver-stats-query.dto";
 import { WeaversService } from "./weavers.service";
 
 // Weaver roster management. Creating and editing a weaver is reachable from
@@ -60,6 +61,27 @@ export class WeaversController {
     );
   }
 
+  /**
+   * Every weaver's stats in one call, optionally scoped to a date window.
+   * NOTE: MUST be declared before @Get(':id') so "stats" isn't parsed as an id.
+   */
+  @Get("stats")
+  getAllStats(@Query() query: WeaverStatsQueryDto) {
+    return this.weaversService.getAllWeaverStats(query.range());
+  }
+
+  /**
+   * Firm-wide monthly output for the trailing `months` window (default 12).
+   * NOTE: MUST be declared before @Get(':id').
+   */
+  @Get("production-series")
+  getProductionSeries(@Query("months") months?: string) {
+    const parsed = months ? Number(months) : undefined;
+    return this.weaversService.getProductionSeries(
+      parsed && !Number.isNaN(parsed) ? parsed : undefined,
+    );
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.weaversService.findOne(id);
@@ -67,8 +89,8 @@ export class WeaversController {
 
   /** Live performance stats: QC pass rate, active batch rows, material issues. */
   @Get(":id/stats")
-  getStats(@Param("id") id: string) {
-    return this.weaversService.getWeaverStats(id);
+  getStats(@Param("id") id: string, @Query() query: WeaverStatsQueryDto) {
+    return this.weaversService.getWeaverStats(id, query.range());
   }
 
   @RequireRoles(UserRole.ACCOUNTANT, UserRole.ADMIN, UserRole.SUPERADMIN)

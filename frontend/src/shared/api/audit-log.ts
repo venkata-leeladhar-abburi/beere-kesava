@@ -42,8 +42,12 @@ interface PaginatedResponse<T> {
 }
 
 export const auditLogApi = {
-  list: (pageSize = 100) =>
-    apiClient.get<PaginatedResponse<BackendAuditLog>>(`/audit-log?pageSize=${pageSize}`),
+  list: (params: { pageSize?: number; userId?: string } = {}) => {
+    const { pageSize = 100, userId } = params;
+    const query = new URLSearchParams({ pageSize: String(pageSize) });
+    if (userId) query.set("userId", userId);
+    return apiClient.get<PaginatedResponse<BackendAuditLog>>(`/audit-log?${query.toString()}`);
+  },
 
   listActions: (
     params: { pageSize?: number; page?: number; module?: string; userId?: string; modules?: string[] } = {},

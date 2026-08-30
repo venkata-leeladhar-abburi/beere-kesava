@@ -19,9 +19,9 @@ export function TabsNav({
   activeTab,
   setActiveTab,
 }: {
-  tabs: { key: "po" | "ext" | "warp" | "rate"; label: string; count: number }[];
-  activeTab: "po" | "ext" | "warp" | "rate";
-  setActiveTab: (t: "po" | "ext" | "warp" | "rate") => void;
+  tabs: { key: "po" | "warp" | "rate"; label: string; count: number }[];
+  activeTab: "po" | "warp" | "rate";
+  setActiveTab: (t: "po" | "warp" | "rate") => void;
 }) {
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{
@@ -75,7 +75,7 @@ export function TabContent({
   setViewDocPOId,
   decideExternal,
 }: {
-  activeTab: "po" | "ext" | "warp" | "rate";
+  activeTab: "po" | "warp" | "rate";
   combinedPOList: POItem[];
   contextPendingItems: { id: string }[];
   pos: PurchaseOrder[];
@@ -130,41 +130,6 @@ export function TabContent({
                         onApprove={id => approvePO(id)}
                         onReject={id => rejectPO(id)}
                         onViewDoc={pos.some(p => p.id === item.id) ? (id) => setViewDocPOId(id) : undefined}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </div>
-              </>
-            )}
-          </motion.div>
-        )}
-
-        {/* — External Purchase Requests — */}
-        {activeTab === "ext" && (
-          <motion.div
-            key="ext"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            {pendingRequests.length === 0 ? (
-              <EmptyState message="No pending external purchase requests" />
-            ) : (
-              <>
-                <BulkActionStrip
-                  count={pendingRequests.length}
-                  noun="external purchase requests"
-                  onApproveAll={() => pendingRequests.forEach(r => decideExternal(r.id, "approved"))}
-                />
-                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                  <AnimatePresence>
-                    {pendingRequests.map(req => (
-                      <ExternalPurchaseCard
-                        key={req.id}
-                        req={req}
-                        onApprove={id => decideExternal(id, "approved")}
-                        onReject={id => decideExternal(id, "rejected")}
                       />
                     ))}
                   </AnimatePresence>

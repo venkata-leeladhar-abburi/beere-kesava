@@ -183,8 +183,14 @@ describe("AuthService", () => {
       prisma.otpCode.findFirst.mockResolvedValue(null);
 
       await expect(service.verifyOtp({ phone: "9999999999", code: "123456" })).rejects.toThrow(
-        UnauthorizedException,
+        HttpException,
       );
+      try {
+        await service.verifyOtp({ phone: "9999999999", code: "123456" });
+      } catch (err) {
+        expect(err).toBeInstanceOf(HttpException);
+        expect((err as HttpException).getStatus()).toBe(HttpStatus.TOO_MANY_REQUESTS);
+      }
     });
 
     it("increments attempts and rejects on a wrong code", async () => {

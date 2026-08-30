@@ -6,7 +6,11 @@ import {
   Layers, Layers3, Star, MapPin, Phone, Eye, Edit3, AlertTriangle,
 } from "lucide-react";
 import { Rows3 as Rows } from "lucide-react";
-import { weaversApi, BackendWeaver, BackendWeaverStats } from "../../../shared/api/weavers";
+import { BackendWeaver, BackendWeaverStats } from "../../../shared/api/weavers";
+import { useWeaverRosterStats, weaverStatusFromStats, formatLastActive } from "../hooks/useWeaverRosterStats";
+import { warpRequestsApi } from "../../../shared/api/warpRequests";
+import { paymentsApi } from "../../../shared/api/payments";
+import { rupees, formatMoney } from "@/lib/domain/money";
 import { resolveAssetUrl } from "../../../shared/api/uploads";
 import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 import { useUrlFilters } from "../../../shared/ui/filter";
@@ -50,7 +54,7 @@ interface Weaver {
   id: string; code: string; name: string; village: string; mobile: string;
   photo: string | null; initials: string; avatarBg: string;
   status: Status; accentColor: string;
-  thisMonth: number; passRate: number; totalSarees: number;
+  thisMonth: number; passRate: number; totalSarees: number; qcPassed: number;
   looms: number; batch: string | null; totalPaid: string;
   lastActive: string;
 }
@@ -64,12 +68,6 @@ interface Weaver {
 // unavailable ("—" / 0) rather than invented, per the design note below.
 const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040"];
 
-function statusFromStats(stats: BackendWeaverStats | undefined): Status {
-  if (!stats) return "idle";
-  if (stats.activeBatchRowsCount > 0) return "active";
-  return "idle";
-}
-
 function toDisplayWeaver(w: BackendWeaver, index: number, stats: BackendWeaverStats | undefined): Weaver {
   return {
     id: w.id,
@@ -82,15 +80,16 @@ function toDisplayWeaver(w: BackendWeaver, index: number, stats: BackendWeaverSt
     looms: w.looms,
     avatarBg: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
     accentColor: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
-    status: statusFromStats(stats),
+    status: weaverStatusFromStats(stats),
     // No monthly breakdown from the backend yet — only an all-time total.
     thisMonth: 0,
     passRate: stats?.qcPassRate ?? 0,
     totalSarees: stats?.totalSareesWoven ?? 0,
+    qcPassed: stats?.qcPassCount ?? 0,
     // No current-batch id, payments total, or last-active timestamp exposed yet.
     batch: null,
     totalPaid: "—",
-    lastActive: "—",
+    lastActive: formatLastActive(stats?.lastActivityAt),
   };
 }
 
@@ -124,27 +123,9 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
   const sortBy = weaverFilters.filters.weaverSort as "name" | "output" | "looms";
   const setSortBy = (s: "name" | "output" | "looms") => weaverFilters.setFilter("weaverSort", s);
 
-  // Real weaver roster/identity records from the backend.
-  const { data: weaversRes, isLoading: rosterLoading, isError: rosterError, refetch: refetchRoster } = useQuery({
-    queryKey: ["weavers-directory"],
-    queryFn: () => weaversApi.list(),
-  });
+  // Real weaver roster + every weaver's live stats, in two requests.
+  const { roster, statsById, isLoading, isError, refetch: refetchAll } = useWeaverRosterStats();
 
-  const roster = weaversRes?.items ?? [];
-
-  // Live per-weaver production/QC stats (thisMonth, batch id, totalPaid,
-  // lastActive are NOT exposed by this endpoint yet — see toDisplayWeaver).
-  const { data: statsList, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useQuery({
-    queryKey: ["weavers-directory-stats", roster.map(w => w.id)],
-    queryFn: () => Promise.all(roster.map(w => weaversApi.getStats(w.id))),
-    enabled: roster.length > 0,
-  });
-
-  const isLoading = rosterLoading || (roster.length > 0 && statsLoading);
-  const isError = rosterError || statsError;
-  const refetchAll = () => { void refetchRoster(); void refetchStats(); };
-
-  const statsById = new Map((statsList ?? []).map(s => [s.weaverId, s]));
   const ALL_WEAVERS: Weaver[] = roster.map((w, i) => toDisplayWeaver(w, i, statsById.get(w.id)));
 
   const villages = Array.from(new Set(ALL_WEAVERS.map(w => w.village))).sort();
@@ -160,10 +141,32 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
     return a.name.localeCompare(b.name);
   });
 
+  // Two different senses of "active" were in play across the weaver pages:
+  // on the roster (an admin flag) and on the floor (has batch rows open).
+  // This tile's own subtitle — "all currently with the firm" — is the roster
+  // sense, which is also what WeaversPage's matching tile shows.
+  const rosterActiveCount = roster.filter(w => w.status === "ACTIVE").length;
   const activeCount = ALL_WEAVERS.filter(w => w.status === "active").length;
   const qcCount     = ALL_WEAVERS.filter(w => w.status === "qc").length;
   const idleCount   = ALL_WEAVERS.filter(w => w.status === "idle").length;
   const totalSarees = ALL_WEAVERS.reduce((s, w) => s + w.totalSarees, 0);
+  // Weighted by sarees rather than a mean of per-weaver percentages, which
+  // counted every not-yet-producing weaver as a flat 0%.
+  const totalQcPassed = ALL_WEAVERS.reduce((s, w) => s + w.qcPassed, 0);
+  const overallPassRate = totalSarees ? Math.round((totalQcPassed / totalSarees) * 100) : 0;
+
+  // Both of these were rendered as "—  / Not tracked by the backend yet",
+  // but WeaversPage already reads them from these same two endpoints.
+  const { data: pendingWarpRes } = useQuery({
+    queryKey: ["warp-requests-pending", "all-weavers-stats"],
+    queryFn: () => warpRequestsApi.list("PENDING"),
+  });
+  const { data: paymentSummary } = useQuery({
+    queryKey: ["payments-summary", "all-weavers-stats"],
+    queryFn: () => paymentsApi.getSummary(),
+  });
+  const warpRequestsPending = pendingWarpRes?.items.length ?? 0;
+  const totalPaidToWeavers = paymentSummary?.weaverTotal ?? 0;
 
   return (
     <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
@@ -213,11 +216,11 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.4, ease: EASE }}
             style={{ display: "flex", gap: 0, marginTop: 40, borderTop: "1px solid rgba(245,232,208,0.08)" }}>
             {[
-              { label: "Total Active Weavers",    val: `${activeCount + qcCount}`,  sub: "All currently with the firm",     Icon: Users,        hi: false },
+              { label: "Total Active Weavers",    val: `${rosterActiveCount}`,     sub: "All currently with the firm",     Icon: Users,        hi: false },
               { label: "Total Sarees Woven",       val: `${totalSarees}`,           sub: "All-time, across all weavers",   Icon: Layers,       hi: true  },
-              { label: "Quality Check Pass Rate",  val: `${ALL_WEAVERS.length ? Math.round(ALL_WEAVERS.reduce((s,w) => s + w.passRate, 0) / ALL_WEAVERS.length) : 0}%`, sub: "Average across all weavers", Icon: CheckCircle2, hi: false },
-              { label: "Warp Requests Pending",    val: "—",                        sub: "Not tracked by the backend yet",  Icon: Clock,        hi: false },
-              { label: "Total Paid to Weavers",    val: "—",                        sub: "Not tracked by the backend yet",  Icon: Star,         hi: false },
+              { label: "Quality Check Pass Rate",  val: `${overallPassRate}%`,      sub: "Across all sarees woven",        Icon: CheckCircle2, hi: false },
+              { label: "Warp Requests Pending",    val: `${warpRequestsPending}`,   sub: "Awaiting admin approval",        Icon: Clock,        hi: false },
+              { label: "Total Paid to Weavers",    val: formatMoney(rupees(totalPaidToWeavers)), sub: "All-time payments recorded", Icon: Star, hi: false },
             ].map((m, i) => (
               <div key={m.label} style={{ flex: 1, padding: "20px 20px", borderRight: i < 4 ? "1px solid rgba(245,232,208,0.07)" : "none", display: "flex", alignItems: "center", gap: 14 }}>
                 <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.18)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.35)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>

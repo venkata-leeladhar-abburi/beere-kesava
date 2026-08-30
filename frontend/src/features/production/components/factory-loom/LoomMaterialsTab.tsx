@@ -3,6 +3,7 @@ import { MaterialIssueRecord } from "@/features/materials";
 import { T, F } from "./theme";
 import { GrnLineCode } from "@/shared/ui/domain";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "@/shared/ui/DateFilterBar";
+import { Select, SelectItem } from "@/shared/ui/primitives";
 
 const fmtIssueDate = (iso: string) => {
   const d = new Date(iso);
@@ -11,23 +12,6 @@ const fmtIssueDate = (iso: string) => {
 
 function SectionPill({ label }: { label: string }) {
   return <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.taupe, letterSpacing: "1.2px", textTransform: "uppercase" as const, marginBottom: 4 }}>{label}</div>;
-}
-
-function FilterPill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.5px",
-        borderRadius: 8, padding: "6px 12px", border: `1px solid ${active ? T.antiqueGold : T.borderDef}`,
-        background: active ? T.antiqueGold : "#FFFFFF", color: active ? "#FFFFFF" : T.luxuryBrown,
-        cursor: "pointer",
-      }}
-    >
-      {children}
-    </button>
-  );
 }
 
 export function LoomMaterialsTab({ materialRecords }: { materialRecords: MaterialIssueRecord[] }) {
@@ -54,15 +38,19 @@ export function LoomMaterialsTab({ materialRecords }: { materialRecords: Materia
   return (
     <div>
       <SectionPill label="Materials Issued — Batch Wise" />
-      <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
-      {batchOptions.length > 0 && (
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const, marginTop: 12 }}>
-          <FilterPill active={batchFilter === "all"} onClick={() => setBatchFilter("all")}>All Batches</FilterPill>
-          {batchOptions.map(id => (
-            <FilterPill key={id} active={batchFilter === id} onClick={() => setBatchFilter(id)}>{id}</FilterPill>
-          ))}
-        </div>
-      )}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" as const }}>
+        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+        {batchOptions.length > 0 && (
+          <div style={{ marginLeft: "auto" }}>
+            <Select value={batchFilter} onValueChange={setBatchFilter}>
+              <SelectItem value="all">All Batches</SelectItem>
+              {batchOptions.map(id => (
+                <SelectItem key={id} value={id}>{id}</SelectItem>
+              ))}
+            </Select>
+          </div>
+        )}
+      </div>
       {materialRecords.length > 0 && (
         <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 12 }}>
           Showing <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.luxuryBrown }}>{filteredRecords.length}</span> of{" "}

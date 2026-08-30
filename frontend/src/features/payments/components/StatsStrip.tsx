@@ -54,7 +54,7 @@ export function StatsStrip() {
   const fmt = (n: number) => {
     if (isError) return "—";
     if (isLoading) return "…";
-    return moneyVisible ? formatMoney(rupees(n)) : "—";
+    return moneyVisible ? formatMoney(rupees(n), { compact: true }) : "—";
   };
 
   const STATS = [

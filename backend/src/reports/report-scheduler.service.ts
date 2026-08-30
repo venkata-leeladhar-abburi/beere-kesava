@@ -5,14 +5,9 @@ import { ReportFrequency, WhatsAppMessageKind } from "../generated/prisma/client
 import { StorageService } from "../common/storage/storage.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { WhatsAppService } from "../whatsapp/whatsapp.service";
+import { computeNextRunAt } from "./report-schedule-timing";
 import { buildReportWorkbook, XLSX_MIME_TYPE } from "./report-workbook";
 import { ReportsService } from "./reports.service";
-
-const FREQUENCY_INTERVAL_MS: Record<ReportFrequency, number> = {
-  [ReportFrequency.DAILY]: 24 * 60 * 60 * 1000,
-  [ReportFrequency.WEEKLY]: 7 * 24 * 60 * 60 * 1000,
-  [ReportFrequency.MONTHLY]: 30 * 24 * 60 * 60 * 1000,
-};
 
 /**
  * Maps a ScheduledReport.reportName to the ReportsService method(s) that
@@ -28,8 +23,9 @@ const DEFAULT_REPORT_HANDLER = REPORT_NAME_HANDLERS["outstanding-payments"];
 
 /**
  * Polls active ScheduledReport rows every 15 minutes and generates the
- * report for any that are due, based on their frequency and lastRunAt. A
- * schedule that has never run is always due.
+ * report for any whose nextRunAt has passed. nextRunAt is a real wall-clock
+ * slot (see report-schedule-timing.ts), so a "9 AM daily" report goes out in
+ * the 09:00–09:15 poll every day rather than drifting later with each run.
  */
 @Injectable()
 export class ReportSchedulerService {
@@ -44,11 +40,14 @@ export class ReportSchedulerService {
   ) {}
 
   /**
-   * Scheduled reports go to the same owners' list as the sale-alert feed, so
-   * ScheduledReport needs no recipient-phone column of its own — it has only
-   * ever stored an email.
+   * Each schedule carries the number it was created for. The owners' list is
+   * only a safety net for rows saved before recipientPhone existed — without
+   * it those would generate a workbook and deliver it nowhere.
    */
-  private get recipients(): string[] {
+  private resolveRecipients(recipientPhone: string | null): string[] {
+    if (recipientPhone && recipientPhone.trim()) {
+      return [recipientPhone.trim()];
+    }
     const raw = this.config.get<string>("ADMIN_WHATSAPP_NUMBERS") ?? "";
     return [...new Set(raw.split(",").map((n) => n.trim()).filter(Boolean))];
   }
@@ -60,13 +59,11 @@ export class ReportSchedulerService {
     });
 
     const now = Date.now();
-    const due = schedules.filter((schedule) => {
-      if (!schedule.lastRunAt) {
-        return true;
-      }
-      const intervalMs = FREQUENCY_INTERVAL_MS[schedule.frequency];
-      return now - schedule.lastRunAt.getTime() >= intervalMs;
-    });
+    // A null nextRunAt means the row predates the scheduled-time columns —
+    // treat it as due once, and generateReport gives it a proper slot after.
+    const due = schedules.filter(
+      (schedule) => !schedule.nextRunAt || schedule.nextRunAt.getTime() <= now,
+    );
 
     if (due.length === 0) {
       return;
@@ -115,16 +112,30 @@ export class ReportSchedulerService {
       },
     });
 
+    // Advances even when delivery failed: leaving the schedule due would have
+    // the 15-minute poll regenerate and re-send it for the rest of the day.
+    const completedAt = new Date();
     await this.prisma.scheduledReport.update({
       where: { id: schedule.id },
-      data: { lastRunAt: new Date() },
+      data: {
+        lastRunAt: completedAt,
+        nextRunAt: computeNextRunAt(
+          {
+            frequency: schedule.frequency,
+            deliveryHour: schedule.deliveryHour,
+            deliveryMinute: schedule.deliveryMinute,
+            anchor: schedule.createdAt,
+          },
+          completedAt,
+        ),
+      },
     });
   }
 
   /**
-   * Builds the workbook, stores it, and pushes it to every number on the
-   * owners' list through `bk_report_share_`. Returns the storage key, or null
-   * if nothing could be delivered.
+   * Builds the workbook, stores it, and pushes it to the schedule's own
+   * WhatsApp number through `bk_report_share_`. Returns the storage key, or
+   * null if nothing could be delivered.
    *
    * Never throws: a failed delivery must still let lastRunAt advance. Leaving
    * the schedule "due" would have the 15-minute poll regenerate and re-send it
@@ -133,13 +144,19 @@ export class ReportSchedulerService {
    * WhatsAppMessage, so nothing is lost by moving on.
    */
   private async deliver(
-    schedule: { id: string; reportName: string; frequency: ReportFrequency },
+    schedule: {
+      id: string;
+      reportName: string;
+      frequency: ReportFrequency;
+      recipientPhone: string | null;
+    },
     reportData: unknown,
   ): Promise<string | null> {
-    const recipients = this.recipients;
+    const recipients = this.resolveRecipients(schedule.recipientPhone);
     if (recipients.length === 0) {
       this.logger.warn(
-        `ADMIN_WHATSAPP_NUMBERS is unset — report "${schedule.reportName}" generated but not delivered`,
+        `No recipient number on schedule ${schedule.id} and ADMIN_WHATSAPP_NUMBERS is unset — ` +
+          `report "${schedule.reportName}" generated but not delivered`,
       );
       return null;
     }
@@ -212,6 +229,18 @@ function formatDay(date: Date): string {
   return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+/**
+ * Approximate span each frequency covers, used only to word the "period"
+ * line in the WhatsApp message. The delivery clock itself comes from
+ * report-schedule-timing.ts — nothing here decides when a report fires.
+ */
+const PERIOD_LOOKBACK_MS: Record<ReportFrequency, number> = {
+  [ReportFrequency.DAILY]: 24 * 60 * 60 * 1000,
+  [ReportFrequency.WEEKLY]: 7 * 24 * 60 * 60 * 1000,
+  [ReportFrequency.MONTHLY]: 30 * 24 * 60 * 60 * 1000,
+  [ReportFrequency.QUARTERLY]: 91 * 24 * 60 * 60 * 1000,
+};
+
 /** File-name-safe "2026-08-27". */
 function dateStamp(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -224,7 +253,7 @@ function dateStamp(date: Date): string {
  */
 function formatPeriod(frequency: ReportFrequency, end: Date): string {
   if (frequency === ReportFrequency.DAILY) return formatDay(end);
-  const start = new Date(end.getTime() - FREQUENCY_INTERVAL_MS[frequency]);
+  const start = new Date(end.getTime() - PERIOD_LOOKBACK_MS[frequency]);
   // Same month and year on both ends — "21–27 Aug 2026" rather than the
   // redundant "21 Aug 2026–27 Aug 2026".
   if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {

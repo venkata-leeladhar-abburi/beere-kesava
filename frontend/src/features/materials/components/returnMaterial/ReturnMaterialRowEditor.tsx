@@ -1,7 +1,7 @@
 import React from "react";
 import { AlertTriangle } from "lucide-react";
-import { F, RESHAM_COLORS, JARI_COLORS, T } from "../issueMaterial/theme";
-import { PillTab, ColorSwatchPicker } from "../issueMaterial/primitives";
+import { F, T } from "../issueMaterial/theme";
+import { PillTab } from "../issueMaterial/primitives";
 import { WeaverOutstandingLine } from "../../contexts/MaterialReturnContext";
 import { Button, IconButton, Input, NumberInput } from "../../../../shared/ui/primitives";
 import { ReturnRowState } from "./theme";
@@ -18,13 +18,14 @@ function rowToGrams(row: ReturnRowState): number {
   return row.warpReshamUnit === "g" ? qty : qty * 1000;
 }
 
-function findOutstandingForRow(row: ReturnRowState, lines: WeaverOutstandingLine[]): WeaverOutstandingLine | undefined {
-  return lines.find(l => {
-    if (l.materialType !== row.materialType) return false;
-    if (row.materialType === "Warp") return l.warpSubtype === row.warpSubtype;
-    if (row.materialType === "Jari") return l.jariType === row.jariType && l.jariGrade === row.jariGrade && l.jariColor === row.jariColor;
-    return l.jariColor === row.jariColor; // Resham stores its color in jariColor
-  });
+// Outstanding is reported per GRN line/variant, but returns are now recorded
+// at the material-type level only (no subtype/color selection) — so a row's
+// cap is the SUM of every outstanding line for that material type, regardless
+// of which variant it came from.
+function outstandingGramsForRow(row: ReturnRowState, lines: WeaverOutstandingLine[]): number | undefined {
+  const matches = lines.filter(l => l.materialType === row.materialType);
+  if (matches.length === 0) return undefined;
+  return matches.reduce((sum, l) => sum + l.outstandingGrams, 0);
 }
 
 // Return-materials version of issueMaterial/MaterialRowEditor.tsx — same
@@ -40,9 +41,9 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
 }) {
   const patch = (p: Partial<ReturnRowState>) => onChange({ ...row, ...p });
   const qtyNum = Number(row.quantity) || 0;
-  const outstanding = findOutstandingForRow(row, outstandingLines);
+  const outstandingGrams = outstandingGramsForRow(row, outstandingLines);
   const rowGrams = rowToGrams(row);
-  const overOutstanding = outstanding && rowGrams > outstanding.outstandingGrams;
+  const overOutstanding = outstandingGrams !== undefined && rowGrams > outstandingGrams;
   const reelsToBuns = row.jariUnit === "Reels" ? (qtyNum * 4) : (qtyNum / 4);
 
   return (
@@ -64,32 +65,6 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
         <PillTab options={["Warp", "Resham", "Jari"]} value={row.materialType} onChange={v => patch({ materialType: v as ReturnRowState["materialType"], description: "", quantity: "" })} />
       </div>
 
-      {row.materialType === "Warp" && (
-        <div style={{ marginBottom: 16 }}>
-          <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Warp Subtype</span>
-          <PillTab options={["Resham Warp", "Jari Warp"]} value={row.warpSubtype} onChange={v => patch({ warpSubtype: v as ReturnRowState["warpSubtype"] })} />
-        </div>
-      )}
-
-      {row.materialType === "Jari" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-4">
-          <div>
-            <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Jari Type</span>
-            <PillTab options={["Polyester", "Silk Fast"]} value={row.jariType} onChange={v => patch({ jariType: v as ReturnRowState["jariType"] })} />
-          </div>
-          <div>
-            <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Jari Grade</span>
-            <PillTab options={["1G", "2G", "3G", "4G", "5G"]} value={row.jariGrade} onChange={v => patch({ jariGrade: v as ReturnRowState["jariGrade"] })} />
-          </div>
-        </div>
-      )}
-
-      {(row.materialType === "Resham" || row.materialType === "Jari") && (
-        <div style={{ marginBottom: 16 }}>
-          <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Color</span>
-          <ColorSwatchPicker colors={row.materialType === "Jari" ? JARI_COLORS : RESHAM_COLORS} value={row.jariColor} onChange={v => patch({ jariColor: v })} />
-        </div>
-      )}
 
       {/* Description + Quantity */}
       <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-3.5">
@@ -168,13 +143,13 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
         </div>
       </div>
 
-      {outstanding && (
+      {outstandingGrams !== undefined && (
         <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 7, background: overOutstanding ? "rgba(196,146,58,0.14)" : "rgba(30,102,64,0.08)", border: `1px solid ${overOutstanding ? T.antiqueGold : "rgba(30,102,64,0.20)"}`, borderRadius: 8, padding: "8px 12px" }}>
           <AlertTriangle size={14} color={overOutstanding ? "#8B6018" : T.green} />
           <span style={{ fontFamily: F.ui, fontSize: 12, color: overOutstanding ? "#8B6018" : T.green }}>
             {overOutstanding
-              ? `Only ${formatOutstandingGrams(row.materialType, outstanding.outstandingGrams)} outstanding for this line — you entered more than that`
-              : `${formatOutstandingGrams(row.materialType, outstanding.outstandingGrams)} outstanding for this line`}
+              ? `Only ${formatOutstandingGrams(row.materialType, outstandingGrams)} outstanding for this line — you entered more than that`
+              : `${formatOutstandingGrams(row.materialType, outstandingGrams)} outstanding for this line`}
           </span>
         </div>
       )}

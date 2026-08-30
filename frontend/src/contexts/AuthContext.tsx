@@ -151,7 +151,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // one logout row is a better failure than a user stuck on a spinner, so
     // the rejection is swallowed rather than surfaced.
     void authApi.logout().catch(() => { /* logout is local-first */ });
-
     setState({ isAuthenticated: false, role: null, phone: null });
     localStorage.removeItem(STORAGE_KEY);
     try {

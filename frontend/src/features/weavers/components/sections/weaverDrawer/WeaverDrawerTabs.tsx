@@ -5,6 +5,7 @@ import { Send as PaperPlaneTilt } from "lucide-react";
 import { T, F } from "../../theme";
 import { SectionPill } from "../../common/primitives";
 import { DateFilterBar } from "../../../../../shared/ui/DateFilterBar";
+import { Select, SelectItem } from "../../../../../shared/ui/primitives";
 import { Button } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -16,24 +17,6 @@ import { DispatchRecord } from "@/features/design-library";
 import { WeaverPaymentRecord } from "../../../contexts/WeaverPaymentsContext";
 import { WeaverCardEntry } from "../../data";
 import { DateFilterState } from "../../../../../shared/ui/DateFilterBar";
-
-function FilterPill({ active, onClick, tone = "primary", children }: { active: boolean; onClick: () => void; tone?: "primary" | "secondary"; children: React.ReactNode }) {
-  const activeBg = tone === "primary" ? T.royalBurgundy : T.antiqueGold;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.5px",
-        borderRadius: 8, padding: "6px 12px", border: `1px solid ${active ? activeBg : T.borderDef}`,
-        background: active ? activeBg : "#FFFFFF", color: active ? "#FFFFFF" : T.luxuryBrown,
-        cursor: "pointer",
-      }}
-    >
-      {children}
-    </button>
-  );
-}
 
 export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDateFilter, setBatchDateFilter, setViewDispatches, onNavigate }: {
   sortedAllWeaverBatches: BatchRecord[];
@@ -227,12 +210,16 @@ export function DispatchesTab({ dispatchGroups, dispatchDateFilter, setDispatchD
   );
 }
 
-export function PaymentsTab({ weaver, weaverPayments, filteredWeaverPayments, paymentDateFilter, setPaymentDateFilter }: {
+export function PaymentsTab({ weaver, weaverPayments, filteredWeaverPayments, paymentDateFilter, setPaymentDateFilter, pendingDeductions, pendingDeductionTotal }: {
   weaver: WeaverCardEntry;
   weaverPayments: WeaverPaymentRecord[];
   filteredWeaverPayments: WeaverPaymentRecord[];
   paymentDateFilter: DateFilterState;
   setPaymentDateFilter: (f: DateFilterState) => void;
+  /** Deductions noted on this weaver's material returns, with why each one was made. */
+  pendingDeductions?: { id: string; amount: number; reason: string; date: string }[];
+  /** Sum of pendingDeductions not yet reflected in a WeaverPayment.deduction — what's still owed back when next paid. */
+  pendingDeductionTotal?: number;
 }) {
   return (
             <div>
@@ -242,7 +229,30 @@ export function PaymentsTab({ weaver, weaverPayments, filteredWeaverPayments, pa
                   <div style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown }}>Total Paid Ever</div>
                   <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown }}>{weaver.totalPaid}</div>
                 </div>
+                {!!pendingDeductionTotal && (
+                  <div style={{ flex: 1, background: "rgba(196,146,58,0.10)", border: `1px solid ${T.antiqueGold}`, borderRadius: 16, padding: "20px" }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 16, color: "#8B6018" }}>Pending Deductions</div>
+                    <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: "#8B6018" }}>{formatMoney(rupees(pendingDeductionTotal))}</div>
+                  </div>
+                )}
               </div>
+
+              {pendingDeductions && pendingDeductions.length > 0 && (
+                <div style={{ marginBottom: 24 }}>
+                  <SectionPill label="Deductions to Apply on Next Payout" />
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {pendingDeductions.map(d => (
+                      <div key={d.id} style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                        <div>
+                          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{d.reason}</div>
+                          <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: T.taupe }}>{d.id} · {new Date(d.date).toLocaleDateString("en-IN")}</div>
+                        </div>
+                        <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: "#8B6018" }}>{formatMoney(rupees(d.amount))}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <SectionPill label="Payment History" />
               <DateFilterBar filter={paymentDateFilter} onChange={setPaymentDateFilter} />
@@ -340,25 +350,29 @@ export function MaterialsTab({ materialRecords, materialByBatch, totalRecordCoun
   return (
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               <SectionPill label="Materials Issued — Batch Wise" />
-              <DateFilterBar filter={materialDateFilter} onChange={setMaterialDateFilter} />
-              {loomOptions.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <FilterPill active={loomFilter === "all"} onClick={() => setLoomFilter("all")}>All Looms</FilterPill>
-                    {loomOptions.map(o => (
-                      <FilterPill key={o.key} active={loomFilter === o.key} onClick={() => setLoomFilter(o.key)}>{o.label}</FilterPill>
-                    ))}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <DateFilterBar filter={materialDateFilter} onChange={setMaterialDateFilter} />
+                {(loomOptions.length > 0 || batchOptions.length > 0) && (
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginLeft: "auto" }}>
+                    {loomOptions.length > 0 && (
+                      <Select value={loomFilter} onValueChange={setLoomFilter}>
+                        <SelectItem value="all">All Looms</SelectItem>
+                        {loomOptions.map(o => (
+                          <SelectItem key={o.key} value={o.key}>{o.label}</SelectItem>
+                        ))}
+                      </Select>
+                    )}
+                    {batchOptions.length > 0 && (
+                      <Select value={batchFilter} onValueChange={setBatchFilter}>
+                        <SelectItem value="all">All Batches</SelectItem>
+                        {batchOptions.map(id => (
+                          <SelectItem key={id} value={id}>{id}</SelectItem>
+                        ))}
+                      </Select>
+                    )}
                   </div>
-                  {batchOptions.length > 0 && (
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <FilterPill active={batchFilter === "all"} onClick={() => setBatchFilter("all")} tone="secondary">All Batches</FilterPill>
-                      {batchOptions.map(id => (
-                        <FilterPill key={id} active={batchFilter === id} onClick={() => setBatchFilter(id)} tone="secondary">{id}</FilterPill>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                )}
+              </div>
               {totalRecordCount > 0 && (
                 <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
                   Showing <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.luxuryBrown }}>{materialRecords.length}</span> of{" "}

@@ -325,7 +325,7 @@ export function TopNav({
             </Popover.Trigger>
             <Popover.Content align="end" sideOffset={10} className="!w-[360px] !max-w-[360px] !p-0 !overflow-hidden" style={{ zIndex: "var(--z-tooltip)" }}>
               <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => { set("Notifications"); setShowNotif(false); }}>
                   <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Notifications</span>
                   <span style={{ background: T.royalBurgundy, color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, borderRadius: 999, padding: "2px 7px" }}>{unreadCount}</span>
                 </div>
@@ -333,6 +333,22 @@ export function TopNav({
               </div>
               <div style={{ padding: "24px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
                 No new notifications.
+              </div>
+              <div
+                onClick={() => { set("Notifications"); setShowNotif(false); }}
+                style={{
+                  padding: "12px 20px",
+                  borderTop: "1px solid rgba(110,15,45,0.08)",
+                  background: "rgba(110,15,45,0.03)",
+                  textAlign: "center",
+                  fontFamily: F.ui,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: T.royalBurgundy,
+                  cursor: "pointer",
+                }}
+              >
+                View All Notifications →
               </div>
             </Popover.Content>
           </Popover>

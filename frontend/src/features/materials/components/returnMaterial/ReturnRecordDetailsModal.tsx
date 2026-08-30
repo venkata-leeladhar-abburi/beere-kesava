@@ -37,7 +37,7 @@ export function ReturnRecordDetailsModal({ record, onClose }: { record: Material
       id: "details", header: "Details", accessor: m => m.description,
       cell: (_v, m) => (
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-          {m.materialType === "Warp" ? m.warpSubtype : m.materialType === "Jari" ? `${m.jariType} · ${m.jariGrade} · ${m.jariColor}` : (m.description || m.jariColor || "—")}
+          {m.description || "—"}
         </span>
       ),
     },

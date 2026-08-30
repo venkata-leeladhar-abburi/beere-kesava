@@ -144,7 +144,7 @@ export function WholesaleCollectionsSection() {
     if (!recordPayment) return;
     recordPaymentMutation.mutate({ id: recordPayment.id, amount, utr, method, firmId });
     if (firmId) {
-      addIncomeEntry(firmId, { description: `Wholesale payment — ${recordPayment.customer} (${recordPayment.id})`, amount, date, category: "Wholesale Sale" });
+      addIncomeEntry(firmId, { description: `Wholesale payment — ${recordPayment.customer} (${recordPayment.code ?? recordPayment.id})`, amount, date, category: "Wholesale Sale" });
     }
     toast.success(`Payment of ${formatMoney(rupees(amount))} recorded for ${recordPayment.customer}`);
     setRecordPayment(null);
