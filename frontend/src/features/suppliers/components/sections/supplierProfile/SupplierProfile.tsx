@@ -13,7 +13,7 @@ import { SupplierPayNowModal } from "@/features/payments";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
 import {
-  useSuppliers, Supplier, parseINR,
+  useSuppliers, usePurchasePhotos, Supplier, parseINR,
 } from "../../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { SupplierFormValues } from "../../types";
@@ -63,19 +63,22 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   const [sareeSearch, setSareeSearch] = useState("");
 
   const stats = statsFor(supplier.id);
+  // The shared purchases list is the photo-less "summary" view — hydrate this
+  // supplier's own purchases so saree tiles here show the uploaded photos.
+  const myPurchases = usePurchasePhotos(stats.purchases);
 
   // Every saree ever bought from this supplier, flattened for the inventory view.
   const allSarees = useMemo(
-    () => stats.purchases.flatMap(p => p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier }))),
-    [stats.purchases]
+    () => myPurchases.flatMap(p => p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier }))),
+    [myPurchases]
   );
 
   const sareeTypes  = useMemo(() => ["All Types", ...Array.from(new Set(allSarees.map(s => s.sareeType).filter(Boolean)))], [allSarees]);
   const sareeColors = useMemo(() => ["All Colours", ...Array.from(new Set(allSarees.map(s => s.color).filter(Boolean)))], [allSarees]);
   // Purchase orders this supplier's sarees came from, newest first, for the PO filter dropdown.
   const purchaseOptions = useMemo(
-    () => [...stats.purchases].sort((a, b) => (b.date > a.date ? 1 : -1)),
-    [stats.purchases]
+    () => [...myPurchases].sort((a, b) => (b.date > a.date ? 1 : -1)),
+    [myPurchases]
   );
 
   const filteredSarees = useMemo(() => allSarees.filter(s => {
@@ -89,14 +92,14 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
 
   // Money spent + paid within the overview's selected time range.
   const rangePurchases = useMemo(
-    () => stats.purchases.filter(p => matchesDateFilter(p.date, invFilter)),
-    [stats.purchases, invFilter]
+    () => myPurchases.filter(p => matchesDateFilter(p.date, invFilter)),
+    [myPurchases, invFilter]
   );
   const rangeBilled = rangePurchases.reduce((sum, p) => sum + parseINR(p.billAmount), 0);
   const myPayments  = useMemo(() => payments.filter(p => p.supplierId === supplier.id), [payments, supplier.id]);
   const rangePaid   = myPayments.filter(p => matchesDateFilter(p.date, invFilter)).reduce((sum, p) => sum + p.amount, 0);
 
-  const filteredOrders   = useMemo(() => stats.purchases.filter(p => matchesDateFilter(p.date, orderFilter)), [stats.purchases, orderFilter]);
+  const filteredOrders   = useMemo(() => myPurchases.filter(p => matchesDateFilter(p.date, orderFilter)), [myPurchases, orderFilter]);
   const filteredPayments = useMemo(() => myPayments.filter(p => matchesDateFilter(p.date, payFilter)), [myPayments, payFilter]);
   const filteredPaidSum  = filteredPayments.reduce((sum, p) => sum + p.amount, 0);
 
@@ -105,23 +108,23 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   // Spend trend by month, derived from this supplier's actual purchases.
   const spendByMonth = useMemo(() => {
     const buckets = new Map<string, number>();
-    stats.purchases.forEach(p => {
+    myPurchases.forEach(p => {
       const month = (p.date || "").split(" ").slice(1).join(" ") || "—";
       buckets.set(month, (buckets.get(month) || 0) + parseINR(p.billAmount));
     });
     return Array.from(buckets, ([month, spend]) => ({ month, spend })).reverse();
-  }, [stats.purchases]);
+  }, [myPurchases]);
 
   // Billed amount grouped by payment status.
   const paymentStatusBreakdown = useMemo(() => {
     const colors: Record<string, string> = { Paid: T.green, Pending: T.antiqueGold, Partial: T.crimson };
     const buckets = new Map<string, number>();
-    stats.purchases.forEach(p => {
+    myPurchases.forEach(p => {
       buckets.set(p.status, (buckets.get(p.status) || 0) + parseINR(p.billAmount));
     });
     return Array.from(buckets, ([name, value]) => ({ name, value, fill: colors[name] || T.taupe }))
       .filter(b => b.value > 0);
-  }, [stats.purchases]);
+  }, [myPurchases]);
 
   // Edit-profile form state, reset whenever a different supplier is opened.
   const [form, setForm] = useState<SupplierFormValues>({

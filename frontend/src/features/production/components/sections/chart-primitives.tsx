@@ -201,11 +201,25 @@ export function ChartHint({ children, tone }: { children: React.ReactNode; tone:
 }
 
 /** Big headline figure with a caption underneath, as on “Sarees Produced”. */
-export function HeroStat({ value, caption, icon }: { value: number; caption: string; icon?: React.ReactNode }) {
+export function HeroStat({ value, caption, icon, unit, secondary }: { value: number; caption: string; icon?: React.ReactNode; unit?: string; secondary?: { value: number; unit: string } }) {
   return (
     <div style={{ marginBottom: 4 }}>
-      <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 40, color: T.luxuryBrown, lineHeight: 1.0, ...NUM }}>
-        <CountUp value={value} />
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
+          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 40, color: T.luxuryBrown, lineHeight: 1.0, ...NUM }}>
+            <CountUp value={value} />
+          </span>
+          {unit && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{unit}</span>}
+        </div>
+        {secondary && (
+          <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
+            <span aria-hidden style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginRight: 2 }}>+</span>
+            <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 26, color: T.luxuryBrown, lineHeight: 1.0, ...NUM }}>
+              <CountUp value={secondary.value} />
+            </span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{secondary.unit}</span>
+          </div>
+        )}
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5 }}>
         {icon}
@@ -367,6 +381,84 @@ export function GroupedBarChart({ data, height = 168 }: { data: GroupedBarPoint[
               <text x={gx} y={H - 5} textAnchor="middle" fontFamily={F.ui} fontSize={9} fontWeight="500" fill={T.taupe} letterSpacing="0.6">
                 {d.label}
               </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+export interface SingleBarPoint { label: string; value: number; unit?: string }
+
+export function SingleBarChart({ data, height = 168, fillId = "prodBarA" }: { data: SingleBarPoint[]; height?: number; fillId?: string }) {
+  const W = 420, H = 162, PB = 30, PT = 10, PL = 30;
+  const iW = W - PL, iH = H - PB - PT;
+  const rawMax = Math.max(1, ...data.map(d => d.value));
+  const step = Math.max(1, Math.ceil(rawMax / 3 / 5) * 5);
+  const maxV = step * 3;
+  const ticks = [0, step, step * 2, maxV];
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-40px 0px" });
+
+  return (
+    <div ref={ref} style={{ width: "100%", minHeight: height }}>
+      <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow: "visible", display: "block" }}>
+        <defs>
+          <linearGradient id="singleBarPrimary" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={CHART.primary} />
+            <stop offset="100%" stopColor={CHART.primaryDeep} />
+          </linearGradient>
+          <linearGradient id="singleBarSecondary" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={CHART.secondaryLite} />
+            <stop offset="100%" stopColor={CHART.secondary} />
+          </linearGradient>
+          <filter id="singleBarShadow" x="-60%" y="-20%" width="220%" height="150%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#4A061B" floodOpacity="0.18" />
+          </filter>
+        </defs>
+
+        {ticks.map(v => {
+          const y = PT + iH * (1 - v / maxV);
+          return (
+            <g key={v}>
+              <line x1={PL} y1={y} x2={W} y2={y} stroke={CHART.grid} strokeWidth={1} strokeDasharray={v === 0 ? "0" : "2 4"} />
+              <text x={PL - 6} y={y + 3.5} textAnchor="end" fontFamily={F.ui} fontSize={8.5} fontWeight="500" fill={T.taupe} style={NUM}>
+                {v}
+              </text>
+            </g>
+          );
+        })}
+
+        {data.map((d, i) => {
+          const gW = iW / data.length;
+          const gx = PL + i * gW + gW / 2;
+          const bW = Math.min(24, gW / 2);
+          const baseY = PT + iH;
+          const hV = (d.value / maxV) * iH;
+          return (
+            <g key={d.label}>
+              <title>{`${d.label}: ${d.value}${d.unit ? " " + d.unit : ""}`}</title>
+              <motion.rect
+                x={gx - bW / 2} width={bW} rx={bW / 2} fill={`url(#${fillId})`} filter="url(#singleBarShadow)"
+                initial={{ y: baseY, height: 0 }}
+                animate={inView ? { y: baseY - hV, height: hV } : undefined}
+                transition={{ duration: 0.9, delay: 0.25 + i * 0.08, ease: EASE }}
+              />
+              <text
+                x={gx} y={Math.max(PT + 8, baseY - hV - 5)} textAnchor="middle"
+                fontFamily={F.ui} fontSize={9.5} fontWeight="700" fill={T.luxuryBrown} style={NUM}
+              >
+                {d.value}
+              </text>
+              <text x={gx} y={H - (d.unit ? 13 : 5)} textAnchor="middle" fontFamily={F.ui} fontSize={9} fontWeight="500" fill={T.taupe} letterSpacing="0.6">
+                {d.label}
+              </text>
+              {d.unit && (
+                <text x={gx} y={H - 3} textAnchor="middle" fontFamily={F.ui} fontSize={8} fontWeight="500" fill={T.taupe} letterSpacing="0.4">
+                  {d.unit}
+                </text>
+              )}
             </g>
           );
         })}

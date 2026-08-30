@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useInView, AnimatePresence } from "motion/react";
 import { Package } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +7,7 @@ import { ViewStockDialog } from "./ViewStockDialog";
 import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
 import { Button, SearchInput } from "../../../shared/ui/primitives";
 import { inventoryApi, BackendStockItem } from "../../../shared/api/inventory";
+import { useExternalPurchaseRows, type WeaverSareeRow } from "@/features/weavers";
 import { ErrorState, EmptyState, FilteredEmptyState } from "../../../shared/ui/state";
 
 const T = {
@@ -49,6 +50,44 @@ function formatQcDate(iso: string): string {
   return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+/**
+ * An externally purchased piece, as a stock card.
+ *
+ * These deliberately do not come from GET /inventory: an external purchase
+ * lives in Purchase + PurchaseSareeLine and is never turned into a production
+ * Saree row, so the stock ledger reports zero of them. Reading the purchases
+ * directly (the same hook the Inventory page's External Purchases tab uses) is
+ * what makes the "External" source filter and the supplier/invoice search
+ * terms return anything at all — previously both were structurally empty, and
+ * the card's supplier line rendered "undefined · undefined".
+ */
+function externalToStockSaree(r: WeaverSareeRow, index: number): StockSaree {
+  return {
+    id: r.sareeId,
+    source: "external",
+    weaver: null,
+    weaverCode: "—",
+    loom: "—",
+    weight: r.stock?.weight || "—",
+    qcDate: r.stock?.purchaseDate ? formatQcDate(r.stock.purchaseDate) : "—",
+    design: "—",
+    sareeType: r.sareeTypeName || "—",
+    // A purchased piece stands in stock until it is sold; the ledger has no
+    // sale against it, so it is available by definition here.
+    status: "available",
+    saleRef: null,
+    customer: null,
+    assignedBy: null,
+    assignedAt: null,
+    supplier: r.stock?.supplier ?? null,
+    supplierLocation: r.stock?.supplierLocation ?? null,
+    purchaseId: r.stock?.purchaseId ?? null,
+    invoiceNumber: r.stock?.invoiceNumber ?? null,
+    initials: "EX",
+    avatarBg: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
+  };
+}
+
 function toStockSaree(item: BackendStockItem, index: number): StockSaree {
   const initials = item.weaverName
     ? item.weaverName.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase()
@@ -86,18 +125,34 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
     queryKey: ["stock-list"],
     queryFn: () => inventoryApi.list(),
   });
+  const { rows: externalRows, isLoading: externalLoading } = useExternalPurchaseRows(true);
 
-  const ALL_STOCK: StockSaree[] = (raw ?? []).map((item, i) => toStockSaree(item, i));
+  const ALL_STOCK: StockSaree[] = useMemo(() => {
+    // The ledger has no external sarees of its own; drop any a legacy row
+    // still claims so a piece can't be listed twice once the purchases are
+    // merged in below.
+    const ledger = (raw ?? []).filter(item => item.source !== "external").map(toStockSaree);
+    const external = externalRows
+      // A piece sent back to the supplier is no longer stock we hold.
+      .filter(r => !r.external?.returned)
+      .map((r, i) => externalToStockSaree(r, ledger.length + i));
+    return [...ledger, ...external];
+  }, [raw, externalRows]);
 
   const filtered = ALL_STOCK.filter(s => {
-    const q = search.toLowerCase();
-    const matchSearch = search === "" || s.id.toLowerCase().includes(q) || (s.weaver || "").toLowerCase().includes(q) || s.design.toLowerCase().includes(q) || (s.supplier || "").toLowerCase().includes(q) || (s.invoiceNumber || "").toLowerCase().includes(q);
+    const q = search.trim().toLowerCase();
+    const matchSearch = q === "" || s.id.toLowerCase().includes(q) || (s.weaver || "").toLowerCase().includes(q) || s.design.toLowerCase().includes(q) || (s.supplier || "").toLowerCase().includes(q) || (s.invoiceNumber || "").toLowerCase().includes(q);
     const matchStatus = statusFilter === "all" || s.status === statusFilter;
     const matchSource = sourceFilter === "all" || s.source === sourceFilter;
     return matchSearch && matchStatus && matchSource;
   });
 
   const pag = usePagination(filtered, 10);
+  // Narrowing the list while on a later page would otherwise strand the user
+  // on a page that has nothing to do with what they just filtered for. Only
+  // setPage is stable across renders, so `pag` itself can't be a dep.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { pag.setPage(1); }, [search, statusFilter, sourceFilter]);
 
   const availableCount  = ALL_STOCK.filter(s => s.status === "available").length;
   const soldCount       = ALL_STOCK.filter(s => s.status === "sold").length;
@@ -224,7 +279,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
 
       {/* ── CARDS GRID ── */}
       <section className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 24, paddingBottom: 56 }}>
-        {isLoading ? (
+        {isLoading || externalLoading ? (
           <FadeUp>
             <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "64px 32px", textAlign: "center" }}>
               <Package size={48} color={T.taupe} style={{ marginBottom: 16, opacity: 0.3 }} />

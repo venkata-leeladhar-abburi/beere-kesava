@@ -5,13 +5,14 @@ import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 import { useBulkOrders } from "@/features/bulk-orders";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
+import { FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, AnimBar } from "../common/primitives";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import type { BulkOrder } from "@/features/bulk-orders";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, StatusPill } from "@/shared/ui/domain";
+import { useReportPeriod, useRegisterExport } from "../PeriodContext";
 import type { StatusValueOf } from "@/lib/domain/status";
 
 // BulkOrder.paymentStatus ("pending" | "partial" | "paid") normalized onto
@@ -56,9 +57,18 @@ function MoneyChartTip({ active, payload, label }: TooltipProps<ValueType, NameT
 }
 
 export function WholesaleSalesReport() {
-  const { bulkOrders, isError, isLoading, refetch } = useBulkOrders();
+  const { bulkOrders: allBulkOrders, isError, isLoading, refetch } = useBulkOrders();
+  const { inCurrent, label: periodLabel } = useReportPeriod();
+
+  const bulkOrders = useMemo(
+    () => allBulkOrders.filter(o => inCurrent(o.createdDate)),
+    [allBulkOrders, inCurrent],
+  );
 
   // Dynamic calculation for wholesale weekly breakdown
+  // Day-of-month buckets over the selected period. Bucketing purely on
+  // day-of-month used to match orders from every month and year, so the chart
+  // under a current-month heading was an all-time day-of-month histogram.
   const wholesaleWeeklyData = useMemo(() => {
     const weeks = [
       { week: "Week 1", from: 1, to: 7 },
@@ -73,12 +83,14 @@ export function WholesaleSalesReport() {
 
       for (const order of bulkOrders) {
         const d = new Date(order.createdDate);
-        if (!isNaN(d.getTime())) {
-          const day = d.getDate();
-          if (day >= w.from && day <= w.to) {
-            sarees += order.done || order.total || 0;
-            revenue += order.amountDue || 0;
-          }
+        if (isNaN(d.getTime())) continue;
+        const day = d.getDate();
+        if (day >= w.from && day <= w.to) {
+          // The chart is labelled "dispatched", so it counts what has
+          // actually gone out (`done`) — falling back to the order total
+          // inflated every not-yet-dispatched order to its full size.
+          sarees += order.done ?? 0;
+          revenue += order.amountDue || 0;
         }
       }
 
@@ -86,23 +98,32 @@ export function WholesaleSalesReport() {
     });
   }, [bulkOrders]);
 
-  // Dynamic calculation for wholesale monthly revenue (last 6 months)
+  // Monthly revenue, keyed by year+month. Keying on the month name alone
+  // merged (say) Aug 2025 into Aug 2026 and ordered them by calendar month
+  // rather than chronologically.
   const wsMonthlyRev = useMemo(() => {
-    const monthsMap: Record<string, number> = {};
-    const monthsOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const map = new Map<string, { month: string; rev: number }>();
 
     for (const order of bulkOrders) {
       const d = new Date(order.createdDate);
-      if (!isNaN(d.getTime())) {
-        const mLabel = d.toLocaleString("en-US", { month: "short" });
-        monthsMap[mLabel] = (monthsMap[mLabel] || 0) + (order.amountDue || 0);
-      }
+      if (isNaN(d.getTime())) continue;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const label = d.toLocaleString("en-US", { month: "short", year: "2-digit" }).replace(" ", " '");
+      const entry = map.get(key) ?? { month: label, rev: 0 };
+      entry.rev += order.amountDue || 0;
+      map.set(key, entry);
     }
 
-    const activeMonths = monthsOrder.filter(m => monthsMap[m] !== undefined);
-    if (activeMonths.length === 0) return [];
-    return activeMonths.map(m => ({ month: m, rev: monthsMap[m] || 0 }));
+    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0])).slice(-6).map(([, v]) => v);
   }, [bulkOrders]);
+
+  // Registered before the loading/error early-returns so the hook order stays
+  // stable across renders.
+  useRegisterExport(useMemo(() => ({
+    name: "Wholesale Sales Report",
+    headers: ["Bulk Order Ref", "Customer", "Sarees Ordered", "Sarees Dispatched", "Invoiced", "Collected", "Outstanding", "Payment Status", "Created"],
+    rows: bulkOrders.map(o => [o.ref, o.customer, o.total, o.done ?? 0, o.amountDue ?? 0, o.amountPaid ?? 0, Math.max(0, (o.amountDue ?? 0) - (o.amountPaid ?? 0)), o.paymentStatus ?? "pending", o.createdDate]),
+  }), [bulkOrders]));
 
   if (isLoading) {
     return (
@@ -203,16 +224,16 @@ export function WholesaleSalesReport() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 12 }}>
             <div>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>Wholesale Sarees Dispatched Each Week</div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>Current Month — weekly breakdown</div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>{periodLabel} — weekly breakdown</div>
             </div>
             <div style={{ display: "flex", gap: 24 }}>
               <div>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Sarees (All Orders)</div>
-                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrders.reduce((s, o) => s + o.total, 0)}</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Sarees Dispatched</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{wholesaleWeeklyData.reduce((s, w) => s + w.sarees, 0)}</div>
               </div>
               <div>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Invoiced (All Orders)</div>
-                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}><Money value={rupees(totalInvoiced)} /></div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Invoiced</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}><Money value={rupees(wholesaleWeeklyData.reduce((s, w) => s + w.revenue, 0))} /></div>
               </div>
             </div>
           </div>
@@ -229,7 +250,7 @@ export function WholesaleSalesReport() {
       </FadeUp>
 
       <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 24 }}>
-        <ChartCard title="Wholesale Revenue — Last Months" sub="Monthly invoiced amount">
+        <ChartCard title="Wholesale Revenue — Last 6 Months" sub="Monthly invoiced amount">
           {wsMonthlyRev.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
               No wholesale orders recorded yet.
@@ -296,7 +317,7 @@ export function WholesaleSalesReport() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4" style={{ gap: 22, marginBottom: 28, alignItems: "stretch" }}>
-        <SilkSumCard icon={<ReceiptText size={22} color={T.antiqueGold} />} label="Total Bulk Orders" value={`${bulkOrders.length} orders`} sub="All-time" gid="wsr-b" />
+        <SilkSumCard icon={<ReceiptText size={22} color={T.antiqueGold} />} label="Total Bulk Orders" value={`${bulkOrders.length} orders`} sub="In the selected period" gid="wsr-b" />
         <SilkSumCard icon={<Banknote size={22} color={T.antiqueGold} />} label="Total Invoiced Amount" value={formatMoney(rupees(totalInvoiced))} sub="Across all customers" gid="wsr-i" />
         <SilkSumCard icon={<CheckCircle2 size={22} color={T.antiqueGold} />} label="Total Collected" value={formatMoney(rupees(totalCollected))} sub="Payments received" gid="wsr-c" />
         <SilkSumCard icon={<BellRing size={22} color={T.antiqueGold} />} label="Total Outstanding" value={formatMoney(rupees(Math.max(totalOutstanding, 0)))} sub="Yet to be collected" gid="wsr-o" />

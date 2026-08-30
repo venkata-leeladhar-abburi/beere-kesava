@@ -14,6 +14,7 @@ import { weaversApi } from "../../../../shared/api/weavers";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
+import { useRegisterExport } from "../PeriodContext";
 
 function daysBetween(a: Date, b: Date): number {
   return Math.max(0, Math.round((a.getTime() - b.getTime()) / 86400000));
@@ -66,7 +67,11 @@ export function OverdueAlertsReport() {
   // Dynamic low stock materials from rawMaterialsApi
   const lowStockMaterials = useMemo(() => {
     const items = stockRes?.items ?? [];
+    // currentStock / reorderLevel arrive as strings (Prisma Decimal serialises
+    // over JSON as text). Compared as-is they sorted lexicographically —
+    // "1334" <= "200" is true — flagging healthy stock as running low.
     return items
+      .map(item => ({ ...item, currentStock: Number(item.currentStock), reorderLevel: Number(item.reorderLevel) }))
       .filter(item => item.currentStock <= item.reorderLevel)
       .map(item => {
         const isJari = item.materialType === "JARI";
@@ -149,6 +154,19 @@ export function OverdueAlertsReport() {
       daysLeft: daysBetween(new Date(o.dueDate), now),
       status: o.status === "OVERDUE" ? "Overdue" : "At Risk",
     }));
+
+  // Alerts are live status, not a period report — the export mirrors the four
+  // alert tables as one flat "what needs action now" sheet.
+  useRegisterExport(useMemo(() => ({
+    name: "Overdue and Alerts Report",
+    headers: ["Alert Type", "Subject", "Reference", "Detail", "Amount / Quantity", "Due"],
+    rows: [
+      ...overdueCustomers.map(r => ["Overdue Invoice", r.customer, r.inv, `${r.days} days overdue`, r.overdue, r.dueDate]),
+      ...lowStockMaterials.map(r => ["Low Stock", `${r.type} — ${r.sub}`, r.batch, `Shortage ${r.shortage}${r.isJari ? " reels" : " kg"}`, r.current, ""]),
+      ...lateWeavers.map(r => ["Late Weaver", r.name, r.code, `${r.remaining} remaining in ${r.batch}`, r.days, r.expected]),
+      ...atRiskOrders.map(r => ["Bulk Order at Risk", r.customer, r.order, r.status, r.shortage, r.deadline]),
+    ],
+  }), [overdueCustomers, lowStockMaterials, lateWeavers, atRiskOrders]));
 
   return (
     <div id="rep-overdue" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>

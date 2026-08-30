@@ -18,6 +18,7 @@ import { LiveSummarySnapshot } from "./sections/LiveSummarySnapshot";
 import { ScheduledReportsSection } from "./sections/ScheduledReportsSection";
 import { DownloadHistorySection } from "./sections/DownloadHistorySection";
 import { ReportsFooter } from "./sections/ReportsFooter";
+import { ReportPeriodProvider, useReportPeriod } from "./PeriodContext";
 
 /**
  * Composition root for the Reports feature. Originally a single
@@ -26,9 +27,18 @@ import { ReportsFooter } from "./sections/ReportsFooter";
  * pre-split version if you need to trace exactly what moved where).
  */
 export function ReportsPage() {
+  return (
+    <ReportPeriodProvider>
+      <ReportsPageInner />
+    </ReportPeriodProvider>
+  );
+}
+
+function ReportsPageInner() {
   const [activeTab, setActiveTab] = useState<ReportTabKey>("production");
-  const [activePeriod, setActivePeriod] = useState("This Month");
-  const [compareOn, setCompareOn] = useState(false);
+  // The period selection lives in context so every section can actually
+  // filter against it, rather than being local state nothing downstream read.
+  const { period, setPeriod, custom, setCustom, compareOn, setCompareOn, label, priorLabel } = useReportPeriod();
 
   const TAB_CONTENT: Record<ReportTabKey, React.ReactNode> = {
     "raw-material":   <RawMaterialReport />,
@@ -52,8 +62,10 @@ export function ReportsPage() {
       </div>
       <ReportTabNav
         activeTab={activeTab} setActiveTab={setActiveTab}
-        activePeriod={activePeriod} setActivePeriod={setActivePeriod}
+        activePeriod={period} setActivePeriod={setPeriod}
+        custom={custom} setCustom={setCustom}
         compareOn={compareOn} setCompareOn={setCompareOn}
+        periodLabel={label} priorLabel={priorLabel}
       />
       <div style={{ background: T.silkCream, flex: 1 }}>
         {TAB_CONTENT[activeTab]}

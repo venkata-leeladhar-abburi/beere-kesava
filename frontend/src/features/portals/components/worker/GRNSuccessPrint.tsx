@@ -1,9 +1,12 @@
 import React from "react";
 import { CheckCircle2, Printer } from "lucide-react";
-import { toast } from "sonner";
 import { C, F, card } from "./tokens";
 import { GrnReceiptItem } from "../../../../shared/api/rawMaterials";
 import { Button } from "../../../../shared/ui/primitives";
+import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
+import { useDocument } from "../../../../shared/ui/document";
+import { ScannableCode } from "../../../../shared/ui/domain";
+import { GrnLabelSheet, type GrnLabel } from "./GrnLabelSheet";
 
 interface GRNSuccessProps {
   grnBatchId: string;
@@ -41,16 +44,29 @@ interface GRNPrintProps {
 }
 
 export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
-  const batches = (grn?.items ?? []).map((item, i) => {
+  const { print } = useDocument();
+
+  const batches: GrnLabel[] = (grn?.items ?? []).map((item, i) => {
     const isJari = item.materialType === "JARI";
-    const qtyText = `${item.quantity} ${item.unit || (isJari ? "Reels" : "kg")}`;
+    // Jari is received in Buns but stocked, issued and listed in Goods Receipt
+    // History as Reels (4 Buns = 1 Reel). The label printed the raw received
+    // unit, so a tag read "1000 Buns" against a "250 Reels" row for the very
+    // same drum. Normalise here so the physical label matches every screen.
+    const qtyText = isJari
+      ? formatBunsReels(jariToReels(item.quantity, item.unit ?? "KG"))
+      : `${item.quantity} ${item.unit || "kg"}`;
     return {
       // Falls back to a position-derived id only for rows received before
       // itemCode existed — every new receipt gets the real persisted one.
-      id: item.itemCode || `${grnBatchId}-${i + 1}`,
-      type: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
+      code: item.itemCode || `${grnBatchId}-${i + 1}`,
+      materialType: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
       description: item.description || item.name,
-      qty: qtyText,
+      quantity: qtyText,
+      grnBatchId,
+      vendor: grn?.supplierName,
+      receivedDate: grn?.receivedDate
+        ? new Date(grn.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+        : undefined,
     };
   });
 
@@ -60,21 +76,23 @@ export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
       <div style={{ padding: "4px 20px 12px", fontFamily: F.u, fontSize: 13, color: C.muted }}>Print labels for all batches in {grnBatchId}</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "0 20px 16px" }}>
         {batches.map((b) => (
-          <div key={b.id} style={{ ...card, padding: 14 }}>
-            <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg, marginBottom: 2 }}>{b.id}</div>
-            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 2 }}>{b.type} · {b.qty}</div>
+          <div key={b.code} style={{ ...card, padding: 14 }}>
+            <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg, marginBottom: 2 }}>{b.code}</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 2 }}>{b.materialType} · {b.quantity}</div>
             {b.description && <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted, marginBottom: 8 }}>{b.description}</div>}
-            <div style={{ background: "#000", height: 32, borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8, marginTop: b.description ? 0 : 8 }}>
-              <span style={{ fontFamily: F.m, fontSize: 6, color: "#FFF", letterSpacing: 2 }}>||| | || ||| ||</span>
+            {/* The same code that prints, so what's on screen is what the
+                scanner will read off the tag. */}
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 8, marginTop: b.description ? 0 : 8 }}>
+              <ScannableCode value={b.code} size={72} />
             </div>
-            <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => toast.success(`Label ${b.id} sent to printer`)} className="rounded-[7px] border-[rgba(110,15,45,0.12)] bg-[#FFF8E7] text-[#6E0F2D] hover:bg-[#FFF8E7]">
+            <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => print(<GrnLabelSheet labels={[b]} />)} className="rounded-[7px] border-[rgba(110,15,45,0.12)] bg-[#FFF8E7] text-[#6E0F2D] hover:bg-[#FFF8E7]">
               Print
             </Button>
           </div>
         ))}
       </div>
       <div style={{ padding: "0 20px" }}>
-        <Button variant="primary" fullWidth iconLeft={Printer} onClick={() => toast.success(`${batches.length} label${batches.length === 1 ? "" : "s"} sent to printer`)} className="rounded-[14px] bg-[#6E0F2D] hover:bg-[#6E0F2D] mb-2.5">Print All Labels</Button>
+        <Button variant="primary" fullWidth iconLeft={Printer} disabled={batches.length === 0} onClick={() => print(<GrnLabelSheet labels={batches} />)} className="rounded-[14px] bg-[#6E0F2D] hover:bg-[#6E0F2D] mb-2.5">Print All Labels</Button>
         {onReset && <Button variant="secondary" fullWidth onClick={onReset} className="rounded-[14px] border-[rgba(110,15,45,0.30)] text-[#6E0F2D]">Done — Skip Printing</Button>}
       </div>
     </div>
