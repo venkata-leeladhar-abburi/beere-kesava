@@ -59,6 +59,7 @@ export function POVendorDetailsSection({
             }
             setErrors(prev => ({ ...prev, vendor: "" }));
           }}
+          className="w-full"
         >
           <SelectItem value="-1">Select vendor…</SelectItem>
           {vendors.map((v, i) => (

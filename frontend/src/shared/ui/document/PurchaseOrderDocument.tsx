@@ -59,6 +59,13 @@ export function PurchaseOrderDocument({
     ...(urgency === "Urgent" ? [{ label: "Priority", value: "URGENT" }] : []),
   ];
 
+  // A PO raised without agreed rates (the create form no longer asks for a
+  // price per kg / per reel) would otherwise print an "Est. Amount" column of
+  // ₹0.00 and a ₹0.00 grand total, which reads as a priced order worth
+  // nothing. When nothing is priced, the money column is dropped entirely and
+  // the sheet is a pure quantity order.
+  const hasAmounts = materials.some(m => (m.subtotal ?? 0) > 0 || (m.pricePerUnit ?? 0) > 0) || totalValue > 0;
+
   const totalsRows = [{ label: "Estimated Total", amount: formatPaise(toPaise(totalValue)), grand: true }];
 
   const terms = [
@@ -117,17 +124,19 @@ export function PurchaseOrderDocument({
               </div>
             ),
           },
-          { header: "Qty", align: "end", width: "20mm", cell: row => row.quantity },
-          { header: "Unit", width: "18mm", cell: row => row.unit },
-          {
-            header: "Est. Amount", align: "end", width: "35mm",
-            cell: row => <strong>{formatPaise(toPaise(row.subtotal ?? (row.pricePerUnit ?? 0) * row.quantity))}</strong>,
-          },
+          { header: "Qty", align: "end", width: hasAmounts ? "20mm" : "26mm", cell: row => row.quantity },
+          { header: "Unit", width: hasAmounts ? "18mm" : "24mm", cell: row => row.unit },
+          ...(hasAmounts
+            ? [{
+                header: "Est. Amount", align: "end" as const, width: "35mm",
+                cell: (row: PODocumentItem) => <strong>{formatPaise(toPaise(row.subtotal ?? (row.pricePerUnit ?? 0) * row.quantity))}</strong>,
+              }]
+            : []),
         ]}
         rows={materials}
       />
 
-      <TotalsBlock rows={totalsRows} />
+      {hasAmounts && <TotalsBlock rows={totalsRows} />}
 
       {(notesVendor || notesAdmin) && (
         <div style={{ display: "grid", gridTemplateColumns: notesVendor && notesAdmin ? "1fr 1fr" : "1fr", gap: "4mm", marginTop: "5mm" }}>

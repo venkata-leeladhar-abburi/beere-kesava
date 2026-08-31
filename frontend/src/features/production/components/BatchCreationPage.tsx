@@ -14,7 +14,7 @@ import { Modal } from "../../../shared/ui/overlay";
 
 import { T, F, rowComplete, lbl } from "./batch-creation/constants";
 import {
-  WeaverPickerModal, BulkOrderPickerModal,
+  WeaverPickerModal, BulkOrderPickerModal, DesignCodePickerModal,
   SareeTypePickerModal, WeaverLoomPickerModal, FactoryLoomPickerModal,
 } from "./batch-creation/PickerModals";
 import {
@@ -98,7 +98,7 @@ export function BatchCreationPage() {
     rows, setRows, selected, setSelected, picker, setPicker, generated, setGenerated,
     loomPickerRow, setLoomPickerRow, generateRows, addRows, allSelected, toggleAll, toggleRow,
     applyWeaver, applyWeaverLoomToRow, applyFactoryLoom, applyBulkOrder,
-    applySareeType, removeSelected,
+    applyDesign, applySareeType, removeSelected,
     bulkOrderConflict, assignBulkOrderUpToCapacity, dismissBulkOrderConflict,
   } = useBatchFormHandlers(bulkOrders, assignedElsewhereByRef);
 
@@ -459,6 +459,7 @@ export function BatchCreationPage() {
         {picker === "weaver"     && <WeaverPickerModal     key="wp" weavers={weavers} onClose={() => setPicker(null)} onSelect={applyWeaver} />}
         {picker === "bulkorder"  && <BulkOrderPickerModal  key="bp" onClose={() => setPicker(null)} onSelect={applyBulkOrder} />}
         {picker === "factoryloom" && <FactoryLoomPickerModal key="flp" looms={looms} onClose={() => setPicker(null)} onSelect={applyFactoryLoom} />}
+        {picker === "design"     && <DesignCodePickerModal key="dp" onClose={() => setPicker(null)} onSelect={applyDesign} />}
         {picker === "saretype"   && (
           <SareeTypePickerModal
             key="sp"
