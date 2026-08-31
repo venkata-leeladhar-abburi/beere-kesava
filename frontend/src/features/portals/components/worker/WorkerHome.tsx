@@ -1,4 +1,3 @@
-import React from "react";
 import { WorkerHomeDesktop } from "./WorkerHomeDesktop";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "activity";

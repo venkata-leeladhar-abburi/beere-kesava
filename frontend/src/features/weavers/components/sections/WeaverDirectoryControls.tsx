@@ -1,15 +1,16 @@
 // ── Search / filter / view-toggle controls for the weaver directory ────────
 import type { ReactNode } from "react";
 import { UserPlus } from "lucide-react";
-import { Upload as UploadSimple, Search as MagnifyingGlass, ChevronDown as CaretDown, MapPin as PhMapPin, Users } from "lucide-react";
+import { Search as MagnifyingGlass, ChevronDown as CaretDown, MapPin as PhMapPin, Users } from "lucide-react";
 import { T, F } from "../theme";
 import { FILTER_PILLS, VIEW_OPTIONS } from "../data";
 import { FadeUp, SectionCard } from "../common/primitives";
 import { Button, Input } from "../../../../shared/ui/primitives";
 import { useRealWeavers } from "./WeaverCardAndListViews";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
-export function AllWeaversControls({ view, setView, filter, setFilter, search, setSearch, onAddWeaver, onViewAll, onImport, children }: {
-  view: string; setView: (v: string) => void; filter: string; setFilter: (f: string) => void; search: string; setSearch: (s: string) => void; onAddWeaver: () => void; onViewAll: () => void; onImport: () => void; children?: ReactNode;
+export function AllWeaversControls({ view, setView, filter, setFilter, search, setSearch, onAddWeaver, onViewAll, children }: {
+  view: string; setView: (v: string) => void; filter: string; setFilter: (f: string) => void; search: string; setSearch: (s: string) => void; onAddWeaver: () => void; onViewAll: () => void; children?: ReactNode;
 }) {
   // The subtitle used to read a hardcoded "350 weavers registered · 84
   // currently active" regardless of the roster.
@@ -36,14 +37,6 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
               className="rounded-[14px] bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white hover:border-white/30"
             >
               <Users size={20} /> View All Weavers
-            </Button>
-            <Button
-              onClick={onImport}
-              variant="secondary"
-              size="lg"
-              className="rounded-[14px] bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white hover:border-white/30"
-            >
-              <UploadSimple size={20} /> Import from Excel
             </Button>
             <Button
               onClick={onAddWeaver}
@@ -114,39 +107,40 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
             </div>
           </div>
 
-        {/* Filter pills row */}
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", paddingBottom: 32 }}>
-          {FILTER_PILLS.map(f => (
+          {/* Filter pills row */}
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", paddingBottom: 32 }}>
+            {FILTER_PILLS.map(f => (
+              <Button
+                key={f} onClick={() => setFilter(f)}
+                variant={filter === f ? "primary" : "secondary"}
+                size="sm"
+                className={
+                  filter === f
+                    ? "rounded-full bg-[#6E0F2D] border-none shadow-[0_4px_14px_rgba(110,15,45,0.22)]"
+                    : "rounded-full bg-white text-[#3B2314] border-[1.5px] border-[rgba(110,15,45,0.16)]"
+                }
+              >
+                {f}
+              </Button>
+            ))}
+            {/* Village filter and sort order have no handlers behind them here —
+                both live (and work) on the full "View All Weavers" page. Marked
+                disabled rather than left looking clickable and inert. */}
             <Button
-              key={f} onClick={() => setFilter(f)}
-              variant={filter === f ? "primary" : "secondary"}
-              size="sm"
-              className={
-                filter === f
-                  ? "rounded-full bg-[#6E0F2D] border-none shadow-[0_4px_14px_rgba(110,15,45,0.22)]"
-                  : "rounded-full bg-white text-[#3B2314] border-[1.5px] border-[rgba(110,15,45,0.16)]"
-              }
+              variant="secondary" size="sm" disabled
+              title="Filter by village on the View All Weavers page"
+              className="rounded-[14px] bg-white text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.16)] opacity-60"
             >
-              {f}
+              <PhMapPin size={16} /> Filter by Village <CaretDown size={14} />
             </Button>
-          ))}
-          {/* Village filter and sort order have no handlers behind them here —
-              both live (and work) on the full "View All Weavers" page. Marked
-              disabled rather than left looking clickable and inert. */}
-          <Button
-            variant="secondary" size="sm" disabled
-            title="Filter by village on the View All Weavers page"
-            className="rounded-[14px] bg-white text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.16)] opacity-60"
-          >
-            <PhMapPin size={16} /> Filter by Village <CaretDown size={14} />
-          </Button>
-          <Button
-            variant="secondary" size="sm" disabled
-            title="Sort weavers on the View All Weavers page"
-            className="rounded-[14px] bg-white text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.16)] opacity-60"
-          >
-            Sort: Most Sarees <CaretDown size={14} />
-          </Button>
+            <Button
+              variant="secondary" size="sm" disabled
+              title="Sort weavers on the View All Weavers page"
+              className="rounded-[14px] bg-white text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.16)] opacity-60"
+            >
+              Sort: Most Sarees <CaretDown size={14} />
+            </Button>
+          </div>
         </div>
 
         {children}

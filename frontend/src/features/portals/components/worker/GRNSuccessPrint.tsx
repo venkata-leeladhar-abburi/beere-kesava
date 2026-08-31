@@ -1,4 +1,3 @@
-import React from "react";
 import { CheckCircle2, Printer } from "lucide-react";
 import { C, F, card } from "./tokens";
 import { GrnReceiptItem } from "../../../../shared/api/rawMaterials";

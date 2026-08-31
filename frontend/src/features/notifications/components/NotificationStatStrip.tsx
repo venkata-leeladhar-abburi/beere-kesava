@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { Bell, AlertTriangle, CheckCircle2, Inbox, Zap } from "lucide-react";
 import { UnifiedNotif, Priority } from "./notifTypes";

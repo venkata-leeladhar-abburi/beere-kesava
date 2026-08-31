@@ -108,14 +108,14 @@ export function parseCode(code: string): ParsedCode | null {
 
   if (spec.yearScoped) {
     if (parts.length !== 3) return { type, serial: NaN, valid: false };
-    const [, fy, serialStr] = parts;
+    const [, fy = "", serialStr = ""] = parts;
     const serial = Number(serialStr);
     const valid = /^\d{4}$/.test(fy) && /^\d+$/.test(serialStr) && serialStr.length === serialWidth(spec.pattern);
     return { type, fy, serial, valid };
   }
 
   if (parts.length !== 2) return { type, serial: NaN, valid: false };
-  const [, serialStr] = parts;
+  const [, serialStr = ""] = parts;
   const serial = Number(serialStr);
   const valid = /^\d+$/.test(serialStr) && serialStr.length === serialWidth(spec.pattern);
   return { type, serial, valid };

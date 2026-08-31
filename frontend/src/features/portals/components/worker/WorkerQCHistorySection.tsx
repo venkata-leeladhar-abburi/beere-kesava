@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { History, LayoutGrid, LayoutList, CheckCircle2 } from "lucide-react";
 import { T, F, PassedLogItem } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";

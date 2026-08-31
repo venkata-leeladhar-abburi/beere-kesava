@@ -91,6 +91,10 @@ export function WorkerGRN({
   const createGrnMutation = useMutation({
     mutationFn: (payload: CreateGrnPayload) => rawMaterialsApi.createGrn(payload),
     onSuccess: async (data) => {
+      // Refetch-only: the receipt lists are cached per date range
+      // (["grn-receipts", from, to]), so there is no single entry to seed, and
+      // the worker moves to the success screen below rather than back to a
+      // list that would show the delay.
       queryClient.invalidateQueries({ queryKey: ["grn-receipts"] });
       // Update grnBatchId with the real one returned from backend
       setGrnBatchId(data.id);
@@ -197,7 +201,7 @@ export function WorkerGRN({
   }) : [];
 
   const allFilled = selectedPO ? selectedPO.materials.every((m, i) => getHasQty(i, m)) : false;
-  const allApproved = selectedPO ? selectedPO.materials.every((m, i) =>
+  const allApproved = selectedPO ? selectedPO.materials.every((_m, i) =>
     itemApproval[i] === "approved" || (itemApproval[i] === "rejected" && !!itemRejectReason[i]?.trim())
   ) : false;
 

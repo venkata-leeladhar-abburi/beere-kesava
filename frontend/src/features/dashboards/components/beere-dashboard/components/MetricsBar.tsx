@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'motion/react';
 import { T, EASE } from '../theme';
 import { IcoResourceMgmt, IcoFabricRoll, IcoInvoice, IcoQualityCheck, IcoTruck } from '../ui';

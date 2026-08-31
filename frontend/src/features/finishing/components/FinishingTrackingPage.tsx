@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { Users, ClipboardList, Clock, CheckCircle2, AlertTriangle, FileText } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ClipboardList, Clock, CheckCircle2, AlertTriangle, FileText } from "lucide-react";
 import { useFinishing, FinishingAssignment } from "../contexts/FinishingContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import { Button, SearchInput } from "../../../shared/ui/primitives";

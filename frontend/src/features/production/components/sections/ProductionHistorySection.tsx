@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, Calendar, Users, Download, Eye, LayoutGrid, List } from "lucide-react";
+import { ChevronDown, Calendar, Users, Download, Eye } from "lucide-react";
 import { useRatesPricing } from "@/features/pricing";
 import { T, F } from "../theme";
 import type { CodeCallbacks } from "../types";
@@ -44,7 +44,6 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
   const [search, setSearch] = useState("");
   const [sareeTypeFilter, setSareeTypeFilter] = useState("All Saree Types");
   const [weaverFilter, setWeaverFilter] = useState("All Weavers");
-  const [currentPage, setCurrentPage] = useState(1);
   const { batches } = useBatches();
   const { data: qcRecords = [], isLoading: qcLoading, isError: qcError, refetch: refetchQc } = useQuery({
     queryKey: ["qc", "all"],

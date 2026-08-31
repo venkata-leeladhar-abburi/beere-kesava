@@ -1,4 +1,3 @@
-import React from "react";
 import { F, T } from "../theme";
 import { FinancialSummarySection } from "./FinancialSummarySection";
 import { MaterialsFooter } from "@/features/materials";

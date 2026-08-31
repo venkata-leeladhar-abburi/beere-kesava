@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax */
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import { Check, X, Package } from "lucide-react";
 import {

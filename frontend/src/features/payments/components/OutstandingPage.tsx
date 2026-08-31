@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
   AlertTriangle, Factory, Layers, Truck, TrendingUp, Users, Package, ShoppingBag,

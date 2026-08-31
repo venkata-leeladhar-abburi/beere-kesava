@@ -65,5 +65,8 @@ export const inventoryApi = {
   /** GET /inventory/shop — what is physically in the shop: every saree an
    *  admin dispatched to it that has not since been sold. This is the shop
    *  portal's stock, deliberately not the factory list. */
-  shopStock: () => apiClient.get<ShopStockItem[]>("/inventory/shop"),
+  shopStock: (dispatchId?: string) =>
+    apiClient.get<ShopStockItem[]>(
+      `/inventory/shop${dispatchId ? `?dispatchId=${encodeURIComponent(dispatchId)}` : ""}`,
+    ),
 };

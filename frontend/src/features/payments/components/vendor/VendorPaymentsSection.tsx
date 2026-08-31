@@ -8,7 +8,7 @@ import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { ViewSelector } from "@/shared/ui/ViewSelector";
 import { PurchaseOrder, usePO } from "@/features/purchasing";
 import { PODocumentModal } from "@/features/purchasing";
-import { vendorPaymentsApi } from "../../../../shared/api/payments";
+import { vendorPaymentsApi, type BackendVendorPayment } from "../../../../shared/api/payments";
 import { vendorBillsApi } from "../../../../shared/api/vendor-bills";
 import { EASE, F, T } from "../../theme";
 import { useFirms } from "@/features/firms";
@@ -31,6 +31,7 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 import { EntityCode, Money } from "@/shared/ui/domain";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { toPaise, fromPaise } from "@/lib/gst";
+import { prependToEnvelope } from "../../../../lib/cacheUpdates";
 
 const SHOW_OVERDUE_ALERT = false;
 
@@ -183,7 +184,7 @@ export function VendorPaymentsSection() {
     if (!amount || amount <= 0 || !utrNumber.trim() || !sidebarFirmId) return;
     setSavingSidebarPayment(true);
     try {
-      await vendorPaymentsApi.create({
+      const created = await vendorPaymentsApi.create({
         vendorId: selVP.vendorId ?? selVP.id,
         amount,
         utr: utrNumber.trim(),
@@ -192,6 +193,12 @@ export function VendorPaymentsSection() {
         date: payDate || undefined,
         billId: selVP.billId,
       });
+      // The vendor rows are a useMemo over this raw list, so inserting the new
+      // payment is enough for the paid/balance columns and the recorded-total
+      // to recompute — no need to wait out the refetch that refreshVendorLedger
+      // kicks off below to see the payment land.
+      prependToEnvelope<BackendVendorPayment>(
+        queryClient, ["vendor-payments-section-totals"], [created]);
       addExpenseEntry(sidebarFirmId, {
         description: `Vendor payment — ${selVP.vendor} (${selVP.poNumber})`,
         amount, date: payDate || new Date().toISOString().slice(0, 10), category: "Material Purchase",

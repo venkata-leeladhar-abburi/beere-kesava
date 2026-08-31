@@ -1,4 +1,3 @@
-import React from "react";
 import { useMaterialIssue } from "@/features/materials";
 import { useDesignLibrary } from "@/features/design-library";
 import { Package } from "lucide-react";

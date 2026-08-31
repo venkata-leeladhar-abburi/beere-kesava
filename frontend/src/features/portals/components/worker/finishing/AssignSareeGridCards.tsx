@@ -1,4 +1,3 @@
-import React from "react";
 import { PersonGroupGrid, BatchGroupGrid, READY_PILL } from "./FinishingGroupGrid";
 import { type FinishingTableRow } from "./FinishingSareeTable";
 

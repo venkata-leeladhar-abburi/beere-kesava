@@ -27,7 +27,7 @@ export interface BackendWeaver {
   looms: number;
   status: BackendWeaverStatus;
   photoUrl: string;
-  email: string;
+  email?: string;
   phone: string;
   bankName: string | null;
   accountNo: string | null;

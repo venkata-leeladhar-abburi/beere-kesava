@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { patchListItems, removeFromListWhere } from "../../../lib/cacheUpdates";
 import { toast } from "sonner";
 import { ApiError } from "../../../shared/api/client";
 import { BackendBatch, batchesApi, ReceiveBatchRowPayload } from "../../../shared/api/batches";
@@ -314,6 +315,10 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       return realBatchId;
     },
     onSuccess: () => {
+      // Refetch-only: saving a draft returns the batch id, and the rows the
+      // server actually persisted (saree ids it generates, rows it skipped for
+      // an incomplete recipient) can differ from the local draft. Seeding from
+      // that draft would show rows as saved that were not.
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Batch saved");
     },
@@ -343,7 +348,20 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
         tallied: args.tallied,
         weight: args.weight, warpG: args.warpG, reshamG: args.reshamG, jariReels: args.jariReels,
       }),
-    onSuccess: () => {
+    onSuccess: (_row, args) => {
+      // Flip the checkbox immediately — tallying is a rapid row-by-row pass, and
+      // waiting a round trip per saree for the tick to appear is what makes it
+      // feel unresponsive. Only `tallied`/`talliedAt` are seeded: the corrected
+      // weights are re-serialised by the backend (decimal strings), so echoing
+      // the raw entered numbers here would render one format and then visibly
+      // snap to another when the invalidate below lands.
+      patchListItems<BatchRecord>(queryClient, QUERY_KEY, b => b.batchId === args.batchId, batch => ({
+        ...batch,
+        rows: batch.rows.map(row =>
+          row.serial === args.serial
+            ? { ...row, tallied: args.tallied, talliedAt: args.tallied ? new Date().toISOString() : null }
+            : row),
+      }));
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       void queryClient.invalidateQueries({ queryKey: ["bulkOrders"] });
     },
@@ -357,7 +375,25 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const receiveRowMutation = useMutation({
     mutationFn: (args: { batchId: string; serial: number; payload: ReceiveBatchRowPayload }) =>
       batchesApi.receiveRow(args.batchId, args.serial, args.payload),
-    onSuccess: () => {
+    onSuccess: (row, args) => {
+      // Copy the receive fields off the response using the same mapping the
+      // list query uses (see backendBatchToRecord), so the weights render in
+      // the backend's own decimal formatting and don't visibly re-render when
+      // the invalidate below lands.
+      patchListItems<BatchRecord>(queryClient, QUERY_KEY, b => b.batchId === args.batchId, batch => ({
+        ...batch,
+        rows: batch.rows.map(r => r.serial === args.serial ? {
+          ...r,
+          receivedAt: row.receivedAt,
+          receivedBy: row.receivedByUser ? formatRecordedBy(row.receivedByUser) : r.receivedBy,
+          receivedWeight: row.receivedWeight,
+          receivedColor: row.receivedColor,
+          receivedPhotoUrl: row.receivedPhotoUrl,
+          receivedWarpG: row.receivedWarpG,
+          receivedReshamG: row.receivedReshamG,
+          receivedJariReels: row.receivedJariReels,
+        } : r),
+      }));
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       // Receiving a saree auto-draws its weight down from the weaver's
       // outstanding material (BatchesService.receiveRow ->
@@ -374,7 +410,10 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
 
   const finalizeBatchMutation = useMutation({
     mutationFn: (batchId: string) => batchesApi.finalize(batchId),
-    onSuccess: () => {
+    onSuccess: (_finalized, batchId) => {
+      patchListItems<BatchRecord>(queryClient, QUERY_KEY, b => b.batchId === batchId, {
+        status: "completed",
+      });
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Batch finalized");
     },
@@ -387,7 +426,8 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
 
   const deleteBatchMutation = useMutation({
     mutationFn: (batchId: string) => batchesApi.remove(batchId),
-    onSuccess: () => {
+    onSuccess: (_result, batchId) => {
+      removeFromListWhere<BatchRecord>(queryClient, QUERY_KEY, b => b.batchId === batchId);
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       // The backend cascades the delete onto that batch's QC records,
       // finishing assignments, and inventory/saree rows — so anything

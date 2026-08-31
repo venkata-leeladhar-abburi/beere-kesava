@@ -1,4 +1,3 @@
-import React from "react";
 import { ArrowDownCircle, BadgeCheck, Eye, Package, Scissors, UploadCloud } from "lucide-react";
 import { motion } from "motion/react";
 

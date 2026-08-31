@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Eye, RotateCcw, AlertTriangle, ImageOff, Calendar, Tag, Package, LayoutGrid, LayoutList } from "lucide-react";
 import { T, F, DefectiveLogItem } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";

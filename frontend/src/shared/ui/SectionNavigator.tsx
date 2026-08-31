@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "motion/react";
 
 import { MAIN_NAV_H, SUB_NAV_H, SECTION_NAV_H, MOBILE_NAV_H } from "./section-navigator-data";
@@ -39,7 +39,8 @@ export function SectionNavigator({
   inline?: boolean;
 }) {
   const [active, setActive] = useState(sections[0]?.id ?? "");
-  const [hasScrollbar, setHasScrollbar] = useState(false);
+  // Value is unused — only the setter drives the overflow effect below.
+  const [, setHasScrollbar] = useState(false);
   const pillRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const stripRef = useRef<HTMLDivElement | null>(null);
 

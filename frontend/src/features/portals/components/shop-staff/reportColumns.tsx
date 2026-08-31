@@ -8,7 +8,6 @@
  * `priority` drives the card fallback: 1 is the card title (exactly one
  * column), 2 becomes a label/value pair, 3 is hidden on small screens.
  */
-import React from "react";
 import { C, Chip } from "./theme";
 import type { ColumnDef } from "../../../../shared/ui/data";
 import type { SalesReportRow, ReturnReportRow } from "./salesReportModel";

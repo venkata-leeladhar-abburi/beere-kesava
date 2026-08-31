@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Printer, PackageCheck, RotateCcw, Building2, ShoppingBag, Camera, CheckCircle2, Search, X,
@@ -14,6 +14,7 @@ import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomM
 import { DateFilterBar, DEFAULT_DATE_FILTER, matchesDateFilter, type DateFilterState } from "../../../../shared/ui/DateFilterBar";
 import { usePrintSareeTags, type SareeTagData } from "@/features/weavers";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { removeFromListWhere } from "../../../../lib/cacheUpdates";
 
 /**
  * Returned sarees as their own stock, categorised by where they came back
@@ -112,8 +113,11 @@ export function ShopReturnsSection() {
 
   const sendToInventory = useMutation({
     mutationFn: (returnRef: string) => salesApi.sendReturnToInventory(returnRef),
-    onSuccess: () => {
+    onSuccess: (_result, returnRef) => {
       setSendError(null);
+      // It has left the returns queue for sellable stock — drop it now so the
+      // row can't be sent a second time while the refetch is still in flight.
+      removeFromListWhere<ReturnStockItem>(queryClient, ["return-stock"], r => r.returnRef === returnRef);
       // Both lists move: the return is now sellable stock.
       void queryClient.invalidateQueries({ queryKey: ["return-stock"] });
       void queryClient.invalidateQueries({ queryKey: ["shop-stock"] });

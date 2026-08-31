@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Search, History, CheckSquare, Square, Printer, ImageOff } from "lucide-react";
 import { C, F } from "../tokens";
 import { SectionCard } from "../primitives";

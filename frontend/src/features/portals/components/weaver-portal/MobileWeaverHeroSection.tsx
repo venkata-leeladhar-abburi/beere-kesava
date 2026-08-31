@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { ChevronRight } from "lucide-react";
 import { T, F, G } from "@/features/dashboards";

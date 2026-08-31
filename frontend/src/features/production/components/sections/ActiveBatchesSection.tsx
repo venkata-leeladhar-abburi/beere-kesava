@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { ChevronDown as PhCaretDown, Plus as PhPlus, Layers } from "lucide-react";
 import { useBatches } from "../../contexts/BatchContext";

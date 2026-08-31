@@ -14,7 +14,6 @@
  * fit, so the preview is guaranteed to match what gets printed, downloaded
  * and sent to the vendor.
  */
-import React from "react";
 import { ExtItem } from "./POTypesAndVendors";
 import { DocumentThumb, PurchaseOrderDocument, DEFAULT_LETTERHEAD_FIRM } from "../../../shared/ui/document";
 

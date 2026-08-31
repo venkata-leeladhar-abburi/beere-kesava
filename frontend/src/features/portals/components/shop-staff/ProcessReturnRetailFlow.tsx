@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { RotateCcw, List, Search, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";

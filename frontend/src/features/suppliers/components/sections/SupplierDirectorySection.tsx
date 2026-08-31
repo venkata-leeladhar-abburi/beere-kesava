@@ -1,6 +1,5 @@
 // Directory grid — search/filter controls plus the card grid of all suppliers.
 
-import React from "react";
 import { Plus, Building2 } from "lucide-react";
 import { T } from "../theme";
 import { FadeUp, SectionCard } from "../common/primitives";

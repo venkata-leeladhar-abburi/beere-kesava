@@ -1,4 +1,3 @@
-import React from "react";
 import { X, UploadCloud } from "lucide-react";
 import {
   buildSareeCode, computeFinalAmount,

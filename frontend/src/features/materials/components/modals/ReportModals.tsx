@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { rupees } from "@/lib/domain/money";
 import { Money, StatusPill, EntityCode } from "@/shared/ui/domain";
 import type { StatusValueOf } from "@/lib/domain/status";
+import { patchEnvelopeItems } from "../../../../lib/cacheUpdates";
 
 // PurchaseOrder["status"] doesn't have its own "pending approval" key in the
 // shared document taxonomy — a PO awaiting approval is the same lifecycle
@@ -256,8 +257,18 @@ export function ThresholdsModal({ open, onClose, stockItems, onSave }: {
   const saveMutation = useMutation({
     mutationFn: (payload: { thresholds: { id: string; reorderLevel: number }[] }) =>
       rawMaterialsApi.updateReorderLevels(payload),
-    onSuccess: () => {
+    onSuccess: (_result, payload) => {
       toast.success("Alert thresholds updated successfully");
+      // The submitted thresholds are the new values — apply them to the stock
+      // rows directly so the low-stock highlighting behind this modal updates
+      // as it closes, rather than a refetch later.
+      const byId = new Map(payload.thresholds.map(t => [t.id, t.reorderLevel]));
+      patchEnvelopeItems<RawMaterialStockItem>(
+        queryClient,
+        ["raw-material-stock-list"],
+        item => byId.has(item.id),
+        item => ({ ...item, reorderLevel: byId.get(item.id) as number }),
+      );
       queryClient.invalidateQueries({ queryKey: ["raw-material-stock-list"] });
       onSave();
       onClose();

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { ReceiptText, Banknote, CheckCircle2, BellRing, Boxes } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import type { TooltipProps } from "recharts";
@@ -7,9 +7,7 @@ import { useBulkOrders } from "@/features/bulk-orders";
 import { T, F } from "../theme";
 import { FadeUp, SilkSumCard, SectionCard, ReportDLBar } from "../common/primitives";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
-import {
-  ChartCard, ChartBand, ChartHint, TrackBar, BAND, CHART, NUM, CountUp
-} from "../../../production/components/sections/chart-primitives";
+import { ChartCard, ChartBand, TrackBar, BAND } from "../../../production/components/sections/chart-primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import type { BulkOrder } from "@/features/bulk-orders";

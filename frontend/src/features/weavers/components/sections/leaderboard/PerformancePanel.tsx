@@ -1,16 +1,12 @@
 // ── Performance leaderboard + QC results panel (row 1 of the leaderboard section) ─
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
-import { Download, FileText } from "lucide-react";
 import { Medal, CheckCircle2 as CheckCircle, AlertCircle as WarningCircle, Clock } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
 import { T, F } from "../../theme";
-import { FadeUp, Avatar, ActionDialog, SectionCard, qcColor } from "../../common/primitives";
-import { DownloadGate } from "../../../../../shared/ui/DownloadAccess";
-import { Button } from "../../../../../shared/ui/primitives";
-import { weaversApi, type BackendWeaverLeaderboardEntry } from "../../../../../shared/api/weavers";
-import { exportTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { FadeUp, Avatar, SectionCard, qcColor } from "../../common/primitives";
+import { weaversApi } from "../../../../../shared/api/weavers";
 import { resolveAssetUrl } from "../../../../../shared/api/uploads";
 import { reportsApi } from "../../../../../shared/api/reports";
 import { qcApi } from "../../../../../shared/api/qc";
@@ -73,7 +69,6 @@ const luxuryCardStyle: React.CSSProperties = {
 };
 
 export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) => void }) {
-  const [reportOpen, setReportOpen] = useState(false);
 
   // Real top-10 leaderboard, ranked by QC pass rate (see GET /weavers/leaderboard).
   const { data: leaderboard = [], isLoading, isError } = useQuery({
@@ -120,25 +115,6 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
   const overallDefectRate = totalQcSarees > 0 ? Math.round((rejectedCount / totalQcSarees) * 100) : 0;
   const pendingQC = production?.finishingByStatus?.["AWAITING_RETURN"] ?? 0;
 
-  // This button used to open a dialog whose "Download PDF" only closed it —
-  // nothing was ever produced. It exports the leaderboard actually on screen.
-  const reportColumns: ColumnDef<BackendWeaverLeaderboardEntry>[] = [
-    { id: "rank", header: "Rank", accessor: r => leaderboard.indexOf(r) + 1, type: "number" },
-    { id: "name", header: "Weaver", accessor: r => r.name },
-    { id: "village", header: "Village", accessor: r => r.village ?? "" },
-    { id: "totalSareesWoven", header: "Sarees Woven (all-time)", accessor: r => r.totalSareesWoven, type: "number" },
-    { id: "qcPassRate", header: "QC Pass Rate %", accessor: r => r.qcPassRate, type: "percent" },
-  ];
-
-  const handleDownloadReport = () => {
-    exportTable({
-      columns: reportColumns,
-      rows: leaderboard,
-      filename: "weaver-performance",
-    });
-    setReportOpen(false);
-  };
-
   return (
     <>
       <FadeUp>
@@ -147,13 +123,6 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
           icon={Medal}
           title="Weaver Performance"
           subtitle="All-time rankings by QC pass rate · Quality check results"
-          actions={
-            <DownloadGate>
-              <Button onClick={() => setReportOpen(true)} variant="secondary" iconLeft={Download} className="bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white hover:border-white/30">
-                Download Full Report
-              </Button>
-            </DownloadGate>
-          }
         >
           {/* Two-column body */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -328,26 +297,6 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
         </div>
       </FadeUp>
 
-      <ActionDialog open={reportOpen} title="Download weaver performance report" onClose={() => setReportOpen(false)}>
-        <div style={{ display: "flex", gap: 14, alignItems: "flex-start", fontFamily: F.ui, color: T.luxuryBrown, lineHeight: 1.6 }}>
-          <FileText size={34} color={T.royalBurgundy} />
-          <div>
-            <b>Weaver performance report</b><br />
-            {leaderboard.length} ranked weaver{leaderboard.length === 1 ? "" : "s"} with all-time output and QC
-            pass rate, plus the quality summary ({totalQcSarees} saree{totalQcSarees === 1 ? "" : "s"} inspected,
-            {" "}{overallDefectRate}% defect rate).
-          </div>
-        </div>
-        <Button
-          onClick={handleDownloadReport}
-          disabled={leaderboard.length === 0}
-          variant="primary"
-          fullWidth
-          className="mt-[22px] rounded-xl bg-[#6E0F2D]"
-        >
-          <Download size={16} /> Download spreadsheet
-        </Button>
-      </ActionDialog>
     </>
   );
 }

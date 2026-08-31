@@ -1,5 +1,4 @@
 // ── Table view + directory container that switches between card/list/table ─
-import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Rows3 as Rows, Eye as PhEye, MapPin as PhMapPin } from "lucide-react";
 import { T, F } from "../theme";

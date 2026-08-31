@@ -5,7 +5,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 import type { ValueType, NameType, Payload } from "recharts/types/component/DefaultTooltipContent";
 import { Trophy } from "lucide-react";
 import { T, F } from "../../theme";
-import { semantic } from "../../../../../design-system/tokens";
 import { ChartFigure } from "../../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { toInitials } from "@/shared/lib/initials";

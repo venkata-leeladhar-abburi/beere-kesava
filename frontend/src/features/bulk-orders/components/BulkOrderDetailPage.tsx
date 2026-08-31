@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { MapPin, Phone, Package,
@@ -667,7 +667,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                 drag="x"
                 dragConstraints={{ left: 0, right: 318 }}
                 dragElastic={0}
-                onDragEnd={(e, info) => {
+                onDragEnd={(_e, info) => {
                   if (info.offset.x > 250) {
                     tallyOrder(live.ref, "Admin");
                     setTallyPrompt(false);

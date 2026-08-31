@@ -1,4 +1,3 @@
-import React from "react";
 import { ExternalLink, Lock } from "lucide-react";
 import { CardSection, F, T, Toggle } from "./primitives";
 

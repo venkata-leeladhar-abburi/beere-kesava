@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Eye, ShieldAlert, AlertTriangle, ImageOff, Calendar, Tag, Package, LayoutGrid, LayoutList } from "lucide-react";
 import { T, F, DefectiveLogItem } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";

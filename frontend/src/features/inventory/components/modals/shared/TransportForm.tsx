@@ -1,4 +1,3 @@
-import React from "react";
 import { Field, TextInput } from "../../common/primitives";
 import { Textarea } from "../../../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../../../shared/ui/date";

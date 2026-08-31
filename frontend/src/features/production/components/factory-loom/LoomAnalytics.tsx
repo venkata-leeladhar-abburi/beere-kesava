@@ -161,8 +161,6 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
       .slice(0, 5);
   }, [doneSarees]);
 
-  const cardTitle: React.CSSProperties = { fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown };
-  const cardSub: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 };
   const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };
 
   return (
@@ -299,7 +297,7 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
               </ResponsiveContainer>
             </ChartFigure>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 border-t border-[rgba(200,155,71,0.18)] pt-3.5 mt-1.5">
-              {rankedLooms.slice(0, 4).map((l, i) => (
+              {rankedLooms.slice(0, 4).map((l) => (
                 <div key={l.id} style={{ background: "rgba(255,255,255,0.80)", border: `1px solid rgba(200,155,71,0.18)`, borderRadius: 12, padding: "8px 10px", minWidth: 0 }}>
                   <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{l.short}</div>
                   <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>{l.operatorName}</div>

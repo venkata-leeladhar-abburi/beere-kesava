@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Edit2, ShieldOff, ShieldCheck, Eye, Trash2, ChevronLeft, ChevronRight, Users, LayoutGrid, LayoutList } from "lucide-react";
+import { Edit2, ShieldOff, ShieldCheck, Eye, Trash2, Users, LayoutGrid, LayoutList } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFilterBar";
 import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
 import { T, F, ROLES } from "./theme";

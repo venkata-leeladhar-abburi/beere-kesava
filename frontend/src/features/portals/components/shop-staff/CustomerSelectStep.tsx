@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { motion } from "motion/react";
 import { Search, PhoneCall, UserPlus, Pencil, Check, MapPin, ArrowLeft } from "lucide-react";
 import { C, F } from "./theme";

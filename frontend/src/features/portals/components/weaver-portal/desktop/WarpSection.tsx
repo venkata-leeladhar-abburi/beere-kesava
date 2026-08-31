@@ -11,6 +11,7 @@ import { useAuth } from "../../../../../contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { warpRequestsApi, BackendWarpRequest } from "../../../../../shared/api/warpRequests";
+import { prependToEnvelope } from "../../../../../lib/cacheUpdates";
 
 /** Thin wrapper on the shared portal heading — see PaymentsSection. */
 function DSectionHeader({ label }: { label: string }) {
@@ -91,7 +92,7 @@ export function WarpSection({
     mutationFn: async () => {
       if (!weaverId) throw new Error("No weaver profile resolved.");
       const selectedMaterials = (["warp", "resham", "jari"] as const).filter(m => materials[m]);
-      await Promise.all(selectedMaterials.map(mat =>
+      return Promise.all(selectedMaterials.map(mat =>
         warpRequestsApi.create({
           weaverId,
           warpType: MATERIAL_TO_WARP_TYPE[mat],
@@ -101,7 +102,12 @@ export function WarpSection({
         }),
       ));
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
+      // Put the new request(s) straight into the weaver's own history list. The
+      // create response is the same BackendWarpRequest the list is built from,
+      // so nothing has to be reconstructed — and a weaver who just submitted a
+      // request sees it listed instead of an unchanged screen.
+      prependToEnvelope<BackendWarpRequest>(queryClient, ["warpRequests"], created);
       void queryClient.invalidateQueries({ queryKey: ["warpRequests"] });
       setWarpSubmitted(true);
     },

@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { AlignJustify, ArrowDownCircle, ArrowUpCircle, ChevronLeft, ChevronRight, Download, Eye, History, LayoutGrid, LayoutList, Receipt, TrendingUp, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { AlignJustify, ArrowDownCircle, ArrowUpCircle, Download, Eye, History, LayoutGrid, LayoutList, Receipt, TrendingUp, X } from "lucide-react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -52,9 +52,7 @@ export function PaymentHistorySection() {
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [search,       setSearch]       = useState("");
   const [view,         setView]         = useState<"card" | "list" | "table">("card");
-  const [page,         setPage]         = useState(1);
   const [viewRecord,   setViewRecord]   = useState<PayHistRecord | null>(null);
-  const PER_PAGE = 10;
 
   const { data: vendorsRes } = useQuery({ queryKey: ["history-vendors"], queryFn: () => vendorsApi.list() });
   const { data: suppliersRes } = useQuery({ queryKey: ["history-suppliers"], queryFn: () => suppliersApi.list() });

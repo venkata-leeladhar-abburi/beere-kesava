@@ -2,7 +2,8 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { StorageService } from "../common/storage/storage.service";
-import { fromGrams, toGrams } from "../common/weight-units.util";
+import { deductStock, restoreStock } from "../common/raw-material-stock.util";
+import { toGrams } from "../common/weight-units.util";
 import {
   JariGrade,
   MaterialIssueStatus,
@@ -125,21 +126,30 @@ export class MaterialReturnsService {
       : loom!.code ?? businessSegment(loom!.loomNumber, "Loom");
     const id = await this.idGenerator.nextScoped(MRR_ID_PREFIX_BASE, parentCode);
 
-    const record = await this.prisma.materialReturnRecord.create({
-      data: {
-        id,
-        weaverId: dto.weaverId,
-        factoryLoomId: dto.factoryLoomId,
-        loomNumber: dto.loomNumber ? String(dto.loomNumber) : undefined,
-        batchId: dto.batchId,
-        receivedById: dto.receivedById,
-        signatureMethod: dto.signatureMethod,
-        deductionAmount: dto.deductionAmount,
-        deductionReason: dto.deductionReason,
-        notes: dto.notes,
-        items: { create: dto.items },
-      },
-      include: includeItems,
+    // Record and stock restoration are one unit of work — a failure between
+    // them used to leave a return recorded whose material never came back.
+    const record = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.materialReturnRecord.create({
+        data: {
+          id,
+          weaverId: dto.weaverId,
+          factoryLoomId: dto.factoryLoomId,
+          loomNumber: dto.loomNumber ? String(dto.loomNumber) : undefined,
+          batchId: dto.batchId,
+          receivedById: dto.receivedById,
+          signatureMethod: dto.signatureMethod,
+          deductionAmount: dto.deductionAmount,
+          deductionReason: dto.deductionReason,
+          notes: dto.notes,
+          items: { create: dto.items },
+        },
+        include: includeItems,
+      });
+
+      // Restore returned material quantities back into RawMaterialStock —
+      // the inverse of MaterialIssuesService.create's deduction.
+      await restoreStock(tx, dto.items);
+      return created;
     });
 
     // Remote signature: no phone/SMS involved — the weaver approves this
@@ -153,23 +163,6 @@ export class MaterialReturnsService {
           userId: linkedUser.id,
           type: "material_signature_request",
           payload: { recordId: record.id, recordKind: "RETURN" },
-        });
-      }
-    }
-
-    // Restore returned material quantities back into RawMaterialStock — the
-    // inverse of MaterialIssuesService.create's deduction.
-    for (const item of dto.items) {
-      const stock = await this.prisma.rawMaterialStock.findFirst({
-        where: { materialType: item.materialType },
-      });
-      if (stock) {
-        const stockGrams = toGrams(Number(stock.currentStock), stock.unit);
-        const returnedGrams = toGrams(Number(item.quantity), item.unit);
-        const newStock = fromGrams(stockGrams + returnedGrams, stock.unit);
-        await this.prisma.rawMaterialStock.update({
-          where: { id: stock.id },
-          data: { currentStock: newStock },
         });
       }
     }
@@ -275,22 +268,12 @@ export class MaterialReturnsService {
   async remove(id: string) {
     const record = await this.findOne(id);
 
-    for (const item of record.items) {
-      const stock = await this.prisma.rawMaterialStock.findFirst({
-        where: { materialType: item.materialType },
-      });
-      if (stock) {
-        const stockGrams = toGrams(Number(stock.currentStock), stock.unit);
-        const removedGrams = toGrams(Number(item.quantity), item.unit);
-        const newStock = fromGrams(Math.max(0, stockGrams - removedGrams), stock.unit);
-        await this.prisma.rawMaterialStock.update({
-          where: { id: stock.id },
-          data: { currentStock: newStock },
-        });
-      }
-    }
-
-    await this.prisma.materialReturnRecord.delete({ where: { id } });
+    // Reverse and delete together, so a failed delete can't take the material
+    // back out of stock twice.
+    await this.prisma.$transaction(async (tx) => {
+      await deductStock(tx, record.items);
+      await tx.materialReturnRecord.delete({ where: { id } });
+    });
   }
 
   // Issued (non-cancelled) minus already-approved-returned, grouped by

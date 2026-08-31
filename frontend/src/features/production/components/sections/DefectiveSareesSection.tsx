@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
-import { Eye, LayoutGrid, List, ImageOff } from "lucide-react";
+import { Eye, ImageOff } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Shield, Download as DownloadSimple, ShieldAlert as SealWarning, AlertCircle as WarningCircle,
@@ -59,7 +59,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
   const [dlPeriod, setDlPeriod] = useState("This Month");
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
 
-  const { data: qcRecords = [], isLoading: qcLoading, isError: qcError, refetch: refetchQc } = useQuery({
+  const { data: qcRecords = [], isLoading: qcLoading, isError: qcError } = useQuery({
     queryKey: ["qc", "all"],
     queryFn: () => qcApi.list().then(r => r.items),
   });

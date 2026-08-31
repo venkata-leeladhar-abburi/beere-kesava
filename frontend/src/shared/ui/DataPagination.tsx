@@ -47,9 +47,15 @@ export function Pagination({ page, pageCount, total, pageSize, start, onPageChan
   onPageChange: (p: number) => void; onPageSizeChange?: (n: number) => void; itemLabel?: string;
   targetId?: string; scrollToTop?: boolean;
 }) {
+  // Created before the empty-state bail-out so the hook count doesn't depend
+  // on the data. React tolerates this particular shape today, but the ordering
+  // rule is what keeps it safe: add a second hook below the ref, or an effect,
+  // and the empty/populated renders stop agreeing. Flagged by
+  // react-hooks/rules-of-hooks.
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
   if (total === 0) return null;
   const end = Math.min(start + pageSize, total);
-  const containerRef = React.useRef<HTMLDivElement>(null);
 
   const handlePageChange = (newPage: number) => {
     if (newPage === page || newPage < 1 || newPage > pageCount) return;

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, LayoutGrid, AlignJustify, Printer } from "lucide-react";
 import { C, F, card } from "./tokens";
@@ -75,7 +75,6 @@ function renderMaterialsSummary(lines: ReceiptMaterialLine[]) {
   );
 }
 
-const PAGE_SIZE = 10;
 
 interface ReceiptHistoryTableProps {
   receiptHistory?: ReceiptRecord[];

@@ -1,4 +1,3 @@
-import React from "react";
 import { T, F } from "../../theme";
 import { WholesaleCustomer } from "../../types";
 import { Phone, Building2, MapPin, Landmark, MessageSquare, StickyNote, FileText } from "lucide-react";

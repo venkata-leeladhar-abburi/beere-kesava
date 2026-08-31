@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { TableRow } from "./utils";
 import { T, F } from "./theme";
 import { Button, Field, Input } from "../../../shared/ui/primitives";

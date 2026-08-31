@@ -64,7 +64,7 @@ export interface CustomerAnalyticsSectionProps {
 }
 
 // ── Card header (icon tile + title + subtitle) ──────────────────────────────
-function CardHeader({ icon: Icon, title, subtitle, iconBg, iconColor, downloadBtn }: {
+function CardHeader({ icon: Icon, title, subtitle, downloadBtn }: {
   icon: typeof Star;
   title: string;
   subtitle: string;

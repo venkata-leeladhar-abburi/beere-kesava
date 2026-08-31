@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { CheckCircle2, AlertTriangle, Square, CheckSquare, LayoutGrid, List } from "lucide-react";
 import { C, F } from "../tokens";
 import { type WeaverBatchData } from "./weaversData";

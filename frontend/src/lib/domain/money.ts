@@ -124,10 +124,12 @@ export function formatMoney(amount: Paise, opts: MoneyOpts = {}): string {
     if (shown >= 100 && tierIndex > 0) {
       tierIndex -= 1;
       const promoted = TIERS[tierIndex];
-      value = abs / promoted.divisor;
-      d = value < 10 ? 2 : 1;
-      shown = roundTo(value, d);
-      return `${signPrefix(rupeeValue)}₹${shown.toFixed(d)}${promoted.suffix}`;
+      if (promoted) {
+        value = abs / promoted.divisor;
+        d = value < 10 ? 2 : 1;
+        shown = roundTo(value, d);
+        return `${signPrefix(rupeeValue)}₹${shown.toFixed(d)}${promoted.suffix}`;
+      }
     }
 
     return `${signPrefix(rupeeValue)}₹${shown.toFixed(d)}${tier.suffix}`;

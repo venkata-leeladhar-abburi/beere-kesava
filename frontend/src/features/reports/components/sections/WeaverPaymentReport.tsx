@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { IndianRupee, TrendingDown, CheckCircle2, Users, BarChart2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -7,9 +7,7 @@ import { weaversApi } from "../../../../shared/api/weavers";
 import { qcApi } from "../../../../shared/api/qc";
 import { T, F } from "../theme";
 import { FadeUp, SilkSumCard, SectionCard, ReportDLBar } from "../common/primitives";
-import {
-  ChartCard, ChartBand, ChartHint, TrackBar, BAND, CHART, NUM, CountUp
-} from "../../../production/components/sections/chart-primitives";
+import { ChartCard, ChartBand, TrackBar, BAND } from "../../../production/components/sections/chart-primitives";
 import { DataTable } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import { rupees, formatMoney } from "@/lib/domain/money";

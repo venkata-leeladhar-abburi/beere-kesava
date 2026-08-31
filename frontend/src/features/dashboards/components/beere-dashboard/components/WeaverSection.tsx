@@ -1,6 +1,3 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { ChevronRight } from 'lucide-react';
 import { T, F } from '../theme';
 import { SectionHeader } from '../ui';
 import { useDashboardWeavers } from '../hooks/useDashboardWeavers';

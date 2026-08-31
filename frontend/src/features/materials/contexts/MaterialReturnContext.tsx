@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { prependToList, removeFromList } from "../../../lib/cacheUpdates";
 import { toast } from "sonner";
 import {
   BackendMaterialReturnRecord,
@@ -167,6 +168,25 @@ const MaterialReturnContext = createContext<MaterialReturnContextValue | null>(n
 
 const RETURN_RECORDS_KEY = ["materialReturn", "returnRecords"] as const;
 
+/**
+ * Map a freshly created return into the shape the list cache holds, taking the
+ * weaver/factory-loom display names from the submitted input instead of the
+ * lookup tables the list query builds from GET /weavers and /factory-looms.
+ * The two agree — the input's names came from those same directories — and
+ * using them avoids two extra requests just to label a row the user is already
+ * looking at.
+ */
+function toRecordUsingInputNames(
+  created: Parameters<typeof backendRecordToFrontend>[0],
+  input: AddReturnRecordInput,
+): MaterialReturnRecord {
+  const weaverLookup = new Map(input.weaverId && input.weaverName ? [[input.weaverId, input.weaverName]] : []);
+  const loomLookup = new Map(
+    input.factoryLoomId && input.factoryLoomNumber ? [[input.factoryLoomId, input.factoryLoomNumber]] : [],
+  );
+  return backendRecordToFrontend(created, weaverLookup, loomLookup);
+}
+
 export function MaterialReturnProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -213,7 +233,13 @@ export function MaterialReturnProvider({ children }: { children: React.ReactNode
       }
       return created;
     },
-    onSuccess: () => {
+    onSuccess: (created, input) => {
+      // The list cache joins each backend row against weaver/factory-loom name
+      // lookups (see queryFn), which the create response has no way to supply.
+      // The caller already knows both names, though — they came from the form
+      // that submitted this return — so the row can be mapped in full here
+      // rather than waiting a round trip for the refetch to name it.
+      prependToList(queryClient, RETURN_RECORDS_KEY, toRecordUsingInputNames(created, input));
       void queryClient.invalidateQueries({ queryKey: RETURN_RECORDS_KEY });
       toast.success("Materials received back");
     },
@@ -224,19 +250,14 @@ export function MaterialReturnProvider({ children }: { children: React.ReactNode
 
   const deleteReturnRecordMutation = useMutation({
     mutationFn: (id: string) => materialReturnsApi.remove(id),
-    onSuccess: () => {
+    onSuccess: (_result, id) => {
+      removeFromList<MaterialReturnRecord>(queryClient, RETURN_RECORDS_KEY, id);
       void queryClient.invalidateQueries({ queryKey: RETURN_RECORDS_KEY });
     },
   });
 
-  const addReturnRecord = async (input: AddReturnRecordInput): Promise<MaterialReturnRecord> => {
-    const created = await addReturnRecordMutation.mutateAsync(input);
-    const weaverLookup = new Map(input.weaverId && input.weaverName ? [[input.weaverId, input.weaverName]] : []);
-    const loomLookup = new Map(
-      input.factoryLoomId && input.factoryLoomNumber ? [[input.factoryLoomId, input.factoryLoomNumber]] : [],
-    );
-    return backendRecordToFrontend(created, weaverLookup, loomLookup);
-  };
+  const addReturnRecord = async (input: AddReturnRecordInput): Promise<MaterialReturnRecord> =>
+    toRecordUsingInputNames(await addReturnRecordMutation.mutateAsync(input), input);
 
   const deleteReturnRecord = (id: string): Promise<void> =>
     deleteReturnRecordMutation.mutateAsync(id).then(() => undefined);

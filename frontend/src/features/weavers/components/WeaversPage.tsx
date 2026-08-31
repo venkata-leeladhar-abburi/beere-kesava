@@ -22,7 +22,6 @@ import { WeaverAnalytics } from "./sections/WeaverAnalytics";
 import { LeaderboardAndQC } from "./sections/LeaderboardAndQC";
 import { MaterialsFooter } from "@/features/materials";
 import { NewWeaverModal } from "./modals/NewWeaverModal";
-import { ImportWeaversModal } from "./modals/ImportWeaversModal";
 
 /**
  * Composition root for the Weavers feature. Originally a single
@@ -100,7 +99,6 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
   const [newWeaverExpanded, setNewWeaverExpanded] = useState(() => new URLSearchParams(location.search).get("new") === "1");
   const [drawerMode, setDrawerMode] = useState<"view" | "edit">(navState?.mode === "edit" ? "edit" : "view");
   const [batchDialog, setBatchDialog] = useState<typeof WEAVERS[0] | null>(null);
-  const [importOpen, setImportOpen] = useState(false);
   const { batches } = useBatches();
 
   // Use the live-fetched weaver when navigating from AllWeavers, otherwise the
@@ -110,7 +108,7 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
   // Real aggregate numbers for the hero stats strip. GET /weavers/leaderboard
   // only returns the top 10, so the roster + the bulk GET /weavers/stats are
   // used to compute true totals/averages across everyone.
-  const { roster, allStats, refetch: refetchWeavers } = useWeaverRosterStats();
+  const { roster, allStats } = useWeaverRosterStats();
   const totalActiveWeavers = roster.filter(w => w.status === "ACTIVE").length;
   const totalSareesWoven = allStats.reduce((s, st) => s + st.totalSareesWoven, 0);
   // Weighted across sarees, not a mean of per-weaver percentages: averaging
@@ -152,18 +150,13 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
       <StatsStrip stats={realStats} />
       <WarpRequestsSection />
       <div id="weav-all-weavers">
-        <AllWeaversControls view={view} setView={setView} filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} onAddWeaver={() => setNewWeaverExpanded(true)} onViewAll={() => onNavigate?.("AllWeavers")} onImport={() => setImportOpen(true)}>
+        <AllWeaversControls view={view} setView={setView} filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} onAddWeaver={() => setNewWeaverExpanded(true)} onViewAll={() => onNavigate?.("AllWeavers")}>
           <WeaverDirectory view={view} search={search} filter={filter} onSelect={(w) => { setDrawerMode("view"); setSelectedWeaver(w); }} onEdit={(w) => { setDrawerMode("edit"); setSelectedWeaver(w); }} onBatches={setBatchDialog} />
         </AllWeaversControls>
       </div>
       <div id="weav-performance"><WeaverAnalytics /></div>
       <div id="weav-activities"><LeaderboardAndQC onActivities={() => onNavigate?.("Notifications")} onNavigate={onNavigate} /></div>
       <NewWeaverModal expanded={newWeaverExpanded} setExpanded={setNewWeaverExpanded} />
-      <ImportWeaversModal
-        open={importOpen}
-        onClose={() => setImportOpen(false)}
-        onImported={() => { void refetchWeavers(); }}
-      />
       <div style={{ marginTop: "auto" }}>
         <MaterialsFooter />
       </div>

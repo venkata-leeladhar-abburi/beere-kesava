@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import { TrendingUp } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';

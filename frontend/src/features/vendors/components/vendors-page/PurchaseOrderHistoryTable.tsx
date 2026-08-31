@@ -1,4 +1,3 @@
-import React from "react";
 import { T, F } from "./theme";
 import { MAT_TAG_PO } from "./data";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";

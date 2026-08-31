@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useBatches } from "@/features/production";
 import { useFinishing } from "@/features/finishing";

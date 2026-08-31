@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Scale, ChevronLeft, UserRound, Layers, TrendingUp } from "lucide-react";
 import { useBatches, type SareeRow } from "../contexts/BatchContext";
 import { useRatesPricing } from "@/features/pricing";

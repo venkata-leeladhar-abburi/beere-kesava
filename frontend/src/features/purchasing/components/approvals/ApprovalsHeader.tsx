@@ -1,4 +1,3 @@
-import React from "react";
 import { T, F } from "./tokens";
 
 // ─── 1. PAGE HEADER ─────────────────────────────────────────────────────────

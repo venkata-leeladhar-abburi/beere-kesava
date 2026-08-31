@@ -1,6 +1,6 @@
 import { materialTypeIcon } from "./MyBatchesPage";
 
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { AnimatePresence } from "motion/react";
 import { useResponsive } from "../../../../hooks/useResponsive";
 

@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { Check, X, Settings } from "lucide-react";
 import { T, F } from "./tokens";

@@ -732,9 +732,14 @@ export class SalesService {
    * categorised stock, separate from dispatched stock, with the
    * "send to inventory" action attached to the ones still held.
    */
-  async listReturnStock(): Promise<ReturnStockItem[]> {
+  /**
+   * @param limit Newest N returns. Omitted, every return ever recorded is
+   *   returned — which is what the shop screens used to ask for unconditionally.
+   */
+  async listReturnStock(limit?: number): Promise<ReturnStockItem[]> {
     const returns = await this.prisma.returnRecord.findMany({
       orderBy: { createdAt: "desc" },
+      ...(limit ? { take: limit } : {}),
       include: { saree: { include: { sareeType: true } } },
     });
     if (returns.length === 0) {

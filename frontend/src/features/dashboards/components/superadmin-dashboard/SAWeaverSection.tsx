@@ -1,6 +1,3 @@
-import React from "react";
-import { motion } from "motion/react";
-import { ChevronRight } from "lucide-react";
 import { T, F } from "./theme";
 import { SectionHeader } from "./atoms";
 import { useDashboardWeavers } from "../beere-dashboard/hooks/useDashboardWeavers";

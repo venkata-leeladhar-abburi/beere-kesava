@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Filter, X, SlidersHorizontal, Check } from "lucide-react";
+import { useState } from "react";
+import { X, SlidersHorizontal, Check } from "lucide-react";
 import { Drawer } from "../overlay/Drawer";
 import { Button, SearchInput } from "../primitives";
 

@@ -1,4 +1,3 @@
-import React from "react";
 import { ArrowRight, Palette as Swatches, Layers as Stack } from "lucide-react";
 import { WeaverSareesSection } from "@/features/weavers";
 import { T, F } from "../theme";

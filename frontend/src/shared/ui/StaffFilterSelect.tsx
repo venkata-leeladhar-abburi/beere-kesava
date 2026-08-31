@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Select, SelectItem } from "./primitives";
 
 // Admin/superadmin-only "filter by staff" dropdown, styled to sit next to

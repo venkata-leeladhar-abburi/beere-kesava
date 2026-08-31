@@ -45,62 +45,6 @@ function SupplierStatusBadge({ status }: { status: SupplierStatusKey }) {
   );
 }
 
-const TopDivider = () => (
-  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginBottom: 12 }}>
-    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-    </div>
-    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
-    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
-      <g transform="translate(30, 10)">
-        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
-        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
-        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
-        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
-        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
-        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
-        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
-      </g>
-    </svg>
-    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
-    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-    </div>
-  </div>
-);
-
-const BottomDivider = () => (
-  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginTop: 16 }}>
-    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-    </div>
-    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
-    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
-      <g transform="translate(30, 10)">
-        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
-        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
-        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
-        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
-        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
-        {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament, not a chart data mark */}
-        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
-      </g>
-    </svg>
-    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
-    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-    </div>
-  </div>
-);
-
 export function SupplierPaymentsSection() {
   const { suppliers, purchases, payments, addPayment, statsFor, isLoading, isError, refetch } = useSuppliers();
 
@@ -469,7 +413,6 @@ export function SupplierPaymentsSection() {
                 const isOverdue = r.status === "Overdue";
                 const statusColor = isPaid ? T.green : isOverdue ? T.crimson : T.antiqueGold;
                 const statusBg = isPaid ? "rgba(46,125,50,0.08)" : isOverdue ? "rgba(192,57,43,0.08)" : "rgba(200,155,71,0.12)";
-                const borderAccent = isPaid ? T.green : isOverdue ? T.crimson : T.royalBurgundy;
 
                 return (
                   <motion.div

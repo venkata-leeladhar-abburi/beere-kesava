@@ -1,9 +1,7 @@
-import React from "react";
-import { T } from "./tokens";
 import { formatMoney, rupees } from "@/lib/domain/money";
 
 import { LuxuryStatsCard } from "../../../../shared/ui/LuxuryStatsCard";
-import { CheckCircle2, ShoppingBag, Send, ShieldAlert, TrendingUp } from "lucide-react";
+import { CheckCircle2, ShoppingBag, ShieldAlert, TrendingUp } from "lucide-react";
 
 // ─── 2. STATS STRIP ─────────────────────────────────────────────────────────
 export function StatsStrip({

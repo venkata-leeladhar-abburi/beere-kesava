@@ -85,7 +85,19 @@ export interface GrnReceiptItem {
 
 export const rawMaterialsApi = {
   listStock: () => apiClient.get<{ items: RawMaterialStockItem[] }>("/materials/stock"),
-  listGrns: () => apiClient.get<{ items: GrnReceiptItem[] }>("/materials/grn"),
+  /**
+   * GET /materials/grn. `limit` takes the newest N receipts; `from`/`to` scope
+   * by receipt date. Passing neither returns every receipt — bound it to what
+   * the screen actually renders.
+   */
+  listGrns: (opts?: { limit?: number; from?: string; to?: string }) => {
+    const q = new URLSearchParams();
+    if (opts?.limit) q.set("limit", String(opts.limit));
+    if (opts?.from) q.set("from", opts.from);
+    if (opts?.to) q.set("to", opts.to);
+    const qs = q.toString();
+    return apiClient.get<{ items: GrnReceiptItem[] }>(`/materials/grn${qs ? `?${qs}` : ""}`);
+  },
   createGrn: (payload: CreateGrnPayload) => apiClient.post<GrnReceiptItem>("/materials/grn", payload),
   updateReorderLevels: (payload: { thresholds: { id: string; reorderLevel: number }[] }) =>
     apiClient.patch<{ success: boolean }>("/materials/reorder-levels", payload),

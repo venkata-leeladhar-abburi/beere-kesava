@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { CreditCard, Loader2, X } from "lucide-react";
 import { uploadsApi, resolveAssetUrl } from "../api/uploads";
 import { ApiError } from "../api/client";

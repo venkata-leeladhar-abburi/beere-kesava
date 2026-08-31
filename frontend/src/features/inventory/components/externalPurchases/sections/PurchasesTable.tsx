@@ -23,7 +23,6 @@ export function PurchasesTable({
   totalCount,
   viewMode = "card",
   hoveredRow,
-  setHoveredRow,
   onView,
   onViewSarees,
   onEdit,

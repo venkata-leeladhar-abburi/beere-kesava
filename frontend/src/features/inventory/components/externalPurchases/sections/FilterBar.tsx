@@ -1,6 +1,6 @@
 import React from "react";
 import { ShoppingBag, LayoutGrid, List } from "lucide-react";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "@/shared/ui/DateFilterBar";
+import { DateFilterBar, DateFilterState } from "@/shared/ui/DateFilterBar";
 import { MobileFilterBar } from "@/shared/ui/filter/MobileFilterBar";
 import { T } from "../theme";
 import { Select, SectionCard } from "../common/primitives";

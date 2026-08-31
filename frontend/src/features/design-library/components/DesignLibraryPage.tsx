@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -22,9 +22,7 @@ import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../
 export { DesignCodeCard };
 
 export function DesignLibraryPage() {
-  const { designs, addDesign, updateDesign, dispatches: dispatchHistory, addDispatch, isLoading, isError, error, refetch } = useDesignLibrary();
-  const [search] = useState("");
-  const [filter] = useState("All Designs");
+  const { addDesign, updateDesign, dispatches: dispatchHistory, addDispatch, isLoading, isError, error, refetch } = useDesignLibrary();
   const [showAdd, setShowAdd] = useState(false);
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
   const [slipDesign, setSlipDesign] = useState<DesignEntry | null>(null);
@@ -91,18 +89,6 @@ export function DesignLibraryPage() {
     setUploadedSlip(null);
     setUploadedGraph(null);
   };
-
-  const _visible = designs.filter(d => {
-    if (filter === "Currently in Production" && d.batches === 0) return false;
-    if (filter === "Completed Designs"       && d.batches  > 0) return false;
-    if (filter === "Has Design Graph"        && !d.hasGraph)    return false;
-    if (filter === "No Graph Uploaded"       && d.hasGraph)     return false;
-    if (search) {
-      const q = search.toLowerCase();
-      return d.code.toLowerCase().includes(q) || d.name.toLowerCase().includes(q) || d.weaverName.toLowerCase().includes(q);
-    }
-    return true;
-  });
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: F.ui }}>

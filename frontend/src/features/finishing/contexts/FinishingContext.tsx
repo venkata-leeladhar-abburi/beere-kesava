@@ -17,6 +17,7 @@ import { batchesApi, BackendBatchSareeRow } from "../../../shared/api/batches";
 import { weaversApi } from "../../../shared/api/weavers";
 import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
 import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
+import { upsertInList } from "../../../lib/cacheUpdates";
 
 const FinishingContext = createContext<FinishingContextValue | null>(null);
 
@@ -286,6 +287,9 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       .map(r => dispatchedSareeIds.has(r.sareeId) ? { ...r, inventoryStatus: "Dispatched" as const } : r);
   }, [backendAssignments, dispatches, getSareeTypeByCode]);
 
+    const setQuotations = (updater: (prev: Quotation[]) => Quotation[]) =>
+    qc.setQueryData<Quotation[]>(QUOTATIONS_KEY, prev => (prev ? updater(prev) : prev));
+
   const setDispatches = (updater: (prev: DispatchRecord[]) => DispatchRecord[]) =>
     qc.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, prev => updater(prev ?? []));
 
@@ -296,7 +300,14 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         finishingStaffId: args.staff.id,
         assignedById: actingUserId,
       }),
-    onSuccess: () => {
+    onSuccess: (_created, args) => {
+      // READY_KEY is "QC-passed but not yet assigned", so the sarees just
+      // assigned are no longer part of it. Dropping them locally makes them
+      // leave the ready list on the click instead of one refetch later —
+      // otherwise they linger, and a second assign against the same rows looks
+      // like a valid action right up until it fails.
+      const assigned = new Set(args.sareeIds);
+      qc.setQueryData<ReadySaree[]>(READY_KEY, prev => prev?.filter(s => !assigned.has(s.id)));
       void qc.invalidateQueries({ queryKey: ASSIGNMENTS_KEY });
       void qc.invalidateQueries({ queryKey: READY_KEY });
     },
@@ -330,7 +341,11 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         damagePhotoUrl: params.damagePhotoUrl,
       });
     },
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      // ASSIGNMENTS_KEY caches raw BackendFinishingAssignment rows (queryFn
+      // does no mapping) and the receive endpoint returns exactly that, so the
+      // response can go straight in.
+      upsertInList<BackendFinishingAssignment>(qc, ASSIGNMENTS_KEY, updated);
       void qc.invalidateQueries({ queryKey: ASSIGNMENTS_KEY });
     },
     onError: (err) => {
@@ -447,7 +462,19 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         raisedById: actingUserId,
         sarees: q.sarees.map(s => ({ sareeId: s.sareeId, price: Number(q.prices[s.sareeId] ?? 0) })),
       }),
-    onSuccess: () => {
+    onSuccess: (created, q) => {
+      // Built from the submitted quotation rather than the response: the cached
+      // row joins batch rows and weaver names (see queryFn) that POST
+      // /quotations doesn't return, and the form that raised this already holds
+      // every one of those display fields. Only the server-assigned identity
+      // comes off the response.
+      setQuotations(prev => [{
+        ...q,
+        id: created.id,
+        quotationNumber: created.quotationNumber,
+        createdAt: new Date(created.createdAt).getTime(),
+        status: "raised",
+      }, ...prev]);
       void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
     },
     onError: (err) => {
@@ -462,7 +489,20 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         staffId: args.staff.id,
         assignedById: args.assignedBy,
       }),
-    onSuccess: () => {
+    onSuccess: (_result, args) => {
+      // A cached Quotation is joined against batch rows and weaver names (see
+      // queryFn) that this endpoint doesn't return, so patch the fields the
+      // assignment actually moves rather than reseeding the row.
+      const assigned = new Set(args.sareeIds);
+      setQuotations(prev => prev.map(q => q.id !== args.quotationId ? q : {
+        ...q,
+        status: "in-finishing",
+        finishingStaffId: args.staff.id,
+        finishingStaffName: args.staff.name,
+        sarees: q.sarees.map(s => assigned.has(s.sareeId)
+          ? { ...s, finishingStatus: "in-finishing" as const, finishingStaffName: args.staff.name }
+          : s),
+      }));
       void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
     },
     onError: (err) => {
@@ -473,7 +513,20 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const receiveQuotationSareesMutation = useMutation({
     mutationFn: (args: { quotationId: string; sareeIds: string[]; receivedBy: string }) =>
       quotationsApi.receiveSarees(args.quotationId, args.sareeIds),
-    onSuccess: () => {
+    onSuccess: (_result, args) => {
+      const received = new Set(args.sareeIds);
+      setQuotations(prev => prev.map(q => {
+        if (q.id !== args.quotationId) return q;
+        const sarees = q.sarees.map(s =>
+          received.has(s.sareeId) ? { ...s, finishingStatus: "received" as const } : s);
+        // Mirrors the backend's own roll-up (QuotationsService.receiveSarees):
+        // the quotation is only "received" once every saree on it is.
+        return {
+          ...q,
+          sarees,
+          status: sarees.every(s => s.finishingStatus === "received") ? "received" : "partially-received",
+        };
+      }));
       void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
     },
     onError: (err) => {
@@ -483,7 +536,8 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
 
   const markQuotationDispatchedMutation = useMutation({
     mutationFn: (quotationId: string) => quotationsApi.dispatch(quotationId),
-    onSuccess: () => {
+    onSuccess: (_result, quotationId) => {
+      setQuotations(prev => prev.map(q => q.id === quotationId ? { ...q, status: "dispatched" } : q));
       void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
     },
     onError: (err) => {
@@ -499,7 +553,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       qc.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, old => (old || []).filter(d => d.id !== id));
       return { previous };
     },
-    onError: (err, variables, context) => {
+    onError: (err, _variables, context) => {
       console.error("Failed to delete dispatch:", err);
       if (context?.previous) {
         qc.setQueryData(DISPATCHES_KEY, context.previous);
@@ -507,7 +561,10 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
     },
     onSettled: () => {
       void qc.invalidateQueries({ queryKey: DISPATCHES_KEY });
-      void qc.invalidateQueries({ queryKey: ["finishing", "ready"] });
+      // READY_KEY, not ["finishing", "ready"]: React Query matches key prefixes
+      // segment by segment, so "ready" never matched "readySarees" and deleting
+      // a dispatch left the ready-for-finishing list stale until a page reload.
+      void qc.invalidateQueries({ queryKey: READY_KEY });
       // The backend reverts any quotation this dispatch was raised from back
       // to RECEIVED (see DispatchService.remove) — that's stale here until
       // refetched, or the quotation (and its bulk order's Quotations tab)

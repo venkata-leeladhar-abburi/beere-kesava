@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { reportsApi, type ReportFrequency, type ScheduledReportItem } from "../../../../shared/api/reports";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { useConfirm } from "../../../../shared/ui/overlay";
+import { patchEnvelopeItems, prependToEnvelope, removeFromEnvelopeWhere } from "../../../../lib/cacheUpdates";
 
 const REPORT_TYPES = [
   "Raw Material Report",
@@ -119,6 +120,8 @@ function formatClock(hhmm: string): string {
   return `${String(hour12).padStart(2, "0")}:${String(m).padStart(2, "0")} ${suffix}`;
 }
 
+const SCHEDULES_KEY = ["reports-schedules-list"] as const;
+
 export function ScheduledReportsSection() {
   const [showForm, setShowForm] = useState(false);
   const [reportType, setReportType] = useState(REPORT_TYPES[0]);
@@ -145,7 +148,7 @@ export function ScheduledReportsSection() {
   }, [showForm, myNumber]);
 
   const { data: schedRes, isLoading, isError } = useQuery({
-    queryKey: ["reports-schedules-list"],
+    queryKey: SCHEDULES_KEY,
     queryFn: () => reportsApi.listSchedules(),
   });
   const schedules = schedRes?.items ?? [];
@@ -163,7 +166,7 @@ export function ScheduledReportsSection() {
   const showPhoneError = phoneTouched && recipientPhone.length > 0 && !phoneValid;
   const usingOwnNumber = myNumber.length === 10 && digitsOnly(recipientPhone) === myNumber;
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["reports-schedules-list"] });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: SCHEDULES_KEY });
 
   const createMutation = useMutation({
     mutationFn: () =>
@@ -175,6 +178,12 @@ export function ScheduledReportsSection() {
         actorId: user?.id,
       }),
     onSuccess: (created) => {
+      // GET /reports/schedules returns exactly what POST does, so the new
+      // schedule can be listed straight from the response.
+      // Guarded because the code below treats the response as possibly absent
+      // (`created?.nextRunAt`) — seeding an undefined row would be worse than
+      // waiting for the refetch.
+      if (created) prependToEnvelope<ScheduledReportItem>(queryClient, SCHEDULES_KEY, [created]);
       invalidate();
       setShowForm(false);
       const next = created?.nextRunAt;
@@ -193,6 +202,9 @@ export function ScheduledReportsSection() {
     mutationFn: (vars: { id: string; active: boolean }) =>
       reportsApi.updateSchedule(vars.id, { active: vars.active, actorId: user?.id }),
     onSuccess: (updated) => {
+      if (updated) {
+        patchEnvelopeItems<ScheduledReportItem>(queryClient, SCHEDULES_KEY, r => r.id === updated.id, updated);
+      }
       invalidate();
       toast.success(
         updated?.active
@@ -209,7 +221,8 @@ export function ScheduledReportsSection() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => reportsApi.deleteSchedule(id),
-    onSuccess: () => {
+    onSuccess: (_result, id) => {
+      removeFromEnvelopeWhere<ScheduledReportItem>(queryClient, SCHEDULES_KEY, r => r.id === id);
       invalidate();
       toast.success("Report schedule deleted");
     },

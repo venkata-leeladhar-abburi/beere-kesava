@@ -1,4 +1,3 @@
-import React from "react";
 import { CheckCircle2, Clock, PenLine, Send } from "lucide-react";
 import { C, F } from "../tokens";
 import { Button } from "../../../../../shared/ui/primitives";

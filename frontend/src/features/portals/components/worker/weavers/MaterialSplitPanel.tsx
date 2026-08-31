@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax -- material weight/quantity parsing (grams, reels, buns, factors), not currency */
-import React, { useState } from "react";
+import { useState } from "react";
 import { C, F } from "../tokens";
 import {
   jariFromReels, jariGrams, jariToReels, trimNum,

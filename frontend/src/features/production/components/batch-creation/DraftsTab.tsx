@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Layers as Stack, ArrowRight, Trash2 } from "lucide-react";
 import { BatchRecord, useBatches } from "../../contexts/BatchContext";

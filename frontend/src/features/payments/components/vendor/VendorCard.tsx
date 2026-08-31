@@ -1,4 +1,3 @@
-import React from "react";
 import { FileText, Pencil, type LucideIcon } from "lucide-react";
 import { motion } from "motion/react";
 

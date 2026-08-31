@@ -1,4 +1,3 @@
-import React from "react";
 
 import { AlertCircle, AlertTriangle, CheckCircle2, History, ListChecks, Package, RotateCcw } from "lucide-react";
 

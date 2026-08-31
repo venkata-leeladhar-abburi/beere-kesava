@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Layers, Package } from "lucide-react";
 import { C, F, SareeTypeDetailCard, ProgressBar, MyBatchEntry } from "../theme";

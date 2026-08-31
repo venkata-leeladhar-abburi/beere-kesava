@@ -1,4 +1,3 @@
-import React from "react";
 import { Truck } from "lucide-react";
 import { DispatchRecord } from "@/features/finishing";
 import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";

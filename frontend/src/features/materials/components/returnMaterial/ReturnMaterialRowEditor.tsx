@@ -1,4 +1,3 @@
-import React from "react";
 import { AlertTriangle } from "lucide-react";
 import { F, T } from "../issueMaterial/theme";
 import { PillTab } from "../issueMaterial/primitives";

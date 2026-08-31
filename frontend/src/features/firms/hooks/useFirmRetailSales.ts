@@ -1,7 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   firmsApi,
+  type BackendFirm,
+  type ConnectableRetailSalesResponse,
   type FirmRetailSale,
+  type FirmRetailSalesResponse,
   type LinkRetailSalesPayload,
   type RetailSaleQuery,
 } from "../../../shared/api/firms";
@@ -81,13 +84,51 @@ export function useRetailSaleLinking() {
   const link = useMutation({
     mutationFn: ({ firmId, payload }: { firmId: string; payload: LinkRetailSalesPayload }) =>
       firmsApi.linkRetailSales(firmId, payload),
-    onSuccess: (_res, vars) => invalidate(vars.firmId),
+    onSuccess: (res, vars) => {
+      // Those sales are no longer connectable, so drop them from the pool the
+      // connect dialog is showing. Scoped to the connectable prefix rather than
+      // all of ["firms", "retail-sales"], which also covers the active-firm and
+      // filter-option entries — different shapes this updater would corrupt.
+      // Only the pool is seeded: the firm's own list is filtered, paginated and
+      // server-aggregated, so guessing where the rows land (and what that does
+      // to totalAmount) would be a worse answer than the refetch's.
+      const linked = new Set(res?.saleRefs ?? vars.payload.saleRefs);
+      queryClient.setQueriesData<ConnectableRetailSalesResponse>(
+        { queryKey: ["firms", "retail-sales", "connectable"] },
+        (current) => {
+          if (!current) return current;
+          const items = current.items.filter((sale) => !linked.has(sale.saleRef));
+          return { ...current, items, total: Math.max(0, current.total - (current.items.length - items.length)) };
+        },
+      );
+      invalidate(vars.firmId);
+    },
   });
 
   const unlink = useMutation({
     mutationFn: ({ firmId, saleRef }: { firmId: string; saleRef: string }) =>
       firmsApi.unlinkRetailSale(firmId, saleRef),
-    onSuccess: (_res, vars) => invalidate(vars.firmId),
+    onSuccess: (_res, vars) => {
+      // Every cached filter/page combination for this firm — the key carries the
+      // query object, so one firm can have several live entries at once.
+      queryClient.setQueriesData<FirmRetailSalesResponse>(
+        { queryKey: ["firms", "retail-sales", vars.firmId] },
+        (current) => {
+          if (!current) return current;
+          const removed = current.items.find((sale) => sale.saleRef === vars.saleRef);
+          if (!removed) return current;
+          return {
+            ...current,
+            items: current.items.filter((sale) => sale.saleRef !== vars.saleRef),
+            total: Math.max(0, current.total - 1),
+            // Mirrors the server's aggregate over the whole filtered set, which
+            // this row has just left.
+            totalAmount: current.totalAmount - Number(removed.amount ?? 0),
+          };
+        },
+      );
+      invalidate(vars.firmId);
+    },
   });
 
   return {
@@ -160,12 +201,22 @@ export function useRetailSalesFirmControl() {
 
   const set = useMutation({
     mutationFn: (firmId: string) => firmsApi.setRetailSalesFirm(firmId),
-    onSuccess: invalidate,
+    onSuccess: (_res, firmId) => {
+      // The endpoint returns { firmId, backfilled }, not the firm itself, so the
+      // row comes from the already-cached directory. If that isn't loaded there
+      // is nothing to seed from and the invalidate below is the only path.
+      const firm = queryClient.getQueryData<BackendFirm[]>(["firms"])?.find((f) => f.id === firmId);
+      if (firm) queryClient.setQueryData<BackendFirm | null>(retailSalesFirmKey, firm);
+      invalidate();
+    },
   });
 
   const clear = useMutation({
     mutationFn: () => firmsApi.clearRetailSalesFirm(),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      queryClient.setQueryData<BackendFirm | null>(retailSalesFirmKey, null);
+      invalidate();
+    },
   });
 
   return {

@@ -79,13 +79,14 @@ export class CustomersService {
     // returned saree's sale is excluded here rather than counted as a live
     // purchase. Without this, returning a saree would revert its stock/QC
     // status but leave it still inflating the customer's purchase count.
-    const returnedSareeIds = customerIds.length
-      ? (await this.prisma.returnRecord.findMany({ select: { sareeId: true } })).map((r) => r.sareeId)
-      : [];
+    // Expressed as a relation filter so the exclusion happens inside the query.
+    // This used to read every ReturnRecord's sareeId and pass the whole list
+    // back as `notIn` — which grows without limit and, past roughly 65k
+    // returns, exceeds Postgres's bind-parameter ceiling and fails outright.
     const sales = customerIds.length
       ? await this.prisma.saleRecord.groupBy({
           by: ["customerId"],
-          where: { customerId: { in: customerIds }, sareeId: { notIn: returnedSareeIds } },
+          where: { customerId: { in: customerIds }, saree: { returns: { none: {} } } },
           _count: { _all: true },
           _sum: { amount: true },
           _max: { date: true },

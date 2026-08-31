@@ -1,4 +1,3 @@
-import React from "react";
 import { ShoppingCart, Tag, FileText, Calendar } from "lucide-react";
 import { Purchase } from "@/features/suppliers";
 import { LuxuryStatsCard } from "@/shared/ui/LuxuryStatsCard";

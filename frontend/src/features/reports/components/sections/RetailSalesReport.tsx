@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Tag, Banknote, Percent, RefreshCcw, Store } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -7,9 +7,7 @@ import type { ValueType, NameType } from "recharts/types/component/DefaultToolti
 import { T, F } from "../theme";
 import { semantic } from "../../../../design-system/tokens";
 import { FadeUp, SilkSumCard, SectionCard, ReportDLBar } from "../common/primitives";
-import {
-  ChartCard, ChartBand, ChartHint, TrackBar, BAND, CHART, NUM, CountUp
-} from "../../../production/components/sections/chart-primitives";
+import { ChartCard, ChartBand, TrackBar, BAND } from "../../../production/components/sections/chart-primitives";
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
 import { batchesApi } from "../../../../shared/api/batches";

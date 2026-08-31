@@ -11,7 +11,6 @@
  * value the Issue Material scanner matches against, and the whole point of the
  * tag is to identify this one material, not the delivery it arrived in.
  */
-import React from "react";
 import { ScannableCode } from "@/shared/ui/domain";
 
 export interface GrnLabel {

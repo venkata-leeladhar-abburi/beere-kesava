@@ -1,20 +1,21 @@
-import React, { useContext, useState, useMemo } from "react";
+import { useContext, useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { Download, Trash2, ArrowLeftRight, ArrowDownLeft, ArrowUpRight } from "lucide-react";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, dateFilterToRange } from "../../../../shared/ui/DateFilterBar";
 import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
 import { ApiError } from "../../../../shared/api/client";
 import { T, F, EASE, MobileCtx } from "../theme";
 import { SectionCard, FadeUp } from "../common/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
-import { materialIssuesApi } from "../../../../shared/api/material-issues";
+import { materialIssuesApi, type BackendMaterialIssueRecord } from "../../../../shared/api/material-issues";
 import { IconButton, Button } from "../../../../shared/ui/primitives";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { EntityCode } from "@/shared/ui/domain";
 import { exportTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
+import { removeFromEnvelopeWhere, removeFromList } from "../../../../lib/cacheUpdates";
 
 function parseKg(quantity: number | string | null | undefined, unit?: string | null): number {
   const q = Number(quantity || 0);
@@ -62,6 +63,12 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
     setDeleteError(null);
     try {
       await materialIssuesApi.remove(deletingRef);
+      // Both caches hold this issue — the movement table's own paginated read
+      // and MaterialIssueContext's mapped list — so drop it from each and the
+      // row leaves the table as the dialog closes.
+      removeFromEnvelopeWhere<BackendMaterialIssueRecord>(
+        queryClient, ["material-issues"], r => r.id === deletingRef);
+      removeFromList(queryClient, ["materialIssue", "issueRecords"], deletingRef);
       void queryClient.invalidateQueries({ queryKey: ["material-issues"] });
       void queryClient.invalidateQueries({ queryKey: ["materialIssue", "issueRecords"] });
       void queryClient.invalidateQueries({ queryKey: ["raw-material-stock"] });
@@ -74,9 +81,14 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
     }
   }
 
+  // The screen's own date filter is sent to the server rather than applied
+  // only after the fact, so the read is scoped to the window being viewed
+  // instead of every receipt ever written. "All time" sends no bounds, so
+  // nothing the user could previously reach becomes unreachable.
+  const grnRange = dateFilterToRange(dateFilter);
   const { data: rawGrns, isLoading: grnsLoading, isError: grnsError, refetch: refetchGrns } = useQuery({
-    queryKey: ["grn-receipts"],
-    queryFn: () => rawMaterialsApi.listGrns(),
+    queryKey: ["grn-receipts", grnRange.from ?? null, grnRange.to ?? null],
+    queryFn: () => rawMaterialsApi.listGrns(grnRange),
   });
 
   const { data: rawIssues, isLoading: issuesLoading, isError: issuesError, refetch: refetchIssues } = useQuery({

@@ -6,7 +6,6 @@
  * carrying a genuinely scannable code rather than decorative stripes — the
  * shop-staff scanner reads these tags to look a saree up by its id.
  */
-import React from "react";
 import { ScannableCode } from "@/shared/ui/domain";
 
 export interface SareeTag {

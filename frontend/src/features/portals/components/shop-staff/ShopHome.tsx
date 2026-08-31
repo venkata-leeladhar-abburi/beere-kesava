@@ -1,7 +1,7 @@
 import { useCanSeePrices, PageHero, PortalStatsStrip, TabId, type PortalStat } from "./theme";
 import { ShoppingBag, Check, Send, AlertTriangle, Package, RotateCcw, ArrowUpRight, X, ChevronRight, BarChart2 } from "lucide-react";
 import { useAuth } from "../../../../contexts/AuthContext";
-import React, { useState } from 'react';
+import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Modal } from "../../../../shared/ui/overlay";
 import { useQuery } from "@tanstack/react-query";

@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Get, Patch, Post, Query } from "@nestjs/common";
+import { ListGrnsQueryDto } from "./dto/list-grns-query.dto";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { UserRole } from "../generated/prisma/client";
 import { RawMaterialsService, CreateGrnDto } from "./raw-materials.service";
@@ -16,8 +17,8 @@ export class RawMaterialsController {
   }
 
   @Get("grn")
-  listGrns() {
-    return this.rawMaterialsService.listGrns();
+  listGrns(@Query() query: ListGrnsQueryDto) {
+    return this.rawMaterialsService.listGrns(query);
   }
 
   @Post("grn")

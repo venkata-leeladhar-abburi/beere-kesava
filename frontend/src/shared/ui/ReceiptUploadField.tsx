@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Upload, FileText, Loader2 } from "lucide-react";
 import { uploadsApi, resolveAssetUrl } from "../api/uploads";
 import { ApiError } from "../api/client";

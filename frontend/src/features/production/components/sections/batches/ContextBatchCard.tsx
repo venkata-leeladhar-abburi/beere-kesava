@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { Palette, ArrowRight } from "lucide-react";
 import { useDesignLibrary } from "@/features/design-library";

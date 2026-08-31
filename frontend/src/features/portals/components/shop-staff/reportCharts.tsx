@@ -5,7 +5,6 @@
  * clips past the card edge at 320px once there are four payment methods — so
  * the donut renders with `legendType="none"` and this wrapping legend instead.
  */
-import React from "react";
 import { C, F } from "./theme";
 
 export const CHART_COLORS = [C.burg, C.gold, "#1E6640", "#8E5A2B", "#C0392B", "#5B4B8A"];

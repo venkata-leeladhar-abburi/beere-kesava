@@ -1,4 +1,3 @@
-import React from "react";
 import { ChevronLeft, Flower2, Printer } from "lucide-react";
 import { C, F, Btn, Chip } from "./theme";
 import { IconButton } from "../../../../shared/ui/primitives";

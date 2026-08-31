@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import { Scan, X, ShoppingBag, Users, FileText } from "lucide-react";
 import { T, F, EASE, card } from "../theme";

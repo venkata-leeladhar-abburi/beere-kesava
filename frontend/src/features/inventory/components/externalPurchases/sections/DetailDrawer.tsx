@@ -1,4 +1,3 @@
-import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Tag } from "lucide-react";
 import { Purchase, totalPieces } from "@/features/suppliers";

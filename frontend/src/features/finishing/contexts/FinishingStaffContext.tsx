@@ -7,6 +7,7 @@ import {
   finishingStaffApi,
 } from "../../../shared/api/finishing";
 import { useAuthGate } from "../../../contexts/AuthContext";
+import { removeFromList, upsertInList } from "../../../lib/cacheUpdates";
 
 export interface FinishingStaffMember {
   id: string;
@@ -90,7 +91,10 @@ export function FinishingStaffProvider({ children }: { children: React.ReactNode
         specialisation: m.specialisation || undefined,
         notes: m.notes || undefined,
       }),
-    onSuccess: () => {
+    onSuccess: (created) => {
+      // The list cache holds mapped members, not raw backend rows, so the
+      // response goes through the same transform the queryFn uses.
+      upsertInList<FinishingStaffMember>(queryClient, QUERY_KEY, backendToMember(created));
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Finishing staff member added");
     },
@@ -110,7 +114,8 @@ export function FinishingStaffProvider({ children }: { children: React.ReactNode
         notes: args.updates.notes,
         status: args.updates.status ? STATUS_TO_BACKEND[args.updates.status] : undefined,
       }),
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      upsertInList<FinishingStaffMember>(queryClient, QUERY_KEY, backendToMember(updated));
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Staff member updated");
     },
@@ -125,7 +130,8 @@ export function FinishingStaffProvider({ children }: { children: React.ReactNode
       const nextStatus: FinishingStaffMember["status"] = current?.status === "Active" ? "Inactive" : "Active";
       return finishingStaffApi.update(id, { status: STATUS_TO_BACKEND[nextStatus] });
     },
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      upsertInList<FinishingStaffMember>(queryClient, QUERY_KEY, backendToMember(updated));
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Staff status updated");
     },
@@ -136,7 +142,8 @@ export function FinishingStaffProvider({ children }: { children: React.ReactNode
 
   const deleteMemberMutation = useMutation({
     mutationFn: (id: string) => finishingStaffApi.remove(id),
-    onSuccess: () => {
+    onSuccess: (_result, id) => {
+      removeFromList<FinishingStaffMember>(queryClient, QUERY_KEY, id);
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Staff member removed");
     },

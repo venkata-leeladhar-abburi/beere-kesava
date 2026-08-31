@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, FileText, IndianRupee, TrendingUp, Users } from "lucide-react";

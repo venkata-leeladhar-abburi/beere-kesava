@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { T } from "./audit-log/tokens";
 import { PageHeaderStats } from "./audit-log/PageHeaderStats";

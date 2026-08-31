@@ -14,7 +14,6 @@
  * visible. Falls back to the batch id alone for rows received before per-line
  * codes existed.
  */
-import * as React from "react";
 import { EntityCode } from "./EntityCode";
 
 export interface GrnLineCodeProps {

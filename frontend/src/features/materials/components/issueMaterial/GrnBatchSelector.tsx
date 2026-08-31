@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ChevronDown, ChevronRight, QrCode } from "lucide-react";
 import { F, GrnBatch, GrnLine, T } from "./theme";

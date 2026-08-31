@@ -1,6 +1,6 @@
-import React, { useContext, useState, useMemo } from "react";
+import { useContext, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { PieChart, Pie, Cell, RadialBarChart, RadialBar } from "recharts";
+import { RadialBarChart, RadialBar } from "recharts";
 import { Layers, Tag, Sparkles, Calculator, Users, IndianRupee, Download, History, LayoutGrid, List, PieChart as PieChartIcon } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { T, F, MobileCtx } from "../theme";

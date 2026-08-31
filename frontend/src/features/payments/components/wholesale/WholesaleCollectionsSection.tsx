@@ -26,6 +26,7 @@ import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
+import { patchListItems } from "../../../../lib/cacheUpdates";
 
 const INVOICES_QUERY_KEY = ["invoices"] as const;
 
@@ -91,6 +92,11 @@ export function WholesaleCollectionsSection() {
   const createInvoiceMutation = useMutation({
     mutationFn: invoicesApi.create,
     onSuccess: () => {
+      // Refetch-only on purpose. A cached invoice row carries the customer's
+      // city, which neither this response nor the dispatch that triggered the
+      // creation knows — seeding would print "—" in that column and then
+      // silently correct itself. This also runs from the effect below rather
+      // than a user action, so nobody is waiting on the round trip.
       void queryClient.invalidateQueries({ queryKey: INVOICES_QUERY_KEY });
     },
     onError: (err) => {
@@ -132,7 +138,23 @@ export function WholesaleCollectionsSection() {
   const recordPaymentMutation = useMutation({
     mutationFn: (args: { id: string; amount: number; utr: string; method: string; firmId: string }) =>
       invoicesApi.recordPayment(args.id, { amount: args.amount, utr: args.utr || undefined, method: args.method || undefined, firmId: args.firmId || undefined }),
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      // Only the three fields a payment actually moves. A full remap through
+      // backendInvoiceToFrontend would be wrong here: that mapper falls back to
+      // "Unknown Customer"/"—" when `customer` is absent, and this endpoint
+      // returns the invoice without its customer relation — so the row would
+      // briefly relabel itself before the refetch put the name back.
+      patchListItems<Invoice>(queryClient, INVOICES_QUERY_KEY, i => i.id === updated.id, {
+        paid: Number(updated.paid),
+        status: backendStatusToFrontend(updated.status),
+        payments: updated.payments.map(pmt => ({
+          amount: Number(pmt.amount),
+          date: new Date(pmt.date).toLocaleDateString("en-IN"),
+          utr: pmt.utr ?? "",
+          method: pmt.method ?? "",
+          recordedBy: pmt.recordedBy ?? null,
+        })),
+      });
       void queryClient.invalidateQueries({ queryKey: INVOICES_QUERY_KEY });
     },
     onError: (err) => {

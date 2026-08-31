@@ -1,4 +1,3 @@
-import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { MaterialReturnRecord } from "../../contexts/MaterialReturnContext";

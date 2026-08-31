@@ -1,5 +1,5 @@
 // ── Full-page weaver profile drawer (overview / batches / dispatches / payments / materials tabs) ─
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ChevronLeft as ChevronLeftIcon, Layers3, MapPin, Phone, Camera, FileText, Save, ClipboardList,
@@ -27,11 +27,21 @@ import { SUB_NAV_H, MOBILE_NAV_H } from "@/shared/ui/section-navigator-data";
 import { useResponsive } from "@/hooks/useResponsive";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { weaversApi, type UpdateWeaverPayload } from "../../../../shared/api/weavers";
+import {
+  weaversApi,
+  WEAVERS_LIST_QUERY_KEY,
+  type BackendWeaver,
+  type UpdateWeaverPayload,
+} from "../../../../shared/api/weavers";
 import { toast } from "sonner";
 import { Button, Field, Input, NumberInput } from "../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { recordView, useConfirm } from "../../../../shared/ui/overlay";
+import {
+  invalidateQueriesMentioning,
+  patchEnvelopeItems,
+  removeFromEnvelopeWhere,
+} from "../../../../lib/cacheUpdates";
 
 // The runtime weaver object (built in WeaversPage.tsx from the real backend
 // BackendWeaver) carries a few extra bank/contact fields that WeaverCardEntry
@@ -64,12 +74,9 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
 
   const updateWeaver = useMutation({
     mutationFn: (data: UpdateWeaverPayload) => weaversApi.update(weaver!.id, data),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["weavers-directory"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-table-roster"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-card-roster"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-page-roster"] });
-      void queryClient.invalidateQueries({ queryKey: ["weaver-nav"] });
+    onSuccess: (updated) => {
+      patchEnvelopeItems<BackendWeaver>(queryClient, WEAVERS_LIST_QUERY_KEY, w => w.id === updated.id, updated);
+      invalidateQueriesMentioning(queryClient, "weaver");
       setMode("view");
       toast.success("Weaver profile updated");
     },
@@ -81,11 +88,8 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
   const deleteWeaver = useMutation({
     mutationFn: () => weaversApi.remove(weaver!.id),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["weavers-directory"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-table-roster"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-card-roster"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-page-roster"] });
-      void queryClient.invalidateQueries({ queryKey: ["weaver-nav"] });
+      removeFromEnvelopeWhere<BackendWeaver>(queryClient, WEAVERS_LIST_QUERY_KEY, w => w.id === weaver!.id);
+      invalidateQueriesMentioning(queryClient, "weaver");
       toast.success("Weaver deleted");
       onClose();
     },

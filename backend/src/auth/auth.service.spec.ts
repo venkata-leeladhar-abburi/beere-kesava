@@ -1,4 +1,4 @@
-import { HttpStatus, ServiceUnavailableException, UnauthorizedException } from "@nestjs/common";
+import { HttpException, HttpStatus, ServiceUnavailableException, UnauthorizedException } from "@nestjs/common";
 import * as bcrypt from "bcryptjs";
 import {
   AccessLevel,
@@ -180,7 +180,17 @@ describe("AuthService", () => {
 
     it("never lets an audit-write failure block a rejection", async () => {
       auditLog.record.mockRejectedValue(new Error("audit table unavailable"));
-      prisma.otpCode.findFirst.mockResolvedValue(null);
+      // A locked-out row: 3 wrong guesses, the last one just now. This is the
+      // branch that raises the bare 429 asserted below — a null row here would
+      // take the "no OTP requested" path and throw 401 instead.
+      prisma.otpCode.findFirst.mockResolvedValue({
+        id: "otp-1",
+        code: "hashed",
+        attempts: 3,
+        updatedAt: new Date(),
+        expiresAt: new Date(Date.now() + 60_000),
+        consumedAt: null,
+      });
 
       await expect(service.verifyOtp({ phone: "9999999999", code: "123456" })).rejects.toThrow(
         HttpException,

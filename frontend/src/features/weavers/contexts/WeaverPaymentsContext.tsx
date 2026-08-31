@@ -5,6 +5,7 @@ import { BackendWeaverPayment, weaverPaymentsApi, WeaverEarnings } from "../../.
 import { weaversApi, WEAVERS_LIST_QUERY_KEY } from "../../../shared/api/weavers";
 import { firmsApi, BackendFirm } from "../../../shared/api/firms";
 import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
+import { prependAllToList } from "../../../lib/cacheUpdates";
 
 export interface WeaverPaymentRecord {
   id: string;
@@ -108,7 +109,7 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
   // rather than a silently-accepted fake payment.
   const addPaymentsMutation = useMutation({
     mutationFn: async (records: WeaverPaymentRecord[]) => {
-      await Promise.all(
+      return Promise.all(
         records.map(r =>
           weaverPaymentsApi.create({
             weaverId: r.weaverId,
@@ -123,8 +124,24 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
         ),
       );
     },
-    onSuccess: () => {
+    onSuccess: (created, records) => {
+      // Promise.all preserves order, so created[i] is the row submitted as
+      // records[i]. That pairing is what makes seeding possible here: the list
+      // labels each payment with a weaver and firm name resolved through
+      // GET /weavers and GET /firms, and the submitted record already carries
+      // both — so the new rows can be named without those two extra requests.
+      prependAllToList<WeaverPaymentRecord>(
+        queryClient,
+        QUERY_KEY,
+        created.map((p, i) => ({
+          ...backendPaymentToFrontend(p, new Map([[p.weaverId, records[i].weaverName]]), new Map()),
+          firmName: records[i].firmName,
+        })),
+      );
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      // Payments change what each weaver is still owed, which the earnings
+      // endpoint computes server-side — stale until refetched.
+      void queryClient.invalidateQueries({ queryKey: EARNINGS_QUERY_KEY });
       toast.success("Weaver payment recorded");
     },
     onError: (err) => {

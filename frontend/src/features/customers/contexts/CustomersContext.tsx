@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BackendCustomer, CreateCustomerPayload, customersApi, UpdateCustomerPayload } from "../../../shared/api/customers";
 import { useAuthGate } from "../../../contexts/AuthContext";
+import { removeFromList, upsertInList } from "../../../lib/cacheUpdates";
 
 // Thin real-backend directory of Customer{id,name,type,...} records — the
 // FK target for BulkOrder.customerId, Quotation.customerId, and
@@ -47,7 +48,14 @@ export function CustomersProvider({ children }: { children: React.ReactNode }) {
 
   const addCustomerMutation = useMutation({
     mutationFn: (payload: CreateCustomerPayload) => customersApi.create(payload),
-    onSuccess: () => {
+    onSuccess: (customer) => {
+      // POST /customers returns the bare Customer row; the list decorates every
+      // row with purchase aggregates computed off SaleRecord. A customer that
+      // was created a moment ago genuinely has none, so seeding the empty
+      // values here is correct rather than a placeholder.
+      upsertInList<Customer>(queryClient, QUERY_KEY, customer, {
+        seed: { totalPurchases: 0, totalSpend: 0, lastPurchaseDate: null },
+      });
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Customer added");
     },
@@ -59,7 +67,10 @@ export function CustomersProvider({ children }: { children: React.ReactNode }) {
   const updateCustomerMutation = useMutation({
     mutationFn: (args: { id: string; payload: UpdateCustomerPayload }) =>
       customersApi.update(args.id, args.payload),
-    onSuccess: () => {
+    onSuccess: (customer) => {
+      // Merge, don't replace: PATCH also returns the undecorated row, and the
+      // aggregates already in cache are still accurate after an edit.
+      upsertInList<Customer>(queryClient, QUERY_KEY, customer);
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Customer updated");
     },
@@ -70,7 +81,8 @@ export function CustomersProvider({ children }: { children: React.ReactNode }) {
 
   const deleteCustomerMutation = useMutation({
     mutationFn: (id: string) => customersApi.remove(id),
-    onSuccess: () => {
+    onSuccess: (_result, id) => {
+      removeFromList<Customer>(queryClient, QUERY_KEY, id);
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Customer deleted");
     },

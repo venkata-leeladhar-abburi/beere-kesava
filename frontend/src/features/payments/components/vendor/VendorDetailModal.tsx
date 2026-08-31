@@ -1,4 +1,3 @@
-import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";

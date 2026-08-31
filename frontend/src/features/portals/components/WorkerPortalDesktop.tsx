@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { C, F } from "./worker/tokens";
 import { useAuth } from "../../../contexts/AuthContext";

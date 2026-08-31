@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { CheckCircle2, Mail, Package, Phone, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";

@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
+import { ListGrnsQueryDto } from "./dto/list-grns-query.dto";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { MaterialType } from "../generated/prisma/client";
@@ -49,8 +50,15 @@ export class RawMaterialsService {
     return { items: stock };
   }
 
-  async listGrns() {
+  async listGrns(query: ListGrnsQueryDto = {}) {
+    const createdAt =
+      query.from || query.to
+        ? { ...(query.from ? { gte: query.from } : {}), ...(query.to ? { lte: query.to } : {}) }
+        : undefined;
+
     const grns = await this.prisma.grnReceipt.findMany({
+      where: createdAt ? { createdAt } : undefined,
+      ...(query.limit ? { take: query.limit } : {}),
       include: {
         vendor: true,
         firm: true,

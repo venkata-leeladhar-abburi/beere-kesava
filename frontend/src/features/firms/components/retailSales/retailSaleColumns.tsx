@@ -10,7 +10,6 @@
  * `priority` drives DataTable's card fallback below `md`: 1 is the card title,
  * 2 becomes a label/value pair, 3 is hidden on small screens.
  */
-import React from "react";
 import { Trash2 } from "lucide-react";
 import type { ColumnDef } from "../../../../shared/ui/data";
 import { IconButton } from "../../../../shared/ui/primitives";

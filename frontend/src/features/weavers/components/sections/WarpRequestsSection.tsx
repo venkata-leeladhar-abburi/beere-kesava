@@ -9,12 +9,14 @@ import { FadeUp, ActionDialog, SectionCard } from "../common/primitives";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { warpRequestsApi, BackendWarpRequest } from "../../../../shared/api/warpRequests";
-import { Button, SearchInput, Textarea } from "../../../../shared/ui/primitives";
+import { Button, Textarea } from "../../../../shared/ui/primitives";
 import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
+import { removeFromEnvelopeWhere } from "../../../../lib/cacheUpdates";
 
 export function WarpRequestsSection() {
   const queryClient = useQueryClient();
   const [decision, setDecision] = useState<{ type: "approve" | "reject"; req: BackendWarpRequest } | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
   const [search, setSearch] = useState("");
   const [warpTypeFilter, setWarpTypeFilter] = useState("All Types");
 
@@ -33,7 +35,12 @@ export function WarpRequestsSection() {
 
   const approveMutation = useMutation({
     mutationFn: (id: string) => warpRequestsApi.approve(id),
-    onSuccess: () => {
+    onSuccess: (_approved, id) => {
+      // This query is the PENDING-only list, so a decided request is no longer
+      // part of it — drop it straight away rather than leaving it on screen,
+      // still showing Approve/Reject, until the refetch returns.
+      removeFromEnvelopeWhere<BackendWarpRequest>(
+        queryClient, ["warp-requests-pending"], r => r.id === id);
       void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] });
       setDecision(null);
       toast.success("Warp request approved");
@@ -46,7 +53,9 @@ export function WarpRequestsSection() {
   const rejectMutation = useMutation({
     mutationFn: ({ id, notes }: { id: string; notes?: string }) =>
       warpRequestsApi.reject(id, undefined, notes),
-    onSuccess: () => {
+    onSuccess: (_rejected, { id }) => {
+      removeFromEnvelopeWhere<BackendWarpRequest>(
+        queryClient, ["warp-requests-pending"], r => r.id === id);
       void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] });
       setDecision(null);
       setRejectReason("");

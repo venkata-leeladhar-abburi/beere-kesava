@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CheckCircle2, LayoutGrid, LayoutList } from "lucide-react";
 import { T, F, PassedLogItem } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";

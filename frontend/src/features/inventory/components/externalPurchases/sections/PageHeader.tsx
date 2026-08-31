@@ -1,4 +1,3 @@
-import React from "react";
 import { Download, Plus } from "lucide-react";
 import { T, F } from "../theme";
 import { Button } from "../../../../../shared/ui/primitives";

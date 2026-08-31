@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Package, Scissors, BarChart2 } from "lucide-react";
 import { T, F } from "../theme";

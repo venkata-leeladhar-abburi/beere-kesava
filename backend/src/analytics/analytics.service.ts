@@ -5,16 +5,45 @@ import { PrismaService } from "../prisma/prisma.service";
 export class AnalyticsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Inclusive start of the calendar month `back` months before now, and the
+   * exclusive end of the current month. Every all-time scan below is clamped
+   * to this window — the endpoints only ever render the recent buckets, so
+   * reading the full table was pure waste.
+   */
+  private monthWindow(back: number): { start: Date; end: Date } {
+    const now = new Date();
+    return {
+      start: new Date(now.getFullYear(), now.getMonth() - back, 1),
+      end: new Date(now.getFullYear(), now.getMonth() + 1, 1),
+    };
+  }
+
+  private static num(v: unknown): number {
+    return v == null ? 0 : Number(v);
+  }
+
   async getCashFlow() {
-    const invoices = await this.prisma.invoice.findMany({
-      select: { invoiceDate: true, paid: true },
-    });
-    const weaverPayments = await this.prisma.weaverPayment.findMany({
-      select: { paymentDate: true, amountPaid: true },
-    });
-    const vendorPayments = await this.prisma.vendorPayment.findMany({
-      select: { date: true, amount: true },
-    });
+    // Buckets are keyed by short month name ("Jan"), which repeats every year.
+    // Without a date filter a January 2021 invoice landed in this January's
+    // bucket, so clamping the query to the five rendered months both bounds
+    // the read and stops those cross-year collisions.
+    const { start, end } = this.monthWindow(4);
+
+    const [invoices, weaverPayments, vendorPayments] = await Promise.all([
+      this.prisma.invoice.findMany({
+        where: { invoiceDate: { gte: start, lt: end } },
+        select: { invoiceDate: true, paid: true },
+      }),
+      this.prisma.weaverPayment.findMany({
+        where: { paymentDate: { gte: start, lt: end } },
+        select: { paymentDate: true, amountPaid: true },
+      }),
+      this.prisma.vendorPayment.findMany({
+        where: { date: { gte: start, lt: end } },
+        select: { date: true, amount: true },
+      }),
+    ]);
 
     const monthsMap: Record<string, { month: string; income: number; expenses: number }> = {};
     const now = new Date();
@@ -25,86 +54,76 @@ export class AnalyticsService {
       monthsMap[key] = { month: key, income: 0, expenses: 0 };
     }
 
-    invoices.forEach((inv) => {
-      const key = new Date(inv.invoiceDate).toLocaleString("en-US", { month: "short" });
-      if (monthsMap[key]) {
-        monthsMap[key].income += Number(inv.paid) / 100000;
-      }
-    });
+    const add = (date: Date | null, field: "income" | "expenses", value: unknown) => {
+      if (!date) return;
+      const key = new Date(date).toLocaleString("en-US", { month: "short" });
+      const bucket = monthsMap[key];
+      if (bucket) bucket[field] += AnalyticsService.num(value) / 100000;
+    };
 
-    weaverPayments.forEach((p) => {
-      const key = new Date(p.paymentDate).toLocaleString("en-US", { month: "short" });
-      if (monthsMap[key]) {
-        monthsMap[key].expenses += Number(p.amountPaid) / 100000;
-      }
-    });
-
-    vendorPayments.forEach((vp) => {
-      const key = new Date(vp.date).toLocaleString("en-US", { month: "short" });
-      if (monthsMap[key]) {
-        monthsMap[key].expenses += Number(vp.amount) / 100000;
-      }
-    });
+    invoices.forEach((inv) => add(inv.invoiceDate, "income", inv.paid));
+    weaverPayments.forEach((p) => add(p.paymentDate, "expenses", p.amountPaid));
+    vendorPayments.forEach((vp) => add(vp.date, "expenses", vp.amount));
 
     return { items: Object.values(monthsMap) };
   }
 
   async getProductionTrends() {
-    const sarees = await this.prisma.batchSareeRow.findMany({
-      select: { createdAt: true, qcPassed: true },
-    });
+    // Three counts instead of loading every saree row to length-check it.
+    const [passed, pending, total] = await Promise.all([
+      this.prisma.batchSareeRow.count({ where: { qcPassed: true } }),
+      this.prisma.batchSareeRow.count({ where: { OR: [{ qcPassed: false }, { qcPassed: null }] } }),
+      this.prisma.batchSareeRow.count(),
+    ]);
 
-    const passedCount = sarees.filter((s) => s.qcPassed === true).length;
-    const pendingCount = sarees.filter((s) => s.qcPassed === false || s.qcPassed === null).length;
-
-    return {
-      passed: passedCount,
-      pending: pendingCount,
-      total: sarees.length,
-    };
+    return { passed, pending, total };
   }
 
   async getRevenueSplit() {
-    const sales = await this.prisma.saleRecord.findMany({
-      select: { channel: true, amount: true },
+    // Summed in the database; this used to pull every sale row to add them up.
+    const grouped = await this.prisma.saleRecord.groupBy({
+      by: ["channel"],
+      _sum: { amount: true },
     });
 
     let retail = 0;
     let wholesale = 0;
+    for (const row of grouped) {
+      const amount = AnalyticsService.num(row._sum.amount);
+      if (row.channel === "RETAIL") retail += amount;
+      else wholesale += amount;
+    }
 
-    sales.forEach((s) => {
-      if (s.channel === "RETAIL") retail += Number(s.amount);
-      else wholesale += Number(s.amount);
-    });
-
-    return {
-      retail,
-      wholesale,
-      total: retail + wholesale,
-    };
+    return { retail, wholesale, total: retail + wholesale };
   }
 
   async getTopWeavers() {
-    const payments = await this.prisma.weaverPayment.findMany({
-      include: { weaver: true },
+    // Was: every weaver payment, each with its full weaver row included, then
+    // grouped and sorted in JS to keep five. The database can do all of that
+    // and return five rows.
+    // weaverId is a required FK, so every payment has one — the old
+    // `if (!p.weaver) return` guard was unreachable.
+    const totals = await this.prisma.weaverPayment.groupBy({
+      by: ["weaverId"],
+      _sum: { amountPaid: true },
+      orderBy: { _sum: { amountPaid: "desc" } },
+      take: 5,
     });
 
-    const weaverTotals: Record<string, { name: string; amount: number }> = {};
+    const weavers = await this.prisma.weaver.findMany({
+      where: { id: { in: totals.map((t) => t.weaverId) } },
+      select: { id: true, name: true },
+    });
+    const nameById = new Map(weavers.map((w) => [w.id, w.name]));
 
-    payments.forEach((p) => {
-      if (!p.weaver) return;
-      const wId = p.weaver.id;
-      if (!weaverTotals[wId]) {
-        weaverTotals[wId] = { name: p.weaver.name, amount: 0 };
-      }
-      weaverTotals[wId].amount += Number(p.amountPaid);
+    const items = totals.flatMap((t) => {
+      const name = nameById.get(t.weaverId);
+      return name === undefined
+        ? []
+        : [{ name, amount: AnalyticsService.num(t._sum?.amountPaid) }];
     });
 
-    const sorted = Object.values(weaverTotals)
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, 5);
-
-    return { items: sorted };
+    return { items };
   }
 
   // ── Monthly time-series helpers ─────────────────────────────────────────
@@ -235,40 +254,53 @@ export class AnalyticsService {
     const n = this.clampMonths(months);
     const buckets = this.buildMonthBuckets(n);
 
-    // Pull every purchase (invoice or sale) with a date, up to "now", so we
-    // can determine each customer's first-ever purchase month — including
-    // purchases that happened before the range start, which is needed to
-    // tell whether an in-range purchase is a "return" or a first-time one.
-    const [invoices, sales] = await Promise.all([
+    const rangeStart = buckets[0].start;
+
+    // Deciding "new" vs "returning" needs each customer's first-ever purchase,
+    // which reaches back before the rendered range. That used to mean reading
+    // every invoice and every sale ever written. Two things replace it:
+    // a _min aggregate, which returns one row per customer rather than one per
+    // transaction, and an in-range read for the buckets themselves.
+    const [firstInvoice, firstSale, invoices, sales] = await Promise.all([
+      this.prisma.invoice.groupBy({
+        by: ["customerId"],
+        _min: { invoiceDate: true },
+      }),
+      this.prisma.saleRecord.groupBy({
+        by: ["customerId"],
+        _min: { date: true },
+      }),
       this.prisma.invoice.findMany({
+        where: { invoiceDate: { gte: rangeStart } },
         select: { customerId: true, invoiceDate: true },
       }),
       // customerId is required on SaleRecord, so no filter is needed here —
       // every row already has one.
       this.prisma.saleRecord.findMany({
+        where: { date: { gte: rangeStart } },
         select: { customerId: true, date: true },
       }),
     ]);
 
     const firstPurchase: Record<string, Date> = {};
-    const record = (customerId: string | null, date: Date) => {
-      if (!customerId) return;
+    const record = (customerId: string | null, date: Date | null) => {
+      if (!customerId || !date) return;
       const existing = firstPurchase[customerId];
       if (!existing || date < existing) firstPurchase[customerId] = date;
     };
-    invoices.forEach((i) => record(i.customerId, new Date(i.invoiceDate)));
-    sales.forEach((s) => record(s.customerId, new Date(s.date)));
+    firstInvoice.forEach((r) => record(r.customerId, r._min?.invoiceDate ?? null));
+    firstSale.forEach((r) => record(r.customerId, r._min?.date ?? null));
 
     // Purchases per customer per month (any purchase in that month, dedup by customer).
     const purchasesByMonth: Record<string, Set<string>> = {};
-    const addPurchase = (customerId: string | null, date: Date) => {
-      if (!customerId) return;
+    const addPurchase = (customerId: string | null, date: Date | null) => {
+      if (!customerId || !date) return;
       const key = this.monthKey(date);
       if (!purchasesByMonth[key]) purchasesByMonth[key] = new Set();
       purchasesByMonth[key].add(customerId);
     };
-    invoices.forEach((i) => addPurchase(i.customerId, new Date(i.invoiceDate)));
-    sales.forEach((s) => addPurchase(s.customerId, new Date(s.date)));
+    invoices.forEach((i) => addPurchase(i.customerId, i.invoiceDate));
+    sales.forEach((s) => addPurchase(s.customerId, s.date));
 
     const items = buckets.map((b) => {
       const customersThisMonth = purchasesByMonth[b.key] ?? new Set<string>();

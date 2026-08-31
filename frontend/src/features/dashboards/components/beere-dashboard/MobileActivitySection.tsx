@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { motion, useInView } from 'motion/react';
 import { useQuery } from '@tanstack/react-query';
 import { Scissors, Users, Package, IndianRupee } from 'lucide-react';

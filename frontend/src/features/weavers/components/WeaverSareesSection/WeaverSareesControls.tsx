@@ -1,4 +1,3 @@
-import React from "react";
 import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilterBar";
 import { Button, Select as SelectPrimitive, SelectItem } from "../../../../shared/ui/primitives";
 import { TabKey } from "./types";

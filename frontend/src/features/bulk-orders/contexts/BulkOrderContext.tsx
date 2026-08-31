@@ -8,7 +8,7 @@ import {
   BackendOrderPaymentStatus,
   bulkOrdersApi,
 } from "../../../shared/api/bulk-orders";
-import { customersApi } from "../../../shared/api/customers";
+import { customersApi, type BackendCustomer } from "../../../shared/api/customers";
 import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 import { useRatesPricing } from "@/features/pricing";
 import { type SareeTypeRecord } from "@/features/pricing";
@@ -181,7 +181,22 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
         actorId: user?.id,
       });
     },
-    onSuccess: () => {
+    onSuccess: (created, order) => {
+      // The cached row needs the customer's *name*, which POST /bulk-orders
+      // doesn't return — but the customers directory is already in cache (it is
+      // what the customer picker on this form reads from), so the name is a
+      // local lookup rather than another request. If that cache is cold there
+      // is nothing to name the order with, and the invalidate below is the only
+      // path.
+      const customerName = queryClient
+        .getQueryData<BackendCustomer[]>(["customers"])
+        ?.find(c => c.id === order.customerId)?.name;
+      if (customerName && order.customerId) {
+        setBulkOrders(prev => [
+          backendOrderToFrontend(created, new Map([[order.customerId as string, customerName]]), getSareeTypeByCode),
+          ...prev,
+        ]);
+      }
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Bulk order created");
     },
@@ -202,7 +217,12 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
         tallied: args.updates.tallied,
         talliedBy: args.updates.talliedBy,
       }),
-    onSuccess: () => {
+    onSuccess: (_updated, args) => {
+      // Patch the fields we just sent rather than seeding from the response:
+      // a cached BulkOrder is a join of the backend order with a customer-name
+      // lookup (see queryFn), which PATCH /bulk-orders does not return. The row
+      // already exists, so patching known fields keeps the join intact.
+      setBulkOrders(prev => prev.map(o => (o.ref === args.ref ? { ...o, ...args.updates } : o)));
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Bulk order updated");
     },
@@ -245,7 +265,19 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
         .update(args.ref, { amountPaid: newPaid, paymentStatus: PAYMENT_STATUS_TO_BACKEND[paymentStatus] })
         .then(() => args);
     },
-    onSuccess: () => {
+    onSuccess: (args) => {
+      setBulkOrders(prev =>
+        prev.map(o => {
+          if (o.ref !== args.ref) return o;
+          const amountPaid = (o.amountPaid || 0) + args.amount;
+          const due = o.amountDue || 0;
+          return {
+            ...o,
+            amountPaid,
+            paymentStatus: due > 0 && amountPaid >= due ? "paid" : amountPaid > 0 ? "partial" : "pending",
+          };
+        }),
+      );
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Payment recorded");
     },
@@ -257,7 +289,10 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
 
   const tallyOrderMutation = useMutation({
     mutationFn: (args: { ref: string; by: string }) => bulkOrdersApi.update(args.ref, { tallied: true, talliedBy: args.by }),
-    onSuccess: () => {
+    onSuccess: (_updated, args) => {
+      setBulkOrders(prev =>
+        prev.map(o => (o.ref === args.ref ? { ...o, tallied: true, talliedBy: args.by } : o)),
+      );
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Order tallied");
     },
@@ -273,7 +308,8 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   // refetching too or they'd keep showing a bulkOrderRef that's now gone.
   const deleteBulkOrderMutation = useMutation({
     mutationFn: (ref: string) => bulkOrdersApi.remove(ref),
-    onSuccess: () => {
+    onSuccess: (_result, ref) => {
+      setBulkOrders(prev => prev.filter(o => o.ref !== ref));
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       void queryClient.invalidateQueries({ queryKey: ["finishing"] });
       toast.success("Bulk order deleted");

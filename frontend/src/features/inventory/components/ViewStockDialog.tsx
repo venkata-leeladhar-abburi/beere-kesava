@@ -1,4 +1,3 @@
-import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { CheckCircle2 as CheckCircle } from "lucide-react";
 import { X } from "lucide-react";

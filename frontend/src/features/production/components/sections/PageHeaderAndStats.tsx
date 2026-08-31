@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { Layers, Factory, CheckCircle2, AlertCircle } from "lucide-react";

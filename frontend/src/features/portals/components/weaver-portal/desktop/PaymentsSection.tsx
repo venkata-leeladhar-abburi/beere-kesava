@@ -1,4 +1,3 @@
-import React from "react";
 import { Check } from "lucide-react";
 import { C, F, FABRIC_BG } from "../theme";
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";

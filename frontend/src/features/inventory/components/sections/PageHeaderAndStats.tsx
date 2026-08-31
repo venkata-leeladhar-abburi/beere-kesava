@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { Package, Clock, CheckCircle2, Truck, AlertTriangle } from "lucide-react";
 import { T, F } from "../theme";

@@ -1074,6 +1074,8 @@ model SaleRecord {
 
   @@index([sareeId])
   @@index([firmId])
+  @@index([date])
+  @@index([customerId])
 }
 
 model ReturnRecord {
@@ -1088,7 +1090,7 @@ model ReturnRecord {
   photoUrl     String?
   createdAt    DateTime @default(now())
 
-  @@index([sareeId])
+  @@index([sareeId, createdAt])
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1152,6 +1154,7 @@ model SupplierPayment {
 
   @@index([supplierId])
   @@index([purchaseId])
+  @@index([date])
 }
 
 model Vendor {
@@ -1471,6 +1474,7 @@ model WeaverPayment {
   recordedBy   User?    @relation("WeaverPaymentRecordedBy", fields: [recordedById], references: [id])
 
   @@index([weaverId])
+  @@index([paymentDate])
 }
 
 model VendorPayment {
@@ -1495,6 +1499,7 @@ model VendorPayment {
 
   @@index([vendorId])
   @@index([billId])
+  @@index([date])
 }
 
 model Invoice {
@@ -1517,6 +1522,7 @@ model Invoice {
 
   @@index([customerId])
   @@index([status])
+  @@index([invoiceDate])
 }
 
 model InvoicePayment {
@@ -1535,6 +1541,7 @@ model InvoicePayment {
   recordedBy   User?    @relation("InvoicePaymentRecordedBy", fields: [recordedById], references: [id])
 
   @@index([invoiceId])
+  @@index([date])
 }
 
 model Customer {
@@ -1688,6 +1695,7 @@ model GrnReceipt {
 
   items          GrnItem[]
   purchaseOrders PurchaseOrder[]
+  @@index([createdAt])
 }
 
 model GrnItem {

@@ -4,7 +4,6 @@
  * Standalone month grid for a given year. Used by Calendar's inline
  * month/year nav, and exported for DateFilterBar's `month` mode.
  */
-import * as React from "react";
 import { cn } from "../utils";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

@@ -1,4 +1,3 @@
-import React from "react";
 import { F } from "../../theme";
 import { InvoiceStatus } from "../../types";
 

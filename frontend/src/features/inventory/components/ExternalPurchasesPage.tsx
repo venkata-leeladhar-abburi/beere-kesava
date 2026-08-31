@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {
   useSuppliers, SareeTag, Purchase,
   totalPieces, parseINR, serialFromLineCode,

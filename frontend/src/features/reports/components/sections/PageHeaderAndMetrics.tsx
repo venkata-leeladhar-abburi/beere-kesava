@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart2, Clock, Calendar, Download, FileText } from "lucide-react";

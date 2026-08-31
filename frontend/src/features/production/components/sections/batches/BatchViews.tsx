@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import {
   Calendar as CalendarBlank, AlertCircle as WarningCircle, CheckCircle2 as CheckCircle,

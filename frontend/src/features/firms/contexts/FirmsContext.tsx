@@ -2,6 +2,7 @@ import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuthGate } from "../../../contexts/AuthContext";
+import { removeFromList, upsertInList } from "../../../lib/cacheUpdates";
 import {
   firmsApi,
   type BackendFinancialEntry,
@@ -121,6 +122,30 @@ function groupEntriesIntoFinancials(firmId: string, entries: BackendFinancialEnt
   return { firmId, income, expenses, misc };
 }
 
+/**
+ * Rewrite one firm's cached financials so `entries` replace whatever is
+ * currently held under the same ids, dropping `removeIds` outright.
+ *
+ * An edit can move an entry between buckets — changing its kind or flipping a
+ * misc entry from income to expense — so every id is cleared from all three
+ * lists before the regrouped version is merged back in, rather than patching it
+ * where it used to live.
+ */
+function applyEntriesToFinancials(
+  financials: FirmFinancials,
+  entries: BackendFinancialEntry[],
+  removeIds: string[] = [],
+): FirmFinancials {
+  const stale = new Set([...removeIds, ...entries.map((e) => e.id)]);
+  const grouped = groupEntriesIntoFinancials(financials.firmId, entries);
+  return {
+    firmId: financials.firmId,
+    income: [...grouped.income, ...financials.income.filter((e) => !stale.has(e.id))],
+    expenses: [...grouped.expenses, ...financials.expenses.filter((e) => !stale.has(e.id))],
+    misc: [...grouped.misc, ...financials.misc.filter((e) => !stale.has(e.id))],
+  };
+}
+
 // ─── Context ──────────────────────────────────────────────────────────────────
 
 interface FirmsContextValue {
@@ -182,9 +207,25 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
     enabled: enabled && backendFirms.length > 0,
   });
 
+  /**
+   * Apply `update` to one firm's slice of the FINANCIALS_KEY cache.
+   *
+   * That cache is an array of per-firm grouped financials, so an entry write
+   * touches exactly one element of it. No-ops when the query hasn't loaded, or
+   * when this firm has no slice yet — there is nothing on screen to correct and
+   * inventing one would shadow the real fetch.
+   */
+  const seedFinancials = (firmId: string, update: (current: FirmFinancials) => FirmFinancials) =>
+    queryClient.setQueryData<FirmFinancials[]>(FINANCIALS_KEY, prev =>
+      prev?.map(fin => (fin.firmId === firmId ? update(fin) : fin)),
+    );
+
   const addFirmMutation = useMutation({
     mutationFn: (data: Omit<Firm, "id" | "createdAt">) => firmsApi.create(data),
-    onSuccess: () => {
+    onSuccess: (created) => {
+      // FIRMS_KEY caches raw BackendFirm rows (toFirm maps them at render), and
+      // POST /firms returns exactly that shape — nothing to seed around.
+      upsertInList<BackendFirm>(queryClient, FIRMS_KEY, created);
       void queryClient.invalidateQueries({ queryKey: FIRMS_KEY });
       void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
       toast.success("Firm added");
@@ -197,7 +238,8 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
   const updateFirmMutation = useMutation({
     mutationFn: (args: { id: string; updates: Omit<Firm, "id" | "createdAt"> }) =>
       firmsApi.update(args.id, args.updates),
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      upsertInList<BackendFirm>(queryClient, FIRMS_KEY, updated);
       void queryClient.invalidateQueries({ queryKey: FIRMS_KEY });
       toast.success("Firm updated");
     },
@@ -208,7 +250,8 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
 
   const deleteFirmMutation = useMutation({
     mutationFn: (id: string) => firmsApi.remove(id),
-    onSuccess: () => {
+    onSuccess: (_result, id) => {
+      removeFromList<BackendFirm>(queryClient, FIRMS_KEY, id);
       void queryClient.invalidateQueries({ queryKey: FIRMS_KEY });
       void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
       toast.success("Firm deleted");
@@ -221,7 +264,8 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
   const addEntryMutation = useMutation({
     mutationFn: (args: { firmId: string; payload: CreateFinancialEntryPayload }) =>
       firmsApi.addEntry(args.firmId, args.payload),
-    onSuccess: (_data, args) => {
+    onSuccess: (created, args) => {
+      seedFinancials(args.firmId, fin => applyEntriesToFinancials(fin, [created]));
       void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
       void queryClient.invalidateQueries({ queryKey: ["firms", "activity", args.firmId] });
       toast.success("Entry added");
@@ -232,12 +276,13 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
   });
 
   const bulkAddEntriesMutation = useMutation({
-    mutationFn: async (args: { firmId: string; payloads: CreateFinancialEntryPayload[] }) => {
-      for (const payload of args.payloads) {
-        await firmsApi.addEntry(args.firmId, payload);
-      }
-    },
-    onSuccess: (_data, args) => {
+    // One request per entry, but issued together rather than in a sequential
+    // await-loop: the database is remote, so a 20-row paste was paying 20 full
+    // round trips end to end instead of overlapping them.
+    mutationFn: (args: { firmId: string; payloads: CreateFinancialEntryPayload[] }) =>
+      Promise.all(args.payloads.map(payload => firmsApi.addEntry(args.firmId, payload))),
+    onSuccess: (created, args) => {
+      seedFinancials(args.firmId, fin => applyEntriesToFinancials(fin, created));
       void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
       void queryClient.invalidateQueries({ queryKey: ["firms", "activity", args.firmId] });
       toast.success("Entries added");
@@ -253,7 +298,8 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
   const updateEntryMutation = useMutation({
     mutationFn: (args: { firmId: string; entryId: string; payload: Partial<CreateFinancialEntryPayload> }) =>
       firmsApi.updateEntry(args.firmId, args.entryId, args.payload),
-    onSuccess: (_data, args) => {
+    onSuccess: (updated, args) => {
+      seedFinancials(args.firmId, fin => applyEntriesToFinancials(fin, [updated], [args.entryId]));
       void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
       void queryClient.invalidateQueries({ queryKey: ["firms", "activity", args.firmId] });
       toast.success("Entry updated");
@@ -267,6 +313,7 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
     mutationFn: (args: { firmId: string; entryId: string }) =>
       firmsApi.removeEntry(args.firmId, args.entryId),
     onSuccess: (_data, args) => {
+      seedFinancials(args.firmId, fin => applyEntriesToFinancials(fin, [], [args.entryId]));
       void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
       void queryClient.invalidateQueries({ queryKey: ["firms", "activity", args.firmId] });
       toast.success("Entry deleted");

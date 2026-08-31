@@ -1,4 +1,3 @@
-import React from "react";
 import { Eye, MapPin } from "lucide-react";
 import { F, T } from "../../theme";
 import { Invoice } from "../../types";

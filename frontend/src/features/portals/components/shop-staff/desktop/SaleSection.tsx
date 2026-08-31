@@ -1,4 +1,3 @@
-import React from "react";
 import { C, F, ShopDesktopHero, SILK_BG } from "../theme";
 import { NewSaleFlow } from "../NewSaleFlow";
 

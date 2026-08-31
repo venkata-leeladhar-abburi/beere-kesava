@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { RotateCcw, ChevronLeft, Check, Printer, PackageCheck } from "lucide-react";
 import { C, F, Card, Btn } from "./theme";

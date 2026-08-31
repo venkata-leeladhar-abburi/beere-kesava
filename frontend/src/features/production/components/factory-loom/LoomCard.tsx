@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { FileText, Factory } from "lucide-react";
 import { FactoryLoom, loomLabel } from "../../data/factoryLooms";

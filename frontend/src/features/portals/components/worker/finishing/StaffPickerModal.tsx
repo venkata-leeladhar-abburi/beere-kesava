@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { C, F } from "../tokens";
 import { useFinishingStaff } from "@/features/finishing";

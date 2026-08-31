@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { FileText, Truck } from "lucide-react";
 import { Quotation } from "@/features/finishing";
 import { T, F } from "../theme";

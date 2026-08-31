@@ -7,7 +7,6 @@
  * repeats correctly on every printed page via `table-header-group` — Part
  * K's "balance carried forward on every break" is what that buys for free.
  */
-import * as React from "react";
 import { DocumentPage } from "./DocumentPage";
 import { Letterhead, type LetterheadFirm } from "./Letterhead";
 import { PartyBlock, type MetaField } from "./PartyBlock";

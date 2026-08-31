@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { motion } from "motion/react";
 import { Layers, Palette, Bell } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";

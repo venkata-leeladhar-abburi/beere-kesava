@@ -95,7 +95,7 @@ export class WeaversService {
           cluster: dto.cluster,
           looms: dto.looms ?? 0,
           photoUrl: dto.photoUrl,
-          email: dto.email,
+          email: dto.email ?? "",
           phone: dto.phone,
           bankName: dto.bankName,
           accountNo: dto.accountNo,

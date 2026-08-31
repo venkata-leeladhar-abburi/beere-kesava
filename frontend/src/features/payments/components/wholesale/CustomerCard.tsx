@@ -1,4 +1,3 @@
-import React from "react";
 import { CheckCircle2, Eye, IndianRupee, MapPin } from "lucide-react";
 import { motion } from "motion/react";
 

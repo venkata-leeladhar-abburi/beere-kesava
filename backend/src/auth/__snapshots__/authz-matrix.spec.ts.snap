@@ -1185,6 +1185,7 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "public": false,
     "roles": [
       "ACCOUNTANT",
+      "SHOP",
     ],
     "route": "GET /purchases",
   },
@@ -1193,6 +1194,7 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "public": false,
     "roles": [
       "ACCOUNTANT",
+      "SHOP",
     ],
     "route": "GET /purchases/:id",
   },

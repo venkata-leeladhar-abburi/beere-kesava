@@ -192,18 +192,31 @@ export class InventoryService {
    *
    * A WHOLESALE dispatch is not shop stock — those goods left the business.
    */
-  async findShopStock(): Promise<ShopStockItem[]> {
+  /**
+   * @param dispatchId Narrows the query to one SHOP dispatch. The challan
+   *   screen only ever needs the pieces on a single lorry, and asking for the
+   *   whole shop's stock to filter it down client-side meant the printed
+   *   document depended on a read that grows forever.
+   */
+  async findShopStock(dispatchId?: string): Promise<ShopStockItem[]> {
     // Returns are read first: they decide whether a dispatched saree that was
     // sold is back on the shelf, and they carry the pieces that entered stock
     // as a wholesale return without ever being on a lorry.
     const [consignments, returns] = await Promise.all([
       this.prisma.dispatchSaree.findMany({
-        where: { dispatch: { type: "SHOP" } },
+        where: { dispatch: { type: "SHOP", ...(dispatchId ? { id: dispatchId } : {}) } },
         include: { dispatch: true },
         orderBy: { dispatch: { dispatchDate: "desc" } },
       }),
+      // Only the newest return per saree is ever consulted — `latestReturn`
+      // below used to build exactly this by reading every return ever written
+      // and keeping the first of each. `distinct` states that directly, so the
+      // read is one row per saree instead of one per return. Filtering to
+      // `restocked: true` here would be wrong: a piece that was restocked and
+      // has since come back again must not read as on-the-shelf.
       this.prisma.returnRecord.findMany({
         orderBy: { createdAt: "desc" },
+        distinct: ["sareeId"],
         include: { saree: { include: { sareeType: true } } },
       }),
     ]);
@@ -339,7 +352,9 @@ export class InventoryService {
     //     back. That one has no SHOP dispatch, so `latestBySaree` never had it.
     // The `!latestBySaree.has()` guard is what keeps the two branches from
     // both emitting the same saree.
-    const returnedStock = returns
+    // Scoped to one dispatch, the caller wants that lorry's pieces — a
+    // wholesale return that was never on it does not belong in the answer.
+    const returnedStock = (dispatchId ? [] : returns)
       .filter((r) => r.restocked && !latestBySaree.has(r.sareeId))
       // The latest return is the live one — an older restocked return on the
       // same piece must not emit a duplicate row.

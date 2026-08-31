@@ -1,4 +1,3 @@
-import React from "react";
 import { AlertCircle, CheckCircle2, ShieldAlert } from "lucide-react";
 import { T } from "./WorkerQCTypes";
 import { PageHero, StatsStrip, type WorkerStat } from "./primitives";

@@ -1,4 +1,3 @@
-import React from "react";
 import { ReturnedMaterialItem } from "../../contexts/MaterialReturnContext";
 import { F, T } from "../issueMaterial/theme";
 

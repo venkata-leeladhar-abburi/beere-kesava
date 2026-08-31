@@ -1,4 +1,3 @@
-import React from "react";
 import { Package, Layers, Sparkles } from "lucide-react";
 import { IssuedMaterialItem } from "../../contexts/MaterialIssueContext";
 import { F, T } from "./theme";

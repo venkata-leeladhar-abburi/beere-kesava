@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Wallet, Receipt, ShoppingBag, Clock, LayoutGrid, List } from "lucide-react";
 import { T, F } from "../theme";

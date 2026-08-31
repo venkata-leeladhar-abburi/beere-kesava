@@ -1,4 +1,3 @@
-import React from "react";
 import { AlertTriangle, ArrowUpRight, BarChart2, Check, ChevronRight, Package, RotateCcw, Send, ShoppingBag } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../../shared/api/sales";

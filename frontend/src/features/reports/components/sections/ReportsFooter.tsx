@@ -1,4 +1,3 @@
-import React from "react";
 import {
   LayoutDashboard, Scissors, Factory, Package, CreditCard,
   BarChart2, UserRound, CheckCircle2,

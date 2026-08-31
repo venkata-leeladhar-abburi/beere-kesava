@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Building2, Phone, FileText, Clock, Package, MapPin, Landmark, MessageSquare, StickyNote } from "lucide-react";
 import { T, F } from "../../theme";
 import { Supplier } from "../../../contexts/SupplierContext";

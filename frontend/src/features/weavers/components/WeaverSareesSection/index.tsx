@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { LayoutGrid, List, Printer } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Printer } from "lucide-react";
 import { isSold, isOutstanding } from "@/features/customers";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { usePagination } from "../../../../shared/ui/DataPagination";
@@ -57,7 +57,6 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   const printTags = usePrintSareeTags();
 
   const [tab, setTab] = useState<TabKey>("assigned");
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [fBatch, setFBatch] = useState("all");

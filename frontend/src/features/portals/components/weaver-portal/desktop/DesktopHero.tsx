@@ -1,4 +1,3 @@
-import React from "react";
 import { C, F, BG_IMAGE, DesktopHeroProps } from "../theme";
 import { LuxuryStatsCard, type StatItem } from "@/shared/ui/LuxuryStatsCard";
 import { IcoResourceMgmt, IcoFabricRoll, IcoQualityCheck, IcoWarehouse, IcoInvoice } from "@/features/dashboards";

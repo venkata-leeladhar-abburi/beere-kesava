@@ -1,4 +1,3 @@
-import React from "react";
 import { Package } from "lucide-react";
 import { FinishingReturn } from "@/features/finishing";
 import { useBatches } from "@/features/production";

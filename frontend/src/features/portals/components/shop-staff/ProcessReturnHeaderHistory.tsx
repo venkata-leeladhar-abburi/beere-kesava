@@ -1,4 +1,3 @@
-import React from "react";
 import { ChevronLeft, RotateCcw } from "lucide-react";
 import { C, F } from "./theme";
 import { IconButton } from "../../../../shared/ui/primitives";

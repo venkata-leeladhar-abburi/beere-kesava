@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, Plus, X, CheckCircle2, Undo2 } from "lucide-react";
 import { Button, IconButton } from "../../../shared/ui/primitives";

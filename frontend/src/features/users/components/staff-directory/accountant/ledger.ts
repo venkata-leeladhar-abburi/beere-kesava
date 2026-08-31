@@ -7,7 +7,6 @@
  * send, the per-day series behind the charts, and the row-level reductions
  * that are genuinely about the rows in hand.
  */
-import type { DateFilterState } from "@/shared/ui/DateFilterBar";
 import {
   UNATTRIBUTED_ID,
   type StaffFinanceTotals,
@@ -52,56 +51,10 @@ export function emptyTotals(): LedgerTotals {
  * server-side is what lets a total cover the whole period instead of just the
  * rows that fit under the ledger's row cap.
  */
-export function dateFilterToRange(filter: DateFilterState): { from?: string; to?: string } {
-  const startOf = (y: number, m: number, d: number) => new Date(y, m, d, 0, 0, 0, 0).toISOString();
-  const endOf = (y: number, m: number, d: number) => new Date(y, m, d, 23, 59, 59, 999).toISOString();
-  // Parsed field-by-field, never through `new Date(str)`.
-  //
-  // DateFilterBar stores these as local calendar dates (date-fns `format`,
-  // "yyyy-MM-dd"), but native Date parses a bare date string as UTC midnight.
-  // Reading it back with the local getters therefore lands a day early for
-  // any reader west of UTC — invisible from IST, wrong in London or New York.
-  const dayBounds = (value: string) => {
-    const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
-    if (!parts) return null;
-    const y = Number(parts[1]);
-    const m = Number(parts[2]) - 1;
-    const d = Number(parts[3]);
-    if (m < 0 || m > 11 || d < 1 || d > 31) return null;
-    return { y, m, d };
-  };
-
-  if (filter.mode === "day") {
-    const b = filter.day ? dayBounds(filter.day) : null;
-    return b ? { from: startOf(b.y, b.m, b.d), to: endOf(b.y, b.m, b.d) } : {};
-  }
-  if (filter.mode === "range") {
-    const a = filter.from ? dayBounds(filter.from) : null;
-    const z = filter.to ? dayBounds(filter.to) : null;
-    return {
-      ...(a ? { from: startOf(a.y, a.m, a.d) } : {}),
-      ...(z ? { to: endOf(z.y, z.m, z.d) } : {}),
-    };
-  }
-  if (filter.mode === "month" && filter.month) {
-    const parts = /^(\d{4})-(\d{1,2})$/.exec(filter.month.trim());
-    if (!parts) return {};
-    const y = Number(parts[1]);
-    const m = Number(parts[2]) - 1;
-    // Out-of-range months must be rejected, not passed to the Date
-    // constructor: month 98 does not fail, it rolls forward eight years.
-    if (m < 0 || m > 11) return {};
-    // Day 0 of the next month is the last day of this one, leap years included.
-    return { from: startOf(y, m, 1), to: endOf(y, m + 1, 0) };
-  }
-  if (filter.mode === "year" && filter.year) {
-    const parts = /^(\d{4})$/.exec(filter.year.trim());
-    if (!parts) return {};
-    const y = Number(parts[1]);
-    return { from: startOf(y, 0, 1), to: endOf(y, 11, 31) };
-  }
-  return {};
-}
+// dateFilterToRange now lives beside DateFilterBar in shared/ui — it converts
+// that component's state into server bounds and is not accountant-specific.
+// Re-exported here so existing importers (and its tests) are unaffected.
+export { dateFilterToRange } from "../../../../../shared/ui/DateFilterBar";
 
 function emptyByKind(): LedgerTotals["byKind"] {
   return {

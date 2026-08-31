@@ -103,6 +103,7 @@ export function WeaverAnalytics() {
   // These buttons were disabled placeholders — the stats endpoint had no date
   // window, so only all-time totals existed. It takes ?from/&to now.
   const [period, setPeriod] = React.useState<AnalyticsPeriod>("All Time");
+  const [search, setSearch] = React.useState("");
   const periodLabel = period;
   const range = React.useMemo(() => {
     const from = periodStart(period);
