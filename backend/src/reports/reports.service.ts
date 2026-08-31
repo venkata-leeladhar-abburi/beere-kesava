@@ -1,13 +1,17 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { DispatchType, InvoiceStatus, OrderPaymentStatus, Prisma, QcResult, ReportFrequency } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
+import { computeNextRunAt, listUpcomingRuns, parseDeliveryTime } from "./report-schedule-timing";
 
 export interface CreateScheduleDto {
   reportName: string;
   frequency: ReportFrequency;
   format?: string;
-  recipientEmail: string;
+  /** WhatsApp number the workbook is delivered to. */
+  recipientPhone: string;
+  /** "HH:mm" in IST. Defaults to 09:00 when absent or unparseable. */
+  deliveryTime?: string;
   actorId?: string;
 }
 
@@ -15,10 +19,14 @@ export interface UpdateScheduleDto {
   reportName?: string;
   frequency?: ReportFrequency;
   format?: string;
-  recipientEmail?: string;
+  recipientPhone?: string;
+  deliveryTime?: string;
   active?: boolean;
   actorId?: string;
 }
+
+/** How many future delivery dates the UI previews per schedule. */
+const UPCOMING_RUNS_PREVIEW_COUNT = 5;
 
 export interface RecordDownloadDto {
   reportName: string;
@@ -66,8 +74,12 @@ export class ReportsService {
 
     const invoiceRows = invoices.map((invoice) => ({
       source: "invoice" as const,
-      id: invoice.id,
-      customerId: invoice.customerId,
+      // invoice.id is the internal UUID FK — invoice.code (e.g.
+      // "INV-CUST001-003") is the human-facing id shown everywhere else.
+      // Legacy rows predating Invoice.code fall back to the UUID rather
+      // than showing blank.
+      id: invoice.code ?? invoice.id,
+      customerCode: invoice.customer.code ?? invoice.customerId,
       customerName: invoice.customer.name,
       dueDate: invoice.dueDate ?? invoice.invoiceDate,
       total: Number(invoice.total),
@@ -79,7 +91,7 @@ export class ReportsService {
     const bulkOrderRows = bulkOrders.map((order) => ({
       source: "bulk_order" as const,
       id: order.ref,
-      customerId: order.customerId,
+      customerCode: order.customer.code ?? order.customerId,
       customerName: order.customer.name,
       dueDate: order.dueDate,
       total: Number(order.amountDue),
@@ -236,19 +248,76 @@ export class ReportsService {
   }
 
   async listSchedules() {
-    const items = await this.prisma.scheduledReport.findMany({
+    const rows = await this.prisma.scheduledReport.findMany({
       orderBy: { createdAt: "desc" },
     });
+
+    // The upcoming dates are derived here rather than in the browser so the
+    // calendar the admin reads and the clock the scheduler obeys can never
+    // disagree — one implementation, one timezone.
+    const now = new Date();
+    const items = rows.map((row) => ({
+      ...row,
+      upcomingRuns: row.active
+        ? listUpcomingRuns(
+            {
+              frequency: row.frequency,
+              deliveryHour: row.deliveryHour,
+              deliveryMinute: row.deliveryMinute,
+              anchor: row.createdAt,
+            },
+            UPCOMING_RUNS_PREVIEW_COUNT,
+            now,
+          ).map((date) => date.toISOString())
+        : [],
+    }));
+
     return { items };
   }
 
+  /**
+   * Dates a not-yet-saved schedule would fire on, for the "when will this
+   * arrive?" preview in the Add Schedule form.
+   */
+  previewUpcomingRuns(frequency: ReportFrequency, deliveryTime?: string, count?: number) {
+    if (!Object.values(ReportFrequency).includes(frequency)) {
+      throw new BadRequestException(`Unknown report frequency "${frequency}"`);
+    }
+    const { hour, minute } = parseDeliveryTime(deliveryTime);
+    const now = new Date();
+    const runs = listUpcomingRuns(
+      { frequency, deliveryHour: hour, deliveryMinute: minute, anchor: now },
+      Math.min(Math.max(count ?? UPCOMING_RUNS_PREVIEW_COUNT, 1), 12),
+      now,
+    );
+    return { runs: runs.map((date) => date.toISOString()) };
+  }
+
   async createSchedule(dto: CreateScheduleDto) {
+    const recipientPhone = normalisePhoneInput(dto.recipientPhone);
+    if (!recipientPhone) {
+      throw new BadRequestException("A valid 10-digit recipient WhatsApp number is required");
+    }
+
+    const { hour, minute } = parseDeliveryTime(dto.deliveryTime);
+    const createdAt = new Date();
+
     const item = await this.prisma.scheduledReport.create({
       data: {
         reportName: dto.reportName,
         frequency: dto.frequency,
-        format: dto.format || "PDF",
-        recipientEmail: dto.recipientEmail,
+        format: dto.format || "XLSX",
+        recipientPhone,
+        deliveryHour: hour,
+        deliveryMinute: minute,
+        createdAt,
+        // Stored up front so the scheduler never has to guess, and so the
+        // first delivery lands at the chosen time rather than on the next
+        // poll after creation.
+        nextRunAt: computeNextRunAt(
+          { frequency: dto.frequency, deliveryHour: hour, deliveryMinute: minute, anchor: createdAt },
+          createdAt,
+        ),
       },
     });
 
@@ -270,14 +339,48 @@ export class ReportsService {
       throw new NotFoundException(`Scheduled report ${id} not found`);
     }
 
+    let recipientPhone: string | undefined;
+    if (dto.recipientPhone !== undefined) {
+      const cleaned = normalisePhoneInput(dto.recipientPhone);
+      if (!cleaned) {
+        throw new BadRequestException("A valid 10-digit recipient WhatsApp number is required");
+      }
+      recipientPhone = cleaned;
+    }
+
+    // Any change to frequency or time moves every future delivery, so the
+    // stored nextRunAt is recomputed rather than left pointing at a slot the
+    // schedule no longer keeps. Resuming a paused schedule does the same:
+    // its nextRunAt may be long past, and firing immediately on resume would
+    // send a report nobody asked for at that moment.
+    const frequency = dto.frequency ?? existing.frequency;
+    const { hour, minute } =
+      dto.deliveryTime !== undefined
+        ? parseDeliveryTime(dto.deliveryTime)
+        : { hour: existing.deliveryHour, minute: existing.deliveryMinute };
+    const timingChanged =
+      frequency !== existing.frequency || hour !== existing.deliveryHour || minute !== existing.deliveryMinute;
+    const resumed = dto.active === true && !existing.active;
+
     const item = await this.prisma.scheduledReport.update({
       where: { id },
       data: {
         reportName: dto.reportName ?? undefined,
         frequency: dto.frequency ?? undefined,
         format: dto.format ?? undefined,
-        recipientEmail: dto.recipientEmail ?? undefined,
+        recipientPhone: recipientPhone ?? undefined,
+        deliveryHour: dto.deliveryTime !== undefined ? hour : undefined,
+        deliveryMinute: dto.deliveryTime !== undefined ? minute : undefined,
         active: dto.active ?? undefined,
+        nextRunAt:
+          timingChanged || resumed
+            ? computeNextRunAt({
+                frequency,
+                deliveryHour: hour,
+                deliveryMinute: minute,
+                anchor: existing.createdAt,
+              })
+            : undefined,
       },
     });
 
@@ -348,4 +451,16 @@ export class ReportsService {
     });
     return item;
   }
+}
+
+/**
+ * Accepts what an admin actually types — spaces, dashes, "+91", a leading 0 —
+ * and stores the bare 10-digit number the rest of the app keeps (see
+ * AuthService.cleanPhone). Returns null when it cannot be read as one, so the
+ * caller can reject rather than persist a number AiSensy will bounce.
+ */
+function normalisePhoneInput(raw: string | undefined): string | null {
+  const digits = (raw ?? "").replace(/\D/g, "");
+  const local = digits.length > 10 ? digits.slice(-10) : digits;
+  return /^[6-9]\d{9}$/.test(local) ? local : null;
 }

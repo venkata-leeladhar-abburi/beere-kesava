@@ -1,8 +1,11 @@
+import { useMemo } from "react";
 import { Building2, Users, IndianRupee, AlertTriangle, UserPlus } from "lucide-react";
 import customersHero from "../../../../assets/inline/customers2.jpg";
 import { Money } from "../../../../shared/ui/domain/Money";
-import { paise } from "../../../../lib/domain/money";
+import { rupees } from "../../../../lib/domain/money";
 import { T, F } from "../theme";
+import { useBulkOrders, resolveOrderMoney } from "@/features/bulk-orders";
+import { INVOICES } from "@/features/payments";
 
 import { useCustomers } from "../../contexts/CustomersContext";
 
@@ -36,12 +39,36 @@ import { LuxuryStatsCard } from "../../../../shared/ui/LuxuryStatsCard";
 
 export function StatsStrip() {
   const { wholesaleCustomers = [], retailCustomers = [], customers = [] } = useCustomers() ?? {};
+  const { bulkOrders = [] } = useBulkOrders();
+
+  // Real per-wholesale-customer billed/paid/outstanding, matched the same
+  // way CustomersPage.tsx's `wholesaleList` memo does (customerId FK, else
+  // business-name fallback for older rows created before bulk orders
+  // carried a customerId).
+  const wholesaleAggregates = useMemo(() => {
+    return wholesaleCustomers.map(c => {
+      const custOrders = bulkOrders.filter(o =>
+        (o.customerId && o.customerId === c.id) || o.customer.toLowerCase() === c.name.toLowerCase()
+      );
+      const money = custOrders.map(o => resolveOrderMoney(o, INVOICES));
+      const billed = money.reduce((a, m) => a + m.amountDue, 0);
+      const paid = money.reduce((a, m) => a + m.amountPaid, 0);
+      const outstanding = Math.max(0, billed - paid);
+      return { paid, outstanding };
+    });
+  }, [wholesaleCustomers, bulkOrders]);
+
+  const wholesaleRevenue = wholesaleAggregates.reduce((sum, a) => sum + a.paid, 0);
+  const retailRevenue = retailCustomers.reduce((sum, c) => sum + (c.totalSpend || 0), 0);
+  const totalRevenue = wholesaleRevenue + retailRevenue;
+  const customersWithDues = wholesaleAggregates.filter(a => a.outstanding > 0).length;
+  const totalDues = wholesaleAggregates.reduce((sum, a) => sum + a.outstanding, 0);
 
   const statItems = [
     { icon: <Building2 size={20} color="rgba(245,232,208,0.90)" />, label: "Wholesale Customers", value: String(wholesaleCustomers.length), sub: "Active business relationships", highlight: false },
     { icon: <Users size={20} color="rgba(245,232,208,0.90)" />, label: "Retail Customers", value: String(retailCustomers.length), sub: "Profiles at point of sale", highlight: false },
-    { icon: <IndianRupee size={20} color="rgba(231,201,131,0.95)" />, label: "Total Revenue", value: <Money value={paise(0)} />, sub: "Live Database", highlight: true },
-    { icon: <AlertTriangle size={20} color="rgba(245,232,208,0.90)" />, label: "Customers with Dues", value: "0", sub: <>Total dues: <Money value={paise(0)} /></>, highlight: false },
+    { icon: <IndianRupee size={20} color="rgba(231,201,131,0.95)" />, label: "Total Revenue", value: <Money value={rupees(totalRevenue)} />, sub: "Live Database", highlight: true },
+    { icon: <AlertTriangle size={20} color="rgba(245,232,208,0.90)" />, label: "Customers with Dues", value: String(customersWithDues), sub: <>Total dues: <Money value={rupees(totalDues)} /></>, highlight: false },
     { icon: <UserPlus size={20} color="rgba(245,232,208,0.90)" />, label: "Total Customers", value: String(customers.length), sub: `${retailCustomers.length} retail · ${wholesaleCustomers.length} wholesale`, highlight: false },
   ];
 

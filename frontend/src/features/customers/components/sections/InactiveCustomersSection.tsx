@@ -5,6 +5,7 @@ import { monthsSinceLabel } from "../utils";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { FilterBarActive, type ActiveFilter } from "../../../../shared/ui/filter";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 export interface InactiveCustomerRow {
@@ -104,49 +105,104 @@ export function InactiveCustomersSection({
       subtitle="These customers have not placed any order or visited the shop in the last 6 months. Consider reaching out to bring them back."
       actions={<SectionDownloadAction label="Download Inactive List" />}
     >
-      {/* Filters + timeline */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap" as const, gap: 12 }}>
-        <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" as const }}>
-          <div style={{ width: 260 }}>
-            <SearchInput
-              aria-label="Search by customer name"
-              value={inactiveSearch}
-              onChange={e => setInactiveSearch(e.target.value)}
-              placeholder="Search by customer name..."
-            />
-          </div>
-          <Pill active={inactiveTypeFilter === "all"} onClick={() => setInactiveTypeFilter("all")}>All ({inactiveDataLength})</Pill>
-          <Pill active={inactiveTypeFilter === "Wholesale"} onClick={() => setInactiveTypeFilter("Wholesale")}>Wholesale ({wholesaleCount})</Pill>
-          <Pill active={inactiveTypeFilter === "Retail"} onClick={() => setInactiveTypeFilter("Retail")}>Retail ({retailCount})</Pill>
-        </div>
-        <div style={{ width: 160 }}>
-          <Select value={inactiveCityFilter} onValueChange={setInactiveCityFilter} size="sm" placeholder="All Cities">
-            <SelectItem value="all">All Cities</SelectItem>
-            {inactiveCities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-          </Select>
-        </div>
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={inactiveSearch}
+          onSearchChange={setInactiveSearch}
+          searchPlaceholder="Search inactive customer..."
+          filterGroups={[
+            {
+              id: "type",
+              label: "Customer Type",
+              value: inactiveTypeFilter,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: `All (${inactiveDataLength})` },
+                { value: "Wholesale", label: `Wholesale (${wholesaleCount})` },
+                { value: "Retail", label: `Retail (${retailCount})` },
+              ],
+              onChange: (v: string) => setInactiveTypeFilter(v as any),
+            },
+            {
+              id: "city",
+              label: "City",
+              value: inactiveCityFilter,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Cities" },
+                ...inactiveCities.map(c => ({ value: c, label: c })),
+              ],
+              onChange: setInactiveCityFilter,
+            },
+            {
+              id: "timeline",
+              label: "Inactive Period",
+              value: inactiveTimelineFilter,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "Any length" },
+                { value: "6", label: "6+ months" },
+                { value: "8", label: "8+ months" },
+                { value: "10", label: "10+ months" },
+                { value: "12", label: "12+ months" },
+              ],
+              onChange: (v: string) => setInactiveTimelineFilter(v as any),
+            },
+          ]}
+          onResetAll={() => {
+            setInactiveSearch("");
+            setInactiveTypeFilter("all");
+            setInactiveCityFilter("all");
+            setInactiveTimelineFilter("all");
+          }}
+        />
       </div>
 
-      {/* Timeline filter — how long inactive */}
-      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 20, flexWrap: "wrap" as const }}>
-        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginRight: 4 }}>Inactive for:</span>
-        {([
-          { key: "all", label: "Any length" },
-          { key: "6", label: "6+ months" },
-          { key: "8", label: "8+ months" },
-          { key: "10", label: "10+ months" },
-          { key: "12", label: "12+ months" },
-        ] as const).map(t => (
-          <Button
-            key={t.key}
-            onClick={() => setInactiveTimelineFilter(t.key)}
-            variant={inactiveTimelineFilter === t.key ? "danger" : "tertiary"}
-            size="sm"
-            className="rounded-full"
-          >
-            {t.label}
-          </Button>
-        ))}
+      {/* Desktop Filter Controls */}
+      <div className="hidden md:block mb-5">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap" as const, gap: 12 }}>
+          <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" as const }}>
+            <div style={{ width: 260 }}>
+              <SearchInput
+                aria-label="Search by customer name"
+                value={inactiveSearch}
+                onChange={e => setInactiveSearch(e.target.value)}
+                placeholder="Search by customer name..."
+              />
+            </div>
+            <Pill active={inactiveTypeFilter === "all"} onClick={() => setInactiveTypeFilter("all")}>All ({inactiveDataLength})</Pill>
+            <Pill active={inactiveTypeFilter === "Wholesale"} onClick={() => setInactiveTypeFilter("Wholesale")}>Wholesale ({wholesaleCount})</Pill>
+            <Pill active={inactiveTypeFilter === "Retail"} onClick={() => setInactiveTypeFilter("Retail")}>Retail ({retailCount})</Pill>
+          </div>
+          <div style={{ width: 160 }}>
+            <Select value={inactiveCityFilter} onValueChange={setInactiveCityFilter} size="sm" placeholder="All Cities">
+              <SelectItem value="all">All Cities</SelectItem>
+              {inactiveCities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </Select>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" as const }}>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginRight: 4 }}>Inactive for:</span>
+          {([
+            { key: "all", label: "Any length" },
+            { key: "6", label: "6+ months" },
+            { key: "8", label: "8+ months" },
+            { key: "10", label: "10+ months" },
+            { key: "12", label: "12+ months" },
+          ] as const).map(t => (
+            <Button
+              key={t.key}
+              onClick={() => setInactiveTimelineFilter(t.key)}
+              variant={inactiveTimelineFilter === t.key ? "primary" : "tertiary"}
+              size="sm"
+              className={`rounded-full ${inactiveTimelineFilter === t.key ? "bg-[#6E0F2D] text-[#FFFDF9]" : ""}`}
+            >
+              {t.label}
+            </Button>
+          ))}
+        </div>
       </div>
 
       {onClearAllFilters && (
@@ -161,6 +217,7 @@ export function InactiveCustomersSection({
             columns={inactiveColumns}
             data={filteredInactive.map((row, i) => ({ ...row, _rowIndex: i }))}
             getRowId={row => String(row._rowIndex)}
+            pagination
             isFiltered={activeFilters.length > 0}
             onClearFilters={onClearAllFilters}
             emptyTitle="No inactive customers"

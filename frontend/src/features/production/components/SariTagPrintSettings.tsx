@@ -1,4 +1,3 @@
-import React from "react";
 import { Printer, Check } from "lucide-react";
 import { Button, Select, SelectItem, NumberInput } from "../../../shared/ui/primitives";
 

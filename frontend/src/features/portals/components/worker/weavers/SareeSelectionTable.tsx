@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { CheckCircle2, AlertTriangle, Square, CheckSquare, LayoutGrid, List } from "lucide-react";
 import { C, F } from "../tokens";
 import { type WeaverBatchData } from "./weaversData";
@@ -359,6 +359,7 @@ export function SareeSelectionTable({
               getRowId={s => String(s.no)}
               onRowClick={s => { if (s.status === "pending") selectSareeSlot(s.no); }}
               rowClassName={s => (selectedSareeNos.has(s.no) ? "bk-saree-row-selected" : undefined)}
+              pagination
             />
           </div>
           <style>{`.bk-saree-row-selected { background: rgba(110,15,45,0.05) !important; }`}</style>

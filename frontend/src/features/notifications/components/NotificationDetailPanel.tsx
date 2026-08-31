@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { X, ArrowRight, Check } from "lucide-react";
 import { Button, IconButton } from "../../../shared/ui/primitives";

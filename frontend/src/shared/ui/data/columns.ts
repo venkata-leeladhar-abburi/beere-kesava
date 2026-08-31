@@ -36,8 +36,8 @@ export interface ColumnDef<T> {
   sortable?: boolean;
   sortFn?: (a: T, b: T) => number;
 
-  /** Render override — receives the accessor's raw value and the full row. */
-  cell?: (value: unknown, row: T) => React.ReactNode;
+  /** Render override — receives the accessor's raw value, the full row, and its overall sorted index. */
+  cell?: (value: unknown, row: T, rowIndex: number) => React.ReactNode;
 
   headerTooltip?: string;
   width?: number | "auto";

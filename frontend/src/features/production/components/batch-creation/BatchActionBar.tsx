@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { Save as FloppyDisk, CheckCircle2 as CheckCircle, CircleDot } from "lucide-react";
 import { T, F } from "./constants";

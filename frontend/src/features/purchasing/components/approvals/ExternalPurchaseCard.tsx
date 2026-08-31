@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax */
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import { Check, X, Package } from "lucide-react";
 import {
@@ -189,7 +189,7 @@ export function ExternalPurchaseCard({
           </Button>
           {open && (
             <div style={{ overflowX: "auto" }}>
-              <DataTable responsive columns={pieceColumns} data={pieces} getRowId={s => s.id} />
+              <DataTable responsive columns={pieceColumns} data={pieces} getRowId={s => s.id} pagination />
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, background: T.silkCream, padding: "9px 12px", minWidth: 760 }}>
                 <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>
                   Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}

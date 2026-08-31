@@ -381,6 +381,7 @@ function TableSection({ batches, isLoading, isError, onRetry }: { batches: Histo
           onRetry={onRetry}
           emptyTitle="No completed batches yet"
           emptyDescription="Batches will appear here once every piece has passed QC or finishing."
+          pagination
         />
       </div>
 

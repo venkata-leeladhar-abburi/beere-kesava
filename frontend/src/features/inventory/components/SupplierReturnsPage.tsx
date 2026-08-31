@@ -11,6 +11,7 @@ import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../shared/ui/state";
 import { Modal } from "../../../shared/ui/overlay";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
 import { LuxuryStatsCard } from "@/shared/ui/LuxuryStatsCard";
 import { T, F } from "./externalPurchases/theme";
 import { SectionCard } from "./externalPurchases/common/primitives";
@@ -212,55 +213,105 @@ export function SupplierReturnsPage() {
           title="Supplier Returns Queue"
           subtitle="Sarees sent back to a supplier from an External Purchase. Approving removes the pieces from that purchase's available stock."
         >
-        {/* Search & Filter Bar */}
-        <div style={{
-          background: "white",
-          borderRadius: 18,
-          border: `1px solid ${T.borderDef}`,
-          boxShadow: "0 4px 20px rgba(74,6,27,0.07)",
-          padding: "18px 22px",
-          marginBottom: 20,
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-        }}>
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 w-full">
-            <div className="flex-1 min-w-0">
-              <SearchInput aria-label="Search supplier returns"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onSearch={setSearch}
-                placeholder="Search by supplier, saree code, return ID, or reason…"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0 overflow-x-auto scrollbar-none">
-              {([
-                { key: "PENDING", label: `Pending${pendingCount ? ` (${pendingCount})` : ""}` },
-                { key: "APPROVED", label: "Approved" },
-                { key: "REJECTED", label: "Rejected" },
-                { key: "ALL", label: "All" },
-              ] as { key: StatusFilter; label: string }[]).map(f => (
-                <Button
-                  key={f.key}
-                  onClick={() => setStatusFilter(f.key)}
-                  size="sm"
-                  className={
-                    statusFilter === f.key
-                      ? "rounded-[10px] bg-[var(--surface-brand)] text-[#FFFDF9] border-none shadow-none"
-                      : "rounded-[10px] bg-transparent text-[var(--text-tertiary)] border border-[rgba(110,15,45,0.18)] shadow-none"
-                  }
-                >
-                  {f.label}
-                </Button>
-              ))}
-            </div>
-          </div>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search by supplier, saree code, reason..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: dateFilter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                  else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                  else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                  else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                },
+              },
+              {
+                id: "status",
+                label: "Return Status",
+                value: statusFilter,
+                defaultValue: "PENDING",
+                options: [
+                  { value: "PENDING", label: `Pending${pendingCount ? ` (${pendingCount})` : ""}` },
+                  { value: "APPROVED", label: "Approved" },
+                  { value: "REJECTED", label: "Rejected" },
+                  { value: "ALL", label: "All" },
+                ],
+                onChange: (s: string) => setStatusFilter(s as StatusFilter),
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setStatusFilter("PENDING");
+              setDateFilter(DEFAULT_DATE_FILTER);
+            }}
+          />
         </div>
 
-        {/* Date Filter Bar */}
-        <div style={{ marginBottom: 16 }}>
-          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+        {/* Desktop Filter Bar & Controls */}
+        <div className="hidden md:block">
+          <div style={{
+            background: "white",
+            borderRadius: 18,
+            border: `1px solid ${T.borderDef}`,
+            boxShadow: "0 4px 20px rgba(74,6,27,0.07)",
+            padding: "18px 22px",
+            marginBottom: 20,
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+          }}>
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 w-full">
+              <div className="flex-1 min-w-0">
+                <SearchInput aria-label="Search supplier returns"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onSearch={setSearch}
+                  placeholder="Search by supplier, saree code, return ID, or reason…"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0 overflow-x-auto scrollbar-none">
+                {([
+                  { key: "PENDING", label: `Pending${pendingCount ? ` (${pendingCount})` : ""}` },
+                  { key: "APPROVED", label: "Approved" },
+                  { key: "REJECTED", label: "Rejected" },
+                  { key: "ALL", label: "All" },
+                ] as { key: StatusFilter; label: string }[]).map(f => (
+                  <Button
+                    key={f.key}
+                    onClick={() => setStatusFilter(f.key)}
+                    size="sm"
+                    className={
+                      statusFilter === f.key
+                        ? "rounded-[10px] bg-[var(--surface-brand)] text-[#FFFDF9] border-none shadow-none"
+                        : "rounded-[10px] bg-transparent text-[var(--text-tertiary)] border border-[rgba(110,15,45,0.18)] shadow-none"
+                    }
+                  >
+                    {f.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+          </div>
         </div>
 
         {/* Card View / Table View Toggle (Mobile) */}
@@ -402,7 +453,7 @@ export function SupplierReturnsPage() {
               })}
             </div>
           ) : (
-            <DataTable responsive columns={columns} data={rows} getRowId={r => r.id} />
+            <DataTable responsive columns={columns} data={rows} getRowId={r => r.id} pagination />
           )}
         </div>
 
@@ -419,7 +470,7 @@ export function SupplierReturnsPage() {
               <EmptyState title="No return requests yet" description="Sarees returned to suppliers will show up here." />
             )
           ) : (
-            <DataTable responsive columns={columns} data={rows} getRowId={r => r.id} />
+            <DataTable responsive columns={columns} data={rows} getRowId={r => r.id} pagination />
           )}
         </div>
       </SectionCard>

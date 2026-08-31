@@ -9,6 +9,7 @@ import { WEAVERS } from "./data";
 import { ActionDialog } from "./common/primitives";
 import { PageHeader, StatsStrip, WeaverStatTile } from "./sections/PageHeaderAndStats";
 import { weaversApi } from "../../../shared/api/weavers";
+import { useWeaverRosterStats } from "../hooks/useWeaverRosterStats";
 import { warpRequestsApi } from "../../../shared/api/warpRequests";
 import { paymentsApi } from "../../../shared/api/payments";
 import { resolveAssetUrl } from "../../../shared/api/uploads";
@@ -21,7 +22,6 @@ import { WeaverAnalytics } from "./sections/WeaverAnalytics";
 import { LeaderboardAndQC } from "./sections/LeaderboardAndQC";
 import { MaterialsFooter } from "@/features/materials";
 import { NewWeaverModal } from "./modals/NewWeaverModal";
-import { ImportWeaversModal } from "./modals/ImportWeaversModal";
 
 /**
  * Composition root for the Weavers feature. Originally a single
@@ -83,6 +83,10 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
         totalEver: 0,
         totalPaid: "—",
         lastActive: "—",
+        email: navWeaver.email,
+        bankName: navWeaver.bankName,
+        accountNo: navWeaver.accountNo,
+        ifsc: navWeaver.ifsc,
       }
     : null;
 
@@ -95,7 +99,6 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
   const [newWeaverExpanded, setNewWeaverExpanded] = useState(() => new URLSearchParams(location.search).get("new") === "1");
   const [drawerMode, setDrawerMode] = useState<"view" | "edit">(navState?.mode === "edit" ? "edit" : "view");
   const [batchDialog, setBatchDialog] = useState<typeof WEAVERS[0] | null>(null);
-  const [importOpen, setImportOpen] = useState(false);
   const { batches } = useBatches();
 
   // Use the live-fetched weaver when navigating from AllWeavers, otherwise the
@@ -103,22 +106,17 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
   const activeWeaver = navWeaverObj ?? selectedWeaver;
 
   // Real aggregate numbers for the hero stats strip. GET /weavers/leaderboard
-  // only returns the top 10, so the roster + per-weaver GET /weavers/:id/stats
-  // calls are used to compute true totals/averages across everyone.
-  const { data: weaversRes, refetch: refetchWeavers } = useQuery({
-    queryKey: ["weavers-page-roster"],
-    queryFn: () => weaversApi.list(),
-  });
-  const roster = weaversRes?.items ?? [];
-  const { data: statsList } = useQuery({
-    queryKey: ["weavers-page-stats", roster.map(w => w.id)],
-    queryFn: () => Promise.all(roster.map(w => weaversApi.getStats(w.id))),
-    enabled: roster.length > 0,
-  });
-  const allStats = statsList ?? [];
+  // only returns the top 10, so the roster + the bulk GET /weavers/stats are
+  // used to compute true totals/averages across everyone.
+  const { roster, allStats } = useWeaverRosterStats();
   const totalActiveWeavers = roster.filter(w => w.status === "ACTIVE").length;
   const totalSareesWoven = allStats.reduce((s, st) => s + st.totalSareesWoven, 0);
-  const avgPassRate = allStats.length ? Math.round(allStats.reduce((s, st) => s + st.qcPassRate, 0) / allStats.length) : 0;
+  // Weighted across sarees, not a mean of per-weaver percentages: averaging
+  // the rates gave every weaver equal weight and counted anyone with no
+  // production yet as a flat 0%, dragging the firm-wide figure well below
+  // the true pass rate.
+  const totalQcPassed = allStats.reduce((s, st) => s + st.qcPassCount, 0);
+  const avgPassRate = totalSareesWoven ? Math.round((totalQcPassed / totalSareesWoven) * 100) : 0;
 
   const { data: pendingWarpRequestsRes } = useQuery({
     queryKey: ["warp-requests-pending", "weavers-page-stats"],
@@ -152,18 +150,13 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
       <StatsStrip stats={realStats} />
       <WarpRequestsSection />
       <div id="weav-all-weavers">
-        <AllWeaversControls view={view} setView={setView} filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} onAddWeaver={() => setNewWeaverExpanded(true)} onViewAll={() => onNavigate?.("AllWeavers")} onImport={() => setImportOpen(true)}>
-          <WeaverDirectory view={view} onSelect={(w) => { setDrawerMode("view"); setSelectedWeaver(w); }} onEdit={(w) => { setDrawerMode("edit"); setSelectedWeaver(w); }} onBatches={setBatchDialog} />
+        <AllWeaversControls view={view} setView={setView} filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} onAddWeaver={() => setNewWeaverExpanded(true)} onViewAll={() => onNavigate?.("AllWeavers")}>
+          <WeaverDirectory view={view} search={search} filter={filter} onSelect={(w) => { setDrawerMode("view"); setSelectedWeaver(w); }} onEdit={(w) => { setDrawerMode("edit"); setSelectedWeaver(w); }} onBatches={setBatchDialog} />
         </AllWeaversControls>
       </div>
       <div id="weav-performance"><WeaverAnalytics /></div>
       <div id="weav-activities"><LeaderboardAndQC onActivities={() => onNavigate?.("Notifications")} onNavigate={onNavigate} /></div>
       <NewWeaverModal expanded={newWeaverExpanded} setExpanded={setNewWeaverExpanded} />
-      <ImportWeaversModal
-        open={importOpen}
-        onClose={() => setImportOpen(false)}
-        onImported={() => { void refetchWeavers(); }}
-      />
       <div style={{ marginTop: "auto" }}>
         <MaterialsFooter />
       </div>

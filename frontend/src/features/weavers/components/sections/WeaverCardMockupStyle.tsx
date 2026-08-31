@@ -1,4 +1,3 @@
-import React from "react";
 import { MapPin, Phone, Eye, Edit3, Layers3 } from "lucide-react";
 import { Rows3 as Rows } from "lucide-react";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";

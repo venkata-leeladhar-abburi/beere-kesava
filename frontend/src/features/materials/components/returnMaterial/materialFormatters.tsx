@@ -1,4 +1,3 @@
-import React from "react";
 import { ReturnedMaterialItem } from "../../contexts/MaterialReturnContext";
 import { F, T } from "../issueMaterial/theme";
 
@@ -6,32 +5,20 @@ import { F, T } from "../issueMaterial/theme";
 // Mirrors issueMaterial/materialFormatters.tsx's summarizeMaterials/
 // renderIssuedMaterials, minus the grnBatchId field returns don't carry.
 export function summarizeMaterials(items: ReturnedMaterialItem[]): string {
-  return items.map(m => {
-    if (m.materialType === "Warp") return `Warp (${m.warpSubtype ?? "—"}) ${m.quantity}${m.unit}`;
-    if (m.materialType === "Resham") return `Resham${m.jariColor ? ` ${m.jariColor}` : ""} ${m.quantity}${m.unit}`;
-    return `Jari ${m.jariType ?? ""} ${m.jariGrade ?? ""} ${m.jariColor ?? ""} ${m.quantity} ${m.unit}`.replace(/\s+/g, " ").trim();
-  }).join(" · ");
+  return items.map(m => `${m.materialType}${m.description ? ` (${m.description})` : ""} ${m.quantity}${m.unit}`).join(" · ");
 }
 
 export function renderReturnedMaterials(items: ReturnedMaterialItem[]) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
       {items.map((m, idx) => {
-        let desc = "";
-        if (m.materialType === "Warp") {
-          desc = m.warpSubtype || "";
-          if (m.description) desc += desc ? ` (${m.description})` : m.description;
-        } else if (m.materialType === "Resham") {
-          desc = m.description || m.jariColor || "";
-        } else if (m.materialType === "Jari") {
-          desc = `${m.jariType || ""} ${m.jariGrade || ""} ${m.jariColor || ""}`.replace(/\s+/g, " ").trim();
-        }
+        const desc = m.description || "";
 
         return (
           // ReturnedMaterialItem carries no unique id/sku — fall back to a composite of its
           // distinguishing fields plus index, since two entries can otherwise be identical.
           // eslint-disable-next-line react/no-array-index-key
-          <div key={`${m.materialType}-${m.warpSubtype ?? ""}-${m.jariColor ?? ""}-${idx}`} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          <div key={`${m.materialType}-${desc}-${idx}`} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
             <span style={{
               fontFamily: F.ui, fontSize: 12, fontWeight: 700,
               color: m.materialType === "Warp" ? "#7A5010" : m.materialType === "Resham" ? "#7A5E1C" : T.royalBurgundy,

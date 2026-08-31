@@ -9,12 +9,14 @@ import {
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcryptjs";
+import { AuditLogService } from "../audit-log/audit-log.service";
+import { deviceLabel } from "../audit-log/device-label";
 import { PrismaService } from "../prisma/prisma.service";
 import { WhatsAppService } from "../whatsapp/whatsapp.service";
 import { RequestOtpDto } from "./dto/request-otp.dto";
 import { VerifyOtpDto } from "./dto/verify-otp.dto";
 import { OtpInspectorService } from "./testing/otp-inspector.service";
-import { UserRole, AccessLevel, WhatsAppMessageKind, WhatsAppMessageStatus } from "../generated/prisma/client";
+import { AuditStatus, UserRole, AccessLevel, WhatsAppMessageKind, WhatsAppMessageStatus } from "../generated/prisma/client";
 
 @Injectable()
 export class AuthService {
@@ -22,6 +24,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly whatsapp: WhatsAppService,
+    private readonly auditLog: AuditLogService,
     // Only actually provided when isE2eTestModeEnabled() (see auth.module.ts);
     // @Optional() means this resolves to undefined everywhere else, so every
     // call site below is a no-op in production.
@@ -138,8 +141,36 @@ export class AuthService {
     };
   }
 
-  async verifyOtp(dto: VerifyOtpDto) {
+  /**
+   * Every outcome of this method is recorded to the login history — success
+   * and each distinct failure alike. A security log that only records
+   * successes is the one that cannot answer the question it exists for
+   * ("was anyone trying to get in?").
+   *
+   * `userAgent` is optional so existing callers and the unit tests are
+   * unaffected; the controller passes the real header.
+   */
+  async verifyOtp(dto: VerifyOtpDto, userAgent?: string) {
     const phone = this.cleanPhone(dto.phone);
+    const device = deviceLabel(userAgent);
+
+    // Best-effort: an audit write must never turn a good login into a 500, or
+    // mask the real reason a bad one was rejected.
+    const audit = async (
+      status: AuditStatus,
+      params: { userId?: string; failReason?: string; duration?: number } = {},
+    ) => {
+      try {
+        await this.auditLog.record({ status, device, ...params });
+      } catch {
+        /* login history is observability, not a precondition for signing in */
+      }
+    };
+
+    // Resolved lazily so a failed attempt can still be attributed to the
+    // account someone was trying to get into.
+    const attemptedUserId = async () =>
+      (await this.prisma.user.findFirst({ where: { mobile: { contains: phone } }, select: { id: true } }))?.id;
 
     const otpRow = await this.prisma.otpCode.findFirst({
       where: { phoneNumber: phone, consumedAt: null },
@@ -147,15 +178,27 @@ export class AuthService {
     });
 
     if (!otpRow) {
+      await audit(AuditStatus.FAILED, {
+        userId: await attemptedUserId(),
+        failReason: "No OTP was requested for this phone number",
+      });
       throw new UnauthorizedException("No OTP was requested for this phone number.");
     }
 
     if (otpRow.expiresAt < new Date()) {
+      await audit(AuditStatus.FAILED, {
+        userId: await attemptedUserId(),
+        failReason: "OTP had expired",
+      });
       throw new UnauthorizedException("OTP has expired. Please request a new one.");
     }
 
     const lockoutMinutes = this.lockoutRemainingMinutes(otpRow);
     if (lockoutMinutes !== null) {
+      await audit(AuditStatus.FAILED, {
+        userId: await attemptedUserId(),
+        failReason: `Locked out after ${this.maxOtpAttempts} incorrect attempts`,
+      });
       throw new HttpException(
         `Too many incorrect attempts. Please try again in ${lockoutMinutes} minute${lockoutMinutes === 1 ? "" : "s"}.`,
         HttpStatus.TOO_MANY_REQUESTS,
@@ -167,6 +210,10 @@ export class AuthService {
       await this.prisma.otpCode.update({
         where: { id: otpRow.id },
         data: { attempts: { increment: 1 } },
+      });
+      await audit(AuditStatus.FAILED, {
+        userId: await attemptedUserId(),
+        failReason: `Incorrect OTP (attempt ${otpRow.attempts + 1} of ${this.maxOtpAttempts})`,
       });
       throw new UnauthorizedException("Invalid OTP code.");
     }
@@ -206,6 +253,7 @@ export class AuthService {
       // verify. There is no "fall back to SuperAdmin" branch here anymore —
       // an unresolved identity means the session is denied, full stop.
       if (!weaver) {
+        await audit(AuditStatus.FAILED, { failReason: "Account not found for this phone number" });
         throw new UnauthorizedException("Account not found for this phone number.");
       }
 
@@ -235,6 +283,10 @@ export class AuthService {
 
     const token = this.jwtService.sign(payload);
 
+    // Only User rows can be referenced: the weaver fallback path above sets
+    // `userId` to a Weaver.id, which is not a valid AuditLog.userId FK.
+    await audit(AuditStatus.LOGIN, { userId: user?.id });
+
     return {
       token,
       user: {
@@ -249,6 +301,24 @@ export class AuthService {
         dateAdded,
       },
     };
+  }
+
+  /**
+   * Closes the caller's session in the login history.
+   *
+   * Logging out is otherwise entirely client-side (the token is simply
+   * dropped), so without this the history would only ever contain LOGIN rows
+   * and every session would read as "Ongoing" forever.
+   */
+  async logout(userId: string | undefined, userAgent?: string) {
+    // Undefined for a session with no User row behind it — see
+    // AuthenticatedUser.id, which carries a Weaver.id on the weaver fallback
+    // path. Those never produced a LOGIN row either, so there is nothing to
+    // close and nothing to record.
+    if (userId) {
+      await this.auditLog.recordLogout(userId, deviceLabel(userAgent));
+    }
+    return { ok: true };
   }
 
   async ensureDefaultUsers() {
@@ -298,3 +368,4 @@ export class AuthService {
     }
   }
 }
+

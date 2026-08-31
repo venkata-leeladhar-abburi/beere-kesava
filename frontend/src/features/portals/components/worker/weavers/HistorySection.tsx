@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Search, History, CheckSquare, Square, Printer, ImageOff } from "lucide-react";
 import { C, F } from "../tokens";
 import { SectionCard } from "../primitives";
@@ -346,6 +346,7 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
                     onSelectionChange={setSelected}
                     responsive
                     density="compact"
+                    pagination
                   />
                 </div>
               </div>
@@ -372,6 +373,7 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
                     onSelectionChange={setSelected}
                     responsive
                     density="compact"
+                    pagination
                   />
                 </div>
               </div>

@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { Search, Download, RefreshCw, X } from "lucide-react";
 import { F, T } from "./tokens";
@@ -7,6 +6,8 @@ import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/p
 export function LiveFilterBar({
   search, setSearch,
   roleFilter, setRoleFilter,
+  staffFilter, setStaffFilter,
+  staffOptions,
   moduleFilter, setModuleFilter,
   actionFilter, setActionFilter,
   periodFilter, setPeriodFilter,
@@ -14,6 +15,8 @@ export function LiveFilterBar({
 }: {
   search: string; setSearch: (v: string) => void;
   roleFilter: string; setRoleFilter: (v: string) => void;
+  staffFilter: string; setStaffFilter: (v: string) => void;
+  staffOptions: { id: string; label: string }[];
   moduleFilter: string; setModuleFilter: (v: string) => void;
   actionFilter: string; setActionFilter: (v: string) => void;
   periodFilter: string; setPeriodFilter: (v: string) => void;
@@ -67,7 +70,7 @@ export function LiveFilterBar({
         </div>
 
         {/* Filter row */}
-        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr]" style={{
+        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr]" style={{
           gap: 12,
           marginBottom: 14,
         }}>
@@ -86,6 +89,13 @@ export function LiveFilterBar({
             <SelectItem value="WORKER STAFF">WORKER STAFF</SelectItem>
             <SelectItem value="FINISHING STAFF">FINISHING STAFF</SelectItem>
             <SelectItem value="SHOP STAFF">SHOP STAFF</SelectItem>
+          </Select>
+          {/* Staff — scoped to whichever role is selected above */}
+          <Select value={staffFilter} onValueChange={setStaffFilter} placeholder="All Staff">
+            <SelectItem value="All Staff">All Staff</SelectItem>
+            {staffOptions.map(s => (
+              <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
+            ))}
           </Select>
           {/* Module */}
           <Select value={moduleFilter} onValueChange={setModuleFilter} placeholder="All Modules">

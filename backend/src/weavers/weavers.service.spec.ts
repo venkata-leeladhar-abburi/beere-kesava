@@ -36,8 +36,18 @@ describe("WeaversService", () => {
       },
       qcRecord: { findMany: jest.fn().mockResolvedValue([]) },
       finishingAssignment: { findMany: jest.fn().mockResolvedValue([]) },
-      batchSareeRow: { count: jest.fn().mockResolvedValue(0) },
-      materialIssueRecord: { count: jest.fn().mockResolvedValue(0) },
+      batchSareeRow: {
+        // Two different counts run now — active rows and the awaiting-QC
+        // queue. Tests that care set them apart via mockImplementation on the
+        // `where`; the shared default keeps the rest untouched.
+        count: jest.fn().mockResolvedValue(0),
+        findFirst: jest.fn().mockResolvedValue(null),
+        groupBy: jest.fn().mockResolvedValue([]),
+      },
+      materialIssueRecord: {
+        count: jest.fn().mockResolvedValue(0),
+        groupBy: jest.fn().mockResolvedValue([]),
+      },
       $transaction: jest.fn().mockImplementation((arg: any) =>
         typeof arg === "function" ? arg(tx) : Promise.resolve([]),
       ),
@@ -79,8 +89,30 @@ describe("WeaversService", () => {
         qcPassCount: 5,
         qcPassRate: 71.4,
         activeBatchRowsCount: 2,
+        awaitingQcCount: 2,
         materialIssueCount: 3,
+        lastActivityAt: null,
       });
+    });
+
+    it("counts a re-inspected saree once, so the pass rate can't exceed 100%", async () => {
+      prisma.weaver.findUnique.mockResolvedValue({ id: "w1" });
+      // s1 was inspected twice and passed both times. Counting the raw
+      // QcRecord rows against a deduplicated saree total gave 3/2 = 150%.
+      prisma.qcRecord.findMany.mockResolvedValue([
+        { weaverId: "w1", sareeId: "s1" },
+        { weaverId: "w1", sareeId: "s1" },
+        { weaverId: "w1", sareeId: "s2" },
+      ]);
+      prisma.finishingAssignment.findMany.mockResolvedValue([]);
+      prisma.batchSareeRow.count.mockResolvedValue(0);
+      prisma.materialIssueRecord.count.mockResolvedValue(0);
+
+      const stats = await service.getWeaverStats("w1");
+
+      expect(stats.totalSareesWoven).toBe(2);
+      expect(stats.qcPassCount).toBe(2);
+      expect(stats.qcPassRate).toBe(100);
     });
 
     it("returns 0% qcPassRate (not NaN) when the weaver has zero sarees", async () => {
@@ -93,6 +125,81 @@ describe("WeaversService", () => {
       const stats = await service.getWeaverStats("w1");
 
       expect(stats.qcPassRate).toBe(0);
+    });
+  });
+
+  describe("getAllWeaverStats", () => {
+    it("shapes each weaver from the grouped counts, defaulting missing groups to 0", async () => {
+      prisma.weaver.findMany.mockResolvedValue([{ id: "w1" }, { id: "w2" }]);
+      prisma.qcRecord.findMany.mockResolvedValue([
+        { weaverId: "w1", sareeId: "s1", qcDate: new Date("2026-05-02") },
+        { weaverId: "w1", sareeId: "s2", qcDate: new Date("2026-06-09") },
+      ]);
+      prisma.finishingAssignment.findMany.mockResolvedValue([]);
+      prisma.batchSareeRow.groupBy
+        // active rows
+        .mockResolvedValueOnce([{ weaverId: "w1", _count: { _all: 4 } }])
+        // awaiting QC
+        .mockResolvedValueOnce([{ weaverId: "w2", _count: { _all: 3 } }])
+        // last receipt
+        .mockResolvedValueOnce([{ weaverId: "w1", _max: { receivedAt: null } }]);
+      prisma.materialIssueRecord.groupBy.mockResolvedValue([{ weaverId: "w1", _count: { _all: 7 } }]);
+
+      const [w1, w2] = await service.getAllWeaverStats();
+
+      expect(w1).toEqual({
+        weaverId: "w1",
+        totalSareesWoven: 2,
+        qcPassCount: 2,
+        qcPassRate: 100,
+        activeBatchRowsCount: 4,
+        awaitingQcCount: 0,
+        materialIssueCount: 7,
+        lastActivityAt: new Date("2026-06-09").toISOString(),
+      });
+      // w2 produced nothing and appears in no count group but the awaiting one
+      expect(w2).toEqual({
+        weaverId: "w2",
+        totalSareesWoven: 0,
+        qcPassCount: 0,
+        qcPassRate: 0,
+        activeBatchRowsCount: 0,
+        awaitingQcCount: 3,
+        materialIssueCount: 0,
+        lastActivityAt: null,
+      });
+    });
+
+    it("returns an empty list without querying when there are no weavers", async () => {
+      prisma.weaver.findMany.mockResolvedValue([]);
+
+      await expect(service.getAllWeaverStats()).resolves.toEqual([]);
+      expect(prisma.qcRecord.findMany).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("getProductionSeries", () => {
+    it("buckets output by month and keeps empty months on the axis", async () => {
+      jest.useFakeTimers().setSystemTime(new Date("2026-06-15"));
+      prisma.qcRecord.findMany.mockResolvedValue([
+        { sareeId: "s1", qcDate: new Date("2026-05-04") },
+        // same saree inspected twice in one month — counted once
+        { sareeId: "s1", qcDate: new Date("2026-05-20") },
+        { sareeId: "s2", qcDate: new Date("2026-06-01") },
+      ]);
+      prisma.finishingAssignment.findMany.mockResolvedValue([
+        { sareeId: "s3", updatedAt: new Date("2026-06-02") },
+      ]);
+
+      const series = await service.getProductionSeries(3);
+
+      expect(series).toEqual([
+        { month: "2026-04", produced: 0, passed: 0 },
+        { month: "2026-05", produced: 1, passed: 1 },
+        // s2 passed QC, s3 only came back through finishing
+        { month: "2026-06", produced: 2, passed: 1 },
+      ]);
+      jest.useRealTimers();
     });
   });
 

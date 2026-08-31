@@ -63,6 +63,8 @@ export function staffIdentitySubtitle({
   return adminViewingAs ? `${roleLabel(adminViewingAs)} · viewing ${portalLabel}` : fallback;
 }
 
+import { semantic, radius } from "@/design-system/tokens";
+
 /**
  * Full-width notice pinned under a staff portal's nav while an admin is
  * viewing it. Renders nothing for a real staff session.
@@ -75,24 +77,25 @@ export function AdminViewingBanner({ portalLabel }: { portalLabel: string }) {
     <div
       role="status"
       className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-2 md:px-7 xl:px-12"
-      style={{ background: "rgba(200,155,71,0.16)", borderBottom: "1px solid rgba(200,155,71,0.35)" }}
+      style={{ background: semantic.surface.accentSubtle, borderBottom: `1px solid ${semantic.border.accent}` }}
     >
-      <ShieldCheck size={15} color="#845E04" className="shrink-0" />
-      <span className="text-[12px] font-semibold" style={{ color: "#845E04" }}>
+      <ShieldCheck size={15} color={semantic.text.accent} className="shrink-0" />
+      <span className="text-[12px] font-semibold" style={{ color: semantic.text.accent }}>
         You are viewing {portalLabel} as {user?.name ?? roleLabel(adminViewingAs)}
         {user?.name ? ` (${roleLabel(adminViewingAs)})` : ""}.
       </span>
-      <span className="text-[12px]" style={{ color: "#845E04", opacity: 0.85 }}>
+      <span className="text-[12px]" style={{ color: semantic.text.accent, opacity: 0.85 }}>
         Anything you record here is saved under your name, not a staff member's.
       </span>
       <button
         type="button"
         onClick={returnToAdmin}
-        className="ml-auto inline-flex items-center gap-1 rounded-full px-3 py-1 text-[12px] font-bold"
-        style={{ color: "#FFFDF9", background: "#845E04" }}
+        className="ml-auto inline-flex items-center gap-1 px-3 py-1 text-[12px] font-bold"
+        style={{ color: semantic.text.onInverse, background: semantic.text.accent, borderRadius: radius.md }}
       >
-        <ChevronLeft size={13} /> Return to {roleLabel(adminViewingAs)}
+        <ChevronLeft size={13} /> Return to Admin
       </button>
     </div>
   );
 }
+

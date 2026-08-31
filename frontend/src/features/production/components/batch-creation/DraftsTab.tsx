@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Layers as Stack, ArrowRight, Trash2 } from "lucide-react";
 import { BatchRecord, useBatches } from "../../contexts/BatchContext";
@@ -18,6 +18,8 @@ import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 
 
 
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
+
 export function DraftsTab({
   batches, batchDateFilter, setBatchDateFilter, setTab, openDraft,
 }: {
@@ -32,6 +34,9 @@ export function DraftsTab({
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
   function cancelDelete() {
     if (deleting) return;
     setDeletingBatch(null);
@@ -39,9 +44,6 @@ export function DraftsTab({
   }
 
   async function confirmDelete() {
-    // Guard re-entry: without this, a second click before the first
-    // request resolves fires a duplicate DELETE at the same (possibly
-    // already-gone) batch id.
     if (!deletingBatch || deleting) return;
     setDeleting(true);
     setDeleteError(null);
@@ -54,6 +56,23 @@ export function DraftsTab({
       setDeleting(false);
     }
   }
+
+  const filteredBatches = batches.filter(b => {
+    if (!matchesDateFilter(b.createdAt, batchDateFilter)) return false;
+    const done = b.rows.filter(r => r.qcPassed === true || r.finished === true).length;
+    const isCompleted = b.status === "completed" || (b.totalCount > 0 && done === b.totalCount);
+    const isDraft = b.status === "draft" && !isCompleted;
+    const currentStatus = isCompleted ? "Completed" : isDraft ? "Draft" : "Active";
+
+    if (statusFilter !== "All" && currentStatus !== statusFilter) return false;
+
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      const text = `${b.batchId} ${b.rows.map(r => `${r.weaverName} ${r.factoryLoomNumber} ${r.sareeTypeCode}`).join(" ")}`.toLowerCase();
+      if (!text.includes(q)) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 28, paddingBottom: 64 }}>
@@ -73,8 +92,61 @@ export function DraftsTab({
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <DateFilterBar filter={batchDateFilter} onChange={setBatchDateFilter} />
-          {batches.filter(b => matchesDateFilter(b.createdAt, batchDateFilter)).map(b => {
+          {/* Mobile Flipkart-style Filter Bar */}
+          <div className="md:hidden">
+            <MobileFilterBar
+              search={search}
+              onSearchChange={setSearch}
+              searchPlaceholder="Search batch ID, weaver, loom..."
+              filterGroups={[
+                {
+                  id: "date",
+                  label: "Time Period",
+                  value: batchDateFilter.mode,
+                  defaultValue: "all",
+                  options: [
+                    { value: "all", label: "All Time" },
+                    { value: "day", label: "Specific Date" },
+                    { value: "range", label: "Date Range" },
+                    { value: "month", label: "Monthly" },
+                    { value: "year", label: "Yearly" },
+                  ],
+                  onChange: (m: string) => {
+                    const mode = m as DateFilterState["mode"];
+                    if (mode === "day") setBatchDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                    else if (mode === "month") setBatchDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                    else if (mode === "year") setBatchDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                    else setBatchDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                  },
+                },
+                {
+                  id: "status",
+                  label: "Batch Status",
+                  value: statusFilter,
+                  defaultValue: "All",
+                  options: [
+                    { value: "All", label: "All Statuses" },
+                    { value: "Active", label: "Active" },
+                    { value: "Draft", label: "Draft" },
+                    { value: "Completed", label: "Completed" },
+                  ],
+                  onChange: setStatusFilter,
+                },
+              ]}
+              onResetAll={() => {
+                setSearch("");
+                setStatusFilter("All");
+                setBatchDateFilter({ mode: "all", day: "", from: "", to: "", month: "", year: "" });
+              }}
+            />
+          </div>
+
+          {/* Desktop Filter Bar */}
+          <div className="hidden md:block">
+            <DateFilterBar filter={batchDateFilter} onChange={setBatchDateFilter} />
+          </div>
+
+          {filteredBatches.map(b => {
             // "Complete" = QC-passed OR finished via the Raise Quotation
             // receive flow — either milestone alone counts a saree as done.
             const done = b.rows.filter(r => r.qcPassed === true || r.finished === true).length;

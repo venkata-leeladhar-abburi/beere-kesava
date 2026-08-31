@@ -1,7 +1,6 @@
 /**
  * AmountInWords — design-system/07-DOCUMENTS.md Part G.1 ⑦ / Part I.4.
  */
-import * as React from "react";
 
 export function AmountInWords({ words }: { words: string }) {
   return (

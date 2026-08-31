@@ -1,13 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import {
-  Layers, Tag, Sparkles, ChevronLeft, IndianRupee, ShoppingBag, Building2,
+  Layers, Tag, Sparkles, ChevronLeft, IndianRupee, Building2,
 } from "lucide-react";
 import { ViewPurchaseModal, PrintPurchaseModal, Purchase, MatType } from "./PurchaseModals";
 import { PurchaseCard } from "./PurchaseCard";
 import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
 import { Button, SearchInput } from "../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
+import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../shared/ui/state";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { rawMaterialsApi, type GrnReceiptItem } from "../../../shared/api/rawMaterials";
+import { vendorsApi } from "../../../shared/api/vendors";
 import { rupees, formatMoney, sumMoney } from "@/lib/domain/money";
 import { jariToReels, formatBunsReels } from "../../../shared/lib/weightUnits";
 
@@ -33,48 +38,178 @@ const G = {
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const NUM: React.CSSProperties = { fontVariantNumeric: "tabular-nums", fontFeatureSettings: '"tnum" 1, "lnum" 1' };
 
-const ALL_PURCHASES: Purchase[] = [
-  { id: "PUR-001", po: "PO-SVT-2026-042", date: "01 May 2026", vendor: "Sri Venkateswara Textiles", vendorCity: "Ongole, AP",      firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "50 kg",  totalPaid: rupees(14000),  status: "received", grn: "GRN-WRP-SVT-20260501-001" },
-  { id: "PUR-002", po: "PO-KNC-2026-118", date: "02 May 2026", vendor: "Kanchipuram Silks",         vendorCity: "Kanchipuram, TN", firmName: "Beere Kesava & Brothers Silks", material: "Red + Blue",            type: "Resham", quantity: "58 kg",  totalPaid: rupees(87000),  status: "received", grn: "GRN-RSM-KNC-20260430-001" },
-  { id: "PUR-003", po: "PO-SZW-2026-033", date: "01 May 2026", vendor: "Surat Zari Works",          vendorCity: "Surat, GJ",       firmName: "Beere Kesava & Brothers Silks", material: "Polyester 2G Gold",     type: "Jari",   quantity: "5 Buns", totalPaid: rupees(64000),  status: "received", grn: "GRN-JRI-SZW-20260428-001" },
-  { id: "PUR-004", po: "PO-MSC-2026-056", date: "28 Apr 2026", vendor: "Mysore Silk Co.",           vendorCity: "Mysore, KA",      firmName: "Beere Kesava & Brothers Silks", material: "Gold",                  type: "Resham", quantity: "25 kg",  totalPaid: rupees(37000),  status: "received", grn: "GRN-RSM-MSC-20260426-001" },
-  { id: "PUR-005", po: "PO-LTH-2026-029", date: "28 Apr 2026", vendor: "Lakshmi Thread House",      vendorCity: "Chennai, TN",     firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "40 kg",  totalPaid: rupees(11000),  status: "received", grn: "GRN-WRP-LTH-20260428-001" },
-  { id: "PUR-006", po: "PO-VZH-2026-021", date: "28 Apr 2026", vendor: "Varanasi Zari House",       vendorCity: "Varanasi, UP",    firmName: "Beere Kesava & Brothers Silks", material: "Silk Fast 2G Gold",     type: "Jari",   quantity: "2 Buns", totalPaid: rupees(27360),  status: "received", grn: "GRN-JRI-VZH-20260428-001" },
-  { id: "PUR-007", po: "PO-KNC-2026-109", date: "15 Apr 2026", vendor: "Kanchipuram Silks",         vendorCity: "Kanchipuram, TN", firmName: "Beere Kesava & Brothers Silks", material: "Blue",                  type: "Resham", quantity: "28 kg",  totalPaid: rupees(42000),  status: "received", grn: "GRN-RSM-KNC-20260415-001" },
-  { id: "PUR-008", po: "PO-SVT-2026-038", date: "20 Apr 2026", vendor: "Sri Venkateswara Textiles", vendorCity: "Ongole, AP",      firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "35 kg",  totalPaid: rupees(9800),   status: "received", grn: "GRN-WRP-SVT-20260420-001" },
-  { id: "PUR-009", po: "PO-SZW-2026-028", date: "20 Apr 2026", vendor: "Surat Zari Works",          vendorCity: "Surat, GJ",       firmName: "Beere Kesava & Brothers Silks", material: "Polyester 3G Copper",   type: "Jari",   quantity: "1 Bun",  totalPaid: rupees(12800),  status: "received", grn: "GRN-JRI-SZW-20260420-001" },
-  { id: "PUR-010", po: "PO-VZH-2026-018", date: "20 Apr 2026", vendor: "Varanasi Zari House",       vendorCity: "Varanasi, UP",    firmName: "Beere Kesava & Brothers Silks", material: "Silk Fast 1G Blue",     type: "Jari",   quantity: "1 Bun",  totalPaid: rupees(9120),   status: "received", grn: "GRN-JRI-VZH-20260420-001" },
-  { id: "PUR-011", po: "PO-MSC-2026-048", date: "10 Apr 2026", vendor: "Mysore Silk Co.",           vendorCity: "Mysore, KA",      firmName: "Beere Kesava & Brothers Silks", material: "Gold + Red",            type: "Resham", quantity: "30 kg",  totalPaid: rupees(44400),  status: "received", grn: "GRN-RSM-MSC-20260410-001" },
-  { id: "PUR-012", po: "PO-LTH-2026-022", date: "05 Apr 2026", vendor: "Lakshmi Thread House",      vendorCity: "Chennai, TN",     firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "45 kg",  totalPaid: rupees(12375),  status: "received", grn: "GRN-WRP-LTH-20260405-001" },
-  { id: "PUR-013", po: "PO-KNC-2026-101", date: "01 Apr 2026", vendor: "Kanchipuram Silks",         vendorCity: "Kanchipuram, TN", firmName: "Beere Kesava & Brothers Silks", material: "Green",                 type: "Resham", quantity: "22 kg",  totalPaid: rupees(33000),  status: "received", grn: "GRN-RSM-KNC-20260401-001" },
-  { id: "PUR-014", po: "PO-SZW-2026-019", date: "28 Mar 2026", vendor: "Surat Zari Works",          vendorCity: "Surat, GJ",       firmName: "Beere Kesava & Brothers Silks", material: "Polyester 1G Silver",   type: "Jari",   quantity: "1 Bun",  totalPaid: rupees(9600),   status: "received", grn: "GRN-JRI-SZW-20260328-001" },
-  { id: "PUR-015", po: "PO-SVT-2026-031", date: "20 Mar 2026", vendor: "Sri Venkateswara Textiles", vendorCity: "Ongole, AP",      firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "60 kg",  totalPaid: rupees(16800),  status: "received", grn: "GRN-WRP-SVT-20260320-001" },
-  { id: "PUR-016", po: "PO-VZH-2026-014", date: "15 Mar 2026", vendor: "Varanasi Zari House",       vendorCity: "Varanasi, UP",    firmName: "Beere Kesava & Brothers Silks", material: "Silk Fast 3G Pink",     type: "Jari",   quantity: "1 Bun",  totalPaid: rupees(13680),  status: "pending", grn: "GRN-JRI-VZH-20260315-001", notes: "Partial shipment, remaining stock expected by 25 Mar" },
-];
+/** Backend RawMaterialType → the label the cards and modals are keyed on.
+ *  A line whose type isn't one of the three is dropped rather than defaulted:
+ *  MAT_CFG has no entry for it, and rendering one would throw. */
+const MAT_TYPE: Record<string, MatType | undefined> = {
+  WARP: "Warp", RESHAM: "Resham", JARI: "Jari",
+};
+
+function fmtDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+/** Jari is always shown in Reels regardless of the unit it was received in
+ *  (see shared/lib/weightUnits) — everything else keeps its own unit. */
+function fmtQuantity(quantity: number, unit: string, type: MatType): string {
+  if (type === "Jari") return formatBunsReels(jariToReels(quantity, unit || "Reels"));
+  return `${quantity} ${unit || ""}`.trim();
+}
+
+/** A purchase card plus the receipt's raw timestamp.
+ *
+ *  `Purchase.date` is already formatted for display ("01 May 2026"), which is
+ *  not something to hand a date filter — parsing it back would depend on the
+ *  locale it was written in. The ISO value the receipt actually carries rides
+ *  along here instead, and the shared `Purchase` shape stays untouched. */
+type PurchaseRow = Purchase & { receivedIso: string | null };
+
+/**
+ * One card per material line on a goods receipt.
+ *
+ * A purchase here is a *material* actually received, not a whole order: the
+ * card, the detail modal and the printed GRN are all single-material, and the
+ * Warp / Resham / Jari tabs can only count a line if each line stands alone.
+ * A receipt covering warp and jari therefore produces two cards, one under
+ * each tab, which is also how the vendor's own bill itemises it.
+ */
+function receiptRows(g: GrnReceiptItem, cityOf: (vendorId: string | null | undefined, name: string) => string): PurchaseRow[] {
+  return g.items.flatMap(item => {
+    const type = MAT_TYPE[item.materialType];
+    if (!type) return [];
+    const quantity = Number(item.quantity) || 0;
+    const rejected = Number(item.rejectedQuantity) || 0;
+    // totalPrice is what the receiving desk recorded; recompute from the unit
+    // price only when it was left at zero, so a card never shows ₹0 for goods
+    // that do have a price behind them.
+    const total = Number(item.totalPrice) || quantity * (Number(item.unitPrice) || 0);
+    const notes = [
+      g.notes || null,
+      rejected > 0 ? `${fmtQuantity(rejected, item.unit || "", type)} of this line was rejected at receipt.` : null,
+      g.invoiceNo ? `Vendor invoice ${g.invoiceNo}${g.invoiceDate ? ` dated ${fmtDate(g.invoiceDate)}` : ""}.` : null,
+    ].filter(Boolean).join(" ");
+
+    return [{
+      id: item.id,
+      receivedIso: g.receivedDate ?? null,
+      // A GRN can be recorded ad hoc, with no order behind it at all.
+      po: g.purchaseOrders[0]?.poNumber ?? "Direct purchase",
+      date: fmtDate(g.receivedDate),
+      vendor: g.supplierName || "—",
+      vendorCity: cityOf(g.vendorId, g.supplierName),
+      firmName: g.firm?.firmName ?? "—",
+      material: [item.name, item.description].filter(Boolean).join(" · ") || item.name,
+      type,
+      quantity: fmtQuantity(quantity, item.unit || "", type),
+      totalPaid: rupees(total),
+      // "received" is the whole point of a GRN; a line with a rejected
+      // portion is the one case where the entry isn't cleanly complete.
+      status: rejected > 0 ? "pending" : "received",
+      // The line's own barcode id where it has one, else the parent receipt's.
+      grn: item.itemCode ?? g.id,
+      notes: notes || undefined,
+    }];
+  });
+}
 
 export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | MatType>("all");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [viewPurchase, setViewPurchase] = useState<Purchase | null>(null);
   const [printPurchase, setPrintPurchase] = useState<Purchase | null>(null);
 
-  const filtered = ALL_PURCHASES.filter(p => {
-    const matchType   = typeFilter === "all" || p.type === typeFilter;
-    const matchSearch = search === "" ||
-      p.vendor.toLowerCase().includes(search.toLowerCase()) ||
-      p.po.toLowerCase().includes(search.toLowerCase()) ||
-      p.material.toLowerCase().includes(search.toLowerCase()) ||
-      p.grn.toLowerCase().includes(search.toLowerCase());
-    return matchType && matchSearch;
+  // Same query keys the Materials page's Purchase History section uses, so the
+  // two views share one cache rather than each refetching the same receipts.
+  const { data: grnRes, isLoading, isError, refetch } = useQuery({
+    queryKey: ["grn-receipts"],
+    queryFn: () => rawMaterialsApi.listGrns(),
+  });
+  // Vendor city is the one field a receipt doesn't carry — it lives on the
+  // vendor record. A failure here only costs the "City, State" line, so the
+  // page renders without it rather than erroring out.
+  const { data: vendorRes } = useQuery({
+    queryKey: ["vendors"],
+    queryFn: () => vendorsApi.list(100),
   });
 
-  const pag = usePagination(filtered, 25);
+  const cityOf = useMemo(() => {
+    const byId = new Map((vendorRes?.items ?? []).map(v => [v.id, v]));
+    const byName = new Map((vendorRes?.items ?? []).map(v => [v.name.trim().toLowerCase(), v]));
+    return (vendorId: string | null | undefined, name: string) => {
+      // Ad-hoc receipts record only a free-text supplier name, so fall back to
+      // matching on that before giving up on a location.
+      const v = (vendorId && byId.get(vendorId)) || byName.get((name || "").trim().toLowerCase());
+      return [v?.city, v?.state].filter(Boolean).join(", ") || "—";
+    };
+  }, [vendorRes]);
+
+  // Newest receipt first. Sorting the receipts rather than the mapped cards
+  // keeps the real timestamp — Purchase.date is already a display string, and
+  // the GRN code sorts by vendor sequence, not by when the goods arrived.
+  const ALL_PURCHASES: PurchaseRow[] = useMemo(
+    () => [...(grnRes?.items ?? [])]
+      .sort((a, b) => new Date(b.receivedDate).getTime() - new Date(a.receivedDate).getTime())
+      .flatMap(g => receiptRows(g, cityOf)),
+    [grnRes, cityOf],
+  );
+
+  // Everything except the material tabs, so the tab counts below can be taken
+  // from this set: a tab then promises exactly what clicking it will show,
+  // rather than a total the date range or the search has already ruled out.
+  const matchesExceptType = (p: PurchaseRow) => {
+    const q = search.trim().toLowerCase();
+    const matchSearch = q === "" ||
+      p.vendor.toLowerCase().includes(q) ||
+      p.po.toLowerCase().includes(q) ||
+      p.material.toLowerCase().includes(q) ||
+      p.grn.toLowerCase().includes(q) ||
+      p.firmName.toLowerCase().includes(q);
+    return matchSearch && matchesDateFilter(p.receivedIso, dateFilter);
+  };
+
+  const baseRows = ALL_PURCHASES.filter(matchesExceptType);
+  const filtered = baseRows.filter(p => typeFilter === "all" || p.type === typeFilter);
+
+  const pag = usePagination(filtered, 10);
+  // Narrowing the list while on a later page would otherwise leave the user
+  // on a page whose contents have nothing to do with what they just typed.
+  // Only setPage is stable across renders, so `pag` itself can't be a dep.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { pag.setPage(1); }, [search, typeFilter, dateFilter]);
 
   const totalSpend = sumMoney(ALL_PURCHASES.map(p => p.totalPaid));
 
-  const warpCount   = ALL_PURCHASES.filter(p => p.type === "Warp").length;
-  const reshamCount = ALL_PURCHASES.filter(p => p.type === "Resham").length;
-  const jariCount   = ALL_PURCHASES.filter(p => p.type === "Jari").length;
+  const warpCount   = baseRows.filter(p => p.type === "Warp").length;
+  const reshamCount = baseRows.filter(p => p.type === "Resham").length;
+  const jariCount   = baseRows.filter(p => p.type === "Jari").length;
+
+  // Hero totals, over the receipts themselves rather than the tab counts:
+  // Warp and Resham are weighed in kg, Jari always in reels.
+  const totals = useMemo(() => {
+    let warpKg = 0, reshamKg = 0, jariReels = 0;
+    const vendors = new Set<string>();
+    const states = new Set<string>();
+    (grnRes?.items ?? []).forEach(g => {
+      vendors.add((g.supplierName || "").trim().toLowerCase() || g.id);
+      const loc = cityOf(g.vendorId, g.supplierName);
+      const state = loc.split(",").pop()?.trim();
+      if (state && state !== "—") states.add(state);
+      g.items.forEach(i => {
+        const qty = Number(i.quantity) || 0;
+        if (i.materialType === "WARP") warpKg += qty;
+        else if (i.materialType === "RESHAM") reshamKg += qty;
+        else if (i.materialType === "JARI") jariReels += jariToReels(qty, i.unit || "Reels");
+      });
+    });
+    return { warpKg, reshamKg, jariReels, vendorCount: vendors.size, stateCount: states.size };
+  }, [grnRes, cityOf]);
+
+  const filtersActive = search.trim() !== "" || typeFilter !== "all" || dateFilter.mode !== "all";
+  const clearFilters = () => { setSearch(""); setTypeFilter("all"); setDateFilter(DEFAULT_DATE_FILTER); };
 
   return (
     <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
@@ -143,11 +278,11 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.4, ease: EASE }}
             style={{ display: "flex", gap: 0, marginTop: 36, borderTop: "1px solid rgba(245,232,208,0.08)" }}>
             {[
-              { label: "Total Warp Purchased",   val: "2,840 kg",                   sub: "From 2 vendors",         Icon: Layers,      hi: false },
-              { label: "Total Resham Purchased", val: "1,240 kg",                   sub: "All colors combined",    Icon: Tag,         hi: false },
-              { label: "Total Jari Purchased",   val: formatBunsReels(jariToReels(680, "KG")), sub: "All types and grades",   Icon: Sparkles,    hi: false },
+              { label: "Total Warp Purchased",   val: `${totals.warpKg.toLocaleString("en-IN")} kg`,   sub: `From ${totals.vendorCount} vendor${totals.vendorCount === 1 ? "" : "s"}`, Icon: Layers,      hi: false },
+              { label: "Total Resham Purchased", val: `${totals.reshamKg.toLocaleString("en-IN")} kg`, sub: "All colors combined",    Icon: Tag,         hi: false },
+              { label: "Total Jari Purchased",   val: formatBunsReels(totals.jariReels), sub: "All types and grades",   Icon: Sparkles,    hi: false },
               { label: "Total Amount Spent",     val: formatMoney(totalSpend, { compact: true }), sub: "All materials combined", Icon: IndianRupee, hi: true  },
-              { label: "Active Vendors",         val: "6",                          sub: "Across 3 states",        Icon: Building2,   hi: false },
+              { label: "Active Vendors",         val: String(totals.vendorCount),   sub: `Across ${totals.stateCount} state${totals.stateCount === 1 ? "" : "s"}`, Icon: Building2,   hi: false },
             ].map((m, i) => (
               <div key={m.label} style={{ flex: 1, padding: "18px 18px", borderRight: i < 4 ? "1px solid rgba(245,232,208,0.07)" : "none", display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.18)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.35)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -168,7 +303,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
       <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "relative", zIndex: 10, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, height: 60, minWidth: "max-content" }}>
           {([
-            { key: "all",    label: "All Purchases",  count: ALL_PURCHASES.length },
+            { key: "all",    label: "All Purchases",  count: baseRows.length },
             { key: "Warp",   label: "Warp",           count: warpCount },
             { key: "Resham", label: "Resham",         count: reshamCount },
             { key: "Jari",   label: "Jari",           count: jariCount },
@@ -197,16 +332,26 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
+      {/* ── DATE RANGE ── */}
+      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "relative", zIndex: 9, paddingTop: 14, paddingBottom: 14 }}>
+        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+      </div>
+
       {/* ── CARDS GRID ── */}
       <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80 }}>
-        {filtered.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "80px 40px" }}>
-            <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-              <ShoppingBag size={28} color={T.taupe} />
-            </div>
-            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, marginBottom: 8 }}>No purchases found</div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Try adjusting your search or filter.</div>
-          </div>
+        {isLoading ? (
+          <LoadingState label="Loading purchase history…" />
+        ) : isError ? (
+          // A failed fetch and a genuinely empty history look identical
+          // otherwise — say which it is instead of showing "No purchases".
+          <ErrorState error={undefined} onRetry={() => void refetch()} />
+        ) : filtered.length === 0 ? (
+          filtersActive
+            ? <FilteredEmptyState onClearFilters={clearFilters} />
+            : <EmptyState
+                title="No purchases recorded yet"
+                description="Raw materials received against a purchase order — or entered as a direct purchase — will appear here."
+              />
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4" style={{ gap: 22 }}>

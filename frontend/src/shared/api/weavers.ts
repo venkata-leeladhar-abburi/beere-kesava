@@ -27,7 +27,7 @@ export interface BackendWeaver {
   looms: number;
   status: BackendWeaverStatus;
   photoUrl: string;
-  email: string;
+  email?: string;
   phone: string;
   bankName: string | null;
   accountNo: string | null;
@@ -43,7 +43,29 @@ export interface BackendWeaverStats {
   /** Percentage 0-100, one decimal place */
   qcPassRate: number;
   activeBatchRowsCount: number;
+  /**
+   * Sarees handed in and received but not yet inspected. This is the signal
+   * behind the "Submitted — Waiting Quality Check" state; without it a weaver
+   * could only ever read as active or idle.
+   */
+  awaitingQcCount: number;
   materialIssueCount: number;
+  /** Most recent QC inspection or saree receipt (ISO), null if never. */
+  lastActivityAt: string | null;
+}
+
+/** One month of firm-wide output, oldest first. */
+export interface BackendWeaverProductionSeriesPoint {
+  /** "YYYY-MM" */
+  month: string;
+  produced: number;
+  passed: number;
+}
+
+/** Optional window for the production/QC aggregates; omit for all-time. */
+export interface WeaverStatsRange {
+  from?: string;
+  to?: string;
 }
 
 /** Entry in the GET /weavers/leaderboard response */
@@ -93,6 +115,14 @@ export interface UpdateWeaverPayload extends Partial<CreateWeaverPayload> {
   status?: BackendWeaverStatus;
 }
 
+function statsQuery(range?: WeaverStatsRange): string {
+  if (!range?.from && !range?.to) return "";
+  const q = new URLSearchParams();
+  if (range.from) q.set("from", range.from);
+  if (range.to) q.set("to", range.to);
+  return `?${q.toString()}`;
+}
+
 export const weaversApi = {
   // Same class of bug as batchesApi.list/materialIssuesApi.list: a single
   // capped page (server max 500) silently dropped weavers past it, which
@@ -122,8 +152,23 @@ export const weaversApi = {
   remove: (id: string) => apiClient.delete<void>(`/weavers/${id}`),
 
   /** Live stats: QC pass rate, active batch row count, material issue count, total sarees woven. */
-  getStats: (id: string) =>
-    apiClient.get<BackendWeaverStats>(`/weavers/${id}/stats`),
+  getStats: (id: string, range?: WeaverStatsRange) =>
+    apiClient.get<BackendWeaverStats>(`/weavers/${id}/stats${statsQuery(range)}`),
+
+  /**
+   * Every weaver's stats in ONE request. Prefer this over mapping getStats
+   * across the roster — that fired a request per weaver on every directory,
+   * analytics and dashboard mount, and the two go out of sync whenever one
+   * caller forgets a parameter.
+   */
+  getAllStats: (range?: WeaverStatsRange) =>
+    apiClient.get<BackendWeaverStats[]>(`/weavers/stats${statsQuery(range)}`),
+
+  /** Firm-wide monthly output for the trailing window (default 12 months). */
+  getProductionSeries: (months?: number) =>
+    apiClient.get<BackendWeaverProductionSeriesPoint[]>(
+      `/weavers/production-series${months ? `?months=${months}` : ""}`,
+    ),
 
   /** Top-10 leaderboard of active weavers ranked by QC pass rate. */
   getLeaderboard: () =>

@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useBatches } from "@/features/production";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";

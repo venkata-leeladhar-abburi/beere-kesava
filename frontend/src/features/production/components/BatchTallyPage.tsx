@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Scale, ChevronLeft, UserRound, Layers, TrendingUp } from "lucide-react";
 import { useBatches, type SareeRow } from "../contexts/BatchContext";
 import { useRatesPricing } from "@/features/pricing";
@@ -11,6 +11,7 @@ import { EntityCode } from "@/shared/ui/domain";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
 import { SectionCard } from "@/shared/ui/SectionCard";
+import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
 
 /**
  * Batch Tally as its own full page (same pattern as BulkOrderDetailPage —
@@ -268,6 +269,26 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
               <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{b.dueDate || "Not Set"}</div>
             </div>
 
+            {(b.createdBy || b.talliedBy) && (
+              <>
+                <div style={{ height: 1, background: "rgba(110,15,45,0.06)" }} />
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 24 }}>
+                  {b.createdBy && (
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Created By</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{b.createdBy}</div>
+                    </div>
+                  )}
+                  {b.talliedBy && (
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Tallied By</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{b.talliedBy}</div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
             <div style={{ height: 1, background: "rgba(110,15,45,0.06)" }} />
 
             <div>
@@ -312,7 +333,53 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
             Weight is what Worker Staff entered at receipt, shown against the SareeTypeRate standard for that saree's type. Tally each saree once you've physically verified it.
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-center gap-2.5 mb-4">
+          {/* Mobile Flipkart-style Filter Bar */}
+          <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+            <MobileFilterBar
+              search={search}
+              onSearchChange={setSearch}
+              searchPlaceholder="Search saree ID, weaver, loom..."
+              filterGroups={[
+                {
+                  id: "weaver",
+                  label: "Weaver",
+                  value: weaverFilter,
+                  defaultValue: "All",
+                  options: weaverOptions.map(w => ({ value: w as string, label: w === "All" ? "All Weavers" : w as string })),
+                  onChange: setWeaverFilter,
+                },
+                {
+                  id: "order",
+                  label: "Bulk Order",
+                  value: orderFilter,
+                  defaultValue: "All",
+                  options: orderOptions.map(o => ({ value: o as string, label: o === "All" ? "All Orders" : o as string })),
+                  onChange: setOrderFilter,
+                },
+                {
+                  id: "qc",
+                  label: "QC Status",
+                  value: qcFilter,
+                  defaultValue: "All",
+                  options: [
+                    { value: "All", label: "All QC Status" },
+                    { value: "QC Passed", label: "QC Passed" },
+                    { value: "In Progress", label: "In Progress" },
+                  ],
+                  onChange: setQcFilter,
+                },
+              ]}
+              onResetAll={() => {
+                setSearch("");
+                setWeaverFilter("All");
+                setOrderFilter("All");
+                setQcFilter("All");
+              }}
+            />
+          </div>
+
+          {/* Desktop Filter Bar */}
+          <div className="hidden md:flex flex-row md:items-center gap-2.5 mb-4">
             <SearchInput aria-label="Search saree ID or weaver" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Saree ID, Weaver..." className="w-full md:w-[240px] shrink-0" />
             <div className="flex items-center gap-2.5 flex-nowrap overflow-x-auto shrink-0 w-full md:w-auto pb-1 md:pb-0">
               <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm" className="w-auto min-w-[130px] shrink-0">

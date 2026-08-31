@@ -225,6 +225,13 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
         inspectedById: user?.id ?? STOPGAP_ACTING_USER_ID,
       }),
     onSuccess: () => {
+      // Deliberately refetch-only, unlike the other write paths in this app,
+      // which seed the list cache from the mutation response to avoid the extra
+      // round trip. It buys nothing here: a cached QC row is assembled from
+      // three lookups (weavers, factory looms, and batch saree rows) that the
+      // queryFn above fetches alongside the records and POST /qc does not
+      // return, so producing one row would cost the same three requests the
+      // refetch already makes.
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       // The backend derives the ready-for-finishing queue from QC results,
       // so a new QC record can change it too.

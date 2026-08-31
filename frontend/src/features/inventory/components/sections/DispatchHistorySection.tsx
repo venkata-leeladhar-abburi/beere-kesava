@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Truck, Users, ShoppingBag, Clock, CheckCircle2, Trash2, FileText, Pencil, LayoutGrid, LayoutList } from "lucide-react";
 import { DispatchRecord, useFinishing } from "@/features/finishing";
 import { useCustomers } from "@/features/customers";
@@ -11,6 +11,8 @@ import { EntityCode } from "@/shared/ui/domain";
 import { EditWholesaleCustomerModal } from "../modals/EditWholesaleCustomerModal";
 import { challanReference } from "../modals/dispatchDocument";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
+import { StaffFilterSelect } from "../../../../shared/ui/StaffFilterSelect";
+import { useAuth } from "../../../../contexts/AuthContext";
 
 function formatDateStr(s?: string): string {
   if (!s) return "—";
@@ -27,12 +29,21 @@ function formatDateStr(s?: string): string {
 // Exported for the Worker Staff portal — same component, same markup, so the two
 // screens cannot fall out of step.
 export function DispatchHistorySection({ dispatches, firms, onResume, onDelete, onViewInvoice }: { dispatches: DispatchRecord[]; firms: { id: string; firmName: string }[]; onResume: (d: DispatchRecord) => void; onDelete?: (d: DispatchRecord) => void; onViewInvoice?: (d: DispatchRecord) => void; }) {
+  const { role } = useAuth();
+  const canFilterByStaff = role === "admin" || role === "superadmin";
+  const [staffFilter, setStaffFilter] = useState("");
+  const staffNames = useMemo(
+    () => Array.from(new Set(dispatches.map(d => d.dispatchedByName).filter((n): n is string => !!n))).sort(),
+    [dispatches],
+  );
+
   const [tab, setTab] = useState<"all" | "shop" | "wholesale">("all");
   const rows = useMemo(() =>
     [...dispatches]
       .filter(d => tab === "all" || d.type === tab)
+      .filter(d => !canFilterByStaff || !staffFilter || d.dispatchedByName === staffFilter)
       .sort((a, b) => (b.id > a.id ? 1 : -1)),
-  [dispatches, tab]);
+  [dispatches, tab, canFilterByStaff, staffFilter]);
 
   // Counts are consignments, not pieces — one badge per dispatch sent, matching
   // the "Showing N of M dispatches" footer below. They used to sum sareeIds,
@@ -49,7 +60,7 @@ export function DispatchHistorySection({ dispatches, firms, onResume, onDelete, 
       title="Dispatch History"
       subtitle="Every dispatch sent out to shops and wholesale customers."
       actions={
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }} className="shrink-0 min-w-max">
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }} className="shrink-0 min-w-max flex-wrap">
           {TABS.map(t => (
             <Button
               key={t.key}
@@ -61,6 +72,9 @@ export function DispatchHistorySection({ dispatches, firms, onResume, onDelete, 
               {t.label} <span style={{ fontFamily: F.ui, fontSize: 12, fontVariantNumeric: "tabular-nums" }}>({t.count})</span>
             </Button>
           ))}
+          {canFilterByStaff && (
+            <StaffFilterSelect names={staffNames} value={staffFilter} onChange={setStaffFilter} label="Dispatcher" />
+          )}
         </div>
       }
     >
@@ -71,7 +85,7 @@ export function DispatchHistorySection({ dispatches, firms, onResume, onDelete, 
 
 function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { rows: DispatchRecord[]; firms: { id: string; firmName: string }[]; onResume: (d: DispatchRecord) => void; onDelete?: (d: DispatchRecord) => void; onViewInvoice?: (d: DispatchRecord) => void; }) {
   const [view, setView] = useState<"card" | "table">("card");
-  const pag = usePagination(rows, 25);
+  const pag = usePagination(rows, 10);
   const { customers } = useCustomers();
   const { isLoading, isError, error, refetch } = useFinishing();
   const [editingCustomerId, setEditingCustomerId] = useState<string | null>(null);
@@ -193,7 +207,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
   ];
 
   return (
-    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
+    <div id="dispatch-history-table" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
       {editingCustomer && (
         <EditWholesaleCustomerModal customer={editingCustomer} onClose={() => setEditingCustomerId(null)} />
       )}
@@ -349,6 +363,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
             error={isError}
             onRetry={refetch}
             emptyTitle="No dispatches yet."
+            pagination={false}
           />
         </div>
       </div>
@@ -356,6 +371,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
       {rows.length > 0 && (
         <div style={{ padding: "0 14px" }}>
           <Pagination
+            targetId="dispatch-history-table"
             page={pag.page}
             pageCount={pag.pageCount}
             total={pag.total}

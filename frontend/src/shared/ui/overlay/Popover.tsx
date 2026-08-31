@@ -19,8 +19,8 @@ import { cn } from "../utils";
 
 export type PopoverProps = React.ComponentProps<typeof RadixPopover.Root>;
 
-function Root({ children, ...props }: PopoverProps) {
-  return <RadixPopover.Root {...props}>{children}</RadixPopover.Root>;
+function Root({ children, modal = false, ...props }: PopoverProps) {
+  return <RadixPopover.Root modal={modal} {...props}>{children}</RadixPopover.Root>;
 }
 
 const Trigger = RadixPopover.Trigger;

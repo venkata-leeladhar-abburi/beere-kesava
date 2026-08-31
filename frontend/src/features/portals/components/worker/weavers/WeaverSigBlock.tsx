@@ -1,4 +1,3 @@
-import React from "react";
 import { CheckCircle2, Clock, PenLine, Send } from "lucide-react";
 import { C, F } from "../tokens";
 import { Button } from "../../../../../shared/ui/primitives";
@@ -57,7 +56,7 @@ export function WeaverSigBlock({ weaverName, sigMethod, setSigMethod, signed, se
             <Send size={22} color={sigMethod === "remote" ? C.burg : C.muted} />
           </div>
           <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: sigMethod === "remote" ? C.wine : C.text, marginBottom: 3 }}>Send Request</div>
-          <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Weaver&apos;s mobile</div>
+          <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>To weaver&apos;s portal</div>
         </Button>
       </div>
 
@@ -101,7 +100,7 @@ export function WeaverSigBlock({ weaverName, sigMethod, setSigMethod, signed, se
             <div style={{ background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.35)", borderRadius: 12, padding: 18, textAlign: "center" }}>
               <Clock size={22} color="#845E04" style={{ margin: "0 auto 6px" }} />
               <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.wine, marginBottom: 2 }}>Waiting for Signature…</div>
-              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 10 }}>Request sent to {weaverName}'s mobile</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 10 }}>Request sent to {weaverName}'s portal</div>
               <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
                 <Button variant="link" className="p-0 text-[13px] text-[#845E04]">Resend</Button>
                 <Button variant="link" onClick={() => setRemoteConfirmed(true)} className="p-0 text-[13px] text-[#69635E] underline">Demo: Signed →</Button>
@@ -110,8 +109,8 @@ export function WeaverSigBlock({ weaverName, sigMethod, setSigMethod, signed, se
           ) : (
             <>
               <div style={{ marginBottom: 12 }}>
-                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Sending to: {weaverName}</div>
-                <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 13, color: C.text }}>+91 98765 43210</div>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Sending to</div>
+                <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 13, color: C.text }}>{weaverName}'s portal</div>
               </div>
               <Button variant="primary" fullWidth iconLeft={Send} onClick={() => setRemoteSent(true)} className="h-12 rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] text-[14px]">
                 Send Signature Request

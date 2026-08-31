@@ -39,7 +39,7 @@ export function TransactionDetailModal({ record, onClose }: { record: PayHistRec
 
   return (
     <Modal open onOpenChange={o => { if (!o) onClose(); }} size="sm">
-      <div style={{ display: "flex", flexDirection: "column", background: T.warmIvory, borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", maxHeight: "calc(85vh)", background: T.warmIvory, borderRadius: "1rem", overflow: "hidden" }}>
         <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "22px 26px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>

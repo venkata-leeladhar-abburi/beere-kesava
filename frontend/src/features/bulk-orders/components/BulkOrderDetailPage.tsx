@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { MapPin, Phone, Package,
@@ -26,6 +26,7 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, EntityCode } from "@/shared/ui/domain";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
 import { SectionCard } from "@/shared/ui/SectionCard";
+import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 
 const T = {
   silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D",
@@ -426,6 +427,18 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                   </div>
                 </div>
               </div>
+
+              {live.createdBy && (
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl px-4 py-3 min-w-[150px] flex-1 sm:flex-none">
+                  <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.20)] flex items-center justify-center shrink-0">
+                    <Boxes size={20} color={T.antiqueGold} />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Created By</div>
+                    <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{live.createdBy.name}</div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -504,30 +517,12 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
         </SectionCard>
       </div>
 
-      {/* Sub-tab strip */}
-      <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b-2 border-[var(--border-default)]">
-        <div className="flex items-center gap-1 min-w-max">
-          {tabs.map(t => {
-            const isActive = tab === t.key;
-            return (
-              <Button
-                key={t.key}
-                variant="tertiary"
-                onClick={() => setTab(t.key)}
-                className={
-                  "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base cursor-pointer flex items-center gap-2.5 transition-all " +
-                  (isActive
-                    ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
-                    : "border-b-[3px] border-transparent text-[#9C8672] hover:text-[#6E0F2D] font-medium")
-                }
-              >
-                {t.icon}
-                <span>{t.label}</span>
-              </Button>
-            );
-          })}
-        </div>
-      </div>
+      {/* Royal Sub-tab strip */}
+      <RoyalSubTabStrip
+        tabs={tabs}
+        activeTab={tab}
+        onTabChange={setTab}
+      />
 
       <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
@@ -672,7 +667,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                 drag="x"
                 dragConstraints={{ left: 0, right: 318 }}
                 dragElastic={0}
-                onDragEnd={(e, info) => {
+                onDragEnd={(_e, info) => {
                   if (info.offset.x > 250) {
                     tallyOrder(live.ref, "Admin");
                     setTallyPrompt(false);

@@ -1,6 +1,3 @@
-import React from "react";
-import { motion } from "motion/react";
-import { ChevronRight } from "lucide-react";
 import { T, F } from "./theme";
 import { SectionHeader } from "./atoms";
 import { useDashboardWeavers } from "../beere-dashboard/hooks/useDashboardWeavers";
@@ -76,16 +73,6 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
             />
           </div>
         ))}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <motion.div
-            onClick={() => onNavigate("AllWeavers")}
-            whileHover={{ scale: 1.12, boxShadow: "0px 10px 30px rgba(74,6,27,0.16)" }}
-            whileTap={{ scale: 0.93 }}
-            style={{ width: 44, height: 44, borderRadius: "50%", background: T.warmIvory, border: `1.5px solid ${T.borderGold}`, boxShadow: "0px 6px 20px rgba(74,6,27,0.10)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-          >
-            <ChevronRight size={18} color={T.royalBurgundy} />
-          </motion.div>
-        </div>
       </div>
     </section>
   );

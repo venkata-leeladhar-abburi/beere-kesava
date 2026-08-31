@@ -1,4 +1,3 @@
-import React from "react";
 import { ChevronRight, Package, User, Factory } from "lucide-react";
 import { F, T, initials, type SareeItem } from "./WorkerQCTypes";
 

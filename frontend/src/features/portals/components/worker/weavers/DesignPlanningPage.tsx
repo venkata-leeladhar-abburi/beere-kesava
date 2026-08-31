@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Camera, UploadCloud, CheckCircle2, Search,
 } from "lucide-react";

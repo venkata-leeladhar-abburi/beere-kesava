@@ -34,7 +34,7 @@ export function SectionHeader({ icon, title, count, accent }: {
 // one input serves both a physical scanner and manual entry. It is
 // autofocusable and keeps focus after each submit so a scanner can fire
 // several codes back to back without anyone touching the keyboard.
-export function ScanBar({ value, onChange, onSubmit, onDetected, label = "Scan Barcode", tone = "burgundy", inputRef }: {
+export function ScanBar({ value, onChange, onSubmit, onDetected, label = "Scan Barcode", tone = "burgundy", inputRef, className }: {
   value: string; onChange: (v: string) => void; onSubmit: () => void;
   /** Fired with the raw decoded text once the camera modal reads a barcode —
    *  the caller resolves it immediately (never through `value`, which
@@ -43,6 +43,7 @@ export function ScanBar({ value, onChange, onSubmit, onDetected, label = "Scan B
   label?: string;
   tone?: "burgundy" | "green";
   inputRef?: React.RefObject<HTMLInputElement | null>;
+  className?: string;
 }) {
   const [cameraOpen, setCameraOpen] = useState(false);
 
@@ -56,7 +57,7 @@ export function ScanBar({ value, onChange, onSubmit, onDetected, label = "Scan B
     <>
       <form
         onSubmit={e => { e.preventDefault(); onSubmit(); }}
-        className="flex items-center gap-2 w-full min-w-0"
+        className={className ?? "flex items-center gap-2 w-full min-w-0"}
         role="search"
       >
         <Input

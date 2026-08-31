@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from "react";
-import { Search, PackageCheck } from "lucide-react";
+import { PackageCheck } from "lucide-react";
 import type { FinishingReturn } from "@/features/finishing";
 import { C, F } from "./tokens";
 import { DataTable, type ColumnDef } from "@/shared/ui/data";
 import { Pagination, usePagination } from "@/shared/ui/DataPagination";
 import { EntityCode } from "@/shared/ui/domain";
+import { SearchInput } from "@/shared/ui/primitives";
 
 function formatDate(value?: string): string {
   if (!value) return "—";
@@ -42,7 +43,7 @@ export function AwaitingDispatchTable({ sarees, loading, error, onRetry }: {
     return [...matched].sort((a, b) => (a.receivedDate ?? "").localeCompare(b.receivedDate ?? ""));
   }, [sarees, query]);
 
-  const pag = usePagination(rows, 25);
+  const pag = usePagination(rows, 10);
 
   const columns: ColumnDef<FinishingReturn>[] = [
     {
@@ -95,16 +96,15 @@ export function AwaitingDispatchTable({ sarees, loading, error, onRetry }: {
   ];
 
   return (
-    <div style={{ border: `1px solid ${C.bdr}`, borderRadius: 12, background: C.ivory, boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
+    <div id="sarees-awaiting-dispatch-table" style={{ border: `1px solid ${C.bdr}`, borderRadius: 12, background: C.ivory, boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 p-3">
-        <div className="relative w-full sm:max-w-[320px]">
-          <Search size={15} color={C.muted} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)" }} />
-          <input
+        <div className="w-full sm:max-w-[320px]">
+          <SearchInput
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search saree, design, weaver, batch…"
             aria-label="Search sarees awaiting dispatch"
-            style={{ width: "100%", height: 38, paddingLeft: 34, paddingRight: 12, borderRadius: 10, border: `1px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontSize: 13, color: C.text, outline: "none" }}
+            className="w-full"
           />
         </div>
         <div style={{ ...cellMuted, fontWeight: 600 }}>
@@ -125,12 +125,14 @@ export function AwaitingDispatchTable({ sarees, loading, error, onRetry }: {
           onClearFilters={() => setQuery("")}
           emptyTitle="No sarees awaiting dispatch."
           emptyDescription="Sarees appear here once finishing hands them back."
+          pagination={false}
         />
       </div>
 
       {rows.length > 0 && (
         <div style={{ padding: "0 14px" }}>
           <Pagination
+            targetId="sarees-awaiting-dispatch-table"
             page={pag.page}
             pageCount={pag.pageCount}
             total={pag.total}

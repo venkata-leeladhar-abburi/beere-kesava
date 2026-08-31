@@ -5,6 +5,7 @@
 import React, { useMemo, useState } from "react";
 import { Building2, BarChart3 as ChartBar } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { T, F } from "../theme";
 import { MONTH_ABBR, TYPE_FILLS, MODE_FILLS } from "../data";
 import { useSuppliers, parseINR } from "../../contexts/SupplierContext";
@@ -19,8 +20,9 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 export function SupplierAnalytics() {
   const { suppliers, purchases, payments, isError } = useSuppliers();
   const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [search, setSearch] = useState("");
 
-  const buys = useMemo(() => purchases.filter(p => matchesDateFilter(p.date, filter)), [purchases, filter]);
+  const buys = useMemo(() => purchases.filter(p => matchesDateFilter(p.date, filter) && (!search || p.supplier.toLowerCase().includes(search.toLowerCase()) || p.id.toLowerCase().includes(search.toLowerCase()))), [purchases, filter, search]);
   const pays = useMemo(() => payments.filter(p => matchesDateFilter(p.date, filter)), [payments, filter]);
 
   const periodLabel = useMemo(() => {
@@ -135,7 +137,8 @@ export function SupplierAnalytics() {
 
   const byMode = useMemo(() => {
     const m = new Map<string, number>();
-    pays.forEach(p => m.set(p.mode, (m.get(p.mode) || 0) + p.amount));
+    pays.forEach(p => m.set(p.mode || "Bank Transfer", (m.get(p.mode || "Bank Transfer") || 0) + p.amount));
+
     return [...m.entries()]
       .map(([mode, amount]) => ({ mode, amount, fill: MODE_FILLS[mode] ?? T.taupe }))
       .sort((a, b) => b.amount - a.amount);
@@ -143,12 +146,13 @@ export function SupplierAnalytics() {
 
   const L = (n: number) => formatMoney(rupees(n), { compact: true });
   const card: React.CSSProperties = {
-    background: "#FFF", borderRadius: 20, border: `1.5px solid ${T.borderDef}`,
-    padding: "24px 28px", boxShadow: "0 2px 12px rgba(74,6,27,0.05)",
+    background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.royalBurgundy}`,
+    padding: "24px 28px", boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)",
+    position: "relative", overflow: "hidden", display: "flex", flexDirection: "column",
   };
   const cardTitle: React.CSSProperties = { fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown };
   const cardSub: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 };
-  const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };
+  const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid rgba(200,155,71,0.25)`, boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)" };
 
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 48 }}>
@@ -161,8 +165,43 @@ export function SupplierAnalytics() {
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "#FFFDF9", background: "rgba(255,255,255,0.14)", padding: "6px 14px", borderRadius: 20, textTransform: "uppercase" }}>{periodLabel}</span>
         }
       >
-        {/* Timeline scope — drives every chart in this section */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search supplier analytics..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: filter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day") setFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                  else if (mode === "month") setFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                  else if (mode === "year") setFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                  else setFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                },
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setFilter(DEFAULT_DATE_FILTER);
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter Bar */}
+        <div className="hidden md:flex items-center justify-between gap-4 mb-4 flex-wrap">
           <DateFilterBar filter={filter} onChange={setFilter} />
           <div style={{ display: "flex", gap: 24, marginBottom: 16 }}>
             {[

@@ -7,7 +7,6 @@
  * <Icon icon={SomeLucideIcon} /> is the escape hatch for the rare
  * icon that doesn't have (and doesn't deserve) a semantic name yet.
  */
-import React from "react";
 import { Icons, ICON_SIZE, type IconName, type IconSize, type LucideIcon } from "./icons";
 
 interface IconPropsBase {

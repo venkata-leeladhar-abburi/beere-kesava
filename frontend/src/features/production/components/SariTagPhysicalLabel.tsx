@@ -1,4 +1,3 @@
-import React from "react";
 import { labelsApi } from "../../../shared/api/labels";
 import { EntityCode } from "../../../shared/ui/domain";
 

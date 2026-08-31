@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AlertTriangle, AlignJustify, BadgeCheck, Download, Eye, HandCoins, LayoutGrid, LayoutList, MinusCircle, UserCheck, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
@@ -17,6 +17,9 @@ import { FadeUp } from "../common/motion";
 import { DropBtn, Pip, SectionCard, StatusBadge } from "../common/primitives";
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
 import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/data";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { useDocument } from "../../../../shared/ui/document";
 import { BankUploadPanel } from "./BankUploadPanel";
 import { WeaverProductionSummaryPanel } from "./WeaverProductionSummaryPanel";
@@ -154,6 +157,7 @@ export function WeaverMakingChargesSection() {
   const [uploadRefreshKey, setUploadRefreshKey] = useState(0);
   const [filterVillage, setFilterVillage] = useState("All Villages");
   const [filterStatus, setFilterStatus] = useState("All Payment Status");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const { batches } = useBatches();
   useMaterialIssue();
   const { download } = useDocument();
@@ -172,8 +176,12 @@ export function WeaverMakingChargesSection() {
     const matchSearch = !search || w.name.toLowerCase().includes(search.toLowerCase()) || w.id.toLowerCase().includes(search.toLowerCase()) || w.village.toLowerCase().includes(search.toLowerCase());
     const matchVillage = filterVillage === "All Villages" || w.village === filterVillage;
     const matchStatus = filterStatus === "All Payment Status" || w.status === filterStatus;
-    return matchSearch && matchVillage && matchStatus;
+    const payment = latestByWeaver.get(w.id);
+    const matchDate = dateFilter.mode === "all" || (payment ? matchesDateFilter(payment.paymentDate, dateFilter) : true);
+    return matchSearch && matchVillage && matchStatus && matchDate;
   });
+
+  const pag = usePagination(filtered, 8);
 
   // Declared for <DataTable> rather than hand-written <th>/<td> — the markup
   // this replaced duplicated the header row, the zebra striping and the
@@ -575,10 +583,63 @@ export function WeaverMakingChargesSection() {
 
         <WeaverProductionSummaryPanel refreshKey={uploadRefreshKey} />
 
-        {/* ── Filter + View toggle bar ─────────────────────────── */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18, flexWrap: "wrap" as const }}>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search weaver name, ID, or village..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: dateFilter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                  else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                  else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                  else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                },
+              },
+              {
+                id: "village",
+                label: "Village",
+                value: filterVillage,
+                defaultValue: "All Villages",
+                options: ["All Villages", ...villageOptions].map(v => ({ value: v, label: v })),
+                onChange: setFilterVillage,
+              },
+              {
+                id: "status",
+                label: "Payment Status",
+                value: filterStatus,
+                defaultValue: "All Payment Status",
+                options: ["All Payment Status", "Pending", "Paid"].map(s => ({ value: s, label: s })),
+                onChange: setFilterStatus,
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setFilterVillage("All Villages");
+              setFilterStatus("All Payment Status");
+              setDateFilter(DEFAULT_DATE_FILTER);
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter + View toggle bar */}
+        <div className="hidden md:flex items-center gap-2.5 mb-4 flex-wrap">
           {/* View toggle */}
-          <div className="hidden md:flex" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
+          <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
             {viewOptions.map(({ key, Icon, label }) => (
               <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
                 onClick={() => setView(key as "card" | "list")}
@@ -587,6 +648,7 @@ export function WeaverMakingChargesSection() {
               </Button>
             ))}
           </div>
+          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           <label htmlFor="select-all-filtered-weavers" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", border: `1px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer" }}>
             <Checkbox
               id="select-all-filtered-weavers"
@@ -605,11 +667,6 @@ export function WeaverMakingChargesSection() {
             />
             Select All Filtered
           </label>
-          {/* Only filters that actually filter are shown. Two decorative
-              DropBtns used to sit here with no onChange at all: an "All Weavers"
-              seniority filter (Master/Junior — not a concept in the data model)
-              and a making-charge-rate filter whose ₹450/₹680/₹280 options were
-              invented figures backed by nothing. */}
           <DropBtn value={filterVillage} options={["All Villages", ...villageOptions]} onChange={setFilterVillage} />
           <DropBtn value={filterStatus} options={["All Payment Status", "Pending", "Paid"]} onChange={setFilterStatus} />
           <div style={{ flex: 1, minWidth: 200 }}>
@@ -662,40 +719,60 @@ export function WeaverMakingChargesSection() {
             </div>
           </div>
         ) : (
-        <>
-        {/* ── Card view grid ───────────────────────────────────── */}
-        {view === "card" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-            {filtered.map((w, i) => (
-              <motion.div key={w.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05, ease: EASE }}>
-                <WeaverCard
-                  w={w}
-                  onViewDetails={() => setSelWeaver(w)}
-                  selected={selectedIds.has(w.id)}
-                  onToggleSelect={() => toggleSelection(w.id)}
-                />
-              </motion.div>
-            ))}
-          </div>
-        )}
+            <>
+            {/* ── Card view grid ───────────────────────────────────── */}
+            {view === "card" && (
+              <div data-pagination-target>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-4">
+                  {pag.pageItems.map((w, i) => (
+                    <motion.div key={w.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05, ease: EASE }}>
+                      <WeaverCard
+                        w={w}
+                        onViewDetails={() => setSelWeaver(w)}
+                        selected={selectedIds.has(w.id)}
+                        onToggleSelect={() => toggleSelection(w.id)}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="mb-6">
+                  <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="weavers" />
+                </div>
+              </div>
+            )}
 
-        {/* ── Table / List view ────────────────────────────────── */}
-        {(view === "list" || view === "table") && (
-          <div className="overflow-x-auto w-full mb-8">
-            <div className="min-w-[1450px]">
-              <DataTable
-                columns={weaverColumns}
-                data={filtered}
-                getRowId={w => w.id}
-                caption="Weaver making charges"
-                selectedIds={selectedIds}
-                onSelectionChange={setSelectedIds}
-                emptyTitle="No weavers match your filters"
-              />
-            </div>
-          </div>
-        )}
-        </>
+            {/* ── Table / List view ────────────────────────────────── */}
+            {(view === "list" || view === "table") && (
+              <div data-pagination-target className="w-full mb-8">
+                <div className="overflow-x-auto w-full">
+                  <div className="min-w-[1450px]">
+                    <DataTable
+                      columns={weaverColumns}
+                      data={pag.pageItems}
+                      getRowId={w => w.id}
+                      caption="Weaver making charges"
+                      selectedIds={selectedIds}
+                      onSelectionChange={setSelectedIds}
+                      emptyTitle="No weavers match your filters"
+                      pagination={false}
+                    />
+                  </div>
+                </div>
+                <div className="p-4 border-t border-[var(--border-default)] bg-white rounded-b-xl">
+                  <Pagination
+                    page={pag.page}
+                    pageCount={pag.pageCount}
+                    total={pag.total}
+                    pageSize={pag.pageSize}
+                    start={pag.start}
+                    onPageChange={pag.setPage}
+                    onPageSizeChange={pag.setPageSize}
+                    itemLabel="weavers"
+                  />
+                </div>
+              </div>
+            )}
+            </>
         )}
 
       </SectionCard>

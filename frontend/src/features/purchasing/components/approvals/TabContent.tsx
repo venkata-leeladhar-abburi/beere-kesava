@@ -9,7 +9,6 @@ import { Button } from "../../../../shared/ui/primitives";
 import { POCard, POListItem } from "./POCard";
 import { WarpCard } from "./WarpCard";
 import { RateCard } from "./RateCard";
-import { ExternalPurchaseCard } from "./ExternalPurchaseCard";
 
 type POItem = POListItem;
 
@@ -19,9 +18,9 @@ export function TabsNav({
   activeTab,
   setActiveTab,
 }: {
-  tabs: { key: "po" | "ext" | "warp" | "rate"; label: string; count: number }[];
-  activeTab: "po" | "ext" | "warp" | "rate";
-  setActiveTab: (t: "po" | "ext" | "warp" | "rate") => void;
+  tabs: { key: "po" | "warp" | "rate"; label: string; count: number }[];
+  activeTab: "po" | "warp" | "rate";
+  setActiveTab: (t: "po" | "warp" | "rate") => void;
 }) {
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{
@@ -59,6 +58,7 @@ export function TabsNav({
 import { useQueryClient } from "@tanstack/react-query";
 import { BackendWarpRequest } from "../../../../shared/api/warpRequests";
 import { BackendRateChangeRequest } from "../../../../shared/api/rateRequests";
+import { removeFromEnvelopeWhere } from "../../../../lib/cacheUpdates";
 
 // ─── 4. TAB CONTENT ───────────────────────────────────────────────────────────
 export function TabContent({
@@ -66,16 +66,14 @@ export function TabContent({
   combinedPOList,
   contextPendingItems,
   pos,
-  pendingRequests,
   warpList,
   rateList,
   allEmpty,
   approvePO,
   rejectPO,
   setViewDocPOId,
-  decideExternal,
 }: {
-  activeTab: "po" | "ext" | "warp" | "rate";
+  activeTab: "po" | "warp" | "rate";
   combinedPOList: POItem[];
   contextPendingItems: { id: string }[];
   pos: PurchaseOrder[];
@@ -93,10 +91,18 @@ export function TabContent({
   setRateList?: React.Dispatch<React.SetStateAction<BackendRateChangeRequest[]>>;
 }) {
   const queryClient = useQueryClient();
-  const handleWarpAction = () => {
+  // WarpCard/RateCard already pass the id of the request they just decided —
+  // it was being discarded. Both lists are PENDING-only, so a decided request
+  // has left them: dropping it here retires the card on the click instead of
+  // leaving it sitting there, still offering Approve/Reject, until the refetch
+  // lands. The invalidate still follows and reconciles (it matches by prefix,
+  // so the weavers-page and all-weavers pending counts refresh with it).
+  const handleWarpAction = (id: string) => {
+    removeFromEnvelopeWhere<BackendWarpRequest>(queryClient, ["warp-requests-pending"], r => r.id === id);
     void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] });
   };
-  const handleRateAction = () => {
+  const handleRateAction = (id: string) => {
+    removeFromEnvelopeWhere<BackendRateChangeRequest>(queryClient, ["rate-requests-pending"], r => r.id === id);
     void queryClient.invalidateQueries({ queryKey: ["rate-requests-pending"] });
   };
   return (
@@ -139,41 +145,6 @@ export function TabContent({
           </motion.div>
         )}
 
-        {/* — External Purchase Requests — */}
-        {activeTab === "ext" && (
-          <motion.div
-            key="ext"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            {pendingRequests.length === 0 ? (
-              <EmptyState message="No pending external purchase requests" />
-            ) : (
-              <>
-                <BulkActionStrip
-                  count={pendingRequests.length}
-                  noun="external purchase requests"
-                  onApproveAll={() => pendingRequests.forEach(r => decideExternal(r.id, "approved"))}
-                />
-                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                  <AnimatePresence>
-                    {pendingRequests.map(req => (
-                      <ExternalPurchaseCard
-                        key={req.id}
-                        req={req}
-                        onApprove={id => decideExternal(id, "approved")}
-                        onReject={id => decideExternal(id, "rejected")}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </div>
-              </>
-            )}
-          </motion.div>
-        )}
-
         {/* — Warp Requests — */}
         {activeTab === "warp" && (
           <motion.div
@@ -190,7 +161,7 @@ export function TabContent({
                 <BulkActionStrip
                   count={warpList.length}
                   noun="warp requests"
-                  onApproveAll={handleWarpAction}
+                  onApproveAll={() => void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] })}
                 />
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                   <AnimatePresence>
@@ -224,7 +195,7 @@ export function TabContent({
                 <BulkActionStrip
                   count={rateList.length}
                   noun="rate change requests"
-                  onApproveAll={handleRateAction}
+                  onApproveAll={() => void queryClient.invalidateQueries({ queryKey: ["rate-requests-pending"] })}
                 />
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                   <AnimatePresence>

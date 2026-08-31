@@ -13,7 +13,6 @@
  * Unlike Invoice, a quotation carries no tax split (H.2: "no tax split, one
  * Est. GST @ x% line") and no HSN column — it's an estimate, not a supply.
  */
-import * as React from "react";
 import { DocumentPage } from "./DocumentPage";
 import { Letterhead, type LetterheadFirm } from "./Letterhead";
 import { PartyBlock, type MetaField } from "./PartyBlock";

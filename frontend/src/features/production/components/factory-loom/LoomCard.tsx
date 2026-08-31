@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { FileText, Factory } from "lucide-react";
 import { FactoryLoom, loomLabel } from "../../data/factoryLooms";
@@ -27,7 +26,7 @@ export function LoomCard({ loom, batches, sarees, onView }: { loom: FactoryLoom;
         color: T.luxuryBrown,
       }}>
       {/* Accent top */}
-      <div style={{ height: 4, background: tc, width: "100%", opacity: 0.8, flexShrink: 0 }} />
+      <div style={{ height: 4, background: tc, width: "100%", flexShrink: 0 }} />
       
       {/* Header */}
       <div style={{ padding: "20px 22px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>

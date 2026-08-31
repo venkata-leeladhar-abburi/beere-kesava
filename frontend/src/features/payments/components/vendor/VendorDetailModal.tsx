@@ -1,4 +1,3 @@
-import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -38,7 +37,7 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
 
   return (
     <Modal open onOpenChange={o => { if (!o) onClose(); }} size="md">
-      <div style={{ display: "flex", flexDirection: "column", overflowY: "auto", maxHeight: "calc(100dvh - 96px)", background: T.warmIvory, borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", maxHeight: "calc(100dvh - 96px)", background: T.warmIvory, borderRadius: "1rem", overflow: "hidden" }}>
         <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", paddingRight: 56, position: "relative", flexShrink: 0 }}>
           <Dialog.Title style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9", margin: 0 }}>{vendorName}</Dialog.Title>
           <Dialog.Description asChild><div style={{ marginTop: 4 }}><EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" /></div></Dialog.Description>
@@ -48,7 +47,7 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
           </Dialog.Close>
         </div>
 
-        <div style={{ padding: "24px 28px 28px", display: "flex", flexDirection: "column", gap: 22 }}>
+        <div style={{ padding: "24px 28px 28px", display: "flex", flexDirection: "column", gap: 22, flex: 1, minHeight: 0, overflowY: "auto" }}>
           {/* PO details */}
           <div>
             <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>PO Details</div>

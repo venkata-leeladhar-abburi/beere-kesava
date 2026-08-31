@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { ChevronDown, ChevronUp, Factory, Truck, Users, LayoutGrid, List, type LucideIcon } from "lucide-react";
 import { T, F } from "../../theme";
@@ -166,6 +166,7 @@ function RankTable({ title, sub, ranks, unitLabel, icon }: { title: string; sub:
             getRowId={r => r.key}
             caption={`${title} table`}
             emptyTitle={`No ${unitLabel.toLowerCase()} data yet`}
+            pagination
           />
         </div>
       </div>

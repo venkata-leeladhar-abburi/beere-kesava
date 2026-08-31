@@ -7,12 +7,14 @@ import { motion, AnimatePresence } from "motion/react";
 import { MapPin, Package, Send, Trash2, Wallet, ChevronLeft, UserRound, Boxes, ShoppingBag, CreditCard, UserCheck, Edit3 } from "lucide-react";
 import { toast } from "sonner";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { useScrollTopOnView } from "@/shared/ui/ScrollToTop";
 import { SectionCard } from "@/shared/ui/SectionCard";
+import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 import { SupplierPayNowModal } from "@/features/payments";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
 import {
-  useSuppliers, Supplier, parseINR,
+  useSuppliers, usePurchasePhotos, Supplier, parseINR,
 } from "../../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { SupplierFormValues } from "../../types";
@@ -32,7 +34,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   onBack: () => void;
   onRaiseRequest: (supplierId: string) => void;
 }) {
-  const { statsFor, purchases, payments, requests, updateSupplier, deleteSupplier, addPayment } = useSuppliers();
+  const { statsFor, payments, requests, updateSupplier, deleteSupplier, addPayment } = useSuppliers();
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
   const confirm = useConfirm();
   const [payModalOpen, setPayModalOpen] = useState(false);
@@ -43,6 +45,8 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   useEffect(() => {
     recordView({ key: `supplier:${supplier.id}`, label: supplier.name, path: "/admin/suppliers", kind: "Supplier" });
   }, [supplier.id, supplier.name]);
+
+  useScrollTopOnView(supplier.id);
   const tabs = [
     { key: "overview", label: "Overview", icon: <Boxes size={18} /> },
     { key: "orders",   label: "Order History", icon: <ShoppingBag size={18} /> },
@@ -62,19 +66,22 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   const [sareeSearch, setSareeSearch] = useState("");
 
   const stats = statsFor(supplier.id);
+  // The shared purchases list is the photo-less "summary" view — hydrate this
+  // supplier's own purchases so saree tiles here show the uploaded photos.
+  const myPurchases = usePurchasePhotos(stats.purchases);
 
   // Every saree ever bought from this supplier, flattened for the inventory view.
   const allSarees = useMemo(
-    () => stats.purchases.flatMap(p => p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier }))),
-    [stats.purchases]
+    () => myPurchases.flatMap(p => p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier }))),
+    [myPurchases]
   );
 
   const sareeTypes  = useMemo(() => ["All Types", ...Array.from(new Set(allSarees.map(s => s.sareeType).filter(Boolean)))], [allSarees]);
   const sareeColors = useMemo(() => ["All Colours", ...Array.from(new Set(allSarees.map(s => s.color).filter(Boolean)))], [allSarees]);
   // Purchase orders this supplier's sarees came from, newest first, for the PO filter dropdown.
   const purchaseOptions = useMemo(
-    () => [...stats.purchases].sort((a, b) => (b.date > a.date ? 1 : -1)),
-    [stats.purchases]
+    () => [...myPurchases].sort((a, b) => (b.date > a.date ? 1 : -1)),
+    [myPurchases]
   );
 
   const filteredSarees = useMemo(() => allSarees.filter(s => {
@@ -88,39 +95,46 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
 
   // Money spent + paid within the overview's selected time range.
   const rangePurchases = useMemo(
-    () => stats.purchases.filter(p => matchesDateFilter(p.date, invFilter)),
-    [stats.purchases, invFilter]
+    () => myPurchases.filter(p => matchesDateFilter(p.date, invFilter)),
+    [myPurchases, invFilter]
   );
   const rangeBilled = rangePurchases.reduce((sum, p) => sum + parseINR(p.billAmount), 0);
   const myPayments  = useMemo(() => payments.filter(p => p.supplierId === supplier.id), [payments, supplier.id]);
   const rangePaid   = myPayments.filter(p => matchesDateFilter(p.date, invFilter)).reduce((sum, p) => sum + p.amount, 0);
 
-  const filteredOrders   = useMemo(() => stats.purchases.filter(p => matchesDateFilter(p.date, orderFilter)), [stats.purchases, orderFilter]);
+  const filteredOrders   = useMemo(() => myPurchases.filter(p => matchesDateFilter(p.date, orderFilter)), [myPurchases, orderFilter]);
   const filteredPayments = useMemo(() => myPayments.filter(p => matchesDateFilter(p.date, payFilter)), [myPayments, payFilter]);
   const filteredPaidSum  = filteredPayments.reduce((sum, p) => sum + p.amount, 0);
 
   const myRequests = requests.filter(r => r.supplierId === supplier.id);
 
   // Spend trend by month, derived from this supplier's actual purchases.
+  // `p.date` is an ISO "YYYY-MM-DD" string — bucket by the "YYYY-MM" prefix
+  // and sort chronologically, rather than splitting on a space that never
+  // occurs (which used to dump every purchase into one "—" bucket).
   const spendByMonth = useMemo(() => {
     const buckets = new Map<string, number>();
-    stats.purchases.forEach(p => {
-      const month = (p.date || "").split(" ").slice(1).join(" ") || "—";
-      buckets.set(month, (buckets.get(month) || 0) + parseINR(p.billAmount));
+    myPurchases.forEach(p => {
+      const key = (p.date || "").slice(0, 7) || "—";
+      buckets.set(key, (buckets.get(key) || 0) + parseINR(p.billAmount));
     });
-    return Array.from(buckets, ([month, spend]) => ({ month, spend })).reverse();
-  }, [stats.purchases]);
+    return Array.from(buckets, ([key, spend]) => {
+      const [y, m] = key.split("-");
+      const month = y && m ? new Date(Number(y), Number(m) - 1, 1).toLocaleDateString("en-IN", { month: "short", year: "numeric" }) : key;
+      return { key, month, spend };
+    }).sort((a, b) => a.key.localeCompare(b.key));
+  }, [myPurchases]);
 
   // Billed amount grouped by payment status.
   const paymentStatusBreakdown = useMemo(() => {
     const colors: Record<string, string> = { Paid: T.green, Pending: T.antiqueGold, Partial: T.crimson };
     const buckets = new Map<string, number>();
-    stats.purchases.forEach(p => {
+    myPurchases.forEach(p => {
       buckets.set(p.status, (buckets.get(p.status) || 0) + parseINR(p.billAmount));
     });
     return Array.from(buckets, ([name, value]) => ({ name, value, fill: colors[name] || T.taupe }))
       .filter(b => b.value > 0);
-  }, [stats.purchases]);
+  }, [myPurchases]);
 
   // Edit-profile form state, reset whenever a different supplier is opened.
   const [form, setForm] = useState<SupplierFormValues>({
@@ -314,30 +328,12 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b-2 border-[var(--border-default)]">
-        <div className="flex items-center gap-1 min-w-max">
-          {tabs.map(t => {
-            const isActive = tab === t.key;
-            return (
-              <Button
-                key={t.key}
-                variant="tertiary"
-                onClick={() => setTab(t.key)}
-                className={
-                  "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base cursor-pointer flex items-center gap-2.5 transition-all " +
-                  (isActive
-                    ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
-                    : "border-b-[3px] border-transparent text-[#9C8672] hover:text-[#6E0F2D] font-medium")
-                }
-              >
-                {t.icon}
-                <span>{t.label}</span>
-              </Button>
-            );
-          })}
-        </div>
-      </div>
+      {/* Royal Sub-Tab Strip */}
+      <RoyalSubTabStrip
+        tabs={tabs}
+        activeTab={tab}
+        onTabChange={setTab}
+      />
 
       <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22 }}>
@@ -438,7 +434,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
         <SupplierPayNowModal
           supplier={supplier}
           outstanding={stats.outstanding}
-          openPurchases={purchases.filter(p => p.supplierId === supplier.id && p.status !== "Paid")}
+          openPurchases={myPurchases.filter(p => p.status !== "Paid")}
           saving={savingPayment}
           onClose={() => setPayModalOpen(false)}
           onSave={payload => {

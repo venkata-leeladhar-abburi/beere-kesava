@@ -7,6 +7,12 @@ services:
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm run start:prod
     envVars:
+      # Pinned to the version CI tests against (.github/workflows/ci.yml).
+      # Without this Render picks its own current default, which moves over
+      # time — so the runtime that builds a deploy can differ from the one
+      # every check ran on, with nothing in the repo recording the change.
+      - key: NODE_VERSION
+        value: "24"
       - key: NODE_ENV
         value: production
       - key: PORT

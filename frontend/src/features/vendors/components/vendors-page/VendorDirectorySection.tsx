@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import { Building2 } from "lucide-react";
 import { T } from "./theme";
@@ -11,6 +11,7 @@ import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/p
 import { VendorCard, type VendorCardProps } from "@/shared/ui/domain";
 import { rupees } from "@/lib/domain/money";
 import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 // Vendor.status (types.ts) is the overloaded-field pattern the design
 // system audit calls out (design-system/06-DOMAIN.md Part A.3/D.1): it
@@ -41,12 +42,11 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick, lo
     const mSearch = !q || v.name.toLowerCase().includes(q) || v.city.toLowerCase().includes(q) || (v.code || v.id).toLowerCase().includes(q) || v.contactName.toLowerCase().includes(q);
     const mType = typeFilter === "All Types" || v.type.includes(typeFilter);
     const mStatus = statusFilter === "All" || v.status === statusFilter.toLowerCase();
-    const vendorRating = v.rating || 3;
-    const mRating = ratingFilter === "All Ratings" || vendorRating === parseInt(ratingFilter, 10);
+    const mRating = ratingFilter === "All Ratings" || v.rating === parseInt(ratingFilter, 10);
     return mSearch && mType && mStatus && mRating;
   });
 
-  const pag = usePagination(filtered, 25);
+  const pag = usePagination(filtered, 8);
 
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80 }}>
@@ -68,7 +68,56 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick, lo
           </motion.div>
         }
       >
-        <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 24, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search vendor name, city, contact..."
+            filterGroups={[
+              {
+                id: "status",
+                label: "Status",
+                value: statusFilter,
+                defaultValue: "All",
+                options: ["All", "Active", "Overdue", "Inactive"].map(s => ({ value: s, label: s })),
+                onChange: setStatusFilter,
+              },
+              {
+                id: "type",
+                label: "Material Type",
+                value: typeFilter,
+                defaultValue: "All Types",
+                options: MATERIAL_TYPES.map(t => ({ value: t, label: t })),
+                onChange: setTypeFilter,
+              },
+              {
+                id: "rating",
+                label: "Rating",
+                value: ratingFilter,
+                defaultValue: "All Ratings",
+                options: [
+                  { value: "All Ratings", label: "All Ratings" },
+                  { value: "5", label: "5 Stars" },
+                  { value: "4", label: "4 Stars" },
+                  { value: "3", label: "3 Stars" },
+                  { value: "2", label: "2 Stars" },
+                  { value: "1", label: "1 Star" },
+                ],
+                onChange: setRatingFilter,
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setStatusFilter("All");
+              setTypeFilter("All Types");
+              setRatingFilter("All Ratings");
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter Bar */}
+        <div className="hidden md:flex items-center gap-3.5 mb-6 flex-wrap" style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px", boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
           <div style={{ flex: "1 1 280px" }}>
             <SearchInput
               aria-label="Search by vendor name, city, or contact"

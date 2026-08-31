@@ -1,5 +1,4 @@
 /* eslint-disable no-restricted-syntax */
-import React from "react";
 import { Trash2 } from "lucide-react";
 import { T, F, ExtItem } from "./POTypesAndVendors";
 import { IconButton, Textarea, NumberInput, Select, SelectItem } from "../../../shared/ui/primitives";

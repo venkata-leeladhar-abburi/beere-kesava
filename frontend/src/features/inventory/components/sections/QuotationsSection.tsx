@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { FileText, Truck } from "lucide-react";
 import { Quotation } from "@/features/finishing";
 import { T, F } from "../theme";
@@ -48,25 +48,41 @@ export function QuotationsSection({ quotations, onDispatch }: { quotations: Quot
         </div>
       }
     >
-      <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {rows.length === 0 ? (
-          <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No quotations raised yet.</div>
-        ) : rows.map((q, i) => {
+          <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 14, color: T.taupe, background: "#FFF", borderRadius: 14, border: `1px solid rgba(110,15,45,0.18)` }}>No quotations raised yet.</div>
+        ) : rows.map((q) => {
           const st = quotationStatusStyle(q.status);
           const receivedCount = q.sarees.filter(s => s.finishingStatus === "received").length;
           const canDispatch = q.status === "received" || q.status === "partially-received";
           return (
-            <div key={q.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "15px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, flexWrap: "wrap" as const }}>
+            <div
+              key={q.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 16,
+                padding: "16px 22px",
+                border: `1px solid rgba(110,15,45,0.18)`,
+                borderRadius: 14,
+                background: "#FFFFFF",
+                boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)",
+                flexWrap: "wrap" as const,
+                transition: "all 0.2s ease",
+              }}
+            >
               <div className="min-w-[140px]">
                 <EntityCode type="quotation" value={q.quotationNumber} />
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{q.quotationDate}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{q.quotationDate}</div>
               </div>
               <div style={{ flex: 1, minWidth: 160 }}>
-                <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{q.customerName}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{q.customerName}</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{q.customerCity || "—"}</div>
               </div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, minWidth: 70, fontVariantNumeric: "tabular-nums" }}>{receivedCount}/{q.sarees.length}<span style={{ color: T.taupe, fontWeight: 400 }}> received</span></div>
-              <div style={{ background: st.bg, border: `1px solid ${st.border}`, borderRadius: 999, padding: "3px 11px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: st.color, textTransform: "capitalize" as const, whiteSpace: "nowrap" as const }}>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, minWidth: 80, fontVariantNumeric: "tabular-nums" }}>
+                <strong>{receivedCount}/{q.sarees.length}</strong><span style={{ color: T.taupe, fontWeight: 400 }}> received</span>
+              </div>
+              <div style={{ background: st.bg, border: `1px solid ${st.border}`, borderRadius: 999, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: st.color, textTransform: "capitalize" as const, whiteSpace: "nowrap" as const }}>
                 {q.status.replace("-", " ")}
               </div>
               <Button

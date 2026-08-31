@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { useNavigate, useLocation } from "react-router";
 import { T, F } from "../theme";

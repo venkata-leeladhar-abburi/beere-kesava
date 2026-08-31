@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
-import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { AdminOnly, RequireRoles } from "../auth/decorators/require-roles.decorator";
 import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
 import { resolveWeaverScope } from "../auth/weaver-scope";
 import { UserRole } from "../generated/prisma/client";
@@ -20,8 +20,10 @@ import { CreateWeaverPaymentDto } from "./dto/create-weaver-payment.dto";
 import { ListSupplierPaymentsQueryDto } from "./dto/list-supplier-payments-query.dto";
 import { ListVendorPaymentsQueryDto } from "./dto/list-vendor-payments-query.dto";
 import { ListWeaverPaymentsQueryDto } from "./dto/list-weaver-payments-query.dto";
+import { StaffLedgerQueryDto } from "./dto/staff-ledger-query.dto";
 import { WeaverEarningsQueryDto } from "./dto/weaver-earnings-query.dto";
 import { PaymentsService } from "./payments.service";
+import { StaffFinanceService } from "./staff-finance.service";
 
 // Financial module — ACCOUNTANT access by default. The one exception is
 // GET /payments/weavers, which a WEAVER may also call to see their own
@@ -30,11 +32,31 @@ import { PaymentsService } from "./payments.service";
 @Controller("payments")
 @RequireRoles(UserRole.ACCOUNTANT)
 export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(
+    private readonly paymentsService: PaymentsService,
+    private readonly staffFinanceService: StaffFinanceService,
+  ) {}
 
   @Get("summary")
   getPaymentSummary() {
     return this.paymentsService.getPaymentSummary();
+  }
+
+  // Who recorded which money movement — the Accountant Staff Directory's
+  // data source. Oversight over other people's work, so ADMIN/SUPERADMIN
+  // only, unlike the rest of this controller.
+  @Get("staff-ledger")
+  @AdminOnly()
+  getStaffLedger(@Query() query: StaffLedgerQueryDto) {
+    return this.staffFinanceService.getStaffLedger(query);
+  }
+
+  // Exact per-recorder totals for a period, aggregated in the database, so a
+  // headline figure never depends on how many rows staff-ledger returned.
+  @Get("staff-summary")
+  @AdminOnly()
+  getStaffFinanceSummary(@Query() query: StaffLedgerQueryDto) {
+    return this.staffFinanceService.getStaffFinanceSummary(query);
   }
 
   @Post("weavers")

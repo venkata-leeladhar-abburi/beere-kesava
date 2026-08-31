@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { List, Plus, Trash2 } from "lucide-react";
 import { C, F, Card } from "./theme";
@@ -255,6 +255,7 @@ export function ScanSareeStep({
                 caption="Sarees dispatched to this shop and still unsold"
                 density="compact"
                 responsive
+                pagination
                 loading={sareesLoading}
                 selectedIds={selected}
                 onSelectionChange={setSelected}

@@ -1,4 +1,3 @@
-import React from "react";
 import { VendorStatus } from "../../types";
 
 export const VENDOR_STATUS_CFG: Record<VendorStatus, { bg: string; color: string; label: string }> = {

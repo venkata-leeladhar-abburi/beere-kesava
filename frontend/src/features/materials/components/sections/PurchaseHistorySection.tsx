@@ -1,7 +1,7 @@
-import React, { useContext, useState, useMemo } from "react";
+import { useContext, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { RadialBarChart, RadialBar } from "recharts";
-import { Layers, Tag, Sparkles, Calculator, Users, IndianRupee, Download, History, LayoutGrid, List } from "lucide-react";
+import { Layers, Tag, Sparkles, Calculator, Users, IndianRupee, Download, History, LayoutGrid, List, PieChart as PieChartIcon } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { T, F, MobileCtx } from "../theme";
 import { MAT_TAG } from "../materialConfig";
@@ -14,6 +14,8 @@ import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/da
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Button } from "../../../../shared/ui/primitives";
 import { jariToReels } from "../../../../shared/lib/weightUnits";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 interface VendorRow {
   name: string;
@@ -41,7 +43,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
 
   const { data: rawPos, isLoading: posLoading, isError: posError, refetch: refetchPos } = useQuery({
     queryKey: ["purchase-orders"],
-    queryFn: () => purchaseOrdersApi.list(100),
+    queryFn: () => purchaseOrdersApi.list(undefined, 100),
   });
 
   const { data: rawVendors, isLoading: vendorsLoading, isError: vendorsError, refetch: refetchVendors } = useQuery({
@@ -283,6 +285,8 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
     };
   }, [rawGrns, rawPos, rawVendors, rawVendorPayments?.items]);
 
+  const vendorPag = usePagination(stats.vendorRows, 10);
+
   const vendorColumns: ColumnDef<VendorRow>[] = [
     {
       id: "name", header: "Vendor Name", accessor: v => v.name, priority: 1,
@@ -344,7 +348,40 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
       }
     >
       <FadeUp>
-        <div style={{ marginBottom: 16 }}>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search=""
+            onSearchChange={() => {}}
+            searchPlaceholder="Search vendor purchase history..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: dateFilter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                  else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                  else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                  else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                },
+              },
+            ]}
+            onResetAll={() => setDateFilter(DEFAULT_DATE_FILTER)}
+          />
+        </div>
+
+        {/* Desktop Filter Bar */}
+        <div className="hidden md:block mb-4">
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
         </div>
       </FadeUp>
@@ -379,20 +416,41 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
       </div>
 
       <FadeUp>
-        <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 16px rgba(74,6,27,0.06)", overflow: "hidden", marginBottom: 24 }}>
-          <div style={{ padding: "22px 26px 16px", borderBottom: `1px solid rgba(110,15,45,0.07)` }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 6 }}>How Much Was Bought From Each Vendor</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.55 }}>Each vendor listed separately — what material they supplied, how much, and what it cost in total.</div>
+        <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.royalBurgundy}`, boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)", overflow: "hidden", marginBottom: 28, position: "relative" }}>
+          <span aria-hidden style={{
+            position: "absolute", top: -70, right: -70, width: 200, height: 200, borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(110,15,45,0.05) 0%, rgba(110,15,45,0) 70%)",
+            pointerEvents: "none",
+          }} />
+          <div style={{
+            background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`,
+            padding: "18px 24px",
+          }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: 10,
+                background: "rgba(255,255,255,0.12)",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <Users size={20} color="#FFFDF9" />
+              </div>
+              <div>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 17, color: "#FFFDF9", letterSpacing: "-0.1px", lineHeight: 1.25 }}>
+                  How Much Was Bought From Each Vendor
+                </div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>
+                  Each vendor listed separately — what material they supplied, how much, and what it cost in total.
+                </div>
+              </div>
             </div>
-            <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 self-start sm:self-auto">
+            <div className="flex md:hidden items-center border border-white/20 rounded-xl overflow-hidden bg-white/10 shrink-0 self-start sm:self-auto backdrop-blur-sm">
               <Button
                 onClick={() => setVendorViewMode("card")}
                 variant="ghost"
                 className={`h-auto rounded-none gap-1.5 py-1.5 px-2.5 text-[12px] font-bold ${
                   vendorViewMode === "card"
-                    ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                    : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                    ? "bg-[#FFFDF9] text-[#6E0F2D] hover:bg-[#FFFDF9]"
+                    : "bg-transparent text-white/80 hover:bg-white/10"
                 }`}
               >
                 <LayoutGrid size={14} /> Card View
@@ -402,38 +460,85 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
                 variant="ghost"
                 className={`h-auto rounded-none gap-1.5 py-1.5 px-2.5 text-[12px] font-bold ${
                   vendorViewMode === "table"
-                    ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                    : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                    ? "bg-[#FFFDF9] text-[#6E0F2D] hover:bg-[#FFFDF9]"
+                    : "bg-transparent text-white/80 hover:bg-white/10"
                 }`}
               >
                 <List size={14} /> Table View
               </Button>
             </div>
           </div>
-          <div className="overflow-x-auto w-full">
-            <DataTable
-              responsive={vendorViewMode === "card"}
-              columns={vendorColumns}
-              data={stats.vendorRows}
-              getRowId={v => v.name}
-              loading={historyLoading}
-              error={historyError}
-              onRetry={refetchHistory}
-              emptyTitle="No purchase history found across vendors."
-            />
+          <div className="w-full">
+            <div className="overflow-x-auto w-full">
+              <DataTable
+                responsive={vendorViewMode === "card"}
+                columns={vendorColumns}
+                data={vendorPag.pageItems}
+                getRowId={v => v.name}
+                loading={historyLoading}
+                error={historyError}
+                onRetry={refetchHistory}
+                emptyTitle="No purchase history found across vendors."
+                pagination={false}
+              />
+            </div>
+            <div className="p-4 border-t border-[var(--border-default)] bg-white">
+              <Pagination
+                page={vendorPag.page}
+                pageCount={vendorPag.pageCount}
+                total={vendorPag.total}
+                pageSize={vendorPag.pageSize}
+                start={vendorPag.start}
+                onPageChange={vendorPag.setPage}
+                onPageSizeChange={vendorPag.setPageSize}
+                itemLabel="vendors"
+              />
+            </div>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: T.warmCream, padding: "16px 18px", borderTop: `1px solid ${T.borderDef}` }}>
-            <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.taupe }}>Grand Total across all vendors:</span>
-            <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.antiqueGold }}>{formatCurrency(stats.totalSpent)}</span>
+          <div style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            background: "linear-gradient(90deg, rgba(110,15,45,0.04) 0%, rgba(200,155,71,0.08) 100%)",
+            padding: "18px 24px",
+            borderTop: `1px solid rgba(110,15,45,0.12)`,
+          }}>
+            <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Grand Total across all vendors:</span>
+            <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, color: T.royalBurgundy }}>{formatCurrency(stats.totalSpent)}</span>
           </div>
         </div>
       </FadeUp>
 
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 22 }}>
         <FadeUp delay={0.1}>
-          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid rgba(200,155,71,0.4)`, padding: "24px 26px 22px", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", height: "100%" }}>
-            <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 6 }}>Total Spend Split</div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 22, lineHeight: 1.5 }}>How much of your total spend goes to each material type</div>
+          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.royalBurgundy}`, boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)", overflow: "hidden", height: "100%", position: "relative" }}>
+            <span aria-hidden style={{
+              position: "absolute", top: -70, right: -70, width: 200, height: 200, borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(110,15,45,0.05) 0%, rgba(110,15,45,0) 70%)",
+              pointerEvents: "none",
+            }} />
+            <div style={{
+              background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`,
+              padding: "18px 24px",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: 10,
+                background: "rgba(255,255,255,0.12)",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <PieChartIcon size={20} color="#FFFDF9" />
+              </div>
+              <div>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 17, color: "#FFFDF9", letterSpacing: "-0.1px", lineHeight: 1.25 }}>
+                  Total Spend Split
+                </div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>
+                  How much of your total spend goes to each material type
+                </div>
+              </div>
+            </div>
+            <div style={{ padding: "24px 26px 22px" }}>
             <div className="flex flex-col sm:flex-row items-center sm:items-center gap-5 sm:gap-6 w-full">
               <div style={{ flexShrink: 0, margin: "0 auto", position: "relative" }}>
                 <RadialBarChart 
@@ -462,6 +567,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
                   </div>
                 ))}
               </div>
+            </div>
             </div>
           </div>
         </FadeUp>

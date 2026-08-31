@@ -8,7 +8,6 @@
  * table, no GST, no letterhead band (a receipt is a slip, not a formal
  * document with a full identity band).
  */
-import * as React from "react";
 import { DocumentPage } from "./DocumentPage";
 import { amountInWords, formatPaise } from "../../../lib/gst";
 

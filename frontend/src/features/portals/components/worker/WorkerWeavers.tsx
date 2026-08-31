@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { PackageCheck, Package, ShieldAlert } from "lucide-react";
 import { C } from "./tokens";
 import { useBatches } from "@/features/production";

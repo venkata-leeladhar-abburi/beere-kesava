@@ -6,6 +6,7 @@ import { T, F } from "../theme";
 import { StatusPill } from "../common/primitives";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { Pagination, usePagination } from "../../../../../shared/ui/DataPagination";
 
 /**
  * Migrated onto <DataTable> — design-system/04-DATA-DISPLAY.md Part S, Step 3
@@ -38,8 +39,8 @@ export function PurchasesTable({
   statusOf?: (row: Purchase) => Purchase["status"];
   totalCount: number;
   viewMode?: "card" | "table";
-  hoveredRow: string | null;
-  setHoveredRow: (id: string | null) => void;
+  hoveredRow?: string | null;
+  setHoveredRow?: (id: string | null) => void;
   onView: (row: Purchase) => void;
   onViewSarees: (row: Purchase) => void;
   onEdit: (id: string) => void;
@@ -49,6 +50,8 @@ export function PurchasesTable({
   onRetry?: () => void;
   onClearFilters?: () => void;
 }) {
+  const pag = usePagination(filtered, 10);
+
   const balanceOf = (row: Purchase) =>
     Math.max(0, parseINR(row.billAmount) - (paidFor ? paidFor(row) : 0));
 
@@ -154,7 +157,7 @@ export function PurchasesTable({
         <DataTable
           responsive={viewMode === "card"}
           columns={columns}
-          data={filtered}
+          data={pag.pageItems}
           getRowId={row => row.id}
           onRowClick={onView}
           rowClassName={row => (hoveredRow === row.id ? "bk-purchases-row-hovered" : undefined)}
@@ -167,31 +170,16 @@ export function PurchasesTable({
         />
         <style>{`.bk-purchases-row-hovered { background: #F0E8D0 !important; }`}</style>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderTop: `1px solid ${T.borderDef}`,
-            padding: "12px 20px",
-          }}
-        >
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
-            Showing 1–{filtered.length} of {totalCount} entries
-          </span>
-          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-            {["← Previous", "1", "Next →"].map((p) => (
-              <Button
-                key={p}
-                variant={p === "1" ? "secondary" : "ghost"}
-                size="sm"
-                className="shadow-none"
-              >
-                {p}
-              </Button>
-            ))}
-          </div>
-        </div>
+        <Pagination
+          page={pag.page}
+          pageCount={pag.pageCount}
+          total={pag.total}
+          pageSize={pag.pageSize}
+          start={pag.start}
+          onPageChange={pag.setPage}
+          onPageSizeChange={pag.setPageSize}
+          itemLabel="purchases"
+        />
       </div>
   );
 }

@@ -1,4 +1,3 @@
-import React from "react";
 import { F, T } from "../../theme";
 import { VendorPayment } from "../../types";
 import type { Firm } from "@/features/firms";

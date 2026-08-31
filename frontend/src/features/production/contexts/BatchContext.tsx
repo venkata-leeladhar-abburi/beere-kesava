@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { patchListItems, removeFromListWhere } from "../../../lib/cacheUpdates";
 import { toast } from "sonner";
 import { ApiError } from "../../../shared/api/client";
 import { BackendBatch, batchesApi, ReceiveBatchRowPayload } from "../../../shared/api/batches";
@@ -83,6 +84,9 @@ export interface BatchRecord {
   status: "draft" | "active" | "completed";
   createdAt: string;
   updatedAt: string;
+  createdBy?: string | null;
+  /** Batch-level tally attribution — currently always null, no batch-level tally action exists yet (only per-row SareeRow.talliedBy is wired). */
+  talliedBy?: string | null;
 }
 
 // ─── Saree ID generation ──────────────────────────────────────────────────────
@@ -151,6 +155,8 @@ function backendBatchToRecord(
     status: b.status === "DRAFT" ? "draft" : b.status === "ACTIVE" ? "active" : "completed",
     createdAt: b.createdAt,
     updatedAt: b.updatedAt,
+    createdBy: b.createdBy ? formatRecordedBy(b.createdBy) : null,
+    talliedBy: b.talliedBy ? formatRecordedBy(b.talliedBy) : null,
     rows: b.rows.map((r): SareeRow => {
       const weaver = r.weaverId ? weaverLookup.get(r.weaverId) : undefined;
       const qcResult = r.qcRecords?.[0] ? QC_RESULT_FROM_BACKEND[r.qcRecords[0].result] : undefined;
@@ -206,7 +212,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   // (this provider is also mounted in WeaverLayout) would always 403 on
   // both, so skip each call for roles that can't read it rather than firing
   // a guaranteed-403 request just to fall back to an empty lookup.
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
   const canReadRates = role === "accountant" || role === "admin" || role === "superadmin";
   // GET /batches is WORKER/WEAVER-only on the backend (ADMIN/SUPERADMIN
@@ -266,7 +272,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
 
       const realBatchId = existing
         ? batch.batchId
-        : (await batchesApi.create({ totalCount: batch.totalCount, dueDate: batch.dueDate })).id;
+        : (await batchesApi.create({ totalCount: batch.totalCount, dueDate: batch.dueDate, actorId: user?.id })).id;
 
       // One bulk request for every assignable row, instead of one
       // PATCH-per-row round trip — a 50-row batch used to mean 50 sequential
@@ -276,14 +282,19 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       const assignable = batch.rows
         .map(row => {
           const recipientType = row.weaverId ? "WEAVER" as const : row.factoryLoomId ? "FACTORY_LOOM" as const : null;
-          if (!recipientType || !row.sareeTypeCode) return null;
+          // Recipient and saree type are assigned in separate steps in the
+          // UI (weaver picker vs. saree-type picker), so a row can reach
+          // Save with a weaver/loom set but no type yet — that must still be
+          // sent and persisted, not silently dropped, or a Save Draft loses
+          // the weaver assignment the moment the batch list refetches.
+          if (!recipientType) return null;
           return {
             serial: row.serial,
             recipientType,
             weaverId: row.weaverId ?? undefined,
             factoryLoomId: row.factoryLoomId ?? undefined,
             designCode: row.designCode ?? undefined,
-            sareeTypeCode: row.sareeTypeCode,
+            sareeTypeCode: row.sareeTypeCode ?? undefined,
             // Persists the row's bulk-order link so it survives a refetch —
             // previously withheld because the backend wrote an unvalidated FK
             // (any bad ref 500'd); assignRows now validates it and returns a
@@ -304,6 +315,10 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       return realBatchId;
     },
     onSuccess: () => {
+      // Refetch-only: saving a draft returns the batch id, and the rows the
+      // server actually persisted (saree ids it generates, rows it skipped for
+      // an incomplete recipient) can differ from the local draft. Seeding from
+      // that draft would show rows as saved that were not.
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Batch saved");
     },
@@ -333,7 +348,20 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
         tallied: args.tallied,
         weight: args.weight, warpG: args.warpG, reshamG: args.reshamG, jariReels: args.jariReels,
       }),
-    onSuccess: () => {
+    onSuccess: (_row, args) => {
+      // Flip the checkbox immediately — tallying is a rapid row-by-row pass, and
+      // waiting a round trip per saree for the tick to appear is what makes it
+      // feel unresponsive. Only `tallied`/`talliedAt` are seeded: the corrected
+      // weights are re-serialised by the backend (decimal strings), so echoing
+      // the raw entered numbers here would render one format and then visibly
+      // snap to another when the invalidate below lands.
+      patchListItems<BatchRecord>(queryClient, QUERY_KEY, b => b.batchId === args.batchId, batch => ({
+        ...batch,
+        rows: batch.rows.map(row =>
+          row.serial === args.serial
+            ? { ...row, tallied: args.tallied, talliedAt: args.tallied ? new Date().toISOString() : null }
+            : row),
+      }));
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       void queryClient.invalidateQueries({ queryKey: ["bulkOrders"] });
     },
@@ -347,7 +375,25 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const receiveRowMutation = useMutation({
     mutationFn: (args: { batchId: string; serial: number; payload: ReceiveBatchRowPayload }) =>
       batchesApi.receiveRow(args.batchId, args.serial, args.payload),
-    onSuccess: () => {
+    onSuccess: (row, args) => {
+      // Copy the receive fields off the response using the same mapping the
+      // list query uses (see backendBatchToRecord), so the weights render in
+      // the backend's own decimal formatting and don't visibly re-render when
+      // the invalidate below lands.
+      patchListItems<BatchRecord>(queryClient, QUERY_KEY, b => b.batchId === args.batchId, batch => ({
+        ...batch,
+        rows: batch.rows.map(r => r.serial === args.serial ? {
+          ...r,
+          receivedAt: row.receivedAt,
+          receivedBy: row.receivedByUser ? formatRecordedBy(row.receivedByUser) : r.receivedBy,
+          receivedWeight: row.receivedWeight,
+          receivedColor: row.receivedColor,
+          receivedPhotoUrl: row.receivedPhotoUrl,
+          receivedWarpG: row.receivedWarpG,
+          receivedReshamG: row.receivedReshamG,
+          receivedJariReels: row.receivedJariReels,
+        } : r),
+      }));
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       // Receiving a saree auto-draws its weight down from the weaver's
       // outstanding material (BatchesService.receiveRow ->
@@ -364,7 +410,10 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
 
   const finalizeBatchMutation = useMutation({
     mutationFn: (batchId: string) => batchesApi.finalize(batchId),
-    onSuccess: () => {
+    onSuccess: (_finalized, batchId) => {
+      patchListItems<BatchRecord>(queryClient, QUERY_KEY, b => b.batchId === batchId, {
+        status: "completed",
+      });
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Batch finalized");
     },
@@ -377,7 +426,8 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
 
   const deleteBatchMutation = useMutation({
     mutationFn: (batchId: string) => batchesApi.remove(batchId),
-    onSuccess: () => {
+    onSuccess: (_result, batchId) => {
+      removeFromListWhere<BatchRecord>(queryClient, QUERY_KEY, b => b.batchId === batchId);
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       // The backend cascades the delete onto that batch's QC records,
       // finishing assignments, and inventory/saree rows — so anything

@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
+import { ViewSelector } from "@/shared/ui/ViewSelector";
 import { useFinishing } from "@/features/finishing";
 import { invoicesApi, BackendInvoice } from "../../../../shared/api/invoices";
 import { EASE, F, T } from "../../theme";
@@ -12,6 +13,7 @@ import { useBulkOrders } from "@/features/bulk-orders";
 import { BulkOrder } from "@/features/production";
 import { useFirms } from "@/features/firms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { Invoice } from "../../types";
 import { AnimCount, FadeUp } from "../common/motion";
 import { ActionModal, DropBtn, SectionCard } from "../common/primitives";
@@ -23,6 +25,8 @@ import { WholesaleTableView } from "./WholesaleTableView";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
+import { patchListItems } from "../../../../lib/cacheUpdates";
 
 const INVOICES_QUERY_KEY = ["invoices"] as const;
 
@@ -88,6 +92,11 @@ export function WholesaleCollectionsSection() {
   const createInvoiceMutation = useMutation({
     mutationFn: invoicesApi.create,
     onSuccess: () => {
+      // Refetch-only on purpose. A cached invoice row carries the customer's
+      // city, which neither this response nor the dispatch that triggered the
+      // creation knows — seeding would print "—" in that column and then
+      // silently correct itself. This also runs from the effect below rather
+      // than a user action, so nobody is waiting on the round trip.
       void queryClient.invalidateQueries({ queryKey: INVOICES_QUERY_KEY });
     },
     onError: (err) => {
@@ -129,7 +138,23 @@ export function WholesaleCollectionsSection() {
   const recordPaymentMutation = useMutation({
     mutationFn: (args: { id: string; amount: number; utr: string; method: string; firmId: string }) =>
       invoicesApi.recordPayment(args.id, { amount: args.amount, utr: args.utr || undefined, method: args.method || undefined, firmId: args.firmId || undefined }),
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      // Only the three fields a payment actually moves. A full remap through
+      // backendInvoiceToFrontend would be wrong here: that mapper falls back to
+      // "Unknown Customer"/"—" when `customer` is absent, and this endpoint
+      // returns the invoice without its customer relation — so the row would
+      // briefly relabel itself before the refetch put the name back.
+      patchListItems<Invoice>(queryClient, INVOICES_QUERY_KEY, i => i.id === updated.id, {
+        paid: Number(updated.paid),
+        status: backendStatusToFrontend(updated.status),
+        payments: updated.payments.map(pmt => ({
+          amount: Number(pmt.amount),
+          date: new Date(pmt.date).toLocaleDateString("en-IN"),
+          utr: pmt.utr ?? "",
+          method: pmt.method ?? "",
+          recordedBy: pmt.recordedBy ?? null,
+        })),
+      });
       void queryClient.invalidateQueries({ queryKey: INVOICES_QUERY_KEY });
     },
     onError: (err) => {
@@ -142,7 +167,7 @@ export function WholesaleCollectionsSection() {
     if (!recordPayment) return;
     recordPaymentMutation.mutate({ id: recordPayment.id, amount, utr, method, firmId });
     if (firmId) {
-      addIncomeEntry(firmId, { description: `Wholesale payment — ${recordPayment.customer} (${recordPayment.id})`, amount, date, category: "Wholesale Sale" });
+      addIncomeEntry(firmId, { description: `Wholesale payment — ${recordPayment.customer} (${recordPayment.code ?? recordPayment.id})`, amount, date, category: "Wholesale Sale" });
     }
     toast.success(`Payment of ${formatMoney(rupees(amount))} recorded for ${recordPayment.customer}`);
     setRecordPayment(null);
@@ -166,6 +191,8 @@ export function WholesaleCollectionsSection() {
     const matchDate = matchesDateFilter(inv.invoiceDate, dateFilter);
     return matchSearch && matchState && matchDate;
   });
+
+  const pag = usePagination(filtered, 8);
 
   const viewOptions = [
     { key: "card",  Icon: LayoutGrid,   label: "Card View"  },
@@ -361,16 +388,71 @@ export function WholesaleCollectionsSection() {
           </div>
         )}
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
-          <div className="hidden md:flex" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
-            {viewOptions.map(({ key, Icon, label }) => (
-              <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
-                onClick={() => setView(key)}
-                className={view === key ? "rounded-none bg-[#6E0F2D] text-[#FFFDF9]" : "rounded-none bg-white text-[var(--text-tertiary)]"}>
-                {label}
-              </Button>
-            ))}
-          </div>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search invoice or customer..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: dateFilter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                  else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                  else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                  else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                },
+              },
+              {
+                id: "state",
+                label: "Location",
+                value: filterState,
+                defaultValue: "All States",
+                options: ["All States", "Varanasi", "Surat", "Mumbai", "Hyderabad", "Chennai", "Bengaluru"].map(s => ({ value: s, label: s })),
+                onChange: setFilterState,
+              },
+              {
+                id: "customer",
+                label: "Customer",
+                value: filterCust,
+                defaultValue: "All Customers",
+                options: ["All Customers", "Lakshmi Silks", "Padmavathi Textiles", "Vijaya Silk House", "Narayana Silk Emporium", "Meenakshi Silks"].map(c => ({ value: c, label: c })),
+                onChange: setFilterCust,
+              },
+              {
+                id: "type",
+                label: "Invoice Type",
+                value: filterType,
+                defaultValue: "All Invoice Types",
+                options: ["All Invoice Types", "Wholesale", "Retail", "Export"].map(t => ({ value: t, label: t })),
+                onChange: setFilterType,
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setFilterState("All States");
+              setFilterCust("All Customers");
+              setFilterType("All Invoice Types");
+              setDateFilter(DEFAULT_DATE_FILTER);
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter Bar & Controls */}
+        <div className="hidden md:flex items-center gap-2.5 mb-5 flex-wrap">
+          <ViewSelector options={viewOptions} activeView={view} onViewChange={setView} />
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           <DropBtn value={filterState} options={["All States", "Varanasi", "Surat", "Mumbai", "Hyderabad", "Chennai", "Bengaluru"]} onChange={setFilterState} />
           <DropBtn value={filterCust} options={["All Customers", "Lakshmi Silks", "Padmavathi Textiles", "Vijaya Silk House", "Narayana Silk Emporium", "Meenakshi Silks"]} onChange={setFilterCust} />
@@ -380,43 +462,21 @@ export function WholesaleCollectionsSection() {
           </div>
         </div>
 
-        <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
-          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
-            <Button
-              onClick={() => setView("card")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-                view === "card"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-              }`}
-            >
-              <LayoutGrid size={14} /> Card View
-            </Button>
-            <Button
-              onClick={() => setView("table")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-                view === "table"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-              }`}
-            >
-              <AlignJustify size={14} /> Table View
-            </Button>
-          </div>
-        </div>
-
         {view === "card" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 items-stretch">
-            {filtered.map((inv, i) => {
-              const matchingOrder = matchBulkOrder(inv.id);
-              return (
-                <motion.div key={inv.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.06, ease: EASE }} style={{ display: "flex", flexDirection: "column" }}>
-                  <CustomerCard inv={inv} onViewInvoice={() => setViewInvoice(inv)} onRecordPayment={() => setRecordPayment(inv)} bulkOrderRef={matchingOrder?.ref} bulkOrderData={matchingOrder} />
-                </motion.div>
-              );
-            })}
+          <div data-pagination-target>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6 items-stretch">
+              {pag.pageItems.map((inv, i) => {
+                const matchingOrder = matchBulkOrder(inv.id);
+                return (
+                  <motion.div key={inv.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.06, ease: EASE }} style={{ display: "flex", flexDirection: "column" }}>
+                    <CustomerCard inv={inv} onViewInvoice={() => setViewInvoice(inv)} onRecordPayment={() => setRecordPayment(inv)} bulkOrderRef={matchingOrder?.ref} bulkOrderData={matchingOrder} />
+                  </motion.div>
+                );
+              })}
+            </div>
+            <div className="mb-8">
+              <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="invoices" />
+            </div>
           </div>
         )}
 

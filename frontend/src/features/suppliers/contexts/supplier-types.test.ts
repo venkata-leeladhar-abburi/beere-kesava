@@ -5,6 +5,8 @@ import {
   buildSareeCode,
   buildSareePieceCode,
   pieceCodeFromLineCode,
+  serialFromLineCode,
+  serialFromPieceCode,
   computeFinalAmount,
   totalPieces,
   lineBuying,
@@ -53,6 +55,28 @@ describe("piece codes", () => {
 
   it("derives the same piece code from an existing line code", () => {
     expect(pieceCodeFromLineCode("RAVI-34-001", 3)).toBe("RAVI-34-001-03");
+  });
+});
+
+describe("serial extraction", () => {
+  it("reads the serial off the end of a line code", () => {
+    expect(serialFromLineCode("RAVI-34-001")).toBe("001");
+    expect(serialFromLineCode("RAVI-NOINV-007")).toBe("007");
+  });
+
+  it("reads the serial when the invoice number itself contains dashes and digits", () => {
+    expect(serialFromLineCode("NEWB-INV-2026-12-001")).toBe("001");
+    expect(serialFromPieceCode("NEWB-INV-2026-12-001-01")).toBe("001");
+  });
+
+  it("reads the serial off a piece code, not the piece number", () => {
+    expect(serialFromPieceCode("RAVI-34-001-03")).toBe("001");
+    expect(serialFromPieceCode(buildSareePieceCode("Ravi Silks", 12, 4, "34"))).toBe("012");
+  });
+
+  it("returns null for codes that are not in that shape", () => {
+    expect(serialFromLineCode("RAVI-34")).toBeNull();
+    expect(serialFromPieceCode("RAVI-34-001")).toBeNull();
   });
 });
 

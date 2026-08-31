@@ -91,6 +91,10 @@ export function WorkerGRN({
   const createGrnMutation = useMutation({
     mutationFn: (payload: CreateGrnPayload) => rawMaterialsApi.createGrn(payload),
     onSuccess: async (data) => {
+      // Refetch-only: the receipt lists are cached per date range
+      // (["grn-receipts", from, to]), so there is no single entry to seed, and
+      // the worker moves to the success screen below rather than back to a
+      // list that would show the delay.
       queryClient.invalidateQueries({ queryKey: ["grn-receipts"] });
       // Update grnBatchId with the real one returned from backend
       setGrnBatchId(data.id);
@@ -197,7 +201,7 @@ export function WorkerGRN({
   }) : [];
 
   const allFilled = selectedPO ? selectedPO.materials.every((m, i) => getHasQty(i, m)) : false;
-  const allApproved = selectedPO ? selectedPO.materials.every((m, i) =>
+  const allApproved = selectedPO ? selectedPO.materials.every((_m, i) =>
     itemApproval[i] === "approved" || (itemApproval[i] === "rejected" && !!itemRejectReason[i]?.trim())
   ) : false;
 
@@ -220,6 +224,10 @@ export function WorkerGRN({
         const inputtedUnit = receivedUnit[i] || m.unit;
         const isRejected = itemApproval[i] === "rejected";
         return {
+          // The ordered line this row is receiving against. This screen is the
+          // only place the pairing is unambiguous — `name` below is rewritten
+          // to the subtype, so nothing downstream could recover it afterwards.
+          poItemId: m.id,
           materialType: m.materialType === "Warp" ? "WARP" : m.materialType === "Resham" ? "RESHAM" : "JARI",
           name: m.subtype || "General",
           description: m.description || undefined,

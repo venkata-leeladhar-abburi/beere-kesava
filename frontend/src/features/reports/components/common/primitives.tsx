@@ -6,6 +6,7 @@ import type { ValueType, NameType } from "recharts/types/component/DefaultToolti
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F, EASE } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
+import { useReportPeriod } from "../PeriodContext";
 
 export function FadeUp({ children, delay = 0, style = {} }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -258,24 +259,32 @@ export function SumCard({ icon, label, value, sub, hi = false, crimsonHi = false
   );
 }
 
-export function ReportDLBar({ period = "May 2026", compared = "April 2026" }: { period?: string; compared?: string }) {
+/**
+ * Per-section period banner + download buttons. The period and comparison
+ * labels used to be hard-coded props defaulting to "May 2026" / "April 2026"
+ * regardless of what the page was actually showing; they now come from the
+ * live period selection, and the buttons export the visible section's rows.
+ */
+export function ReportDLBar({ note }: { note?: string }) {
+  const { label, priorLabel, compareOn, exportCsv, exportPdf, canExport } = useReportPeriod();
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0" style={{ background: T.warmIvory, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 20px", marginBottom: 24, boxShadow: "0 2px 8px rgba(74,6,27,0.04)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 9, background: "rgba(200,155,71,0.12)", border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: 36, height: 36, borderRadius: 9, background: "rgba(200,155,71,0.12)", border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <Calendar size={17} color={T.antiqueGold} />
         </div>
         <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-          Showing: <span style={{ fontFamily: F.display, fontWeight: 700, color: T.luxuryBrown }}>{period}</span>
-          {compared && <> · Compared with: <span style={{ fontFamily: F.display, fontWeight: 700, color: T.antiqueGold }}>{compared}</span></>}
+          Showing: <span style={{ fontFamily: F.display, fontWeight: 700, color: T.luxuryBrown }}>{label}</span>
+          {compareOn && priorLabel && <> · Compared with: <span style={{ fontFamily: F.display, fontWeight: 700, color: T.antiqueGold }}>{priorLabel}</span></>}
+          {note && <span style={{ fontStyle: "italic" }}> · {note}</span>}
         </span>
       </div>
       <DownloadGate>
         <div className="w-full sm:w-auto flex flex-wrap gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-[rgba(110,15,45,0.08)] sm:border-transparent mt-1 sm:mt-0">
-          <Button variant="secondary" size="sm" iconLeft={FileText}>
+          <Button variant="secondary" size="sm" iconLeft={FileText} onClick={exportPdf}>
             Download PDF
           </Button>
-          <Button variant="primary" size="sm" iconLeft={Download}>
+          <Button variant="primary" size="sm" iconLeft={Download} onClick={exportCsv} disabled={!canExport}>
             Download Excel
           </Button>
         </div>

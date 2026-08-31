@@ -1,4 +1,3 @@
-import React from "react";
 import { Printer } from "lucide-react";
 import { toast } from "sonner";
 import { BarcodePreview, F, T } from "./primitives";

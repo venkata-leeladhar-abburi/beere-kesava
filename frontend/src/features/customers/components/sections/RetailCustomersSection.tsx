@@ -17,6 +17,7 @@ import { salesApi } from "../../../../shared/api/sales";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, StatusPill } from "@/shared/ui/domain";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 interface RetailFormState {
   name: string;
@@ -205,7 +206,7 @@ export function RetailCustomersSection({
         </FadeUp>
       )}
 
-      <div style={{ marginBottom: 24 }}>
+      <div className="hidden md:block mb-6">
         <DateFilterBar filter={retailOverviewDateFilter} onChange={setRetailOverviewDateFilter} />
       </div>
 
@@ -311,8 +312,81 @@ export function RetailCustomersSection({
       <RetailChartsRow1 />
       <RetailChartsRow2 />
 
-      {/* Toolbar */}
-      <div className="flex flex-col gap-5 mb-6">
+      {/* Mobile Flipkart-style Collapsible Filter Bar */}
+      <div className="md:hidden bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs mb-4">
+        <MobileFilterBar
+          search={retailSearch}
+          onSearchChange={setRetailSearch}
+          searchPlaceholder="Search customer name or phone..."
+          filterGroups={[
+            {
+              id: "time",
+              label: "Time Period",
+              value: retailOverviewDateFilter.mode,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Time" },
+                { value: "day", label: "Specific Date" },
+                { value: "range", label: "Date Range" },
+                { value: "month", label: "Monthly" },
+                { value: "year", label: "Yearly" },
+              ],
+              onChange: (m: string) => {
+                const mode = m as DateFilterState["mode"];
+                if (mode === "day") setRetailOverviewDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                else if (mode === "month") setRetailOverviewDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                else if (mode === "year") setRetailOverviewDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                else setRetailOverviewDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+              },
+            },
+            {
+              id: "status",
+              label: "Status",
+              value: retailStatusFilter,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: `All Retail (${filteredRetail.length})` },
+                { value: "regular", label: `Regular Buyers (${filteredRetail.filter(r => r.regular).length})` },
+                { value: "inactive", label: `Inactive (${filteredRetail.filter(r => r.inactive).length})` },
+              ],
+              onChange: (v: string) => setRetailStatusFilter(v as any),
+            },
+            {
+              id: "city",
+              label: "City",
+              value: retailCityFilter,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Cities" },
+                ...retailCities.map(c => ({ value: c, label: c })),
+              ],
+              onChange: setRetailCityFilter,
+            },
+            {
+              id: "sort",
+              label: "Sort By",
+              value: retailSort,
+              defaultValue: "spend",
+              options: [
+                { value: "spend", label: "Sort: Total Spend" },
+                { value: "purchases", label: "Sort: Total Purchases" },
+                { value: "recent", label: "Sort: Most Recent Visit" },
+              ],
+              onChange: (v: string) => setRetailSort(v as any),
+            },
+          ]}
+          onResetAll={() => {
+            setRetailSearch("");
+            setRetailStatusFilter("all");
+            setRetailCityFilter("all");
+            setRetailSort("spend");
+            setRetailOverviewDateFilter({ mode: "all", day: "", from: "", to: "", month: "", year: "" });
+          }}
+        />
+      </div>
+
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:flex flex-col gap-5 mb-6">
         {/* Top row: search + sort/filters */}
         <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
           {/* Search bar */}
@@ -407,7 +481,7 @@ export function RetailCustomersSection({
               color: T.luxuryBrown,
             }}>
               {/* Accent top */}
-              <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8, flexShrink: 0 }} />
+              <div style={{ height: 4, background: T.royalBurgundy, width: "100%", flexShrink: 0 }} />
 
               {/* Card Header */}
               <div style={{ padding: "20px 22px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -485,6 +559,7 @@ export function RetailCustomersSection({
               columns={retailColumns}
               data={filteredRetail}
               getRowId={r => r.id}
+              pagination
             />
           </div>
         </div>

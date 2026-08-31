@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import {
-  ChevronLeft, ChevronDown, Bell, Search,
-  LogOut, UserRound, Users, Store, Eye
+  ChevronLeft, ChevronDown, Bell,
+  LogOut, UserRound, Users, Store, Eye, IndianRupee
 } from 'lucide-react';
 import { useResponsive } from "../../../../../hooks/useResponsive";
 import { imgBKLogo } from '../../../../../shared/constants/weaverImages';
@@ -273,7 +273,14 @@ export function TopNav({
                       <DropdownMenuItem
                         key={p.key}
                         aria-current={pActive ? "page" : undefined}
-                        onClick={() => { set(p.key); setOpenGroup(null); }}
+                        onClick={() => {
+                          set(p.key);
+                          setOpenGroup(null);
+                          setMainNavHidden(false);
+                          if (active !== p.key) {
+                            try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { /* ignore */ }
+                          }
+                        }}
                         className={`!h-auto !justify-between !py-[13px] !px-3.5 !mb-0.5 !rounded-[10px] !text-sm ${
                           pActive
                             ? "!bg-[rgba(110,15,45,0.07)] !text-[#6E0F2D] !font-semibold data-[highlighted]:!bg-[rgba(110,15,45,0.07)] data-[highlighted]:!text-[#6E0F2D]"
@@ -293,16 +300,6 @@ export function TopNav({
 
         {/* Right actions */}
         <div style={{ display: "flex", alignItems: "center", gap: compact ? 6 : 10, flexShrink: 0 }}>
-          {!compact && (
-            <motion.div initial={{ backgroundColor: "rgba(245,232,208,0.06)" }} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }} style={{ borderRadius: 12 }}>
-              <IconButton
-                icon={Search}
-                label="Search"
-                variant="ghost"
-                className="!size-[38px] !rounded-xl !border !border-white/14 !bg-white/6 hover:!bg-white/12"
-              />
-            </motion.div>
-          )}
           {/* The notification bell used to be a hand-rolled showNotif useState
               + an absolutely-positioned div — its own separate overlay
               pattern, styled close to but not quite matching the shared
@@ -328,7 +325,7 @@ export function TopNav({
             </Popover.Trigger>
             <Popover.Content align="end" sideOffset={10} className="!w-[360px] !max-w-[360px] !p-0 !overflow-hidden" style={{ zIndex: "var(--z-tooltip)" }}>
               <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => { set("Notifications"); setShowNotif(false); }}>
                   <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Notifications</span>
                   <span style={{ background: T.royalBurgundy, color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, borderRadius: 999, padding: "2px 7px" }}>{unreadCount}</span>
                 </div>
@@ -336,6 +333,22 @@ export function TopNav({
               </div>
               <div style={{ padding: "24px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
                 No new notifications.
+              </div>
+              <div
+                onClick={() => { set("Notifications"); setShowNotif(false); }}
+                style={{
+                  padding: "12px 20px",
+                  borderTop: "1px solid rgba(110,15,45,0.08)",
+                  background: "rgba(110,15,45,0.03)",
+                  textAlign: "center",
+                  fontFamily: F.ui,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: T.royalBurgundy,
+                  cursor: "pointer",
+                }}
+              >
+                View All Notifications →
               </div>
             </Popover.Content>
           </Popover>
@@ -376,6 +389,9 @@ export function TopNav({
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => set("ShopStaff")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
                   <Store size={15} color={T.taupe} /> Shop Staff
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => set("AccountantStaff")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                  <IndianRupee size={15} color={T.taupe} /> Accountant Staff
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {/* Opens the staff portal as yourself — not impersonation.
@@ -425,7 +441,13 @@ export function TopNav({
                 return (
                   <Button
                     key={p.key}
-                    onClick={() => set(p.key)}
+                    onClick={() => {
+                      set(p.key);
+                      setMainNavHidden(false);
+                      if (active !== p.key) {
+                        try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { /* ignore */ }
+                      }
+                    }}
                     variant="tertiary"
                     className={`!relative !rounded-[10px] !py-[9px] !px-[22px] !whitespace-nowrap !border-none !bg-transparent !text-[13px] ${
                       isActive

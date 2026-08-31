@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { Palette, ArrowRight } from "lucide-react";
 import { useDesignLibrary } from "@/features/design-library";
@@ -156,6 +155,17 @@ export function ContextBatchCard({
             />
           </div>
         </div>
+
+        {(b.createdBy || b.talliedBy) && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {b.createdBy && (
+              <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>Created by {b.createdBy}</div>
+            )}
+            {b.talliedBy && (
+              <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>Tallied by {b.talliedBy}</div>
+            )}
+          </div>
+        )}
 
         <div style={{ marginTop: "auto", paddingTop: 8 }}>
           <Button

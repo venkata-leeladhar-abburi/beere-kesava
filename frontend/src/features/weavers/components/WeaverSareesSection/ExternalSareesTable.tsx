@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Image as ImageIcon } from "lucide-react";
 import { Pagination, UsePaginationReturn } from "../../../../shared/ui/DataPagination";

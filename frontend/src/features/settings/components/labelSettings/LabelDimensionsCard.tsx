@@ -1,4 +1,3 @@
-import React from "react";
 import { CardSection, F, T } from "./primitives";
 import { Select, SelectItem } from "../../../../shared/ui/primitives";
 

@@ -1,4 +1,3 @@
-import React from "react";
 import { Plus } from "lucide-react";
 import { purchaseTotals } from "@/features/suppliers";
 import { formatMoney, rupees } from "@/lib/domain/money";

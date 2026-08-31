@@ -278,7 +278,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
                   fullWidth
                   role="radio"
                   aria-checked={false}
-                  className="h-full flex-col items-start justify-start gap-4 whitespace-normal rounded-xl border border-[rgba(200,155,71,0.4)] bg-white p-6 text-left transition-all hover:border-[#6E0F2D] hover:bg-[#F8F4F0]"
+                  className="h-full flex-col items-start justify-start gap-4 whitespace-normal rounded-xl border border-[rgba(110,15,45,0.18)] bg-white p-6 text-left transition-all hover:border-[#6E0F2D] hover:bg-[#F8F4F0]"
                 >
                   <span style={{ width: 52, height: 52, borderRadius: 14, background: o.soft, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <o.Icon size={26} color={o.accent} />

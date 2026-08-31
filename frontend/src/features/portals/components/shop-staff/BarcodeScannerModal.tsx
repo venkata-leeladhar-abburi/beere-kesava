@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import type { IScannerControls } from "@zxing/browser";
 import { X, AlertCircle, ScanLine } from "lucide-react";
@@ -35,7 +35,7 @@ export function BarcodeScannerModal({
 
     const reader = new BrowserMultiFormatReader();
     reader
-      .decodeFromVideoDevice(undefined, videoRef.current ?? undefined, (result, err, controls) => {
+      .decodeFromVideoDevice(undefined, videoRef.current ?? undefined, (result, _err, controls) => {
         controlsRef.current = controls;
         if (cancelled) return;
         if (result) {

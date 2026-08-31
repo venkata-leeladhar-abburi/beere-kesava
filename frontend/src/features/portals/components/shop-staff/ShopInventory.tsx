@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Truck, Package, ChevronDown, ChevronRight, Printer, X, CheckCircle } from "lucide-react";
 
@@ -444,6 +444,7 @@ function ShopInventory() {
       caption={caption}
       density="compact"
       responsive
+      pagination
       loading={isLoading}
       error={isError}
       onRetry={() => void refetch()}

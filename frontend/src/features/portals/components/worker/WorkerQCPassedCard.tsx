@@ -1,4 +1,3 @@
-import React from "react";
 import { CheckCircle2, Calendar, Tag } from "lucide-react";
 import { F } from "./WorkerQCTypes";
 

@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Edit2, FileText, Factory, Package, Layers, Sparkles,
   CheckCircle2, ChevronLeft, UserRound } from "lucide-react";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { useScrollTopOnView } from "@/shared/ui/ScrollToTop";
 import { SectionCard } from "@/shared/ui/SectionCard";
+import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 import { useBatches } from "../../contexts/BatchContext";
 import { useDesignLibrary, DispatchRecord } from "@/features/design-library";
 import { useMaterialIssue } from "@/features/materials";
@@ -63,6 +65,8 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
   useEffect(() => {
     recordView({ key: `loom:${loom.id}`, label: loomLabel(loom), path: "/admin/production", kind: "Loom" });
   }, [loom]);
+
+  useScrollTopOnView(loom.id);
 
   const { batches } = useBatches();
   const { dispatches } = useDesignLibrary();
@@ -227,26 +231,12 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b-2 border-[var(--border-default)]">
-        <div className="flex items-center gap-1 min-w-max">
-          {TABS.map(t => (
-            <Button
-              key={t.k}
-              variant="tertiary"
-              onClick={() => setTab(t.k as "overview" | "batches" | "dispatches" | "materials")}
-              className={
-                "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base cursor-pointer flex items-center gap-2 " +
-                (tab === t.k
-                  ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
-                  : "border-b-[3px] border-transparent text-[#9C8672] font-medium")
-              }
-            >
-              {t.icon} {t.l}
-            </Button>
-          ))}
-        </div>
-      </div>
+      {/* Royal Sub-Tab Strip */}
+      <RoyalSubTabStrip
+        tabs={TABS.map(t => ({ key: t.k as "overview" | "batches" | "dispatches" | "materials", label: t.l, icon: t.icon }))}
+        activeTab={tab}
+        onTabChange={setTab}
+      />
 
       <div className="w-full">
         {tab === "overview" && (
@@ -362,6 +352,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                     <div style={{ overflowX: "auto" as const, border: `1px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF" }}>
                       <DataTable
                         responsive
+                        pagination
                         columns={[
                           {
                             id: "sareeId", header: "Saree ID", accessor: (row: typeof rowsInBatch[number]) => row.sareeId, priority: 1,

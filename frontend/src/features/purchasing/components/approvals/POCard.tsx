@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { Check, X, Package, FileText } from "lucide-react";
 import { toast } from "sonner";

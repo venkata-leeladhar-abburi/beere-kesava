@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { Printer as LucidePrinter } from "lucide-react";
 import {
@@ -76,7 +75,7 @@ export function StockCard({ s, onView }: { s: StockSaree; onView: (s: StockSaree
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.royalBurgundy, marginBottom: 3 }}>{s.id}</div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
               {s.source === "factory"  ? `🏭 Factory · ${s.loom}`
-             : s.source === "external" ? `🚚 ${s.supplier} · ${s.invoiceNumber}`
+             : s.source === "external" ? `🚚 ${s.supplier || "External supplier"} · ${s.invoiceNumber || "no invoice"}`
              :                           `🪡 ${s.weaver} · ${s.weaverCode}`}
             </div>
           </div>

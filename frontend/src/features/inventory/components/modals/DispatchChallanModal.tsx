@@ -39,14 +39,15 @@ export function DispatchChallanModal({ dispatch, onClose }: { dispatch: Dispatch
   // type, weaver/loom and the retail price — keyed by the dispatch that
   // delivered them. Sold pieces stay in this list, so a reprinted challan still
   // shows every line it was originally sent with.
+  // Scoped server-side to this dispatch. It used to fetch the shop's entire
+  // stock and filter it down here, so a printed challan got slower with every
+  // saree the shop had ever received.
   const { data: shopStock } = useQuery({
-    queryKey: ["shop-stock"],
-    queryFn: () => inventoryApi.shopStock(),
+    queryKey: ["shop-stock", dispatch.id],
+    queryFn: () => inventoryApi.shopStock(dispatch.id),
   });
 
-  const detailBySaree = new Map(
-    (shopStock ?? []).filter(s => s.dispatch.dispatchId === dispatch.id).map(s => [s.sareeId, s]),
-  );
+  const detailBySaree = new Map((shopStock ?? []).map(s => [s.sareeId, s]));
 
   const reference = challanReference(dispatch);
   const firm = firms.find(f => f.id === dispatch.firmId);

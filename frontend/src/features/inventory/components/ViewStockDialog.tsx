@@ -1,4 +1,3 @@
-import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { CheckCircle2 as CheckCircle } from "lucide-react";
 import { X } from "lucide-react";
@@ -77,7 +76,7 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>Source</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
               {saree.source === "factory"  ? `Own Factory · ${saree.loom}`
-             : saree.source === "external" ? `External Purchase · ${saree.supplier} (${saree.supplierLocation}) · ${saree.purchaseId}`
+             : saree.source === "external" ? `External Purchase · ${saree.supplier || "supplier not recorded"} (${saree.supplierLocation || "—"}) · ${saree.purchaseId || "—"}`
              :                               `${saree.weaver} (${saree.weaverCode}) · ${saree.loom}`}
             </div>
           </div>

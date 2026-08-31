@@ -4,7 +4,6 @@
  * All amounts arrive pre-formatted (from lib/gst's formatPaise) — this
  * component never does money arithmetic.
  */
-import * as React from "react";
 
 export interface TotalsRow {
   label: string;

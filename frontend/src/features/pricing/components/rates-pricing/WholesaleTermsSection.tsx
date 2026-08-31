@@ -143,7 +143,7 @@ export function WholesaleTermsSection() {
       </div>
 
       {/* Payment Terms Table */}
-      <div style={cardStyle}>
+      <div id="wholesale-payment-terms-table" style={cardStyle}>
         {isLoading ? (
           <LoadingState variant="skeleton" rows={4} />
         ) : isError ? (

@@ -9,7 +9,6 @@
  * Pass as <DocumentPage band={<Letterhead … />}> — it renders outside the
  * body's side margins so the gradient reaches the paper edge.
  */
-import * as React from "react";
 import { imgBKLogo } from "../../constants/weaverImages";
 
 export interface LetterheadFirm {

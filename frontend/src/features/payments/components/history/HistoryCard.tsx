@@ -1,4 +1,3 @@
-import React from "react";
 import { ArrowDownCircle, BadgeCheck, Eye, Package, Scissors, UploadCloud } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -108,7 +107,7 @@ export function HistoryCard({ r, onView }: { r: PayHistRecord; onView?: () => vo
       }}
     >
       {/* Top accent bar */}
-      <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8 }} />
+      <div style={{ height: 4, background: T.royalBurgundy, width: "100%" }} />
 
       <div style={{ padding: "16px 20px 0" }}>
         <TopDivider />

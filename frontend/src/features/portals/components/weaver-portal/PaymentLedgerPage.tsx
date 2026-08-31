@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { useBatches } from "@/features/production";
 
 import { useWeaverPayments } from "@/features/weavers";

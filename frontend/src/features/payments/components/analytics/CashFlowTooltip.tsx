@@ -1,4 +1,3 @@
-import React from "react";
 import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 import { F, T } from "../../theme";

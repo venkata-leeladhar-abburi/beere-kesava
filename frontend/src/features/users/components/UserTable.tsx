@@ -1,12 +1,14 @@
 import React, { useState } from "react";
-import { Edit2, ShieldOff, ShieldCheck, Eye, Trash2, ChevronLeft, ChevronRight, Users, LayoutGrid, LayoutList } from "lucide-react";
-import { DateFilterBar, DateFilterState } from "../../../shared/ui/DateFilterBar";
+import { Edit2, ShieldOff, ShieldCheck, Eye, Trash2, Users, LayoutGrid, LayoutList } from "lucide-react";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
 import { T, F, ROLES } from "./theme";
 import { TableRow } from "./utils";
 import { SectionCard, RoleBadge, AccessBadge, StatusBadge } from "./UserBadges";
 import { FinishingStaffMember } from "@/features/finishing";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
+import { Pagination } from "../../../shared/ui/DataPagination";
 
 interface UserTableProps {
   allRows: TableRow[];
@@ -162,29 +164,74 @@ export function UserTable({
       icon={Users}
       title="All Users"
       subtitle={`${allRows.length} user${allRows.length === 1 ? "" : "s"} registered across all roles and portals.`}
-      actions={
-        <>
-          {/* Quick-filter pills */}
-          <div style={{ display: "flex", gap: 6 }}>
-            {["All Roles", "Finishing Staff"].map(pill => (
-              <Button key={pill} size="sm"
-                variant={roleFilter === pill ? "secondary" : "tertiary"}
-                onClick={() => { setRoleFilter(pill); setPage(1); }}
-                className={roleFilter === pill ? "" : "bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white"}
-              >{pill}</Button>
-            ))}
-          </div>
-          {/* Search */}
-          <SearchInput aria-label="Search users" value={searchQ} onChange={e => { setSearchQ(e.target.value); setPage(1); }} placeholder="Search users…" containerClassName="w-[220px]" />
-          {/* Role filter dropdown */}
+    >
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={searchQ}
+          onSearchChange={s => { setSearchQ(s); setPage(1); }}
+          searchPlaceholder="Search name, phone, email..."
+          filterGroups={[
+            {
+              id: "time",
+              label: "Time Period",
+              value: dateFilter.mode,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Time" },
+                { value: "day", label: "Specific Date" },
+                { value: "range", label: "Date Range" },
+                { value: "month", label: "Monthly" },
+                { value: "year", label: "Yearly" },
+              ],
+              onChange: (m: string) => {
+                const mode = m as DateFilterState["mode"];
+                if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                setPage(1);
+              },
+            },
+            {
+              id: "role",
+              label: "User Role",
+              value: roleFilter,
+              defaultValue: "All Roles",
+              options: [
+                { value: "All Roles", label: "All Roles" },
+                ...ROLES.map(r => ({ value: r, label: r })),
+              ],
+              onChange: (r: string) => { setRoleFilter(r); setPage(1); },
+            },
+          ]}
+          onResetAll={() => {
+            setSearchQ("");
+            setRoleFilter("All Roles");
+            setDateFilter(DEFAULT_DATE_FILTER);
+            setPage(1);
+          }}
+        />
+      </div>
+
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:block mb-4">
+        <div className="flex flex-wrap items-center gap-3 mb-3">
+          <SearchInput aria-label="Search users" value={searchQ} onChange={e => { setSearchQ(e.target.value); setPage(1); }} placeholder="Search users by name, phone, email…" containerClassName="flex-1 min-w-[260px]" />
           <Select value={roleFilter} onValueChange={v => { setRoleFilter(v); setPage(1); }} className="w-[170px]">
             <SelectItem value="All Roles">All Roles</SelectItem>
             {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
           </Select>
-        </>
-      }
-    >
-      <div style={{ marginBottom: 16 }}>
+          <div style={{ display: "flex", gap: 6 }}>
+            {["All Roles", "Finishing Staff"].map(pill => (
+              <Button key={pill} size="sm"
+                variant={roleFilter === pill ? "primary" : "tertiary"}
+                onClick={() => { setRoleFilter(pill); setPage(1); }}
+                className={roleFilter === pill ? "rounded-full bg-[#6E0F2D] text-[#FFFDF9]" : "rounded-full"}
+              >{pill}</Button>
+            ))}
+          </div>
+        </div>
         <DateFilterBar filter={dateFilter} onChange={f => { setDateFilter(f); setPage(1); }} />
       </div>
 
@@ -309,20 +356,16 @@ export function UserTable({
       </div>
 
       {/* Pagination */}
-      <div style={{ margin: "16px -28px -28px", padding: "16px 28px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-          Showing {Math.min((page - 1) * ROWS_PER_PAGE + 1, filtered.length)}–{Math.min(page * ROWS_PER_PAGE, filtered.length)} of {filtered.length} users
-        </span>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <IconButton label="Previous page" size="sm" variant="tertiary"
-            icon={ChevronLeft} onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} />
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(pg => (
-            <Button key={pg} size="sm" variant={pg === page ? "primary" : "tertiary"} onClick={() => setPage(pg)}
-            >{pg}</Button>
-          ))}
-          <IconButton label="Next page" size="sm" variant="tertiary"
-            icon={ChevronRight} onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} />
-        </div>
+      <div style={{ margin: "16px -28px -28px", padding: "8px 28px 16px", borderTop: `1px solid ${T.borderDef}` }}>
+        <Pagination
+          page={page}
+          pageCount={totalPages}
+          total={filtered.length}
+          pageSize={ROWS_PER_PAGE}
+          start={(page - 1) * ROWS_PER_PAGE}
+          onPageChange={p => setPage(p)}
+          itemLabel="users"
+        />
       </div>
     </SectionCard>
   );

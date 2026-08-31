@@ -1,9 +1,9 @@
-import React from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart2, Clock, Calendar, Download, FileText } from "lucide-react";
 import { T, F, EASE } from "../theme";
 import { reportsApi } from "../../../../shared/api/reports";
+import { REPORT_TABS } from "./ReportTabNav";
 
 export function ReportsHeader() {
   return (
@@ -97,7 +97,9 @@ export function ReportsStatsStrip() {
     {
       icon: <FileText size={22} color="rgba(245,232,208,0.90)" />,
       label: "Report Categories",
-      value: "8",
+      // Counted from the tab list rather than a hard-coded "8" that drifted
+      // out of date as tabs were added.
+      value: String(REPORT_TABS.length),
       sub: "Full business coverage",
       highlight: false,
     },

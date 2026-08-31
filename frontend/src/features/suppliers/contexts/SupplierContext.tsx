@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 export * from "./supplier-types";
+export * from "./usePurchasePhotos";
 import { Supplier, Purchase, SareeTag, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchaseTotals, parseINR } from "./supplier-types";
 import { BackendSupplier, suppliersApi } from "../../../shared/api/suppliers";
 import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
@@ -172,6 +173,11 @@ interface SupplierContextValue {
   deletePurchase: (id: string) => void;
   /** Full purchase incl. saree photos — `purchases` only carries the "summary" view. */
   getPurchaseDetail: (id: string) => Promise<Purchase>;
+  /** Edit a purchase's saree lines starting from the *full* (photo-carrying)
+   * detail rather than whatever the caller happens to be rendering. Updating
+   * from a "summary" row would PATCH every line back with a null imageUrl and
+   * wipe photos that were already stored. */
+  updatePurchaseSarees: (id: string, apply: (sarees: SareeTag[]) => SareeTag[]) => Promise<void>;
 
   addPayment: (p: Omit<SupplierPayment, "id">) => void;
   raiseRequest: (r: Omit<PurchaseRequest, "id" | "status">) => void;
@@ -484,6 +490,15 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
       }),
     );
 
+  const updatePurchaseSarees = async (id: string, apply: (sarees: SareeTag[]) => SareeTag[]) => {
+    try {
+      const full = await getPurchaseDetail(id);
+      updatePurchase(id, { sarees: apply(full.sarees) });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to load the purchase before saving");
+    }
+  };
+
   const addPayment = (p: Omit<SupplierPayment, "id">) => addPaymentMutation.mutate(p);
   const raiseRequest = (r: Omit<PurchaseRequest, "id" | "status">) => raiseRequestMutation.mutate(r);
   const decideRequest = (id: string, status: "approved" | "rejected", _decidedBy: string, note?: string) =>
@@ -510,7 +525,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const value: SupplierContextValue = {
     suppliers, purchases, payments, requests,
     addSupplier, updateSupplier, deleteSupplier, getSupplier,
-    addPurchase, updatePurchase, deletePurchase, getPurchaseDetail,
+    addPurchase, updatePurchase, deletePurchase, getPurchaseDetail, updatePurchaseSarees,
     addPayment, raiseRequest, decideRequest, statsFor,
     isError, error, isLoading,
     refetch: () => {

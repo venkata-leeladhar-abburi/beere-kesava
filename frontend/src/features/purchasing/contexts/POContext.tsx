@@ -47,10 +47,30 @@ export interface PurchaseOrder {
 
 // A PO raised without a price entered stays at ₹0 on its own line items
 // forever — but once it's received, the real price actually paid is known
-// from the GRN receipt. Grouped by material type (weighted-average unit
-// price across every GRN line of that type) since GrnItem doesn't carry a
-// strict per-PO-line FK back to PurchaseOrderItem, only materialType +
-// carried-over description.
+// from the GRN receipt. Receipts recorded since GrnItem.poItemId exists say
+// outright which ordered line each price belongs to, so those are read back
+// exactly; see grnPriceByPoItem below.
+function grnPriceByPoItem(grnReceipt: BackendPurchaseOrder["grnReceipt"]): Map<string, number> {
+  const totals = new Map<string, { qty: number; price: number }>();
+  for (const item of grnReceipt?.items ?? []) {
+    if (!item.poItemId) continue;
+    const entry = totals.get(item.poItemId) ?? { qty: 0, price: 0 };
+    // Summed rather than assigned: one ordered line can arrive across
+    // several deliveries, and the price is a weighted average of them.
+    entry.qty += Number(item.quantity) || 0;
+    entry.price += Number(item.totalPrice) || 0;
+    totals.set(item.poItemId, entry);
+  }
+  const unitPriceByPoItem = new Map<string, number>();
+  for (const [poItemId, { qty, price }] of totals) {
+    if (qty > 0) unitPriceByPoItem.set(poItemId, price / qty);
+  }
+  return unitPriceByPoItem;
+}
+
+// The fallback for receipts predating that column: a weighted average across
+// every GRN line of the same material type. Blunt where one order carried two
+// lines of a type, but the only thing recoverable after the fact.
 function grnPriceByMaterialType(grnReceipt: BackendPurchaseOrder["grnReceipt"]): Map<string, number> {
   const totals = new Map<string, { qty: number; price: number }>();
   for (const item of grnReceipt?.items ?? []) {
@@ -68,6 +88,7 @@ function grnPriceByMaterialType(grnReceipt: BackendPurchaseOrder["grnReceipt"]):
 
 // materials[] line items are populated from backend `items` relation if present.
 function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): PurchaseOrder {
+  const grnPricesByPoItem = grnPriceByPoItem(po.grnReceipt);
   const grnPrices = grnPriceByMaterialType(po.grnReceipt);
   const mappedMaterials: POItem[] = (po.items && po.items.length > 0) ? po.items.map(item => {
     let pricePerUnit = Number(item.unitPrice || 0);
@@ -79,7 +100,7 @@ function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): Pu
       // ₹0 itself, same as the PO, while invoicedAmount is filled in once
       // the bill actually arrives.
       const invoicedAmount = item.invoicedAmount ? Number(item.invoicedAmount) : 0;
-      const grnUnitPrice = grnPrices.get(item.materialType);
+      const grnUnitPrice = grnPricesByPoItem.get(item.id) ?? grnPrices.get(item.materialType);
       if (invoicedAmount > 0) {
         subtotal = invoicedAmount;
         pricePerUnit = Number(item.quantity) > 0 ? invoicedAmount / Number(item.quantity) : 0;

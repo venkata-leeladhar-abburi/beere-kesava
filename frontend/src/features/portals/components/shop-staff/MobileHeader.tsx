@@ -1,8 +1,6 @@
-import { formatMoney, rupees } from "@/lib/domain/money";
 import React, { useState } from "react";
-import { Bell, ChevronLeft, LogOut, Menu, UserRound, Home, ShoppingBag, Package, Users, BarChart2, RotateCcw, X } from "lucide-react";
+import { Bell, ChevronLeft, ChevronRight, LogOut, Menu, UserRound, Home, ShoppingBag, Package, Users, BarChart2, RotateCcw, X } from "lucide-react";
 import { staffIdentitySubtitle, useAdminStaffView } from "@/shared/ui/portal/AdminStaffView";
-import { useQuery } from "@tanstack/react-query";
 import { C, F } from "./theme";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
@@ -11,27 +9,8 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Drawer } from "../../../../shared/ui/overlay/Drawer";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { Role } from "../../../../contexts/AuthContext";
-import { notificationsApi } from "../../../../shared/api/notifications";
-import { salesApi } from "../../../../shared/api/sales";
+import { CATEGORY_ACCENT, CATEGORY_ICON, useShopNotifications } from "./notificationsModel";
 import { toInitials } from "@/shared/lib/initials";
-
-function notifEmoji(type: string): string {
-  const t = type.toLowerCase();
-  if (t.includes("return")) return "🔄";
-  if (t.includes("sale")) return "🛍️";
-  if (t.includes("inventory") || t.includes("stock")) return "📦";
-  if (t.includes("pass") || t.includes("complete")) return "✅";
-  return "🔔";
-}
-
-function formatRelativeTime(iso: string): string {
-  const diffMin = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (diffMin < 1 || isNaN(diffMin)) return "Now";
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHrs = Math.round(diffMin / 60);
-  if (diffHrs < 24) return `${diffHrs}h ago`;
-  return `${Math.round(diffHrs / 24)}d ago`;
-}
 
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
 
@@ -50,76 +29,21 @@ export function MobileHeader({
   selectRole: (role: Role) => void;
   routerNavigate: (path: string) => void;
 }) {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const { adminViewingAs } = useAdminStaffView();
   const name = user?.name || "Shop Staff";
   const initials = name === "Shop Staff" ? "SS" : name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [markedRead, setMarkedRead] = useState(false);
-
-  const { data: notifRes } = useQuery({
-    queryKey: ["notifications-list-shop-mobile"],
-    // No `role` filter — the server scopes this to the caller's own feed.
-    // Sending role: "SHOP" excluded every personally-addressed notification,
-    // whose rows carry role = null.
-    queryFn: () => notificationsApi.list({ pageSize: 20 }),
-  });
-
-  const { data: returnsRes } = useQuery({
-    queryKey: ["returns-list-notif-mobile"],
-    queryFn: () => salesApi.listReturns(20),
-  });
-
-  const { data: salesRes } = useQuery({
-    queryKey: ["sales-list-notif-mobile"],
-    queryFn: () => salesApi.list(20),
-  });
-
-  const backendNotifs = (notifRes?.items ?? []).map(n => ({
-    id: n.id,
-    type: n.type,
-    title: n.type.replace(/_/g, " "),
-    desc: typeof n.payload === "object" && n.payload ? JSON.stringify(n.payload).replace(/[{}"]/g, " ") : "Store activity alert",
-    time: formatRelativeTime(n.createdAt),
-    unread: !n.readAt,
-  }));
-
-  const returnNotifs = (returnsRes?.items ?? []).slice(0, 4).map(r => ({
-    id: `return-${r.returnRef}`,
-    type: "return",
-    title: `Return: ${r.sareeId}`,
-    desc: `Reason: ${r.reason || "Customer return"}${r.refundAmount ? ` · Refund: ${formatMoney(rupees(Number(r.refundAmount)))}` : ""}`,
-    time: formatRelativeTime(r.returnDate),
-    unread: true,
-  }));
-
-  const saleNotifs = (salesRes?.items ?? []).slice(0, 4).map(s => ({
-    id: `sale-${s.saleRef}`,
-    type: "sale",
-    title: `Sale Recorded: ${s.sareeId}`,
-    desc: `${s.channel === "WHOLESALE" ? "Wholesale" : "Retail"} sale · ${s.customer?.name || "Walk-in Customer"}`,
-    time: formatRelativeTime(s.saleDate),
-    unread: false,
-  }));
-
-  const liveNotifications = [...backendNotifs, ...returnNotifs, ...saleNotifs];
-  const unreadCount = markedRead ? 0 : liveNotifications.filter(n => n.unread).length;
-
-  const handleMarkAllRead = async () => {
-    setMarkedRead(true);
-    for (const n of notifRes?.items ?? []) {
-      if (!n.readAt) {
-        try { await notificationsApi.markRead(n.id); } catch { /* ignore single error */ }
-      }
-    }
-  };
+  const { notifications, unreadCount, markAllRead, markRead } = useShopNotifications(20);
+  const recent = notifications.slice(0, 8);
+  const canSeeReports = role === "admin" || role === "superadmin";
 
   const NAV_ITEMS = [
     { id: "home" as TabId, label: "Home", icon: Home },
     { id: "sale" as TabId, label: "New Sale", icon: ShoppingBag },
     { id: "inventory" as TabId, label: "Shop Inventory", icon: Package },
     { id: "customers" as TabId, label: "Customers", icon: Users },
-    { id: "reports" as TabId, label: "Sales Reports", icon: BarChart2 },
+    ...(canSeeReports ? [{ id: "reports" as TabId, label: "Sales Reports", icon: BarChart2 }] : []),
   ];
 
   return (
@@ -190,42 +114,56 @@ export function MobileHeader({
                 )}
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="!w-[300px] !max-w-[300px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.12)`, zIndex: 2000 }}>
-              <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: C.dark }}>Notifications</span>
+            <DropdownMenuContent align="end" className="!w-[min(340px,calc(100vw-24px))] !max-w-[calc(100vw-24px)] !p-0 !rounded-[14px] !overflow-hidden !max-h-[min(70vh,520px)] flex flex-col" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.12)`, zIndex: 2000 }}>
+              <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: C.dark }}>
+                  Notifications{unreadCount > 0 ? ` (${unreadCount})` : ""}
+                </span>
                 <Button
                   variant="link"
                   size="sm"
-                  onClick={handleMarkAllRead}
+                  onClick={markAllRead}
                   disabled={unreadCount === 0}
                   className={`p-0 h-auto text-[12px] ${unreadCount > 0 ? "text-[#C89B47]" : "text-[#69635E]"}`}
                 >
                   Mark all read
                 </Button>
               </div>
-              {liveNotifications.length === 0 || markedRead ? (
-                <div style={{ padding: "20px 16px", textAlign: "center" as const, fontFamily: F.u, fontSize: 13, color: C.muted }}>
-                  No notifications.
-                </div>
-              ) : (
-                liveNotifications.map((n, i) => (
-                  <div
-                    key={n.id}
-                    role="button"
-                    tabIndex={0}
-                    style={{ padding: "10px 16px", borderBottom: i < liveNotifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.03)"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                  >
-                    <span style={{ fontSize: 14, flexShrink: 0 }}>{notifEmoji(n.type)}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.dark, marginBottom: 2 }}>{n.title}</div>
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{n.desc}</div>
-                    </div>
-                    <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted, flexShrink: 0 }}>{n.time}</span>
+              <div style={{ flex: 1, minHeight: 0, overflowY: "auto" as const }}>
+                {recent.length === 0 ? (
+                  <div style={{ padding: "20px 16px", textAlign: "center" as const, fontFamily: F.u, fontSize: 13, color: C.muted }}>
+                    No notifications.
                   </div>
-                ))
-              )}
+                ) : (
+                  recent.map((n, i) => (
+                    <div
+                      key={n.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => markRead(n)}
+                      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); markRead(n); } }}
+                      style={{ padding: "10px 16px", borderBottom: i < recent.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer", background: n.unread ? "rgba(200,155,71,0.06)" : "transparent" }}
+                    >
+                      <span style={{ width: 32, height: 32, borderRadius: 10, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: `${CATEGORY_ACCENT[n.category]}14`, border: `1px solid ${CATEGORY_ACCENT[n.category]}2E` }}>
+                        {React.createElement(CATEGORY_ICON[n.category], { size: 16, color: CATEGORY_ACCENT[n.category] })}
+                      </span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.dark, marginBottom: 2 }}>{n.title}</div>
+                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>{n.desc}</div>
+                      </div>
+                      <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted, flexShrink: 0 }}>{n.time}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+              {/* A DropdownMenuItem, not a bare <button>: Radix owns closing the
+                  menu on select, so the navigation isn't raced by the dismiss. */}
+              <DropdownMenuItem
+                onSelect={() => routerNavigate("/shop/notifications")}
+                className="!h-auto !py-3 !px-4 !justify-center !gap-1.5 !shrink-0 !text-[13px] !font-bold !text-[#6E0F2D] !bg-[rgba(110,15,45,0.04)] border-t border-[rgba(110,15,45,0.08)]"
+              >
+                View all notifications <ChevronRight size={15} />
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 

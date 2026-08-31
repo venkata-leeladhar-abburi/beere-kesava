@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { patchListItems, prependToList, removeFromList } from "../../../lib/cacheUpdates";
 import { toast } from "sonner";
 import {
   BackendJariGrade,
@@ -298,6 +299,23 @@ interface MaterialIssueContextValue {
 const MaterialIssueContext = createContext<MaterialIssueContextValue | null>(null);
 
 const ISSUE_RECORDS_KEY = ["materialIssue", "issueRecords"] as const;
+
+/**
+ * Map a freshly created issue into the shape the list cache holds, naming the
+ * weaver and factory loom from the submitted input rather than the lookup
+ * tables the list query builds from GET /weavers and /factory-looms. The two
+ * agree — the input's names came from those same directories.
+ */
+function toRecordUsingInputNames(
+  created: Parameters<typeof backendRecordToFrontend>[0],
+  input: AddIssueRecordInput,
+): MaterialIssueRecord {
+  const weaverLookup = new Map(input.weaverId && input.weaverName ? [[input.weaverId, input.weaverName]] : []);
+  const loomLookup = new Map(
+    input.factoryLoomId && input.factoryLoomNumber ? [[input.factoryLoomId, input.factoryLoomNumber]] : [],
+  );
+  return backendRecordToFrontend(created, weaverLookup, loomLookup);
+}
 const RECEIVED_SAREES_KEY = ["materialIssue", "receivedSarees"] as const;
 
 export function MaterialIssueProvider({ children }: { children: React.ReactNode }) {
@@ -367,7 +385,12 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
       // server-side until that lands.
       return created;
     },
-    onSuccess: (_data, input) => {
+    onSuccess: (created, input) => {
+      // Same trick as MaterialReturnContext: the list joins each row against
+      // weaver/factory-loom name lookups the create response can't supply, but
+      // the submitting form already knows both names, so the new slip can be
+      // listed in full without two extra directory fetches.
+      prependToList(queryClient, ISSUE_RECORDS_KEY, toRecordUsingInputNames(created, input));
       void queryClient.invalidateQueries({ queryKey: ISSUE_RECORDS_KEY });
       // Fulfilling a warp request flips it to ISSUED server-side — refresh
       // whatever "approved warp requests" list the Issue Material page has
@@ -384,7 +407,8 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
 
   const deleteIssueRecordMutation = useMutation({
     mutationFn: (id: string) => materialIssuesApi.remove(id),
-    onSuccess: () => {
+    onSuccess: (_result, id) => {
+      removeFromList<MaterialIssueRecord>(queryClient, ISSUE_RECORDS_KEY, id);
       void queryClient.invalidateQueries({ queryKey: ISSUE_RECORDS_KEY });
     },
   });
@@ -400,7 +424,17 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   const updateSignatureStatusMutation = useMutation({
     mutationFn: (args: { recordId: string; signatureBlob: Blob }) =>
       materialIssuesApi.sign(args.recordId, args.signatureBlob),
-    onSuccess: () => {
+    onSuccess: (_signed, args) => {
+      // Patch rather than seed from the response: a cached record is the
+      // backend row joined with weaver/factory-loom name lookups (see queryFn)
+      // that POST .../sign doesn't return. Flipping the two fields the
+      // signature actually changes keeps that join intact.
+      patchListItems<MaterialIssueRecord>(
+        queryClient,
+        ISSUE_RECORDS_KEY,
+        r => r.id === args.recordId,
+        { signatureCaptured: true, status: "signed", signatureTimestamp: new Date().toISOString() },
+      );
       void queryClient.invalidateQueries({ queryKey: ISSUE_RECORDS_KEY });
       toast.success("Signature captured");
     },
@@ -419,14 +453,8 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
     },
   });
 
-  const addIssueRecord = async (input: AddIssueRecordInput): Promise<MaterialIssueRecord> => {
-    const created = await addIssueRecordMutation.mutateAsync(input);
-    const weaverLookup = new Map(input.weaverId && input.weaverName ? [[input.weaverId, input.weaverName]] : []);
-    const loomLookup = new Map(
-      input.factoryLoomId && input.factoryLoomNumber ? [[input.factoryLoomId, input.factoryLoomNumber]] : [],
-    );
-    return backendRecordToFrontend(created, weaverLookup, loomLookup);
-  };
+  const addIssueRecord = async (input: AddIssueRecordInput): Promise<MaterialIssueRecord> =>
+    toRecordUsingInputNames(await addIssueRecordMutation.mutateAsync(input), input);
 
   const deleteIssueRecord = (id: string): Promise<void> =>
     deleteIssueRecordMutation.mutateAsync(id).then(() => undefined);

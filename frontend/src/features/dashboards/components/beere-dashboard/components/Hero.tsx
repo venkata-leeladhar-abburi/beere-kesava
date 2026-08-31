@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'motion/react';
 import { ChevronRight, SlidersHorizontal, Moon } from 'lucide-react';
 import { T, F, EASE } from '../theme';

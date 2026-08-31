@@ -15,6 +15,7 @@ import { Button } from "../../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { useScrollTopOnView } from "@/shared/ui/ScrollToTop";
 import { SectionCard } from "@/shared/ui/SectionCard";
 
 export interface WholesaleDetailSectionProps {
@@ -36,6 +37,8 @@ export function WholesaleDetailSection({
   wholesaleOrderDateFilter, setWholesaleOrderDateFilter, wholesalePaymentDateFilter, setWholesalePaymentDateFilter,
 }: WholesaleDetailSectionProps) {
   const { bulkOrders } = useBulkOrders();
+
+  useScrollTopOnView(customer.id);
 
   // ── Bulk orders belonging to the open wholesale customer ───────────────────
   // Matched on customerId where the order carries one, else on business name.
@@ -159,8 +162,8 @@ export function WholesaleDetailSection({
       </div>
 
       {/* Sub-tab strip */}
-      <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b-2 border-[var(--border-default)]">
-        <div className="flex items-center gap-1 min-w-max">
+      <div className="w-full overflow-x-auto section-nav-scroll pt-1.5 pb-2 mb-6 border-b border-[var(--border-default)]">
+        <div className="flex items-center justify-between w-full min-w-max md:min-w-0 gap-1 sm:gap-2">
           {[
             { key: "Overview" as const, label: "Overview", icon: <Boxes size={18} /> },
             { key: "Order History" as const, label: "Order History", icon: <ShoppingBag size={18} /> },
@@ -170,26 +173,37 @@ export function WholesaleDetailSection({
           ].map(t => {
             const isActive = wholesaleTab === t.key;
             return (
-              <Button
+              <button
                 key={t.key}
-                variant="tertiary"
-                onClick={() => setWholesaleTab(t.key)}
+                type="button"
+                onClick={() => {
+                  setWholesaleTab(t.key);
+                  setTimeout(() => {
+                    const el = document.getElementById("customer-tab-content");
+                    if (el) {
+                      const isMobile = window.innerWidth <= 768;
+                      const topNavOffset = isMobile ? 80 : 120;
+                      const rect = el.getBoundingClientRect();
+                      const absoluteTop = window.scrollY + rect.top - topNavOffset;
+                      window.scrollTo({ top: Math.max(0, absoluteTop), behavior: "smooth" });
+                    }
+                  }, 40);
+                }}
                 className={
-                  "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base cursor-pointer flex items-center gap-2.5 transition-all " +
-                  (isActive
-                    ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
-                    : "border-b-[3px] border-transparent text-[#9C8672] hover:text-[#6E0F2D] font-medium")
+                  isActive
+                    ? "flex-1 inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2.5 rounded-full font-bold text-xs sm:text-sm bg-[#6E0F2D] text-[#FFFDF9] shadow-md transition-all shrink-0"
+                    : "flex-1 inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2.5 rounded-full font-medium text-xs sm:text-sm text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#3B2314] transition-all shrink-0 bg-transparent"
                 }
               >
                 {t.icon}
                 <span>{t.label}</span>
-              </Button>
+              </button>
             );
           })}
         </div>
       </div>
 
-      {/* Tab Content inside SectionCard */}
+      <div id="customer-tab-content">{/* Tab Content inside SectionCard */}
       {wholesaleTab === "Overview" && (
         <SectionCard
           icon={Boxes}
@@ -259,6 +273,7 @@ export function WholesaleDetailSection({
           <EditProfileTab customer={customer} setWholesaleTab={setWholesaleTab} onSave={onSave} />
         </SectionCard>
       )}
+      </div>
     </div>
   );
 }

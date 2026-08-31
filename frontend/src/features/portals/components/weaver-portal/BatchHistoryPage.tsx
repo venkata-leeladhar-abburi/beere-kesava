@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useBatches } from "@/features/production";
 import { isBatchDoneForWeaver } from "./batchCompletion";
 import { useCurrentWeaver } from "./useCurrentWeaver";

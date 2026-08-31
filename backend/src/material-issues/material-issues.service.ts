@@ -1,9 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
 import { StorageService } from "../common/storage/storage.service";
+import { deductStock, restoreStock } from "../common/raw-material-stock.util";
 import { fromGrams, toGrams } from "../common/weight-units.util";
-import { MaterialIssueStatus, Prisma } from "../generated/prisma/client";
+import { MaterialIssueStatus, NotificationTargetType, Prisma, SignatureMethod } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment, nameSegment } from "../id-generator/id-generator.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateMaterialIssueDto } from "./dto/create-material-issue.dto";
 import { ListMaterialIssuesQueryDto } from "./dto/list-material-issues-query.dto";
@@ -35,6 +37,7 @@ export class MaterialIssuesService {
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
     private readonly storage: StorageService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateMaterialIssueDto) {
@@ -101,47 +104,50 @@ export class MaterialIssuesService {
       : loom!.code ?? businessSegment(loom!.loomNumber, "Loom");
     const id = await this.idGenerator.nextScoped(MIR_ID_PREFIX_BASE, parentCode);
 
-    const record = await this.prisma.materialIssueRecord.create({
-      data: {
-        id,
-        weaverId: dto.weaverId,
-        factoryLoomId: dto.factoryLoomId,
-        loomNumber: dto.loomNumber ? String(dto.loomNumber) : undefined,
-        batchId: dto.batchId,
-        issuedById: dto.issuedById,
-        signatureMethod: dto.signatureMethod,
-        notes: dto.notes,
-        warpRequestId: dto.warpRequestId,
-        items: { create: dto.items },
-      },
-      include: includeItems,
+    // The record, the warp-request status flip and the stock deductions are
+    // one unit of work: failing partway through used to leave an issue record
+    // whose materials had only partly been taken out of stock.
+    const record = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.materialIssueRecord.create({
+        data: {
+          id,
+          weaverId: dto.weaverId,
+          factoryLoomId: dto.factoryLoomId,
+          loomNumber: dto.loomNumber ? String(dto.loomNumber) : undefined,
+          batchId: dto.batchId,
+          issuedById: dto.issuedById,
+          signatureMethod: dto.signatureMethod,
+          notes: dto.notes,
+          warpRequestId: dto.warpRequestId,
+          items: { create: dto.items },
+        },
+        include: includeItems,
+      });
+
+      // Pulls the request out of the Issue Material page's "Approved Warp
+      // Requests" queue now that it's been fulfilled.
+      if (dto.warpRequestId) {
+        await tx.warpRequest.update({
+          where: { id: dto.warpRequestId },
+          data: { status: "ISSUED" },
+        });
+      }
+
+      await deductStock(tx, dto.items);
+      return created;
     });
 
-    // Pulls the request out of the Issue Material page's "Approved Warp
-    // Requests" queue now that it's been fulfilled.
-    if (dto.warpRequestId) {
-      await this.prisma.warpRequest.update({
-        where: { id: dto.warpRequestId },
-        data: { status: "ISSUED" },
-      });
-    }
-
-    // Deduct issued material quantities from RawMaterialStock
-    for (const item of dto.items) {
-      const stock = await this.prisma.rawMaterialStock.findFirst({
-        where: { materialType: item.materialType },
-      });
-      if (stock) {
-        // Stock and issue-item quantities can be entered in different units
-        // (e.g. Jari stock in KG, issued in grams) — always convert through
-        // grams before subtracting, never raw quantities.
-        const stockGrams = toGrams(Number(stock.currentStock), stock.unit);
-        const issuedGrams = toGrams(Number(item.quantity), item.unit);
-        const newStockGrams = Math.max(0, stockGrams - issuedGrams);
-        const newStock = fromGrams(newStockGrams, stock.unit);
-        await this.prisma.rawMaterialStock.update({
-          where: { id: stock.id },
-          data: { currentStock: newStock },
+    // Remote signature: no phone/SMS involved — the weaver approves this
+    // in-app, on their own portal's Confirm Materials page. Push them an
+    // in-app notification pointing at the record instead of texting anyone.
+    if (dto.signatureMethod === SignatureMethod.REMOTE && dto.weaverId) {
+      const linkedUser = await this.prisma.user.findUnique({ where: { linkedWeaverId: dto.weaverId } });
+      if (linkedUser) {
+        await this.notifications.create({
+          targetType: NotificationTargetType.USER,
+          userId: linkedUser.id,
+          type: "material_signature_request",
+          payload: { recordId: record.id, recordKind: "ISSUE" },
         });
       }
     }
@@ -222,22 +228,12 @@ export class MaterialIssuesService {
   async remove(id: string) {
     const record = await this.findOne(id);
 
-    for (const item of record.items) {
-      const stock = await this.prisma.rawMaterialStock.findFirst({
-        where: { materialType: item.materialType },
-      });
-      if (stock) {
-        const stockGrams = toGrams(Number(stock.currentStock), stock.unit);
-        const restoredGrams = toGrams(Number(item.quantity), item.unit);
-        const newStock = fromGrams(stockGrams + restoredGrams, stock.unit);
-        await this.prisma.rawMaterialStock.update({
-          where: { id: stock.id },
-          data: { currentStock: newStock },
-        });
-      }
-    }
-
-    await this.prisma.materialIssueRecord.delete({ where: { id } });
+    // Restore and delete together: restoring first and deleting after meant a
+    // failed delete left the material counted back in twice.
+    await this.prisma.$transaction(async (tx) => {
+      await restoreStock(tx, record.items);
+      await tx.materialIssueRecord.delete({ where: { id } });
+    });
   }
 
   /**

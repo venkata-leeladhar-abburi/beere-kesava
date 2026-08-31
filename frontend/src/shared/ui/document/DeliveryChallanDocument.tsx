@@ -7,7 +7,6 @@
  * "Value for transport purposes only" figure per line, and the mandatory
  * footer disclaims it as not a tax document.
  */
-import * as React from "react";
 import { DocumentPage } from "./DocumentPage";
 import { Letterhead, type LetterheadFirm } from "./Letterhead";
 import { PartyBlock, type MetaField } from "./PartyBlock";

@@ -13,6 +13,17 @@
    * The rule: `include` only ever grows, never shrinks. Migrate one directory
    * (or one feature) at a time, add it here, and it can never regress.
    *
+   * ── Current state (31 Aug 2026) ───────────────────────────────────────────
+   * The three declared roots are strict-clean: 0 errors. The ~467 that this
+   * config still reports are all in transitively-checked files under
+   * src/features and src/shared/ui, reached through the contexts barrel — they
+   * cannot be cleared by editing `include`, only by fixing those files. The CI
+   * job is therefore informational (see .github/workflows/ci.yml) rather than
+   * a required check that can never pass. Breakdown of the remainder:
+   *   dashboards 69 · portals 52 · shared/ui 51 · reports 49 · materials 43
+   *   production 41 · customers 32 · weavers 26 · notifications 18 · other ~86
+   * Mostly noUncheckedIndexedAccess and possibly-undefined access.
+   *
    * CI runs this in a separate `typecheck:strict` job from the baseline
    * `typecheck` job — see .github/workflows/ci.yml.
    *

@@ -1,11 +1,13 @@
-import React, { useMemo, useState } from "react";
-import { AlignJustify, ArrowDownCircle, ArrowUpCircle, ChevronLeft, ChevronRight, Download, Eye, History, LayoutGrid, LayoutList, Receipt, TrendingUp, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { AlignJustify, ArrowDownCircle, ArrowUpCircle, Download, Eye, History, LayoutGrid, LayoutList, Receipt, TrendingUp, X } from "lucide-react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
+import { ViewSelector } from "@/shared/ui/ViewSelector";
 import { EASE, F, T } from "../../theme";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { PayHistRecord } from "../../types";
 import { FadeUp } from "../common/motion";
 import { SectionCard } from "../common/primitives";
@@ -22,6 +24,7 @@ import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, StatusPill, EntityCode } from "@/shared/ui/domain";
 import type { PaymentStatus } from "@/lib/domain/status";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 function formatHistDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
@@ -49,9 +52,7 @@ export function PaymentHistorySection() {
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [search,       setSearch]       = useState("");
   const [view,         setView]         = useState<"card" | "list" | "table">("card");
-  const [page,         setPage]         = useState(1);
   const [viewRecord,   setViewRecord]   = useState<PayHistRecord | null>(null);
-  const PER_PAGE = 10;
 
   const { data: vendorsRes } = useQuery({ queryKey: ["history-vendors"], queryFn: () => vendorsApi.list() });
   const { data: suppliersRes } = useQuery({ queryKey: ["history-suppliers"], queryFn: () => suppliersApi.list() });
@@ -164,6 +165,8 @@ export function PaymentHistorySection() {
         !r.description.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
+
+  const pag = usePagination(filtered, 8);
 
   const totalIn  = filtered.filter(r => r.type === "Customer Receipt").reduce((s, r) => s + r.amount, 0);
   const totalOut = filtered.filter(r => r.type !== "Customer Receipt").reduce((s, r) => s + r.amount, 0);
@@ -371,20 +374,65 @@ export function PaymentHistorySection() {
           ))}
         </div>
 
-        {/* ── Filter bar ──────────────────────────────────────── */}
-        <div style={{ background: T.warmIvory, borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 20, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search history..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: dateFilter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                  else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                  else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                  else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                },
+              },
+              {
+                id: "type",
+                label: "Payment Type",
+                value: typeFilter,
+                defaultValue: "All Payment Types",
+                options: ["All Payment Types","Vendor Payment","Weaver Payment","Supplier Payment","Customer Receipt"].map(t => ({ value: t, label: t })),
+                onChange: setTypeFilter,
+              },
+              {
+                id: "status",
+                label: "Status",
+                value: statusFilter,
+                defaultValue: "All Statuses",
+                options: ["All Statuses","Paid","Partial","Pending"].map(s => ({ value: s, label: s })),
+                onChange: setStatusFilter,
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setTypeFilter("All Payment Types");
+              setStatusFilter("All Statuses");
+              setDateFilter(DEFAULT_DATE_FILTER);
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter Bar & Controls */}
+        <div className="hidden md:block" style={{ background: T.warmIvory, borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 20, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
 
-            {/* View toggle */}
-            <div className="hidden md:flex" style={{ alignItems: "center", gap: 3, background: T.warmCream, borderRadius: 9, padding: 3, border: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
-              {viewOptions.map(({ key, Icon: Ico, label }) => (
-                <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Ico}
-                  onClick={() => setView(key)}
-                  className={view === key ? "rounded-[7px] bg-[#6E0F2D] text-[#FFFDF9]" : "rounded-[7px] bg-transparent text-[var(--text-tertiary)]"}>
-                  {label}
-                </Button>
-              ))}
-            </div>
+            {/* View Selector */}
+            <ViewSelector options={viewOptions} activeView={view} onViewChange={setView} />
 
             <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
 
@@ -409,33 +457,6 @@ export function PaymentHistorySection() {
               Clear
             </Button>
           </div>
-
-          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-            <div className="flex items-center gap-1 border border-[#E8DCC4] rounded-[10px] p-1 bg-white shrink-0">
-              <Button
-                onClick={() => setView("card")}
-                variant="ghost"
-                className={`h-auto rounded-[8px] gap-1.5 py-1.5 px-3 text-[12px] sm:text-[13px] font-bold ${
-                  view === "card"
-                    ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                    : "bg-transparent text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-                }`}
-              >
-                <LayoutGrid size={14} /> Card View
-              </Button>
-              <Button
-                onClick={() => setView("table")}
-                variant="ghost"
-                className={`h-auto rounded-[8px] gap-1.5 py-1.5 px-3 text-[12px] sm:text-[13px] font-bold ${
-                  view === "table"
-                    ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                    : "bg-transparent text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-                }`}
-              >
-                <AlignJustify size={14} /> Table View
-              </Button>
-            </div>
-          </div>
         </div>
 
         {/* ── Loading / error states ──────────────────────────── */}
@@ -447,94 +468,106 @@ export function PaymentHistorySection() {
         <>
         {/* ── CARD VIEW ───────────────────────────────────────── */}
         {view === "card" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 items-stretch">
-            {filtered.map((r, i) => (
-              <motion.div key={r.id} style={{ display: "flex", flexDirection: "column" }}
-                initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.06, ease: EASE }}>
-                <HistoryCard r={r} onView={() => setViewRecord(r)} />
-              </motion.div>
-            ))}
-            {filtered.length === 0 && (
-              <div style={{ gridColumn: "1 / -1", padding: "60px 0", textAlign: "center" as const }}>
-                <Receipt size={40} color={T.borderDef} style={{ marginBottom: 12 }} />
-                <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No transactions match your filters.</div>
-              </div>
+          <div data-pagination-target className="mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6 items-stretch">
+              {pag.pageItems.map((r, i) => (
+                <motion.div key={r.id} style={{ display: "flex", flexDirection: "column" }}
+                  initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.06, ease: EASE }}>
+                  <HistoryCard r={r} onView={() => setViewRecord(r)} />
+                </motion.div>
+              ))}
+              {filtered.length === 0 && (
+                <div style={{ gridColumn: "1 / -1", padding: "60px 0", textAlign: "center" as const }}>
+                  <Receipt size={40} color={T.borderDef} style={{ marginBottom: 12 }} />
+                  <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No transactions match your filters.</div>
+                </div>
+              )}
+            </div>
+            {filtered.length > 0 && (
+              <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="transactions" />
             )}
           </div>
         )}
 
         {/* ── LIST VIEW ────────────────────────────────────────── */}
         {view === "list" && (
-          <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 32, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
+          <div data-pagination-target style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 32, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
             {filtered.length === 0 ? (
               <div style={{ padding: "60px 0", textAlign: "center" as const }}>
                 <Receipt size={40} color={T.borderDef} style={{ marginBottom: 12 }} />
                 <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No transactions match your filters.</div>
               </div>
-            ) : filtered.map((r, i) => {
-              const typeCfg = HIST_TYPE_CFG[r.type];
-              const { Icon: HistIcon, color: iconColor, iconBg } = getHistTypeIcon(r.type);
-              const isReceipt = r.type === "Customer Receipt";
-              return (
-                <motion.div
-                  key={r.id}
-                  initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.04, ease: EASE }}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 16, padding: "16px 20px",
-                    background: i % 2 === 0 ? "#FFFDF9" : T.silkCream,
-                    borderBottom: `1px solid ${T.borderDef}`,
-                    borderLeft: `4px solid ${typeCfg.border}`,
-                  }}
-                >
-                  {/* Icon */}
-                  <div style={{ width: 42, height: 42, borderRadius: 11, background: iconBg, border: `1px solid ${typeCfg.border}22`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <HistIcon size={18} color={iconColor} />
-                  </div>
+            ) : (
+              <div>
+                {pag.pageItems.map((r, i) => {
+                  const typeCfg = HIST_TYPE_CFG[r.type];
+                  const { Icon: HistIcon, color: iconColor, iconBg } = getHistTypeIcon(r.type);
+                  const isReceipt = r.type === "Customer Receipt";
+                  return (
+                    <motion.div
+                      key={r.id}
+                      initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: i * 0.04, ease: EASE }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 16, padding: "16px 20px",
+                        background: i % 2 === 0 ? "#FFFDF9" : T.silkCream,
+                        borderBottom: `1px solid ${T.borderDef}`,
+                        borderLeft: `4px solid ${typeCfg.border}`,
+                      }}
+                    >
+                      {/* Icon */}
+                      <div style={{ width: 42, height: 42, borderRadius: 11, background: iconBg, border: `1px solid ${typeCfg.border}22`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <HistIcon size={18} color={iconColor} />
+                      </div>
 
-                  {/* Party + Type */}
-                  <div style={{ flex: "0 0 200px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.party}</div>
-                    <span style={{ display: "inline-block", marginTop: 3, padding: "2px 8px", borderRadius: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{r.type}</span>
-                  </div>
+                      {/* Party + Type */}
+                      <div style={{ flex: "0 0 200px" }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.party}</div>
+                        <span style={{ display: "inline-block", marginTop: 3, padding: "2px 8px", borderRadius: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{r.type}</span>
+                      </div>
 
-                  {/* Description */}
-                  <div style={{ flex: 1, fontFamily: F.ui, fontSize: 13, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-                    {r.description}
-                  </div>
+                      {/* Description */}
+                      <div style={{ flex: 1, fontFamily: F.ui, fontSize: 13, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+                        {r.description}
+                      </div>
 
-                  {/* Ref + PO */}
-                  <div style={{ flex: "0 0 130px" }}>
-                    <div><EntityCode type="payment" value={r.refNo} size="sm" /></div>
-                    {r.invoicePO && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.invoicePO}</div>}
-                  </div>
+                      {/* Ref + PO */}
+                      <div style={{ flex: "0 0 130px" }}>
+                        <div><EntityCode type="payment" value={r.refNo} size="sm" /></div>
+                        {r.invoicePO && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.invoicePO}</div>}
+                      </div>
 
-                  {/* Date */}
-                  <div style={{ flex: "0 0 100px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{r.date}</div>
+                      {/* Date */}
+                      <div style={{ flex: "0 0 100px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{r.date}</div>
 
-                  {/* Amount */}
-                  <div style={{ flex: "0 0 120px", textAlign: "right" as const }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: isReceipt ? T.green : T.crimson }}>
-                      {isReceipt ? "+" : "−"}<Money value={rupees(r.amount)} />
-                    </div>
-                    {r.utr && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 2 }}>{r.utr}</div>}
-                  </div>
+                      {/* Amount */}
+                      <div style={{ flex: "0 0 120px", textAlign: "right" as const }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: isReceipt ? T.green : T.crimson }}>
+                          {isReceipt ? "+" : "−"}<Money value={rupees(r.amount)} />
+                        </div>
+                        {r.utr && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 2 }}>{r.utr}</div>}
+                      </div>
 
-                  {/* Status badge */}
-                  <StatusPill taxonomy="payment" status={payHistStatusKey(r.status)} className="shrink-0" />
+                      {/* Status badge */}
+                      <StatusPill taxonomy="payment" status={payHistStatusKey(r.status)} className="shrink-0" />
 
-                  {/* Mode + Recorded */}
-                  <div style={{ flex: "0 0 100px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                    <div>{r.mode}</div>
-                    <div style={{ marginTop: 2, fontSize: 12 }}>{r.recordedBy}</div>
-                  </div>
+                      {/* Mode + Recorded */}
+                      <div style={{ flex: "0 0 100px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                        <div>{r.mode}</div>
+                        <div style={{ marginTop: 2, fontSize: 12 }}>{r.recordedBy}</div>
+                      </div>
 
-                  {/* View button */}
-                  <IconButton icon={Eye} label="View" variant="secondary" size="sm" onClick={() => setViewRecord(r)} className="flex-shrink-0 rounded-[8px] text-[#6E0F2D]" />
-                </motion.div>
-              );
-            })}
+                      {/* View button */}
+                      <IconButton icon={Eye} label="View" variant="secondary" size="sm" onClick={() => setViewRecord(r)} className="flex-shrink-0 rounded-[8px] text-[#6E0F2D]" />
+                    </motion.div>
+                  );
+                })}
+                <div style={{ padding: "14px 20px" }}>
+                  <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="transactions" />
+                </div>
+              </div>
+            )}
             {/* Summary footer */}
             {filtered.length > 0 && (
               <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", background: T.warmCream }}>
@@ -552,42 +585,52 @@ export function PaymentHistorySection() {
         {/* ── TABLE VIEW ──────────────────────────────────────── */}
         {view === "table" && (
           <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-            <div className="overflow-x-auto w-full">
-              <div className="min-w-[1600px]">
-                <DataTable responsive={false} columns={tableColumns} data={filtered} getRowId={r => r.id} emptyTitle="No transactions match your filters" />
-              </div>
-            </div>
+            <DataTable responsive={false} columns={tableColumns} data={filtered} getRowId={r => r.id} emptyTitle="No transactions match your filters" pagination />
             {filtered.length > 0 && (
-              <div style={{ background: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 14px" }}>
-                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9" }}>TOTALS FOR SELECTED PERIOD</span>
-                <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.50)" }}>{filtered.length} rows</span>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.goldLight }}>+<Money value={rupees(totalIn)} /></span>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: "#F47B72"  }}>−<Money value={rupees(totalOut)} /></span>
-                  <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold }}><Money value={rupees(totalAmt)} /></span>
+              <div style={{
+                background: "linear-gradient(135deg, #3B0818 0%, #5D1027 60%, #2A040E 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 16,
+                padding: "16px 22px",
+                borderTop: `1px solid ${T.borderDef}`,
+              }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 800, color: "#FFFFFF", letterSpacing: "1.2px", textTransform: "uppercase" }}>
+                    Totals For Selected Period
+                  </span>
+                  <div>
+                    <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: "#FFFFFF", background: "rgba(255,255,255,0.18)", padding: "3px 10px", borderRadius: 99, border: "1px solid rgba(255,255,255,0.3)" }}>
+                      {filtered.length} {filtered.length === 1 ? "row" : "rows"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Numbers stacked under each other — pure white text */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase" }}>Inflows:</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 800, color: "#FFFFFF" }}>
+                      +<Money value={rupees(totalIn)} className="!text-white" />
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase" }}>Outflows:</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 800, color: "#FFFFFF" }}>
+                      −<Money value={rupees(totalOut)} className="!text-white" />
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, borderTop: "1px solid rgba(255,255,255,0.25)", paddingTop: 6, marginTop: 2 }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, color: "#FFFFFF", textTransform: "uppercase" }}>Total Volume:</span>
+                    <span style={{ fontFamily: F.display, fontSize: 19, fontWeight: 900, color: "#FFFFFF" }}>
+                      <Money value={rupees(totalAmt)} className="!text-white" />
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
-            {/* Pagination */}
-            <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", background: T.warmIvory }}>
-              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                Showing {Math.min(PER_PAGE, filtered.length)} of {filtered.length} results
-              </span>
-              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <Button variant="secondary" size="sm" iconLeft={ChevronLeft} className="rounded-[7px] text-[var(--text-tertiary)]">
-                  Prev
-                </Button>
-                {[1,2,3].map(p => (
-                  <Button key={p} variant={page === p ? "primary" : "secondary"} size="sm" onClick={() => setPage(p)}
-                    className={page === p ? "size-[34px] rounded-[7px] bg-[#6E0F2D] p-0 text-[#FFFDF9]" : "size-[34px] rounded-[7px] p-0 text-[#3B2314]"}>
-                    {p}
-                  </Button>
-                ))}
-                <Button variant="secondary" size="sm" iconRight={ChevronRight} className="rounded-[7px] text-[var(--text-tertiary)]">
-                  Next
-                </Button>
-              </div>
-            </div>
           </div>
         )}
         </>

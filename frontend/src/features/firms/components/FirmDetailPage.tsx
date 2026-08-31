@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
-  ArrowLeft, Edit, TrendingUp, TrendingDown, Building2, CreditCard,
+  ArrowLeft, Edit, TrendingUp, TrendingDown, Building2, CreditCard, ShoppingBag,
   User, FileText, Package, Receipt, Truck, Wallet, Link2,
   AlertTriangle, ArrowUpRight,
 } from "lucide-react";
@@ -14,6 +14,7 @@ import type {
 import { T, F } from "./theme";
 import { fmtFull, initials } from "./utils";
 import { FinSection, MiscSection } from "./FirmFinanceSections";
+import { FirmRetailSalesTab } from "./retailSales/FirmRetailSalesTab";
 import { Button, Select, SelectItem, StatusPill, type StatusTone } from "../../../shared/ui/primitives";
 import { LoadingState, ErrorState, EmptyState } from "../../../shared/ui/state";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
@@ -21,6 +22,7 @@ import {
   DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter,
 } from "../../../shared/ui/DateFilterBar";
 import { useConfirm } from "../../../shared/ui/overlay";
+import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 
 // ── Document/payment presentation config ──────────────────────────────────────
 const DOC_CFG: Record<FirmDocumentType, { label: string; icon: React.ElementType }> = {
@@ -41,6 +43,7 @@ const PAYMENT_LABEL: Record<FirmPayment["type"], string> = {
   VENDOR: "Vendor Payment",
   SUPPLIER: "Supplier Payment",
   INVOICE: "Customer Receipt",
+  RETAIL_SALE: "Retail Sale",
 };
 
 type DirectionFilter = "all" | "INCOME" | "EXPENSE";
@@ -110,22 +113,24 @@ function SummaryStrip({ income, expense, net, pendingIncome, pendingExpense, quo
   );
 }
 
-export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
+export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments, initialTab = "finance" }: {
   firm: Firm;
   onBack: () => void;
   onEdit: () => void;
+  /** Which sub-tab to open on — driven by the ?tab= URL param. */
+  initialTab?: "finance" | "retail" | "info";
   /** Jumps to the Payments page — payment entry stays owned by that one screen. */
   onGoToPayments?: () => void;
 }) {
   const {
-    getFirmFinancials, addIncomeEntry, addExpenseEntry, addMiscEntry,
+    firms, getFirmFinancials, addIncomeEntry, addExpenseEntry, addMiscEntry,
     bulkAddIncome, bulkAddExpenses, updateEntry, deleteEntry,
   } = useFirms();
   const confirm = useConfirm();
   const { documents, payments, isLoading, isError, error, refetch } = useFirmActivity(firm.id);
   const fin = getFirmFinancials(firm.id);
 
-  const [tab, setTab] = useState<"finance" | "info">("finance");
+  const [tab, setTab] = useState<"finance" | "retail" | "info">(initialTab);
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [direction, setDirection] = useState<DirectionFilter>("all");
   const [status, setStatus] = useState<"all" | FirmActivityStatus>("all");
@@ -401,33 +406,16 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
           </div>
         </div>
 
-        {/* Sub-tab Navigation Strip Card */}
-        <div className="bg-white rounded-[10px] border border-[#E8DCC4] px-3 sm:px-5 pt-2 pb-0 mb-6 shadow-sm overflow-x-auto section-nav-scroll">
-          <div className="flex items-center gap-1 min-w-max">
-            {[
-              { key: "finance" as const, label: "Financial Tracking", icon: <CreditCard size={18} /> },
-              { key: "info" as const, label: "Firm Info", icon: <Building2 size={18} /> },
-            ].map(t => {
-              const isActive = tab === t.key;
-              return (
-                <Button
-                  key={t.key}
-                  variant="tertiary"
-                  onClick={() => setTab(t.key)}
-                  className={
-                    "rounded-none px-4 sm:px-6 py-3 shrink-0 text-sm sm:text-base cursor-pointer flex items-center gap-2.5 transition-all " +
-                    (isActive
-                      ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
-                      : "border-b-[3px] border-transparent text-[#9C8672] hover:text-[#6E0F2D] font-medium")
-                  }
-                >
-                  {t.icon}
-                  <span>{t.label}</span>
-                </Button>
-              );
-            })}
-          </div>
-        </div>
+        {/* Royal Sub-Tab Strip */}
+        <RoyalSubTabStrip
+          tabs={[
+            { key: "finance" as const, label: "Financial Tracking", icon: <CreditCard size={18} /> },
+            { key: "retail" as const, label: "Retail Sales", icon: <ShoppingBag size={18} /> },
+            { key: "info" as const, label: "Firm Info", icon: <Building2 size={18} /> },
+          ]}
+          activeTab={tab}
+          onTabChange={setTab}
+        />
 
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -436,7 +424,9 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
         className="w-full"
         style={{ paddingTop: 24, paddingBottom: 72 }}
       >
-        {tab === "info" ? (
+        {tab === "retail" ? (
+          <FirmRetailSalesTab firm={firm} firms={firms} />
+        ) : tab === "info" ? (
           <div className="w-full mb-6 rounded-2xl border border-[#E8DCC4] overflow-hidden bg-white shadow-sm">
             <div className="bg-[#6E0F2D] p-5 sm:px-6 sm:py-5 text-white flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3.5">
@@ -590,7 +580,7 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
                   </div>
                 )
               ) : (
-                <DataTable responsive columns={docColumns} data={visibleDocs} getRowId={d => `${d.type}-${d.id}`} />
+                <DataTable responsive columns={docColumns} data={visibleDocs} getRowId={d => `${d.type}-${d.id}`} pagination />
               )}
             </SectionShell>
 
@@ -614,7 +604,7 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
                   </div>
                 )
               ) : (
-                <DataTable responsive columns={paymentColumns} data={visiblePayments} getRowId={p => `${p.type}-${p.id}`} />
+                <DataTable responsive columns={paymentColumns} data={visiblePayments} getRowId={p => `${p.type}-${p.id}`} pagination />
               )}
             </SectionShell>
 

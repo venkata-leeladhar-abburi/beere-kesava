@@ -142,6 +142,12 @@ describe("authz matrix / guard coverage", () => {
     // able to mark one read. Ownership is the correct control and now lives
     // in NotificationsService.markRead().
     "PATCH /notifications/:id/read",
+    // Every role must be able to end its own session, so a role list would
+    // name all of them. The control that matters is scope, not membership:
+    // the handler closes the caller's own session using the id from their
+    // token and ignores any client-supplied identity, so it cannot be aimed
+    // at anyone else.
+    "POST /auth/logout",
   ];
 
   // Mutating routes with no authorization at all and no accepted reason.

@@ -1,4 +1,4 @@
-import { ServiceUnavailableException, UnauthorizedException } from "@nestjs/common";
+import { HttpException, HttpStatus, ServiceUnavailableException, UnauthorizedException } from "@nestjs/common";
 import * as bcrypt from "bcryptjs";
 import {
   AccessLevel,
@@ -11,6 +11,7 @@ describe("AuthService", () => {
   let prisma: any;
   let jwtService: any;
   let whatsapp: any;
+  let auditLog: any;
   let service: AuthService;
 
   beforeEach(() => {
@@ -36,7 +37,8 @@ describe("AuthService", () => {
       sendTemplate: jest.fn().mockResolvedValue({ status: WhatsAppMessageStatus.SENT }),
       sanitiseParam: jest.fn((v: string) => v),
     };
-    service = new AuthService(prisma, jwtService, whatsapp);
+    auditLog = { record: jest.fn().mockResolvedValue({}), recordLogout: jest.fn().mockResolvedValue({}) };
+    service = new AuthService(prisma, jwtService, whatsapp, auditLog);
   });
 
   describe("requestOtp", () => {
@@ -134,16 +136,71 @@ describe("AuthService", () => {
     });
 
     it("rejects once the attempt ceiling is reached", async () => {
+      // `updatedAt` is what lockoutRemainingMinutes times the lockout from —
+      // a row without it made this assert a TypeError rather than the refusal
+      // the test name describes, so the ceiling was never actually covered.
       prisma.otpCode.findFirst.mockResolvedValue({
         id: "otp-1",
         code: hashed("123456"),
         expiresAt: new Date(Date.now() + 60_000),
         attempts: 5,
+        updatedAt: new Date(),
+      });
+
+      // A lockout is 429, not 401 — UnauthorizedException would also have
+      // been satisfied by the TypeError this test used to throw.
+      await expect(service.verifyOtp({ phone: "9999999999", code: "123456" })).rejects.toMatchObject({
+        status: HttpStatus.TOO_MANY_REQUESTS,
+      });
+    });
+
+    it("records a failed attempt to the login history, with the reason", async () => {
+      prisma.otpCode.findFirst.mockResolvedValue({
+        id: "otp-1",
+        code: hashed("999999"),
+        expiresAt: new Date(Date.now() + 60_000),
+        attempts: 0,
+        updatedAt: new Date(),
+      });
+      prisma.user.findFirst.mockResolvedValue({ id: "user-1" });
+
+      await expect(
+        service.verifyOtp({ phone: "9999999999", code: "123456" }, "Mozilla/5.0 (iPhone) Safari/605"),
+      ).rejects.toThrow(UnauthorizedException);
+
+      expect(auditLog.record).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: "FAILED",
+          userId: "user-1",
+          device: "Safari on iPhone",
+          failReason: expect.stringContaining("Incorrect OTP"),
+        }),
+      );
+    });
+
+    it("never lets an audit-write failure block a rejection", async () => {
+      auditLog.record.mockRejectedValue(new Error("audit table unavailable"));
+      // A locked-out row: 3 wrong guesses, the last one just now. This is the
+      // branch that raises the bare 429 asserted below — a null row here would
+      // take the "no OTP requested" path and throw 401 instead.
+      prisma.otpCode.findFirst.mockResolvedValue({
+        id: "otp-1",
+        code: "hashed",
+        attempts: 3,
+        updatedAt: new Date(),
+        expiresAt: new Date(Date.now() + 60_000),
+        consumedAt: null,
       });
 
       await expect(service.verifyOtp({ phone: "9999999999", code: "123456" })).rejects.toThrow(
-        UnauthorizedException,
+        HttpException,
       );
+      try {
+        await service.verifyOtp({ phone: "9999999999", code: "123456" });
+      } catch (err) {
+        expect(err).toBeInstanceOf(HttpException);
+        expect((err as HttpException).getStatus()).toBe(HttpStatus.TOO_MANY_REQUESTS);
+      }
     });
 
     it("increments attempts and rejects on a wrong code", async () => {

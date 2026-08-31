@@ -1,6 +1,6 @@
 import { materialTypeIcon } from "./MyBatchesPage";
 
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { AnimatePresence } from "motion/react";
 import { useResponsive } from "../../../../hooks/useResponsive";
 
@@ -243,7 +243,9 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
                   {m.quantity} {m.unit}{m.materialType === "Jari" ? ` (${m.jariType} · ${m.jariGrade} · ${m.jariColor})` : ""}
                 </div>
                 {m.description && <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" as const, marginBottom: 4 }}>{m.description}</div>}
-                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, textAlign: "center" as const }}>From batch: {m.grnBatchId}</div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, textAlign: "center" as const }}>
+                  From {m.grnItemCode ? <>label <strong>{m.grnItemCode}</strong>{m.grnBatchId && m.grnBatchId !== m.grnItemCode ? ` of ${m.grnBatchId}` : ""}</> : <>batch <strong>{m.grnBatchId}</strong></>}
+                </div>
               </div>
             ))}
           </div>

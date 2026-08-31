@@ -3,7 +3,7 @@ import { apiClient } from "./client";
 export interface OutstandingPaymentItem {
   source: "invoice" | "bulk_order";
   id: string;
-  customerId: string;
+  customerCode: string;
   customerName: string;
   dueDate: string | null;
   total: number;
@@ -29,31 +29,44 @@ export interface SalesSummaryReport {
   wholesale: { totalSales: number; count: number };
 }
 
+export type ReportFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "QUARTERLY";
+
 export interface ScheduledReportItem {
   id: string;
   reportName: string;
-  frequency: "DAILY" | "WEEKLY" | "MONTHLY";
+  frequency: ReportFrequency;
   format: string;
-  recipientEmail: string;
+  /** Bare 10-digit WhatsApp number the report is delivered to. */
+  recipientPhone?: string | null;
+  /** Legacy column, kept only so pre-WhatsApp rows still render. */
+  recipientEmail?: string | null;
+  /** Delivery hour/minute in IST. */
+  deliveryHour: number;
+  deliveryMinute: number;
   active: boolean;
   lastRunAt?: string | null;
   nextRunAt?: string | null;
   createdAt: string;
+  /** Next few delivery instants, computed server-side. Empty when paused. */
+  upcomingRuns?: string[];
 }
 
 export interface CreateSchedulePayload {
   reportName: string;
-  frequency: "DAILY" | "WEEKLY" | "MONTHLY";
+  frequency: ReportFrequency;
   format?: string;
-  recipientEmail: string;
+  recipientPhone: string;
+  /** "HH:mm" in IST. */
+  deliveryTime?: string;
   actorId?: string;
 }
 
 export interface UpdateSchedulePayload {
   reportName?: string;
-  frequency?: "DAILY" | "WEEKLY" | "MONTHLY";
+  frequency?: ReportFrequency;
   format?: string;
-  recipientEmail?: string;
+  recipientPhone?: string;
+  deliveryTime?: string;
   active?: boolean;
   actorId?: string;
 }
@@ -81,6 +94,13 @@ export const reportsApi = {
   productionSummary: () => apiClient.get<ProductionSummaryReport>("/reports/production-summary"),
   salesSummary: () => apiClient.get<SalesSummaryReport>("/reports/sales-summary"),
   listSchedules: () => apiClient.get<{ items: ScheduledReportItem[] }>("/reports/schedules"),
+  // Dates an unsaved schedule would fire on — same server-side maths the
+  // scheduler uses, so the preview cannot disagree with reality.
+  previewSchedule: (frequency: ReportFrequency, deliveryTime: string, count = 5) =>
+    apiClient.get<{ runs: string[] }>(
+      `/reports/schedules/preview?frequency=${encodeURIComponent(frequency)}` +
+        `&deliveryTime=${encodeURIComponent(deliveryTime)}&count=${count}`,
+    ),
   createSchedule: (payload: CreateSchedulePayload) => apiClient.post<ScheduledReportItem>("/reports/schedules", payload),
   updateSchedule: (id: string, payload: UpdateSchedulePayload) =>
     apiClient.patch<ScheduledReportItem>(`/reports/schedules/${id}`, payload),

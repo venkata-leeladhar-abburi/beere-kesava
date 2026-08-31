@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
   AlertTriangle, Factory, Layers, Truck, TrendingUp, Users, Package, ShoppingBag,
@@ -18,7 +18,7 @@ import inventoryHero from "../../../assets/inline/inventoryHero.jpg";
 import { LuxuryStatsCard } from "@/shared/ui/LuxuryStatsCard";
 import { LoadingState, ErrorState } from "../../../shared/ui/state";
 
-const inr = (n: number) => formatMoney(rupees(n));
+const inr = (n: number) => formatMoney(rupees(n), { compact: true });
 
 // ── Main page ────────────────────────────────────────────────────────────────
 type OutTab = "weaver" | "factoryLoom" | "external" | "batch" | "ranking";

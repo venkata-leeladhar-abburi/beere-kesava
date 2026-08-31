@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { usePO } from "../contexts/POContext";
 import { useSuppliers } from "@/features/suppliers";
 import { PODocumentModal } from "./PODocumentModal";
@@ -19,7 +19,7 @@ import { LoadingState } from "../../../shared/ui/state";
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export function ApprovalsPage() {
-  const [activeTab, setActiveTab] = useState<"po" | "ext" | "warp" | "rate">("po");
+  const [activeTab, setActiveTab] = useState<"po" | "warp" | "rate">("po");
   const [histFilter, setHistFilter] = useState("All History");
   const [histPeriod, setHistPeriod] = useState("This Month");
   const [viewDocPOId, setViewDocPOId] = useState<string | null>(null);
@@ -82,11 +82,10 @@ export function ApprovalsPage() {
     ? pos.find(p => p.id === viewDocPOId) ?? null
     : null;
 
-  const allEmpty = combinedPOList.length === 0 && warpList.length === 0 && rateList.length === 0 && pendingRequests.length === 0;
+  const allEmpty = combinedPOList.length === 0 && warpList.length === 0 && rateList.length === 0;
 
-  const tabs: { key: "po" | "ext" | "warp" | "rate"; label: string; count: number }[] = [
+  const tabs: { key: "po" | "warp" | "rate"; label: string; count: number }[] = [
     { key: "po",   label: "Purchase Orders",   count: combinedPOList.length },
-    { key: "ext",  label: "External Purchases", count: pendingRequests.length },
     { key: "warp", label: "Warp Requests",     count: warpList.length },
     { key: "rate", label: "Rate Changes",      count: rateList.length },
   ];
@@ -97,10 +96,8 @@ export function ApprovalsPage() {
       <ApprovalsHeader />
 
       <StatsStrip
-        totalPending={combinedPOList.length + pendingRequests.length + warpList.length + rateList.length}
+        totalPending={combinedPOList.length + warpList.length + rateList.length}
         poCount={combinedPOList.length}
-        externalCount={pendingRequests.length}
-        externalTotal={pendingRequests.reduce((sum, r) => sum + r.estimatedAmount, 0)}
         warpCount={warpList.length}
         rateCount={rateList.length}
       />

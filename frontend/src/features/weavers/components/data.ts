@@ -37,6 +37,13 @@ export interface WeaverCardEntry {
   totalEver: number;
   totalPaid: string;
   lastActive: string;
+  // Real contact/bank details straight off the Weaver record. The drawer's
+  // "Personal & Bank Details" panel used to render a hardcoded address, bank
+  // and IFSC for every weaver alike — these carry the actual values through.
+  email?: string;
+  bankName?: string | null;
+  accountNo?: string | null;
+  ifsc?: string | null;
 }
 
 export const WEAVERS: WeaverCardEntry[] = [];
@@ -73,11 +80,11 @@ export const VIEW_OPTIONS = [
 // documented gap there instead of being invented.
 
 export const STATUS_MIX_META: Record<Status, { label: string; color: string }> = {
-  active: { label: "Currently Weaving", color: T.green },
+  active: { label: "Currently Weaving", color: T.royalBurgundy },
   qc: { label: "Awaiting Quality Check", color: T.antiqueGold },
   idle: { label: "No Active Batch", color: T.taupe },
 };
-export const CLUSTER_FILLS = [T.royalBurgundy, T.antiqueGold, T.green, "#5A3E6B", "#2D6B6B", "#8A2440"];
+export const CLUSTER_FILLS = [T.royalBurgundy, T.antiqueGold, "#3D0E1A", "#5A3E6B", "#2D6B6B", "#8A2440"];
 
 export const ACTIVITY_ICONS: Record<string, { PhIcon: React.ElementType; bg: string; color: string }> = {
   "📦": { PhIcon: Package, bg: "rgba(200,155,71,0.10)", color: T.antiqueGold },

@@ -5,8 +5,8 @@ import { SignatureCanvas, SignatureCanvasHandle } from "./SignatureCanvas";
 import { Button } from "../../../../shared/ui/primitives";
 
 // ── Signature capture block (mirrors WorkerWeavers WeaverSigBlock, T/F tokens) ─
-export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMethod, setSigned, remoteSent, setRemoteSent, canvasRef }: {
-  weaverName: string; weaverPhone: string;
+export function SignatureBlock({ weaverName, sigMethod, setSigMethod, setSigned, remoteSent, setRemoteSent, canvasRef }: {
+  weaverName: string;
   sigMethod: "none" | "here" | "remote"; setSigMethod: (m: "none" | "here" | "remote") => void;
   signed: boolean; setSigned: (v: boolean) => void;
   remoteSent: boolean; setRemoteSent: (v: boolean) => void;
@@ -40,7 +40,7 @@ export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMetho
           <div style={{ width: 44, height: 44, borderRadius: 12, background: sigMethod === "remote" ? "rgba(110,15,45,0.10)" : "rgba(110,15,45,0.05)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
             <Send size={20} color={sigMethod === "remote" ? T.royalBurgundy : T.taupe} />
           </div>
-          <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Send to Weaver's Phone</div>
+          <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Send to Weaver's Portal</div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>Weaver signs remotely</div>
         </Button>
       </div>
@@ -65,7 +65,7 @@ export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMetho
             <>
               <div style={{ marginBottom: 14 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 3 }}>Sending to</div>
-                <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>+91 {weaverPhone}</div>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{weaverName}'s portal</div>
               </div>
               <Button variant="primary" size="lg" onClick={() => setRemoteSent(true)} iconLeft={Send} className="w-full">
                 Send Signature Request

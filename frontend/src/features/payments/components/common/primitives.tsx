@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { CheckCircle2, type LucideIcon } from "lucide-react";
+import { CheckCircle2, X, type LucideIcon } from "lucide-react";
 
 import { F, T } from "../../theme";
-import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { Button, IconButton, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { cn } from "../../../../shared/ui/utils";
 import { Modal } from "../../../../shared/ui/overlay";
 import { StatusPill } from "@/shared/ui/domain";
@@ -71,16 +71,38 @@ export function ActionModal({ open, onClose, title, desc, actionLabel, icon: Ico
         </div>
       ) : (
         <>
-          <Modal.Header title={title} onClose={onClose} />
-          <Modal.Body>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Icon size={22} color={T.royalBurgundy} />
+          <div style={{
+            background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`,
+            padding: "20px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderTopLeftRadius: "var(--radius-lg)",
+            borderTopRightRadius: "var(--radius-lg)",
+            flexShrink: 0,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Icon size={22} color="#FFFDF9" />
               </div>
+              <Dialog.Title style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFFDF9", margin: 0 }}>
+                {title}
+              </Dialog.Title>
             </div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.6, paddingBottom: 16 }}>
+            <Dialog.Close asChild>
+              <IconButton
+                icon={X}
+                label="Close"
+                onClick={onClose}
+                shape="circle"
+                className="bg-white/12 text-white border border-white/22 hover:bg-white/18"
+              />
+            </Dialog.Close>
+          </div>
+          <Modal.Body className="pt-5">
+            <Dialog.Description style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.6, paddingBottom: 8 }}>
               {desc}
-            </div>
+            </Dialog.Description>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" size="sm" onClick={onClose}>Cancel</Button>

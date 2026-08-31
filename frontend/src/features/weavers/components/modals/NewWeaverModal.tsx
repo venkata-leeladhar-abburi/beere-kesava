@@ -10,10 +10,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { T, F } from "../theme";
 import { FadeUp } from "../common/primitives";
-import { weaversApi, CreateWeaverPayload } from "../../../../shared/api/weavers";
+import { weaversApi, CreateWeaverPayload, WEAVERS_LIST_QUERY_KEY, type BackendWeaver } from "../../../../shared/api/weavers";
 import { Button, Field, Input, NumberInput, IconButton } from "../../../../shared/ui/primitives";
 import { PhotoUploadField } from "../../../../shared/ui/PhotoUploadField";
 import { Modal } from "../../../../shared/ui/overlay";
+import { invalidateQueriesMentioning, prependToEnvelope } from "../../../../lib/cacheUpdates";
 
 interface FormState {
   firstName: string;
@@ -43,11 +44,14 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
 
   const createWeaver = useMutation({
     mutationFn: (payload: CreateWeaverPayload) => weaversApi.create(payload),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["weavers-directory"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-table-roster"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-card-roster"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-page-roster"] });
+    onSuccess: (created) => {
+      // WEAVERS_LIST_QUERY_KEY is the shared roster BatchContext,
+      // WeaverPaymentsContext and useCurrentWeaver all read through, and it
+      // caches the raw paginated response that POST /weavers matches — so the
+      // new weaver is resolvable everywhere immediately. The other weaver
+      // caches hold per-screen derived shapes and are left to the refetch.
+      prependToEnvelope<BackendWeaver>(queryClient, WEAVERS_LIST_QUERY_KEY, [created]);
+      invalidateQueriesMentioning(queryClient, "weaver");
       setForm(EMPTY_FORM);
       setError(null);
       setExpanded(false);
@@ -61,8 +65,8 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
   });
 
   const handleSave = () => {
-    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim() || !form.phone.trim()) {
-      setError("First name, last name, email and mobile number are required.");
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.phone.trim()) {
+      setError("First name, last name and mobile number are required.");
       return;
     }
     const looms = form.looms.trim() ? Number(form.looms) : undefined;
@@ -73,7 +77,7 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
     createWeaver.mutate({
       firstName: form.firstName.trim(),
       lastName: form.lastName.trim(),
-      email: form.email.trim(),
+      email: form.email.trim() || undefined,
       phone: form.phone.trim(),
       village: form.village.trim() || undefined,
       looms,
@@ -117,7 +121,7 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
         </div>
         {/* Email */}
         <div style={{ gridColumn: "1 / -1" }}>
-          <Field label={<>Email ID *<span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 400, color: T.taupe, marginLeft: 8 }}>Used for records and notifications.</span></>}>
+          <Field label={<>Email ID<span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 400, color: T.taupe, marginLeft: 8 }}>Optional — used for records and notifications.</span></>}>
             <Input type="email" placeholder="weaver@example.com" value={form.email} onChange={set("email")} />
           </Field>
         </div>

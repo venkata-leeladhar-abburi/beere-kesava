@@ -1,4 +1,3 @@
-import React from "react";
 import { FileText } from "lucide-react";
 import { C, F } from "../theme";
 import { Button } from "../../../../../shared/ui/primitives";

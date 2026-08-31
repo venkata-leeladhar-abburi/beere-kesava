@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import {
   Calendar as CalendarBlank, AlertCircle as WarningCircle, CheckCircle2 as CheckCircle,
@@ -123,7 +123,7 @@ export function BatchCard({ b, onView }: { b: Batch; expandedId: string | null; 
         cursor: "pointer"
       }}
     >
-      <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8 }} />
+      <div style={{ height: 4, background: T.royalBurgundy, width: "100%" }} />
 
       <div style={{ padding: "16px 20px 0" }}>
         <TopDivider />
@@ -216,6 +216,12 @@ export function BatchCard({ b, onView }: { b: Batch; expandedId: string | null; 
                 )}
               </div>
             )}
+
+            {b.createdBy && (
+              <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 12 }}>
+                Created by {b.createdBy}
+              </div>
+            )}
           </div>
         </div>
 
@@ -305,6 +311,7 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
       data={batches}
       getRowId={b => b.id}
       emptyTitle="No batches found"
+      pagination
     />
   );
 }
@@ -432,9 +439,8 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 6px 24px rgba(74,6,27,0.05)" }}>
       <div style={{ overflowX: "auto" }}>
-        <DataTable columns={columns} data={batches} getRowId={b => b.id} />
+        <DataTable columns={columns} data={batches} getRowId={b => b.id} pagination />
       </div>
-      <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Showing {batches.length} of {batches.length} batches</div>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'motion/react';
 import { Flower2 as Lotus } from 'lucide-react';
 import { imgBKLogo, imgSareeFooter } from '../../../../../shared/constants/weaverImages';

@@ -13,7 +13,6 @@
  * saree, so `saleRefs` carries every reference on the bill and `billRef` (the
  * first) is what the document is numbered and filed under.
  */
-import * as React from "react";
 import { DocumentPage } from "./DocumentPage";
 import { Letterhead, DEFAULT_LETTERHEAD_FIRM, type LetterheadFirm } from "./Letterhead";
 import { PartyBlock, type MetaField } from "./PartyBlock";

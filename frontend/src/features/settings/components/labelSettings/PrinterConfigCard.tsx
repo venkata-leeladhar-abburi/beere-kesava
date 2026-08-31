@@ -1,4 +1,3 @@
-import React from "react";
 import { Printer } from "lucide-react";
 import { toast } from "sonner";
 import { CardSection, F, T } from "./primitives";

@@ -86,7 +86,7 @@ export class PurchaseOrdersService {
           // ₹0 forever otherwise, even once the real prices actually paid
           // are known from receiving it. The frontend falls back to these
           // once the PO's own line items show ₹0.
-          grnReceipt: { include: { receivedBy: { select: { id: true, firstName: true, lastName: true } }, items: true } }
+          grnReceipt: { include: { receivedBy: { select: { id: true, firstName: true, lastName: true } }, items: true, firm: { select: { id: true, firmName: true } } } }
         },
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
@@ -106,7 +106,7 @@ export class PurchaseOrdersService {
         items: true,
         firm: { select: { id: true, firmName: true } },
         createdBy: { select: { firstName: true, lastName: true } },
-        grnReceipt: { include: { receivedBy: { select: { id: true, firstName: true, lastName: true } }, items: true } },
+        grnReceipt: { include: { receivedBy: { select: { id: true, firstName: true, lastName: true } }, items: true, firm: { select: { id: true, firmName: true } } } },
       },
     });
     if (!po) {

@@ -230,7 +230,10 @@ export const salesApi = {
   },
 
   /** GET /sales/returns/stock — every return, categorised, for Inventory */
-  listReturnStock: () => apiClient.get<ReturnStockItem[]>("/sales/returns/stock"),
+  listReturnStock: (limit?: number) =>
+    apiClient.get<ReturnStockItem[]>(
+      `/sales/returns/stock${limit ? `?limit=${limit}` : ""}`,
+    ),
 
   /** POST /sales/returns/:ref/restock — make a held return sellable */
   sendReturnToInventory: (returnRef: string) =>

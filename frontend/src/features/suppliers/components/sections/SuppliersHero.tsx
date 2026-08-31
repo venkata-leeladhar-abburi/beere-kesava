@@ -1,6 +1,5 @@
 // Page hero banner + the stats strip that overlaps its bottom edge.
 
-import React from "react";
 import suppliersHero from "../../../../assets/inline/suppliersHero.jpg";
 import { Send, Plus, Building2, Package, IndianRupee, CheckCircle2, AlertTriangle } from "lucide-react";
 import { T, F } from "../theme";

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, Plus, X, CheckCircle2, Send, Scissors } from "lucide-react";
@@ -387,7 +387,7 @@ export function IssueMaterialPage() {
           <div style={{ marginTop: 32 }}>
             <SectionPill label="Step 4 · Collect Weaver Signature" />
             <SignatureBlock
-              weaverName={selectedWeaver?.name ?? "the weaver"} weaverPhone={selectedWeaver?.phone ?? "—"}
+              weaverName={selectedWeaver?.name ?? "the weaver"}
               sigMethod={sigMethod} setSigMethod={setSigMethod}
               signed={signed} setSigned={setSigned}
               remoteSent={remoteSent} setRemoteSent={setRemoteSent}
@@ -409,7 +409,7 @@ export function IssueMaterialPage() {
             histSearch={histSearch} setHistSearch={v => { setHistSearch(v); setHistPage(1); }}
             histWeaverFilter={histWeaverFilter} setHistWeaverFilter={v => { setHistWeaverFilter(v); setHistPage(1); }}
             histDateFilter={histDateFilter} setHistDateFilter={f => { setHistDateFilter(f); setHistPage(1); }}
-            pagedHistory={pagedHistory} histPage={histPage} setHistPage={setHistPage} totalPages={totalPages}
+            pagedHistory={pagedHistory} histPage={histPage} setHistPage={setHistPage} totalPages={totalPages} totalCount={filteredHistory.length}
             setViewRecord={setViewRecord}
           />
         </div>

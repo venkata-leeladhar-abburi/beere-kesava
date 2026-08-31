@@ -1,4 +1,3 @@
-import React from "react";
 import { AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { DesignCodeCard } from "@/features/design-library";

@@ -460,6 +460,7 @@ export function ProcessReturnWholesaleConsignment({
                         caption={`Sarees on ${consignmentLabel(d)}`}
                         density="compact"
                         responsive
+                        pagination
                         isFiltered={search.trim() !== ""}
                         onClearFilters={() => setSearch("")}
                         emptyTitle="No sarees match"

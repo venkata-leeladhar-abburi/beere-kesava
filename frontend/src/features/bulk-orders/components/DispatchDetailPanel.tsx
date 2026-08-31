@@ -1,4 +1,3 @@
-import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Truck, X, AlertTriangle } from "lucide-react";
 import { DispatchRecord } from "@/features/finishing";

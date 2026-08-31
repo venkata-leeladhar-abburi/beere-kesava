@@ -1,4 +1,3 @@
-import React from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
@@ -27,7 +26,7 @@ export function PageHeaderStats() {
   });
   const { data: loginsData } = useQuery({
     queryKey: ["audit-log", "logins", "stats"],
-    queryFn: () => auditLogApi.list(100),
+    queryFn: () => auditLogApi.list({ pageSize: 100 }),
   });
 
   const actions = actionsData?.items ?? [];

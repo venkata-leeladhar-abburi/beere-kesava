@@ -27,6 +27,18 @@ export function scrollToTop() {
 }
 
 /**
+ * Scrolls to top whenever `key` changes. For detail views that swap in via
+ * local state on the same route, where <ScrollToTop /> never fires because
+ * useLocation() sees no change.
+ */
+export function useScrollTopOnView(key: unknown) {
+  useEffect(() => {
+    if (key === null || key === undefined) return;
+    scrollToTop();
+  }, [key]);
+}
+
+/**
  * Global ScrollToTop component mounted inside BrowserRouter.
  * Automatically scrolls page to top on every route/location change.
  */

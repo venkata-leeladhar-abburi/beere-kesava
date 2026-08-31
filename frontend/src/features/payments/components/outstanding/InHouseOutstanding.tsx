@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ChevronRight, Users, Factory } from "lucide-react";
 import { T, F } from "../../theme";

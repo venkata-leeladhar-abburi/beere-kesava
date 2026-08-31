@@ -1,16 +1,19 @@
 // ── Table view + directory container that switches between card/list/table ─
-import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Rows3 as Rows, Eye as PhEye, MapPin as PhMapPin } from "lucide-react";
 import { T, F } from "../theme";
 import { STATUS_CFG, Status } from "../types";
 import { WEAVERS } from "../data";
 import { FadeUp, qcColor } from "../common/primitives";
-import { WeaverCardGrid, WeaverListView, useRealWeavers } from "./WeaverCardAndListViews";
-import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
+import { WeaverCardGrid, WeaverListView, useRealWeavers, filterWeavers } from "./WeaverCardAndListViews";
+import { BackendWeaverStats } from "../../../../shared/api/weavers";
+import { useWeaverRosterStats, weaverStatusFromStats, formatLastActive } from "../../hooks/useWeaverRosterStats";
+import { weaverPaymentsApi } from "../../../../shared/api/payments";
+import { rupees, formatMoney } from "@/lib/domain/money";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 interface WeaverTableRow {
   id: string;
@@ -27,21 +30,20 @@ interface WeaverTableRow {
   lastActive: string;
 }
 
-// Real roster + live per-weaver stats (GET /weavers, GET /weavers/:id/stats).
-// The stats endpoint has no monthly breakdown, total-paid, or last-active
-// timestamp yet, so those columns show "—" rather than an invented number.
+// Real roster + live stats for every weaver in one call (GET /weavers, GET
+// /weavers/stats). Total-paid comes from the payments module. There is still
+// no dated production ledger, so output columns are all-time and labelled so.
 function useRealTableRows() {
-  const { data: weaversRes, isLoading: rosterLoading, isError: rosterError, refetch: refetchRoster } = useQuery({
-    queryKey: ["weavers-table-roster"],
-    queryFn: () => weaversApi.list(),
+  const { roster, statsById, isLoading, isError, refetch } = useWeaverRosterStats();
+  // Real payout totals — this column rendered a literal "—" for every weaver.
+  const { data: payments } = useQuery({
+    queryKey: ["weavers-table-payments"],
+    queryFn: () => weaverPaymentsApi.listAll(),
   });
-  const roster = weaversRes?.items ?? [];
-  const { data: statsList, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useQuery({
-    queryKey: ["weavers-table-stats", roster.map(w => w.id)],
-    queryFn: () => Promise.all(roster.map(w => weaversApi.getStats(w.id))),
-    enabled: roster.length > 0,
+  const paidById = new Map<string, number>();
+  (payments ?? []).forEach(p => {
+    paidById.set(p.weaverId, (paidById.get(p.weaverId) ?? 0) + Number(p.amountPaid ?? 0));
   });
-  const statsById = new Map((statsList ?? []).map(s => [s.weaverId, s]));
   const rows = roster.map(w => {
     const s: BackendWeaverStats | undefined = statsById.get(w.id);
     return {
@@ -51,26 +53,24 @@ function useRealTableRows() {
       village: w.village || "—",
       mobile: w.phone || "—",
       looms: w.looms,
-      status: (s && s.activeBatchRowsCount > 0 ? "active" : "idle") as Status,
-      thisMonth: 0,
+      status: weaverStatusFromStats(s),
+      // All-time, not this month — the stats endpoint has no dated ledger.
+      // Rendered under a "Total Woven" header so the number matches its label
+      // (it was previously a hardcoded 0 under a "This Month" header).
+      thisMonth: s?.totalSareesWoven ?? 0,
       passRate: s?.qcPassRate ?? 0,
       totalEver: String(s?.totalSareesWoven ?? 0),
-      totalPaid: "—",
-      lastActive: "—",
+      totalPaid: paidById.has(w.id) ? formatMoney(rupees(paidById.get(w.id)!)) : "—",
+      lastActive: formatLastActive(s?.lastActivityAt),
     };
   });
-  return {
-    rows,
-    isLoading: rosterLoading || (roster.length > 0 && statsLoading),
-    isError: rosterError || statsError,
-    refetch: () => { void refetchRoster(); void refetchStats(); },
-  };
+  return { rows, isLoading, isError, refetch };
 }
 
-export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }) {
-  const [showAll, setShowAll] = useState(true);
-  const { rows: TABLE_ROWS, isLoading, isError, refetch } = useRealTableRows();
-  const visible = showAll ? TABLE_ROWS : TABLE_ROWS.slice(0, 5);
+export function WeaverTableView({ onSelect, search = "", filter = "All Weavers" }: { onSelect: (id: string) => void; search?: string; filter?: string }) {
+  const { rows: ALL_ROWS, isLoading, isError, refetch } = useRealTableRows();
+  const TABLE_ROWS = filterWeavers(ALL_ROWS, search, filter);
+  const pag = usePagination(TABLE_ROWS, 10);
 
   const columns: ColumnDef<WeaverTableRow>[] = [
     {
@@ -115,7 +115,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
       },
     },
     {
-      id: "thisMonth", header: "This Month", accessor: r => r.thisMonth, type: "number", sortable: true,
+      id: "thisMonth", header: "Total Woven", accessor: r => r.thisMonth, type: "number", sortable: true,
       cell: (_v, r) => <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.antiqueGold }}>{r.thisMonth}</span>,
     },
     {
@@ -166,7 +166,9 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
   if (TABLE_ROWS.length === 0) {
     return (
       <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}` }}>
-        <EmptyState title="No weavers yet" description="Weavers added to the roster will show up here." />
+        {ALL_ROWS.length === 0
+          ? <EmptyState title="No weavers yet" description="Weavers added to the roster will show up here." />
+          : <EmptyState title="No matching weavers" description="No weaver matches this search or filter." />}
       </div>
     );
   }
@@ -174,18 +176,16 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(74,6,27,0.06)" }}>
       <div className="w-full overflow-x-auto section-nav-scroll p-2">
         <div className="min-w-[850px]">
-          <DataTable responsive={false} columns={columns} data={visible} getRowId={r => r.id} />
+          <DataTable responsive={false} columns={columns} data={pag.pageItems} getRowId={r => r.id} />
         </div>
       </div>
-      {!showAll && (
-        <div style={{ padding: "22px 26px", textAlign: "center", borderTop: `1px solid ${T.borderDef}` }}>
-          <Button onClick={() => setShowAll(true)} variant="link" className="text-[16px] font-bold text-[#6E0F2D] underline decoration-[rgba(110,15,45,0.35)]">Load More Weavers</Button>
-        </div>
-      )}
+      <div className="p-3 border-t border-[rgba(110,15,45,0.10)]">
+        <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="weavers" />
+      </div>
     </div>
   );
 }
-export function WeaverDirectory({ view, onSelect, onEdit, onBatches }: { view: string; onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void }) {
+export function WeaverDirectory({ view, onSelect, onEdit, onBatches, search = "", filter = "All Weavers" }: { view: string; onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void; search?: string; filter?: string }) {
   // Build a real-roster lookup map so the table-view "View" button can resolve
   // a clicked row id to a real weaver object (WEAVERS[] is empty mock).
   const realWeavers = useRealWeavers();
@@ -193,10 +193,12 @@ export function WeaverDirectory({ view, onSelect, onEdit, onBatches }: { view: s
 
   return (
     <FadeUp>
-      {view === "card" && <WeaverCardGrid onSelect={onSelect} onEdit={onEdit} onBatches={onBatches} />}
-      {view === "list" && <WeaverListView onSelect={onSelect} />}
+      {view === "card" && <WeaverCardGrid onSelect={onSelect} onEdit={onEdit} onBatches={onBatches} search={search} filter={filter} />}
+      {view === "list" && <WeaverListView onSelect={onSelect} search={search} filter={filter} />}
       {view === "table" && (
         <WeaverTableView
+          search={search}
+          filter={filter}
           onSelect={id => {
             const w = realById.get(id);
             if (w) onSelect(w);

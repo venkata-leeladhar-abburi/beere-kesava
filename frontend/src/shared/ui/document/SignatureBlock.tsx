@@ -3,7 +3,6 @@
  * `break-before: avoid` (print.css) keeps this from being orphaned onto its
  * own page.
  */
-import * as React from "react";
 
 export interface SignatureBlockProps {
   firmName: string;

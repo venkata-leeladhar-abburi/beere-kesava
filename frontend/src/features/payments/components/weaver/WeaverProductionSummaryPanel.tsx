@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlignJustify, ClipboardList, Download, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { weaverPaymentsApi, BackendWeaverPayment } from "../../../../shared/api/
 import { weaversApi } from "../../../../shared/api/weavers";
 import { firmsApi } from "../../../../shared/api/firms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Button } from "../../../../shared/ui/primitives";
 import { DropBtn, Pip } from "../common/primitives";
@@ -230,7 +231,7 @@ function WeaverProductionCard({ row }: { row: GroupedRow }) {
       width: "100%",
     }}>
       {/* Top accent bar */}
-      <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8 }} />
+      <div style={{ height: 4, background: T.royalBurgundy, width: "100%" }} />
 
       <div style={{ padding: "16px 20px 0" }}>
         <TopDivider />
@@ -321,6 +322,7 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
   const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [weaverFilter, setWeaverFilter] = useState(ALL_WEAVERS);
   const [batchFilter, setBatchFilter] = useState(ALL_BATCHES);
+  const [search, setSearch] = useState("");
 
   const { data: weaversRes } = useQuery({
     queryKey: ["payments-weavers-roster"],
@@ -399,10 +401,11 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
 
   const grouped = useMemo(
     () => groupedByDate.filter(r =>
+      (!search || r.weaverName.toLowerCase().includes(search.toLowerCase()) || r.weaverCode.toLowerCase().includes(search.toLowerCase()) || r.batchId.toLowerCase().includes(search.toLowerCase())) &&
       (weaverFilter === ALL_WEAVERS || r.weaverName === weaverFilter) &&
       (batchFilter === ALL_BATCHES || r.batchId === batchFilter),
     ),
-    [groupedByDate, weaverFilter, batchFilter],
+    [groupedByDate, search, weaverFilter, batchFilter],
   );
 
   const savedRows = useMemo(() => {
@@ -476,7 +479,61 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const, alignItems: "center", marginBottom: 14 }}>
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search production summary..."
+          filterGroups={[
+            {
+              id: "time",
+              label: "Time Period",
+              value: filter.mode,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Time" },
+                { value: "day", label: "Specific Date" },
+                { value: "range", label: "Date Range" },
+                { value: "month", label: "Monthly" },
+                { value: "year", label: "Yearly" },
+              ],
+              onChange: (m: string) => {
+                const mode = m as DateFilterState["mode"];
+                if (mode === "day") setFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                else if (mode === "month") setFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                else if (mode === "year") setFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                else setFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+              },
+            },
+            {
+              id: "weaver",
+              label: "Weaver",
+              value: weaverFilter,
+              defaultValue: ALL_WEAVERS,
+              options: weaverOptions.map(w => ({ value: w, label: w })),
+              onChange: setWeaverFilter,
+            },
+            {
+              id: "batch",
+              label: "Batch",
+              value: batchFilter,
+              defaultValue: ALL_BATCHES,
+              options: batchOptions.map(b => ({ value: b, label: b })),
+              onChange: setBatchFilter,
+            },
+          ]}
+          onResetAll={() => {
+            setSearch("");
+            setWeaverFilter(ALL_WEAVERS);
+            setBatchFilter(ALL_BATCHES);
+            setFilter(DEFAULT_DATE_FILTER);
+          }}
+        />
+      </div>
+
+      {/* Desktop Filter Bar & Controls */}
+      <div className="hidden md:flex flex-wrap items-center gap-2.5 mb-3.5">
         <DateFilterBar filter={filter} onChange={setFilter} />
         <DropBtn value={weaverFilter} options={weaverOptions} onChange={setWeaverFilter} />
         <DropBtn value={batchFilter} options={batchOptions} onChange={setBatchFilter} />

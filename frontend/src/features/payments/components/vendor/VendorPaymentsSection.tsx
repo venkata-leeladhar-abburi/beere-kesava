@@ -5,13 +5,15 @@ import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
+import { ViewSelector } from "@/shared/ui/ViewSelector";
 import { PurchaseOrder, usePO } from "@/features/purchasing";
 import { PODocumentModal } from "@/features/purchasing";
-import { vendorPaymentsApi } from "../../../../shared/api/payments";
+import { vendorPaymentsApi, type BackendVendorPayment } from "../../../../shared/api/payments";
 import { vendorBillsApi } from "../../../../shared/api/vendor-bills";
 import { EASE, F, T } from "../../theme";
 import { useFirms } from "@/features/firms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { VendorPayment, VendorStatus } from "../../types";
 import { AnimCount, FadeUp } from "../common/motion";
 import { ActionModal, DropBtn, SectionCard } from "../common/primitives";
@@ -27,7 +29,9 @@ import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/p
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { EntityCode, Money } from "@/shared/ui/domain";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { toPaise, fromPaise } from "@/lib/gst";
+import { prependToEnvelope } from "../../../../lib/cacheUpdates";
 
 const SHOW_OVERDUE_ALERT = false;
 
@@ -180,7 +184,7 @@ export function VendorPaymentsSection() {
     if (!amount || amount <= 0 || !utrNumber.trim() || !sidebarFirmId) return;
     setSavingSidebarPayment(true);
     try {
-      await vendorPaymentsApi.create({
+      const created = await vendorPaymentsApi.create({
         vendorId: selVP.vendorId ?? selVP.id,
         amount,
         utr: utrNumber.trim(),
@@ -189,6 +193,12 @@ export function VendorPaymentsSection() {
         date: payDate || undefined,
         billId: selVP.billId,
       });
+      // The vendor rows are a useMemo over this raw list, so inserting the new
+      // payment is enough for the paid/balance columns and the recorded-total
+      // to recompute — no need to wait out the refetch that refreshVendorLedger
+      // kicks off below to see the payment land.
+      prependToEnvelope<BackendVendorPayment>(
+        queryClient, ["vendor-payments-section-totals"], [created]);
       addExpenseEntry(sidebarFirmId, {
         description: `Vendor payment — ${selVP.vendor} (${selVP.poNumber})`,
         amount, date: payDate || new Date().toISOString().slice(0, 10), category: "Material Purchase",
@@ -225,8 +235,10 @@ export function VendorPaymentsSection() {
     const matchVendor = vendorFilter === "All Vendors" || v.vendor === vendorFilter;
     const matchSearch = !search || v.vendor.toLowerCase().includes(search.toLowerCase()) || v.poNumber.toLowerCase().includes(search.toLowerCase());
     const matchDate = matchesDateFilter(v.dueDate, dateFilter);
-    return matchStatus && matchVendor && matchSearch && matchDate;
+    return matchSearch && matchStatus && matchVendor && matchDate;
   });
+
+  const pag = usePagination(filtered, 8);
 
   const viewOptions = [
     { key: "card",  Icon: LayoutGrid,   label: "Card View"  },
@@ -499,16 +511,62 @@ export function VendorPaymentsSection() {
           }))}
         />
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
-          <div className="hidden md:flex" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
-            {viewOptions.map(({ key, Icon, label }) => (
-              <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
-                onClick={() => setView(key)}
-                className={view === key ? "rounded-none bg-[#6E0F2D] text-[#FFFDF9]" : "rounded-none bg-white text-[var(--text-tertiary)]"}>
-                {label}
-              </Button>
-            ))}
-          </div>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search vendor, PO, bill number..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: dateFilter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                  else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                  else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                  else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                },
+              },
+              {
+                id: "vendor",
+                label: "Vendor",
+                value: vendorFilter,
+                defaultValue: vendorFilterOptions[0] ?? "All Vendors",
+                options: vendorFilterOptions.map(v => ({ value: v, label: v })),
+                onChange: setVendorFilter,
+              },
+              {
+                id: "status",
+                label: "Bill Status",
+                value: statusFilter,
+                defaultValue: "All Bill Status",
+                options: ["All Bill Status", "Paid", "Partial", "Overdue", "Pending"].map(s => ({ value: s, label: s })),
+                onChange: setStatusFilter,
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setVendorFilter(vendorFilterOptions[0] ?? "All Vendors");
+              setStatusFilter("All Bill Status");
+              setDateFilter(DEFAULT_DATE_FILTER);
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter Bar & Controls */}
+        <div className="hidden md:flex items-center gap-2.5 mb-5 flex-wrap">
+          <ViewSelector options={viewOptions} activeView={view} onViewChange={setView} />
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           <DropBtn value={vendorFilter} options={vendorFilterOptions} onChange={setVendorFilter} />
           <Select value={statusFilter} onValueChange={setStatusFilter} size="sm" containerClassName="w-auto shrink-0" className="w-[145px] font-semibold">
@@ -519,47 +577,27 @@ export function VendorPaymentsSection() {
           </div>
         </div>
 
-        <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
-          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
-            <Button
-              onClick={() => setView("card")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-                view === "card"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-              }`}
-            >
-              <LayoutGrid size={14} /> Card View
-            </Button>
-            <Button
-              onClick={() => setView("table")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-                view === "table"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-              }`}
-            >
-              <AlignJustify size={14} /> Table View
-            </Button>
-          </div>
-        </div>
+
 
         {view === "card" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 items-stretch">
-            {filtered.map((vp, i) => (
-              <motion.div key={vp.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.07, ease: EASE }} style={{ display: "flex", flexDirection: "column" }}>
-                <VendorCard vp={vp} matchedPO={matchPO(vp.poNumber)} onPay={() => setPayNowId(vp.id)} onView={() => setViewDetailsId(vp.id)} onViewPO={() => setViewPO(matchPO(vp.poNumber) ?? null)} onAddInvoice={() => setAddInvoiceForId(vp.id)} selected={selVendor === vp.id} />
-              </motion.div>
-            ))}
+          <div data-pagination-target>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6 items-stretch">
+              {pag.pageItems.map((vp, i) => (
+                <motion.div key={vp.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.07, ease: EASE }} style={{ display: "flex", flexDirection: "column" }}>
+                  <VendorCard vp={vp} matchedPO={matchPO(vp.poNumber)} onPay={() => setPayNowId(vp.id)} onView={() => setViewDetailsId(vp.id)} onViewPO={() => setViewPO(matchPO(vp.poNumber) ?? null)} onAddInvoice={() => setAddInvoiceForId(vp.id)} selected={selVendor === vp.id} />
+                </motion.div>
+              ))}
+            </div>
+            <div className="mb-8">
+              <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="vendor bills" />
+            </div>
           </div>
         )}
 
         {view === "list" && (
-          <div className="overflow-x-auto w-full mb-8">
+          <div data-pagination-target className="overflow-x-auto w-full mb-8">
             <div className="min-w-[600px]" style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-              {filtered.map((vp, i) => {
+              {pag.pageItems.map((vp, i) => {
                 const balance = vp.invoiceAmt - vp.paidAmt;
                 const cfg = VENDOR_STATUS_CFG[vp.status];
                 return (
@@ -585,11 +623,14 @@ export function VendorPaymentsSection() {
                 );
               })}
             </div>
+            <div className="mt-4">
+              <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="vendor bills" />
+            </div>
           </div>
         )}
 
         {view === "table" && (
-          <div className="flex flex-col lg:flex-row gap-5 items-start w-full">
+          <div data-pagination-target className="flex flex-col lg:flex-row gap-5 items-start w-full">
             <div className="w-full lg:flex-1 min-w-0">
               <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
                 <div style={{ overflowX: "auto" }} className="w-full">
@@ -597,14 +638,27 @@ export function VendorPaymentsSection() {
                     <DataTable
                       responsive={false}
                       columns={vendorTableColumns}
-                      data={filtered}
+                      data={pag.pageItems}
                       getRowId={vp => vp.id}
                       loading={paymentsLoading || billsLoading}
                       error={paymentsError || billsError}
                       onRetry={() => { void refetchVendorPayments(); void refetchVendorBills(); }}
                       emptyTitle="No vendor bills match your filters"
+                      pagination={false}
                     />
                   </div>
+                </div>
+                <div className="p-4 border-t border-[var(--border-default)] bg-white">
+                  <Pagination
+                    page={pag.page}
+                    pageCount={pag.pageCount}
+                    total={pag.total}
+                    pageSize={pag.pageSize}
+                    start={pag.start}
+                    onPageChange={pag.setPage}
+                    onPageSizeChange={pag.setPageSize}
+                    itemLabel="vendor bills"
+                  />
                 </div>
                 <div style={{ padding: "12px 18px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Showing {filtered.length} of {vendorPayments.length} vendor bills</span>

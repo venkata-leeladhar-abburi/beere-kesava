@@ -8,7 +8,6 @@
  * All money arithmetic is on integer paise (lib/gst), never parseFloat —
  * the exact bug Part A.4 flags in the pre-existing InvoiceGenerator.
  */
-import * as React from "react";
 import { DocumentPage } from "./DocumentPage";
 import { Letterhead, type LetterheadFirm } from "./Letterhead";
 import { PartyBlock, type MetaField } from "./PartyBlock";

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from "@nestjs/common";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
@@ -63,8 +63,8 @@ export class SalesController {
 
   /** Every returned saree, categorised, for the shop's Inventory screen. */
   @Get("returns/stock")
-  listReturnStock() {
-    return this.salesService.listReturnStock();
+  listReturnStock(@Query("limit", new ParseIntPipe({ optional: true })) limit?: number) {
+    return this.salesService.listReturnStock(limit);
   }
 
   /** Makes one held return sellable and puts it into shop stock. */

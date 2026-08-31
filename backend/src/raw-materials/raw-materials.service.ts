@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
+import { ListGrnsQueryDto } from "./dto/list-grns-query.dto";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { MaterialType } from "../generated/prisma/client";
@@ -25,6 +26,11 @@ export interface CreateGrnDto {
     unit?: string;
     unitPrice: number;
     rejectedQuantity?: number;
+    // PurchaseOrderItem.id this line was received against. The receiving
+    // screen walks the PO's lines one by one, so the pairing is known
+    // exactly here — persisting it removes the need for downstream code to
+    // re-guess it from materialType + name. Omitted for ad-hoc receipts.
+    poItemId?: string;
   }[];
 }
 
@@ -44,8 +50,15 @@ export class RawMaterialsService {
     return { items: stock };
   }
 
-  async listGrns() {
+  async listGrns(query: ListGrnsQueryDto = {}) {
+    const createdAt =
+      query.from || query.to
+        ? { ...(query.from ? { gte: query.from } : {}), ...(query.to ? { lte: query.to } : {}) }
+        : undefined;
+
     const grns = await this.prisma.grnReceipt.findMany({
+      where: createdAt ? { createdAt } : undefined,
+      ...(query.limit ? { take: query.limit } : {}),
       include: {
         vendor: true,
         firm: true,
@@ -142,6 +155,25 @@ export class RawMaterialsService {
       }
     }
 
+    // A wrong poItemId would satisfy the foreign key while quietly attaching
+    // this delivery to another vendor's order — and every downstream screen
+    // now trusts that link for receipt codes and prices. Check it belongs to
+    // an order raised with this vendor before writing it.
+    const poItemIds = [...new Set(dto.items.map((i) => i.poItemId).filter((id): id is string => !!id))];
+    if (poItemIds.length > 0) {
+      const valid = await this.prisma.purchaseOrderItem.findMany({
+        where: { id: { in: poItemIds }, purchaseOrder: { vendorId: dto.vendorId } },
+        select: { id: true },
+      });
+      const validIds = new Set(valid.map((i) => i.id));
+      const stray = poItemIds.filter((id) => !validIds.has(id));
+      if (stray.length > 0) {
+        throw new BadRequestException(
+          `Purchase order line(s) ${stray.join(", ")} do not belong to an order for this vendor`,
+        );
+      }
+    }
+
     const grnId = await this.idGenerator.nextScoped("GRN", vendor.code ?? businessSegment(vendor.name, "Vendor"));
 
     const grn = await this.prisma.$transaction(async (tx) => {
@@ -162,6 +194,7 @@ export class RawMaterialsService {
             // deriving a barcode label from a slice of the PO's raw uuid.
             create: dto.items.map((item, index) => ({
               itemCode: `${grnId}-${index + 1}`,
+              poItemId: item.poItemId || null,
               materialType: item.materialType,
               name: item.name,
               description: item.description || null,

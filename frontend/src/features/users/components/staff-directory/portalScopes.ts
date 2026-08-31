@@ -28,6 +28,17 @@ export const WORKER_SCOPE: PortalScope = {
   modules: ["BATCHES", "QC", "FINISHING", "DISPATCH", "MATERIALS"],
 };
 
+export const ACCOUNTANT_SCOPE: PortalScope = {
+  role: "ACCOUNTANT",
+  label: "Accountant Staff",
+  singular: "Accountant",
+  blurb: "Everyone with Accountant access, the money each of them has moved, and everything they have recorded in the Accountant portal.",
+  modules: [
+    "PAYMENTS", "WEAVERS", "VENDORS", "SUPPLIERS", "CUSTOMERS", "SALES",
+    "PURCHASE", "PURCHASE_REQUESTS", "RATES", "RATE_REQUESTS", "APPROVALS", "REPORTS",
+  ],
+};
+
 export const SHOP_SCOPE: PortalScope = {
   role: "SHOP",
   label: "Shop Staff",
@@ -47,6 +58,14 @@ export const MODULE_LABELS: Record<string, string> = {
   CUSTOMERS: "Customers",
   PAYMENTS: "Payments",
   REPORTS: "Reports",
+  WEAVERS: "Weavers",
+  VENDORS: "Vendors",
+  SUPPLIERS: "Suppliers",
+  PURCHASE: "Purchases",
+  PURCHASE_REQUESTS: "Purchase Requests",
+  RATES: "Rates",
+  RATE_REQUESTS: "Rate Requests",
+  APPROVALS: "Approvals",
 };
 
 export function moduleLabel(module: string): string {

@@ -186,6 +186,7 @@ export function SareeDetailTable({ sarees, mode = "outstanding", showReturn = fa
             data={sarees}
             getRowId={s => s.sareeId}
             caption="Saree detail table"
+            pagination
           />
         </div>
       </div>

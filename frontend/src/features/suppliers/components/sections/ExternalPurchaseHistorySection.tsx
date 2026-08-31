@@ -1,11 +1,26 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { History, LayoutGrid, List } from "lucide-react";
 import { T, F } from "../theme";
 import { FadeUp, SectionCard } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
-import { Purchase } from "../../contexts/SupplierContext";
+import { Purchase, purchaseTotals, totalPieces, parseINR } from "../../contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
+
+/** Pieces actually recorded on the purchase's lines, falling back to the
+ * stored aggregate when a purchase has no line detail. */
+function piecesOf(p: Purchase): number {
+  return p.sarees.length > 0 ? totalPieces(p.sarees) : p.sareeCount;
+}
+
+/** What the supplier billed: the lines' buying total when they exist, else
+ * the stored bill amount. */
+function billOf(p: Purchase): number {
+  const buying = purchaseTotals(p.sarees).buying;
+  return p.sarees.length > 0 && buying > 0 ? buying : parseINR(p.billAmount);
+}
 
 export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purchase[] }) {
   const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -25,13 +40,29 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
       id: "invoice", header: "Invoice", accessor: p => p.invoiceNumber, priority: 3,
       cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.invoiceNumber || "—"}</span>,
     },
+    // Counts and money come from the purchase's own saree lines — the same
+    // source the External Purchases inventory table uses — so this table and
+    // that one never disagree. The stored aggregates (sareeCount/billAmount)
+    // are only a fallback for rows whose lines aren't loaded.
     {
-      id: "sarees", header: "Sarees", accessor: p => p.sareeCount,
-      cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.sareeCount} pcs</span>,
+      id: "sarees", header: "Sarees", accessor: p => piecesOf(p),
+      cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{piecesOf(p)} pcs</span>,
     },
     {
-      id: "bill", header: "Bill Amount", accessor: p => p.billAmount,
-      cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{p.billAmount}</span>,
+      id: "buying", header: "Buying Price", accessor: p => purchaseTotals(p.sarees).buying, priority: 3,
+      cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown }}>{formatMoney(rupees(purchaseTotals(p.sarees).buying))}</span>,
+    },
+    {
+      id: "selling", header: "Selling Price", accessor: p => purchaseTotals(p.sarees).selling, priority: 3,
+      cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{formatMoney(rupees(purchaseTotals(p.sarees).selling))}</span>,
+    },
+    {
+      id: "profit", header: "Profit", accessor: p => purchaseTotals(p.sarees).profit, priority: 3,
+      cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.greenMid }}>{formatMoney(rupees(purchaseTotals(p.sarees).profit))}</span>,
+    },
+    {
+      id: "bill", header: "Bill Amount", accessor: p => billOf(p),
+      cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{formatMoney(rupees(billOf(p)))}</span>,
     },
     {
       id: "date", header: "Date", accessor: p => p.date, priority: 3,
@@ -57,7 +88,40 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
         title="External Purchase History"
         subtitle="Every raw-material purchase recorded from every supplier, with bill status and invoice reference."
       >
-        <div style={{ marginBottom: 16 }}>
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search=""
+            onSearchChange={() => {}}
+            searchPlaceholder="Search external purchases..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: filter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day") setFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                  else if (mode === "month") setFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                  else if (mode === "year") setFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                  else setFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                },
+              },
+            ]}
+            onResetAll={() => setFilter(DEFAULT_DATE_FILTER)}
+          />
+        </div>
+
+        {/* Desktop Filter Bar */}
+        <div className="hidden md:block mb-4">
           <DateFilterBar filter={filter} onChange={setFilter} />
         </div>
 
@@ -91,6 +155,7 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
             columns={columns}
             data={filtered}
             getRowId={p => p.id}
+            pagination
             emptyTitle="No external purchases recorded in this period"
           />
         </div>

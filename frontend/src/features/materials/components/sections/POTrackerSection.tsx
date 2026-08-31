@@ -1,8 +1,9 @@
-import React, { useContext, useState } from "react";
+import { useContext, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Trash2, ShoppingCart, PackageCheck, RefreshCw, FileText, Plus } from "lucide-react";
 import { usePO, PurchaseOrder } from "@/features/purchasing";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
 import { ApiError } from "../../../../shared/api/client";
 import { T, F, MobileCtx } from "../theme";
@@ -13,6 +14,7 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { POVendorDetailModal } from "../modals/ReportModals";
 import { rupees } from "@/lib/domain/money";
 import { Money, EntityCode } from "@/shared/ui/domain";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 const TopDivider = () => (
   <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginBottom: 12 }}>
@@ -137,6 +139,7 @@ export function POTrackerSection({
   };
 
   const filtered = filter === "all" ? pos : pos.filter(p => p.status === filter);
+  const pag = usePagination(filtered, 9);
 
   const PILL_LABELS: { key: POFilter; label: string }[] = [
     { key: "all",      label: `All POs (${counts.all})` },
@@ -159,21 +162,74 @@ export function POTrackerSection({
         </Button>
       }
     >
-      <div style={{ marginBottom: 16 }}>
-        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search=""
+          onSearchChange={() => {}}
+          searchPlaceholder="Search purchase orders..."
+          filterGroups={[
+            {
+              id: "time",
+              label: "Time Period",
+              value: dateFilter.mode,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Time" },
+                { value: "day", label: "Specific Date" },
+                { value: "range", label: "Date Range" },
+                { value: "month", label: "Monthly" },
+                { value: "year", label: "Yearly" },
+              ],
+              onChange: (m: string) => {
+                const mode = m as DateFilterState["mode"];
+                if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+              },
+            },
+            {
+              id: "status",
+              label: "PO Status",
+              value: filter,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: `All POs (${counts.all})` },
+                { value: "pending", label: `Pending (${counts.pending})` },
+                { value: "approved", label: `Approved (${counts.approved})` },
+                { value: "received", label: `Received (${counts.received})` },
+                { value: "rejected", label: `Rejected (${counts.rejected})` },
+              ],
+              onChange: (f: string) => { setFilter(f as POFilter); pag.setPage(1); },
+            },
+          ]}
+          onResetAll={() => {
+            setFilter("all");
+            setDateFilter(DEFAULT_DATE_FILTER);
+            pag.setPage(1);
+          }}
+        />
       </div>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
-        {PILL_LABELS.map(p => (
-          <Button
-            key={p.key}
-            onClick={() => setFilter(p.key)}
-            variant={filter === p.key ? "primary" : "secondary"}
-            size="sm"
-            className="rounded-[10px]"
-          >
-            {p.label}
-          </Button>
-        ))}
+
+      {/* Desktop Filter Bar & Pills */}
+      <div className="hidden md:block mb-4">
+        <div style={{ marginBottom: 16 }}>
+          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+          {PILL_LABELS.map(p => (
+            <Button
+              key={p.key}
+              onClick={() => { setFilter(p.key); pag.setPage(1); }}
+              variant={filter === p.key ? "primary" : "secondary"}
+              size="sm"
+              className="rounded-[10px]"
+            >
+              {p.label}
+            </Button>
+          ))}
+        </div>
       </div>
 
       {isError ? (
@@ -185,210 +241,224 @@ export function POTrackerSection({
           <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No purchase orders in this category.</div>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
-          {filtered.map(po => {
-            const cfg = PO_STATUS_CFG[po.status];
-            return (
-              <motion.div
-                key={po.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                onClick={() => setSelectedPO(po)}
-                style={{
-                  background: "#FFFDF9",
-                  borderRadius: 12,
-                  border: `1.5px solid ${T.antiqueGold}`,
-                  boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
-                  overflow: "hidden",
-                  display: "flex",
-                  flexDirection: "column",
-                  height: "100%",
-                  position: "relative",
-                  cursor: "pointer",
-                }}
-              >
-                <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8 }} />
+        <div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+            {pag.pageItems.map(po => {
+              const cfg = PO_STATUS_CFG[po.status];
+              return (
+                <motion.div
+                  key={po.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  onClick={() => setSelectedPO(po)}
+                  style={{
+                    background: "#FFFDF9",
+                    borderRadius: 12,
+                    border: `1.5px solid ${T.antiqueGold}`,
+                    boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                    position: "relative",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div style={{ height: 4, background: T.royalBurgundy, width: "100%" }} />
 
-                <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", flex: 1 }}>
-                  <TopDivider />
+                  <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", flex: 1 }}>
+                    <TopDivider />
 
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 14 }}>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <EntityCode type="purchaseOrder" value={po.poNumber} size="sm" />
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <EntityCode type="purchaseOrder" value={po.poNumber} size="sm" />
+                      </div>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: "#F7F2EA", padding: "4px 10px", borderRadius: 8, whiteSpace: "nowrap", flexShrink: 0 }}>
+                        {new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                      </span>
                     </div>
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: "#F7F2EA", padding: "4px 10px", borderRadius: 8, whiteSpace: "nowrap", flexShrink: 0 }}>
-                      {new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-                    </span>
-                  </div>
 
-                  <div style={{ marginBottom: 16 }}>
-                    <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: T.luxuryBrown, letterSpacing: "-0.2px", marginBottom: 4 }}>
-                      {po.vendor}
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                      <span>{po.vendorCity}</span>
-                      {po.firmName && (
-                        <>
-                          <span style={{ color: T.borderDef }}>•</span>
-                          <span style={{ color: T.antiqueGold, fontWeight: 600 }}>{po.firmName}</span>
-                        </>
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: T.luxuryBrown, letterSpacing: "-0.2px", marginBottom: 4 }}>
+                        {po.vendor}
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                        <span>{po.vendorCity}</span>
+                        {po.firmName && (
+                          <>
+                            <span style={{ color: T.borderDef }}>•</span>
+                            <span style={{ color: T.antiqueGold, fontWeight: 600 }}>{po.firmName}</span>
+                          </>
+                        )}
+                      </div>
+                      {po.raisedBy && (
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>
+                          Created by <span style={{ color: T.royalBurgundy, fontWeight: 600 }}>{po.raisedBy}</span>
+                        </div>
+                      )}
+                      {po.status === "received" && po.receivedBy && (
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>
+                          Received by <span style={{ color: T.royalBurgundy, fontWeight: 600 }}>{po.receivedBy.id.substring(0, 8)} - {po.receivedBy.firstName} {po.receivedBy.lastName}</span>
+                        </div>
                       )}
                     </div>
-                    {po.raisedBy && (
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>
-                        Created by <span style={{ color: T.royalBurgundy, fontWeight: 600 }}>{po.raisedBy}</span>
-                      </div>
-                    )}
-                    {po.status === "received" && po.receivedBy && (
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>
-                        Received by <span style={{ color: T.royalBurgundy, fontWeight: 600 }}>{po.receivedBy.id.substring(0, 8)} - {po.receivedBy.firstName} {po.receivedBy.lastName}</span>
-                      </div>
-                    )}
-                  </div>
 
-                  <MiddleDivider />
+                    <MiddleDivider />
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18, background: "rgba(110,15,45,0.015)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: 12 }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
-                      {po.materials.map((m, mi) => {
-                        const mt = MAT_TAG[m.materialType] || MAT_TAG.Warp;
-                        return (
-                          <div key={`${m.materialType}-${m.subtype || m.description || "item"}`} style={{ display: "flex", flexDirection: "column", gap: 8, borderBottom: mi < po.materials.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", paddingBottom: mi < po.materials.length - 1 ? 12 : 0, paddingTop: mi > 0 ? 8 : 0 }}>
-                            <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center", marginTop: 1, flexShrink: 0 }}>
-                                {m.materialType}
-                              </span>
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                {(m.subtype || m.description) ? (
-                                  <>
-                                    <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-                                      {m.subtype || m.description}
-                                    </div>
-                                    {m.description && m.subtype && (
-                                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, marginTop: 1 }}>
-                                        {m.description}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18, background: "rgba(110,15,45,0.015)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: 12 }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
+                        {po.materials.map((m, mi) => {
+                          const mt = MAT_TAG[m.materialType] || MAT_TAG.Warp;
+                          return (
+                            <div key={`${m.materialType}-${m.subtype || m.description || "item"}`} style={{ display: "flex", flexDirection: "column", gap: 8, borderBottom: mi < po.materials.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", paddingBottom: mi < po.materials.length - 1 ? 12 : 0, paddingTop: mi > 0 ? 8 : 0 }}>
+                              <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center", marginTop: 1, flexShrink: 0 }}>
+                                  {m.materialType}
+                                </span>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  {(m.subtype || m.description) ? (
+                                    <>
+                                      <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+                                        {m.subtype || m.description}
                                       </div>
-                                    )}
-                                  </>
-                                ) : (
-                                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</div>
-                                )}
-                              </div>
-                              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5, marginTop: 1, whiteSpace: "nowrap" as const }}>
-                                {m.quantity} {m.unit}
-                                {m.pricePerUnit > 0 && <> · <Money value={rupees(m.pricePerUnit)} />/{m.unit}</>}
-                              </span>
-                            </div>
-
-                            <div style={{ paddingLeft: 60, marginTop: 4 }}>
-                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
-                                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Amount</span>
-                                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: m.invoiceAmount ? "#8B6018" : T.taupe }}>
-                                  {m.invoiceAmount ? <Money value={rupees(m.invoiceAmount)} /> : "Not yet invoiced"}
+                                      {m.description && m.subtype && (
+                                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, marginTop: 1 }}>
+                                          {m.description}
+                                        </div>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</div>
+                                  )}
+                                </div>
+                                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5, marginTop: 1, whiteSpace: "nowrap" as const }}>
+                                  {m.quantity} {m.unit}
+                                  {m.pricePerUnit > 0 && <> · <Money value={rupees(m.pricePerUnit)} />/{m.unit}</>}
                                 </span>
                               </div>
+
+                              <div style={{ paddingLeft: 60, marginTop: 4 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
+                                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Amount</span>
+                                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: m.invoiceAmount ? "#8B6018" : T.taupe }}>
+                                    {m.invoiceAmount ? <Money value={rupees(m.invoiceAmount)} /> : "Not yet invoiced"}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
+                          );
+                        })}
+                    </div>
+
+                    {(po.deliveryDate || po.notesVendor) && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 18, paddingLeft: 2 }}>
+                        {po.deliveryDate && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+                            <span style={{ color: T.taupe }}>Deadline:</span>
+                            <span style={{ fontWeight: 600, color: T.royalBurgundy }}>
+                              {new Date(po.deliveryDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                            </span>
                           </div>
-                        );
-                      })}
-                  </div>
-
-                  {(po.deliveryDate || po.notesVendor) && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 18, paddingLeft: 2 }}>
-                      {po.deliveryDate && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
-                          <span style={{ color: T.taupe }}>Deadline:</span>
-                          <span style={{ fontWeight: 600, color: T.royalBurgundy }}>
-                            {new Date(po.deliveryDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-                          </span>
-                        </div>
-                      )}
-                      {po.notesVendor && (
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic", lineHeight: 1.4 }}>
-                          "{po.notesVendor}"
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {(() => {
-                    const totalInvoiceAmount = po.materials.reduce((sum, m) => sum + (m.invoiceAmount || 0), 0);
-                    const hasAnyAmount = po.materials.some(m => !!m.invoiceAmount);
-                    if (!hasAnyAmount) return null;
-                    return (
-                      <div style={{ border: `1.5px solid ${T.borderGold}`, background: "linear-gradient(135deg, rgba(200,155,71,0.06) 0%, rgba(200,155,71,0.01) 100%)", borderRadius: 12, padding: "12px 14px", marginBottom: 18 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>Total Invoice Value</span>
-                          <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: "#8B6018" }}>
-                            <Money value={rupees(totalInvoiceAmount)} />
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  <div className="flex gap-2 mb-[18px] items-stretch w-full">
-                    <div style={{ flex: po.status === "received" && po.grnId ? "0 0 auto" : "1 1 0%", background: cfg.badgeBg, border: `1px solid ${cfg.border}22`, borderRadius: 10, padding: "8px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, minWidth: 0 }}>
-                      <div className="shrink-0 flex items-center">{cfg.icon}</div>
-                      <span className="truncate">{cfg.badge}</span>
-                    </div>
-                    {po.status === "received" && po.grnId && (
-                      <div className="flex-1 px-2.5 rounded-[10px] bg-[rgba(30,102,64,0.06)] border border-[rgba(30,102,64,0.18)] text-[11px] font-bold text-[#1E6640] flex items-center justify-center min-w-0">
-                        <span className="truncate">✓ {po.grnId}</span>
+                        )}
+                        {po.notesVendor && (
+                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic", lineHeight: 1.4 }}>
+                            "{po.notesVendor}"
+                          </div>
+                        )}
                       </div>
                     )}
-                  </div>
 
-                  <div className="flex flex-col gap-2 w-full mt-auto">
-                    {po.status === "approved" && (
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onNavigate?.("ReceiveStock", { poId: po.poNumber });
-                        }}
-                        variant="primary"
-                        size="sm"
-                        className="w-full px-3 text-[12px] whitespace-nowrap justify-center bg-[var(--bk-green-700,#1E6640)] hover:bg-[#154d30] flex items-center gap-1.5"
-                      >
-                        <PackageCheck size={14} /> Receive
-                      </Button>
-                    )}
-                    {po.status === "rejected" && (
-                      <Button
-                        onClick={(e) => { e.stopPropagation(); onCreatePO(); }}
-                        variant="secondary"
-                        size="sm"
-                        className="w-full px-3 text-[12px] whitespace-nowrap justify-center flex items-center gap-1.5"
-                      >
-                        <RefreshCw size={14} /> Recreate
-                      </Button>
-                    )}
-                    <div className="flex items-center gap-2 w-full">
-                      <Button
-                        onClick={(e) => { e.stopPropagation(); onViewPO(po); }}
-                        variant="secondary"
-                        size="sm"
-                        className="flex-1 px-3 text-[12px] whitespace-nowrap justify-center flex items-center gap-1.5"
-                      >
-                        <FileText size={14} /> View PO
-                      </Button>
-                      {po.status !== "received" && (
-                        <IconButton
-                          onClick={(e) => { e.stopPropagation(); setDeletingPO(po); }}
-                          icon={Trash2}
-                          label="Delete purchase order"
-                          variant="ghost"
-                          className="text-[#C0392B] bg-[rgba(192,57,43,0.06)]"
-                        />
+                    {(() => {
+                      const totalInvoiceAmount = po.materials.reduce((sum, m) => sum + (m.invoiceAmount || 0), 0);
+                      const hasAnyAmount = po.materials.some(m => !!m.invoiceAmount);
+                      if (!hasAnyAmount) return null;
+                      return (
+                        <div style={{ border: `1.5px solid ${T.borderGold}`, background: "linear-gradient(135deg, rgba(200,155,71,0.06) 0%, rgba(200,155,71,0.01) 100%)", borderRadius: 12, padding: "12px 14px", marginBottom: 18 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>Total Invoice Value</span>
+                            <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: "#8B6018" }}>
+                              <Money value={rupees(totalInvoiceAmount)} />
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    <div className="flex gap-2 mb-[18px] items-stretch w-full">
+                      <div style={{ flex: po.status === "received" && po.grnId ? "0 0 auto" : "1 1 0%", background: cfg.badgeBg, border: `1px solid ${cfg.border}22`, borderRadius: 10, padding: "8px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, minWidth: 0 }}>
+                        <div className="shrink-0 flex items-center">{cfg.icon}</div>
+                        <span className="truncate">{cfg.badge}</span>
+                      </div>
+                      {po.status === "received" && po.grnId && (
+                        <div className="flex-1 px-2.5 rounded-[10px] bg-[rgba(30,102,64,0.06)] border border-[rgba(30,102,64,0.18)] text-[11px] font-bold text-[#1E6640] flex items-center justify-center min-w-0">
+                          <span className="truncate">✓ {po.grnId}</span>
+                        </div>
                       )}
                     </div>
+
+                    <div className="flex flex-col gap-2 w-full mt-auto">
+                      {po.status === "approved" && (
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onNavigate?.("ReceiveStock", { poId: po.poNumber });
+                          }}
+                          variant="primary"
+                          size="sm"
+                          className="w-full px-3 text-[12px] whitespace-nowrap justify-center bg-[var(--bk-green-700,#1E6640)] hover:bg-[#154d30] flex items-center gap-1.5"
+                        >
+                          <PackageCheck size={14} /> Receive
+                        </Button>
+                      )}
+                      {po.status === "rejected" && (
+                        <Button
+                          onClick={(e) => { e.stopPropagation(); onCreatePO(); }}
+                          variant="secondary"
+                          size="sm"
+                          className="w-full px-3 text-[12px] whitespace-nowrap justify-center flex items-center gap-1.5"
+                        >
+                          <RefreshCw size={14} /> Recreate
+                        </Button>
+                      )}
+                      <div className="flex items-center gap-2 w-full">
+                        <Button
+                          onClick={(e) => { e.stopPropagation(); onViewPO(po); }}
+                          variant="secondary"
+                          size="sm"
+                          className="flex-1 px-3 text-[12px] whitespace-nowrap justify-center flex items-center gap-1.5"
+                        >
+                          <FileText size={14} /> View PO
+                        </Button>
+                        {po.status !== "received" && (
+                          <IconButton
+                            onClick={(e) => { e.stopPropagation(); setDeletingPO(po); }}
+                            icon={Trash2}
+                            label="Delete purchase order"
+                            variant="ghost"
+                            className="text-[#C0392B] bg-[rgba(192,57,43,0.06)]"
+                          />
+                        )}
+                      </div>
+                    </div>
+                    <BottomDivider />
                   </div>
-                  <BottomDivider />
-                </div>
-              </motion.div>
-            );
-          })}
+                </motion.div>
+              );
+            })}
+          </div>
+          <div style={{ marginTop: 24 }}>
+            <Pagination
+              page={pag.page}
+              pageCount={pag.pageCount}
+              total={pag.total}
+              pageSize={pag.pageSize}
+              start={pag.start}
+              onPageChange={pag.setPage}
+              onPageSizeChange={pag.setPageSize}
+              itemLabel="purchase orders"
+            />
+          </div>
         </div>
       )}
     </SectionCard>

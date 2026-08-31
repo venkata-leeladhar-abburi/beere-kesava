@@ -1,4 +1,3 @@
-import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Edit2 } from "lucide-react";
 import { FinishingStaffMember } from "@/features/finishing";

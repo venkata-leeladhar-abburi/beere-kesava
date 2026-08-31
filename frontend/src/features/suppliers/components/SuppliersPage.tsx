@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation } from "react-router";
 import { AnimatePresence } from "motion/react";
 import {
@@ -65,7 +65,7 @@ export function SuppliersPage() {
       const match = ratingFilter.match(/(\d)/);
       if (match) {
         const r = parseInt(match[1]);
-        mRating = Math.round(s.rating || 3) === r;
+        mRating = Math.round(s.rating || 0) === r;
       }
     }
 
@@ -139,8 +139,6 @@ export function SuppliersPage() {
             onAddSupplier={() => setShowAdd(true)}
           />
 
-          <div id="supp-analytics"><SupplierAnalytics /></div>
-
           <div id="supp-directory">
             <SupplierDirectorySection
             filtered={filtered}
@@ -154,6 +152,8 @@ export function SuppliersPage() {
             onViewSupplier={setSelected}
           />
           </div>
+
+          <div id="supp-analytics"><SupplierAnalytics /></div>
 
           <div id="supp-history"><ExternalPurchaseHistorySection purchases={purchases} /></div>
 

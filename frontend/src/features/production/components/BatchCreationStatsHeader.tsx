@@ -1,4 +1,3 @@
-import React from "react";
 import { T, F } from "./batch-creation/constants";
 import { BatchRecord, SareeRow } from "../contexts/BatchContext";
 import { Button } from "../../../shared/ui/primitives";

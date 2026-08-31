@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "motion/react";
 import { T, F, G, NUM, EASE } from "@/features/dashboards";
 import { AnimatedNumber, IcoFabricRoll, IcoQualityCheck, IcoInvoice, IcoResourceMgmt, IcoWarehouse } from "@/features/dashboards";

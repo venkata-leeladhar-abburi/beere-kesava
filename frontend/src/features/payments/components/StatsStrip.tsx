@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, FileText, IndianRupee, TrendingUp, Users } from "lucide-react";
@@ -35,14 +35,14 @@ export function StatsStrip() {
   const isLoading = weaverPaymentsLoading || vendorPaymentsLoading || supplierPaymentsLoading || invoicesLoading;
   const isError = weaverPaymentsError || vendorPaymentsError || supplierPaymentsError || invoicesError;
 
-  const paidToWeavers = (weaverPaymentsRes?.items ?? []).reduce((s, p) => s + Number(p.amountPaid), 0);
-  const totalVendorPayments = (vendorPaymentsRes?.items ?? []).reduce((s, p) => s + Number(p.amount), 0);
+  const paidToWeavers = (weaverPaymentsRes?.items ?? []).reduce((s, p) => s + (Number(p?.amountPaid) || 0), 0);
+  const totalVendorPayments = (vendorPaymentsRes?.items ?? []).reduce((s, p) => s + (Number(p?.amount) || 0), 0);
   const outstandingFromCustomers = (invoicesRes?.items ?? []).reduce(
-    (s, inv) => s + (Number(inv.total) - Number(inv.paid)), 0,
+    (s, inv) => s + ((Number(inv?.total) || 0) - (Number(inv?.paid) || 0)), 0,
   );
-  const collectedFromCustomers = (invoicesRes?.items ?? []).reduce((s, inv) => s + Number(inv.paid), 0);
+  const collectedFromCustomers = (invoicesRes?.items ?? []).reduce((s, inv) => s + (Number(inv?.paid) || 0), 0);
   const netIncome = useMemo(() => {
-    const supplierPaid = (supplierPaymentsRes?.items ?? []).reduce((s, p) => s + Number(p.amount), 0);
+    const supplierPaid = (supplierPaymentsRes?.items ?? []).reduce((s, p) => s + (Number(p?.amount) || 0), 0);
     return collectedFromCustomers - totalVendorPayments - supplierPaid - paidToWeavers;
   }, [supplierPaymentsRes, collectedFromCustomers, totalVendorPayments, paidToWeavers]);
 
@@ -54,7 +54,7 @@ export function StatsStrip() {
   const fmt = (n: number) => {
     if (isError) return "—";
     if (isLoading) return "…";
-    return moneyVisible ? formatMoney(rupees(n)) : "—";
+    return moneyVisible ? formatMoney(rupees(n), { compact: true }) : "—";
   };
 
   const STATS = [

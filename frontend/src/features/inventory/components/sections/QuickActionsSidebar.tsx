@@ -1,4 +1,3 @@
-import React from "react";
 import { ShoppingBag, Users, FileText } from "lucide-react";
 import { T, F, card } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";

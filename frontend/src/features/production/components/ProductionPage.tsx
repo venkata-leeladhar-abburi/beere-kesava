@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { useDesignLibrary } from "@/features/design-library";
 import { DesignCodeCard } from "@/features/design-library";

@@ -1,4 +1,3 @@
-import React from "react";
 import { Eye, MapPin } from "lucide-react";
 import { F, T } from "../../theme";
 import { Invoice } from "../../types";
@@ -7,6 +6,7 @@ import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees } from "@/lib/domain/money";
 import { EntityCode, Money } from "@/shared/ui/domain";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 interface WholesaleTableViewProps {
   view: "list" | "table";
@@ -16,65 +16,64 @@ interface WholesaleTableViewProps {
 }
 
 export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPayment }: WholesaleTableViewProps) {
+  const pag = usePagination(filtered, 10);
+
   if (view === "list") {
     return (
-      <div className="overflow-x-auto w-full mb-8">
+      <div className="w-full mb-8">
         <div className="min-w-[700px]" style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
-        {filtered.map((inv, i) => {
-          const rem = inv.total - inv.paid;
-          return (
-            <div
-              key={inv.id}
-              style={{
-                display: "flex", alignItems: "center", gap: 16, padding: "16px 20px",
-                borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderDef}` : "none",
-                borderLeft: `4px solid ${INV_STATUS_CFG[inv.status].color}`,
-                transition: "background-color 0.15s ease",
-              }}
-            >
-              <div style={{ flex: "0 0 130px" }}>
-                <EntityCode type="invoice" value={inv.code} size="sm" />
-              </div>
-              <div style={{ flex: "0 0 230px" }}>
-                <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{inv.customer}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
-                  <MapPin size={12} />{inv.city}
+          {filtered.map((inv, i) => {
+            const rem = inv.total - inv.paid;
+            return (
+              <div
+                key={inv.id}
+                style={{
+                  display: "flex", alignItems: "center", gap: 16, padding: "16px 20px",
+                  borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderDef}` : "none",
+                  borderLeft: `4px solid ${INV_STATUS_CFG[inv.status].color}`,
+                  transition: "background-color 0.15s ease",
+                }}
+              >
+                <div style={{ flex: "0 0 130px" }}>
+                  <EntityCode type="invoice" value={inv.code} size="sm" />
                 </div>
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Invoice Total</div>
-                <div style={{ fontSize: 14, color: T.luxuryBrown, fontWeight: 700 }}><Money value={rupees(inv.total)} /></div>
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Remaining Due</div>
-                <div style={{ fontSize: 13, color: rem === 0 ? T.green : T.crimson, fontWeight: 700 }}>
-                  {rem === 0 ? "Paid ✓" : <Money value={rupees(rem)} />}
+                <div style={{ flex: "0 0 230px" }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{inv.customer}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
+                    <MapPin size={12} />{inv.city}
+                  </div>
                 </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Invoice Total</div>
+                  <div style={{ fontSize: 14, color: T.luxuryBrown, fontWeight: 700 }}><Money value={rupees(inv.total)} /></div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Remaining Due</div>
+                  <div style={{ fontSize: 13, color: rem === 0 ? T.green : T.crimson, fontWeight: 700 }}>
+                    {rem === 0 ? "Paid ✓" : <Money value={rupees(rem)} />}
+                  </div>
+                </div>
+                <div style={{ flex: "0 0 130px" }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Due Date</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 13, color: inv.status === "Overdue" ? T.crimson : T.luxuryBrown, fontWeight: inv.status === "Overdue" ? 700 : 500 }}>{inv.dueDate}</div>
+                </div>
+                <div style={{ flex: "0 0 150px" }}>
+                  <InvBadge status={inv.status} />
+                </div>
+                <Button variant="secondary" size="sm" onClick={() => setViewInvoice(inv)}
+                  className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
+                  View
+                </Button>
               </div>
-              <div style={{ flex: "0 0 130px" }}>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Due Date</div>
-                <div style={{ fontFamily: F.ui, fontSize: 13, color: inv.status === "Overdue" ? T.crimson : T.luxuryBrown, fontWeight: inv.status === "Overdue" ? 700 : 500 }}>{inv.dueDate}</div>
-              </div>
-              <div style={{ flex: "0 0 150px" }}>
-                <InvBadge status={inv.status} />
-              </div>
-              <Button variant="secondary" size="sm" onClick={() => setViewInvoice(inv)}
-                className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
-                View
-              </Button>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-    </div>
     );
   }
 
   const columns: ColumnDef<Invoice>[] = [
     {
-      // Width comes from the cell's own class rather than ColumnDef.width —
-      // the two were duplicating the same 320px and the column sizes to its
-      // content either way.
       id: "id", header: "Invoice ID", accessor: inv => inv.code,
       cell: (_v, inv) => (
         <div className="w-[320px] min-w-[320px] whitespace-nowrap">
@@ -153,14 +152,15 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
 
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
-      <div style={{ overflowX: "auto" }} className="w-full">
+      <div className="w-full">
         <div className="min-w-[1650px]">
           <DataTable
             responsive={false}
             columns={columns}
-            data={filtered}
+            data={pag.pageItems}
             getRowId={inv => inv.id}
             emptyTitle="No invoices match your filters"
+            pagination={false}
           />
         </div>
       </div>
@@ -179,6 +179,18 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
             <Money value={rupees(filtered.reduce((s, inv) => s + (inv.total - inv.paid), 0))} />
           </span>
         </div>
+      </div>
+      <div className="p-4 border-t border-[var(--border-default)] bg-white">
+        <Pagination
+          page={pag.page}
+          pageCount={pag.pageCount}
+          total={pag.total}
+          pageSize={pag.pageSize}
+          start={pag.start}
+          onPageChange={pag.setPage}
+          onPageSizeChange={pag.setPageSize}
+          itemLabel="invoices"
+        />
       </div>
     </div>
   );

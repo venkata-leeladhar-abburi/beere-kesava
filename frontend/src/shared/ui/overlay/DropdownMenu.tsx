@@ -13,7 +13,23 @@ import * as RadixDropdown from "@radix-ui/react-dropdown-menu";
 import { ChevronRight, Check, Circle } from "lucide-react";
 import { cn } from "../utils";
 
-export const DropdownMenu = RadixDropdown.Root;
+/**
+ * Root — defaults to `modal={false}`.
+ *
+ * Radix's default (`modal`) mounts react-remove-scroll, which locks the page
+ * by setting `body[data-scroll-locked] { overflow: hidden !important;
+ * position: relative !important }`. In this app the body is the element that
+ * carries the page scroll (`html, body { overflow-x: clip }` in
+ * styles/tokens.css), so that lock collapses the scroll offset the moment a
+ * menu opens: every sticky bar and the menu itself jump upward by scrollY and
+ * the menu lands off-screen above the viewport — which reads as "the dropdown
+ * disappeared / went behind the page" when opened from a scrolled page.
+ * Non-modal menus keep outside-click-to-close, Escape, roving focus and
+ * type-ahead, and never touch the body. Pass `modal` explicitly to override.
+ */
+export function DropdownMenu({ modal = false, ...props }: React.ComponentProps<typeof RadixDropdown.Root>) {
+  return <RadixDropdown.Root modal={modal} {...props} />;
+}
 export const DropdownMenuTrigger = RadixDropdown.Trigger;
 export const DropdownMenuGroup = RadixDropdown.Group;
 export const DropdownMenuRadioGroup = RadixDropdown.RadioGroup;

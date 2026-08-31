@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { useBulkOrders } from "../contexts/BulkOrderContext";

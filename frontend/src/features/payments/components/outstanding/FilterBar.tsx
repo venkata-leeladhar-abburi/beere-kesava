@@ -1,9 +1,9 @@
-import React from "react";
 import { Package } from "lucide-react";
 import { T, F } from "../../theme";
 import { AGE_BUCKETS, Card } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 // ── Filter bar ───────────────────────────────────────────────────────────────
 export function FilterBar({
@@ -14,28 +14,59 @@ export function FilterBar({
   count: number;
 }) {
   return (
-    <Card pad={16}>
-      <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-        <div className="flex-1 min-w-[260px]">
-          <SearchInput aria-label="Search saree code, weaver, loom, supplier, invoice, saree type" value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search saree code, weaver, loom, supplier, invoice, saree type…" />
-        </div>
-
-        <div style={{ display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
-          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", fontWeight: 700 }}>Ageing</span>
-          {(["all", ...AGE_BUCKETS] as AgeKey[]).map(k => (
-            <Button key={k} onClick={() => setAgeFilter(k)} size="sm" variant={ageFilter === k ? "primary" : "tertiary"}
-              className={ageFilter === k ? "rounded-full bg-[#6E0F2D] text-[#FFFDF9] border-none" : "rounded-full bg-transparent text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.18)]"}>
-              {k === "all" ? "All ages" : `${k} d`}
-            </Button>
-          ))}
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", background: T.warmCream, borderRadius: 10, padding: "8px 14px" }}>
-          <Package size={15} color={T.taupe} />
-          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 600 }}>{count} outstanding</span>
-        </div>
+    <>
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search saree code, weaver, loom, supplier..."
+          filterGroups={[
+            {
+              id: "age",
+              label: "Ageing",
+              value: ageFilter,
+              defaultValue: "all",
+              options: (["all", ...AGE_BUCKETS] as AgeKey[]).map(k => ({
+                value: k,
+                label: k === "all" ? "All ages" : `${k} days+`,
+              })),
+              onChange: v => setAgeFilter(v as AgeKey),
+            },
+          ]}
+          onResetAll={() => {
+            setSearch("");
+            setAgeFilter("all");
+          }}
+        />
       </div>
-    </Card>
+
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:block">
+        <Card pad={16}>
+          <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+            <div className="flex-1 min-w-[260px]">
+              <SearchInput aria-label="Search saree code, weaver, loom, supplier, invoice, saree type" value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Search saree code, weaver, loom, supplier, invoice, saree type…" />
+            </div>
+
+            <div style={{ display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", fontWeight: 700 }}>Ageing</span>
+              {(["all", ...AGE_BUCKETS] as AgeKey[]).map(k => (
+                <Button key={k} onClick={() => setAgeFilter(k)} size="sm" variant={ageFilter === k ? "primary" : "tertiary"}
+                  className={ageFilter === k ? "rounded-full bg-[#6E0F2D] text-[#FFFDF9] border-none" : "rounded-full bg-transparent text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.18)]"}>
+                  {k === "all" ? "All ages" : `${k} d`}
+                </Button>
+              ))}
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", background: T.warmCream, borderRadius: 10, padding: "8px 14px" }}>
+              <Package size={15} color={T.taupe} />
+              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 600 }}>{count} outstanding</span>
+            </div>
+          </div>
+        </Card>
+      </div>
+    </>
   );
 }

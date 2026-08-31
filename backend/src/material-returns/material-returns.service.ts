@@ -2,16 +2,20 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { StorageService } from "../common/storage/storage.service";
-import { fromGrams, toGrams } from "../common/weight-units.util";
+import { deductStock, restoreStock } from "../common/raw-material-stock.util";
+import { toGrams } from "../common/weight-units.util";
 import {
   JariGrade,
   MaterialIssueStatus,
   MaterialReturnStatus,
   MaterialType,
+  NotificationTargetType,
   Prisma,
+  SignatureMethod,
   WarpSubtype,
 } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment, nameSegment } from "../id-generator/id-generator.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateMaterialReturnDto } from "./dto/create-material-return.dto";
 import { GetOutstandingQueryDto } from "./dto/get-outstanding-query.dto";
@@ -27,13 +31,40 @@ export interface OutstandingGroup {
   jariType: string | null;
   jariGrade: string | null;
   jariColor: string | null;
+  // Provenance of the material still outstanding. Issues carry a GRN link
+  // (grnBatchId = the parent receipt, grnItem.itemCode = the exact received
+  // line), so an outstanding balance can be traced back to the stock it came
+  // from. Null for rows issued before GRN linkage existed.
+  grnBatchId: string | null;
+  grnItemCode: string | null;
+  // Human label for the received line: GrnItem.description, falling back to
+  // its name. Lets the panel show "Resham Warp · Gold 2-ply" instead of just
+  // a material type.
+  description: string | null;
+  // The unit the material was issued in ("KG", "REELS", …). Grams are the
+  // arithmetic currency; this is what the quantity should be displayed as.
+  unit: string;
+  // Every material-issue record that contributed to this line, so the panel
+  // can show which handover(s) the outstanding weight came from.
+  issueIds: string[];
   issuedGrams: number;
   returnedGrams: number;
   outstandingGrams: number;
 }
 
-function groupKey(item: { materialType: string; warpSubtype: string | null; jariType: string | null; jariGrade: string | null; jariColor: string | null }): string {
+// Identity of a material *variant* — type plus whatever sub-attributes
+// distinguish two lines of that type. Returns are recorded at this
+// granularity (MaterialReturnItem carries no GRN link), so it is the level
+// at which returned weight can be matched back to issued weight.
+function variantKey(item: { materialType: string; warpSubtype: string | null; jariType: string | null; jariGrade: string | null; jariColor: string | null }): string {
   return [item.materialType, item.warpSubtype, item.jariType, item.jariGrade, item.jariColor].join("|");
+}
+
+// Identity of a specific issued line: the variant plus the GRN line it was
+// drawn from. Finer than variantKey, so one variant can span several GRN
+// receipts and each keeps its own provenance.
+function grnLineKey(item: { materialType: string; warpSubtype: string | null; jariType: string | null; jariGrade: string | null; jariColor: string | null; grnBatchId: string | null; grnItemId: string | null }): string {
+  return [variantKey(item), item.grnBatchId ?? "", item.grnItemId ?? ""].join("#");
 }
 
 @Injectable()
@@ -43,11 +74,18 @@ export class MaterialReturnsService {
     private readonly idGenerator: IdGeneratorService,
     private readonly auditLog: AuditLogService,
     private readonly storage: StorageService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateMaterialReturnDto) {
     if ((dto.weaverId && dto.factoryLoomId) || (!dto.weaverId && !dto.factoryLoomId)) {
       throw new BadRequestException("Provide exactly one of weaverId or factoryLoomId");
+    }
+
+    // A deduction with no stated reason leaves whoever pays the weaver out
+    // unable to explain why the amount was withheld.
+    if (dto.deductionAmount && dto.deductionAmount > 0 && !dto.deductionReason?.trim()) {
+      throw new BadRequestException("deductionReason is required when deductionAmount is set");
     }
 
     // Jari is always counted in Reels/Buns, never a weight unit — same rule
@@ -88,36 +126,43 @@ export class MaterialReturnsService {
       : loom!.code ?? businessSegment(loom!.loomNumber, "Loom");
     const id = await this.idGenerator.nextScoped(MRR_ID_PREFIX_BASE, parentCode);
 
-    const record = await this.prisma.materialReturnRecord.create({
-      data: {
-        id,
-        weaverId: dto.weaverId,
-        factoryLoomId: dto.factoryLoomId,
-        loomNumber: dto.loomNumber ? String(dto.loomNumber) : undefined,
-        batchId: dto.batchId,
-        receivedById: dto.receivedById,
-        signatureMethod: dto.signatureMethod,
-        deductionAmount: dto.deductionAmount,
-        deductionReason: dto.deductionReason,
-        notes: dto.notes,
-        items: { create: dto.items },
-      },
-      include: includeItems,
+    // Record and stock restoration are one unit of work — a failure between
+    // them used to leave a return recorded whose material never came back.
+    const record = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.materialReturnRecord.create({
+        data: {
+          id,
+          weaverId: dto.weaverId,
+          factoryLoomId: dto.factoryLoomId,
+          loomNumber: dto.loomNumber ? String(dto.loomNumber) : undefined,
+          batchId: dto.batchId,
+          receivedById: dto.receivedById,
+          signatureMethod: dto.signatureMethod,
+          deductionAmount: dto.deductionAmount,
+          deductionReason: dto.deductionReason,
+          notes: dto.notes,
+          items: { create: dto.items },
+        },
+        include: includeItems,
+      });
+
+      // Restore returned material quantities back into RawMaterialStock —
+      // the inverse of MaterialIssuesService.create's deduction.
+      await restoreStock(tx, dto.items);
+      return created;
     });
 
-    // Restore returned material quantities back into RawMaterialStock — the
-    // inverse of MaterialIssuesService.create's deduction.
-    for (const item of dto.items) {
-      const stock = await this.prisma.rawMaterialStock.findFirst({
-        where: { materialType: item.materialType },
-      });
-      if (stock) {
-        const stockGrams = toGrams(Number(stock.currentStock), stock.unit);
-        const returnedGrams = toGrams(Number(item.quantity), item.unit);
-        const newStock = fromGrams(stockGrams + returnedGrams, stock.unit);
-        await this.prisma.rawMaterialStock.update({
-          where: { id: stock.id },
-          data: { currentStock: newStock },
+    // Remote signature: no phone/SMS involved — the weaver approves this
+    // in-app, on their own portal's Return Materials page. Push them an
+    // in-app notification pointing at the record instead of texting anyone.
+    if (dto.signatureMethod === SignatureMethod.REMOTE && dto.weaverId) {
+      const linkedUser = await this.prisma.user.findUnique({ where: { linkedWeaverId: dto.weaverId } });
+      if (linkedUser) {
+        await this.notifications.create({
+          targetType: NotificationTargetType.USER,
+          userId: linkedUser.id,
+          type: "material_signature_request",
+          payload: { recordId: record.id, recordKind: "RETURN" },
         });
       }
     }
@@ -223,22 +268,12 @@ export class MaterialReturnsService {
   async remove(id: string) {
     const record = await this.findOne(id);
 
-    for (const item of record.items) {
-      const stock = await this.prisma.rawMaterialStock.findFirst({
-        where: { materialType: item.materialType },
-      });
-      if (stock) {
-        const stockGrams = toGrams(Number(stock.currentStock), stock.unit);
-        const removedGrams = toGrams(Number(item.quantity), item.unit);
-        const newStock = fromGrams(Math.max(0, stockGrams - removedGrams), stock.unit);
-        await this.prisma.rawMaterialStock.update({
-          where: { id: stock.id },
-          data: { currentStock: newStock },
-        });
-      }
-    }
-
-    await this.prisma.materialReturnRecord.delete({ where: { id } });
+    // Reverse and delete together, so a failed delete can't take the material
+    // back out of stock twice.
+    await this.prisma.$transaction(async (tx) => {
+      await deductStock(tx, record.items);
+      await tx.materialReturnRecord.delete({ where: { id } });
+    });
   }
 
   // Issued (non-cancelled) minus already-approved-returned, grouped by
@@ -257,27 +292,40 @@ export class MaterialReturnsService {
     }
 
     const recipientWhere = effectiveWeaverId ? { weaverId: effectiveWeaverId } : { factoryLoomId: effectiveFactoryLoomId };
+    // Loom/batch narrowing is applied to issues and returns alike, so a
+    // scoped balance stays "issued here minus returned here". Scoping only
+    // one side would make a batch look permanently outstanding (its returns
+    // filtered out) or over-returned.
+    const scopeWhere = {
+      ...(query.loomNumber ? { loomNumber: query.loomNumber } : {}),
+      ...(query.batchId ? { batchId: query.batchId } : {}),
+    };
 
     const [issues, returns] = await Promise.all([
       this.prisma.materialIssueRecord.findMany({
-        where: { ...recipientWhere, status: { not: MaterialIssueStatus.CANCELLED } },
-        include: includeItems,
+        where: { ...recipientWhere, ...scopeWhere, status: { not: MaterialIssueStatus.CANCELLED } },
+        include: { items: { include: { grnItem: true } } },
+        orderBy: { issuedAt: "asc" },
       }),
       this.prisma.materialReturnRecord.findMany({
-        where: { ...recipientWhere, status: MaterialReturnStatus.APPROVED },
+        where: { ...recipientWhere, ...scopeWhere, status: MaterialReturnStatus.APPROVED },
         include: includeItems,
       }),
     ]);
 
+    // Pass 1 — issued weight, at GRN-line granularity so provenance survives.
     const groups = new Map<string, OutstandingGroup>();
 
     for (const issue of issues) {
       for (const item of issue.items) {
-        const key = groupKey(item);
+        const key = grnLineKey(item);
         const grams = toGrams(Number(item.quantity), item.unit);
         const existing = groups.get(key);
         if (existing) {
           existing.issuedGrams += grams;
+          if (!existing.issueIds.includes(issue.id)) {
+            existing.issueIds.push(issue.id);
+          }
         } else {
           groups.set(key, {
             materialType: item.materialType,
@@ -285,6 +333,11 @@ export class MaterialReturnsService {
             jariType: item.jariType,
             jariGrade: item.jariGrade,
             jariColor: item.jariColor,
+            grnBatchId: item.grnBatchId,
+            grnItemCode: item.grnItem?.itemCode ?? null,
+            description: item.grnItem?.description ?? item.grnItem?.name ?? null,
+            unit: item.unit,
+            issueIds: [issue.id],
             issuedGrams: grams,
             returnedGrams: 0,
             outstandingGrams: 0,
@@ -293,24 +346,40 @@ export class MaterialReturnsService {
       }
     }
 
+    // Pass 2 — returned weight. MaterialReturnItem carries no GRN link, so a
+    // return can only be matched to the *variant* it belongs to, not to the
+    // exact receipt it originally came from. Total returned per variant is
+    // therefore drawn down across that variant's GRN lines, oldest-issued
+    // first (`issues` is ordered by issuedAt), which is the same FIFO
+    // convention createAutoReturnForReceipt uses. Any excess a variant's
+    // lines cannot absorb — a return logged with no matching issue, or more
+    // returned than was ever issued — has no outstanding weight behind it by
+    // definition, and drops out with the `outstandingGrams > 0` filter below.
+    // Returns are now recorded at the material-type level only (no subtype/
+    // color selection on the Return Materials form), so they can only be
+    // matched back to issued lines by materialType — pooled across every
+    // variant of that type, oldest-issued line drawn down first.
+    const returnedByType = new Map<string, number>();
     for (const ret of returns) {
       for (const item of ret.items) {
-        const key = groupKey(item);
+        const key = item.materialType;
         const grams = toGrams(Number(item.quantity), item.unit);
-        const existing = groups.get(key);
-        if (existing) {
-          existing.returnedGrams += grams;
-        } else {
-          groups.set(key, {
-            materialType: item.materialType,
-            warpSubtype: item.warpSubtype,
-            jariType: item.jariType,
-            jariGrade: item.jariGrade,
-            jariColor: item.jariColor,
-            issuedGrams: 0,
-            returnedGrams: grams,
-            outstandingGrams: 0,
-          });
+        returnedByType.set(key, (returnedByType.get(key) ?? 0) + grams);
+      }
+    }
+
+    for (const [materialType, totalReturned] of returnedByType) {
+      let remaining = totalReturned;
+      const lines = Array.from(groups.values()).filter((g) => g.materialType === materialType);
+
+      for (const line of lines) {
+        if (remaining <= 0) {
+          break;
+        }
+        const draw = Math.min(line.issuedGrams - line.returnedGrams, remaining);
+        if (draw > 0) {
+          line.returnedGrams += draw;
+          remaining -= draw;
         }
       }
     }

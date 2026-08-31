@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "motion/react";
 
 import { MAIN_NAV_H, SUB_NAV_H, SECTION_NAV_H, MOBILE_NAV_H } from "./section-navigator-data";
@@ -39,11 +39,34 @@ export function SectionNavigator({
   inline?: boolean;
 }) {
   const [active, setActive] = useState(sections[0]?.id ?? "");
+  // Value is unused — only the setter drives the overflow effect below.
+  const [, setHasScrollbar] = useState(false);
   const pillRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const stripRef = useRef<HTMLDivElement | null>(null);
 
   const horizontalScrollRafRef = useRef<number>(0);
   const sectionIds = useMemo(() => sections.map(s => s.id).join("|"), [sections]);
+
+  useEffect(() => {
+    const checkScrollbar = () => {
+      if (stripRef.current) {
+        const isOverflowing = stripRef.current.scrollWidth > stripRef.current.clientWidth + 1;
+        setHasScrollbar(isOverflowing);
+      }
+    };
+
+    checkScrollbar();
+    window.addEventListener("resize", checkScrollbar);
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && stripRef.current) {
+      observer = new ResizeObserver(checkScrollbar);
+      observer.observe(stripRef.current);
+    }
+    return () => {
+      window.removeEventListener("resize", checkScrollbar);
+      if (observer) observer.disconnect();
+    };
+  }, [sectionIds]);
 
   const smoothScrollHorizontal = (container: HTMLElement, targetX: number) => {
     if (horizontalScrollRafRef.current) cancelAnimationFrame(horizontalScrollRafRef.current);
@@ -212,8 +235,6 @@ export function SectionNavigator({
       } catch {
         window.scrollTo(0, targetY);
       }
-      document.documentElement.scrollTop = targetY;
-      document.body.scrollTop = targetY;
       return;
     }
 
@@ -330,10 +351,10 @@ export function SectionNavigator({
         transition: "top 0.32s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
-      <span style={{ flexShrink: 0, fontFamily, fontWeight: 600, fontSize: 12, color: mutedColor, letterSpacing: "1.3px", textTransform: "uppercase" as const }}>
+      <span style={{ flexShrink: 0, fontFamily, fontWeight: 600, fontSize: 12, color: mutedColor, letterSpacing: "1.3px", textTransform: "uppercase" as const, alignSelf: "center", display: "flex", alignItems: "center" }}>
         Jump to
       </span>
-      <div ref={stripRef} className="section-nav-scroll" style={{ position: "relative", display: "flex", alignItems: "center", gap: 24, overflowX: "auto", minWidth: 0, flex: 1, paddingTop: 6, paddingBottom: 6 }}>
+      <div ref={stripRef} className="section-nav-scroll" style={{ position: "relative", display: "flex", alignItems: "center", gap: 24, overflowX: "auto", minWidth: 0, flex: 1, paddingTop: 10, paddingBottom: 10, marginTop: 3, transition: "all 0.2s" }}>
         {sections.map(s => {
           const isActive = active === s.id;
           return (

@@ -52,10 +52,11 @@ export default tseslint.config(
   },
 
   {
-    // Root-level config/one-off files sit outside tsconfig.eslint.json's
-    // project, so type-aware parsing cannot resolve them. Lint them without
-    // type information instead of leaving them as parse errors.
-    files: ["*.mjs", "*.js", "_*.ts"],
+    // Config/one-off files sit outside tsconfig.eslint.json's project, so
+    // type-aware parsing cannot resolve them. Lint them without type
+    // information instead of leaving them as parse errors — an unmatched
+    // file here is a file nobody is linting at all.
+    files: ["**/*.mjs", "**/*.js", "_*.ts", "test-db.ts"],
     languageOptions: {
       parserOptions: { project: null, projectService: false },
     },
@@ -66,6 +67,9 @@ export default tseslint.config(
       // prototypes (pg's Pool.query) to inject failures — that cannot be done
       // without `any`, and none of it ships.
       "@typescript-eslint/no-explicit-any": "off",
+      // Plain .js in this package is CommonJS (no "type": "module"), so
+      // require() is the correct form, not a lapse.
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
 

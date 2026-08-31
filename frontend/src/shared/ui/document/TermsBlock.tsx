@@ -2,7 +2,6 @@
  * TermsBlock — design-system/07-DOCUMENTS.md Part G.1 ⑧.
  * Bank details and/or terms, each in its own card.
  */
-import * as React from "react";
 
 export interface BankDetails {
   accountNo?: string;

@@ -1,4 +1,3 @@
-import React from "react";
 import { AlertTriangle, ArrowUpRight, BarChart2, Check, ChevronRight, Package, RotateCcw, Send, ShoppingBag } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../../shared/api/sales";
@@ -125,7 +124,7 @@ export function HomeSection({
           {/* Left */}
           <div>
             {/* New Sale CTA */}
-            <div className="flex flex-col md:flex-row items-center text-center md:text-left gap-4 md:gap-[22px]" style={{ background: "#FFF", border: `2px solid ${C.burg}`, borderRadius: 20, padding: "28px 30px", marginBottom: 28, boxShadow: "0 4px 24px rgba(110,15,45,0.10)" }}>
+            <div className="flex flex-col md:flex-row items-center text-center md:text-left gap-4 md:gap-[22px]" style={{ background: "#FFF", border: "1px solid rgba(110,15,45,0.08)", borderRadius: 20, padding: "28px 30px", marginBottom: 28, boxShadow: "0 4px 24px rgba(110,15,45,0.06)" }}>
               <div style={{ width: 72, height: 72, borderRadius: "50%", background: C.gold, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 16px rgba(200,155,71,0.35)" }}>
                 <ShoppingBag size={34} color={C.dark} />
               </div>
@@ -140,7 +139,7 @@ export function HomeSection({
 
             {/* Recent Sales */}
             <DSH label="Recent Sales — Today" link="View All →" onLink={() => setActive("reports")} />
-            <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${C.bdr}`, overflow: isTablet ? "auto" : "hidden", marginBottom: 32 }}>
+            <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid rgba(110,15,45,0.18)`, boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)", overflow: isTablet ? "auto" : "hidden", marginBottom: 32 }}>
               <div role="table" aria-label="Recent Sales — Today" className={isTablet ? "min-w-[640px]" : undefined}>
                 <div role="rowgroup">
                   <div role="row" style={{ display: "grid", gridTemplateColumns: `50px 1.2fr 1fr 1.2fr 100px${canSeePrices ? " 120px" : ""}`, padding: "16px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FDFBF7" }}>
@@ -160,7 +159,7 @@ export function HomeSection({
                 ) : (
                   <div role="rowgroup">
                     {recentSales.map((s, i) => (
-                      <div key={s.id} role="row" style={{ display: "grid", gridTemplateColumns: `50px 1.2fr 1fr 1.2fr 100px${canSeePrices ? " 120px" : ""}`, padding: "16px 24px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
+                      <div key={s.id} role="row" style={{ display: "grid", gridTemplateColumns: `50px 1.2fr 1fr 1.2fr 100px${canSeePrices ? " 120px" : ""}`, padding: "16px 24px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(110,15,45,0.08)` : "none", alignItems: "center" }}>
                         <div role="cell" style={{ fontFamily: F.m, fontSize: 13, color: C.muted, fontWeight: 600 }}>{String(i + 1).padStart(2, '0')}</div>
                         <div role="cell" style={{ display: "flex", alignItems: "center" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -181,7 +180,7 @@ export function HomeSection({
 
             {/* Returns Today */}
             <DSH label="Returns Today" />
-            <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 12 }} className="p-4 sm:p-[22px_26px]">
+            <div style={{ background: "#FFF", border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 16, boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)" }} className="p-4 sm:p-[22px_26px]">
               {latestReturn ? (
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
                   <div className="flex items-center gap-4">

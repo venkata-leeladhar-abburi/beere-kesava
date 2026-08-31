@@ -1,4 +1,3 @@
-import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { AlertTriangle, Send, X } from "lucide-react";
 import { C, F } from "../theme";

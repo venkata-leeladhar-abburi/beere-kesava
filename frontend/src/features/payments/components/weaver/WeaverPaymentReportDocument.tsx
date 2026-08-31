@@ -7,7 +7,6 @@
  * (useDocument().download) rather than a client-side PDF library, matching
  * how every other "Download …" report in this codebase already works.
  */
-import * as React from "react";
 import { DocumentPage } from "../../../../shared/ui/document/DocumentPage";
 import { Letterhead } from "../../../../shared/ui/document/Letterhead";
 import { formatMoney, rupees } from "@/lib/domain/money";

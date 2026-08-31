@@ -1,5 +1,5 @@
 // ── Full-page weaver profile drawer (overview / batches / dispatches / payments / materials tabs) ─
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ChevronLeft as ChevronLeftIcon, Layers3, MapPin, Phone, Camera, FileText, Save, ClipboardList,
@@ -12,22 +12,36 @@ import { WEAVERS } from "../data";
 import { Avatar, SectionCard } from "../common/primitives";
 import { WeaverSareesSection } from "../WeaverSareesSection";
 import { useWeaverPayments } from "../../contexts/WeaverPaymentsContext";
-import { useMaterialIssue } from "@/features/materials";
+import { useMaterialIssue, useMaterialReturn } from "@/features/materials";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { useScrollTopOnView } from "@/shared/ui/ScrollToTop";
+import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 import { useBatches } from "@/features/production";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { useDesignLibrary, DispatchRecord } from "@/features/design-library";
 import { DispatchDetailsModal } from "@/features/production";
 import { BatchesTab, DispatchesTab, PaymentsTab, MaterialsTab } from "./weaverDrawer/WeaverDrawerTabs";
 import { EntityCode } from "../../../../shared/ui/domain";
+import { SUB_NAV_H, MOBILE_NAV_H } from "@/shared/ui/section-navigator-data";
+import { useResponsive } from "@/hooks/useResponsive";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { weaversApi, type UpdateWeaverPayload } from "../../../../shared/api/weavers";
+import {
+  weaversApi,
+  WEAVERS_LIST_QUERY_KEY,
+  type BackendWeaver,
+  type UpdateWeaverPayload,
+} from "../../../../shared/api/weavers";
 import { toast } from "sonner";
 import { Button, Field, Input, NumberInput } from "../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { recordView, useConfirm } from "../../../../shared/ui/overlay";
+import {
+  invalidateQueriesMentioning,
+  patchEnvelopeItems,
+  removeFromEnvelopeWhere,
+} from "../../../../lib/cacheUpdates";
 
 // The runtime weaver object (built in WeaversPage.tsx from the real backend
 // BackendWeaver) carries a few extra bank/contact fields that WeaverCardEntry
@@ -60,12 +74,9 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
 
   const updateWeaver = useMutation({
     mutationFn: (data: UpdateWeaverPayload) => weaversApi.update(weaver!.id, data),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["weavers-directory"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-table-roster"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-card-roster"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-page-roster"] });
-      void queryClient.invalidateQueries({ queryKey: ["weaver-nav"] });
+    onSuccess: (updated) => {
+      patchEnvelopeItems<BackendWeaver>(queryClient, WEAVERS_LIST_QUERY_KEY, w => w.id === updated.id, updated);
+      invalidateQueriesMentioning(queryClient, "weaver");
       setMode("view");
       toast.success("Weaver profile updated");
     },
@@ -77,11 +88,8 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
   const deleteWeaver = useMutation({
     mutationFn: () => weaversApi.remove(weaver!.id),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["weavers-directory"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-table-roster"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-card-roster"] });
-      void queryClient.invalidateQueries({ queryKey: ["weavers-page-roster"] });
-      void queryClient.invalidateQueries({ queryKey: ["weaver-nav"] });
+      removeFromEnvelopeWhere<BackendWeaver>(queryClient, WEAVERS_LIST_QUERY_KEY, w => w.id === weaver!.id);
+      invalidateQueriesMentioning(queryClient, "weaver");
       toast.success("Weaver deleted");
       onClose();
     },
@@ -104,9 +112,11 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
       ifsc: editForm.ifsc,
     });
   };
+  const { isMobile } = useResponsive();
   const [batchDateFilter, setBatchDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [paymentDateFilter, setPaymentDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [dispatchDateFilter, setDispatchDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [materialDateFilter, setMaterialDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [zoomImage, setZoomImage] = useState<{ url: string; label: string } | null>(null);
 
   // Escape closes the image zoom overlay — Part C.3's focus contract applies
@@ -120,6 +130,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
 
   const { getPaymentsForWeaver } = useWeaverPayments();
   const { getRecordsForWeaver, getMaterialSummaryByBatch } = useMaterialIssue();
+  const { getRecordsForWeaver: getReturnRecordsForWeaver } = useMaterialReturn();
   const { batches } = useBatches();
   const { dispatches } = useDesignLibrary();
   const [viewDispatches, setViewDispatches] = useState<{ weaverName: string; records: DispatchRecord[] } | null>(null);
@@ -133,11 +144,25 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
     recordView({ key: `weaver:${weaver.id}`, label: weaver.name, path: "/admin/weavers", kind: "Weaver" });
   }, [weaver]);
 
+  useScrollTopOnView(weaver?.id);
+
   if (!weaver) return null;
   const weaverPayments = getPaymentsForWeaver(weaver.id);
   const materialRecords = getRecordsForWeaver(weaver.id);
   const materialByBatch = getMaterialSummaryByBatch(weaver.id);
   const cfg = STATUS_CFG[weaver.status];
+
+  // Deductions noted on material returns (e.g. short-returned material) are
+  // only recorded on the return itself — nothing currently marks them as
+  // "settled" when a payment is made. Sum what's been recorded against what
+  // WeaverPayment.deduction already reflects as paid, so the Payments tab can
+  // show what's still owed back to the weaver and why, before the next payout.
+  const returnDeductions = getReturnRecordsForWeaver(weaver.id)
+    .filter(r => r.status !== "cancelled" && (r.deductionAmount ?? 0) > 0)
+    .map(r => ({ id: r.id, amount: r.deductionAmount ?? 0, reason: r.deductionReason || "No reason recorded", date: r.receivedAt }));
+  const totalDeductedFromReturns = returnDeductions.reduce((sum, d) => sum + d.amount, 0);
+  const totalDeductedInPayments = weaverPayments.reduce((sum, p) => sum + (p.deduction ?? 0), 0);
+  const pendingDeductionTotal = Math.max(0, totalDeductedFromReturns - totalDeductedInPayments);
 
   const getBatchNum = (id: string) => {
     const match = id.match(/BATCH-(\d+)/);
@@ -154,6 +179,16 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
     return getBatchNum(b.batchId) - getBatchNum(a.batchId);
   }).filter(b => matchesDateFilter(b.createdAt, batchDateFilter));
   const filteredWeaverPayments = weaverPayments.filter(p => matchesDateFilter(p.paymentDate, paymentDateFilter));
+
+  // Materials Received — the date filter scopes the individual handover
+  // records (issuedAt). A batch card is shown only when at least one of its
+  // handovers falls inside the window; the card's issued/returned/outstanding
+  // figures stay batch-lifetime totals, which is what the weaver actually owes.
+  const filteredMaterialRecords = materialRecords.filter(r => matchesDateFilter(r.issuedAt, materialDateFilter));
+  const materialBatchIdsInWindow = new Set(filteredMaterialRecords.map(r => r.batchId || "Unassigned"));
+  const filteredMaterialByBatch = materialDateFilter.mode === "all"
+    ? materialByBatch
+    : materialByBatch.filter(b => materialBatchIdsInWindow.has(b.batchId));
 
   // Design dispatches sent to this weaver, grouped by batch
   const weaverDispatches = dispatches.filter(d => d.recipientType === "weaver" && d.recipientId === weaver.id && matchesDateFilter(d.sentAt, dispatchDateFilter));
@@ -173,7 +208,15 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
         style={{ width: "100%", background: T.silkCream, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
 
         {/* Sticky Header Navigation Bar */}
-        <div className="px-3 sm:px-7 xl:px-12 py-3 sm:py-4 flex items-center justify-between border-b border-[var(--border-default)] bg-white sticky top-0 z-10 gap-2 flex-wrap">
+        <div
+          className="px-3 sm:px-7 xl:px-12 py-3 sm:py-4 flex items-center justify-between border-b border-[var(--border-default)] bg-white sticky z-10 gap-2 flex-wrap"
+          // When a sub-nav is present the desktop TopNav/SATopNav switches
+          // itself from sticky to relative and scrolls away, leaving only the
+          // sub-nav bar (SUB_NAV_H) pinned at top:0 — this bar must match
+          // that, not the full topbar+subnav stack, or it floats mid-page
+          // with a gap where the scrolled-away topbar used to be.
+          style={{ top: isMobile ? MOBILE_NAV_H : SUB_NAV_H }}
+        >
           <Button
             onClick={onClose}
             variant="secondary"
@@ -358,29 +401,17 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
 
         {/* Sub-tab Navigation Strip Card */}
         <div className="px-4 md:px-7 xl:px-14 mt-4 mb-2">
-          <div className="bg-white rounded-[10px] border border-[#E8DCC4] px-3 sm:px-5 pt-2 pb-0 shadow-sm overflow-x-auto section-nav-scroll">
-            <div className="flex items-center gap-1 sm:gap-2 min-w-max">
-              {[
-                { key: "overview", label: "Overview", icon: <ClipboardList size={16} /> },
-                { key: "batches", label: "Batch History", icon: <Layers3 size={16} /> },
-                { key: "dispatches", label: "Design Dispatches", icon: <PaperPlaneTilt size={16} /> },
-                { key: "payments", label: "Payments", icon: <FileText size={16} /> },
-                { key: "materials", label: "Materials Received", icon: <PackageCheck size={16} /> }
-              ].map(({ key, label, icon }) => (
-                <Button key={key} onClick={() => setTab(key)}
-                  variant="tertiary"
-                  className={
-                    "rounded-none px-3.5 sm:px-5 py-3 shrink-0 text-xs sm:text-sm cursor-pointer flex items-center gap-2 transition-all " +
-                    (tab === key
-                      ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
-                      : "border-b-[3px] border-transparent text-[#9C8672] hover:text-[#6E0F2D] font-medium")
-                  }>
-                  {icon}
-                  <span>{label}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
+          <RoyalSubTabStrip
+            tabs={[
+              { key: "overview", label: "Overview", icon: <ClipboardList size={16} /> },
+              { key: "batches", label: "Batch History", icon: <Layers3 size={16} /> },
+              { key: "dispatches", label: "Design Dispatches", icon: <PaperPlaneTilt size={16} /> },
+              { key: "payments", label: "Payments", icon: <FileText size={16} /> },
+              { key: "materials", label: "Materials Received", icon: <PackageCheck size={16} /> }
+            ]}
+            activeTab={tab}
+            onTabChange={setTab}
+          />
         </div>
 
         <div className="px-3 sm:px-7 xl:px-12 py-6 sm:py-8 flex-1">
@@ -396,10 +427,19 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                   {[
                     { icon: <Smartphone size={18} color={T.royalBurgundy} />, label: "Mobile Number", value: weaver.mobile || "—" },
                     { icon: <MapPin size={18} color={T.royalBurgundy} />, label: "Village / Location", value: weaver.village || "—" },
-                    { icon: <Home size={18} color={T.royalBurgundy} />, label: "Address", value: `14-2, Main Handloom Street, ${weaver.village}` },
+                    // Address, bank and IFSC were hardcoded here and rendered the
+                    // same invented street/account for every weaver. The Weaver
+                    // record carries cluster/bankName/accountNo/ifsc — show those,
+                    // and "—" where the record is genuinely blank.
+                    { icon: <Home size={18} color={T.royalBurgundy} />, label: "Cluster", value: weaver.cluster || "—" },
                     { icon: <Activity size={18} color={T.royalBurgundy} />, label: "Number of Looms", value: `${weaver.looms} Active Looms` },
-                    { icon: <Landmark size={18} color={T.royalBurgundy} />, label: "Bank Account", value: "State Bank of India — ×××× 8990" },
-                    { icon: <CreditCard size={18} color={T.royalBurgundy} />, label: "IFSC Code", value: "SBIN0001234" },
+                    {
+                      icon: <Landmark size={18} color={T.royalBurgundy} />, label: "Bank Account",
+                      value: weaver.bankName || weaver.accountNo
+                        ? [weaver.bankName, weaver.accountNo ? `×××× ${weaver.accountNo.slice(-4)}` : null].filter(Boolean).join(" — ")
+                        : "—",
+                    },
+                    { icon: <CreditCard size={18} color={T.royalBurgundy} />, label: "IFSC Code", value: weaver.ifsc || "—" },
                   ].map(r => (
                     <div key={r.label} style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12 }}>
                       <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -509,13 +549,13 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
 
           {tab === "payments" && (
             <SectionCard icon={FileText} title="Payments Ledger" subtitle={`Financial payout records and transaction statement for ${weaver.name}`}>
-              <PaymentsTab weaver={weaver} weaverPayments={weaverPayments} filteredWeaverPayments={filteredWeaverPayments} paymentDateFilter={paymentDateFilter} setPaymentDateFilter={setPaymentDateFilter} />
+              <PaymentsTab weaver={weaver} weaverPayments={weaverPayments} filteredWeaverPayments={filteredWeaverPayments} paymentDateFilter={paymentDateFilter} setPaymentDateFilter={setPaymentDateFilter} pendingDeductions={returnDeductions} pendingDeductionTotal={pendingDeductionTotal} />
             </SectionCard>
           )}
 
           {tab === "materials" && (
             <SectionCard icon={PackageCheck} title="Raw Materials Received" subtitle={`Yarn issue records and GRN allocations for ${weaver.name}`}>
-              <MaterialsTab materialRecords={materialRecords} materialByBatch={materialByBatch} />
+              <MaterialsTab materialRecords={filteredMaterialRecords} materialByBatch={filteredMaterialByBatch} totalRecordCount={materialRecords.length} materialDateFilter={materialDateFilter} setMaterialDateFilter={setMaterialDateFilter} />
             </SectionCard>
           )}
         </div>

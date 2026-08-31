@@ -10,10 +10,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { warpRequestsApi, BackendWarpRequest } from "../../../../shared/api/warpRequests";
 import { Button, Textarea } from "../../../../shared/ui/primitives";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
+import { removeFromEnvelopeWhere } from "../../../../lib/cacheUpdates";
 
 export function WarpRequestsSection() {
   const queryClient = useQueryClient();
   const [decision, setDecision] = useState<{ type: "approve" | "reject"; req: BackendWarpRequest } | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [search, setSearch] = useState("");
+  const [warpTypeFilter, setWarpTypeFilter] = useState("All Types");
 
   const { data: res, isLoading } = useQuery({
     queryKey: ["warp-requests-pending"],
@@ -21,9 +26,21 @@ export function WarpRequestsSection() {
   });
   const requests = res?.items ?? [];
 
+  const filteredRequests = requests.filter(r => {
+    const q = search.toLowerCase();
+    const matchSearch = !q || r.weaver.name.toLowerCase().includes(q) || (r.weaver.village && r.weaver.village.toLowerCase().includes(q)) || r.warpType.toLowerCase().includes(q);
+    const matchType = warpTypeFilter === "All Types" || r.warpType.toLowerCase() === warpTypeFilter.toLowerCase();
+    return matchSearch && matchType;
+  });
+
   const approveMutation = useMutation({
     mutationFn: (id: string) => warpRequestsApi.approve(id),
-    onSuccess: () => {
+    onSuccess: (_approved, id) => {
+      // This query is the PENDING-only list, so a decided request is no longer
+      // part of it — drop it straight away rather than leaving it on screen,
+      // still showing Approve/Reject, until the refetch returns.
+      removeFromEnvelopeWhere<BackendWarpRequest>(
+        queryClient, ["warp-requests-pending"], r => r.id === id);
       void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] });
       setDecision(null);
       toast.success("Warp request approved");
@@ -34,10 +51,14 @@ export function WarpRequestsSection() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (id: string) => warpRequestsApi.reject(id),
-    onSuccess: () => {
+    mutationFn: ({ id, notes }: { id: string; notes?: string }) =>
+      warpRequestsApi.reject(id, undefined, notes),
+    onSuccess: (_rejected, { id }) => {
+      removeFromEnvelopeWhere<BackendWarpRequest>(
+        queryClient, ["warp-requests-pending"], r => r.id === id);
       void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] });
       setDecision(null);
+      setRejectReason("");
       toast.success("Warp request rejected");
     },
     onError: (err: unknown) => {
@@ -59,13 +80,36 @@ export function WarpRequestsSection() {
           </div>
         }
       >
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search weaver, loom, material..."
+            filterGroups={[
+              {
+                id: "type",
+                label: "Material Type",
+                value: warpTypeFilter,
+                defaultValue: "All Types",
+                options: ["All Types", "Warp", "Resham", "Jari"].map(t => ({ value: t, label: t })),
+                onChange: setWarpTypeFilter,
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setWarpTypeFilter("All Types");
+            }}
+          />
+        </div>
+
           {isLoading ? (
             <div style={{ padding: "16px 0", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading warp requests…</div>
-          ) : requests.length === 0 ? (
-            <div style={{ padding: "16px 0", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No warp requests waiting for approval.</div>
+          ) : filteredRequests.length === 0 ? (
+            <div style={{ padding: "16px 0", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No warp requests match your filters.</div>
           ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 22, alignItems: "stretch" }}>
-            {requests.map((r, idx) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
+            {filteredRequests.map((r, idx) => (
               <motion.div
                 key={r.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -76,7 +120,7 @@ export function WarpRequestsSection() {
                 style={{ background: "#FFFDF9", borderRadius: 12, border: `1.5px solid ${T.antiqueGold}`, boxShadow: "0 4px 20px rgba(200,155,71,0.15)", overflow: "hidden", display: "flex", flexDirection: "column", position: "relative" }}
               >
                 {/* Accent top */}
-                <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8, flexShrink: 0 }} />
+                <div style={{ height: 4, background: T.royalBurgundy, width: "100%", flexShrink: 0 }} />
 
                 {/* Weaver identity */}
                 <div style={{ padding: "20px 22px 18px", display: "flex", alignItems: "center", gap: 16 }}>
@@ -146,14 +190,21 @@ export function WarpRequestsSection() {
       </FadeUp>
       <AnimatePresence>
         {decision && (
-          <ActionDialog open={!!decision} title={decision.type === "approve" ? "Approve warp request" : "Reject warp request"} tone={decision.type === "approve" ? "green" : "red"} onClose={() => setDecision(null)}>
+          <ActionDialog open={!!decision} title={decision.type === "approve" ? "Approve warp request" : "Reject warp request"} tone={decision.type === "approve" ? "green" : "red"} onClose={() => { setDecision(null); setRejectReason(""); }}>
             <div style={{ fontFamily: F.ui, color: T.luxuryBrown, fontSize: 16, lineHeight: 1.65 }}>
               {decision.type === "approve" ? <Check size={32} color={T.green} /> : <XOctagon size={32} color={T.crimson} />}
               Confirm {decision.type} for <b>{decision.req.weaver?.name || decision.req.weaverId}</b> ({decision.req.id}) requesting <b>{decision.req.warpType} ({decision.req.lengthMeters}m)</b> {decision.req.loomNumber ? `for Loom ${decision.req.loomNumber}` : ""}.
             </div>
-            {decision.type === "reject" && <Textarea placeholder="Reason for rejection" className="mt-[18px] min-h-[94px]" />}
+            {decision.type === "reject" && (
+              <Textarea
+                value={rejectReason}
+                onChange={e => setRejectReason(e.target.value)}
+                placeholder="Reason for rejection"
+                className="mt-[18px] min-h-[94px]"
+              />
+            )}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 22 }}>
-              <Button onClick={() => setDecision(null)} variant="secondary" className="rounded-xl">Cancel</Button>
+              <Button onClick={() => { setDecision(null); setRejectReason(""); }} variant="secondary" className="rounded-xl">Cancel</Button>
               <Button
                 disabled={approveMutation.isPending || rejectMutation.isPending}
                 loading={approveMutation.isPending || rejectMutation.isPending}
@@ -161,7 +212,7 @@ export function WarpRequestsSection() {
                   if (decision.type === "approve") {
                     approveMutation.mutate(decision.req.id);
                   } else {
-                    rejectMutation.mutate(decision.req.id);
+                    rejectMutation.mutate({ id: decision.req.id, notes: rejectReason.trim() || undefined });
                   }
                 }}
                 variant={decision.type === "approve" ? "primary" : "danger"}

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import { useContext, useState } from "react";
 import { motion } from "motion/react";
 import { AlertTriangle, Plus, Package, CheckCircle2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";

@@ -26,13 +26,25 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       connectionString,
       ssl: sslDisabled ? false : { rejectUnauthorized: false },
       max: 15,
-      // Supabase's pooler (pgbouncer) can silently drop idle connections on
-      // its own schedule (~10-15s). Proactively recycling them after 5s ensures
-      // pg.Pool discards idle clients before Supabase drops the remote socket.
-      idleTimeoutMillis: 5_000,
+      // The database is a remote Supabase pooler (ap-south-1): opening a
+      // connection costs a TCP + TLS + auth handshake, measured at 350-450ms
+      // from a dev machine. Recycling idle clients after 5s meant that in
+      // normal interactive use — where a user acts every 10-30s — *every*
+      // request paid that handshake again, so each screen took ~400ms longer
+      // than it had to before showing data.
+      //
+      // Holding connections for a minute instead removes that tax (measured:
+      // 451ms -> 85ms for a query after a 6s idle gap). The reason 5s was
+      // chosen originally — pgbouncer dropping idle sockets out from under
+      // pg.Pool — is handled properly by TCP keepalives below (a connection
+      // idle for 55s still answers in ~40ms) with ResilientPool's read replay
+      // as the backstop for the rare drop that slips through.
+      idleTimeoutMillis: 60_000,
       connectionTimeoutMillis: 10_000,
       keepAlive: true,
-      keepAliveInitialDelayMillis: 10_000,
+      // Probes start after 5s of silence, well inside the window in which the
+      // pooler would otherwise consider the socket idle and close it.
+      keepAliveInitialDelayMillis: 5_000,
       // Recycling idle clients still leaves a race: a connection can be checked
       // out in the instant between pgbouncer sending FIN and Node handling it,
       // and the in-flight query dies with "Connection terminated unexpectedly".

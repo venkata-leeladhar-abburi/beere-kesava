@@ -1,15 +1,14 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  AlignLeft, Table2, ChevronDown, ChevronLeft, ChevronRight, ClipboardList,
-} from "lucide-react";
+import { AlignLeft, Table2, ClipboardList } from "lucide-react";
 import { F, T, ROLE_COLORS } from "./tokens";
-import { PaginationBtn, SectionCard } from "./shared";
+import { SectionCard } from "./shared";
 import { Button } from "../../../../shared/ui/primitives";
 import { auditLogApi, ActionLogEntry } from "../../../../shared/api/audit-log";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 type ActionEntry = {
   id: string;
@@ -76,6 +75,7 @@ function withinPeriod(iso: string, period: string): boolean {
 export function ActionLogSection({
   search = "",
   roleFilter = "All Roles",
+  staffUserId,
   moduleFilter = "All Modules",
   actionFilter = "All Actions",
   periodFilter = "All Time",
@@ -84,6 +84,7 @@ export function ActionLogSection({
 }: {
   search?: string;
   roleFilter?: string;
+  staffUserId?: string;
   moduleFilter?: string;
   actionFilter?: string;
   periodFilter?: string;
@@ -93,8 +94,8 @@ export function ActionLogSection({
   const [actionView, setActionView] = useState<"timeline"|"table">("timeline");
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["audit-log", "actions", moduleFilter],
-    queryFn: () => auditLogApi.listActions({ pageSize: 200, module: moduleFilter }),
+    queryKey: ["audit-log", "actions", moduleFilter, staffUserId],
+    queryFn: () => auditLogApi.listActions({ pageSize: 200, module: moduleFilter, userId: staffUserId }),
   });
 
   const allEntries: ActionEntry[] = (data?.items ?? []).map(toActionEntry);
@@ -111,7 +112,9 @@ export function ActionLogSection({
     }
     return true;
   });
-  const total = data?.total ?? 0;
+  // The timeline previously rendered all 200 fetched rows in one scroll,
+  // beneath a "Load More Entries" button with no handler behind it.
+  const pag = usePagination(entries, 10);
 
   const actionColumns: ColumnDef<ActionEntry>[] = [
     {
@@ -242,7 +245,7 @@ export function ActionLogSection({
               )
             )}
 
-            {entries.map(entry => (
+            {pag.pageItems.map(entry => (
               <div key={entry.id} style={{ display: "flex", gap: 20, marginBottom: 14, position: "relative" }}>
                 {/* Circle */}
                 <div style={{
@@ -331,12 +334,20 @@ export function ActionLogSection({
               </div>
             ))}
 
-            {/* Load More */}
-            <div style={{ display: "flex", justifyContent: "center", marginTop: 24 }}>
-              <Button variant="secondary" size="md" iconLeft={ChevronDown} className="rounded-[14px]">
-                Load More Entries
-              </Button>
-            </div>
+            {entries.length > 0 && (
+              <div style={{ marginTop: 8 }}>
+                <Pagination
+                  page={pag.page}
+                  pageCount={pag.pageCount}
+                  total={pag.total}
+                  pageSize={pag.pageSize}
+                  start={pag.start}
+                  onPageChange={pag.setPage}
+                  onPageSizeChange={pag.setPageSize}
+                  itemLabel="entries"
+                />
+              </div>
+            )}
           </motion.div>
         ) : (
           <motion.div
@@ -362,31 +373,12 @@ export function ActionLogSection({
                 onRetry={() => refetch()}
                 isFiltered={isFiltered}
                 onClearFilters={onClearFilters}
-                emptyTitle="No actions recorded yet"
-                emptyDescription="As weavers, invoices, and purchase orders are created or updated, they'll show up here."
+                emptyTitle="No audit actions match your filters"
+                emptyDescription="Try clearing search or module filters to see more results."
+                pagination
+                itemLabel="entries"
               />
 
-              {/* Pagination */}
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "16px 18px",
-                borderTop: `1px solid ${T.borderDef}`,
-              }}>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
-                  Showing {entries.length} of {total} entr{total === 1 ? "y" : "ies"}
-                </span>
-                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <PaginationBtn disabled><ChevronLeft size={13} /></PaginationBtn>
-                  {[1, 2, 3].map(n => (
-                    <PaginationBtn key={n} active={n === 1}>{n}</PaginationBtn>
-                  ))}
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, padding: "0 4px" }}>...</span>
-                  <PaginationBtn>60</PaginationBtn>
-                  <PaginationBtn><ChevronRight size={13} /></PaginationBtn>
-                </div>
-              </div>
             </div>
           </motion.div>
         )}

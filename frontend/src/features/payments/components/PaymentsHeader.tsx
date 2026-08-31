@@ -1,4 +1,3 @@
-import React from "react";
 import { F, T } from "../theme";
 import { imgSareeFooter } from "@/shared/constants/weaverImages";
 

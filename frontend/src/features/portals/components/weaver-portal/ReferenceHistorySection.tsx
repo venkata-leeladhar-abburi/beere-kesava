@@ -112,6 +112,7 @@ export function ReferenceHistorySection({
                       ] as ColumnDef<MaterialIssueRecord>[]}
                       data={signedRecords}
                       getRowId={r => r.id}
+                      pagination
                     />
                   </div>
                 </div>
@@ -157,6 +158,7 @@ export function ReferenceHistorySection({
                       ] as ColumnDef<WeavingBatchItem>[]}
                       data={myWeavingBatches}
                       getRowId={b => b.batchId}
+                      pagination
                     />
                   </div>
                 </div>
@@ -201,6 +203,7 @@ export function ReferenceHistorySection({
                       ] as ColumnDef<SareeLogItem>[]}
                       data={mySarees}
                       getRowId={s => s.sareeId}
+                      pagination
                     />
                   </div>
                 </div>

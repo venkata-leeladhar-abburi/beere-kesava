@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { motion, useInView } from 'motion/react';
 import { MapPin, Phone, Eye, Edit3, Layers3, Activity, AlertTriangle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';

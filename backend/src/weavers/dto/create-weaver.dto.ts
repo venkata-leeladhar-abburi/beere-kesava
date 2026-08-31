@@ -40,8 +40,9 @@ export class CreateWeaverDto {
   @IsString()
   photoUrl!: string;
 
+  @IsOptional()
   @IsEmail()
-  email!: string;
+  email?: string;
 
   @IsString()
   @Matches(/^\+?[0-9]{10,15}$/, { message: "phone must be a valid phone number" })

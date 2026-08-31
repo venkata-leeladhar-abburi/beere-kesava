@@ -1,4 +1,4 @@
-import { lazy } from "react";
+import { lazyWithRetry as lazy } from "@/app/lazyWithRetry";
 
 // Lazily loaded so the initial dashboard bundle doesn't pay for every tab's
 // page — only the active tab's chunk is fetched, on first navigation to it.
@@ -22,6 +22,8 @@ export const SupplierReturnsPage = lazy(() => import("../../../inventory/compone
 export const AddUserPage = lazy(() => import("../../../users/components/AddUserPage").then(m => ({ default: m.AddUserPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 export const StaffDirectoryPage = lazy(() => import("../../../users/components/staff-directory/StaffDirectoryPage").then(m => ({ default: m.StaffDirectoryPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
+export const AccountantDirectoryPage = lazy(() => import("../../../users/components/staff-directory/accountant/AccountantDirectoryPage").then(m => ({ default: m.AccountantDirectoryPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 export const IssueMaterialPage = lazy(() => import("../../../materials/components/IssueMaterialPage").then(m => ({ default: m.IssueMaterialPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.

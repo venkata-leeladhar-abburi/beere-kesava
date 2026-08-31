@@ -1,4 +1,3 @@
-import React from "react";
 import { Factory } from "lucide-react";
 import { useBatches, SareeRow } from "../../contexts/BatchContext";
 import { T, F, Pip } from "./constants";

@@ -1,6 +1,6 @@
 
 
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Modal } from "../../../../shared/ui/overlay";
 import {

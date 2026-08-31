@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
-import { Eye, LayoutGrid, List, ImageOff } from "lucide-react";
+import { Eye, ImageOff } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Shield, Download as DownloadSimple, ShieldAlert as SealWarning, AlertCircle as WarningCircle,
@@ -17,6 +17,7 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney, addMoney, type Paise } from "@/lib/domain/money";
 import { EntityCode } from "@/shared/ui/domain";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 interface DefectiveRow {
   id: string;
@@ -47,10 +48,10 @@ function DefectivePhotoCell({ url, sareeId, onView }: { url: string | null; sare
 }
 
 export function DefectiveSareesSection({ superadmin = false }: { superadmin?: boolean; onNavigate?: (tab: string) => void } & CodeCallbacks) {
+  const [search, setSearch] = useState("");
   const [timeFiler, setTimeFilter] = useState("All Time");
   const [weaverFilter, setWeaverFilter] = useState("All Weavers");
   const [defectFilter, setDefectFilter] = useState("All Defect Types");
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
   const [viewDefect, setViewDefect] = useState<DefectiveRow | null>(null);
   const [dlWeaver, setDlWeaver] = useState("All Weavers");
@@ -58,7 +59,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
   const [dlPeriod, setDlPeriod] = useState("This Month");
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
 
-  const { data: qcRecords = [], isLoading: qcLoading, isError: qcError, refetch: refetchQc } = useQuery({
+  const { data: qcRecords = [], isLoading: qcLoading, isError: qcError } = useQuery({
     queryKey: ["qc", "all"],
     queryFn: () => qcApi.list().then(r => r.items),
   });
@@ -117,9 +118,14 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
     return DEFECTIVE_DATA.filter(r => {
       if (weaverFilter !== "All Weavers" && r.weaver !== weaverFilter) return false;
       if (defectFilter !== "All Defect Types" && !r.defects.includes(defectFilter)) return false;
+      if (search.trim()) {
+        const q = search.trim().toLowerCase();
+        const text = `${r.id} ${r.weaver} ${r.batch} ${r.sareeType} ${r.defects.join(" ")}`.toLowerCase();
+        if (!text.includes(q)) return false;
+      }
       return true;
     });
-  }, [DEFECTIVE_DATA, weaverFilter, defectFilter]);
+  }, [DEFECTIVE_DATA, weaverFilter, defectFilter, search]);
 
   const totalDeduction = addMoney(...filteredData.map(r => r.deduction));
 
@@ -222,9 +228,51 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-3 mb-4 w-full max-w-full">
+            {/* Mobile Flipkart-style Filter Bar */}
+            <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+              <MobileFilterBar
+                search={search}
+                onSearchChange={setSearch}
+                searchPlaceholder="Search saree ID, weaver, defect type..."
+                filterGroups={[
+                  {
+                    id: "time",
+                    label: "Time Period",
+                    value: timeFiler,
+                    defaultValue: "All Time",
+                    options: ["All Time", "This Month", "This Week", "Today"].map(t => ({ value: t, label: t })),
+                    onChange: setTimeFilter,
+                  },
+                  {
+                    id: "weaver",
+                    label: "Weaver",
+                    value: weaverFilter,
+                    defaultValue: "All Weavers",
+                    options: ["All Weavers", ...uniqueWeavers].map(w => ({ value: w, label: w })),
+                    onChange: setWeaverFilter,
+                  },
+                  {
+                    id: "defect",
+                    label: "Defect Type",
+                    value: defectFilter,
+                    defaultValue: "All Defect Types",
+                    options: ["All Defect Types", ...uniqueDefects].map(d => ({ value: d, label: d })),
+                    onChange: setDefectFilter,
+                  },
+                ]}
+                onResetAll={() => {
+                  setSearch("");
+                  setTimeFilter("All Time");
+                  setWeaverFilter("All Weavers");
+                  setDefectFilter("All Defect Types");
+                }}
+              />
+            </div>
+
+            {/* Desktop Filter Bar */}
+            <div className="hidden md:flex flex-row flex-wrap items-center justify-between gap-3 mb-4 w-full">
               <div className="flex items-center gap-2 flex-wrap">
-                <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap shrink-0" style={{ WebkitOverflowScrolling: "touch" }}>
+                <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap shrink-0">
                   {["All Time", "This Month", "This Week", "Today"].map(f => (
                     <Button key={f} onClick={() => setTimeFilter(f)} variant={timeFiler === f ? "primary" : "secondary"} size="sm" className="shrink-0 whitespace-nowrap text-[12px]">{f}</Button>
                   ))}
@@ -242,129 +290,20 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                   ))}
                 </Select>
               </div>
-
-              {/* Mobile-only View Mode Toggle — compact inline w-fit, hidden on desktop */}
-              <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white w-fit shrink-0">
-                <Button
-                  onClick={() => setViewMode("card")}
-                  variant="ghost"
-                  className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold w-auto ${viewMode === "card"
-                      ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
-                      : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
-                    }`}
-                >
-                  <LayoutGrid size={14} /> Card View
-                </Button>
-                <Button
-                  onClick={() => setViewMode("table")}
-                  variant="ghost"
-                  className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold w-auto ${viewMode === "table"
-                      ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
-                      : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
-                    }`}
-                >
-                  <List size={14} /> Table View
-                </Button>
-              </div>
             </div>
 
-            {/* Mobile View (Card View or Table View based on viewMode toggle) */}
-            <div className="block md:hidden">
-              {viewMode === "card" ? (
-                qcLoading ? (
-                  <LoadingState variant="skeleton" rows={3} />
-                ) : qcError ? (
-                  <ErrorState error={undefined} onRetry={() => void refetchQc()} />
-                ) : filteredData.length === 0 ? (
-                  <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "32px 16px", textAlign: "center" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No defective sarees recorded yet.</div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {filteredData.map(r => (
-                      <div
-                        key={r.id}
-                        style={{
-                          background: "#FFFFFF",
-                          borderRadius: 16,
-                          border: `1px solid ${T.borderDef}`,
-                          boxShadow: "0 2px 12px rgba(74,6,27,0.06)",
-                          padding: "16px 18px",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 12,
-                        }}
-                      >
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <DefectivePhotoCell url={r.photoUrl} sareeId={r.id} onView={setZoomImage} />
-                            <EntityCode type="saree" value={r.id} size="sm" />
-                          </div>
-                          <Button onClick={() => setViewDefect(r)} variant="secondary" size="sm" className="h-8 px-2.5">
-                            <Eye size={13} /> View
-                          </Button>
-                        </div>
-
-                        <div style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 13, fontFamily: F.ui, borderTop: `1px solid ${T.borderDef}`, paddingTop: 12 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ color: T.taupe, fontSize: 13 }}>Weaver</span>
-                            <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{r.weaver}</span>
-                          </div>
-
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ color: T.taupe, fontSize: 13 }}>Saree Type</span>
-                            <span style={{ color: T.luxuryBrown }}>{r.sareeType}</span>
-                          </div>
-
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                            <span style={{ color: T.taupe, fontSize: 13, flexShrink: 0 }}>Defect Type(s)</span>
-                            <div style={{ display: "flex", gap: 4, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                              {r.defects.map(d => (
-                                <span key={d} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.20)", padding: "2px 8px", borderRadius: 999 }}>{d}</span>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ color: T.taupe, fontSize: 13 }}>QC Date</span>
-                            <span style={{ color: T.taupe, fontSize: 13 }}>{r.qcDate}</span>
-                          </div>
-
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1px dashed ${T.borderDef}`, paddingTop: 10, marginTop: 2 }}>
-                            <span style={{ color: T.taupe, fontSize: 13, fontWeight: 500 }}>Deduction Applied</span>
-                            <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.crimson }}>{formatMoney(r.deduction)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )
-              ) : (
-                <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 24px rgba(74,6,27,0.07)", overflow: "hidden", marginBottom: 16 }}>
-                  <div className="overflow-x-auto w-full">
-                    <DataTable
-                      columns={columns}
-                      data={filteredData}
-                      getRowId={r => r.id}
-                      loading={qcLoading}
-                      error={qcError}
-                      emptyTitle="No defective sarees recorded yet."
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Desktop View — always Table View */}
-            <div className="hidden md:block" style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 24px rgba(74,6,27,0.07)", overflow: "hidden", marginBottom: 16 }}>
+            {/* Table View */}
+            <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 24px rgba(74,6,27,0.07)", overflow: "hidden", marginBottom: 16 }}>
               <div className="overflow-x-auto w-full">
                 <DataTable
+                  responsive={false}
                   columns={columns}
                   data={filteredData}
                   getRowId={r => r.id}
                   loading={qcLoading}
                   error={qcError}
                   emptyTitle="No defective sarees recorded yet."
+                  pagination
                 />
               </div>
             </div>

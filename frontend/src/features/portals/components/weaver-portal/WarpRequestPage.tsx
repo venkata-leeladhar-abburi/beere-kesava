@@ -26,6 +26,7 @@ import { useAuth } from "../../../../contexts/AuthContext";
 import { BG_IMAGE } from "./WeaverBatchNotifData";
 import { LuxuryStatsCard, type StatItem } from "@/shared/ui/LuxuryStatsCard";
 import { IcoResourceMgmt, IcoFabricRoll, IcoQualityCheck } from "@/features/dashboards";
+import { prependToEnvelope } from "../../../../lib/cacheUpdates";
 
 export function WarpRequestPage() {
   const { batches } = useBatches();
@@ -124,7 +125,7 @@ export function WarpRequestPage() {
     mutationFn: async () => {
       if (!weaverId) throw new Error("No weaver profile resolved for this login.");
       const selectedMaterials = (["warp", "resham", "jari"] as const).filter(m => materials[m]);
-      await Promise.all(selectedMaterials.map(mat =>
+      return Promise.all(selectedMaterials.map(mat =>
         warpRequestsApi.create({
           weaverId,
           warpType: MATERIAL_TO_WARP_TYPE[mat],
@@ -134,7 +135,12 @@ export function WarpRequestPage() {
         }),
       ));
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
+      // Put the new request(s) straight into the weaver's own history list. The
+      // create response is the same BackendWarpRequest the list is built from,
+      // so nothing has to be reconstructed — and a weaver who just submitted a
+      // request sees it listed instead of an unchanged screen.
+      prependToEnvelope<BackendWarpRequest>(queryClient, ["warpRequests"], created);
       void queryClient.invalidateQueries({ queryKey: ["warpRequests"] });
       setSubmitted(true);
     },

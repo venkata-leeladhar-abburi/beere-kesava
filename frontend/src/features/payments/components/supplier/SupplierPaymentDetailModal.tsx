@@ -1,4 +1,3 @@
-import React from "react";
 import { X, Receipt, ShoppingBag, Image as ImageIcon, User, FileText } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 

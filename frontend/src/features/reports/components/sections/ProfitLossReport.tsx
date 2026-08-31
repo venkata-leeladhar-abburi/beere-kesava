@@ -8,9 +8,13 @@ import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SectionCard, ReportDLBar, AnimBar } from "../common/primitives";
+import { FadeUp, SectionCard, ReportDLBar } from "../common/primitives";
+import {
+  ChartCard, ChartBand, TrackBar, BAND
+} from "../../../production/components/sections/chart-primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { useReportPeriod, useRegisterExport } from "../PeriodContext";
 
 // Same shape as reports/common/primitives.tsx's ChartTip, but routes the
 // value through the Money system (formatMoney/rupees) instead of a raw "₹"
@@ -33,8 +37,19 @@ function MoneyChartTip({ active, payload, label, moneyVisible }: TooltipProps<Va
 }
 
 export function ProfitLossReport() {
-  const { firms, financials, isLoading, error, refetch } = useFirms();
+  const { firms, financials: allFinancials, isLoading, error, refetch } = useFirms();
+  const { inCurrent, exportCsv, canExport } = useReportPeriod();
   const moneyVisible = useMoneyVisible();
+
+  // Ledger entries are filtered to the selected period before anything is
+  // summed, so the totals, the ledger, the per-firm table and the charts all
+  // describe the same window.
+  const financials = useMemo(() => allFinancials.map(f => ({
+    ...f,
+    income: f.income.filter(e => inCurrent(e.date)),
+    expenses: f.expenses.filter(e => inCurrent(e.date)),
+    misc: f.misc.filter(m => inCurrent(m.date)),
+  })), [allFinancials, inCurrent]);
   const inr = (n: number) => (moneyVisible ? formatMoney(rupees(n)) : "—");
 
   const hasData = financials.some(f => f.income.length > 0 || f.expenses.length > 0 || f.misc.length > 0);
@@ -63,7 +78,7 @@ export function ProfitLossReport() {
 
   type LedgerRow = { id: string; label: string; amount: number | null; kind: "section" | "item" | "subtotal" | "net"; color: string; bg: string };
 
-  const ledgerRows: LedgerRow[] = [
+  const ledgerRows: LedgerRow[] = useMemo(() => [
     { id: "income-section", label: "▼ INCOME", amount: null, kind: "section", color: T.green, bg: T.greenBg },
     { id: "wholesale", label: "Wholesale Sales", amount: wholesaleSales, kind: "item", color: T.green, bg: "transparent" },
     { id: "retail", label: "Retail Sales", amount: retailSales, kind: "item", color: T.green, bg: "transparent" },
@@ -81,7 +96,13 @@ export function ProfitLossReport() {
       id: "net", label: netProfit >= 0 ? "Net Profit" : "Net Loss", amount: Math.abs(netProfit), kind: "net",
       color: netProfit >= 0 ? T.antiqueGold : T.crimson, bg: "rgba(200,155,71,0.12)",
     },
-  ];
+  ], [wholesaleSales, retailSales, otherIncome, totalIncome, weaverPayments, materialPurchases, shopMaintenance, factoryMaintenance, salaries, otherExpenses, totalExpenses, netProfit]);
+
+  useRegisterExport(useMemo(() => ({
+    name: "Profit and Loss Report",
+    headers: ["Line", "Amount"],
+    rows: ledgerRows.filter(r => r.amount != null).map(r => [r.label, r.amount ?? 0]),
+  }), [ledgerRows]));
 
   const ledgerColumns: ColumnDef<LedgerRow>[] = [
     {
@@ -139,34 +160,29 @@ export function ProfitLossReport() {
 
   // Dynamic monthly income vs expenses aggregated from real firm financial entries
   const pnlMonthlyData = useMemo(() => {
-    const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const incomeMap: Record<string, number> = {};
-    const expenseMap: Record<string, number> = {};
+    // Keyed by year+month: a bare month name merged the same month across
+    // years and forced calendar order instead of chronological order.
+    const map = new Map<string, { month: string; income: number; expenses: number }>();
+    const bucket = (d: Date) => {
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const label = d.toLocaleString("en-US", { month: "short", year: "2-digit" }).replace(" ", " '");
+      const entry = map.get(key) ?? { month: label, income: 0, expenses: 0 };
+      map.set(key, entry);
+      return entry;
+    };
 
     for (const f of financials) {
       for (const e of f.income) {
         const d = new Date(e.date);
-        if (!isNaN(d.getTime())) {
-          const m = d.toLocaleString("en-US", { month: "short" });
-          incomeMap[m] = (incomeMap[m] || 0) + e.amount;
-        }
+        if (!isNaN(d.getTime())) bucket(d).income += e.amount;
       }
       for (const e of f.expenses) {
         const d = new Date(e.date);
-        if (!isNaN(d.getTime())) {
-          const m = d.toLocaleString("en-US", { month: "short" });
-          expenseMap[m] = (expenseMap[m] || 0) + e.amount;
-        }
+        if (!isNaN(d.getTime())) bucket(d).expenses += e.amount;
       }
     }
 
-    const activeMonths = monthOrder.filter(m => incomeMap[m] !== undefined || expenseMap[m] !== undefined);
-    if (activeMonths.length === 0) return [];
-    return activeMonths.map(m => ({
-      month: m,
-      income: incomeMap[m] || 0,
-      expenses: expenseMap[m] || 0,
-    }));
+    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([, v]) => v);
   }, [financials]);
 
   // Dynamic expense breakdown pie chart
@@ -192,8 +208,10 @@ export function ProfitLossReport() {
     >
       <ReportDLBar />
 
-      <div className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr]" style={{ gap: 20, marginBottom: 28 }}>
-        <ChartCard title="Income vs Expenses — Monthly" sub="Green = income · Crimson = expenses">
+      <div className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr]" style={{ gap: 20, marginBottom: 28, alignItems: "stretch" }}>
+        <ChartCard>
+          <ChartBand tone="pipeline" icon={<BarChart2 size={19} color={BAND.pipeline.icon} />} title="Income vs Expenses — Monthly" sub="Green = income · Crimson = expenses" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {pnlMonthlyData.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
               No financial entries recorded yet. Add ledger entries in Firms & Vendor Management.
@@ -210,9 +228,12 @@ export function ProfitLossReport() {
               </BarChart>
             </ResponsiveContainer>
           )}
+          </div>
         </ChartCard>
 
-        <ChartCard title="Where Did the Money Go" sub="Expense breakdown by category">
+        <ChartCard>
+          <ChartBand tone="weavers" icon={<FileText size={19} color={BAND.weavers.icon} />} title="Where Did the Money Go" sub="Expense breakdown by category" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {expenseDonut.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
               No expenses recorded yet.
@@ -228,7 +249,7 @@ export function ProfitLossReport() {
                 </PieChart>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 8px" }}>
-                {expenseDonut.map(d => (
+                {expenseDonut.map((d, i) => (
                   <div key={d.name}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -237,13 +258,14 @@ export function ProfitLossReport() {
                       </div>
                       <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: d.color }}>{inr(d.value)}</span>
                     </div>
-                    <AnimBar pct={totalExpenses > 0 ? Math.round((d.value / totalExpenses) * 100) : 0} color={d.color} height={5} />
+                    <TrackBar pct={totalExpenses > 0 ? Math.round((d.value / totalExpenses) * 100) : 0} fill={d.color} height={9} delay={i * 0.08} />
                   </div>
                 ))}
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.crimson, textAlign: "right", marginTop: 4 }}>Total: {inr(totalExpenses)}</div>
               </div>
             </>
           )}
+          </div>
         </ChartCard>
       </div>
 
@@ -314,8 +336,8 @@ export function ProfitLossReport() {
           <DownloadGate>
             <div style={{ padding: "12px 20px", background: "rgba(200,155,71,0.06)", borderTop: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", gap: 10 }}>
               <FileText size={13} color={T.antiqueGold} />
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Download this report as PDF for your monthly records and year-end accounting.</span>
-              <Button variant="primary" size="sm" className="ml-auto">Download PDF</Button>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Download the ledger as a spreadsheet for your monthly records and year-end accounting.</span>
+              <Button variant="primary" size="sm" className="ml-auto" onClick={exportCsv} disabled={!canExport}>Download Ledger CSV</Button>
             </div>
           </DownloadGate>
         </div>
@@ -327,7 +349,7 @@ export function ProfitLossReport() {
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 12 }}>Per-Firm Breakdown</div>
           <div className="w-full overflow-x-auto section-nav-scroll border border-[#E8DCC4] rounded-xl bg-white p-2">
             <div className="min-w-[650px]">
-              <DataTable columns={perFirmColumns} data={perFirm} getRowId={f => f.name} loading={isLoading} error={!!error} onRetry={refetch} />
+              <DataTable columns={perFirmColumns} data={perFirm} getRowId={f => f.name} loading={isLoading} error={!!error} onRetry={refetch} pagination />
             </div>
           </div>
         </div>

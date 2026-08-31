@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { ChevronDown as PhCaretDown, Plus as PhPlus, Layers } from "lucide-react";
 import { useBatches } from "../../contexts/BatchContext";
@@ -12,6 +12,8 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
 import { BatchCardGrid, BatchListView, BatchTableView } from "./batches/BatchViews";
 import { rowComplete } from "./batches/ContextBatchCard";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?: (tab: string) => void; onOpenTally?: (batchId: string) => void } & CodeCallbacks) {
   const { batches, setPendingOpenBatchId, isLoading, isError, error, refetch } = useBatches();
@@ -98,6 +100,7 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
       // Not editable once every assigned saree has been produced (finished) —
       // the batch is locked at that point.
       isLive: producedCount < br.totalCount,
+      createdBy: br.createdBy,
     };
   });
 
@@ -124,6 +127,8 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
     }
     return a.id.localeCompare(b.id);
   });
+
+  const pag = usePagination(visible, 10);
 
   const handleEditBatch = (b: Batch) => {
     setPendingOpenBatchId(b.id);
@@ -165,7 +170,46 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
           </div>
 
         <div className="p-3.5 sm:p-6 md:p-7">
-        <div className="flex items-center gap-2 mt-2 sm:mt-3.5 mb-4 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap">
+        {/* Mobile Flipkart-style Collapsible Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search batch ID, design, weaver..."
+            filterGroups={[
+              {
+                id: "stage",
+                label: "Batch Stage",
+                value: filter ?? "all",
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Batches" },
+                  ...FILTER_PILLS.filter(f => f.stage !== null).map(f => ({ value: f.stage!, label: f.label })),
+                ],
+                onChange: (v: string) => setFilter(v === "all" ? null : (v as BatchStage)),
+              },
+              {
+                id: "sort",
+                label: "Sort By",
+                value: sortBy,
+                defaultValue: "Most Recent First",
+                options: [
+                  { value: "Most Recent First", label: "Most Recent First" },
+                  { value: "Oldest First", label: "Oldest First" },
+                ],
+                onChange: setSortBy,
+              },
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setFilter(null);
+              setSortBy("Most Recent First");
+            }}
+          />
+        </div>
+
+        {/* Desktop Filter Bar */}
+        <div className="hidden md:flex items-center gap-2 mt-2 sm:mt-3.5 mb-4 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap">
           {FILTER_PILLS.map(f => (
             <Button key={f.label} onClick={() => setFilter(f.stage)} variant={filter === f.stage ? "primary" : "tertiary"} size="sm"
               className={`rounded-[10px] shrink-0 whitespace-nowrap text-[12px] ${filter === f.stage ? "" : "border border-[rgba(110,15,45,0.18)] text-[var(--text-tertiary)]"}`}>
@@ -229,9 +273,12 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
               <EmptyState title="No active batches" description="Batches created here will show up as production progresses." />
             )
           ) : (
-            view === "card" ? <BatchCardGrid batches={visible} onView={handleViewBatch} onSlip={(batch) => setBatchDialog({ mode: "slip", batch })} onEdit={handleEditBatch} /> :
-            view === "list" ? <BatchListView batches={visible} onView={handleViewBatch} onEdit={handleEditBatch} /> :
-            <BatchTableView batches={visible} onView={handleViewBatch} onEdit={handleEditBatch} />
+            <>
+              {view === "card" ? <BatchCardGrid batches={pag.pageItems} onView={handleViewBatch} onSlip={(batch) => setBatchDialog({ mode: "slip", batch })} onEdit={handleEditBatch} /> :
+              view === "list" ? <BatchListView batches={pag.pageItems} onView={handleViewBatch} onEdit={handleEditBatch} /> :
+              <BatchTableView batches={pag.pageItems} onView={handleViewBatch} onEdit={handleEditBatch} />}
+              <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="batches" />
+            </>
           )}
         </div>
         </div>

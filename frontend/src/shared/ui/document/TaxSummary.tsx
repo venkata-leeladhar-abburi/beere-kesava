@@ -4,7 +4,6 @@
  * unconditionally and let the caller decide whether to include it (Part
  * I.3 says "mandatory when >1 rate", not "always").
  */
-import * as React from "react";
 
 export interface TaxSummaryRow {
   hsn: string;

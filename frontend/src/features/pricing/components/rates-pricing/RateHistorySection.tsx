@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { Download, Lock, ChevronLeft, ChevronRight, History } from "lucide-react";
+import { Download, Lock, History } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
-import { Button } from "../../../../shared/ui/primitives";
 import { T, F, cardStyle } from "./theme";
 import { SectionCard, GoldLink } from "./sharedUI";
 import { rateRequestsApi, type BackendRateChangeRequest } from "../../../../shared/api/rateRequests";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { useDataAccess } from "@/shared/ui/domain";
@@ -43,7 +43,6 @@ export function RateHistorySection() {
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
-  const [histPage, setHistPage] = useState(1);
 
   const loadHistory = useCallback(() => {
     setIsLoading(true);
@@ -67,6 +66,7 @@ export function RateHistorySection() {
   }, [loadHistory]);
 
   const filteredHistory = history.filter(row => matchesDateFilter(row.date.split(" · ")[0], histDateFilter));
+  const pag = usePagination(filteredHistory, 10);
 
   const historyColumns: ColumnDef<HistoryRow>[] = [
     {
@@ -104,7 +104,7 @@ export function RateHistorySection() {
       actions={<DownloadGate><GoldLink><Download size={13} /> Download History →</GoldLink></DownloadGate>}
     >
       <div style={{ marginBottom: 16 }}>
-        <DateFilterBar filter={histDateFilter} onChange={setHistDateFilter} />
+        <DateFilterBar filter={histDateFilter} onChange={f => { setHistDateFilter(f); pag.setPage(1); }} />
       </div>
 
       {isLoading ? (
@@ -112,13 +112,15 @@ export function RateHistorySection() {
       ) : isError ? (
         <div style={cardStyle}><ErrorState error={undefined} onRetry={loadHistory} /></div>
       ) : (
-      <div style={cardStyle}>
+      <div id="rate-change-history-table" style={cardStyle}>
         <div className="w-full overflow-x-auto">
           <DataTable
+            responsive={false}
             columns={historyColumns}
-            data={filteredHistory}
-            getRowId={r => String(filteredHistory.indexOf(r))}
+            data={pag.pageItems}
+            getRowId={r => String(pag.pageItems.indexOf(r))}
             emptyTitle="No rate changes recorded yet."
+            pagination={false}
           />
         </div>
 
@@ -134,34 +136,17 @@ export function RateHistorySection() {
             </span>
           </div>
 
-          {/* Pagination */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <Button
-              variant="secondary" size="sm" iconLeft={ChevronLeft}
-              className="rounded-[8px] text-[var(--text-tertiary)]"
-              onClick={() => setHistPage(p => Math.max(1, p - 1))}
-            >
-              Previous
-            </Button>
-            {[1, 2, 3].map(p => (
-              <Button
-                key={p}
-                variant={histPage === p ? "primary" : "tertiary"}
-                size="sm"
-                className="h-[30px] w-[30px] rounded-[8px] p-0"
-                onClick={() => setHistPage(p)}
-              >
-                {p}
-              </Button>
-            ))}
-            <Button
-              variant="secondary" size="sm" iconRight={ChevronRight}
-              className="rounded-[8px] text-[var(--text-tertiary)]"
-              onClick={() => setHistPage(p => Math.min(3, p + 1))}
-            >
-              Next
-            </Button>
-          </div>
+          <Pagination
+            targetId="rate-change-history-table"
+            page={pag.page}
+            pageCount={pag.pageCount}
+            total={pag.total}
+            pageSize={pag.pageSize}
+            start={pag.start}
+            onPageChange={pag.setPage}
+            onPageSizeChange={pag.setPageSize}
+            itemLabel="rate changes"
+          />
         </div>
       </div>
       )}

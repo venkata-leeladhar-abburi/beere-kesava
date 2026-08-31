@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { FileText, Receipt, CalendarClock, ShoppingBag, Eye } from "lucide-react";
 import { INVOICES } from "@/features/payments";
 import { T, F } from "../theme";

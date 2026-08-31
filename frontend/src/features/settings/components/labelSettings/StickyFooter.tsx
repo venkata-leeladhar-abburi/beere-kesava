@@ -1,4 +1,3 @@
-import React from "react";
 import { RotateCcw, Save } from "lucide-react";
 import { F, T } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";

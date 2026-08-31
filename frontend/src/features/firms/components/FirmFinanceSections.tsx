@@ -285,6 +285,7 @@ function EntryTable({ entries, type, duplicates, onEdit, onDelete }: {
   return (
     <DataTable
       responsive
+      pagination
       columns={columns}
       data={entries}
       getRowId={e => e.id}

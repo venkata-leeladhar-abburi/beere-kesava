@@ -1,4 +1,3 @@
-import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
@@ -63,7 +62,9 @@ export function PaymentHistoryTab({
 
   return (
     <div>
-      <DateFilterBar filter={wholesalePaymentDateFilter} onChange={setWholesalePaymentDateFilter} />
+      <div className="mb-6">
+        <DateFilterBar filter={wholesalePaymentDateFilter} onChange={setWholesalePaymentDateFilter} />
+      </div>
       {isError && (
         <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: "#C0392B", fontWeight: 600, marginBottom: 12 }}>
           Failed to load payment history. Please try again.
@@ -75,6 +76,8 @@ export function PaymentHistoryTab({
           columns={columns}
           data={filtered}
           getRowId={p => p.id}
+          pageSize={5}
+          pagination={true}
           emptyTitle={isLoading ? "Loading…" : "No payments received from this customer yet."}
         />
       </div>

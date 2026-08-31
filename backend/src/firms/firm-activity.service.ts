@@ -35,7 +35,7 @@ export type FirmDocumentType =
   | "QUOTATION"
   | "DISPATCH_INVOICE";
 
-export type FirmPaymentType = "WEAVER" | "VENDOR" | "SUPPLIER" | "INVOICE";
+export type FirmPaymentType = "WEAVER" | "VENDOR" | "SUPPLIER" | "INVOICE" | "RETAIL_SALE";
 
 export interface FirmDocument {
   id: string;
@@ -95,6 +95,7 @@ export class FirmActivityService {
       vendorPayments,
       supplierPayments,
       invoicePayments,
+      retailSales,
     ] = await Promise.all([
       this.prisma.purchaseOrder.findMany({
         where: { firmId },
@@ -142,6 +143,13 @@ export class FirmActivityService {
         include: {
           invoice: { include: { customer: { select: { name: true } } } },
         },
+      }),
+      // Counter sales an accountant has connected to this firm. Money already
+      // changed hands at the till, so these are realized income the moment
+      // they are linked — never committed/pending.
+      this.prisma.saleRecord.findMany({
+        where: { firmId, channel: "RETAIL" },
+        include: { customer: { select: { name: true } } },
       }),
     ]);
 
@@ -267,6 +275,16 @@ export class FirmActivityService {
         date: iso(p.date),
         amount: num(p.amount),
         category: "Wholesale Sale",
+      })),
+      ...retailSales.map((sale) => ({
+        id: sale.saleRef,
+        type: "RETAIL_SALE" as const,
+        direction: "INCOME" as const,
+        reference: sale.saleRef,
+        party: sale.customer?.name ?? "Walk-in Customer",
+        date: iso(sale.date),
+        amount: num(sale.amount),
+        category: "Retail Sale",
       })),
     ];
 

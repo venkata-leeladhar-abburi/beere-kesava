@@ -10,7 +10,6 @@
  * This is not a tax document (no GST/HSN split): a PO records what's being
  * ordered and its estimated value, not a taxable supply.
  */
-import * as React from "react";
 import { DocumentPage } from "./DocumentPage";
 import { Letterhead, type LetterheadFirm } from "./Letterhead";
 import { PartyBlock, type MetaField } from "./PartyBlock";

@@ -58,6 +58,10 @@ export interface BackendBatch {
   createdAt: string;
   updatedAt: string;
   rows: BackendBatchSareeRow[];
+  /** Who created this batch — undefined on endpoints that don't select it. */
+  createdBy?: BackendActorSummary | null;
+  /** Batch-level tally attribution — currently unset by any endpoint; only per-row talliedByUser is wired. */
+  talliedBy?: BackendActorSummary | null;
 }
 
 interface PaginatedResponse<T> {
@@ -70,6 +74,7 @@ interface PaginatedResponse<T> {
 export interface CreateBatchPayload {
   totalCount: number;
   dueDate: string;
+  actorId?: string;
 }
 
 export interface AssignBatchRowPayload {
@@ -77,7 +82,9 @@ export interface AssignBatchRowPayload {
   weaverId?: string;
   factoryLoomId?: string;
   designCode?: string;
-  sareeTypeCode: string;
+  /** Optional: a draft row's recipient and saree type are assigned in
+   *  separate steps, so a save in between must persist the recipient alone. */
+  sareeTypeCode?: string;
   bulkOrderRef?: string;
   loomNumber?: number;
 }

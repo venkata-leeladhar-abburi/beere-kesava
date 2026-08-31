@@ -1,4 +1,3 @@
-import React from "react";
 import { Check } from "lucide-react";
 import { C, F, FABRIC_BG } from "../theme";
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
@@ -208,7 +207,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
             ) : (
               <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: isTablet ? "auto" : "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", marginBottom: 40 }}>
                 <div style={{ minWidth: isTablet ? "520px" : undefined }}>
-                  <DataTable columns={chargesByTypeColumns} data={chargesByType} getRowId={t => t.code} />
+                  <DataTable columns={chargesByTypeColumns} data={chargesByType} getRowId={t => t.code} pagination />
                   <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr]" style={{ padding: "16px 26px", background: C.cream, alignItems: "center" }}>
                     <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Total</div>
                     <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>{sareesProduced}</div>
@@ -262,7 +261,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
             ) : (
               <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: isTablet ? "auto" : "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)" }}>
                 <div style={{ minWidth: isTablet ? "560px" : undefined }}>
-                  <DataTable columns={paymentHistoryColumns} data={myPayments} getRowId={p => p.id ?? `${p.paymentDate ?? p.uploadedAt}-${p.amountPaid}-${p.utrNumber ?? ""}`} />
+                  <DataTable columns={paymentHistoryColumns} data={myPayments} getRowId={p => p.id ?? `${p.paymentDate ?? p.uploadedAt}-${p.amountPaid}-${p.utrNumber ?? ""}`} pagination />
                 </div>
               </div>
             )}

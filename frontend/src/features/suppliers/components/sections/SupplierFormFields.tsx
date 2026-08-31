@@ -2,7 +2,6 @@
 // customer form, reused for both "Add Supplier" and the profile's "Edit
 // Profile" tab.
 
-import React from "react";
 import { Star } from "lucide-react";
 import { T } from "../theme";
 import { inp, lbl } from "../common/primitives";

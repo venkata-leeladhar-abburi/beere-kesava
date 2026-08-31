@@ -1,12 +1,14 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, LayoutGrid, AlignJustify, Printer } from "lucide-react";
 import { C, F, card } from "./tokens";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { Button, Input } from "../../../../shared/ui/primitives";
 import { rawMaterialsApi, GrnReceiptItem } from "../../../../shared/api/rawMaterials";
 import { jariToReels } from "../../../../shared/lib/weightUnits";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { Modal } from "../../../../shared/ui/overlay";
 import { GRNPrintView } from "./GRNSuccessPrint";
 import type { ReconResult } from "@/lib/domain/status";
@@ -73,7 +75,6 @@ function renderMaterialsSummary(lines: ReceiptMaterialLine[]) {
   );
 }
 
-const PAGE_SIZE = 10;
 
 interface ReceiptHistoryTableProps {
   receiptHistory?: ReceiptRecord[];
@@ -83,7 +84,6 @@ interface ReceiptHistoryTableProps {
 export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compact = false }: ReceiptHistoryTableProps) {
   const [historySearch, setHistorySearch] = useState("");
   const [historyDateFilter, setHistoryDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
-  const [historyPage, setHistoryPage] = useState(1);
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const [tagsRecord, setTagsRecord] = useState<ReceiptRecord | null>(null);
 
@@ -149,8 +149,7 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
         || m.description.toLowerCase().includes(q));
   });
 
-  const totalPages = Math.max(1, Math.ceil(filteredHistory.length / PAGE_SIZE));
-  const pagedHistory = filteredHistory.slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE);
+  const pag = usePagination(filteredHistory, 10);
 
   const columns: ColumnDef<ReceiptRecord>[] = [
     { id: "grnId", header: "GRN Batch ID", accessor: r => r.grnId, priority: 1, cell: (_v, r) => <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.burg, whiteSpace: "nowrap" }}>{r.grnId}</span> },
@@ -190,18 +189,57 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <Input
-          value={historySearch}
-          onChange={e => { setHistorySearch(e.target.value); setHistoryPage(1); }}
-          placeholder="Search by GRN ID, PO number, or vendor..."
-          iconLeft={Search}
-          containerClassName={compact ? "h-10" : "h-[42px]"}
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={historySearch}
+          onSearchChange={s => { setHistorySearch(s); pag.setPage(1); }}
+          searchPlaceholder="Search by GRN ID, PO number, or vendor..."
+          filterGroups={[
+            {
+              id: "time",
+              label: "Time Period",
+              value: historyDateFilter.mode,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Time" },
+                { value: "day", label: "Specific Date" },
+                { value: "range", label: "Date Range" },
+                { value: "month", label: "Monthly" },
+                { value: "year", label: "Yearly" },
+              ],
+              onChange: (m: string) => {
+                const mode = m as DateFilterState["mode"];
+                if (mode === "day") setHistoryDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                else if (mode === "month") setHistoryDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                else if (mode === "year") setHistoryDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                else setHistoryDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                pag.setPage(1);
+              },
+            },
+          ]}
+          onResetAll={() => {
+            setHistorySearch("");
+            setHistoryDateFilter(DEFAULT_DATE_FILTER);
+            pag.setPage(1);
+          }}
         />
       </div>
 
-      <div>
-        <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); setHistoryPage(1); }} />
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:flex flex-col gap-4 mb-4">
+        <div>
+          <Input
+            value={historySearch}
+            onChange={e => { setHistorySearch(e.target.value); pag.setPage(1); }}
+            placeholder="Search by GRN ID, PO number, or vendor..."
+            iconLeft={Search}
+            containerClassName={compact ? "h-10" : "h-[42px]"}
+          />
+        </div>
+        <div>
+          <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); pag.setPage(1); }} />
+        </div>
       </div>
 
       <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 w-fit">
@@ -229,35 +267,27 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
         </Button>
       </div>
 
-      <div style={{ ...card, overflow: "hidden", border: `1.5px solid ${C.bdr}` }}>
+      <div id="goods-receipt-history-table" style={{ ...card, overflow: "hidden", border: `1.5px solid ${C.bdr}` }}>
         <div className={viewMode === "table" ? "w-full overflow-x-auto" : ""}>
           <DataTable
             responsive={viewMode === "card"}
             columns={columns}
-            data={pagedHistory}
+            data={pag.pageItems}
             getRowId={r => r.grnId}
             emptyTitle="No receipts found."
           />
         </div>
-        {totalPages > 0 && (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: compact ? "10px 14px" : "12px 16px", borderTop: `1px solid ${C.bdr}` }}>
-            <span style={{ fontFamily: F.u, fontSize: compact ? 11.5 : 12.5, color: C.muted }}>Page {historyPage} of {totalPages}</span>
-            <div style={{ display: "flex", gap: compact ? 6 : 8 }}>
-              <Button
-                onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
-                disabled={historyPage === 1}
-                size="sm"
-                className={"h-auto rounded-md border border-[rgba(110,15,45,0.12)] bg-white text-[#1A0A0F] " + (compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs")}
-              >Prev</Button>
-              <Button
-                onClick={() => setHistoryPage(p => Math.min(totalPages, p + 1))}
-                disabled={historyPage === totalPages}
-                size="sm"
-                className={"h-auto rounded-md border border-[rgba(110,15,45,0.12)] bg-white text-[#1A0A0F] " + (compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs")}
-              >Next</Button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          targetId="goods-receipt-history-table"
+          page={pag.page}
+          pageCount={pag.pageCount}
+          total={pag.total}
+          pageSize={pag.pageSize}
+          start={pag.start}
+          onPageChange={pag.setPage}
+          onPageSizeChange={pag.setPageSize}
+          itemLabel="receipts"
+        />
       </div>
 
       <Modal open={!!tagsRecord} onOpenChange={open => { if (!open) setTagsRecord(null); }} size="md">

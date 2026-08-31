@@ -1,4 +1,4 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, Query } from "@nestjs/common";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { UserRole } from "../generated/prisma/client";
 import { InventoryService } from "./inventory.service";
@@ -18,7 +18,7 @@ export class InventoryController {
    *  dispatch and not yet sold. Declared before no other :param route exists
    *  here, but kept explicit so a future one cannot shadow it. */
   @Get("shop")
-  findShopStock() {
-    return this.inventoryService.findShopStock();
+  findShopStock(@Query("dispatchId") dispatchId?: string) {
+    return this.inventoryService.findShopStock(dispatchId);
   }
 }

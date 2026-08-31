@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Clock, BellRing, Boxes, ShieldAlert, MessageSquare, Package, Eye } from "lucide-react";
 import { T, F } from "../theme";
@@ -14,6 +14,7 @@ import { weaversApi } from "../../../../shared/api/weavers";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
+import { useRegisterExport } from "../PeriodContext";
 
 function daysBetween(a: Date, b: Date): number {
   return Math.max(0, Math.round((a.getTime() - b.getTime()) / 86400000));
@@ -66,7 +67,11 @@ export function OverdueAlertsReport() {
   // Dynamic low stock materials from rawMaterialsApi
   const lowStockMaterials = useMemo(() => {
     const items = stockRes?.items ?? [];
+    // currentStock / reorderLevel arrive as strings (Prisma Decimal serialises
+    // over JSON as text). Compared as-is they sorted lexicographically —
+    // "1334" <= "200" is true — flagging healthy stock as running low.
     return items
+      .map(item => ({ ...item, currentStock: Number(item.currentStock), reorderLevel: Number(item.reorderLevel) }))
       .filter(item => item.currentStock <= item.reorderLevel)
       .map(item => {
         const isJari = item.materialType === "JARI";
@@ -129,7 +134,7 @@ export function OverdueAlertsReport() {
     .filter(inv => inv.status === "OVERDUE")
     .map(inv => ({
       customer: inv.customer?.name ?? customerNameById.get(inv.customerId) ?? "Unknown Customer",
-      inv: inv.id,
+      inv: inv.code ?? inv.id,
       total: Number(inv.total),
       paid: Number(inv.paid),
       overdue: Number(inv.total) - Number(inv.paid),
@@ -149,6 +154,19 @@ export function OverdueAlertsReport() {
       daysLeft: daysBetween(new Date(o.dueDate), now),
       status: o.status === "OVERDUE" ? "Overdue" : "At Risk",
     }));
+
+  // Alerts are live status, not a period report — the export mirrors the four
+  // alert tables as one flat "what needs action now" sheet.
+  useRegisterExport(useMemo(() => ({
+    name: "Overdue and Alerts Report",
+    headers: ["Alert Type", "Subject", "Reference", "Detail", "Amount / Quantity", "Due"],
+    rows: [
+      ...overdueCustomers.map(r => ["Overdue Invoice", r.customer, r.inv, `${r.days} days overdue`, r.overdue, r.dueDate]),
+      ...lowStockMaterials.map(r => ["Low Stock", `${r.type} — ${r.sub}`, r.batch, `Shortage ${r.shortage}${r.isJari ? " reels" : " kg"}`, r.current, ""]),
+      ...lateWeavers.map(r => ["Late Weaver", r.name, r.code, `${r.remaining} remaining in ${r.batch}`, r.days, r.expected]),
+      ...atRiskOrders.map(r => ["Bulk Order at Risk", r.customer, r.order, r.status, r.shortage, r.deadline]),
+    ],
+  }), [overdueCustomers, lowStockMaterials, lateWeavers, atRiskOrders]));
 
   return (
     <div id="rep-overdue" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
@@ -175,7 +193,7 @@ export function OverdueAlertsReport() {
       <FadeUp>
         <SubAlert label="Overdue Customer Payments — Act Now" color={T.crimson} />
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
-          <div className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="w-full">
             <div className="min-w-[850px]">
               <DataTable<(typeof overdueCustomers)[number]>
                 columns={[
@@ -195,6 +213,7 @@ export function OverdueAlertsReport() {
                 error={!invoicesLoading && !!invoicesTableError}
                 onRetry={refetchInvoicesTable}
                 emptyTitle="No overdue invoices — everything is on track."
+                pagination
                 responsive={false}
               />
             </div>
@@ -206,7 +225,7 @@ export function OverdueAlertsReport() {
       <FadeUp>
         <SubAlert label="Materials Running Low — Order Soon" color={T.antiqueGold} />
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
-          <div className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="w-full">
             <div className="min-w-[850px]">
               <DataTable<(typeof lowStockMaterials)[number]>
                 columns={[
@@ -225,6 +244,7 @@ export function OverdueAlertsReport() {
                 error={stockError}
                 onRetry={refetchStock}
                 emptyTitle="No materials currently low in stock."
+                pagination
                 responsive={false}
               />
             </div>
@@ -236,7 +256,7 @@ export function OverdueAlertsReport() {
       <FadeUp>
         <SubAlert label="Weavers Behind Schedule — Follow Up" color={T.crimson} />
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
-          <div className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="w-full">
             <div className="min-w-[850px]">
               <DataTable<(typeof lateWeavers)[number]>
                 columns={[
@@ -255,6 +275,7 @@ export function OverdueAlertsReport() {
                 error={batchesError || weaversError}
                 onRetry={() => { void refetchBatches(); void refetchWeavers(); }}
                 emptyTitle="No weavers running behind schedule."
+                pagination
                 responsive={false}
               />
             </div>
@@ -266,7 +287,7 @@ export function OverdueAlertsReport() {
       <FadeUp>
         <SubAlert label="Bulk Orders That May Miss Deadline" color={T.antiqueGold} />
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="w-full">
             <div className="min-w-[850px]">
               <DataTable<(typeof atRiskOrders)[number]>
                 columns={[
@@ -286,6 +307,7 @@ export function OverdueAlertsReport() {
                 error={!bulkOrdersLoading && !!bulkOrdersTableError}
                 onRetry={refetchBulkOrdersTable}
                 emptyTitle="No bulk orders at risk right now."
+                pagination
                 responsive={false}
               />
             </div>

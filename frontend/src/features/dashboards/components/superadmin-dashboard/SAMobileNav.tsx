@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { motion } from "motion/react";
 import { ChevronRight, Menu, UserRound, ChevronLeft, LogOut, X, Bell } from "lucide-react";

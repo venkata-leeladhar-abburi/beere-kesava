@@ -1,4 +1,3 @@
-import React from "react";
 import { Factory } from "lucide-react";
 import { FactoryLoom, loomLabel } from "@/features/production";
 import { BatchRecord } from "@/features/production";

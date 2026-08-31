@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, Plus, X, CheckCircle2, Undo2 } from "lucide-react";
 import { Button, IconButton } from "../../../shared/ui/primitives";
@@ -117,7 +117,10 @@ export function ReturnMaterialPage() {
     ? batches.filter(b => b.rows.some(r => r.factoryLoomId === selectedFactoryLoom.id))
     : [];
 
-  // Fetch outstanding balance whenever the recipient changes.
+  // Fetch the outstanding balance whenever the recipient *or* the loom/batch
+  // narrowing changes, so the panel always answers the question the current
+  // selection asks: everything still with the weaver, then just this loom,
+  // then just this batch.
   useEffect(() => {
     let cancelled = false;
     if (!selectedWeaverId && !selectedLoomId) {
@@ -125,11 +128,17 @@ export function ReturnMaterialPage() {
       return;
     }
     setOutstandingLoading(true);
-    void getOutstandingForRecipient(selectedWeaverId ?? undefined, selectedLoomId ?? undefined)
+    void getOutstandingForRecipient(selectedWeaverId ?? undefined, selectedLoomId ?? undefined, {
+      // Loom number is a weaver-side concept — a factory loom is already
+      // identified by selectedLoomId, and sending both would over-filter.
+      loomNumber: recipientType === "weaver" ? selectedLoom : undefined,
+      batchId: selectedBatchId ?? undefined,
+    })
       .then(lines => { if (!cancelled) setOutstandingLines(lines); })
+      .catch(() => { if (!cancelled) setOutstandingLines([]); })
       .finally(() => { if (!cancelled) setOutstandingLoading(false); });
     return () => { cancelled = true; };
-  }, [selectedWeaverId, selectedLoomId, getOutstandingForRecipient]);
+  }, [selectedWeaverId, selectedLoomId, selectedLoom, selectedBatchId, recipientType, getOutstandingForRecipient]);
 
   const isSigned = (sigMethod === "here" && signed) || (sigMethod === "remote" && remoteSent);
 
@@ -138,7 +147,11 @@ export function ReturnMaterialPage() {
   const recipientReady = recipientType === "weaver"
     ? (!!selectedWeaver && selectedLoom !== "" && !!selectedBatchId)
     : (!!selectedFactoryLoom && !!selectedBatchId);
-  const canConfirm = recipientReady && validRows.length > 0 && isSigned;
+  // A deduction amount with no reason leaves the weaver (and whoever pays
+  // them out later) unable to tell why money is being held back — require
+  // the reason whenever an amount is entered.
+  const deductionNeedsReason = deductionAmount !== "" && Number(deductionAmount) > 0 && !deductionReason.trim();
+  const canConfirm = recipientReady && validRows.length > 0 && isSigned && !deductionNeedsReason;
 
   function updateRow(uid: string, updated: ReturnRowState) {
     setRows(prev => prev.map(r => r.uid === uid ? updated : r));
@@ -172,9 +185,7 @@ export function ReturnMaterialPage() {
         quantity: parseFloat(r.quantity),
         unit: r.materialType === "Jari" ? r.jariUnit : (r.warpReshamUnit || "kg"),
       };
-      if (r.materialType === "Warp") { base.warpSubtype = r.warpSubtype; if (r.description) base.description = r.description; }
-      if (r.materialType === "Resham") { if (r.description) base.description = r.description; if (r.jariColor) base.jariColor = r.jariColor; }
-      if (r.materialType === "Jari") { base.jariType = r.jariType; base.jariGrade = r.jariGrade; base.jariColor = r.jariColor; }
+      if (r.description) base.description = r.description;
       return base;
     });
 
@@ -216,6 +227,12 @@ export function ReturnMaterialPage() {
   const pagedHistory = filteredHistory.slice((histPage - 1) * ROWS_PER_PAGE, histPage * ROWS_PER_PAGE);
 
   const recipientLabel = selectedWeaver?.name ?? selectedFactoryLoom?.loomNumber ?? "recipient";
+  // Spells out how far the figures below have been narrowed, so "18.68 kg"
+  // is never ambiguous between the whole weaver and a single batch.
+  const scopeLabel = [
+    recipientType === "weaver" && selectedLoom !== "" ? `Loom ${selectedLoom}` : null,
+    selectedBatchId,
+  ].filter(Boolean).join(" · ");
 
   return (
     <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100dvh" }}>
@@ -234,7 +251,7 @@ export function ReturnMaterialPage() {
         </div>
       </header>
 
-      <div style={{ padding: "40px 56px 80px", width: "100%" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32, paddingBottom: 80, width: "100%" }}>
 
         {/* Success banner */}
         <AnimatePresence>
@@ -275,7 +292,7 @@ export function ReturnMaterialPage() {
           />
 
           {(selectedWeaver || selectedFactoryLoom) && (
-            <OutstandingMaterialPanel loading={outstandingLoading} lines={outstandingLines} recipientLabel={recipientLabel} />
+            <OutstandingMaterialPanel loading={outstandingLoading} lines={outstandingLines} recipientLabel={recipientLabel} scopeLabel={scopeLabel} />
           )}
 
           {/* STEP 2 — Materials */}
@@ -292,7 +309,7 @@ export function ReturnMaterialPage() {
           {/* STEP 3 — Deduction */}
           <div style={{ marginTop: 32 }}>
             <SectionPill label="Step 3 · Deduction (Optional)" />
-            <DeductionBlock amount={deductionAmount} setAmount={setDeductionAmount} reason={deductionReason} setReason={setDeductionReason} />
+            <DeductionBlock amount={deductionAmount} setAmount={setDeductionAmount} reason={deductionReason} setReason={setDeductionReason} showReasonError={deductionNeedsReason} />
           </div>
 
           {/* STEP 4 — Notes */}
@@ -306,7 +323,7 @@ export function ReturnMaterialPage() {
           <div style={{ marginTop: 32 }}>
             <SectionPill label="Step 5 · Collect Weaver Signature" />
             <SignatureBlock
-              weaverName={selectedWeaver?.name ?? "the weaver"} weaverPhone={selectedWeaver?.phone ?? "—"}
+              weaverName={selectedWeaver?.name ?? "the weaver"}
               sigMethod={sigMethod} setSigMethod={setSigMethod}
               signed={signed} setSigned={setSigned}
               remoteSent={remoteSent} setRemoteSent={setRemoteSent}
@@ -328,7 +345,7 @@ export function ReturnMaterialPage() {
             histSearch={histSearch} setHistSearch={v => { setHistSearch(v); setHistPage(1); }}
             histWeaverFilter={histWeaverFilter} setHistWeaverFilter={v => { setHistWeaverFilter(v); setHistPage(1); }}
             histDateFilter={histDateFilter} setHistDateFilter={f => { setHistDateFilter(f); setHistPage(1); }}
-            pagedHistory={pagedHistory} histPage={histPage} setHistPage={setHistPage} totalPages={totalPages}
+            pagedHistory={pagedHistory} histPage={histPage} setHistPage={setHistPage} totalPages={totalPages} totalCount={filteredHistory.length}
             setViewRecord={setViewRecord}
           />
         </div>

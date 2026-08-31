@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
 import { JwtModule } from "@nestjs/jwt";
+import { AuditLogModule } from "../audit-log/audit-log.module";
 import { PassportModule } from "@nestjs/passport";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
@@ -26,6 +27,8 @@ const e2eTestMode = isE2eTestModeEnabled();
 
 @Module({
   imports: [
+    // Login/logout/failed-attempt rows are written from AuthService.
+    AuditLogModule,
     PassportModule.register({ defaultStrategy: "jwt" }),
     // No expiresIn: per product decision, a session lasts until the user
     // explicitly logs out, not on a fixed clock — the frontend's own

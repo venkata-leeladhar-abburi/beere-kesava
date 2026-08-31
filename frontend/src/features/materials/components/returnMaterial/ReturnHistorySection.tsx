@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { CheckCircle2, Clock, History, LayoutGrid, List } from "lucide-react";
 import { MaterialReturnRecord, useMaterialReturn } from "../../contexts/MaterialReturnContext";
-import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilterBar";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { F, T } from "../issueMaterial/theme";
 import { SectionCard } from "../issueMaterial/primitives";
 import { renderReturnedMaterials } from "./materialFormatters";
@@ -10,6 +11,7 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees } from "@/lib/domain/money";
 import { Money, EntityCode } from "@/shared/ui/domain";
 import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
+import { Pagination } from "../../../../shared/ui/DataPagination";
 
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
   approved: { label: "Approved", color: T.green, bg: "rgba(30,102,64,0.10)" },
@@ -20,7 +22,7 @@ const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }>
 export function ReturnHistorySection({
   weaverNames, histSearch, setHistSearch, histWeaverFilter, setHistWeaverFilter,
   histDateFilter, setHistDateFilter, pagedHistory, histPage, setHistPage, totalPages,
-  setViewRecord,
+  setViewRecord, totalCount,
 }: {
   weaverNames: string[];
   histSearch: string; setHistSearch: (v: string) => void;
@@ -30,6 +32,7 @@ export function ReturnHistorySection({
   histPage: number; setHistPage: (fn: (p: number) => number) => void;
   totalPages: number;
   setViewRecord: (r: MaterialReturnRecord) => void;
+  totalCount?: number;
 }) {
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const { isLoading, isError, error, refetch } = useMaterialReturn();
@@ -101,17 +104,63 @@ export function ReturnHistorySection({
 
   return (
     <SectionCard icon={History} title="Material Return History" subtitle="Every material received back from a weaver or factory loom, with signature and deduction status.">
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const, marginBottom: 20 }}>
-        <div style={{ flex: "1 1 260px" }}>
-          <SearchInput aria-label="Search weaver or MRR ID" value={histSearch} onChange={e => setHistSearch(e.target.value)} placeholder="Search weaver or MRR ID…" className="w-full" />
-        </div>
-        <Select value={histWeaverFilter} onValueChange={setHistWeaverFilter}>
-          {weaverNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
-        </Select>
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={histSearch}
+          onSearchChange={setHistSearch}
+          searchPlaceholder="Search weaver or MRR ID..."
+          filterGroups={[
+            {
+              id: "time",
+              label: "Time Period",
+              value: histDateFilter.mode,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Time" },
+                { value: "day", label: "Specific Date" },
+                { value: "range", label: "Date Range" },
+                { value: "month", label: "Monthly" },
+                { value: "year", label: "Yearly" },
+              ],
+              onChange: (m: string) => {
+                const mode = m as DateFilterState["mode"];
+                if (mode === "day") setHistDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                else if (mode === "month") setHistDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                else if (mode === "year") setHistDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                else setHistDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+              },
+            },
+            {
+              id: "weaver",
+              label: "Weaver / Loom",
+              value: histWeaverFilter,
+              defaultValue: weaverNames[0] ?? "All Weavers",
+              options: weaverNames.map(n => ({ value: n, label: n })),
+              onChange: setHistWeaverFilter,
+            },
+          ]}
+          onResetAll={() => {
+            setHistSearch("");
+            setHistWeaverFilter(weaverNames[0] ?? "All Weavers");
+            setHistDateFilter(DEFAULT_DATE_FILTER);
+          }}
+        />
       </div>
 
-      <div style={{ marginBottom: 16 }}>
-        <DateFilterBar filter={histDateFilter} onChange={setHistDateFilter} />
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:block mb-4">
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const, marginBottom: 20 }}>
+          <div style={{ flex: "1 1 260px" }}>
+            <SearchInput aria-label="Search weaver or MRR ID" value={histSearch} onChange={e => setHistSearch(e.target.value)} placeholder="Search weaver or MRR ID…" className="w-full" />
+          </div>
+          <Select value={histWeaverFilter} onValueChange={setHistWeaverFilter}>
+            {weaverNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+          </Select>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <DateFilterBar filter={histDateFilter} onChange={setHistDateFilter} />
+        </div>
       </div>
 
       <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 mb-4 w-fit">
@@ -227,7 +276,7 @@ export function ReturnHistorySection({
             </div>
           )
         ) : (
-          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+          <div id="return-history-table-mobile" style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
             <DataTable
               columns={columns}
               data={pagedHistory}
@@ -238,13 +287,14 @@ export function ReturnHistorySection({
               isFiltered={!!(histSearch.trim() || histWeaverFilter !== "All Weavers")}
               onClearFilters={() => { setHistSearch(""); setHistWeaverFilter("All Weavers"); }}
               emptyTitle="No return records match your filters"
+              pagination={false}
             />
           </div>
         )}
       </div>
 
       {/* Desktop View — always Table View */}
-      <div className="hidden md:block" style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+      <div id="return-history-table" className="hidden md:block" style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
         <DataTable
           columns={columns}
           data={pagedHistory}
@@ -255,14 +305,22 @@ export function ReturnHistorySection({
           isFiltered={!!(histSearch.trim() || histWeaverFilter !== "All Weavers")}
           onClearFilters={() => { setHistSearch(""); setHistWeaverFilter("All Weavers"); }}
           emptyTitle="No return records match your filters"
+          pagination={false}
         />
       </div>
 
       {totalPages > 0 && (
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 10, marginTop: 20 }}>
-          <Button variant="secondary" size="sm" disabled={histPage === 1} onClick={() => setHistPage(p => p - 1)}>← Prev</Button>
-          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Page {histPage} of {totalPages}</span>
-          <Button variant="secondary" size="sm" disabled={histPage === totalPages} onClick={() => setHistPage(p => p + 1)}>Next →</Button>
+        <div className="mt-3 p-2 bg-white rounded-xl border border-[var(--border-default)]">
+          <Pagination
+            targetId="return-history-table"
+            page={histPage}
+            pageCount={totalPages}
+            total={totalCount ?? (totalPages * 15)}
+            pageSize={15}
+            start={(histPage - 1) * 15}
+            onPageChange={p => setHistPage(() => p)}
+            itemLabel="return records"
+          />
         </div>
       )}
     </SectionCard>

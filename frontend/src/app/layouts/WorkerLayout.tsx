@@ -8,17 +8,19 @@ import {
   MaterialIssueProvider,
   DesignLibraryProvider,
   FirmsProvider,
+  FinishingProvider,
+  FinishingStaffProvider,
+  QcProvider,
 } from "../../contexts";
 
-// FinishingProvider / FinishingStaffProvider are mounted once in App.tsx so
-// finishing data is shared across worker, admin, superadmin and accountant.
-// FirmsProvider is needed here too — the Dispatch Details page names the firm
-// each dispatch was raised under.
 const WorkerContexts = composeProviders([
   DesignLibraryProvider,
   BatchProvider,
   MaterialIssueProvider,
   FirmsProvider,
+  FinishingStaffProvider,
+  FinishingProvider,
+  QcProvider,
 ]);
 
 export function WorkerLayout() {

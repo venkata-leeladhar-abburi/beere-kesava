@@ -1,17 +1,19 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { ReceiptText, Banknote, CheckCircle2, BellRing, Boxes } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 import { useBulkOrders } from "@/features/bulk-orders";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
+import { FadeUp, SilkSumCard, SectionCard, ReportDLBar } from "../common/primitives";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
+import { ChartCard, ChartBand, TrackBar, BAND } from "../../../production/components/sections/chart-primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import type { BulkOrder } from "@/features/bulk-orders";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, StatusPill } from "@/shared/ui/domain";
+import { useReportPeriod, useRegisterExport } from "../PeriodContext";
 import type { StatusValueOf } from "@/lib/domain/status";
 
 // BulkOrder.paymentStatus ("pending" | "partial" | "paid") normalized onto
@@ -56,9 +58,18 @@ function MoneyChartTip({ active, payload, label }: TooltipProps<ValueType, NameT
 }
 
 export function WholesaleSalesReport() {
-  const { bulkOrders, isError, isLoading, refetch } = useBulkOrders();
+  const { bulkOrders: allBulkOrders, isError, isLoading, refetch } = useBulkOrders();
+  const { inCurrent, label: periodLabel } = useReportPeriod();
+
+  const bulkOrders = useMemo(
+    () => allBulkOrders.filter(o => inCurrent(o.createdDate)),
+    [allBulkOrders, inCurrent],
+  );
 
   // Dynamic calculation for wholesale weekly breakdown
+  // Day-of-month buckets over the selected period. Bucketing purely on
+  // day-of-month used to match orders from every month and year, so the chart
+  // under a current-month heading was an all-time day-of-month histogram.
   const wholesaleWeeklyData = useMemo(() => {
     const weeks = [
       { week: "Week 1", from: 1, to: 7 },
@@ -73,12 +84,14 @@ export function WholesaleSalesReport() {
 
       for (const order of bulkOrders) {
         const d = new Date(order.createdDate);
-        if (!isNaN(d.getTime())) {
-          const day = d.getDate();
-          if (day >= w.from && day <= w.to) {
-            sarees += order.done || order.total || 0;
-            revenue += order.amountDue || 0;
-          }
+        if (isNaN(d.getTime())) continue;
+        const day = d.getDate();
+        if (day >= w.from && day <= w.to) {
+          // The chart is labelled "dispatched", so it counts what has
+          // actually gone out (`done`) — falling back to the order total
+          // inflated every not-yet-dispatched order to its full size.
+          sarees += order.done ?? 0;
+          revenue += order.amountDue || 0;
         }
       }
 
@@ -86,23 +99,32 @@ export function WholesaleSalesReport() {
     });
   }, [bulkOrders]);
 
-  // Dynamic calculation for wholesale monthly revenue (last 6 months)
+  // Monthly revenue, keyed by year+month. Keying on the month name alone
+  // merged (say) Aug 2025 into Aug 2026 and ordered them by calendar month
+  // rather than chronologically.
   const wsMonthlyRev = useMemo(() => {
-    const monthsMap: Record<string, number> = {};
-    const monthsOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const map = new Map<string, { month: string; rev: number }>();
 
     for (const order of bulkOrders) {
       const d = new Date(order.createdDate);
-      if (!isNaN(d.getTime())) {
-        const mLabel = d.toLocaleString("en-US", { month: "short" });
-        monthsMap[mLabel] = (monthsMap[mLabel] || 0) + (order.amountDue || 0);
-      }
+      if (isNaN(d.getTime())) continue;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const label = d.toLocaleString("en-US", { month: "short", year: "2-digit" }).replace(" ", " '");
+      const entry = map.get(key) ?? { month: label, rev: 0 };
+      entry.rev += order.amountDue || 0;
+      map.set(key, entry);
     }
 
-    const activeMonths = monthsOrder.filter(m => monthsMap[m] !== undefined);
-    if (activeMonths.length === 0) return [];
-    return activeMonths.map(m => ({ month: m, rev: monthsMap[m] || 0 }));
+    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0])).slice(-6).map(([, v]) => v);
   }, [bulkOrders]);
+
+  // Registered before the loading/error early-returns so the hook order stays
+  // stable across renders.
+  useRegisterExport(useMemo(() => ({
+    name: "Wholesale Sales Report",
+    headers: ["Bulk Order Ref", "Customer", "Sarees Ordered", "Sarees Dispatched", "Invoiced", "Collected", "Outstanding", "Payment Status", "Created"],
+    rows: bulkOrders.map(o => [o.ref, o.customer, o.total, o.done ?? 0, o.amountDue ?? 0, o.amountPaid ?? 0, Math.max(0, (o.amountDue ?? 0) - (o.amountPaid ?? 0)), o.paymentStatus ?? "pending", o.createdDate]),
+  }), [bulkOrders]));
 
   if (isLoading) {
     return (
@@ -199,20 +221,18 @@ export function WholesaleSalesReport() {
 
       {/* Weekly sarees dispatched — summary strip + bar chart */}
       <FadeUp>
-        <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "20px 24px", marginBottom: 24, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 12 }}>
-            <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>Wholesale Sarees Dispatched Each Week</div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>Current Month — weekly breakdown</div>
-            </div>
+        <ChartCard style={{ marginBottom: 24 }}>
+          <ChartBand tone="output" icon={<Boxes size={19} color={BAND.output.icon} />} title="Wholesale Sarees Dispatched Each Week" sub={`${periodLabel} — weekly breakdown`} />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 14, flexWrap: "wrap", gap: 12 }}>
             <div style={{ display: "flex", gap: 24 }}>
               <div>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Sarees (All Orders)</div>
-                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrders.reduce((s, o) => s + o.total, 0)}</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Sarees Dispatched</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{wholesaleWeeklyData.reduce((s, w) => s + w.sarees, 0)}</div>
               </div>
               <div>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Invoiced (All Orders)</div>
-                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}><Money value={rupees(totalInvoiced)} /></div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Invoiced</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}><Money value={rupees(wholesaleWeeklyData.reduce((s, w) => s + w.revenue, 0))} /></div>
               </div>
             </div>
           </div>
@@ -225,11 +245,14 @@ export function WholesaleSalesReport() {
               <Bar key="wsw-bar" dataKey="sarees" name="Sarees Dispatched" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </div>
+          </div>
+        </ChartCard>
       </FadeUp>
 
-      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 24 }}>
-        <ChartCard title="Wholesale Revenue — Last Months" sub="Monthly invoiced amount">
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}>
+        <ChartCard>
+          <ChartBand tone="pipeline" icon={<Banknote size={19} color={BAND.pipeline.icon} />} title="Wholesale Revenue — Last 6 Months" sub="Monthly invoiced amount" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {wsMonthlyRev.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
               No wholesale orders recorded yet.
@@ -247,9 +270,12 @@ export function WholesaleSalesReport() {
               </BarChart>
             </ResponsiveContainer>
           )}
+          </div>
         </ChartCard>
 
-        <ChartCard title="How Much Each Customer Still Owes" sub="Outstanding balance per customer">
+        <ChartCard>
+          <ChartBand tone="weavers" icon={<ReceiptText size={19} color={BAND.weavers.icon} />} title="How Much Each Customer Still Owes" sub="Outstanding balance per customer" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 11, padding: "8px 0" }}>
             {wsOutstanding.length === 0 && (
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bulk orders recorded yet.</div>
@@ -260,13 +286,16 @@ export function WholesaleSalesReport() {
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{d.customer}</span>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: d.color }}>{d.amt === 0 ? "Paid ✓" : formatMoney(rupees(d.amt))}</span>
                 </div>
-                <AnimBar pct={d.amt === 0 ? 100 : Math.round((d.amt / maxOutstanding) * 100)} color={d.color} height={6} delay={i * 0.06} />
+                <TrackBar pct={d.amt === 0 ? 100 : Math.round((d.amt / maxOutstanding) * 100)} fill={d.color} height={9} delay={i * 0.08} />
               </div>
             ))}
           </div>
+          </div>
         </ChartCard>
 
-        <ChartCard title="Invoice Status — All Bulk Orders" sub="Live payment status breakdown">
+        <ChartCard>
+          <ChartBand tone="orders" icon={<CheckCircle2 size={19} color={BAND.orders.icon} />} title="Invoice Status — All Bulk Orders" sub="Live payment status breakdown" />
+          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {wsInvStatus.length === 0 ? (
             <div style={{ padding: "20px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bulk orders recorded yet.</div>
           ) : (
@@ -292,11 +321,12 @@ export function WholesaleSalesReport() {
           </div>
           </>
           )}
+          </div>
         </ChartCard>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4" style={{ gap: 22, marginBottom: 28, alignItems: "stretch" }}>
-        <SilkSumCard icon={<ReceiptText size={22} color={T.antiqueGold} />} label="Total Bulk Orders" value={`${bulkOrders.length} orders`} sub="All-time" gid="wsr-b" />
+        <SilkSumCard icon={<ReceiptText size={22} color={T.antiqueGold} />} label="Total Bulk Orders" value={`${bulkOrders.length} orders`} sub="In the selected period" gid="wsr-b" />
         <SilkSumCard icon={<Banknote size={22} color={T.antiqueGold} />} label="Total Invoiced Amount" value={formatMoney(rupees(totalInvoiced))} sub="Across all customers" gid="wsr-i" />
         <SilkSumCard icon={<CheckCircle2 size={22} color={T.antiqueGold} />} label="Total Collected" value={formatMoney(rupees(totalCollected))} sub="Payments received" gid="wsr-c" />
         <SilkSumCard icon={<BellRing size={22} color={T.antiqueGold} />} label="Total Outstanding" value={formatMoney(rupees(Math.max(totalOutstanding, 0)))} sub="Yet to be collected" gid="wsr-o" />
@@ -304,17 +334,17 @@ export function WholesaleSalesReport() {
 
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="w-full">
             <div className="min-w-[850px]">
               <DataTable
                 columns={bulkOrderColumns}
                 data={bulkOrders}
                 getRowId={o => o.ref}
                 emptyTitle="No bulk orders recorded yet"
+                pagination
               />
             </div>
           </div>
-          <TablePager total={bulkOrders.length} showing={bulkOrders.length} />
         </div>
       </FadeUp>
     </SectionCard>
