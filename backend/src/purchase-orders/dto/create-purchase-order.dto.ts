@@ -47,9 +47,10 @@ export class CreatePurchaseOrderDto {
   @IsUUID()
   vendorId!: string;
 
-  /** Which of the company's legal firms this order is raised under — copied onto the GrnReceipt when the goods arrive. */
+  /** Which of the company's legal firms this order is raised under — copied onto the GrnReceipt when the goods arrive.
+   *  Firm.id is a formatted string ("FIRM-NNN"), not a UUID — see [[schema.prisma]]. */
   @IsOptional()
-  @IsUUID()
+  @IsString()
   firmId?: string;
 
   @IsOptional()
