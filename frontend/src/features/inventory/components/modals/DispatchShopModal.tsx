@@ -137,9 +137,14 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
           )}
         </div>
 
-        <div style={{ padding: "16px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexShrink: 0 }}>
+        <div className="p-3.5 sm:px-7 sm:py-5 border-t border-[var(--border-default)] flex items-center justify-between gap-1.5 sm:gap-3 shrink-0 bg-white w-full">
           {step > 1 && (
-            <Button onClick={() => setStep(s => s - 1)} variant="secondary" size="lg" className="rounded-full">
+            <Button
+              onClick={() => setStep(s => s - 1)}
+              variant="secondary"
+              size="md"
+              className="rounded-full px-2.5 sm:px-4 text-xs sm:text-sm shrink-0"
+            >
               Back
             </Button>
           )}
@@ -149,9 +154,9 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
               disabled={noSarees}
               title={noSarees ? "Select at least one saree first" : "Dispatch now — fill remaining details later from Dispatch History"}
               variant="secondary"
-              size="lg"
+              size="md"
               iconLeft={Zap}
-              className="rounded-full border-[1.5px] border-[var(--bk-gold-500)] text-[#8B6018] whitespace-nowrap disabled:opacity-55"
+              className="rounded-full border-[1.5px] border-[var(--bk-gold-500)] text-[#8B6018] whitespace-nowrap disabled:opacity-55 px-2.5 sm:px-4 text-xs sm:text-sm shrink-0"
             >
               Dispatch Now
             </Button>
@@ -164,12 +169,11 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
                 disabled={blocked}
                 title={noSarees ? "Select at least one saree first" : undefined}
                 variant="primary"
-                size="lg"
+                size="md"
                 iconRight={ArrowRight}
-                fullWidth
-                className="rounded-full bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)]"
+                className="rounded-full bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)] px-2.5 sm:px-5 text-xs sm:text-sm flex-1 min-w-0"
               >
-                Continue
+                <span className="truncate">Continue</span>
               </Button>
             );
           })() : (
@@ -177,12 +181,11 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
               onClick={() => onConfirm(transport, { picked, receiptUrl })}
               disabled={noSarees}
               variant="primary"
-              size="lg"
+              size="md"
               iconLeft={CheckCircle2}
-              fullWidth
-              className="rounded-full bg-[linear-gradient(135deg,#1E6640_0%,#145230_100%)] shadow-[0_4px_20px_rgba(30,102,64,0.25)]"
+              className="rounded-full bg-[linear-gradient(135deg,#1E6640_0%,#145230_100%)] shadow-[0_4px_20px_rgba(30,102,64,0.25)] px-2.5 sm:px-5 text-xs sm:text-sm flex-1 min-w-0"
             >
-              Confirm Shop Dispatch
+              <span className="truncate">Confirm Shop Dispatch</span>
             </Button>
           )}
         </div>

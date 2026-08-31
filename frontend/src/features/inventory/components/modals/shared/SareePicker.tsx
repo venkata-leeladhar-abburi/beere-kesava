@@ -90,58 +90,60 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
   };
 
   return (
-    <div style={{ border: `1.5px solid ${T.borderGold}`, background: "rgba(200,155,71,0.05)", borderRadius: 14, padding: "14px 16px", marginBottom: 18 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
-        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.05em", flex: 1 }}>
+    <div style={{ border: `1.5px solid ${T.borderGold}`, background: "rgba(200,155,71,0.05)", borderRadius: 14 }} className="p-3.5 sm:p-4 mb-4.5 overflow-hidden">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.05em" }} className="truncate">
           {label} <span style={{ color: T.royalBurgundy }}>({picked.length})</span>
         </span>
-        {/* One Scan button covers both routes: with an ID in the field it adds
-            that saree, and with the field empty it opens the camera for
-            devices with no hardware scanner attached. */}
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            if (!scanValue.trim()) { setCameraOpen(true); return; }
-            scan(scanValue);
-            setScanValue("");
-          }}
-          style={{ display: "flex", alignItems: "center", gap: 8 }}
-        >
-          <Input
-            value={scanValue}
-            onChange={e => setScanValue(e.target.value)}
-            placeholder="Scan or type saree ID"
-            aria-label="Saree ID to scan"
-            title="Type an ID and press Scan, or press Scan with the box empty to use the camera"
-            className="w-[210px] font-mono"
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+          {/* One Scan button covers both routes: with an ID in the field it adds
+              that saree, and with the field empty it opens the camera for
+              devices with no hardware scanner attached. */}
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              if (!scanValue.trim()) { setCameraOpen(true); return; }
+              scan(scanValue);
+              setScanValue("");
+            }}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <Input
+              value={scanValue}
+              onChange={e => setScanValue(e.target.value)}
+              placeholder="Scan or type saree ID"
+              aria-label="Saree ID to scan"
+              title="Type an ID and press Scan, or press Scan with the box empty to use the camera"
+              className="flex-1 min-w-0 sm:w-[180px] font-mono text-xs sm:text-sm h-9"
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              iconLeft={Scan}
+              className="shrink-0 rounded-[10px] whitespace-nowrap bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)] h-9"
+            >
+              Scan Saree
+            </Button>
+          </form>
+          <CameraScannerModal
+            open={cameraOpen}
+            onClose={() => setCameraOpen(false)}
+            onDetected={handleDetected}
+            title="Scan Saree Barcode"
+            hint="Point the camera at the barcode tag on the saree label."
           />
           <Button
-            type="submit"
-            variant="primary"
+            onClick={toggleBrowse}
+            variant={browse ? "primary" : "secondary"}
             size="sm"
-            iconLeft={Scan}
-            className="rounded-[10px] bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)]"
+            iconLeft={Package}
+            iconRight={browse ? ChevronUp : ChevronDown}
+            className={browse ? "shrink-0 rounded-[10px] bg-[var(--bk-burgundy-900)] w-full sm:w-auto h-9" : "shrink-0 rounded-[10px] w-full sm:w-auto h-9"}
           >
-            Scan Saree
+            Select from Inventory
           </Button>
-        </form>
-        <CameraScannerModal
-          open={cameraOpen}
-          onClose={() => setCameraOpen(false)}
-          onDetected={handleDetected}
-          title="Scan Saree Barcode"
-          hint="Point the camera at the barcode tag on the saree label."
-        />
-        <Button
-          onClick={toggleBrowse}
-          variant={browse ? "primary" : "secondary"}
-          size="sm"
-          iconLeft={Package}
-          iconRight={browse ? ChevronUp : ChevronDown}
-          className={browse ? "rounded-[10px] bg-[var(--bk-burgundy-900)]" : "rounded-[10px]"}
-        >
-          Select from Inventory
-        </Button>
+        </div>
       </div>
       {scanMsg && (
         <div style={{ marginTop: 10, fontFamily: F.ui, fontSize: 12, color: T.green, background: T.greenBg, borderRadius: 8, padding: "7px 12px", display: "inline-block" }}>{scanMsg}</div>

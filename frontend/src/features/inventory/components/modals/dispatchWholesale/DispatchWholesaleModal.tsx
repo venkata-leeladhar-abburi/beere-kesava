@@ -365,9 +365,14 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
           )}
         </div>
 
-        <div style={{ padding: "16px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexShrink: 0 }}>
+        <div className="p-3.5 sm:px-7 sm:py-5 border-t border-[var(--border-default)] flex items-center justify-between gap-1.5 sm:gap-3 shrink-0 bg-white w-full">
           {step > 1 && (
-            <Button onClick={() => setStep(s => s - 1)} variant="secondary" size="lg" className="rounded-full">
+            <Button
+              onClick={() => setStep(s => s - 1)}
+              variant="secondary"
+              size="md"
+              className="rounded-full px-2.5 sm:px-4 text-xs sm:text-sm shrink-0"
+            >
               Back
             </Button>
           )}
@@ -377,9 +382,9 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
               disabled={!canInvoice}
               title={canInvoice ? "Dispatch now — fill transport & receipt later from Dispatch History" : "Add sarees and prices first"}
               variant="secondary"
-              size="lg"
+              size="md"
               iconLeft={Zap}
-              className="rounded-full border-[1.5px] border-[var(--bk-gold-500)] text-[#8B6018] whitespace-nowrap disabled:opacity-50"
+              className="rounded-full border-[1.5px] border-[var(--bk-gold-500)] text-[#8B6018] whitespace-nowrap disabled:opacity-50 px-2.5 sm:px-4 text-xs sm:text-sm shrink-0"
             >
               Dispatch Now
             </Button>
@@ -389,24 +394,22 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
               onClick={() => setStep(s => s + 1)}
               disabled={nextDisabled}
               variant="primary"
-              size="lg"
+              size="md"
               iconRight={ArrowRight}
-              fullWidth
-              className="rounded-full bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)]"
+              className="rounded-full bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)] px-2.5 sm:px-5 text-xs sm:text-sm flex-1 min-w-0"
             >
-              Continue
+              <span className="truncate">Continue</span>
             </Button>
           ) : (
             <Button
               onClick={() => onConfirm(transport, inv, customerId, bulkOrderRef || undefined, confirmOpts)}
               disabled={!canInvoice}
               variant="primary"
-              size="lg"
+              size="md"
               iconLeft={Truck}
-              fullWidth
-              className="rounded-full bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)] shadow-[0_4px_20px_rgba(110,15,45,0.25)]"
+              className="rounded-full bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)] shadow-[0_4px_20px_rgba(110,15,45,0.25)] px-2.5 sm:px-5 text-xs sm:text-sm flex-1 min-w-0"
             >
-              Confirm &amp; Dispatch
+              <span className="truncate">Confirm &amp; Dispatch</span>
             </Button>
           )}
         </div>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Download, Lock, History } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F, cardStyle } from "./theme";
 import { SectionCard, GoldLink } from "./sharedUI";
@@ -40,6 +41,7 @@ function toHistoryRow(req: BackendRateChangeRequest, canSeeCost: boolean): Histo
 export function RateHistorySection() {
   const canSeeCost = useDataAccess("cost");
   const [histDateFilter, setHistDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [search, setSearch] = useState("");
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
@@ -65,7 +67,11 @@ export function RateHistorySection() {
     loadHistory();
   }, [loadHistory]);
 
-  const filteredHistory = history.filter(row => matchesDateFilter(row.date.split(" · ")[0], histDateFilter));
+  const filteredHistory = history.filter(row => {
+    const matchDate = matchesDateFilter(row.date.split(" · ")[0], histDateFilter);
+    const matchSearch = !search.trim() || row.what.toLowerCase().includes(search.toLowerCase()) || row.by.toLowerCase().includes(search.toLowerCase()) || row.reason.toLowerCase().includes(search.toLowerCase());
+    return matchDate && matchSearch;
+  });
   const pag = usePagination(filteredHistory, 10);
 
   const historyColumns: ColumnDef<HistoryRow>[] = [
@@ -103,7 +109,45 @@ export function RateHistorySection() {
       subtitle="A permanent, immutable log of all rate changes made in the system. This record cannot be edited or deleted and serves as the official audit trail."
       actions={<DownloadGate><GoldLink><Download size={13} /> Download History →</GoldLink></DownloadGate>}
     >
-      <div style={{ marginBottom: 16 }}>
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search history by saree type, user, reason..."
+          filterGroups={[
+            {
+              id: "time",
+              label: "Time Period",
+              value: histDateFilter.mode,
+              defaultValue: "all",
+              options: [
+                { value: "all", label: "All Time" },
+                { value: "day", label: "Specific Date" },
+                { value: "range", label: "Date Range" },
+                { value: "month", label: "Monthly" },
+                { value: "year", label: "Yearly" },
+              ],
+              onChange: (m: string) => {
+                const mode = m as DateFilterState["mode"];
+                if (mode === "day") setHistDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
+                else if (mode === "month") setHistDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
+                else if (mode === "year") setHistDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+                else setHistDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                pag.setPage(1);
+              },
+            },
+          ]}
+          onResetAll={() => {
+            setSearch("");
+            setHistDateFilter(DEFAULT_DATE_FILTER);
+            pag.setPage(1);
+          }}
+        />
+      </div>
+
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:block mb-4">
         <DateFilterBar filter={histDateFilter} onChange={f => { setHistDateFilter(f); pag.setPage(1); }} />
       </div>
 

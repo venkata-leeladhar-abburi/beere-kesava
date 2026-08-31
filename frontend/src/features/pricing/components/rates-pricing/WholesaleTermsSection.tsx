@@ -4,9 +4,10 @@ import { motion, AnimatePresence } from "motion/react";
 import { Edit2, Check, X, Clock } from "lucide-react";
 import { T, F, cardStyle, labelStyle } from "./theme";
 import { SectionCard, GoldLink } from "./sharedUI";
-import { Button, NumberInput, Textarea } from "../../../../shared/ui/primitives";
+import { Button, NumberInput, Textarea, Input } from "../../../../shared/ui/primitives";
 import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
 
 interface CustomerTermsState {
@@ -19,6 +20,7 @@ export function WholesaleTermsSection() {
   const [editAlertDay, setEditAlertDay] = useState(false);
   const [globalAlertDay, setGlobalAlertDay] = useState(45);
   const [tempAlertDay, setTempAlertDay] = useState(45);
+  const [search, setSearch] = useState("");
 
   const [customerTerms, setCustomerTerms] = useState<Record<string, CustomerTermsState>>({});
   const [editForm, setEditForm] = useState<{ days: number; notes: string }>({ days: 30, notes: "" });
@@ -29,8 +31,13 @@ export function WholesaleTermsSection() {
   });
 
   const wholesaleCustomers = useMemo(() => {
-    return (customersRes?.items ?? []).filter(c => c.type === "WHOLESALE");
-  }, [customersRes]);
+    const list = (customersRes?.items ?? []).filter(c => c.type === "WHOLESALE");
+    if (!search.trim()) return list;
+    const q = search.toLowerCase();
+    return list.filter(c => c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q));
+  }, [customersRes, search]);
+
+  const editingCust = wholesaleCustomers.find(c => c.id === editTermsRowId);
 
   const handleEditClick = (cust: BackendCustomer) => {
     if (editTermsRowId === cust.id) {
@@ -142,6 +149,29 @@ export function WholesaleTermsSection() {
         </AnimatePresence>
       </div>
 
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search customer by name or code..."
+          filterGroups={[]}
+          onResetAll={() => setSearch("")}
+        />
+      </div>
+
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:flex items-center justify-between gap-4 mb-4">
+        <div className="w-[280px]">
+          <Input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search customer by name or code..."
+            className="h-10 text-sm font-sans"
+          />
+        </div>
+      </div>
+
       {/* Payment Terms Table */}
       <div id="wholesale-payment-terms-table" style={cardStyle}>
         {isLoading ? (
@@ -155,68 +185,76 @@ export function WholesaleTermsSection() {
             columns={columns}
             data={wholesaleCustomers}
             getRowId={c => c.id}
-            rowClassName={c => editTermsRowId === c.id ? "bg-[rgba(110,15,45,0.03)]" : undefined}
-            expandedIds={editTermsRowId ? new Set([editTermsRowId]) : undefined}
-            renderExpandedRow={cust => (
-              <AnimatePresence>
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                  style={{ overflow: "hidden" }}
-                >
-                  <div style={{ background: T.cream, borderTop: `2px solid ${T.antiqueGold}`, padding: 20 }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 14 }}>
-                      Editing Terms: {cust.name}
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16, marginBottom: 14 }}>
-                      <div>
-                        <label style={labelStyle} htmlFor="payment-terms-days">Payment Terms (Days) *</label>
-                        <NumberInput
-                          id="payment-terms-days"
-                          value={editForm.days}
-                          onValueChange={v => setEditForm(f => ({ ...f, days: Number(v) }))}
-                          className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]"
-                        />
-                      </div>
-                      <div>
-                        <label style={labelStyle} htmlFor="notes">Notes</label>
-                        <Textarea
-                          id="notes"
-                          rows={2}
-                          value={editForm.notes}
-                          onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
-                          className="resize-none bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]"
-                          placeholder="Optional notes about this customer's terms…"
-                        />
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", gap: 10 }}>
-                      <Button
-                        variant="primary"
-                        iconLeft={Check}
-                        className="rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto px-5 py-2 text-[12px] font-semibold"
-                        onClick={() => handleSaveTerms(cust.id)}
-                      >
-                        Save Terms
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        iconLeft={X}
-                        className="rounded-full h-auto px-4 py-2 text-[12px]"
-                        onClick={() => setEditTermsRowId(null)}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            )}
+            rowClassName={c => editTermsRowId === c.id ? "bg-[rgba(110,15,45,0.05)]" : undefined}
           />
         )}
       </div>
+
+      {/* Standalone Edit Form Card (Zero horizontal scroll) */}
+      <AnimatePresence>
+        {editingCust && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden mt-4"
+          >
+            <div style={{ ...cardStyle, padding: 24, border: `2px solid ${T.antiqueGold}` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>
+                  Editing Payment Terms: <span style={{ color: T.royalBurgundy }}>{editingCust.name}</span>
+                </div>
+                <Button
+                  variant="ghost" size="sm" iconLeft={X}
+                  className="text-[var(--text-tertiary)] hover:bg-black/5 rounded-full p-2 h-auto"
+                  onClick={() => setEditTermsRowId(null)}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16, marginBottom: 16 }}>
+                <div>
+                  <label style={labelStyle} htmlFor="payment-terms-days">Payment Terms (Days) *</label>
+                  <NumberInput
+                    id="payment-terms-days"
+                    value={editForm.days}
+                    onValueChange={v => setEditForm(f => ({ ...f, days: Number(v) }))}
+                    className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]"
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle} htmlFor="notes">Notes</label>
+                  <Textarea
+                    id="notes"
+                    rows={2}
+                    value={editForm.notes}
+                    onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
+                    className="resize-none bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]"
+                    placeholder="Optional notes about this customer's terms…"
+                  />
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <Button
+                  variant="primary"
+                  iconLeft={Check}
+                  className="rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto px-6 py-2.5 text-[13px] font-semibold"
+                  onClick={() => handleSaveTerms(editingCust.id)}
+                >
+                  Save Terms
+                </Button>
+                <Button
+                  variant="secondary"
+                  iconLeft={X}
+                  className="rounded-full h-auto px-5 py-2.5 text-[13px]"
+                  onClick={() => setEditTermsRowId(null)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </SectionCard>
     </div>
   );

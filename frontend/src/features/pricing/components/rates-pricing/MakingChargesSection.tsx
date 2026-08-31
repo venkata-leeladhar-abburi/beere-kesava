@@ -6,6 +6,7 @@ import { SectionCard, GoldLink, JariWeightField, SareeTypeCombobox } from "./sha
 import { Button, IconButton, NumberInput, Input, Textarea } from "../../../../shared/ui/primitives";
 import type { SareeTypeRecord } from "./sareeTypeData";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { useDataAccess } from "@/shared/ui/domain";
 
@@ -21,6 +22,7 @@ export function MakingChargesSection({
   const canSeeCost = useDataAccess("cost");
   const [editCode, setEditCode] = useState<string | null>(null);
   const [showNewForm, setShowNewForm] = useState(false);
+  const [search, setSearch] = useState("");
 
   // Edit form state
   const [editVals, setEditVals] = useState<Partial<SareeTypeRecord>>({});
@@ -63,6 +65,14 @@ export function MakingChargesSection({
 
   // All current type names for the combobox
   const typeNames = rates.map(r => r.type);
+
+  const filteredRates = rates.filter(r => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return r.type.toLowerCase().includes(q) || r.code.toLowerCase().includes(q) || (r.description && r.description.toLowerCase().includes(q));
+  });
+
+  const editingRow = rates.find(r => r.code === editCode);
 
   const columns: ColumnDef<SareeTypeRecord>[] = [
     {
@@ -110,125 +120,146 @@ export function MakingChargesSection({
       subtitle="Applied to each saree during production billing. Making charge is the amount paid to the weaver per saree woven. All prices in Indian Rupees (₹)."
       actions={<GoldLink><BarChart2 size={13} /> View Rate Change History →</GoldLink>}
     >
+      {/* Mobile Flipkart-style Filter Bar */}
+      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+        <MobileFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search saree type, code..."
+          filterGroups={[]}
+          onResetAll={() => setSearch("")}
+        />
+      </div>
+
+      {/* Desktop Filter Bar */}
+      <div className="hidden md:flex items-center justify-between gap-4 mb-4">
+        <div className="w-[280px]">
+          <Input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search saree type, code..."
+            className="h-10 text-sm font-sans"
+          />
+        </div>
+      </div>
+
       {/* Rates Table */}
       <div id="making-charges-rates-table" style={cardStyle}>
         <DataTable
           columns={columns}
-          data={rates}
+          data={filteredRates}
           getRowId={r => r.code}
-          rowClassName={r => editCode === r.code ? "bg-[rgba(110,15,45,0.03)]" : undefined}
-          expandedIds={editCode ? new Set([editCode]) : undefined}
+          rowClassName={r => editCode === r.code ? "bg-[rgba(110,15,45,0.05)]" : undefined}
           emptyTitle='No rates configured yet. Use "Add New Saree Type" below to create the first entry.'
-          renderExpandedRow={row => (
-            <AnimatePresence>
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                style={{ overflow: "hidden" }}
-              >
-                <div style={{ background: T.cream, borderTop: `2px solid ${T.antiqueGold}`, padding: 24 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
-                      Editing: {row.type} — <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy }}>{row.code}</span>
-                    </span>
-                    <IconButton
-                      icon={X} label="Close" variant="ghost" size="sm"
-                      className="text-[var(--text-tertiary)]"
-                      onClick={() => setEditCode(null)}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 18 }}>
-                    {/* Col 1 — Identity */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                      <div>
-                        <span style={{ ...labelStyle, display: "block" }}>Saree Type Name *</span>
-                        <SareeTypeCombobox
-                          value={editVals.type ?? row.type}
-                          onChange={v => setEditVals(p => ({ ...p, type: v }))}
-                          options={typeNames.filter(n => n !== row.type)}
-                        />
-                      </div>
-                      <div>
-                        <label style={labelStyle} htmlFor="short-code">Short Code</label>
-                        <Input id="short-code" value={row.code} readOnly className="bg-[#EDE5D8] text-[var(--text-tertiary)] cursor-not-allowed" />
-                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4, display: "block" }}>Code cannot be changed</span>
-                      </div>
-                      <div>
-                        <label style={labelStyle} htmlFor="description">Description</label>
-                        <Textarea id="description" rows={2} value={editVals.description ?? row.description} onChange={e => setEditVals(p => ({ ...p, description: e.target.value }))} className="resize-none bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="Short description…" />
-                      </div>
-                    </div>
-                    {/* Col 2 — Pricing */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                      <div>
-                        <label style={labelStyle} htmlFor="making-charge">Making Charge (₹) *</label>
-                        {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
-                        <NumberInput id="making-charge" addonLeft="₹" value={Number(editVals.charge ?? row.charge)} onValueChange={v => setEditVals(p => ({ ...p, charge: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
-                      </div>
-                      <div>
-                        <label style={labelStyle} htmlFor="retail-price">Retail Price (₹)</label>
-                        {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
-                        <NumberInput id="retail-price" addonLeft="₹" value={Number(editVals.retail ?? row.retail)} onValueChange={v => setEditVals(p => ({ ...p, retail: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
-                      </div>
-                      <div>
-                        <label style={labelStyle} htmlFor="wholesale-price">Wholesale Price (₹)</label>
-                        {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
-                        <NumberInput id="wholesale-price" addonLeft="₹" value={Number(editVals.wholesale ?? row.wholesale)} onValueChange={v => setEditVals(p => ({ ...p, wholesale: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
-                      </div>
-                    </div>
-                    {/* Col 3 — Weights */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                      <div>
-                        <label style={labelStyle} htmlFor="standard-weight-g">Standard Weight (g) *</label>
-                        <NumberInput id="standard-weight-g" value={Number(editVals.stdWeight ?? row.stdWeight)} onValueChange={v => setEditVals(p => ({ ...p, stdWeight: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="Enter manually" />
-                      </div>
-                      <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: 14 }}>
-                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                          <div>
-                            <span style={{ ...labelStyle, marginBottom: 3, display: "block" }}>Warp Weight (g)</span>
-                            <NumberInput value={Number(editVals.warpWeight ?? row.warpWeight)} onValueChange={v => setEditVals(p => ({ ...p, warpWeight: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
-                          </div>
-                          <div>
-                            <span style={{ ...labelStyle, marginBottom: 3, display: "block" }}>Resham Weight (g)</span>
-                            <NumberInput value={Number(editVals.reshamWeight ?? row.reshamWeight)} onValueChange={v => setEditVals(p => ({ ...p, reshamWeight: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
-                          </div>
-                          <JariWeightField
-                            reels={editVals.jariWeight ?? row.jariWeight}
-                            onChange={v => setEditVals(p => ({ ...p, jariWeight: v }))}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{
-                    background: "rgba(196,146,58,0.10)", border: `1px solid rgba(200,155,71,0.35)`,
-                    borderRadius: 8, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10, marginBottom: 18,
-                  }}>
-                    <AlertTriangle size={15} color={T.antiqueGold} />
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: "#7A5E1A" }}>
-                      Changing making charges affects all future production bills for <strong>{row.type}</strong>. Changes are logged in rate history.
-                    </span>
-                  </div>
-
-                  <div style={{ display: "flex", gap: 10 }}>
-                    <Button variant="primary" iconLeft={Check} className="rounded-[14px] bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-[9px] px-[22px] text-[13px] font-semibold" onClick={() => saveEdit(row)}>
-                      Save Changes
-                    </Button>
-                    <Button variant="secondary" iconLeft={X} className="rounded-[14px] h-auto py-[9px] px-[18px] text-[13px]" onClick={() => setEditCode(null)}>
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          )}
         />
       </div>
+
+      {/* Full-width Standalone Edit Form Card (No horizontal scroll) */}
+      <AnimatePresence>
+        {editingRow && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden mt-4"
+          >
+            <div style={{ ...cardStyle, padding: 24, border: `2px solid ${T.antiqueGold}` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+                <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>
+                  Editing: {editingRow.type} — <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy }}>{editingRow.code}</span>
+                </span>
+                <IconButton
+                  icon={X} label="Close" variant="ghost" size="sm"
+                  className="text-[var(--text-tertiary)] hover:bg-black/5"
+                  onClick={() => setEditCode(null)}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 18 }}>
+                {/* Col 1 — Identity */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  <div>
+                    <span style={{ ...labelStyle, display: "block" }}>Saree Type Name *</span>
+                    <SareeTypeCombobox
+                      value={editVals.type ?? editingRow.type}
+                      onChange={v => setEditVals(p => ({ ...p, type: v }))}
+                      options={typeNames.filter(n => n !== editingRow.type)}
+                    />
+                  </div>
+                  <div>
+                    <label style={labelStyle} htmlFor="short-code">Short Code</label>
+                    <Input id="short-code" value={editingRow.code} readOnly className="bg-[#EDE5D8] text-[var(--text-tertiary)] cursor-not-allowed font-mono" />
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4, display: "block" }}>Code cannot be changed</span>
+                  </div>
+                  <div>
+                    <label style={labelStyle} htmlFor="description">Description</label>
+                    <Textarea id="description" rows={2} value={editVals.description ?? editingRow.description} onChange={e => setEditVals(p => ({ ...p, description: e.target.value }))} className="resize-none bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="Short description…" />
+                  </div>
+                </div>
+                {/* Col 2 — Pricing */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  <div>
+                    <label style={labelStyle} htmlFor="making-charge">Making Charge (₹) *</label>
+                    {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
+                    <NumberInput id="making-charge" addonLeft="₹" value={Number(editVals.charge ?? editingRow.charge)} onValueChange={v => setEditVals(p => ({ ...p, charge: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                  </div>
+                  <div>
+                    <label style={labelStyle} htmlFor="retail-price">Retail Price (₹)</label>
+                    {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
+                    <NumberInput id="retail-price" addonLeft="₹" value={Number(editVals.retail ?? editingRow.retail)} onValueChange={v => setEditVals(p => ({ ...p, retail: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                  </div>
+                  <div>
+                    <label style={labelStyle} htmlFor="wholesale-price">Wholesale Price (₹)</label>
+                    {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
+                    <NumberInput id="wholesale-price" addonLeft="₹" value={Number(editVals.wholesale ?? editingRow.wholesale)} onValueChange={v => setEditVals(p => ({ ...p, wholesale: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                  </div>
+                </div>
+                {/* Col 3 — Weights */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  <div>
+                    <label style={labelStyle} htmlFor="standard-weight-g">Standard Weight (g) *</label>
+                    <NumberInput id="standard-weight-g" value={Number(editVals.stdWeight ?? editingRow.stdWeight)} onValueChange={v => setEditVals(p => ({ ...p, stdWeight: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="Enter manually" />
+                  </div>
+                  <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: 14 }}>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      <div>
+                        <span style={{ ...labelStyle, marginBottom: 3, display: "block" }}>Warp Weight (g)</span>
+                        <NumberInput value={Number(editVals.warpWeight ?? editingRow.warpWeight)} onValueChange={v => setEditVals(p => ({ ...p, warpWeight: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                      </div>
+                      <div>
+                        <span style={{ ...labelStyle, marginBottom: 3, display: "block" }}>Resham Weight (g)</span>
+                        <NumberInput value={Number(editVals.reshamWeight ?? editingRow.reshamWeight)} onValueChange={v => setEditVals(p => ({ ...p, reshamWeight: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                      </div>
+                      <JariWeightField
+                        reels={editVals.jariWeight ?? editingRow.jariWeight}
+                        onChange={v => setEditVals(p => ({ ...p, jariWeight: v }))}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{
+                background: "rgba(196,146,58,0.10)", border: `1px solid rgba(200,155,71,0.35)`,
+                borderRadius: 8, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10, marginBottom: 18,
+              }}>
+                <AlertTriangle size={15} color={T.antiqueGold} />
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: "#7A5E1A" }}>
+                  Changing making charges affects all future production bills for <strong>{editingRow.type}</strong>. Changes are logged in rate history.
+                </span>
+              </div>
+
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <Button variant="primary" iconLeft={Check} className="rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-[10px] px-[24px] text-[13px] font-semibold" onClick={() => saveEdit(editingRow)}>
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Add New Saree Type */}
       <Button
