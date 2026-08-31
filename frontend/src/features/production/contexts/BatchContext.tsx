@@ -281,14 +281,19 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       const assignable = batch.rows
         .map(row => {
           const recipientType = row.weaverId ? "WEAVER" as const : row.factoryLoomId ? "FACTORY_LOOM" as const : null;
-          if (!recipientType || !row.sareeTypeCode) return null;
+          // Recipient and saree type are assigned in separate steps in the
+          // UI (weaver picker vs. saree-type picker), so a row can reach
+          // Save with a weaver/loom set but no type yet — that must still be
+          // sent and persisted, not silently dropped, or a Save Draft loses
+          // the weaver assignment the moment the batch list refetches.
+          if (!recipientType) return null;
           return {
             serial: row.serial,
             recipientType,
             weaverId: row.weaverId ?? undefined,
             factoryLoomId: row.factoryLoomId ?? undefined,
             designCode: row.designCode ?? undefined,
-            sareeTypeCode: row.sareeTypeCode,
+            sareeTypeCode: row.sareeTypeCode ?? undefined,
             // Persists the row's bulk-order link so it survives a refetch —
             // previously withheld because the backend wrote an unvalidated FK
             // (any bad ref 500'd); assignRows now validates it and returns a

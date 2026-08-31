@@ -167,11 +167,14 @@ export class BatchesService {
         throw new NotFoundException(`Bulk order ${bulkOrderRef} not found`);
       }
     }
-    const sareeType = await this.prisma.sareeTypeRate.findUnique({
-      where: { code: dto.sareeTypeCode },
-    });
-    if (!sareeType) {
-      throw new NotFoundException(`Saree type ${dto.sareeTypeCode} not found`);
+    const sareeTypeCode = dto.sareeTypeCode || null;
+    if (sareeTypeCode) {
+      const sareeType = await this.prisma.sareeTypeRate.findUnique({
+        where: { code: sareeTypeCode },
+      });
+      if (!sareeType) {
+        throw new NotFoundException(`Saree type ${sareeTypeCode} not found`);
+      }
     }
 
     const sareeId = await this.buildSareeId(batchId, dto, serial);
@@ -184,7 +187,7 @@ export class BatchesService {
         weaverId: dto.weaverId,
         factoryLoomId: dto.factoryLoomId,
         designCode,
-        sareeTypeCode: dto.sareeTypeCode,
+        sareeTypeCode,
         bulkOrderRef,
       },
     });
@@ -235,7 +238,7 @@ export class BatchesService {
 
     const designCodes = [...new Set(dto.rows.map((r) => r.designCode || null).filter((v): v is string => !!v))];
     const bulkOrderRefs = [...new Set(dto.rows.map((r) => r.bulkOrderRef || null).filter((v): v is string => !!v))];
-    const sareeTypeCodes = [...new Set(dto.rows.map((r) => r.sareeTypeCode))];
+    const sareeTypeCodes = [...new Set(dto.rows.map((r) => r.sareeTypeCode || null).filter((v): v is string => !!v))];
     const weaverIds = [
       ...new Set(dto.rows.filter((r) => r.recipientType === RecipientType.WEAVER).map((r) => r.weaverId!)),
     ];
@@ -269,8 +272,9 @@ export class BatchesService {
       if (bulkOrderRef && !bulkOrderSet.has(bulkOrderRef)) {
         throw new NotFoundException(`Bulk order ${bulkOrderRef} not found (row ${item.serial})`);
       }
-      if (!sareeTypeSet.has(item.sareeTypeCode)) {
-        throw new NotFoundException(`Saree type ${item.sareeTypeCode} not found (row ${item.serial})`);
+      const sareeTypeCode = item.sareeTypeCode || null;
+      if (sareeTypeCode && !sareeTypeSet.has(sareeTypeCode)) {
+        throw new NotFoundException(`Saree type ${sareeTypeCode} not found (row ${item.serial})`);
       }
 
       const seq3 = String(item.serial).padStart(3, "0");
@@ -298,7 +302,7 @@ export class BatchesService {
           weaverId: item.weaverId,
           factoryLoomId: item.factoryLoomId,
           designCode,
-          sareeTypeCode: item.sareeTypeCode,
+          sareeTypeCode,
           bulkOrderRef,
         },
       });
@@ -517,6 +521,18 @@ export class BatchesService {
       throw new NotFoundException(`Batch ${id} not found`);
     }
     const sareeIds = batch.rows.map((r) => r.sareeId).filter((s): s is string => !!s);
+
+    if (sareeIds.length > 0) {
+      const [saleCount, returnCount] = await Promise.all([
+        this.prisma.saleRecord.count({ where: { sareeId: { in: sareeIds } } }),
+        this.prisma.returnRecord.count({ where: { sareeId: { in: sareeIds } } }),
+      ]);
+      if (saleCount > 0 || returnCount > 0) {
+        throw new ConflictException(
+          `Batch ${id} has sarees with sale/return history and cannot be deleted`,
+        );
+      }
+    }
 
     await this.prisma.$transaction([
       this.prisma.finishingAssignment.deleteMany({ where: { sareeId: { in: sareeIds } } }),

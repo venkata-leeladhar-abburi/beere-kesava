@@ -24,8 +24,13 @@ export class AssignBatchRowDto {
   @IsString()
   designCode?: string;
 
+  // Nullable to match BatchSareeRow.sareeTypeCode — a draft batch assigns a
+  // row's weaver/loom and its saree type as separate steps (see BatchTable's
+  // weaver-picker and saree-type-picker actions), so a save in between must
+  // be able to persist the recipient alone without the type yet being known.
+  @IsOptional()
   @IsString()
-  sareeTypeCode!: string;
+  sareeTypeCode?: string;
 
   @IsOptional()
   @IsString()

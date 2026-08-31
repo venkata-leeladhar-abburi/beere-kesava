@@ -84,6 +84,8 @@ describe("BatchesService", () => {
       materialReturnRecord: { deleteMany: jest.fn() },
       inventoryRecord: { deleteMany: jest.fn() },
       saree: { deleteMany: jest.fn() },
+      saleRecord: { count: jest.fn().mockResolvedValue(0) },
+      returnRecord: { count: jest.fn().mockResolvedValue(0) },
       $transaction: jest.fn().mockResolvedValue([]),
     };
     idGenerator = { nextFormatted: jest.fn().mockResolvedValue("BATCH-0007") };
