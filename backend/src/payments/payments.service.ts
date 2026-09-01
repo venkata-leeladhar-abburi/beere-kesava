@@ -27,6 +27,15 @@ export interface ImportResult {
   totalAmount: number;
 }
 
+// Header cells in an import sheet are typed by hand, so "firmId", "Firm ID"
+// and "firm_id" all mean the same column. Matching the raw string meant an
+// optional column whose header was capitalised differently was silently
+// dropped — the value looked accepted but was never stored, with no row error
+// to explain it (required columns at least failed loudly).
+function normalizeHeader(value: string): string {
+  return value.trim().toLowerCase().replace(/[\s_-]+/g, "");
+}
+
 @Injectable()
 export class PaymentsService {
   constructor(
@@ -435,13 +444,13 @@ export class PaymentsService {
     const columnIndex = new Map<string, number>();
     headerRow.forEach((value, index) => {
       if (typeof value === "string") {
-        columnIndex.set(value.trim(), index);
+        columnIndex.set(normalizeHeader(value), index);
       }
     });
 
     const requiredColumns = ["weaverId", "amountPaid"];
     for (const column of requiredColumns) {
-      if (!columnIndex.has(column)) {
+      if (!columnIndex.has(normalizeHeader(column))) {
         return {
           created: 0,
           failed: 0,
@@ -452,7 +461,7 @@ export class PaymentsService {
     }
 
     const cell = (row: ExcelJS.Row, name: string) => {
-      const index = columnIndex.get(name);
+      const index = columnIndex.get(normalizeHeader(name));
       return index === undefined ? undefined : row.getCell(index).value;
     };
     const asString = (value: unknown): string | undefined => {
@@ -495,7 +504,10 @@ export class PaymentsService {
         return;
       }
 
-      const firmRaw = asString(cell(row, "firmId"));
+      // Accept the firm's name too, not just its id — the production summary
+      // table shows "Firm Name", so that's what an admin filling this sheet by
+      // hand tends to type. Resolved to a real id below.
+      const firmRaw = asString(cell(row, "firmId")) ?? asString(cell(row, "firmName"));
       const data: Prisma.WeaverPaymentCreateManyInput = {
         id: "", // placeholder — assigned a real WP-NNN id below once this row is validated
         weaverId,
@@ -661,18 +673,18 @@ export class PaymentsService {
     const headerRow = sheet.getRow(1).values as unknown[];
     const columnIndex = new Map<string, number>();
     headerRow.forEach((value, index) => {
-      if (typeof value === "string") columnIndex.set(value.trim(), index);
+      if (typeof value === "string") columnIndex.set(normalizeHeader(value), index);
     });
 
     const requiredColumns = ["poNumber", "amountPaid"];
     for (const column of requiredColumns) {
-      if (!columnIndex.has(column)) {
+      if (!columnIndex.has(normalizeHeader(column))) {
         return { created: 0, failed: 0, errors: [{ row: 1, message: `Missing required column "${column}"` }], totalAmount: 0 };
       }
     }
 
     const cell = (row: ExcelJS.Row, name: string) => {
-      const index = columnIndex.get(name);
+      const index = columnIndex.get(normalizeHeader(name));
       return index === undefined ? undefined : row.getCell(index).value;
     };
     const asString = (value: unknown): string | undefined => {

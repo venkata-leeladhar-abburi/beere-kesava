@@ -2,9 +2,9 @@ import { useRef, useState } from "react";
 import { Camera, Loader2 } from "lucide-react";
 import { uploadsApi, resolveAssetUrl } from "../api/uploads";
 import { ApiError } from "../api/client";
+import { IMAGE_ACCEPT_ATTR, IMAGE_REJECTION_MESSAGE, isAcceptedImageFile } from "../lib/imageTypes";
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
-const ACCEPTED_TYPES = new Set(["image/png", "image/jpeg"]);
 
 /**
  * Circular photo dropzone backed by POST /uploads/photo. `photoUrl` is the
@@ -32,8 +32,8 @@ export function PhotoUploadField({
 
   async function handleFile(file: File) {
     setError(null);
-    if (!ACCEPTED_TYPES.has(file.type)) {
-      setError("Photo must be a JPG or PNG image.");
+    if (!isAcceptedImageFile(file)) {
+      setError(IMAGE_REJECTION_MESSAGE);
       return;
     }
     if (file.size > MAX_SIZE_BYTES) {
@@ -91,7 +91,7 @@ export function PhotoUploadField({
       <input
         ref={inputRef}
         type="file"
-        accept="image/png,image/jpeg"
+        accept={IMAGE_ACCEPT_ATTR}
         aria-label={labelText || "Upload photo"}
         style={{ display: "none" }}
         onChange={e => {

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { ApiError } from "../api/client";
 import { uploadsApi } from "../api/uploads";
+import { IMAGE_REJECTION_MESSAGE, isAcceptedImageFile } from "../lib/imageTypes";
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
-const ACCEPTED_TYPES = new Set(["image/png", "image/jpeg"]);
 
 /**
  * Uploads a picked image to POST /uploads/photo and hands back the stored
@@ -27,8 +27,8 @@ export function useImageUpload() {
 
   async function upload(file: File): Promise<string | null> {
     setError(null);
-    if (!ACCEPTED_TYPES.has(file.type)) {
-      setError("Photo must be a JPG or PNG image.");
+    if (!isAcceptedImageFile(file)) {
+      setError(IMAGE_REJECTION_MESSAGE);
       return null;
     }
     if (file.size > MAX_SIZE_BYTES) {

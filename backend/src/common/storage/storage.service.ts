@@ -104,6 +104,23 @@ export class StorageService {
   }
 }
 
+// The stored key's extension has to match the bytes: every image type is
+// accepted now (see isAcceptedImageMimeType), and defaulting all of them to
+// ".jpg" left a .heic or .webp object named as a JPEG — which some CDNs and
+// image tools sniff by extension and then refuse to render.
+const IMAGE_EXTENSIONS: Record<string, string> = {
+  "image/jpeg": ".jpg",
+  "image/jpg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "image/gif": ".gif",
+  "image/avif": ".avif",
+  "image/heic": ".heic",
+  "image/heif": ".heif",
+  "image/bmp": ".bmp",
+  "image/tiff": ".tiff",
+};
+
 function extensionFor(mimetype: string): string {
   switch (mimetype) {
     case "application/pdf":
@@ -112,9 +129,15 @@ function extensionFor(mimetype: string): string {
       return ".xlsx";
     case "text/csv":
       return ".csv";
-    case "image/png":
-      return ".png";
     default:
-      return ".jpg";
+      break;
   }
+  const mapped = IMAGE_EXTENSIONS[mimetype];
+  if (mapped) return mapped;
+  // An image subtype with no explicit mapping ("image/x-canon-cr2") still
+  // gets a plausible extension rather than being mislabelled .jpg.
+  const subtype = mimetype.startsWith("image/")
+    ? mimetype.slice("image/".length).replace(/[^a-z0-9]/gi, "")
+    : "";
+  return subtype ? `.${subtype.toLowerCase()}` : ".jpg";
 }

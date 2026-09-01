@@ -2,9 +2,9 @@ import { useRef, useState } from "react";
 import { Upload, FileText, Loader2 } from "lucide-react";
 import { uploadsApi, resolveAssetUrl } from "../api/uploads";
 import { ApiError } from "../api/client";
+import { IMAGE_ACCEPT_ATTR, isAcceptedImageFile } from "../lib/imageTypes";
 
 const MAX_SIZE_BYTES = 10 * 1024 * 1024;
-const ACCEPTED_TYPES = new Set(["image/png", "image/jpeg", "application/pdf"]);
 
 /**
  * Dropzone for a dispatch LR receipt, backed by POST /uploads/receipt.
@@ -29,7 +29,7 @@ export function ReceiptUploadField({
 
   async function handleFile(file: File) {
     setError(null);
-    if (!ACCEPTED_TYPES.has(file.type)) {
+    if (!isAcceptedImageFile(file) && file.type !== "application/pdf" && !/\.pdf$/i.test(file.name)) {
       setError("Receipt must be a JPG, PNG or PDF file.");
       return;
     }
@@ -69,7 +69,7 @@ export function ReceiptUploadField({
       <input
         ref={inputRef}
         type="file"
-        accept=".jpg,.jpeg,.png,.pdf"
+        accept={`${IMAGE_ACCEPT_ATTR},application/pdf,.pdf`}
         aria-label="Upload LR receipt"
         style={{ display: "none" }}
         onChange={e => {

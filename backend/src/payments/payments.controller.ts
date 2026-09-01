@@ -13,6 +13,7 @@ import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { AdminOnly, RequireRoles } from "../auth/decorators/require-roles.decorator";
 import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
 import { resolveWeaverScope } from "../auth/weaver-scope";
+import { spreadsheetUploadOptions } from "../common/storage/spreadsheet-upload.config";
 import { UserRole } from "../generated/prisma/client";
 import { CreateSupplierPaymentDto } from "./dto/create-supplier-payment.dto";
 import { CreateVendorPaymentDto } from "./dto/create-vendor-payment.dto";
@@ -101,7 +102,7 @@ export class PaymentsController {
   }
 
   @Post("weavers/import")
-  @UseInterceptors(FileInterceptor("file"))
+  @UseInterceptors(FileInterceptor("file", spreadsheetUploadOptions()))
   async importWeaverPayments(
     @CurrentUser() user: AuthenticatedUser,
     @UploadedFile() file?: Express.Multer.File,
@@ -118,7 +119,7 @@ export class PaymentsController {
   }
 
   @Post("vendors/import")
-  @UseInterceptors(FileInterceptor("file"))
+  @UseInterceptors(FileInterceptor("file", spreadsheetUploadOptions()))
   async importVendorPayments(
     @CurrentUser() user: AuthenticatedUser,
     @UploadedFile() file?: Express.Multer.File,

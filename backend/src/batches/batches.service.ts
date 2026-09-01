@@ -262,7 +262,7 @@ export class BatchesService {
 
     const batchSeq = batchId.split("-").pop() || batchId;
 
-    const updates = dto.rows.map((item) => {
+    const rowValues = dto.rows.map((item) => {
       const designCode = item.designCode || null;
       const bulkOrderRef = item.bulkOrderRef || null;
 
@@ -294,21 +294,50 @@ export class BatchesService {
         sareeId = `${loom.loomNumber}-B${batchSeq}-${seq3}`;
       }
 
-      return this.prisma.batchSareeRow.update({
-        where: { batchId_serial: { batchId, serial: item.serial } },
-        data: {
-          sareeId,
-          recipientType: item.recipientType,
-          weaverId: item.weaverId,
-          factoryLoomId: item.factoryLoomId,
-          designCode,
-          sareeTypeCode,
-          bulkOrderRef,
-        },
-      });
+      return Prisma.sql`(
+        ${item.serial}::int,
+        ${sareeId}::text,
+        ${item.recipientType}::"RecipientType",
+        ${item.weaverId ?? null}::text,
+        ${item.factoryLoomId ?? null}::text,
+        ${designCode}::text,
+        ${sareeTypeCode}::text,
+        ${bulkOrderRef}::text
+      )`;
     });
 
-    await this.prisma.$transaction(updates);
+    // One statement, not one per row. Each prisma.update() is several round
+    // trips (the UPDATE plus a SELECT to return the row), so a 10-row batch
+    // was ~12 sequential round trips held open inside an interactive
+    // transaction — measured at 2.4s against the ap-south-1 pooler when idle,
+    // and >20s under contention, which blew the 20s transactionOptions
+    // timeout. The rollback that Prisma then attempted on the expired
+    // transaction rejected asynchronously from a timer (outside any request),
+    // taking the whole process down with "Connection terminated unexpectedly"
+    // — which is why a failed save was followed by ECONNREFUSED on every
+    // later request.
+    //
+    // A single UPDATE ... FROM (VALUES ...) is atomic on its own, so it needs
+    // no explicit transaction and cannot time out mid-way. It also writes
+    // weaverId/factoryLoomId explicitly as NULL: passing `undefined` through
+    // the model API meant "leave unchanged", so switching a row from a weaver
+    // to a factory loom silently kept the stale weaverId alongside the new
+    // factoryLoomId.
+    await this.prisma.$executeRaw`
+      UPDATE "BatchSareeRow" AS r
+      SET "sareeId"       = v."sareeId",
+          "recipientType" = v."recipientType",
+          "weaverId"      = v."weaverId",
+          "factoryLoomId" = v."factoryLoomId",
+          "designCode"    = v."designCode",
+          "sareeTypeCode" = v."sareeTypeCode",
+          "bulkOrderRef"  = v."bulkOrderRef"
+      FROM (VALUES ${Prisma.join(rowValues)}) AS v(
+        "serial", "sareeId", "recipientType", "weaverId",
+        "factoryLoomId", "designCode", "sareeTypeCode", "bulkOrderRef"
+      )
+      WHERE r."batchId" = ${batchId} AND r."serial" = v."serial"
+    `;
 
     await this.auditLog.recordAction({
       actorId: dto.actorId,

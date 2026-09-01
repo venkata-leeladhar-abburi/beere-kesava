@@ -125,8 +125,8 @@ export function GRNItemVerificationCard({
               <div style={{ fontFamily: F.u, fontSize: 12, color: matColor, fontWeight: 600 }}>
                 {m.materialType === "Jari" ? (
                   receivedUnit === "Reels"
-                    ? `= ${(Number(receivedQty) / 4).toFixed(2)} Buns`
-                    : `= ${(Number(receivedQty) * 4).toFixed(0)} Reels`
+                    ? `= ${(Number(receivedQty) * 4).toFixed(0)} Buns`
+                    : `= ${(Number(receivedQty) / 4).toFixed(2)} Reels`
                 ) : (
                   receivedUnit === "kg"
                     ? `= ${(Number(receivedQty) * 1000).toFixed(0)} g`

@@ -15,6 +15,7 @@ import {
 } from "./flow-kit";
 import { BarcodeScannerModal } from "./BarcodeScannerModal";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { IMAGE_ACCEPT_ATTR, IMAGE_REJECTION_MESSAGE, isAcceptedImageFile } from "@/shared/lib/imageTypes";
 import {
   WS_RETURN_REASONS, duplicateDraft, draftProblem, emptyDraft,
   type WholesaleReturnDraft,
@@ -87,8 +88,8 @@ function DraftCard({
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (!["image/png", "image/jpeg"].includes(file.type)) {
-      onChange({ photoError: "Photo must be a JPG or PNG image." });
+    if (!isAcceptedImageFile(file)) {
+      onChange({ photoError: IMAGE_REJECTION_MESSAGE });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -295,8 +296,8 @@ function DraftCard({
           <span style={{ ...labelStyle, marginBottom: 10 }}>
             Photo of the saree <span style={{ color: C.muted, fontWeight: 400 }}>(optional)</span>
           </span>
-          <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} style={{ display: "none" }} onChange={e => { void handlePhotoSelect(e); }} aria-label={`Camera photo for saree ${index + 1}`} />
-          <input type="file" accept="image/*" ref={galleryInputRef} style={{ display: "none" }} onChange={e => { void handlePhotoSelect(e); }} aria-label={`Gallery photo for saree ${index + 1}`} />
+          <input type="file" accept={IMAGE_ACCEPT_ATTR} capture="environment" ref={cameraInputRef} style={{ display: "none" }} onChange={e => { void handlePhotoSelect(e); }} aria-label={`Camera photo for saree ${index + 1}`} />
+          <input type="file" accept={IMAGE_ACCEPT_ATTR} ref={galleryInputRef} style={{ display: "none" }} onChange={e => { void handlePhotoSelect(e); }} aria-label={`Gallery photo for saree ${index + 1}`} />
           {!draft.photoPreview && !draft.photoUrl ? (
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <Button variant="secondary" iconLeft={Camera} onClick={() => cameraInputRef.current?.click()} className="h-11 rounded-xl border border-dashed border-[rgba(110,15,45,0.28)] bg-transparent px-5 text-[14px] text-[#4F4A45]">

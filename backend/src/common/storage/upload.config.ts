@@ -5,12 +5,34 @@ import { memoryStorage } from "multer";
 const ALLOWED_SIGNATURE_MIME_TYPES = new Set(["image/png", "image/jpeg"]);
 const MAX_SIGNATURE_SIZE_BYTES = 2 * 1024 * 1024;
 
-const ALLOWED_PHOTO_MIME_TYPES = new Set(["image/png", "image/jpeg"]);
+// SVG is the one image type deliberately refused: it is an executable
+// document (scripts, external refs), and these files are served back to
+// browsers from our own /uploads route. Everything else a camera or gallery
+// can produce is accepted — the png/jpeg-only list this replaces rejected
+// HEIC/HEIF from iPhones and WebP from Android outright, which is why photos
+// taken on a phone silently never made it into the site.
+export function isAcceptedImageMimeType(mimetype: string): boolean {
+  return mimetype.startsWith("image/") && mimetype !== "image/svg+xml";
+}
+
+// Browsers do not always know an image's MIME type: Windows without the HEIF
+// codec installed sends application/octet-stream (or nothing at all) for a
+// .heic straight off an iPhone. In that case the filename extension is the
+// only signal there is, so it decides.
+const IMAGE_EXTENSIONS =
+  /\.(jpe?g|png|webp|gif|avif|heic|heif|bmp|tiff?|jfif)$/i;
+const UNKNOWN_MIME_TYPES = new Set(["", "application/octet-stream", "binary/octet-stream"]);
+
+export function isAcceptedImageFile(file: Express.Multer.File): boolean {
+  const mimetype = file.mimetype ?? "";
+  if (UNKNOWN_MIME_TYPES.has(mimetype)) return IMAGE_EXTENSIONS.test(file.originalname ?? "");
+  return isAcceptedImageMimeType(mimetype);
+}
+
 const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
 
 // Receipts differ from photos on both axes: an LR receipt is often a scanned
 // PDF rather than a picture, and the dropzones advertise 10MB.
-const ALLOWED_RECEIPT_MIME_TYPES = new Set(["image/png", "image/jpeg", "application/pdf"]);
 const MAX_RECEIPT_SIZE_BYTES = 10 * 1024 * 1024;
 
 // PO/invoice/quotation exports handed to WhatsAppDocumentsService — always
@@ -25,7 +47,11 @@ const MAX_DOCUMENT_SIZE_BYTES = 10 * 1024 * 1024;
  * StorageService, and only it should touch the bytes. The size limits below
  * cap what a single request can hold in memory.
  */
-function memoryUploadOptions(allowedMimeTypes: Set<string>, maxBytes: number, message: string) {
+function memoryUploadOptions(
+  isAllowed: (file: Express.Multer.File) => boolean,
+  maxBytes: number,
+  message: string,
+) {
   return {
     storage: memoryStorage(),
     limits: { fileSize: maxBytes },
@@ -34,7 +60,7 @@ function memoryUploadOptions(allowedMimeTypes: Set<string>, maxBytes: number, me
       file: Express.Multer.File,
       callback: (error: Error | null, accept: boolean) => void,
     ) => {
-      if (!allowedMimeTypes.has(file.mimetype)) {
+      if (!isAllowed(file)) {
         callback(new BadRequestException(message), false);
         return;
       }
@@ -46,7 +72,7 @@ function memoryUploadOptions(allowedMimeTypes: Set<string>, maxBytes: number, me
 /** Multer options for capturing a single signature image. */
 export function signatureUploadOptions() {
   return memoryUploadOptions(
-    ALLOWED_SIGNATURE_MIME_TYPES,
+    (f) => ALLOWED_SIGNATURE_MIME_TYPES.has(f.mimetype),
     MAX_SIGNATURE_SIZE_BYTES,
     "Signature must be a PNG or JPEG image",
   );
@@ -55,25 +81,30 @@ export function signatureUploadOptions() {
 /** Multer options for a general-purpose profile/identification photo. */
 export function photoUploadOptions() {
   return memoryUploadOptions(
-    ALLOWED_PHOTO_MIME_TYPES,
+    isAcceptedImageFile,
     MAX_PHOTO_SIZE_BYTES,
-    "Photo must be a PNG or JPEG image",
+    "Photo must be an image file (SVG isn't supported)",
   );
 }
 
 /** Multer options for a dispatch LR receipt — image or PDF. */
 export function receiptUploadOptions() {
   return memoryUploadOptions(
-    ALLOWED_RECEIPT_MIME_TYPES,
+    (f) =>
+      isAcceptedImageFile(f) ||
+      f.mimetype === "application/pdf" ||
+      // Same unknown-MIME fallback as images: a scanner app's PDF sometimes
+      // arrives as application/octet-stream.
+      (UNKNOWN_MIME_TYPES.has(f.mimetype ?? "") && /\.pdf$/i.test(f.originalname ?? "")),
     MAX_RECEIPT_SIZE_BYTES,
-    "Receipt must be a JPG, PNG or PDF file",
+    "Receipt must be an image or PDF file",
   );
 }
 
 /** Multer options for a generated document PDF (PO/invoice/quotation) shared via WhatsApp. */
 export function documentUploadOptions() {
   return memoryUploadOptions(
-    ALLOWED_DOCUMENT_MIME_TYPES,
+    (f) => ALLOWED_DOCUMENT_MIME_TYPES.has(f.mimetype),
     MAX_DOCUMENT_SIZE_BYTES,
     "Document must be a PDF file",
   );

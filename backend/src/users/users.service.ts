@@ -1,5 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
+import { normalizeMobile } from "../common/phone.util";
 import { nextSequenceId } from "../common/sequence-id.util";
 import { AccessLevel, Prisma, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService, nameSegment } from "../id-generator/id-generator.service";
@@ -30,7 +31,27 @@ export class UsersService {
     private readonly idGenerator: IdGeneratorService,
   ) {}
 
+  // The unique constraint on User.mobile only catches byte-identical values,
+  // so "+919876543210" and "9876543210" would both be accepted for the same
+  // person. Numbers are stored normalised (see normalizeMobile) and checked
+  // here so the second one is rejected with a clear message instead.
+  private async assertMobileAvailable(mobile: string, excludeUserId?: string) {
+    const existing = await this.prisma.user.findFirst({
+      // endsWith, not equals: rows created before normalisation may still
+      // hold "+91…" / "091…" variants of the same 10 digits.
+      where: { mobile: { endsWith: mobile }, ...(excludeUserId ? { id: { not: excludeUserId } } : {}) },
+      select: { empId: true, firstName: true, lastName: true },
+    });
+    if (existing) {
+      throw new ConflictException(
+        `This mobile number is already assigned to ${existing.firstName} ${existing.lastName} (${existing.empId}).`,
+      );
+    }
+  }
+
   async create(dto: CreateUserDto) {
+    const mobile = normalizeMobile(dto.mobile);
+    await this.assertMobileAvailable(mobile);
     // Allocated before the transaction: the id counter is its own atomic
     // statement, so it must not run on the transaction's connection.
     const weaverCode =
@@ -56,7 +77,7 @@ export class UsersService {
                   initials: dto.firstName.toUpperCase().slice(0, 10),
                   photoUrl: dto.photoUrl ?? "",
                   email: dto.email ?? "",
-                  phone: dto.mobile,
+                  phone: mobile,
                   village: dto.village,
                   cluster: dto.cluster,
                   looms: dto.looms ?? 0,
@@ -81,7 +102,7 @@ export class UsersService {
             empId,
             firstName: dto.firstName,
             lastName: dto.lastName,
-            mobile: dto.mobile,
+            mobile,
             email: dto.email,
             role: dto.role,
             accessLevel: dto.accessLevel ?? AccessLevel.FULL_ACCESS,
@@ -134,8 +155,16 @@ export class UsersService {
   async update(id: string, dto: UpdateUserDto) {
     await this.findOne(id);
 
+    const mobile = dto.mobile === undefined ? undefined : normalizeMobile(dto.mobile);
+    if (mobile !== undefined) {
+      await this.assertMobileAvailable(mobile, id);
+    }
+
     try {
-      return await this.prisma.user.update({ where: { id }, data: dto });
+      return await this.prisma.user.update({
+        where: { id },
+        data: { ...dto, ...(mobile === undefined ? {} : { mobile }) },
+      });
     } catch (error) {
       throw this.mapPrismaError(error);
     }

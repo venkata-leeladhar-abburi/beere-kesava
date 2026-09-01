@@ -2,9 +2,9 @@ import { useRef, useState } from "react";
 import { CreditCard, Loader2, X } from "lucide-react";
 import { uploadsApi, resolveAssetUrl } from "../api/uploads";
 import { ApiError } from "../api/client";
+import { IMAGE_ACCEPT_ATTR, IMAGE_REJECTION_MESSAGE, isAcceptedImageFile } from "../lib/imageTypes";
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
-const ACCEPTED_TYPES = new Set(["image/png", "image/jpeg"]);
 
 /**
  * Rectangular visiting-card dropzone backed by POST /uploads/photo — the
@@ -35,8 +35,8 @@ export function VisitingCardUploadField({
 
   async function handleFile(file: File) {
     setError(null);
-    if (!ACCEPTED_TYPES.has(file.type)) {
-      setError("Visiting card must be a JPG or PNG image.");
+    if (!isAcceptedImageFile(file)) {
+      setError(IMAGE_REJECTION_MESSAGE);
       return;
     }
     if (file.size > MAX_SIZE_BYTES) {
@@ -108,7 +108,7 @@ export function VisitingCardUploadField({
       <input
         ref={inputRef}
         type="file"
-        accept="image/png,image/jpeg"
+        accept={IMAGE_ACCEPT_ATTR}
         aria-label={labelText || "Upload visiting card"}
         style={{ display: "none" }}
         onChange={e => {

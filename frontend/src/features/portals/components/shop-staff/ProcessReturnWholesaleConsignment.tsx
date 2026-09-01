@@ -19,6 +19,7 @@ import { uploadsApi, resolveAssetUrl } from "@/shared/api/uploads";
 import { ApiError } from "@/shared/api/client";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { WS_RETURN_REASONS } from "./wholesale-return-draft";
+import { IMAGE_ACCEPT_ATTR, IMAGE_REJECTION_MESSAGE, isAcceptedImageFile } from "@/shared/lib/imageTypes";
 
 /**
  * A wholesale buyer sending back part of a consignment WE dispatched to them.
@@ -106,8 +107,8 @@ function PhotoField({ piece, onChange, idBase }: {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (!["image/png", "image/jpeg"].includes(file.type)) {
-      onChange({ photoError: "Photo must be a JPG or PNG image." });
+    if (!isAcceptedImageFile(file)) {
+      onChange({ photoError: IMAGE_REJECTION_MESSAGE });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -134,8 +135,8 @@ function PhotoField({ piece, onChange, idBase }: {
       <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted, display: "block", marginBottom: 6 }}>
         Photo of the saree <span style={{ opacity: 0.75 }}>(optional)</span>
       </span>
-      <input ref={cameraInputRef} id={`${idBase}-cam`} aria-label="Take a photo of the saree" type="file" accept="image/png,image/jpeg" capture="environment" onChange={handleSelect} style={{ display: "none" }} />
-      <input ref={galleryInputRef} id={`${idBase}-gal`} aria-label="Choose a photo of the saree from the gallery" type="file" accept="image/png,image/jpeg" onChange={handleSelect} style={{ display: "none" }} />
+      <input ref={cameraInputRef} id={`${idBase}-cam`} aria-label="Take a photo of the saree" type="file" accept={IMAGE_ACCEPT_ATTR} capture="environment" onChange={handleSelect} style={{ display: "none" }} />
+      <input ref={galleryInputRef} id={`${idBase}-gal`} aria-label="Choose a photo of the saree from the gallery" type="file" accept={IMAGE_ACCEPT_ATTR} onChange={handleSelect} style={{ display: "none" }} />
 
       {preview ? (
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
