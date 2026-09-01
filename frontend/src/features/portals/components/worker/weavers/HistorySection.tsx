@@ -80,7 +80,10 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
         date: new Date(r.qcDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
         isoDate: r.qcDate,
         status: QC_RESULT_TO_STATUS[r.result] ?? "Pending QC",
-        sareeType: r.sareeTypeName ?? undefined,
+        // The code ("KJ-001"), not the type's display name ("KANJIVARAM") —
+        // the code is what identifies a saree type on the floor, and it is
+        // what the batch's own Saree Type column already shows.
+        sareeType: r.sareeTypeCode ?? undefined,
         bulkOrder: r.bulkOrderLabel ?? undefined,
         loomNumber: row?.weaverLoom ?? undefined,
         photoUrl: row?.receivedPhotoUrl ?? undefined,

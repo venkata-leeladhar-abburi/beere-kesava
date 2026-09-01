@@ -383,16 +383,29 @@ describe("BatchesService", () => {
       expect(prisma.batchSareeRow.update).toHaveBeenCalled();
     });
 
-    it("refuses the saree and does not touch the row when the weaver lacks enough outstanding material", async () => {
+    it("still records the saree's material weights when it out-weighs the weaver's outstanding material", async () => {
+      // A saree heavier than its type's standard weight scales its split past
+      // what's outstanding. That is reconciled inside the material ledger (see
+      // MaterialReturnsService.createAutoReturnForReceipt, which flags the
+      // excess) — it must not stop the saree being received, or the warp/
+      // resham/jari entered on the receive screen is lost entirely.
+      await service.receiveRow("BATCH-0007", 1, { weight: 1200, warpG: 500, actorId: "u-1" });
+
+      expect(prisma.batchSareeRow.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ receivedWeight: 1200, receivedWarpG: 500 }),
+        }),
+      );
+    });
+
+    it("does not touch the row when the material ledger genuinely fails", async () => {
       materialReturns.createAutoReturnForReceipt.mockRejectedValue(
-        new BadRequestException(
-          "Weaver does not have enough outstanding WARP material to return (has 400g, saree requires 500g) — request material from admin.",
-        ),
+        new BadRequestException("Weaver w-1 not found"),
       );
 
       await expect(
         service.receiveRow("BATCH-0007", 1, { weight: 1200, warpG: 500, actorId: "u-1" } as any),
-      ).rejects.toThrow(/request material from admin/);
+      ).rejects.toThrow(/not found/);
       expect(prisma.batchSareeRow.update).not.toHaveBeenCalled();
     });
 

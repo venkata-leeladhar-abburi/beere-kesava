@@ -56,6 +56,34 @@ export interface OutstandingGroup {
 // distinguish two lines of that type. Returns are recorded at this
 // granularity (MaterialReturnItem carries no GRN link), so it is the level
 // at which returned weight can be matched back to issued weight.
+// Marker prefix on an auto-return whose saree declared more material than the
+// weaver had outstanding. Kept in `notes` rather than a new column so this
+// needs no migration, and greppable so the Return Materials list can surface
+// these for admin without parsing the numbers back out.
+export const EXCESS_NOTE_MARKER = "OVER-DECLARED";
+
+/**
+ * Appends an "excess" clause to an auto-return's note when the saree declared
+ * more material than was outstanding. `materialType` is omitted on the
+ * weight-only path, which pools across every type and so can't attribute the
+ * shortfall to one.
+ */
+function withExcessNote(
+  base: string,
+  excesses: { materialType?: string; grams: number }[],
+): string {
+  if (excesses.length === 0) {
+    return base;
+  }
+  const detail = excesses
+    .map((e) => `${Math.round(e.grams)}g${e.materialType ? ` ${e.materialType}` : ""}`)
+    .join(", ");
+  return (
+    `${base}. ${EXCESS_NOTE_MARKER}: ${detail} more than the weaver had outstanding — ` +
+    `outstanding drawn to zero, excess left for admin to reconcile.`
+  );
+}
+
 function variantKey(item: { materialType: string; warpSubtype: string | null; jariType: string | null; jariGrade: string | null; jariColor: string | null }): string {
   return [item.materialType, item.warpSubtype, item.jariType, item.jariGrade, item.jariColor].join("|");
 }
@@ -408,6 +436,9 @@ export class MaterialReturnsService {
     const groups = await this.getOutstanding({ weaverId: params.weaverId });
 
     const itemsToCreate: Prisma.MaterialReturnItemCreateWithoutReturnInput[] = [];
+    // Material declared on the saree beyond what the weaver had outstanding —
+    // per type, so the note names which material came up short.
+    const excesses: { materialType: MaterialType; grams: number }[] = [];
 
     for (const req of params.requests) {
       if (req.grams <= 0) {
@@ -418,14 +449,19 @@ export class MaterialReturnsService {
         .sort((a, b) => b.outstandingGrams - a.outstandingGrams);
       const totalOutstanding = matchingGroups.reduce((sum, g) => sum + g.outstandingGrams, 0);
 
+      // Over-declaration is recorded, never refused. A saree heavier than its
+      // type's standard weight scales its split above what the weaver still
+      // has outstanding, and refusing the receipt meant the saree was never
+      // received at all — its warp/resham/jari weights went unrecorded and the
+      // physical saree sat outside the system. Draw down what is actually
+      // outstanding, and carry the excess into the record's notes for admin to
+      // reconcile (an under-issue earlier in the batch, a mis-typed weight, or
+      // material the weaver genuinely supplied themselves).
       if (totalOutstanding < req.grams) {
-        throw new BadRequestException(
-          `Weaver does not have enough outstanding ${req.materialType} material to return ` +
-            `(has ${totalOutstanding}g, saree requires ${req.grams}g) — request material from admin.`,
-        );
+        excesses.push({ materialType: req.materialType, grams: req.grams - totalOutstanding });
       }
 
-      let remaining = req.grams;
+      let remaining = Math.min(req.grams, totalOutstanding);
       for (const group of matchingGroups) {
         if (remaining <= 0) {
           break;
@@ -444,7 +480,7 @@ export class MaterialReturnsService {
       }
     }
 
-    if (itemsToCreate.length === 0) {
+    if (itemsToCreate.length === 0 && excesses.length === 0) {
       return null;
     }
 
@@ -463,7 +499,7 @@ export class MaterialReturnsService {
         receivedById: params.receivedById,
         status: MaterialReturnStatus.APPROVED,
         signatureCaptured: false,
-        notes: "Auto-recorded: material weight returned with received saree",
+        notes: withExcessNote("Auto-recorded: material weight returned with received saree", excesses),
         items: { create: itemsToCreate },
       },
       include: includeItems,
@@ -492,17 +528,14 @@ export class MaterialReturnsService {
     const groups = (await this.getOutstanding({ weaverId: params.weaverId }))
       .sort((a, b) => b.outstandingGrams - a.outstandingGrams);
     const totalOutstanding = groups.reduce((sum, g) => sum + g.outstandingGrams, 0);
-
-    if (totalOutstanding < params.grams) {
-      throw new BadRequestException(
-        `This weaver doesn't have that much material outstanding ` +
-          `(has ${totalOutstanding}g outstanding, saree weighs ${params.grams}g) — ` +
-          `check the entered weight or request more material from admin.`,
-      );
-    }
+    // Same rule as createAutoReturnForReceipt above: a saree heavier than what
+    // the weaver still has outstanding is recorded with the excess flagged,
+    // not refused — refusing left the physical saree unreceived and its weight
+    // unrecorded anywhere.
+    const excessGrams = Math.max(0, params.grams - totalOutstanding);
 
     const itemsToCreate: Prisma.MaterialReturnItemCreateWithoutReturnInput[] = [];
-    let remaining = params.grams;
+    let remaining = Math.min(params.grams, totalOutstanding);
     for (const group of groups) {
       if (remaining <= 0) {
         break;
@@ -523,7 +556,7 @@ export class MaterialReturnsService {
       remaining -= draw;
     }
 
-    if (itemsToCreate.length === 0) {
+    if (itemsToCreate.length === 0 && excessGrams === 0) {
       return null;
     }
 
@@ -542,7 +575,10 @@ export class MaterialReturnsService {
         receivedById: params.receivedById,
         status: MaterialReturnStatus.APPROVED,
         signatureCaptured: false,
-        notes: "Auto-recorded: saree received weight drawn down from outstanding material",
+        notes: withExcessNote(
+          "Auto-recorded: saree received weight drawn down from outstanding material",
+          excessGrams > 0 ? [{ grams: excessGrams }] : [],
+        ),
         items: { create: itemsToCreate },
       },
       include: includeItems,

@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common";
 import { MaterialReturnsService } from "./material-returns.service";
 import { MaterialIssueStatus, MaterialReturnStatus } from "../generated/prisma/client";
 
@@ -73,16 +73,52 @@ describe("MaterialReturnsService.createAutoReturnForReceipt", () => {
     expect(result).toMatchObject({ id: "MRR-2026-001" });
   });
 
-  it("refuses when the weaver's outstanding balance can't cover the declared weight", async () => {
-    await expect(
-      service.createAutoReturnForReceipt({
-        weaverId: "w-1",
-        batchId: "BATCH-0007",
-        receivedById: "u-1",
-        requests: [{ materialType: "WARP" as any, grams: 700 }],
+  it("records the saree and flags the excess when the declared weight exceeds what's outstanding", async () => {
+    // 600g outstanding, saree declares 700g — a saree heavier than its type's
+    // standard weight. Refusing this used to leave the saree unreceived and
+    // its material weights unrecorded anywhere.
+    const result = await service.createAutoReturnForReceipt({
+      weaverId: "w-1",
+      batchId: "BATCH-0007",
+      receivedById: "u-1",
+      requests: [{ materialType: "WARP", grams: 700 }],
+    });
+
+    expect(prisma.materialReturnRecord.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          // Only the 600g actually outstanding is drawn down — outstanding
+          // goes to zero, never negative.
+          items: { create: [expect.objectContaining({ materialType: "WARP", quantity: 600 })] },
+          notes: expect.stringContaining("OVER-DECLARED"),
+        }),
       }),
-    ).rejects.toThrow(BadRequestException);
-    expect(prisma.materialReturnRecord.create).not.toHaveBeenCalled();
+    );
+    expect(prisma.materialReturnRecord.create.mock.calls[0][0].data.notes).toContain("100g WARP");
+    expect(result).toMatchObject({ id: "MRR-2026-001" });
+  });
+
+  it("still records the excess when the weaver has nothing outstanding at all", async () => {
+    prisma.materialIssueRecord.findMany.mockResolvedValue([]);
+
+    const result = await service.createAutoReturnForReceipt({
+      weaverId: "w-1",
+      batchId: "BATCH-0007",
+      receivedById: "u-1",
+      requests: [{ materialType: "WARP", grams: 500 }],
+    });
+
+    // Nothing to draw down, so no items — but the receipt is not blocked and
+    // the over-declaration is on the record for admin.
+    expect(prisma.materialReturnRecord.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          items: { create: [] },
+          notes: expect.stringContaining("500g WARP"),
+        }),
+      }),
+    );
+    expect(result).toMatchObject({ id: "MRR-2026-001" });
   });
 
   it("does not restore RawMaterialStock — the material stays consumed in the saree, not the warehouse", async () => {

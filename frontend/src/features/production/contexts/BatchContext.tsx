@@ -10,6 +10,7 @@ import type { BackendQcResult } from "../../../shared/api/qc";
 import type { QcResult } from "@/features/qc";
 import { weaversApi, WEAVERS_LIST_QUERY_KEY } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
+import { resolveAssetUrl } from "@/shared/api/uploads";
 import { ratesApi } from "../../../shared/api/rates";
 import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 import { formatRecordedBy } from "@/lib/domain/actor";
@@ -192,7 +193,14 @@ function backendBatchToRecord(
         receivedBy: r.receivedByUser ? formatRecordedBy(r.receivedByUser) : null,
         receivedWeight: r.receivedWeight,
         receivedColor: r.receivedColor,
-        receivedPhotoUrl: r.receivedPhotoUrl,
+        // The API returns a server-relative path ("/uploads/photos/x.jpg") so
+        // the backend origin isn't baked into the database. Resolving it here,
+        // at the boundary — the same place QcContext does it — means every
+        // consumer of SareeRow (received history, batch table, tally list,
+        // defective sarees, bulk-order detail, inventory) gets a URL it can
+        // render. Rendering the raw path resolves it against the *frontend*
+        // origin instead, which 404s and shows an empty thumbnail.
+        receivedPhotoUrl: resolveAssetUrl(r.receivedPhotoUrl),
         receivedWarpG: r.receivedWarpG,
         receivedReshamG: r.receivedReshamG,
         receivedJariReels: r.receivedJariReels,
@@ -388,7 +396,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
           receivedBy: row.receivedByUser ? formatRecordedBy(row.receivedByUser) : r.receivedBy,
           receivedWeight: row.receivedWeight,
           receivedColor: row.receivedColor,
-          receivedPhotoUrl: row.receivedPhotoUrl,
+          receivedPhotoUrl: resolveAssetUrl(row.receivedPhotoUrl),
           receivedWarpG: row.receivedWarpG,
           receivedReshamG: row.receivedReshamG,
           receivedJariReels: row.receivedJariReels,
