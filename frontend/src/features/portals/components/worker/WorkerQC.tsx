@@ -8,6 +8,7 @@ import { DesignCodeCard } from "@/features/design-library";
 import { SareeTypeCard } from "@/features/pricing";
 import { useRatesPricing } from "@/features/pricing";
 import { AnimatePresence } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import {
   ChevronLeft, CheckCircle2, Search, AlertTriangle, ClipboardCheck, User, Package,
 } from "lucide-react";
@@ -23,7 +24,8 @@ import { WorkerQCCompletedTodaySection } from "./WorkerQCCompletedTodaySection";
 import { WorkerQCHistorySection } from "./WorkerQCHistorySection";
 import { WorkerQCQueueHeader } from "./WorkerQCQueueHeader";
 import { WorkerQCWeaverGrid, WorkerQCBatchGrid } from "./WorkerQCGridCards";
-import { IconButton, Input } from "../../../../shared/ui/primitives";
+import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
+import { Modal } from "../../../../shared/ui/overlay";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
@@ -106,10 +108,14 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     setErrorToast(msg);
     setTimeout(() => setErrorToast(""), 4000);
   };
-  const [resultToast, setResultToast] = useState<{ msg: string; kind: "passed" | "semi" | "defective" } | null>(null);
-  const showResultToast = (msg: string, kind: "passed" | "semi" | "defective") => {
-    setResultToast({ msg, kind });
-    setTimeout(() => setResultToast(null), 4000);
+  // Every QC verdict — Passed, Semi-Approved and Defective alike — ends in an
+  // explicit "completed" dialog the inspector has to dismiss. This replaces
+  // the 4-second corner toast that used to be the only confirmation: on the
+  // shop floor it was routinely missed, leaving no way to tell a saved
+  // verdict apart from a tap that never registered.
+  const [completion, setCompletion] = useState<{ sareeId: string; kind: "passed" | "semi" | "defective" } | null>(null);
+  const showCompletion = (sareeId: string, kind: "passed" | "semi" | "defective") => {
+    setCompletion({ sareeId, kind });
   };
   // Derived straight from real QC records — recordQc's refetch keeps this
   // current, so there's no local mutation to make when a defect is logged.
@@ -261,7 +267,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         bulkOrderRef: s.bulkOrderRef,
         status: "qc-passed-pending-finishing",
       });
-      showResultToast(`${s.id} marked Passed`, "passed");
+      showCompletion(s.id, "passed");
     }).catch((err) => {
       showError(`Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
     });
@@ -281,7 +287,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     saveQc(s, "defective").then(() => {
       setInspected(p => new Set(p).add(s.id));
       setDefectSubmitted(true);
-      showResultToast(`${s.id} marked Defective`, "defective");
+      showCompletion(s.id, "defective");
     }).catch((err) => {
       showError(`Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
     });
@@ -304,7 +310,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     saveQc(s, "semi", Number(deductionAmount) || 0).then(() => {
       setInspected(p => new Set(p).add(s.id));
       setDefectSubmitted(true);
-      showResultToast(`${s.id} marked Semi Approved`, "semi");
+      showCompletion(s.id, "semi");
     }).catch((err) => {
       showError(`Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
     });
@@ -318,17 +324,35 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         </div>
       )}
 
-      {resultToast && (() => {
-        const kindStyle = {
-          passed: { bg: T.green, icon: CheckCircle2 },
-          semi: { bg: "#C4923A", icon: AlertTriangle },
-          defective: { bg: T.crim, icon: AlertTriangle },
-        }[resultToast.kind];
-        const Icon = kindStyle.icon;
+      {completion && (() => {
+        const style = {
+          passed: { bg: T.green, icon: CheckCircle2, verdict: "Passed", note: "Sent to finishing as QC-passed." },
+          semi: { bg: "#C4923A", icon: AlertTriangle, verdict: "Semi-Approved", note: "Goes back to the weaver for rework — not to finishing." },
+          defective: { bg: T.crim, icon: AlertTriangle, verdict: "Defective", note: "Logged against the weaver with the making charge deducted." },
+        }[completion.kind];
+        const Icon = style.icon;
         return (
-          <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 9999, background: kindStyle.bg, color: "#FFF", borderRadius: 10, padding: "12px 18px", fontFamily: F.u, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 28px rgba(0,0,0,0.28)", display: "flex", alignItems: "center", gap: 8, maxWidth: "90vw" }}>
-            <Icon size={16} style={{ flexShrink: 0 }} /> <span>{resultToast.msg}</span>
-          </div>
+          <Modal open onOpenChange={o => !o && setCompletion(null)} size="xs">
+            <div style={{ padding: "28px 26px 22px", textAlign: "center" }}>
+              <div style={{ width: 58, height: 58, borderRadius: "50%", background: style.bg, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                <Icon size={30} color="#FFF" />
+              </div>
+              <Dialog.Title asChild>
+                <h3 style={{ fontFamily: F.d, fontSize: 19, fontWeight: 700, color: T.brown, margin: "0 0 6px" }}>QC Completed</h3>
+              </Dialog.Title>
+              <Dialog.Description asChild>
+                <p style={{ fontFamily: F.u, fontSize: 13.5, color: T.brown, margin: "0 0 4px", lineHeight: 1.5 }}>
+                  <strong>{completion.sareeId}</strong> marked <strong style={{ color: style.bg }}>{style.verdict}</strong>.
+                </p>
+              </Dialog.Description>
+              <p style={{ fontFamily: F.u, fontSize: 12.5, color: T.muted, margin: "0 0 20px", lineHeight: 1.5 }}>
+                {style.note}
+              </p>
+              <Button onClick={() => setCompletion(null)} variant="primary" size="lg" fullWidth className="h-[46px] rounded-full">
+                Done
+              </Button>
+            </div>
+          </Modal>
         );
       })()}
     </>,

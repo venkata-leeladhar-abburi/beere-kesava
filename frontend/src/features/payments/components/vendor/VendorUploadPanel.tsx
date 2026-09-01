@@ -111,7 +111,7 @@ export function VendorUploadPanel({ rows, onUploaded }: { rows: VendorTemplateRo
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginBottom: 4 }}>Upload Vendor Payment File</div>
               <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, lineHeight: 1.55 }}>
-                Download the template below — pre-filled with every invoiced PO's PO number, vendor, total, and <span style={{ fontWeight: 600, color: T.luxuryBrown }}>Remaining Amount</span> (what's still owed) — then fill in <span style={{ fontWeight: 600, color: T.luxuryBrown }}>Amount Paying</span> (how much is being paid this time) plus the UTR/firm/date, and upload it back as an Excel file (.xlsx).
+                Download the template below — pre-filled with every invoiced PO's PO number, vendor, total, and <span style={{ fontWeight: 600, color: T.luxuryBrown }}>Remaining Amount</span> (what's still owed) — then fill in <span style={{ fontWeight: 600, color: T.luxuryBrown }}>Amount Paying</span> (how much is being paid this time) plus the UTR/firm/date, and upload it back as a spreadsheet (.xlsx, .xlsm or .csv).
                 {" "}Required: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>poNumber, amountPaid</span>. Optional: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>utrNumber, firmId, paymentDate</span>.
                 {" "}Rows are matched against real POs and their vendor bills, and saved directly.
               </div>

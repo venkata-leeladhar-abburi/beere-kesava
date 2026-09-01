@@ -248,11 +248,62 @@ describe("PaymentsService", () => {
     }
 
     it("rejects a file that isn't a readable workbook", async () => {
+      // Arbitrary text parses as a (nonsense) CSV rather than throwing, so
+      // what rejects it is the required-column check — which names the column
+      // it wanted instead of blaming the file format.
       const result = await service.importWeaverPaymentsFromExcel(Buffer.from("not a spreadsheet"));
 
       expect(result.created).toBe(0);
-      expect(result.errors[0].message).toMatch(/valid \.xlsx/);
+      expect(result.errors[0].message).toMatch(/weaverId/);
       expect(prisma.weaverPayment.createMany).not.toHaveBeenCalled();
+    });
+
+    it("tells the uploader to re-save a legacy .xls instead of failing opaquely", async () => {
+      // OLE2 compound-document signature — a real pre-2007 .xls, which the
+      // OOXML reader has no chance of parsing.
+      const ole2 = Buffer.concat([
+        Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]),
+        Buffer.alloc(512),
+      ]);
+
+      const result = await service.importWeaverPaymentsFromExcel(ole2);
+
+      expect(result.created).toBe(0);
+      expect(result.errors[0].message).toMatch(/legacy \.xls/);
+      expect(prisma.weaverPayment.createMany).not.toHaveBeenCalled();
+    });
+
+    it("imports a CSV the same as an .xlsx", async () => {
+      weaverOwed10k();
+      prisma.firm.findMany.mockResolvedValue([{ id: "FIRM-001", firmName: "Beere Kesava" }]);
+      prisma.weaverPayment.findMany.mockResolvedValue([]);
+
+      const csv = "weaverId,amountPaid,firmId\nw-1,5000,FIRM-001";
+      const result = await service.importWeaverPaymentsFromExcel(Buffer.from(csv, "utf8"));
+
+      expect(result.errors).toEqual([]);
+      expect(result.created).toBe(1);
+      expect(prisma.weaverPayment.createMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: [expect.objectContaining({ weaverId: "w-1", amountPaid: 5000, firmId: "FIRM-001" })],
+        }),
+      );
+    });
+
+    it("matches a header column however it is capitalised or spaced", async () => {
+      weaverOwed10k();
+      prisma.firm.findMany.mockResolvedValue([{ id: "FIRM-001", firmName: "Beere Kesava" }]);
+      prisma.weaverPayment.findMany.mockResolvedValue([]);
+
+      // "Firm ID" used to miss the exact-match "firmId" lookup and be dropped
+      // silently, because firmId is optional and raised no row error.
+      const csv = "Weaver ID,Amount Paid,Firm ID\nw-1,5000,FIRM-001";
+      const result = await service.importWeaverPaymentsFromExcel(Buffer.from(csv, "utf8"));
+
+      expect(result.errors).toEqual([]);
+      expect(prisma.weaverPayment.createMany).toHaveBeenCalledWith(
+        expect.objectContaining({ data: [expect.objectContaining({ firmId: "FIRM-001" })] }),
+      );
     });
 
     it("refuses a sheet missing a required column", async () => {

@@ -75,7 +75,7 @@ export function BankUploadPanel({ onReset, onUploaded }: { onMatchUpdate?: (matc
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginBottom: 4 }}>Upload Bank Payment File</div>
               <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, lineHeight: 1.55 }}>
-                Upload an Excel file (.xlsx) with a header row — same columns as the table above, in this order:
+                Upload a spreadsheet (.xlsx, .xlsm or .csv) with a header row — same columns as the table above, in this order:
                 {" "}<span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverId, weaverName, batchNo, loomNumber, noOfSarees, makingCharges, deduction, amountPaid, utrNumber, firmId, paymentDate</span>.
                 {" "}Required: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverId, amountPaid</span>. Optional: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>utrNumber, firmId, paymentDate, batchNo, loomNumber, noOfSarees, deduction</span>.
                 {" "}<span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverName</span> and <span style={{ fontWeight: 600, color: T.luxuryBrown }}>makingCharges</span> are reference-only — kept for readability but ignored on import.

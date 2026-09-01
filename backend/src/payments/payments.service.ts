@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import * as ExcelJS from "exceljs";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
+import { loadImportWorkbook } from "../common/storage/import-workbook";
 import { Prisma } from "../generated/prisma/client";
 import { businessSegment, IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -426,16 +427,11 @@ export class PaymentsService {
    * paymentDate, batchNo, loomNumber, noOfSarees, deduction.
    */
   async importWeaverPaymentsFromExcel(buffer: Buffer, recordedById?: string): Promise<ImportResult> {
-    const workbook = new ExcelJS.Workbook();
-    try {
-      // exceljs's bundled .d.ts predates the newer generic Buffer<T>/Uint8Array<T> typings
-      // shipped in current @types/node, so this Buffer-to-Buffer call trips a structural
-      // mismatch that doesn't exist at runtime.
-      await workbook.xlsx.load(buffer as unknown as Parameters<typeof workbook.xlsx.load>[0]);
-    } catch {
-      return { created: 0, failed: 0, errors: [{ row: 0, message: "Couldn't read this file — make sure it's a valid .xlsx exported from the template." }], totalAmount: 0 };
+    const loaded = await loadImportWorkbook(buffer);
+    if (!loaded.ok) {
+      return { created: 0, failed: 0, errors: [{ row: 0, message: loaded.message }], totalAmount: 0 };
     }
-    const sheet = workbook.worksheets[0];
+    const sheet = loaded.workbook.worksheets[0];
     if (!sheet) {
       return { created: 0, failed: 0, errors: [{ row: 0, message: "No worksheet found" }], totalAmount: 0 };
     }
@@ -659,13 +655,11 @@ export class PaymentsService {
   // bill-status recompute and audit log stay identical to a manually
   // recorded payment.
   async importVendorPaymentsFromExcel(buffer: Buffer, recordedById?: string): Promise<ImportResult> {
-    const workbook = new ExcelJS.Workbook();
-    try {
-      await workbook.xlsx.load(buffer as unknown as Parameters<typeof workbook.xlsx.load>[0]);
-    } catch {
-      return { created: 0, failed: 0, errors: [{ row: 0, message: "Couldn't read this file — make sure it's a valid .xlsx exported from the template." }], totalAmount: 0 };
+    const loaded = await loadImportWorkbook(buffer);
+    if (!loaded.ok) {
+      return { created: 0, failed: 0, errors: [{ row: 0, message: loaded.message }], totalAmount: 0 };
     }
-    const sheet = workbook.worksheets[0];
+    const sheet = loaded.workbook.worksheets[0];
     if (!sheet) {
       return { created: 0, failed: 0, errors: [{ row: 0, message: "No worksheet found" }], totalAmount: 0 };
     }
