@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {
-  Users, Tag, ShoppingBag, Trash2 as Trash, Factory, ArrowUpNarrowWide as SortAscending, Table2, ImageOff,
+  Users, Tag, ShoppingBag, Trash2 as Trash, Factory, ArrowUpNarrowWide as SortAscending, Table2, ImageOff, Hash,
 } from "lucide-react";
 import { SareeRow } from "../../contexts/BatchContext";
 import { T, F, th, td, rowComplete, Pip, EmptyCell } from "./constants";
@@ -101,6 +101,7 @@ export function BatchTable({
             <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.75)" }}>{selected.size} selected</span>
             {([
               { key: "weaver",     icon: Users,       label: "Assign Weaver" },
+              { key: "loomnumber", icon: Hash,        label: "Assign Loom No." },
               { key: "bulkorder",  icon: ShoppingBag, label: "Assign Bulk Order" },
               { key: "factoryloom", icon: Factory,     label: "Assign Factory Loom" },
               { key: "saretype",   icon: Tag,          label: "Assign Saree Type" },

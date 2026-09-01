@@ -18,6 +18,15 @@ export class ReceiveBatchRowDto {
   @IsString()
   photoUrl?: string;
 
+  // Saree type confirmed at receipt. The type assigned when the batch was
+  // created is what the weaver was told to make; what actually comes back can
+  // differ, and it is this value that QC prices the making charge off. Sent
+  // only when Worker Staff changes it — omitted, the row keeps the type it
+  // already had.
+  @IsOptional()
+  @IsString()
+  sareeTypeCode?: string;
+
   // Actual material split entered at receipt — grams for warp/resham, reels
   // for jari. Optional: the receive screen always computes a value (auto or
   // manually edited), but older callers may omit it.

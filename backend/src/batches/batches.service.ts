@@ -195,10 +195,12 @@ export class BatchesService {
     await this.auditLog.recordAction({
       actorId: dto.actorId,
       module: "BATCHES",
-      action: `Assigned row ${serial} of batch ${batchId} to ${sareeId}`,
+      action: sareeId
+        ? `Assigned row ${serial} of batch ${batchId} to ${sareeId}`
+        : `Assigned row ${serial} of batch ${batchId} (awaiting loom number)`,
       entityType: "BatchSareeRow",
       entityId: `${batchId}-${serial}`,
-      recordLabel: sareeId,
+      recordLabel: sareeId ?? `${batchId}-${serial}`,
     });
 
     return updatedRow;
@@ -278,14 +280,21 @@ export class BatchesService {
       }
 
       const seq3 = String(item.serial).padStart(3, "0");
-      let sareeId: string;
+      let sareeId: string | null;
       if (item.recipientType === RecipientType.WEAVER) {
         const weaver = weaverMap.get(item.weaverId!);
         if (!weaver) {
           throw new NotFoundException(`Weaver ${item.weaverId} not found (row ${item.serial})`);
         }
-        const loomNumber = item.loomNumber ?? 1;
-        sareeId = `${weaver.firstName.toUpperCase()}-L${loomNumber}-B${batchSeq}-${seq3}`;
+        // No loom, no saree ID. Defaulting to loom 1 filed every saree under
+        // the weaver's first loom — wrong for anyone running several, and
+        // invisible once written, since the ID looks perfectly valid. The row
+        // still persists its weaver so a draft save isn't lost; it simply has
+        // no ID until the admin assigns a loom.
+        sareeId =
+          item.loomNumber == null
+            ? null
+            : `${weaver.firstName.toUpperCase()}-L${item.loomNumber}-B${batchSeq}-${seq3}`;
       } else {
         const loom = loomMap.get(item.factoryLoomId!);
         if (!loom) {
@@ -380,6 +389,20 @@ export class BatchesService {
       );
     }
 
+    // Worker Staff can correct the saree type at receipt — the type assigned
+    // at batch creation is what the weaver was asked to make, and what comes
+    // back is not always that. Validated up front so a bad code fails before
+    // any material-ledger write, rather than leaving a drawn-down return
+    // behind a failed receipt.
+    if (dto.sareeTypeCode && dto.sareeTypeCode !== row.sareeTypeCode) {
+      const sareeType = await this.prisma.sareeTypeRate.findUnique({
+        where: { code: dto.sareeTypeCode },
+      });
+      if (!sareeType) {
+        throw new NotFoundException(`Saree type ${dto.sareeTypeCode} not found`);
+      }
+    }
+
     // The material Worker Staff declares as still embedded in the received
     // saree can only be accepted if that much is still outstanding against
     // the weaver — otherwise the saree is refused and staff is told to check
@@ -432,6 +455,9 @@ export class BatchesService {
         receivedById: dto.actorId,
         receivedWeight: dto.weight,
         receivedColor: dto.color,
+        // `undefined` leaves the assigned type untouched — only an explicit
+        // change from the receive screen overwrites it.
+        sareeTypeCode: dto.sareeTypeCode,
         receivedPhotoUrl: dto.photoUrl,
         receivedWarpG: dto.warpG,
         receivedReshamG: dto.reshamG,
@@ -589,7 +615,13 @@ export class BatchesService {
 
   // Matches the frontend's generateSareeId(weaverName, loom, seq) convention:
   // weaver -> {FIRSTNAME}-L{loom}-{seq3}; factory loom -> {loomNumber}-{seq3}.
-  private async buildSareeId(batchId: string, dto: AssignBatchRowDto, serial: number): Promise<string> {
+  // Null for a weaver row with no loom chosen yet — see assignRows for why a
+  // missing loom must not silently become loom 1.
+  private async buildSareeId(
+    batchId: string,
+    dto: AssignBatchRowDto,
+    serial: number,
+  ): Promise<string | null> {
     const batchSeq = batchId.split("-").pop() || batchId;
     const seq3 = String(serial).padStart(3, "0");
 
@@ -598,8 +630,10 @@ export class BatchesService {
       if (!weaver) {
         throw new NotFoundException(`Weaver ${dto.weaverId} not found`);
       }
-      const loomNumber = dto.loomNumber ?? 1;
-      return `${weaver.firstName.toUpperCase()}-L${loomNumber}-B${batchSeq}-${seq3}`;
+      if (dto.loomNumber == null) {
+        return null;
+      }
+      return `${weaver.firstName.toUpperCase()}-L${dto.loomNumber}-B${batchSeq}-${seq3}`;
     }
 
     const factoryLoom = await this.prisma.factoryLoom.findUnique({

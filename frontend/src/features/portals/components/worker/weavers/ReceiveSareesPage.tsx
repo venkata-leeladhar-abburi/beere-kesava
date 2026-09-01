@@ -9,6 +9,7 @@ import {
 import { C, F, card } from "../tokens";
 import { FieldLabel, type ReceivedSareeLog } from "./shared";
 import { MaterialSplitPanel, autoMaterialSplit, type MatSplit } from "./MaterialSplitPanel";
+import { SareeTypePicker } from "./SareeTypePicker";
 import { type WeaverBatchData } from "./weaversData";
 import { weaversApi } from "../../../../../shared/api/weavers";
 import { WeaverSigBlock } from "./WeaverSigBlock";
@@ -158,6 +159,10 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
     if (url) setPhotoUrl(url);
   };
   const [matEdits, setMatEdits] = useState<Partial<MatSplit>>({});
+  // Type this receipt is booked under — seeded from the batch row's assigned
+  // type, overridable per receipt (see SareeTypePicker). `null` means "not
+  // touched yet", so it re-seeds when the worker switches batch.
+  const [typeOverride, setTypeOverride] = useState<string | null>(null);
   const [showTagPrint, setShowTagPrint] = useState(false);
   const [rejectedSarees, setRejectedSarees] = useState<RejectedSaree[]>([]);
   const [showDefectPrompt, setShowDefectPrompt] = useState(false);
@@ -171,6 +176,13 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
   const doneCount = currentBatch ? currentBatch.sarees.filter(s => s.status !== "pending").length : 0;
   const allDone = currentBatch ? doneCount === currentBatch.total : false;
   const reworkSarees = currentBatch ? currentBatch.sarees.filter(s => s.isRework) : [];
+
+  // The type this receipt is booked under: the worker's pick if they made
+  // one, otherwise whatever the batch was assigned. "—" is the upstream
+  // stand-in for a row that never got a type, and is not a real code.
+  const assignedTypeCode =
+    currentBatch && currentBatch.sareeTypeCode !== "—" ? currentBatch.sareeTypeCode : undefined;
+  const effectiveTypeCode = typeOverride ?? assignedTypeCode;
 
   const weightNum = sareeWeight ? parseFloat(sareeWeight) : null;
   const weightOk = weightNum !== null && weightNum >= 600;
@@ -188,13 +200,13 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
     setSelectedWeaver(w);
     setSelectedBatchId(w ? (batches[w.id]?.[0]?.id ?? null) : null);
     setSelectedSareeNos(new Set());
-    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
+    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({}); setTypeOverride(null);
   }, [WEAVERS, batches]);
 
   const pickBatch = useCallback((batchId: string) => {
     setSelectedBatchId(batchId);
     setSelectedSareeNos(new Set());
-    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
+    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({}); setTypeOverride(null);
   }, []);
 
   const selectSareeSlot = (no: number) => {
@@ -213,10 +225,14 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
     const pending = currentBatch?.sarees.filter(s => s.status === "pending") ?? [];
     const allSelected = pending.length > 0 && pending.every(s => selectedSareeNos.has(s.no));
     setSelectedSareeNos(allSelected ? new Set() : new Set(pending.map(s => s.no)));
-    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
+    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({}); setTypeOverride(null);
   };
 
-  const canSaveSaree = selectedSareeNos.size > 0 && !!sareeColor && !!sareeWeight && hasPhoto && !isSaving;
+  // A type is required, not optional: QcService refuses a saree with none
+  // ("has no saree type assigned yet"), which would strand it between receipt
+  // and QC with nothing on screen explaining why.
+  const canSaveSaree =
+    selectedSareeNos.size > 0 && !!sareeColor && !!sareeWeight && !!effectiveTypeCode && hasPhoto && !isSaving;
 
   const saveSaree = async () => {
     if (!selectedWeaver || !currentBatch || selectedSareeNos.size === 0 || !canSaveSaree) return;
@@ -227,7 +243,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
       // the rate card, or Worker Staff's own edit on top of it — is what
       // actually gets recorded per saree, so a bulk order's material tally
       // reflects real entries instead of a re-derived guess later.
-      const auto = autoMaterialSplit(currentBatch.sareeTypeCode, sareeWeight, getSareeTypeByCode);
+      const auto = autoMaterialSplit(effectiveTypeCode, sareeWeight, getSareeTypeByCode);
       const warpG = matEdits.warp !== undefined ? parseFloat(matEdits.warp) : (auto ? parseFloat(auto.warp) : undefined);
       const reshamG = matEdits.resham !== undefined ? parseFloat(matEdits.resham) : (auto ? parseFloat(auto.resham) : undefined);
       const jariReels = matEdits.jari !== undefined ? parseFloat(matEdits.jari) : (auto ? parseFloat(auto.jari) : undefined);
@@ -243,6 +259,9 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
             warpG: Number.isFinite(warpG) ? warpG : undefined,
             reshamG: Number.isFinite(reshamG) ? reshamG : undefined,
             jariReels: Number.isFinite(jariReels) ? jariReels : undefined,
+            // Only sent when it actually differs, so an untouched receipt
+            // leaves the assigned type exactly as it was.
+            sareeTypeCode: effectiveTypeCode !== assignedTypeCode ? effectiveTypeCode : undefined,
             sellingPrice: sareePrice ? fromPaise(toPaise(Number(sareePrice) || 0)) : undefined,
             actorId: user?.id,
           });
@@ -262,10 +281,10 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
           weight: `${sareeWeight}g`, date: dateStr,
           color: sareeColor, status: "Pending QC",
           photoUrl, loomNumber: s.weaverLoom ?? currentBatch.loomNumber ?? null,
-          sareeType: currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
+          sareeType: effectiveTypeCode ?? currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
         });
       }
-      setSelectedSareeNos(new Set()); setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
+      setSelectedSareeNos(new Set()); setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({}); setTypeOverride(null);
     } finally {
       setIsSaving(false);
     }
@@ -357,6 +376,15 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                     className="h-12 text-sm" />
                 </div>
 
+                {/* Above the weight field on purpose — the split below can't be
+                    computed until the type is known. */}
+                <SareeTypePicker
+                  assignedCode={assignedTypeCode}
+                  value={effectiveTypeCode}
+                  onChange={setTypeOverride}
+                  count={selectedSareeNos.size}
+                />
+
 
 
                 <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 10, marginBottom: 10 }}>
@@ -416,7 +444,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                 </div>
 
                 <MaterialSplitPanel
-                  typeCode={currentBatch.sareeTypeCode}
+                  typeCode={effectiveTypeCode}
                   weight={sareeWeight}
                   edits={matEdits}
                   onEdit={setMatEdits}
@@ -477,7 +505,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                         weight: sareeWeight ? `${sareeWeight}g` : "—", date: dateStr,
                         color: sareeColor || "—", status: "Defective",
                         photoUrl, loomNumber: s.weaverLoom ?? currentBatch.loomNumber ?? null,
-                        sareeType: currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
+                        sareeType: effectiveTypeCode ?? currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
                       });
                     });
                   }

@@ -1,1 +1,1 @@
-export type ActivePicker = "weaver" | "bulkorder" | "factoryloom" | "saretype" | "design" | null;
+export type ActivePicker = "weaver" | "bulkorder" | "factoryloom" | "saretype" | "design" | "loomnumber" | null;

@@ -9,6 +9,7 @@ import {
 import { C, F, card } from "../tokens";
 import { FieldLabel, type ReceivedSareeLog } from "./shared";
 import { MaterialSplitPanel, autoMaterialSplit, type MatSplit } from "./MaterialSplitPanel";
+import { SareeTypePicker } from "./SareeTypePicker";
 import { type WeaverBatchData } from "./weaversData";
 import { factoryLoomsApi } from "../../../../../shared/api/factory-looms";
 import { WeaverSigBlock } from "./WeaverSigBlock";
@@ -122,6 +123,9 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
     if (url) setPhotoUrl(url);
   };
   const [matEdits, setMatEdits] = useState<Partial<MatSplit>>({});
+  // Type this receipt is booked under — see SareeTypePicker. Mirrors the
+  // weaver receive screen so both paths behave identically.
+  const [typeOverride, setTypeOverride] = useState<string | null>(null);
   const [showTagPrint, setShowTagPrint] = useState(false);
   const [rejectedSarees, setRejectedSarees] = useState<RejectedSaree[]>([]);
   const [showDefectPrompt, setShowDefectPrompt] = useState(false);
@@ -155,7 +159,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
   })), [LOOMS]);
 
   const resetEntryFields = useCallback(() => {
-    setSareeColor(""); setSareeWeight(""); setPhotoUrl(null); setMatEdits({});
+    setSareeColor(""); setSareeWeight(""); setPhotoUrl(null); setMatEdits({}); setTypeOverride(null);
   }, []);
 
   const pickLoom = useCallback((loomId: string) => {
@@ -191,14 +195,21 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
     resetEntryFields();
   };
 
-  const canSaveSaree = selectedSareeNos.size > 0 && !!sareeColor && !!sareeWeight && hasPhoto && !isSaving;
+  // See ReceiveSareesPage: QC refuses a saree with no type, so it's required
+  // here rather than optional.
+  const assignedTypeCode =
+    currentBatch && currentBatch.sareeTypeCode !== "—" ? currentBatch.sareeTypeCode : undefined;
+  const effectiveTypeCode = typeOverride ?? assignedTypeCode;
+
+  const canSaveSaree =
+    selectedSareeNos.size > 0 && !!sareeColor && !!sareeWeight && !!effectiveTypeCode && hasPhoto && !isSaving;
 
   const saveSaree = async () => {
     if (!selectedLoom || !currentBatch || selectedSareeNos.size === 0 || !canSaveSaree) return;
     setIsSaving(true);
     try {
       const dateStr = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-      const auto = autoMaterialSplit(currentBatch.sareeTypeCode, sareeWeight, getSareeTypeByCode);
+      const auto = autoMaterialSplit(effectiveTypeCode, sareeWeight, getSareeTypeByCode);
       const warpG = matEdits.warp !== undefined ? parseFloat(matEdits.warp) : (auto ? parseFloat(auto.warp) : undefined);
       const reshamG = matEdits.resham !== undefined ? parseFloat(matEdits.resham) : (auto ? parseFloat(auto.resham) : undefined);
       const jariReels = matEdits.jari !== undefined ? parseFloat(matEdits.jari) : (auto ? parseFloat(auto.jari) : undefined);
@@ -213,13 +224,14 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
           warpG: Number.isFinite(warpG) ? warpG : undefined,
           reshamG: Number.isFinite(reshamG) ? reshamG : undefined,
           jariReels: Number.isFinite(jariReels) ? jariReels : undefined,
+          sareeTypeCode: effectiveTypeCode !== assignedTypeCode ? effectiveTypeCode : undefined,
         });
         onSareeReceived?.({
           id: s.sareeId, weaver: loomLabel, wcode: "", batch: currentBatch.id,
           weight: `${sareeWeight}g`, date: dateStr,
           color: sareeColor, status: "Pending QC",
           photoUrl, loomNumber: selectedLoom.loomNumber,
-          sareeType: currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
+          sareeType: effectiveTypeCode ?? currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
         });
       }
       setSelectedSareeNos(new Set());
@@ -359,8 +371,15 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
             </div>
           </div>
 
+          <SareeTypePicker
+            assignedCode={assignedTypeCode}
+            value={effectiveTypeCode}
+            onChange={setTypeOverride}
+            count={selectedSareeNos.size}
+          />
+
           <MaterialSplitPanel
-            typeCode={currentBatch.sareeTypeCode}
+            typeCode={effectiveTypeCode}
             weight={sareeWeight}
             edits={matEdits}
             onEdit={setMatEdits}
@@ -423,7 +442,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
                   weight: sareeWeight ? `${sareeWeight}g` : "—", date: dateStr,
                   color: sareeColor || "—", status: "Defective",
                   photoUrl, loomNumber: selectedLoom.loomNumber,
-                  sareeType: currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
+                  sareeType: effectiveTypeCode ?? currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
                 });
               });
             }

@@ -362,3 +362,61 @@ export function FactoryLoomPickerModal({ looms, onClose, onSelect }: { looms: Lo
     </PickerShell>
   );
 }
+
+// ── Bulk Loom Number Picker ─────────────────────────────────────────────────
+// The multi-row counterpart to WeaverLoomPickerModal. Selected rows can span
+// several weavers, and weavers don't all run the same number of looms, so the
+// grid is capped to the *smallest* loom count among them — offering "L4" when
+// one of the selected weavers only has three looms would produce a saree ID
+// for a loom that doesn't exist. Rows with no weaver yet are reported rather
+// than silently skipped, since "Assign Loom No." would otherwise look like it
+// did nothing to them.
+export function BulkWeaverLoomPickerModal({ weavers, rowsWithoutWeaver, onClose, onSelect }: {
+  weavers: WeaverOption[];
+  rowsWithoutWeaver: number;
+  onClose: () => void;
+  onSelect: (loomNum: number) => void;
+}) {
+  const [sel, setSel] = useState<number | null>(null);
+  const maxLoom = weavers.length > 0 ? Math.min(...weavers.map(w => w.looms)) : 0;
+  const LOOMS = Array.from({ length: maxLoom }, (_, i) => i + 1);
+  const limitedBy = weavers.filter(w => w.looms === maxLoom);
+
+  return (
+    <PickerShell title="Assign Loom No." onClose={onClose} width={400}>
+      <div style={{ padding: "0 24px 8px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+        {weavers.length === 0 ? (
+          "Assign a weaver to these rows first — a loom number belongs to a weaver."
+        ) : weavers.length === 1 ? (
+          `${weavers[0].name} operates ${maxLoom} loom${maxLoom !== 1 ? "s" : ""}.`
+        ) : (
+          `${weavers.length} weavers selected — showing looms 1–${maxLoom}, the most ${limitedBy.map(w => w.name).join(", ")} operate${limitedBy.length === 1 ? "s" : ""}.`
+        )}
+      </div>
+      {rowsWithoutWeaver > 0 && weavers.length > 0 && (
+        <div style={{ padding: "0 24px 8px", fontFamily: F.ui, fontSize: 12, color: T.amber }}>
+          {rowsWithoutWeaver} selected row{rowsWithoutWeaver !== 1 ? "s have" : " has"} no weaver yet and will be skipped.
+        </div>
+      )}
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ padding: "8px 24px 0", display: "grid", gap: 12 }}>
+        {LOOMS.map(loom => (
+          <Button key={loom} onClick={() => setSel(loom)} variant="ghost"
+            className={`h-auto flex-col gap-1.5 p-[16px_12px] rounded-xl border-2 ${sel === loom ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
+            <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 18, fontWeight: 800, color: sel === loom ? T.royalBurgundy : T.luxuryBrown }}>
+              L{loom}
+            </div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>
+              Loom {loom}
+            </div>
+          </Button>
+        ))}
+      </div>
+      <div style={{ padding: "20px 24px 24px", display: "flex", gap: 10 }}>
+        <Button onClick={() => { if (sel !== null) onSelect(sel); }} disabled={sel === null} variant="primary" size="lg" className="flex-[2] h-[46px]">
+          Assign Loom
+        </Button>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
+      </div>
+    </PickerShell>
+  );
+}

@@ -400,6 +400,15 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
           receivedWarpG: row.receivedWarpG,
           receivedReshamG: row.receivedReshamG,
           receivedJariReels: row.receivedJariReels,
+          // Worker Staff can correct the saree type at receipt, so this is a
+          // receive field like the rest — without it the type shown reverts to
+          // the batch's original until the invalidate below lands.
+          sareeTypeCode: row.sareeTypeCode,
+          // The rate-name lookup lives in the list query's scope, so on a
+          // change the code stands in as the label until the invalidate below
+          // refetches and resolves it properly.
+          sareeTypeName:
+            row.sareeTypeCode === r.sareeTypeCode ? r.sareeTypeName : row.sareeTypeCode,
         } : r),
       }));
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });

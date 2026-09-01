@@ -105,6 +105,10 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
                   value={row.quantity === "" ? "" : Number(row.quantity)}
                   onValueChange={v => patch({ quantity: v === "" ? "" : String(v) })}
                   placeholder="0"
+                  // Materials are weighed, not counted: 1.2kg of warp, 0.75
+                  // reels of jari. NumberInput reads decimal support off
+                  // `step`, so the default of 1 silently swallowed the point.
+                  step={0.01}
                   className="w-full pr-[52px]"
                 />
                 <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{row.jariUnit}</span>
@@ -133,6 +137,10 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
                   value={row.quantity === "" ? "" : Number(row.quantity)}
                   onValueChange={v => patch({ quantity: v === "" ? "" : String(v) })}
                   placeholder="0"
+                  // Materials are weighed, not counted: 1.2kg of warp, 0.75
+                  // reels of jari. NumberInput reads decimal support off
+                  // `step`, so the default of 1 silently swallowed the point.
+                  step={0.01}
                   className="w-full pr-[38px]"
                 />
                 <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{row.warpReshamUnit || "kg"}</span>

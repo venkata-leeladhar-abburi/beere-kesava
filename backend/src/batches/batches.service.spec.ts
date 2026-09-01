@@ -218,10 +218,16 @@ describe("BatchesService", () => {
       expect(prisma.batchSareeRow.update.mock.calls[0][0].data.sareeId).toBe("RAMESH-L3-B0007-004");
     });
 
-    it("defaults a weaver row with no loomNumber to loom 1", async () => {
+    it("leaves a weaver row with no loomNumber without a saree id", async () => {
+      // Defaulting to loom 1 filed every saree under the weaver's first loom,
+      // which is wrong for anyone running several and undetectable afterwards
+      // because the generated id looks valid. The weaver is still persisted so
+      // a draft save isn't lost — only the id waits for a loom.
       await service.assignRow("BATCH-0007", 1, assignDto());
 
-      expect(prisma.batchSareeRow.update.mock.calls[0][0].data.sareeId).toBe("RAMESH-L1-B0007-001");
+      const data = prisma.batchSareeRow.update.mock.calls[0][0].data;
+      expect(data.sareeId).toBeNull();
+      expect(data.weaverId).toBe("w-1");
     });
 
     it("keeps the -L{n}-B marker PaymentsService parses looms back out of", async () => {
@@ -407,6 +413,46 @@ describe("BatchesService", () => {
         service.receiveRow("BATCH-0007", 1, { weight: 1200, warpG: 500, actorId: "u-1" } as any),
       ).rejects.toThrow(/not found/);
       expect(prisma.batchSareeRow.update).not.toHaveBeenCalled();
+    });
+
+    it("records a saree type corrected at receipt", async () => {
+      prisma.sareeTypeRate.findUnique.mockResolvedValue({ code: "SILK-B", type: "Silk B" });
+
+      await service.receiveRow("BATCH-0007", 1, {
+        weight: 1200,
+        sareeTypeCode: "SILK-B",
+        actorId: "u-1",
+      });
+
+      expect(prisma.batchSareeRow.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ sareeTypeCode: "SILK-B" }) }),
+      );
+    });
+
+    it("rejects an unknown saree type before touching the material ledger", async () => {
+      prisma.sareeTypeRate.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.receiveRow("BATCH-0007", 1, {
+          weight: 1200,
+          warpG: 500,
+          sareeTypeCode: "NOPE",
+          actorId: "u-1",
+        } as any),
+      ).rejects.toThrow(/Saree type NOPE not found/);
+      // Validated up front, so no half-applied receipt: neither the material
+      // draw-down nor the row write happened.
+      expect(materialReturns.createAutoReturnForReceipt).not.toHaveBeenCalled();
+      expect(prisma.batchSareeRow.update).not.toHaveBeenCalled();
+    });
+
+    it("leaves the assigned type alone when the receipt doesn't change it", async () => {
+      await service.receiveRow("BATCH-0007", 1, { weight: 1200, actorId: "u-1" });
+
+      expect(prisma.sareeTypeRate.findUnique).not.toHaveBeenCalled();
+      expect(prisma.batchSareeRow.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ sareeTypeCode: undefined }) }),
+      );
     });
 
     it("converts jari reels to grams before checking outstanding", async () => {

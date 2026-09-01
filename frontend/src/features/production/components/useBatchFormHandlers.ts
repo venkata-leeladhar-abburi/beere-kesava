@@ -73,26 +73,35 @@ export function useBatchFormHandlers(
   }
 
   function applyWeaver(w: WeaverOption) {
-    const seqMap: Record<string, number> = {};
-    rows.forEach(r => {
-      if (r.weaverId === w.id && r.sareeId) {
-        const m = r.sareeId.match(/-(\d+)$/);
-        if (m) {
-          const n = parseInt(m[1], 10);
-          seqMap[w.id] = Math.max(seqMap[w.id] || 0, n);
-        }
-      }
-    });
-    let seq = seqMap[w.id] || 0;
     setRows(prev => prev.map(r => {
       if (!selected.has(r.serial)) return r;
-      seq++;
       return {
         ...r, recipientType: "weaver" as const,
-        weaverId: w.id, weaverCode: w.code, weaverName: w.name, weaverInitials: w.initials, weaverLoom: 1,
+        weaverId: w.id, weaverCode: w.code, weaverName: w.name, weaverInitials: w.initials,
+        // Which of the weaver's looms this saree sits on is a real decision —
+        // it goes into the saree ID and drives per-loom payment reporting.
+        // Defaulting to loom 1 quietly filed every saree under the first loom
+        // for weavers who run several, so it is left unassigned here and the
+        // admin picks it via "Assign Loom No.". The saree ID can't be built
+        // without it, so the row stays incomplete until they do, which the
+        // existing finalize gate already enforces.
+        weaverLoom: null,
         factoryLoomId: null, factoryLoomNumber: null,
-        sareeId: generateSareeId(w.name, 1, seq),
+        sareeId: null,
       };
+    }));
+    setPicker(null);
+  }
+
+  // Bulk counterpart to applyWeaverLoomToRow — assigns one loom number across
+  // every selected row that already has a weaver. Rows still without a weaver
+  // are skipped rather than silently given a loom they can't belong to.
+  function applyWeaverLoomToSelected(loomNum: number) {
+    setRows(prev => prev.map(r => {
+      if (!selected.has(r.serial) || !r.weaverName) return r;
+      const seqMatch = r.sareeId ? r.sareeId.match(/-(\d+)$/) : null;
+      const seq = seqMatch ? parseInt(seqMatch[1], 10) : r.serial;
+      return { ...r, weaverLoom: loomNum, sareeId: generateSareeId(r.weaverName, loomNum, seq) };
     }));
     setPicker(null);
   }
@@ -261,7 +270,7 @@ export function useBatchFormHandlers(
   return {
     rows, setRows, selected, setSelected, picker, setPicker, generated, setGenerated,
     loomPickerRow, setLoomPickerRow, generateRows, addRows, allSelected, toggleAll, toggleRow,
-    applyWeaver, applyWeaverLoomToRow, applyFactoryLoom, applyBulkOrder, applyDesign,
+    applyWeaver, applyWeaverLoomToRow, applyWeaverLoomToSelected, applyFactoryLoom, applyBulkOrder, applyDesign,
     applySareeType, removeSelected,
     bulkOrderConflict, assignBulkOrderUpToCapacity, dismissBulkOrderConflict,
   };

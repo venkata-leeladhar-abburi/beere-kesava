@@ -100,6 +100,8 @@ export interface ReceiveBatchRowPayload {
   warpG?: number;
   reshamG?: number;
   jariReels?: number;
+  /** Saree type confirmed at receipt; omit to keep the type assigned at batch creation. */
+  sareeTypeCode?: string;
   /** Retail selling price for this specific saree, overriding the type's shared rate. */
   sellingPrice?: number;
   /** Required whenever warpG/reshamG/jariReels are set — see BatchesService.receiveRow. */

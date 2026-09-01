@@ -15,7 +15,7 @@ import { Modal } from "../../../shared/ui/overlay";
 import { T, F, rowComplete, lbl } from "./batch-creation/constants";
 import {
   WeaverPickerModal, BulkOrderPickerModal, DesignCodePickerModal,
-  SareeTypePickerModal, WeaverLoomPickerModal, FactoryLoomPickerModal,
+  SareeTypePickerModal, WeaverLoomPickerModal, BulkWeaverLoomPickerModal, FactoryLoomPickerModal,
 } from "./batch-creation/PickerModals";
 import {
   WeaverDetailsModal, FactoryLoomDetailsModal, BulkOrderDetailsModal, SareeDetailsModal,
@@ -96,7 +96,7 @@ export function BatchCreationPage() {
   // Custom hook for row management and picker handlers
   const {
     rows, setRows, selected, setSelected, picker, setPicker, generated, setGenerated,
-    loomPickerRow, setLoomPickerRow, generateRows, addRows, allSelected, toggleAll, toggleRow,
+    loomPickerRow, setLoomPickerRow, applyWeaverLoomToSelected, generateRows, addRows, allSelected, toggleAll, toggleRow,
     applyWeaver, applyWeaverLoomToRow, applyFactoryLoom, applyBulkOrder,
     applyDesign, applySareeType, removeSelected,
     bulkOrderConflict, assignBulkOrderUpToCapacity, dismissBulkOrderConflict,
@@ -460,6 +460,21 @@ export function BatchCreationPage() {
         {picker === "bulkorder"  && <BulkOrderPickerModal  key="bp" onClose={() => setPicker(null)} onSelect={applyBulkOrder} />}
         {picker === "factoryloom" && <FactoryLoomPickerModal key="flp" looms={looms} onClose={() => setPicker(null)} onSelect={applyFactoryLoom} />}
         {picker === "design"     && <DesignCodePickerModal key="dp" onClose={() => setPicker(null)} onSelect={applyDesign} />}
+        {picker === "loomnumber" && (() => {
+          // Only the weavers actually present on the selection drive the loom
+          // range, so the grid can never offer a loom one of them lacks.
+          const selectedRows = rows.filter(r => selected.has(r.serial));
+          const selectedWeavers = weavers.filter(w => selectedRows.some(r => r.weaverId === w.id));
+          return (
+            <BulkWeaverLoomPickerModal
+              key="blp"
+              weavers={selectedWeavers}
+              rowsWithoutWeaver={selectedRows.filter(r => !r.weaverId).length}
+              onClose={() => setPicker(null)}
+              onSelect={applyWeaverLoomToSelected}
+            />
+          );
+        })()}
         {picker === "saretype"   && (
           <SareeTypePickerModal
             key="sp"
