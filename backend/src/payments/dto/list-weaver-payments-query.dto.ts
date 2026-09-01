@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsInt, IsOptional, IsUUID, Max, Min } from "class-validator";
+import { IsInt, IsOptional, IsString, IsUUID, Max, Min } from "class-validator";
 
 export class ListWeaverPaymentsQueryDto {
   @IsOptional()
@@ -19,7 +19,9 @@ export class ListWeaverPaymentsQueryDto {
   @IsUUID()
   weaverId?: string;
 
+  // Firm ids are FIRM-NNN, not UUIDs — @IsUUID() here rejected every real
+  // firm id with a 400 (same bug already fixed on the purchase-order DTO).
   @IsOptional()
-  @IsUUID()
+  @IsString()
   firmId?: string;
 }

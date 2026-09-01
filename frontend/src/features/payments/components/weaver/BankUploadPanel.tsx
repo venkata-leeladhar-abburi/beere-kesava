@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 
 import { ApiError } from "../../../../shared/api/client";
 import { ImportResult, weaverPaymentsApi } from "../../../../shared/api/payments";
+import { IMPORT_FILE_ACCEPT, validateImportFile } from "../../utils/importFile";
 import { EASE, F, T } from "../../theme";
 import { Button, Input } from "../../../../shared/ui/primitives";
 
@@ -20,6 +21,13 @@ export function BankUploadPanel({ onReset, onUploaded }: { onMatchUpdate?: (matc
   const [uploading, setUploading] = useState(false);
 
   const handleFile = useCallback(async (file: File) => {
+    const rejection = validateImportFile(file);
+    if (rejection) {
+      setResult(null);
+      setFileName(null);
+      setError(rejection);
+      return;
+    }
     setUploading(true);
     setError(null);
     setResult(null);
@@ -71,6 +79,8 @@ export function BankUploadPanel({ onReset, onUploaded }: { onMatchUpdate?: (matc
                 {" "}<span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverId, weaverName, batchNo, loomNumber, noOfSarees, makingCharges, deduction, amountPaid, utrNumber, firmId, paymentDate</span>.
                 {" "}Required: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverId, amountPaid</span>. Optional: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>utrNumber, firmId, paymentDate, batchNo, loomNumber, noOfSarees, deduction</span>.
                 {" "}<span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverName</span> and <span style={{ fontWeight: 600, color: T.luxuryBrown }}>makingCharges</span> are reference-only — kept for readability but ignored on import.
+                {" "}<span style={{ fontWeight: 600, color: T.luxuryBrown }}>firmId</span> accepts either the firm ID (FIRM-NNN) or the firm name exactly as it appears on the table.
+                {" "}Header spelling and capitalisation don't matter.
                 {" "}Rows are matched against real weaver records and saved directly.
               </div>
               {result ? (
@@ -92,7 +102,7 @@ export function BankUploadPanel({ onReset, onUploaded }: { onMatchUpdate?: (matc
               <Input
                 ref={fileInputRef}
                 type="file"
-                accept=".xlsx,.xls"
+                accept={IMPORT_FILE_ACCEPT}
                 onChange={handleFileChange}
                 containerClassName="hidden"
               />

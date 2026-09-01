@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { ApiError } from "../../../../shared/api/client";
 import { ImportResult, vendorPaymentsApi } from "../../../../shared/api/payments";
+import { IMPORT_FILE_ACCEPT, validateImportFile } from "../../utils/importFile";
 import { EASE, F, T } from "../../theme";
 import { Button, Input } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -60,6 +61,13 @@ export function VendorUploadPanel({ rows, onUploaded }: { rows: VendorTemplateRo
   const [uploading, setUploading] = useState(false);
 
   const handleFile = useCallback(async (file: File) => {
+    const rejection = validateImportFile(file);
+    if (rejection) {
+      setResult(null);
+      setFileName(null);
+      setError(rejection);
+      return;
+    }
     setUploading(true);
     setError(null);
     setResult(null);
@@ -133,7 +141,7 @@ export function VendorUploadPanel({ rows, onUploaded }: { rows: VendorTemplateRo
               <Input
                 ref={fileInputRef}
                 type="file"
-                accept=".xlsx,.xls"
+                accept={IMPORT_FILE_ACCEPT}
                 onChange={handleFileChange}
                 containerClassName="hidden"
               />

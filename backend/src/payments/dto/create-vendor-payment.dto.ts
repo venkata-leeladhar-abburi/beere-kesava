@@ -33,8 +33,10 @@ export class CreateVendorPaymentDto {
   @IsString()
   method?: string;
 
+  // Firm ids are FIRM-NNN, not UUIDs — @IsUUID() here rejected every real
+  // firm id with a 400 (same bug already fixed on the purchase-order DTO).
   @IsOptional()
-  @IsUUID()
+  @IsString()
   firmId?: string;
 
   // Optional: when present, this payment settles (partially or fully)
