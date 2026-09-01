@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FinishingStaffMember } from "@/features/finishing";
-import { Button, Field, Input, Textarea } from "../../../shared/ui/primitives";
+import { Button, Field, Input, PhoneInput, Textarea } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 
 export function EditModal({ member, onClose, onSave }: {
@@ -30,7 +30,7 @@ export function EditModal({ member, onClose, onSave }: {
             <Input value={lastName} onChange={e => setLastName(e.target.value)} />
           </Field>
           <Field label="Mobile" required>
-            <Input value={mobile} onChange={e => setMobile(e.target.value)} />
+            <PhoneInput value={mobile} onValueChange={setMobile} />
           </Field>
           <Field label="Email" hint="Optional">
             <Input value={email} onChange={e => setEmail(e.target.value)} />

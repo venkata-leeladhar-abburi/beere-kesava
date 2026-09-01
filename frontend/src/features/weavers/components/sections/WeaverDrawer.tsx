@@ -34,7 +34,7 @@ import {
   type UpdateWeaverPayload,
 } from "../../../../shared/api/weavers";
 import { toast } from "sonner";
-import { Button, Field, Input, NumberInput } from "../../../../shared/ui/primitives";
+import { Button, Field, Input, PhoneInput, NumberInput } from "../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { recordView, useConfirm } from "../../../../shared/ui/overlay";
 import {
@@ -356,7 +356,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                   <Input value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} placeholder="Email ID" />
                 </Field>
                 <Field label="Mobile Number">
-                  <Input value={editForm.phone} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} placeholder="Mobile Number" />
+                  <PhoneInput value={editForm.phone} onValueChange={v => setEditForm(p => ({ ...p, phone: v }))} />
                 </Field>
                 <Field label="Village / Location">
                   <Input value={editForm.village} onChange={e => setEditForm(p => ({ ...p, village: e.target.value }))} placeholder="Village" />

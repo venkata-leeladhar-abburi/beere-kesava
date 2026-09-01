@@ -1,16 +1,13 @@
 
 import { motion, AnimatePresence } from "motion/react";
 
-import {
-  UserPlus, CheckCircle2, Shield, Phone, Mail,
-  Lock, Hash, ShieldCheck, ShieldHalf, Sparkles, X, Layers
-} from "lucide-react";
+import { UserPlus, CheckCircle2, Shield, Mail, Lock, Hash, ShieldCheck, ShieldHalf, Sparkles, X, Layers } from "lucide-react";
 import {
   T, F, EASE,
   ROLE_TO_PORTAL, ROLES, ACCESS_LEVELS, AccessLevel, ACCESS_LEVEL_META,
 } from "./theme";
 import { SectionCard, RoleBadge, AccessBadge } from "./UserBadges";
-import { Button, Field, Input, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
+import { Button, Field, Input, PhoneInput, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
 import { PhotoUploadField } from "../../../shared/ui/PhotoUploadField";
 
 
@@ -154,7 +151,7 @@ export function AddUserForm({
                       <Shield size={10} color={T.antiqueGold} /> This number will be used for OTP login via WhatsApp
                     </span>
                   }>
-                    <Input value={mobile} onChange={e => setMobile(e.target.value)} placeholder="+91 98765 43210" type="tel" iconLeft={Phone} />
+                    <PhoneInput value={mobile} onValueChange={setMobile} />
                   </Field>
                   <Field label="Email ID" hint="Optional">
                     <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="name@bksilks.com" type="email" iconLeft={Mail} />

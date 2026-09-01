@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Firm } from "../contexts/FirmsContext";
 import { T, F } from "./theme";
-import { Button, IconButton, Field as PField, Input, Textarea } from "../../../shared/ui/primitives";
+import { Button, IconButton, Field as PField, Input, PhoneInput, Textarea } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 
 function SLabel({ children }: { children: React.ReactNode }) {
@@ -30,6 +30,10 @@ function Field({ label, value, onChange, placeholder, type = "text", required, t
     <PField label={label} required={required}>
       {textarea ? (
         <Textarea rows={3} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
+      ) : type === "tel" ? (
+        // Contact numbers go through the shared 10-digit input, same as every
+        // other phone field in the app.
+        <PhoneInput value={value} onValueChange={onChange} iconLeft={icon} />
       ) : (
         <Input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} iconLeft={icon} />
       )}

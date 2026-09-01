@@ -6,7 +6,7 @@ import { Star } from "lucide-react";
 import { T } from "../theme";
 import { inp, lbl } from "../common/primitives";
 import { SupplierFormValues } from "../types";
-import { Field, Input } from "../../../../shared/ui/primitives";
+import { Field, Input, PhoneInput } from "../../../../shared/ui/primitives";
 import { VisitingCardUploadField } from "../../../../shared/ui/VisitingCardUploadField";
 
 export function SupplierFormFields({
@@ -34,7 +34,7 @@ export function SupplierFormFields({
         </Field>
         <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
           <Field label="Phone Number" required error={errors.phone}>
-            <Input id="phone-number" value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="Main contact number" />
+            <PhoneInput id="phone-number" value={form.phone} onValueChange={v => set("phone", v)} />
           </Field>
           <Field label="WhatsApp Number">
             <Input id="whatsapp-number" value={form.whatsapp} onChange={e => set("whatsapp", e.target.value)} placeholder="If different" />

@@ -10,6 +10,7 @@ export { SearchInput, type SearchInputProps } from "./SearchInput";
 export { NumberInput, type NumberInputProps } from "./NumberInput";
 export { CurrencyInput, type CurrencyInputProps } from "./CurrencyInput";
 export { CodeInput, type CodeInputProps } from "./CodeInput";
+export { PhoneInput, normalizePhoneInput, PHONE_DIGITS, type PhoneInputProps } from "./PhoneInput";
 
 export { Select, SelectItem, SelectGroup, SelectLabel, SelectSeparator, type SelectProps, type SelectItemProps } from "./Select";
 export { Combobox, type ComboboxProps, type ComboboxOption } from "./Combobox";

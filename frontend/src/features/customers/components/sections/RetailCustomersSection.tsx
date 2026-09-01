@@ -9,7 +9,7 @@ import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilter
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { SectionCard, Pill, FadeUp } from "../common/primitives";
-import { Button, Field, Input, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { Button, Field, Input, PhoneInput, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { RetailCustomer } from "../types";
 import { RetailChartsRow1, RetailChartsRow2 } from "./RetailCharts";
 import { useCustomers } from "../../contexts/CustomersContext";
@@ -186,7 +186,7 @@ export function RetailCustomersSection({
                 <Input value={form.name} onChange={e => updateField("name", e.target.value)} placeholder="e.g. Smt. Sunitha Reddy" />
               </Field>
               <Field label="Phone Number *">
-                <Input value={form.phone} onChange={e => updateField("phone", e.target.value)} placeholder="e.g. +91 98765 43210" />
+                <PhoneInput value={form.phone} onValueChange={v => updateField("phone", v)} />
               </Field>
               <Field label="City">
                 <Input value={form.city} onChange={e => updateField("city", e.target.value)} placeholder="e.g. Dharmavaram" />

@@ -2,7 +2,7 @@ import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Building2, X } from "lucide-react";
 import { T, F } from "../theme";
-import { Button, Field, Input, IconButton } from "../../../../shared/ui/primitives";
+import { Button, Field, Input, PhoneInput, IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { useCustomers } from "@/features/customers";
 import type { Customer } from "@/features/customers";
@@ -82,7 +82,7 @@ export function EditWholesaleCustomerModal({ customer, onClose }: { customer: Cu
           </Field>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             <Field label="Phone Number" id="edit-customer-phone">
-              <Input value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="10-digit mobile" />
+              <PhoneInput value={form.phone} onValueChange={v => set("phone", v)} />
             </Field>
             <Field label="City" id="edit-customer-city">
               <Input value={form.city} onChange={e => set("city", e.target.value)} placeholder="City" />

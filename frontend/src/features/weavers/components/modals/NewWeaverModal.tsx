@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { T, F } from "../theme";
 import { FadeUp } from "../common/primitives";
 import { weaversApi, CreateWeaverPayload, WEAVERS_LIST_QUERY_KEY, type BackendWeaver } from "../../../../shared/api/weavers";
-import { Button, Field, Input, NumberInput, IconButton } from "../../../../shared/ui/primitives";
+import { Button, Field, Input, PhoneInput, NumberInput, IconButton } from "../../../../shared/ui/primitives";
 import { PhotoUploadField } from "../../../../shared/ui/PhotoUploadField";
 import { Modal } from "../../../../shared/ui/overlay";
 import { invalidateQueriesMentioning, prependToEnvelope } from "../../../../lib/cacheUpdates";
@@ -125,7 +125,7 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
             <Input type="email" placeholder="weaver@example.com" value={form.email} onChange={set("email")} />
           </Field>
         </div>
-        <Field label="Mobile Number *"><Input placeholder="10-digit mobile number" value={form.phone} onChange={set("phone")} /></Field>
+        <Field label="Mobile Number *"><PhoneInput value={form.phone} onValueChange={v => set("phone")({ target: { value: v } } as React.ChangeEvent<HTMLInputElement>)} /></Field>
         <Field label="Village / Area"><Input placeholder="E.g., Dharmavaram, AP" value={form.village} onChange={set("village")} /></Field>
         <Field label="Number of Looms">
           <NumberInput min={0} placeholder="Total active looms" value={form.looms === "" ? "" : Number(form.looms)} onValueChange={v => setForm(prev => ({ ...prev, looms: v === "" ? "" : String(v) }))} />

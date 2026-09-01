@@ -3,14 +3,18 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { FactoryLoom } from "../../data/factoryLooms";
 import { T, F } from "./theme";
-import { Button, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
+import { Button, Field, IconButton, Input, PhoneInput, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 
 // ── Form helpers ─────────────────────────────────────────────────────────────
-function FI({ label, value, onChange, placeholder, required }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; required?: boolean }) {
+function FI({ label, value, onChange, placeholder, required, phone }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; required?: boolean; phone?: boolean }) {
   return (
     <Field label={label} required={required}>
-      <Input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
+      {phone ? (
+        <PhoneInput value={value} onValueChange={onChange} />
+      ) : (
+        <Input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
+      )}
     </Field>
   );
 }
@@ -64,7 +68,7 @@ export function AddLoomModal({ open, onClose, onAdd, editLoom, saving = false, s
           )}
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
             <FI label="Operator Name" value={form.operatorName} onChange={v => patch({ operatorName: v })} placeholder="Full name" />
-            <FI label="Operator Phone" value={form.operatorPhone} onChange={v => patch({ operatorPhone: v })} placeholder="98765 00000" />
+            <FI label="Operator Phone" value={form.operatorPhone} onChange={v => patch({ operatorPhone: v })} phone />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
             <FS label="Status" value={form.status} onChange={v => patch({ status: v as "active" | "idle" | "maintenance" })} options={["active", "idle", "maintenance"]} />

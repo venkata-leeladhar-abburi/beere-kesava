@@ -5,7 +5,7 @@ import { T, F } from "../theme";
 import { SectionCard, Pill, FadeUp } from "../common/primitives";
 import { downloadDataAsCSV, monthsSinceLabel } from "../utils";
 import { WholesaleCustomer, ViewMode } from "../types";
-import { Button, Field, Input, SearchInput, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
+import { Button, Field, Input, PhoneInput, SearchInput, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { useCustomers } from "../../contexts/CustomersContext";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -188,7 +188,7 @@ export function WholesaleCustomersSection({
                   <Field label="Business Name *"><Input aria-label="Name of the business or shop" type="text" placeholder="Name of the business or shop" value={form.name} onChange={e => updateField("name", e.target.value)} /></Field>
                   <Field label="Owner / Contact Name *"><Input aria-label="Who to speak to at this business" type="text" placeholder="Who to speak to at this business" value={form.contactName} onChange={e => updateField("contactName", e.target.value)} /></Field>
                   <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-                    <Field label="Phone Number *"><Input aria-label="Main contact number" type="text" placeholder="Main contact number" value={form.phone} onChange={e => updateField("phone", e.target.value)} /></Field>
+                    <Field label="Phone Number *"><PhoneInput aria-label="Main contact number" value={form.phone} onValueChange={v => updateField("phone", v)} /></Field>
                     <Field label="WhatsApp Number"><Input aria-label="If different" type="text" placeholder="If different" value={form.whatsapp} onChange={e => updateField("whatsapp", e.target.value)} /></Field>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>

@@ -1,7 +1,7 @@
 import React from "react";
 import { T } from "../../theme";
 import { WholesaleCustomer, WholesaleTab } from "../../types";
-import { Button, Field, Input, Textarea } from "../../../../../shared/ui/primitives";
+import { Button, Field, Input, PhoneInput, Textarea } from "../../../../../shared/ui/primitives";
 import { VisitingCardUploadField } from "../../../../../shared/ui/VisitingCardUploadField";
 
 export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
@@ -59,7 +59,7 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
           </Field>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             <Field label="Phone Number *">
-              <Input type="text" value={phone} onChange={e => setPhone(e.target.value)} placeholder="Main contact number" />
+              <PhoneInput value={phone} onValueChange={setPhone} />
             </Field>
             <Field label="WhatsApp Number">
               <Input type="text" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="If different" />

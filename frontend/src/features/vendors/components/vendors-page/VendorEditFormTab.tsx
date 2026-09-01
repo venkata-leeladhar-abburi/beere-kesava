@@ -2,7 +2,7 @@ import React from "react";
 import { Star } from "lucide-react";
 import { T, F } from "./theme";
 import { Vendor } from "./types";
-import { Button, Field, Input, Textarea, CheckboxField } from "../../../../shared/ui/primitives";
+import { Button, Field, Input, PhoneInput, Textarea, CheckboxField } from "../../../../shared/ui/primitives";
 import { VisitingCardUploadField } from "../../../../shared/ui/VisitingCardUploadField";
 
 export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpdate?: (v: Vendor) => void }) {
@@ -42,7 +42,7 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
           </Field>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             <Field label="Phone Number" required id="phone-number">
-              <Input value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="Main contact number" />
+              <PhoneInput value={form.phone} onValueChange={v => set("phone", v)} />
             </Field>
             <Field label="WhatsApp Number" id="whatsapp-number">
               <Input value={form.whatsapp || ""} onChange={e => set("whatsapp", e.target.value)} placeholder="If different" />
