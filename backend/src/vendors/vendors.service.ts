@@ -4,6 +4,7 @@ import { CreatePartyDto } from "../common/dto/create-party.dto";
 import { ListPartyQueryDto } from "../common/dto/list-party-query.dto";
 import { UpdatePartyDto } from "../common/dto/update-party.dto";
 import { PaginatedResult } from "../common/pagination";
+import { normalizeMobile } from "../common/phone.util";
 import { Prisma } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -16,7 +17,29 @@ export class VendorsService {
     private readonly idGenerator: IdGeneratorService,
   ) {}
 
+  // Nothing in the schema stops the same vendor being added twice (`code` is
+  // unique, but it is generated per-create), so a double-submitted Add Vendor
+  // form used to land two identical rows. Phone is the vendor's real identity
+  // — matched on the normalised last 10 digits, since "+91…" and bare forms
+  // are the same number — with an exact name match as the fallback for
+  // vendors recorded without one.
+  private async assertNotDuplicate(dto: CreatePartyDto) {
+    const phone = dto.phone ? normalizeMobile(dto.phone) : "";
+    const existing = await this.prisma.vendor.findFirst({
+      where: phone
+        ? { phone: { endsWith: phone } }
+        : { name: { equals: dto.name, mode: "insensitive" } },
+      select: { name: true, code: true },
+    });
+    if (existing) {
+      throw new ConflictException(
+        `Vendor "${existing.name}"${existing.code ? ` (${existing.code})` : ""} already exists with these details.`,
+      );
+    }
+  }
+
   async create(dto: CreatePartyDto) {
+    await this.assertNotDuplicate(dto);
     // "<BusinessName>-NNN", e.g. "ShivaTraders-001" — the sequence is a single
     // counter shared across all vendors, not per name.
     const code = await this.idGenerator.nextNamed("VENDOR", businessSegment(dto.name));

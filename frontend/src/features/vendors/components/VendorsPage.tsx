@@ -125,15 +125,27 @@ export function VendorsPage() {
 
 
   const handleSave = async (v: Vendor) => {
-    const created = await vendorsApi.create({
+    try {
+      await vendorsApi.create({
       name: v.name, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
       city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
       specialty: v.type, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo, ifscCode: v.ifscCode,
       notes: v.notes, rating: v.rating,
-      visitingCardUrl: toStoredAssetPath(v.visitingCard) ?? undefined,
-    });
-    setVendors(p => [toVendor(created), ...p]);
+        visitingCardUrl: toStoredAssetPath(v.visitingCard) ?? undefined,
+      });
+    } catch (err) {
+      // Includes the backend's duplicate-vendor conflict — surfaced here so
+      // the modal stays open with the entered details instead of closing on a
+      // create that never happened.
+      toast.error(err instanceof ApiError ? err.message : "Failed to add vendor");
+      throw err;
+    }
     setShowAddForm(false);
+    // Refetch rather than prepending the created row: the server list is the
+    // source of truth for code/createdAt/ordering, so this is also what makes
+    // a duplicate that slipped through show up as one row, not two.
+    loadVendors();
+    toast.success("Vendor added");
   };
 
   const handleUpdate = async (v: Vendor) => {
@@ -171,7 +183,7 @@ export function VendorsPage() {
             {showAddForm && (
               <AddVendorModal
                 onCancel={() => setShowAddForm(false)}
-                onSave={v => { void handleSave(v); }}
+                onSave={handleSave}
               />
             )}
           </AnimatePresence>

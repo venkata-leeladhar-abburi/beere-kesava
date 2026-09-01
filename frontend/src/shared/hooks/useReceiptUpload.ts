@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { ApiError } from "../api/client";
 import { uploadsApi } from "../api/uploads";
+import { isAcceptedImageFile } from "../lib/imageTypes";
 
 const MAX_SIZE_BYTES = 10 * 1024 * 1024;
-const ACCEPTED_TYPES = new Set(["image/png", "image/jpeg", "application/pdf"]);
 
 /**
  * Uploads a picked invoice/receipt file to POST /uploads/receipt and hands
@@ -16,8 +16,8 @@ export function useReceiptUpload() {
 
   async function upload(file: File): Promise<string | null> {
     setError(null);
-    if (!ACCEPTED_TYPES.has(file.type)) {
-      setError("File must be a JPG, PNG, or PDF.");
+    if (!isAcceptedImageFile(file) && file.type !== "application/pdf" && !/\.pdf$/i.test(file.name)) {
+      setError("File must be an image or a PDF.");
       return null;
     }
     if (file.size > MAX_SIZE_BYTES) {

@@ -8,7 +8,7 @@ import { Button, Field, Input, Textarea, Select, SelectItem, CheckboxField } fro
 import { Modal } from "../../../../shared/ui/overlay";
 import { VisitingCardUploadField } from "../../../../shared/ui/VisitingCardUploadField";
 
-export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => void; onCancel: () => void }) {
+export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => void | Promise<void>; onCancel: () => void }) {
   const [form, setForm] = useState({
     name: "", contactName: "", phone: "", whatsapp: "",
     city: "", state: "Andhra Pradesh", address: "",
@@ -18,6 +18,10 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
   });
   const [cardUrl, setCardUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // The modal stays mounted until the create request resolves, so without
+  // this guard a second click on Save fires a second POST and the vendor is
+  // added twice.
+  const [saving, setSaving] = useState(false);
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
 
@@ -26,7 +30,8 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
     color: T.luxuryBrown, display: "block", marginBottom: 6,
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (saving) return;
     const errs: Record<string, string> = {};
     if (!form.name.trim()) errs.name = "Required";
     if (!form.contactName.trim()) errs.contactName = "Required";
@@ -34,7 +39,9 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
     if (!form.city.trim()) errs.city = "Required";
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     const initials = form.name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
-    onSave({
+    setSaving(true);
+    try {
+      await onSave({
       // Placeholder — VendorsPage.handleSave discards this and keeps the id the
       // backend assigns on create.
       id: "", name: form.name, initials,
@@ -44,8 +51,13 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
       terms: form.terms, bankName: form.bankName, accountNo: form.accountNo, ifscCode: form.ifscCode,
       notes: form.notes, visitingCard: cardUrl || undefined,
       status: "active", totalOrders: 0, totalSpend: "0",
-      outstanding: "0", lastOrder: "—", rating: form.rating,
-    });
+        outstanding: "0", lastOrder: "—", rating: form.rating,
+      });
+    } finally {
+      // Re-enabled on failure so the user can correct and retry; on success
+      // VendorsPage unmounts this modal.
+      setSaving(false);
+    }
   };
 
   return (
@@ -156,9 +168,9 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
 
         {/* Actions */}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 16, marginTop: 32, paddingTop: 24, borderTop: `1px solid rgba(110,15,45,0.08)` }}>
-          <Button onClick={onCancel} variant="tertiary" className="text-[#9C8672]">Cancel</Button>
-          <Button onClick={handleSave} variant="primary" iconLeft="success" className="rounded-lg bg-[#6E0F2D] px-8">
-            Save Vendor
+          <Button onClick={onCancel} variant="tertiary" disabled={saving} className="text-[#9C8672]">Cancel</Button>
+          <Button onClick={() => { void handleSave(); }} variant="primary" iconLeft="success" disabled={saving} className="rounded-lg bg-[#6E0F2D] px-8">
+            {saving ? "Saving…" : "Save Vendor"}
           </Button>
         </div>
       </div>

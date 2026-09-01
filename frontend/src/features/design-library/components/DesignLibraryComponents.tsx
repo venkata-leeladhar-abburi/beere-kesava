@@ -10,6 +10,7 @@ import {
 import { DesignEntry } from "../contexts/DesignLibraryContext";
 import { T, F } from "./theme";
 import { Button, IconButton, Input } from "../../../shared/ui/primitives";
+import { IMAGE_ACCEPT_ATTR, IMAGE_REJECTION_MESSAGE, isAcceptedImageFile } from "../../../shared/lib/imageTypes";
 import { Modal } from "../../../shared/ui/overlay";
 import { EntityCode } from "@/shared/ui/domain";
 import { uploadsApi, resolveAssetUrl } from "../../../shared/api/uploads";
@@ -126,7 +127,6 @@ export const labelStyle: React.CSSProperties = {
 };
 
 const UPLOAD_MAX_BYTES = 5 * 1024 * 1024;
-const UPLOAD_ACCEPTED_TYPES = new Set(["image/png", "image/jpeg"]);
 
 /**
  * Image dropzone backed by POST /uploads/photo, same flow as PhotoUploadField.
@@ -149,8 +149,8 @@ export function UploadZone({ label, hint, icon: Icon, preview, onFile }: {
 
   async function handleFile(file: File) {
     setError(null);
-    if (!UPLOAD_ACCEPTED_TYPES.has(file.type)) {
-      setError("Image must be a JPG or PNG.");
+    if (!isAcceptedImageFile(file)) {
+      setError(IMAGE_REJECTION_MESSAGE);
       return;
     }
     if (file.size > UPLOAD_MAX_BYTES) {
@@ -198,7 +198,7 @@ export function UploadZone({ label, hint, icon: Icon, preview, onFile }: {
         )}
       </div>
       {error && <div style={{ fontFamily: F.ui, fontSize: 12, color: "#C0392B", marginTop: 6 }}>{error}</div>}
-      <Input ref={inputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={e => {
+      <Input ref={inputRef} type="file" accept={IMAGE_ACCEPT_ATTR} className="hidden" onChange={e => {
         const file = e.target.files?.[0];
         if (file) void handleFile(file);
         e.target.value = "";

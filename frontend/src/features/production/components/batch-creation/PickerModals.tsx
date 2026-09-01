@@ -238,19 +238,42 @@ export function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => vo
 // hardcoded list, so the making charge shown here always matches Rates & Pricing.
 export interface SareeTypeBrief { code: string; name: string; charge: number }
 
-export function SareeTypePickerModal({ sareeTypes, onClose, onSelect }: {
-  sareeTypes: SareeTypeBrief[]; onClose: () => void; onSelect: (code: string, name: string) => void;
+// `isLoading` / `isError` matter here: the rate catalog is fetched once by
+// RatesProvider, so opening this picker before that request settles used to
+// render the "no saree types configured" empty state — telling the user to go
+// add types that in fact already exist, and then filling in behind the message
+// a moment later. A pending or failed load is now shown as itself.
+export function SareeTypePickerModal({ sareeTypes, isLoading = false, isError = false, onRetry, onClose, onSelect }: {
+  sareeTypes: SareeTypeBrief[];
+  isLoading?: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
+  onClose: () => void;
+  onSelect: (code: string, name: string) => void;
 }) {
   const [sel, setSel] = useState<string | null>(null);
   return (
     <PickerShell title="Assign Saree Type" onClose={onClose}>
       <div style={{ padding: "0 24px", display: "flex", flexDirection: "column", gap: 8 }}>
-        {sareeTypes.length === 0 && (
+        {isLoading && (
+          <div style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+            Loading saree types…
+          </div>
+        )}
+        {!isLoading && isError && (
+          <div style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 13, color: T.red, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+            <span>Could not load saree types.</span>
+            {onRetry && (
+              <Button onClick={onRetry} variant="ghost" size="sm" className="border border-[var(--text-danger)] text-[var(--text-danger)] hover:bg-[var(--surface-danger-subtle)]">Retry</Button>
+            )}
+          </div>
+        )}
+        {!isLoading && !isError && sareeTypes.length === 0 && (
           <div style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
             No saree types configured yet — add one in Rates &amp; Pricing first.
           </div>
         )}
-        {sareeTypes.map(t => (
+        {!isLoading && sareeTypes.map(t => (
           <Button key={t.code} onClick={() => setSel(t.code)} variant="ghost" fullWidth
             className={`h-auto justify-start gap-3.5 p-[13px_16px] rounded-xl border-2 ${sel === t.code ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
             <div style={{ width: 42, height: 42, borderRadius: 11, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>

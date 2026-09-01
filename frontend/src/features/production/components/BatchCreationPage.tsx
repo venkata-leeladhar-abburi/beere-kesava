@@ -31,7 +31,7 @@ import { BatchSetupStep } from "./BatchSetupStep";
 import { useBatchFormHandlers, WeaverOption, LoomOption } from "./useBatchFormHandlers";
 
 export function BatchCreationPage() {
-  const { rates } = useRatesPricing();
+  const { rates, isLoading: ratesLoading, isError: ratesError, refreshRates } = useRatesPricing();
   const { batches, saveDraft, isSaving, finalizeBatch, isFinalizing, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId } = useBatches();
   const { bulkOrders } = useBulkOrders();
   const { issueRecords } = useMaterialIssue();
@@ -464,6 +464,9 @@ export function BatchCreationPage() {
           <SareeTypePickerModal
             key="sp"
             sareeTypes={rates.map(r => ({ code: r.code, name: r.type, charge: Number(r.charge) }))}
+            isLoading={ratesLoading}
+            isError={ratesError}
+            onRetry={refreshRates}
             onClose={() => setPicker(null)}
             onSelect={applySareeType}
           />

@@ -11,6 +11,7 @@ import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcryptjs";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { deviceLabel } from "../audit-log/device-label";
+import { normalizeMobile } from "../common/phone.util";
 import { PrismaService } from "../prisma/prisma.service";
 import { WhatsAppService } from "../whatsapp/whatsapp.service";
 import { RequestOtpDto } from "./dto/request-otp.dto";
@@ -32,8 +33,7 @@ export class AuthService {
   ) {}
 
   private cleanPhone(phone: string): string {
-    const digits = phone.replace(/\D/g, "");
-    return digits.length >= 10 ? digits.slice(-10) : digits;
+    return normalizeMobile(phone);
   }
 
   private readonly otpTtlMs = 5 * 60 * 1000;

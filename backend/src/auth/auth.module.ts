@@ -7,17 +7,11 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { PermissionsGuard } from "./guards/permissions.guard";
+import { JWT_SECRET } from "./jwt-secret";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { isE2eTestModeEnabled } from "./testing/e2e-test-mode";
 import { OtpInspectorService } from "./testing/otp-inspector.service";
 import { TestOnlyAuthController } from "./testing/test-only-auth.controller";
-
-// The fallback secret below is committed source, so it's only ever safe for
-// local dev — a production deploy relying on it would let anyone forge a
-// valid JWT for any role. Fail fast at boot instead of shipping that silently.
-if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET must be set in production — refusing to start with the dev fallback secret.");
-}
 
 // Decided once, at module load, rather than per-request: a route this
 // function excludes from `controllers`/`providers` below is never wired into
@@ -34,7 +28,8 @@ const e2eTestMode = isE2eTestModeEnabled();
     // explicitly logs out, not on a fixed clock — the frontend's own
     // idle-timeout auto-logout was removed for the same reason.
     JwtModule.register({
-      secret: process.env.JWT_SECRET || "beere-kesava-secret-key-2026",
+      // Resolved (and validated for production) once in ./jwt-secret.
+      secret: JWT_SECRET,
     }),
   ],
   controllers: [AuthController, ...(e2eTestMode ? [TestOnlyAuthController] : [])],

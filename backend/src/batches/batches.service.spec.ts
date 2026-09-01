@@ -3,6 +3,30 @@ import { BatchesService } from "./batches.service";
 import { BatchStatus, QcResult, RecipientType } from "../generated/prisma/client";
 import { AssignBatchRowDto } from "./dto/assign-batch-row.dto";
 
+// assignRows sends one UPDATE ... FROM (VALUES ...) carrying an 8-value tuple
+// per row, so the rows it wrote have to be read back out of the interpolated
+// values rather than off a per-row update() mock. Order matches the VALUES
+// list in the service.
+const TUPLE_FIELDS = [
+  "serial",
+  "sareeId",
+  "recipientType",
+  "weaverId",
+  "factoryLoomId",
+  "designCode",
+  "sareeTypeCode",
+  "bulkOrderRef",
+] as const;
+
+function bulkRowsFrom(executeRaw: jest.Mock): Record<(typeof TUPLE_FIELDS)[number], any>[] {
+  // Tagged-template call shape: (strings, joinedValuesSql, batchId).
+  const values: unknown[] = executeRaw.mock.calls[0][1].values;
+  const n = TUPLE_FIELDS.length;
+  return Array.from({ length: values.length / n }, (_, i) =>
+    Object.fromEntries(TUPLE_FIELDS.map((f, j) => [f, values[i * n + j]])),
+  ) as any;
+}
+
 /**
  * BatchesService owns the production batch lifecycle: draft -> assigned rows
  * -> received from the weaver -> tallied -> finalized, plus the cascade delete.
@@ -87,6 +111,9 @@ describe("BatchesService", () => {
       saleRecord: { count: jest.fn().mockResolvedValue(0) },
       returnRecord: { count: jest.fn().mockResolvedValue(0) },
       $transaction: jest.fn().mockResolvedValue([]),
+      // assignRows writes every row in one UPDATE ... FROM (VALUES ...)
+      // instead of one prisma.update() per row — see the service for why.
+      $executeRaw: jest.fn().mockResolvedValue(0),
     };
     idGenerator = { nextFormatted: jest.fn().mockResolvedValue("BATCH-0007") };
     auditLog = { recordAction: jest.fn() };
@@ -222,7 +249,7 @@ describe("BatchesService", () => {
       await service.assignRows("BATCH-0007", {
         rows: [{ serial: 2, recipientType: RecipientType.WEAVER, weaverId: "w-1", sareeTypeCode: "SILK", loomNumber: 3 }],
       });
-      const bulk = prisma.batchSareeRow.update.mock.calls[0][0].data.sareeId;
+      const bulk = bulkRowsFrom(prisma.$executeRaw)[0].sareeId;
 
       // Two independent implementations of the same format — they must not drift.
       expect(bulk).toBe(single);
@@ -230,7 +257,7 @@ describe("BatchesService", () => {
   });
 
   describe("assignRows", () => {
-    it("applies every row in one transaction rather than row-by-row", async () => {
+    it("applies every row in a single statement rather than row-by-row", async () => {
       await service.assignRows("BATCH-0007", {
         rows: [
           { serial: 1, recipientType: RecipientType.WEAVER, weaverId: "w-1", sareeTypeCode: "SILK" },
@@ -238,8 +265,25 @@ describe("BatchesService", () => {
         ],
       });
 
-      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
-      expect(prisma.$transaction.mock.calls[0][0]).toHaveLength(2);
+      // One statement for the whole batch, and no interactive transaction to
+      // time out: N sequential updates inside $transaction blew the 20s limit
+      // under pooler contention and crashed the process on the failed rollback.
+      expect(prisma.$executeRaw).toHaveBeenCalledTimes(1);
+      expect(prisma.batchSareeRow.update).not.toHaveBeenCalled();
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+      expect(bulkRowsFrom(prisma.$executeRaw).map((r) => r.serial)).toEqual([1, 2]);
+    });
+
+    it("clears the recipient it is not assigning instead of leaving it stale", async () => {
+      // Passing `undefined` through the model API meant "leave unchanged", so
+      // moving a row from a weaver to a factory loom kept the old weaverId.
+      await service.assignRows("BATCH-0007", {
+        rows: [{ serial: 1, recipientType: RecipientType.FACTORY_LOOM, factoryLoomId: "fl-1", sareeTypeCode: "SILK" }],
+      });
+
+      const [written] = bulkRowsFrom(prisma.$executeRaw);
+      expect(written.factoryLoomId).toBe("fl-1");
+      expect(written.weaverId).toBeNull();
     });
 
     it("rejects the whole request when one row names a serial the batch lacks", async () => {

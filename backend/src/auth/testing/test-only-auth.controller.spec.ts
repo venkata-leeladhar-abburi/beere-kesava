@@ -18,11 +18,20 @@
 import { MODULE_METADATA } from "@nestjs/common/constants";
 
 describe("AuthModule / E2E test-mode route registration", () => {
-  const original = { NODE_ENV: process.env.NODE_ENV, E2E_TEST_MODE: process.env.E2E_TEST_MODE };
+  const original = {
+    NODE_ENV: process.env.NODE_ENV,
+    E2E_TEST_MODE: process.env.E2E_TEST_MODE,
+    JWT_SECRET: process.env.JWT_SECRET,
+  };
 
   afterEach(() => {
     process.env.NODE_ENV = original.NODE_ENV;
     process.env.E2E_TEST_MODE = original.E2E_TEST_MODE;
+    // Restored too: auth/jwt-secret.ts validates this value at import time, so
+    // a leftover from the production case below would follow the module cache
+    // into whatever loads next.
+    if (original.JWT_SECRET === undefined) delete process.env.JWT_SECRET;
+    else process.env.JWT_SECRET = original.JWT_SECRET;
     jest.resetModules();
   });
 
@@ -31,10 +40,13 @@ describe("AuthModule / E2E test-mode route registration", () => {
     else process.env.NODE_ENV = nodeEnv;
     if (e2eTestMode === undefined) delete process.env.E2E_TEST_MODE;
     else process.env.E2E_TEST_MODE = e2eTestMode;
-    // auth.module.ts independently refuses to load in production without a
-    // real secret (see its own top-level check) — irrelevant to what this
-    // test is verifying, so satisfy it rather than let it mask the result.
-    if (nodeEnv === "production") process.env.JWT_SECRET = "test-secret-for-this-check-only";
+    // auth/jwt-secret.ts (imported transitively by auth.module.ts) refuses to
+    // load in production without a real secret — irrelevant to what this test
+    // is verifying, so satisfy it rather than let it mask the result. Must
+    // clear its length and known-dev-value checks, hence the padding.
+    if (nodeEnv === "production") {
+      process.env.JWT_SECRET = "test-secret-for-this-check-only-not-a-real-one";
+    }
 
     jest.resetModules();
     // Must be a fresh require() after resetModules() — a static top-of-file
