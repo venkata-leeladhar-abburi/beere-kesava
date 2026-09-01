@@ -7,8 +7,17 @@ import { Button } from "../../../../../shared/ui/primitives";
 import { EntityCode } from "@/shared/ui/domain";
 import { imgSareeMock as imgSaree } from "@/shared/constants/mockImages";
 
+// Kept in step with batch-creation/constants.tsx's rowComplete, which is the
+// definition the Finalize gate uses. Requiring designCode and sareeTypeCode
+// here counted rows as incomplete that the batch page considers finished —
+// so a batch could be finalized and still show "0 complete" on its card.
+// Both are optional: design is a nullable FK, and the saree type is confirmed
+// at receipt rather than up front.
+//
+// A factory-loom row is complete too — keying off weaverId alone left every
+// in-house row uncounted.
 export function rowComplete(r: SareeRow) {
-  return !!(r.weaverId && r.sareeId && r.designCode && r.sareeTypeCode);
+  return !!((r.weaverId || r.factoryLoomId) && r.sareeId);
 }
 export function weaverBreakdown(rows: SareeRow[]): { name: string; count: number }[] {
   const map: Record<string, number> = {};

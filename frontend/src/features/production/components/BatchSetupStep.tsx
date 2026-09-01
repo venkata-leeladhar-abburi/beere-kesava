@@ -133,7 +133,7 @@ export function BatchSetupStep({
         <div style={{ background: "rgba(183,121,31,0.08)", border: "1px solid rgba(183,121,31,0.28)", borderRadius: 12, padding: "14px 18px", marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 10 }}>
           <WarningCircle size={17} color={T.amber} style={{ flexShrink: 0, marginTop: 1 }} />
           <div style={{ fontFamily: F.ui, fontSize: 13, color: "#7A5A10", lineHeight: 1.6 }}>
-            <strong>{incompleteRows.length} row(s) are incomplete</strong> — missing weaver or saree type.
+            <strong>{incompleteRows.length} row(s) are incomplete</strong> — missing a weaver/factory loom, or a loom number.
             {" "}Rows {incompleteRows.slice(0, 8).map(r => r.serial).join(", ")}{incompleteRows.length > 8 ? "…" : ""} need attention.
             {" "}You can save as draft and complete them later, but <strong>Finalize</strong> will remain disabled until all rows are complete.
           </div>

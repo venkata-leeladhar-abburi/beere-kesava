@@ -67,8 +67,18 @@ export const td: React.CSSProperties = {
 // ─── Row completeness ─────────────────────────────────────────────────────────
 // designCode is optional (BatchSareeRow.designCode is a nullable FK) — a row
 // is complete without one.
+//
+// sareeTypeCode is optional here too. What a weaver is *told* to make and what
+// actually comes back can differ, and the type is confirmed (or corrected) at
+// receipt — ReceiveSareesPage requires one before a saree can be saved, and
+// BatchesService.receiveRow persists it onto the row. Forcing it up front made
+// the batch un-finalizable for the common case where the type genuinely isn't
+// known until the saree is in hand.
+//
+// A row still needs a recipient and a saree ID: the ID depends on the assigned
+// loom, so this keeps the loom requirement the "Assign Loom No." flow relies on.
 export function rowComplete(r: SareeRow) {
-  return !!((r.weaverId || r.factoryLoomId) && r.sareeId && r.sareeTypeCode);
+  return !!((r.weaverId || r.factoryLoomId) && r.sareeId);
 }
 export function rowEmpty(r: SareeRow) {
   return !r.weaverId && !r.factoryLoomId && !r.sareeTypeCode;
