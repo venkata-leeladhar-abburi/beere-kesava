@@ -5,7 +5,19 @@ import { Button } from "../../../../shared/ui/primitives";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
 import { useDocument } from "../../../../shared/ui/document";
 import { ScannableCode } from "../../../../shared/ui/domain";
+import { labelsApi } from "../../../../shared/api/labels";
 import { GrnLabelSheet, type GrnLabel } from "./GrnLabelSheet";
+
+/** DDMMYY, e.g. 2026-09-02 -> "020926" — same format the saree tags use. */
+function ddmmyy(dateStr?: string | null): string | null {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return null;
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+  return `${dd}${mm}${yy}`;
+}
 
 interface GRNSuccessProps {
   grnBatchId: string;
@@ -63,9 +75,7 @@ export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
       quantity: qtyText,
       grnBatchId,
       vendor: grn?.supplierName,
-      receivedDate: grn?.receivedDate
-        ? new Date(grn.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
-        : undefined,
+      receivedDate: ddmmyy(grn?.receivedDate) ?? undefined,
     };
   });
 
@@ -77,12 +87,19 @@ export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
         {batches.map((b) => (
           <div key={b.code} style={{ ...card, padding: 14 }}>
             <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg, marginBottom: 2 }}>{b.code}</div>
+            <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginBottom: 2 }}>{b.grnBatchId}</div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 2 }}>{b.materialType} · {b.quantity}</div>
-            {b.description && <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted, marginBottom: 8 }}>{b.description}</div>}
+            {b.description && <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted, marginBottom: 4 }}>{b.description}</div>}
+            {b.receivedDate && <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginBottom: 8 }}>{b.receivedDate}</div>}
             {/* The same code that prints, so what's on screen is what the
                 scanner will read off the tag. */}
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 8, marginTop: b.description ? 0 : 8 }}>
-              <ScannableCode value={b.code} size={72} />
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginBottom: 8, marginTop: b.receivedDate ? 0 : 8 }}>
+              <ScannableCode value={b.code} size={64} />
+              <img
+                src={labelsApi.barcodeUrl(b.code)}
+                alt={`Barcode for ${b.code}`}
+                style={{ width: 90, height: 32, objectFit: "contain" }}
+              />
             </div>
             <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => print(<GrnLabelSheet labels={[b]} />)} className="rounded-[7px] border-[rgba(110,15,45,0.12)] bg-[#FFF8E7] text-[#6E0F2D] hover:bg-[#FFF8E7]">
               Print

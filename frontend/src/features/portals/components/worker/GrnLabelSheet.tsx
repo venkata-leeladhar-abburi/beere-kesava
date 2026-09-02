@@ -12,6 +12,7 @@
  * tag is to identify this one material, not the delivery it arrived in.
  */
 import { ScannableCode } from "@/shared/ui/domain";
+import { labelsApi } from "@/shared/api/labels";
 
 export interface GrnLabel {
   /** The scannable line code — also the human-readable id printed below it. */
@@ -65,7 +66,20 @@ function LabelTile({ label }: { label: GrnLabel }) {
           {label.receivedDate && <div>{label.receivedDate}</div>}
         </div>
       </div>
-      <ScannableCode value={label.code} size={132} />
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2mm", flexShrink: 0 }}>
+        <ScannableCode value={label.code} size={100} />
+        {/* Server-generated Code128, alongside the QR rather than instead of
+            it — QR alone stays the primary code (see ScannableCode's own
+            comment: it survives the smudging a yarn/dye drum tag picks up
+            far better than a linear barcode's thin lines do), but a plain
+            barcode reader that can't decode QR still needs something to
+            scan. */}
+        <img
+          src={labelsApi.barcodeUrl(label.code)}
+          alt={`Barcode for ${label.code}`}
+          style={{ width: "30mm", height: "10mm", objectFit: "contain" }}
+        />
+      </div>
     </div>
   );
 }
