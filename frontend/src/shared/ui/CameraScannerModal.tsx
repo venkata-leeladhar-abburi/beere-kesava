@@ -5,6 +5,25 @@ import { X, AlertCircle, ScanLine } from "lucide-react";
 import { Button } from "./primitives";
 
 /**
+ * A saree tag carries two codes: a Code128 barcode (decodes to the bare
+ * saree id) and a QR code (decodes to a full "<FRONTEND_URL>/scan?id=<id>"
+ * link, so a generic phone camera can open it directly — see
+ * labels.service.ts). Every consumer of this scanner expects a bare id, so
+ * unwrap the QR's URL form here, once, instead of in each caller.
+ */
+function extractScannedId(text: string): string {
+  const trimmed = text.trim();
+  try {
+    const url = new URL(trimmed);
+    const id = url.searchParams.get("id");
+    if (id) return id;
+  } catch {
+    // Not a URL — a Code128 scan (or manual typing) already is the bare id.
+  }
+  return trimmed;
+}
+
+/**
  * Shared live-camera barcode/QR scanner. Decodes whatever's on a saree tag
  * (Code128, QR, EAN, UPC — ZXing's MultiFormat reader picks up all of them)
  * straight off the device camera feed. Used behind every "Open Camera"
@@ -42,7 +61,7 @@ export function CameraScannerModal({
         if (cancelled) return;
         if (result) {
           controls.stop();
-          onDetected(result.getText());
+          onDetected(extractScannedId(result.getText()));
         }
         // NotFoundException fires continuously between frames with no
         // barcode in view — that's the normal steady state, not a failure.

@@ -1,4 +1,4 @@
-import { useState, Suspense, useEffect } from "react";
+import { useState, Suspense } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useAuth } from "../../../contexts/AuthContext";
 import { AnimatePresence, motion } from "motion/react";
@@ -11,7 +11,6 @@ import { PackageCheck, History } from "lucide-react";
 import { T, F, EASE } from "./superadmin-dashboard/theme";
 import { TabLoadingFallback } from "./superadmin-dashboard/atoms";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
-import { scrollToTop } from "@/shared/ui/ScrollToTop";
 import { SectionCard } from "./beere-dashboard/primitives";
 import { SATopNav } from "./superadmin-dashboard/SATopNav";
 import { SAMobileMenuDrawer, SAMobileTopNav } from "./superadmin-dashboard/SAMobileNav";
@@ -78,11 +77,6 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const isMobile = useIsMobile();
-
-  // Always scroll to top when navigating between pages
-  useEffect(() => {
-    scrollToTop();
-  }, [nav]);
 
   // Open a staff portal as this admin. Not impersonation — the session and
   // identity are unchanged, so anything recorded in there is attributed to

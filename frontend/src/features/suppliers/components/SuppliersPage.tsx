@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useListDetailScroll } from "@/shared/ui/ScrollToTop";
 import { useLocation } from "react-router";
 import { AnimatePresence } from "motion/react";
 import {
@@ -31,6 +32,7 @@ export function SuppliersPage() {
   const { suppliers, statsFor, addSupplier, purchases, addPurchase } = useSuppliers();
   const location = useLocation();
   const [selected, setSelected] = useState<Supplier | null>(null);
+  const { openDetail, backToList } = useListDetailScroll();
   // Command palette "New Supplier" action deep-links here with ?new=1 to open
   // the add-supplier form straight away.
   const [showAdd, setShowAdd] = useState(() => new URLSearchParams(location.search).get("new") === "1");
@@ -114,7 +116,7 @@ export function SuppliersPage() {
         <>
           <SupplierProfile
             supplier={liveSelected}
-            onBack={() => setSelected(null)}
+            onBack={() => backToList(() => setSelected(null))}
             onRaiseRequest={id => setRequestFor(id)}
           />
           <AnimatePresence>
@@ -149,7 +151,7 @@ export function SuppliersPage() {
             ratingFilter={ratingFilter}
             setRatingFilter={setRatingFilter}
             onAddSupplier={() => setShowAdd(true)}
-            onViewSupplier={setSelected}
+            onViewSupplier={s => openDetail(() => setSelected(s))}
           />
           </div>
 

@@ -149,14 +149,17 @@ export function NewSaleFlow() {
       const price = result.sellingPrice ?? Number(getSareeTypeByCode(typeCode)?.retail ?? 0);
       return {
         id: result.sareeId,
+        batchId: result.batchId,
         design: result.design?.code ?? "—",
         name: result.design?.name ?? result.sareeType?.type ?? "—",
         // Same "CODE · Name" order the Inventory table uses, so a saree reads
         // identically whether it is being checked in stock or sold.
         type: result.sareeType ? `${result.sareeType.code} · ${result.sareeType.type}` : "—",
         typeCode,
-        weight: "—",
-        weaver: result.weaver?.name ?? (result.factoryLoom ? `Factory Loom ${result.factoryLoom.code ?? result.factoryLoom.loomNumber}` : "—"),
+        weight: result.weight != null ? `${result.weight}g` : "—",
+        weaver: result.weaver
+          ? `${result.weaver.name}${result.weaver.loomNumber != null ? ` · Loom ${result.weaver.loomNumber}` : ""}`
+          : result.factoryLoom ? `Factory Loom ${result.factoryLoom.code ?? result.factoryLoom.loomNumber}` : "—",
         originalPrice: price,
         soldPrice: price,
       };

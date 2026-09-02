@@ -33,23 +33,45 @@ const F = {
 // ═══════════════════════════════════════════════════════════════════════════════
 interface SareeData {
   id:               string;
+  batchId:          string;
   weaver:           string;
   fabricType:       string;
+  fabricCode:       string;
   colour:           string;
+  weight:           string;
   jariType:         string;
   dispatchDate:     string;
   productionStage:  string;
   status:           string;
 }
 
+/** DDMMYY, e.g. 2026-09-02 -> "020926" — same format the printed tag uses. */
+function ddmmyy(dateStr?: string | null): string {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return "—";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+  return `${dd}${mm}${yy}`;
+}
+
 function resultToSareeData(r: ScanLookupResult): SareeData {
+  const weaverName = r.weaver
+    ? `${r.weaver.name}${r.weaver.loomNumber != null ? ` · Loom ${r.weaver.loomNumber}` : ""}`
+    : r.factoryLoom
+      ? `Loom ${r.factoryLoom.code ?? r.factoryLoom.loomNumber}`
+      : "Unknown";
   return {
     id: r.sareeId,
-    weaver: r.weaver?.name ?? r.factoryLoom?.loomNumber ?? "Unknown",
+    batchId: r.batchId,
+    weaver: weaverName,
     fabricType: r.sareeType?.type ?? "—",
-    colour: "—",
+    fabricCode: r.sareeType?.code ?? "—",
+    colour: r.color ?? "—",
+    weight: r.weight != null ? `${r.weight}g` : "—",
     jariType: "—",
-    dispatchDate: "—",
+    dispatchDate: ddmmyy(r.qc?.date ?? r.receivedDate ?? r.batchDate),
     productionStage: r.finishing?.status
       ? `Finishing: ${r.finishing.status}`
       : r.qc?.result
@@ -64,11 +86,14 @@ function resultToSareeData(r: ScanLookupResult): SareeData {
 // ═══════════════════════════════════════════════════════════════════════════════
 function detailRows(saree: SareeData) {
   return [
-    { label: "Weaver Name",                value: saree.weaver },
-    { label: "Fabric Type",                value: saree.fabricType },
+    { label: "Batch Number",               value: saree.batchId },
+    { label: "Weaver / Loom",              value: saree.weaver },
+    { label: "Saree Type",                 value: saree.fabricType },
+    { label: "Saree Type Code",            value: saree.fabricCode },
     { label: "Colour",                     value: saree.colour },
+    { label: "Weight",                     value: saree.weight },
     { label: "Jari Type",                  value: saree.jariType },
-    { label: "Dispatch Date",              value: saree.dispatchDate },
+    { label: "Date",                       value: saree.dispatchDate },
     { label: "Production Stage Completed", value: saree.productionStage },
   ];
 }

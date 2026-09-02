@@ -85,7 +85,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
         invoiceNumber: isExt ? `INV-${item.sareeId.slice(0, 6)}` : null,
         purchaseDate: item.qcDate,
         batchId: null,
-        designCode: item.designCode ?? "BD-001",
+        designCode: item.designCode ?? "",
         sareeTypeCode: item.sareeTypeCode ?? "ST-001",
         sareeTypeName: item.sareeTypeLabel ?? "Pure Silk Saree",
         weight: "850g",

@@ -1,5 +1,5 @@
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { lazyWithRetry as lazy } from "@/app/lazyWithRetry";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJari as _imgJariLocal } from "../../../shared/constants/imageData";
@@ -16,7 +16,6 @@ import type { ReceiptRecord } from "../../portals/components/worker/ReceiptHisto
 import { useQuery } from "@tanstack/react-query";
 import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
-import { scrollToTop } from "@/shared/ui/ScrollToTop";
 
 // Lazily loaded so the initial dashboard bundle doesn't pay for every tab's
 // page — only the active tab's chunk is fetched, on first navigation to it.
@@ -169,11 +168,6 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   const mobileTab = nav;
   const [menuOpen, setMenuOpen] = useState(false);
   const { isMobile } = useResponsive();
-
-  // Always scroll to top when navigating between pages
-  useEffect(() => {
-    scrollToTop();
-  }, [nav, mobileTab]);
 
   const navigate = (tab: string, ctx?: unknown) => {
     const routeMap: Record<string, string> = {

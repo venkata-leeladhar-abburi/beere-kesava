@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import * as bwipjs from "bwip-js/node";
 import * as QRCode from "qrcode";
 import { PrismaService } from "../prisma/prisma.service";
@@ -10,7 +11,10 @@ const LABEL_SETTINGS_SINGLETON_ID = "singleton";
 
 @Injectable()
 export class LabelsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
+  ) {}
 
   /** Get-or-create the singleton label settings row, seeding defaults on first read. */
   async getSettings() {
@@ -46,8 +50,16 @@ export class LabelsService {
     });
   }
 
-  /** QR code PNG — used for the mobile-scan lookup flow. */
+  /**
+   * QR code PNG for the mobile-scan lookup flow — encodes a full /scan?id=
+   * link (not the bare code), so a generic camera app (Google Lens, the
+   * phone's own camera) recognises it as a link and offers to open it,
+   * landing straight on that saree's MobileScanView instead of just
+   * decoding inert text the way the Code128 barcode does.
+   */
   async generateQrCodePng(code: string): Promise<Buffer> {
-    return QRCode.toBuffer(code, { type: "png", margin: 1, scale: 6 });
+    const frontendUrl = this.configService.get<string>("FRONTEND_URL") ?? "http://localhost:5175";
+    const scanUrl = `${frontendUrl.replace(/\/$/, "")}/scan?id=${encodeURIComponent(code)}`;
+    return QRCode.toBuffer(scanUrl, { type: "png", margin: 1, scale: 6 });
   }
 }

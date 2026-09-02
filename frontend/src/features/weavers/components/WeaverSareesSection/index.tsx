@@ -13,7 +13,7 @@ import { MainSareesTable } from "./MainSareesTable";
 import { Select, TabsBar } from "./WeaverSareesControls";
 import { useWeaverSareeRows } from "./useWeaverSareeRows";
 import { useExternalPurchaseRows } from "./useExternalPurchaseRows";
-import { usePrintSareeTags } from "./SareeTagPrint";
+import { usePrintSareeTags, type SareeTagData } from "./SareeTagPrint";
 import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 
@@ -27,8 +27,23 @@ function sareeTypeLabel(r: WeaverSareeRow): string | null {
   return r.sareeTypeName || null;
 }
 
+const VALID_TAB_KEYS: TabKey[] = [
+  "assigned", "produced", "qcpassed", "semi", "defective",
+  "finishing", "sold", "outstanding", "shortage", "external", "dispatched",
+];
+
+function loadPersistedTab(persistKey: string | undefined): TabKey {
+  if (!persistKey) return "assigned";
+  try {
+    const saved = sessionStorage.getItem(`bk-saree-tab:${persistKey}`);
+    return VALID_TAB_KEYS.includes(saved as TabKey) ? (saved as TabKey) : "assigned";
+  } catch {
+    return "assigned";
+  }
+}
+
 // ── Main section ─────────────────────────────────────────────────────────────
-export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver", selectable = false, selectedIds, onToggleRow, onToggleAll, onVisibleChange }: {
+export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver", selectable = false, selectedIds, onToggleRow, onToggleAll, onVisibleChange, persistKey }: {
   /** Weaver id (WV-00X) or factory loom id (FL-00X), depending on ownerType. Unused when ownerType is "all". */
   weaverId?: string;
   weaverName?: string;
@@ -41,6 +56,11 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   onToggleAll?: (visibleIds: string[]) => void;
   /** Fired whenever the currently visible (filtered + sorted) row list changes. */
   onVisibleChange?: (rows: WeaverSareeRow[]) => void;
+  /** When set, the active tab survives a refresh (sessionStorage, scoped to
+   *  this key) instead of always reopening on "Assigned". Omit it for
+   *  transient hosts (a picker modal, a drawer) where starting fresh every
+   *  time is the right behavior. */
+  persistKey?: string;
 }) {
   const isLoom = ownerType === "loom";
   const isAll = ownerType === "all";
@@ -54,9 +74,29 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     () => (isAll ? [...ledgerRows.filter(r => r.stock?.origin !== "external"), ...externalRows] : ledgerRows),
     [isAll, ledgerRows, externalRows],
   );
-  const printTags = usePrintSareeTags();
+  const printSareeTags = usePrintSareeTags();
+  // The tag itself needs the weaver's full name and a print date, which
+  // WeaverSareeRow doesn't carry directly: `ownerLabel` only exists in "all"
+  // (cross-weaver) mode, and single-weaver/loom mode instead gets the name
+  // via the `weaverName` prop.
+  const toTagData = (r: WeaverSareeRow): SareeTagData => ({
+    ...r,
+    weaverName: isLoom ? null : (isAll ? r.ownerLabel : weaverName) ?? null,
+    date: r.qcDate ?? r.receivedDate ?? r.assignedDate ?? null,
+  });
+  const printTags = (rs: WeaverSareeRow[]) => printSareeTags(rs.map(toTagData));
 
-  const [tab, setTab] = useState<TabKey>("assigned");
+  const [tab, setTabState] = useState<TabKey>(() => loadPersistedTab(persistKey));
+  const setTab = (t: TabKey) => {
+    setTabState(t);
+    if (!persistKey) return;
+    try {
+      sessionStorage.setItem(`bk-saree-tab:${persistKey}`, t);
+    } catch {
+      // sessionStorage unavailable (private browsing) — losing the saved
+      // tab is harmless, so fail silently rather than break tab switching.
+    }
+  };
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [fBatch, setFBatch] = useState("all");

@@ -92,6 +92,13 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   R2_PUBLIC_BASE_URL?: string;
+
+  /** Deployed frontend origin, e.g. https://app.beerekesava.com — used to
+   *  build the /scan?id= link encoded into a saree tag's QR code. Falls back
+   *  to the local dev frontend when unset. */
+  @IsOptional()
+  @IsString()
+  FRONTEND_URL?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {

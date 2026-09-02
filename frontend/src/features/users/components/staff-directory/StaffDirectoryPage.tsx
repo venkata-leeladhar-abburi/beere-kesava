@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useListDetailScroll } from "@/shared/ui/ScrollToTop";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Search } from "lucide-react";
 import { PageShell } from "@/shared/ui/PageShell";
@@ -26,6 +27,7 @@ function initialsOf(u: BackendUser) {
 export function StaffDirectoryPage({ scope }: { scope: PortalScope }) {
   const [search, setSearch] = useState("");
   const [openUser, setOpenUser] = useState<BackendUser | null>(null);
+  const { openDetail, backToList } = useListDetailScroll();
   const enabled = useAuthGate("admin", "superadmin");
 
   const { data, isLoading, isError, error, refetch } = useQuery({
@@ -67,7 +69,7 @@ export function StaffDirectoryPage({ scope }: { scope: PortalScope }) {
   }, [data, search]);
 
   if (openUser) {
-    return <StaffMemberHistoryPage scope={scope} user={openUser} onBack={() => setOpenUser(null)} />;
+    return <StaffMemberHistoryPage scope={scope} user={openUser} onBack={() => backToList(() => setOpenUser(null))} />;
   }
 
   const columns: ColumnDef<BackendUser>[] = [
@@ -168,7 +170,7 @@ export function StaffDirectoryPage({ scope }: { scope: PortalScope }) {
                 columns={columns}
                 data={staff}
                 getRowId={u => u.id}
-                onRowClick={u => setOpenUser(u)}
+                onRowClick={u => openDetail(() => setOpenUser(u))}
                 responsive
                 pagination
               />

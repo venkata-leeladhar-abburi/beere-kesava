@@ -55,6 +55,7 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
       if (r.weaverId && r.weaverName) {
         weaversMap[r.weaverId] = {
           id: r.weaverId,
+          code: r.weaverCode,
           name: r.weaverName,
           initials: r.weaverInitials || r.weaverName.split(" ").map(n => n[0]).join("").toUpperCase(),
           bg: T.royalBurgundy

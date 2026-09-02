@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
+import { useListDetailScroll } from "@/shared/ui/ScrollToTop";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -64,6 +65,7 @@ export function FactoryLoomPage() {
   const [showModal, setShowModal] = useState(false);
   const [editLoom, setEditLoom] = useState<FactoryLoom|null>(null);
   const [selected, setSelected] = useState<FactoryLoom|null>(null);
+  const { openDetail, backToList } = useListDetailScroll();
 
   const { data: batchesRes } = useQuery({
     queryKey: ["factory-loom-batches"],
@@ -213,7 +215,7 @@ export function FactoryLoomPage() {
       {selected ? (
         <LoomDetailPage
           loom={selected}
-          onBack={() => setSelected(null)}
+          onBack={() => backToList(() => setSelected(null))}
           onEdit={l => { setEditLoom(l); setShowModal(true); }}
         />
       ) : (
@@ -389,7 +391,7 @@ export function FactoryLoomPage() {
                       loom={l}
                       batches={batches}
                       sarees={sarees}
-                      onView={() => setSelected(l)}
+                      onView={() => openDetail(() => setSelected(l))}
                     />
                   ))}
                 </div>
@@ -420,7 +422,7 @@ export function FactoryLoomPage() {
                           id: "actions", header: "Actions", accessor: () => null, type: "actions",
                           cell: (_v, l) => (
                             <>
-                              <Button onClick={() => setSelected(l)} variant="link" size="sm" className="mr-3">View Details</Button>
+                              <Button onClick={() => openDetail(() => setSelected(l))} variant="link" size="sm" className="mr-3">View Details</Button>
                               <IconButton onClick={() => { setEditLoom(l); setShowModal(true); }} icon={Edit2} label={`Edit loom ${loomLabel(l)}`} variant="ghost" size="sm" />
                             </>
                           ),

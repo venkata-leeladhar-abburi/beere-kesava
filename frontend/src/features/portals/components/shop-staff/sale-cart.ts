@@ -7,6 +7,7 @@
  */
 export interface SaleLine {
   id: string;
+  batchId: string;
   design: string;
   name: string;
   type: string;

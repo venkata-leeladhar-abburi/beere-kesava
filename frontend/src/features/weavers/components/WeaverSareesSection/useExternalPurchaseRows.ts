@@ -122,6 +122,7 @@ function pieceRow({
     bulkOrderLabel: null,
     designCode: null,
     color: line.color || null,
+    weight: line.weight ? Number(String(line.weight).replace(/g$/, "")) || null : null,
     // The piece's own photo, falling back to nothing rather than the line's —
     // consistent with the purchase screens, where a serial's photo is not
     // claimed to be any individual piece's photo.

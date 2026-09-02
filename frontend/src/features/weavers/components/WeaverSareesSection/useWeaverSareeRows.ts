@@ -3,7 +3,6 @@ import { useBatches } from "@/features/production";
 import { useQc } from "@/features/qc";
 import { useFinishing } from "@/features/finishing";
 import { useSales } from "@/features/customers";
-import { useDesignLibrary } from "@/features/design-library";
 import { WeaverSareeRow } from "./types";
 
 interface UseWeaverSareeRowsOptions {
@@ -17,7 +16,6 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
   const { qcRecords: allQcRecords, getQcForWeaver, getQcForLoom } = useQc();
   const { readySarees, assignments, returns, dispatches } = useFinishing();
   const { sarees: allStock, soldSareeIds } = useSales();
-  const { getDesign } = useDesignLibrary();
 
   const qcRecords = isAll ? allQcRecords : isLoom ? getQcForLoom(weaverId!) : getQcForWeaver(weaverId!);
 
@@ -26,7 +24,7 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
 
     const blank = (sareeId: string): WeaverSareeRow => ({
       sareeId, batchId: null, loomNumber: null, sareeTypeCode: null, sareeTypeName: null,
-      bulkOrderLabel: null, designCode: null, color: null, receivedPhotoUrl: null,
+      bulkOrderLabel: null, designCode: null, color: null, weight: null, receivedPhotoUrl: null,
       isAssigned: false, assignedDate: null, qcStatus: "pending",
       receivedDate: null, qcDate: null, defects: [], makingCharge: null, deduction: null,
       payable: null, finishingStatus: "none", finishingAssignedDate: null,
@@ -47,6 +45,8 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
         row.sareeTypeName = r.sareeTypeName ?? null;
         row.bulkOrderLabel = r.bulkOrderLabel ?? null;
         row.designCode = r.designCode ?? null;
+        row.color = row.color ?? r.receivedColor ?? null;
+        row.weight = row.weight ?? (r.receivedWeight != null ? Number(r.receivedWeight) : null);
         row.receivedPhotoUrl = r.receivedPhotoUrl ?? null;
         row.isAssigned = true;
         row.assignedDate = b.createdAt;
@@ -131,12 +131,7 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
       }
     });
 
-    // 5. Body colour comes from the design library entry for the saree's design
-    byId.forEach(row => {
-      row.color = row.designCode ? (getDesign(row.designCode)?.color || null) : null;
-    });
-
-    // 6. Already-dispatched — including via a raised quotation — so callers
+    // 5. Already-dispatched — including via a raised quotation — so callers
     // (e.g. the Inventory dispatch table) can exclude these from selection.
     const dispatchedSareeIds = new Set(dispatches.flatMap(d => d.sareeIds));
     byId.forEach(row => {
@@ -147,5 +142,5 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
     });
 
     return [...byId.values()];
-  }, [batches, qcRecords, allStock, returns, assignments, readySarees, dispatches, soldSareeIds, weaverId, isLoom, isAll, getDesign]);
+  }, [batches, qcRecords, allStock, returns, assignments, readySarees, dispatches, soldSareeIds, weaverId, isLoom, isAll]);
 }

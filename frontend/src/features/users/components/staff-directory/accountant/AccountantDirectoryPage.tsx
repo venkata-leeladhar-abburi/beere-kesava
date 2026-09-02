@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useListDetailScroll } from "@/shared/ui/ScrollToTop";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Receipt, Search, TrendingDown, TrendingUp, Users } from "lucide-react";
 import { PageShell } from "@/shared/ui/PageShell";
@@ -69,6 +70,7 @@ export function AccountantDirectoryPage() {
   const [kindFilter, setKindFilter] = useState<"all" | StaffLedgerKind>("all");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [openRow, setOpenRow] = useState<DirectoryRow | null>(null);
+  const { openDetail, backToList } = useListDetailScroll();
   const enabled = useAuthGate("admin", "superadmin");
   const { money } = useMoneyFormatter();
 
@@ -215,7 +217,7 @@ export function AccountantDirectoryPage() {
         recorderId={openRow.key}
         user={openRow.user}
         displayName={openRow.name}
-        onBack={() => setOpenRow(null)}
+        onBack={() => backToList(() => setOpenRow(null))}
       />
     );
   }
@@ -473,7 +475,7 @@ export function AccountantDirectoryPage() {
                 columns={columns}
                 data={visibleRows}
                 getRowId={r => r.key}
-                onRowClick={r => setOpenRow(r)}
+                onRowClick={r => openDetail(() => setOpenRow(r))}
                 responsive
                 pagination
                 pageSize={10}

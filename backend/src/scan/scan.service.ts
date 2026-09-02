@@ -37,6 +37,12 @@ export class ScanService {
     ]);
     const latestQc = row.qcRecords[0];
 
+    // The weaver's own loom digit isn't a DB column — it's encoded in the
+    // sareeId itself ({FIRSTNAME}-L{loom}-B{batch}-{seq}), same convention
+    // batches.service.ts writes it with and BatchContext.tsx parses it back
+    // with on the frontend.
+    const weaverLoomMatch = row.weaver ? sareeId.match(/-L(\d+)-B/) : null;
+
     // A saree counts as SOLD only if its most recent sale hasn't since been
     // returned — a return after the sale date puts it back in sellable stock.
     const sold = !!latestSale && (!latestReturn || latestSale.date > latestReturn.createdAt);
@@ -78,12 +84,19 @@ export class ScanService {
       sareeId,
       batchId: row.batchId,
       recipientType: row.recipientType,
-      weaver: row.weaver ? { id: row.weaver.id, name: row.weaver.name } : null,
+      weaver: row.weaver
+        ? { id: row.weaver.id, name: row.weaver.name, loomNumber: weaverLoomMatch ? Number(weaverLoomMatch[1]) : null }
+        : null,
       factoryLoom: row.factoryLoom
         ? { id: row.factoryLoom.id, code: row.factoryLoom.code, loomNumber: row.factoryLoom.loomNumber }
         : null,
       design: row.design ? { code: row.design.code, name: row.design.name } : null,
       sareeType: row.sareeType ? { code: row.sareeType.code, type: row.sareeType.type } : null,
+      // Worker Staff's Receive Sarees entry — same source the printed tag uses.
+      weight: row.receivedWeight ? Number(row.receivedWeight) : null,
+      color: row.receivedColor ?? null,
+      receivedDate: row.receivedAt,
+      batchDate: row.batch.createdAt,
       qc: latestQc
         ? { result: latestQc.result, payable: latestQc.payable, date: latestQc.qcDate }
         : null,

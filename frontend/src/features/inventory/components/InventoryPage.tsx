@@ -142,6 +142,7 @@ export function InventoryPage({
             <div style={{ ...card, borderRadius: 16, padding: 20 }}>
               <WeaverSareesSection
                 ownerType="all"
+                persistKey="inventory-all-sarees"
                 selectable={hasAnyDispatchAction}
                 selectedIds={selected}
                 onToggleRow={toggleSareeRow}
