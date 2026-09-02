@@ -58,7 +58,7 @@ export function AllSareesSection() {
             </div>
           </div>
           <div className="p-2.5 sm:p-5 md:p-6 pb-2.5 sm:pb-4">
-            <WeaverSareesSection ownerType="all" />
+            <WeaverSareesSection ownerType="all" persistKey="production-all-sarees" />
           </div>
         </div>
       </FadeUp>
