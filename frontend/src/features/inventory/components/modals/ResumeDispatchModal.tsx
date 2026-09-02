@@ -25,7 +25,7 @@ export function ResumeDispatchModal({ record, onSave, onClose }: {
   });
   const [receiptUrl, setReceiptUrl] = useState<string | null>(record.receiptUrl ?? null);
 
-  const canSave = transport.lrNumber.trim() && transport.transportCompany.trim() && transport.vehicleNumber.trim() && transport.dispatchDate;
+  const canSave = record.pendingReceipt ? !!receiptUrl : true;
 
   return (
     <Modal open onOpenChange={o => !o && onClose()} size="md">

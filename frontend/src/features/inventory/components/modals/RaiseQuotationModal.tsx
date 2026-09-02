@@ -16,6 +16,7 @@ import { NoSareesNotice } from "./shared/NoSareesNotice";
 import { InvoiceGenerator } from "./shared/InvoiceGenerator";
 import { SelectInput } from "../common/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { BlockedActionHint } from "../../../../shared/ui/state";
 import { DocumentViewer, QuotationDocument, toQuotationItems, DEFAULT_LETTERHEAD_FIRM } from "../../../../shared/ui/document";
 
 // ── Raise Quotation modal (Customer → Quotation → Sarees) ─────────────────────
@@ -62,6 +63,21 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
   const STEPS = ["Customer", "Quotation", "Sarees"];
   const QUOTE_STEP = 2;
   const nextDisabled = (step === 1 && !canNext1) || (step === QUOTE_STEP && !canQuote);
+
+  // What's still missing, in the user's words. The billing firm and the price
+  // fields sit below the saree picker, so on a short screen Continue could be
+  // blocked by something the admin couldn't even see — it read as a dead
+  // button rather than an unfinished form.
+  const blockers: string[] = [];
+  if (step === 1 && !canNext1) blockers.push("choose a customer");
+  if (step === QUOTE_STEP) {
+    if (noSarees) blockers.push("add at least one saree");
+    if (!inv.firmId) blockers.push("select the billing firm");
+    if (!noSarees && !pricesComplete) {
+      const unpriced = picked.filter(s => !((Number(inv.prices[s.sareeId || s.id]) || 0) > 0)).length;
+      blockers.push(`enter a price for ${unpriced} saree${unpriced === 1 ? "" : "s"}`);
+    }
+  }
 
   const submitQuotation = async () => {
     // Belt and braces: React batches state updates, so a second click landing
@@ -217,7 +233,16 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
           )}
         </div>
 
-        <div style={{ padding: "16px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexShrink: 0 }}>
+        <div style={{ padding: "16px 28px 24px", borderTop: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
+          <BlockedActionHint
+            blockers={blockers}
+            hint={
+              blockers.some(b => b.includes("firm") || b.includes("price"))
+                ? "scroll down to the quotation details"
+                : undefined
+            }
+          />
+          <div style={{ display: "flex", gap: 10 }}>
           {step > 1 && (
             <Button onClick={() => setStep(s => s - 1)} variant="secondary" size="lg" className="rounded-full">
               Back
@@ -253,6 +278,7 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
               {submitting ? "Raising…" : "Raise Quotation"}
             </Button>
           )}
+          </div>
         </div>
     </Modal>
   );

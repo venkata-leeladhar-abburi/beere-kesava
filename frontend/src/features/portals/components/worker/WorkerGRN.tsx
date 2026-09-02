@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { rawMaterialsApi, CreateGrnPayload, GrnReceiptItem } from "../../../../shared/api/rawMaterials";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { useAuth } from "../../../../contexts/AuthContext";
+import { BlockedActionHint } from "../../../../shared/ui/state";
 
 type GRNStep = "form" | "success" | "print";
 
@@ -207,6 +208,26 @@ export function WorkerGRN({
 
   const currentFormStep = !selectedPO ? 0 : !grnBatchId ? 1 : 2;
 
+  // Why "Confirm Receipt" is disabled — see BlockedActionHint. Three separate
+  // conditions gate it, and a long materials list means the unfilled one is
+  // usually scrolled out of view.
+  const grnBlockers: string[] = [];
+  if (selectedPO) {
+    const unfilled = selectedPO.materials.filter((m, i) => !getHasQty(i, m)).length;
+    if (unfilled > 0) {
+      grnBlockers.push(`enter a received quantity for ${unfilled} material${unfilled === 1 ? "" : "s"}`);
+    }
+    if (!allApproved) {
+      const undecided = selectedPO.materials.filter(
+        (_m, i) => !(itemApproval[i] === "approved" || (itemApproval[i] === "rejected" && !!itemRejectReason[i]?.trim())),
+      ).length;
+      // A rejected line without a reason counts as undecided — the reason is
+      // what makes the rejection actionable.
+      grnBlockers.push(`approve or reject ${undecided} material${undecided === 1 ? "" : "s"} (a rejection needs a reason)`);
+    }
+    if (!confirmedReceived) grnBlockers.push("tick the verification checkbox");
+  }
+
   const handleConfirm = () => {
     if (!selectedPO) return;
 
@@ -333,6 +354,11 @@ export function WorkerGRN({
                 }
               />
             </div>
+
+            <BlockedActionHint
+              blockers={grnBlockers}
+              hint={grnBlockers.some(b => b.includes("material")) ? "check the material list above" : undefined}
+            />
 
             <Button
               onClick={handleConfirm}

@@ -18,6 +18,7 @@ import { batchesApi } from "../../../../shared/api/batches";
 import { qcApi } from "../../../../shared/api/qc";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { reportsApi } from "../../../../shared/api/reports";
+import { ratesApi } from "../../../../shared/api/rates";
 import { purchasesApi, BackendPurchase } from "../../../../shared/api/purchases";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -120,6 +121,9 @@ export function SareeProductionReport() {
   const { data: qcRes, isLoading: qcLoading, isError: qcError } = useQuery({ queryKey: ["reports", "qc"], queryFn: () => qcApi.list() });
   const { data: weaversRes, isLoading: weaversLoading, isError: weaversError } = useQuery({ queryKey: ["reports", "weavers-roster"], queryFn: () => weaversApi.list() });
   const { data: production, isLoading: productionLoading, isError: productionError } = useQuery({ queryKey: ["reports", "production-summary"], queryFn: () => reportsApi.productionSummary() });
+  // Saree-type codes on batch rows carry no human name; rates is the roster
+  // that maps a code ("KS") to its type ("Kanchi Silk").
+  const { data: ratesRes } = useQuery({ queryKey: ["reports", "saree-types"], queryFn: () => ratesApi.list() });
 
   const isLoading = batchesLoading || qcLoading || weaversLoading || productionLoading;
   const isError = batchesError || qcError || weaversError || productionError;
@@ -154,16 +158,21 @@ export function SareeProductionReport() {
     // UUID is only the grouping key.
     const weaverCodeById = new Map((weaversRes?.items ?? []).map(w => [w.id, w.code]));
 
-    interface Acc { batches: Set<string>; produced: number; passed: number; rejected: number; designs: Set<string>; charges: number }
+    const typeNameByCode = new Map((ratesRes?.items ?? []).map(r => [r.code, r.type]));
+
+    interface Acc { batches: Set<string>; produced: number; passed: number; rejected: number; sareeTypes: Set<string>; charges: number }
     const byWeaver = new Map<string, Acc>();
     for (const batch of batches) {
       for (const row of batch.rows) {
         if (row.recipientType !== "WEAVER" || !row.weaverId) continue;
         let acc = byWeaver.get(row.weaverId);
-        if (!acc) { acc = { batches: new Set(), produced: 0, passed: 0, rejected: 0, designs: new Set(), charges: 0 }; byWeaver.set(row.weaverId, acc); }
+        if (!acc) { acc = { batches: new Set(), produced: 0, passed: 0, rejected: 0, sareeTypes: new Set(), charges: 0 }; byWeaver.set(row.weaverId, acc); }
         acc.batches.add(row.batchId);
         acc.produced += 1;
-        if (row.designCode) acc.designs.add(row.designCode);
+        if (row.sareeTypeCode) {
+          const name = typeNameByCode.get(row.sareeTypeCode);
+          acc.sareeTypes.add(name ? `${name} · ${row.sareeTypeCode}` : row.sareeTypeCode);
+        }
         const qc = row.sareeId ? qcBySareeId.get(row.sareeId) : undefined;
         if (qc) {
           if (qc.result === "PASSED") acc.passed += 1;
@@ -180,10 +189,10 @@ export function SareeProductionReport() {
       passed: acc.passed,
       rejected: acc.rejected,
       passRate: acc.produced > 0 ? Math.round((acc.passed / acc.produced) * 100) : 0,
-      designs: acc.designs.size > 0 ? Array.from(acc.designs).join(", ") : "—",
+      sareeTypes: acc.sareeTypes.size > 0 ? Array.from(acc.sareeTypes).join(", ") : "—",
       charges: acc.charges,
     })).sort((a, b) => b.produced - a.produced);
-  }, [scopedBatches, scopedQc, weaversRes]);
+  }, [scopedBatches, scopedQc, weaversRes, ratesRes]);
 
   // Compute "Own Factory vs Outsourced" from live batch rows
   const productionSourceData = useMemo(() => {
@@ -258,13 +267,13 @@ export function SareeProductionReport() {
 
   interface ProdTableRow {
     code: string; name: string; batches: number; produced: number;
-    passed: number; rejected: number; passRate: number; designs: string; charges: number;
+    passed: number; rejected: number; passRate: number; sareeTypes: string; charges: number;
   }
 
   useRegisterExport(useMemo(() => ({
     name: "Saree Production Report",
-    headers: ["Weaver Code", "Weaver Name", "Batches", "Sarees Produced", "QC Passed", "QC Rejected", "Pass Rate %", "Designs", "Making Charges"],
-    rows: prodTableRows.map(r => [r.code, r.name, r.batches, r.produced, r.passed, r.rejected, r.passRate, r.designs, r.charges]),
+    headers: ["Weaver Code", "Weaver Name", "Batches", "Sarees Produced", "QC Passed", "QC Rejected", "Pass Rate %", "Saree Type / Code", "Making Charges"],
+    rows: prodTableRows.map(r => [r.code, r.name, r.batches, r.produced, r.passed, r.rejected, r.passRate, r.sareeTypes, r.charges]),
   }), [prodTableRows]));
 
   const prodColumns: ColumnDef<ProdTableRow>[] = [
@@ -278,7 +287,7 @@ export function SareeProductionReport() {
       id: "passRate", header: "Pass Rate", accessor: r => r.passRate, align: "center",
       cell: (_v, r) => <StatusPill label={`${r.passRate}%`} type={r.passRate >= 95 ? "ok" : r.passRate >= 85 ? "warn" : "bad"} />,
     },
-    { id: "designs", header: "Designs Worked On", accessor: r => r.designs, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{r.designs}</span> },
+    { id: "sareeTypes", header: "Saree Type / Code", accessor: r => r.sareeTypes, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{r.sareeTypes}</span> },
     { id: "charges", header: "Making Charges", accessor: r => r.charges, align: "end", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(r.charges)} /></span> },
   ];
 
@@ -345,7 +354,7 @@ export function SareeProductionReport() {
     <SectionCard
       icon={Factory}
       title="Saree Production Report"
-      subtitle="Track how many sarees were produced, which weavers produced them, which designs were made, and how many passed or failed quality check."
+      subtitle="Track how many sarees were produced, which weavers produced them, which saree types were made, and how many passed or failed quality check."
     >
       <ReportDLBar />
 

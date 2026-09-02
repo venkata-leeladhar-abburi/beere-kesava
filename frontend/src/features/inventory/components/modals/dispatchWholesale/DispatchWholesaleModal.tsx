@@ -18,6 +18,7 @@ import { InvoiceGenerator } from "../shared/InvoiceGenerator";
 import { SareeReviewList } from "../shared/SareeReviewList";
 import { SelectInput } from "../../common/primitives";
 import { Modal } from "../../../../../shared/ui/overlay";
+import { BlockedActionHint } from "../../../../../shared/ui/state";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { toPaise } from "../../../../../lib/gst";
@@ -110,6 +111,31 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
   const REVIEW_STEP = 4;
   const TRANSPORT_STEP = 5;
   const nextDisabled = (step === 1 && !canNext1) || (step === INVOICE_STEP && !canInvoice) || (step === REVIEW_STEP && noSarees) || (step === TRANSPORT_STEP && !canTransport);
+
+  // Why the primary action is disabled — see BlockedActionHint. Four of the
+  // six steps can block, and the invoice step's firm/price fields sit below
+  // the saree list, so without this the button just looked dead.
+  const blockers: string[] = [];
+  if (step === 1 && !canNext1) blockers.push("choose a customer");
+  if (step === INVOICE_STEP || step === REVIEW_STEP) {
+    if (noSarees) blockers.push("add at least one saree");
+  }
+  if (step === INVOICE_STEP) {
+    if (!inv.firmId) blockers.push("select the billing firm");
+    if (!noSarees && !pricesComplete) {
+      const unpriced = picked.filter(s => !(toPaise(Number(inv.prices[s.sareeId || s.id]) || 0) > 0)).length;
+      blockers.push(`enter a price for ${unpriced} saree${unpriced === 1 ? "" : "s"}`);
+    }
+  }
+  if (step === TRANSPORT_STEP && !canTransport) {
+    const missing = [
+      !transport.lrNumber.trim() && "LR number",
+      !transport.transportCompany.trim() && "transport company",
+      !transport.vehicleNumber.trim() && "vehicle number",
+      !transport.dispatchDate && "dispatch date",
+    ].filter((v): v is string => !!v);
+    blockers.push(`fill in the ${missing.join(", ")}`);
+  }
   const confirmOpts = { picked, quotationRef: chosenQuotation?.quotationNumber };
 
   return (
@@ -365,7 +391,16 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
           )}
         </div>
 
-        <div className="p-3.5 sm:px-7 sm:py-5 border-t border-[var(--border-default)] flex items-center justify-between gap-1.5 sm:gap-3 shrink-0 bg-white w-full">
+        <div className="p-3.5 sm:px-7 sm:py-5 border-t border-[var(--border-default)] shrink-0 bg-white w-full">
+          <BlockedActionHint
+            blockers={blockers}
+            hint={
+              blockers.some(b => b.includes("firm") || b.includes("price"))
+                ? "scroll down to the invoice details"
+                : undefined
+            }
+          />
+          <div className="flex items-center justify-between gap-1.5 sm:gap-3 w-full">
           {step > 1 && (
             <Button
               onClick={() => setStep(s => s - 1)}
@@ -412,6 +447,7 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
               <span className="truncate">Confirm &amp; Dispatch</span>
             </Button>
           )}
+          </div>
         </div>
     </Modal>
   );

@@ -8,11 +8,11 @@ export function TransportForm({ data, onChange, wholesale }: { data: TransportDa
   const set = (k: keyof TransportData) => (v: string) => onChange({ ...data, [k]: v });
   return (
     <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "14px 20px" }}>
-      <Field label="LR Number" req><TextInput value={data.lrNumber} onChange={set("lrNumber")} placeholder="e.g. LR-20260702-001" mono /></Field>
-      <Field label="Transport Company" req><TextInput value={data.transportCompany} onChange={set("transportCompany")} placeholder="e.g. Shyam Carriers" /></Field>
-      <Field label="Vehicle Number" req><TextInput value={data.vehicleNumber} onChange={set("vehicleNumber")} placeholder="e.g. AP09AB1234" mono /></Field>
+      <Field label="LR Number"><TextInput value={data.lrNumber} onChange={set("lrNumber")} placeholder="e.g. LR-20260702-001" mono /></Field>
+      <Field label="Transport Company"><TextInput value={data.transportCompany} onChange={set("transportCompany")} placeholder="e.g. Shyam Carriers" /></Field>
+      <Field label="Vehicle Number"><TextInput value={data.vehicleNumber} onChange={set("vehicleNumber")} placeholder="e.g. AP09AB1234" mono /></Field>
       <Field label="Driver Name"><TextInput value={data.driverName} onChange={set("driverName")} placeholder="Optional" /></Field>
-      <Field label="Dispatch Date" req>
+      <Field label="Dispatch Date">
         <DatePicker value={data.dispatchDate ? new Date(data.dispatchDate) : null} onChange={d => set("dispatchDate")(d ? formatDate(d, "iso") : "")} />
       </Field>
       {wholesale && (

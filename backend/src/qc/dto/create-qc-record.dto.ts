@@ -2,6 +2,7 @@ import {
   IsArray,
   IsEnum,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
@@ -26,8 +27,13 @@ export class CreateQcRecordDto {
 
   // Only meaningful for a "semi" result — clamped server-side to
   // [0, makingCharge], matching the frontend's computeQcPayment exactly.
+  //
+  // IsNumber, not IsInt: a deduction is money, and the inspection screen's
+  // own input accepts paise (step 0.01). Under IsInt a perfectly ordinary
+  // amount like 100.50 was rejected with a 400 at the point of recording a
+  // verdict. Matches UpdateQcDeductionDto, which revises the same value.
   @ValidateIf((o: CreateQcRecordDto) => o.result === QcResult.SEMI)
-  @IsInt()
+  @IsNumber()
   @Min(0)
   semiDeduction?: number;
 

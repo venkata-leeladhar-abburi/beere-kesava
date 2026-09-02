@@ -7,4 +7,5 @@ export * from "./SessionExpiredState";
 export * from "./OfflineBanner";
 export * from "./SlowNetworkHint";
 export * from "./SocketStatusBadge";
+export * from "./BlockedActionHint";
 export * from "./errorMessages";

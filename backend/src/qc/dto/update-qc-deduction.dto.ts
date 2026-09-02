@@ -9,8 +9,9 @@ import { IsNumber, IsOptional, IsUUID, Min } from "class-validator";
  * judgement call, often made after talking to them), so it has to be
  * addable and editable afterwards from Defective History.
  *
- * `IsNumber` rather than CreateQcRecordDto's `IsInt`: a deduction is money,
- * and the inspection screen's own input accepts paise (step 0.01).
+ * `IsNumber` because a deduction is money and the inspection screen's own
+ * input accepts paise (step 0.01) — the same rule CreateQcRecordDto applies
+ * to `semiDeduction`, which sets this value in the first place.
  */
 export class UpdateQcDeductionDto {
   @IsOptional()

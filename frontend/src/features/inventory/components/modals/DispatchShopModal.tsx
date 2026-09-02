@@ -12,6 +12,7 @@ import { TransportForm } from "./shared/TransportForm";
 import { SareePicker } from "./shared/SareePicker";
 import { NoSareesNotice } from "./shared/NoSareesNotice";
 import { Modal } from "../../../../shared/ui/overlay";
+import { BlockedActionHint } from "../../../../shared/ui/state";
 import { ReceiptUploadField } from "../../../../shared/ui/ReceiptUploadField";
 
 // ── Dispatch to Shop modal ────────────────────────────────────────────────────
@@ -35,6 +36,21 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
   const noSarees = picked.length === 0;
 
   const STEPS = ["Sarees", "Transport & LR", "Upload Receipt", "Confirm"];
+
+  // Why the primary action is disabled — see BlockedActionHint. The transport
+  // step needs four separate fields, and a disabled Continue named none of
+  // them.
+  const blockers: string[] = [];
+  if (noSarees) blockers.push("select at least one saree");
+  if (step === 2 && !canNext2) {
+    const missing = [
+      !transport.lrNumber.trim() && "LR number",
+      !transport.transportCompany.trim() && "transport company",
+      !transport.vehicleNumber.trim() && "vehicle number",
+      !transport.dispatchDate && "dispatch date",
+    ].filter((v): v is string => !!v);
+    blockers.push(`fill in the ${missing.join(", ")}`);
+  }
 
   return (
     <Modal open onOpenChange={o => !o && onClose()} size="xl">
@@ -137,7 +153,9 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
           )}
         </div>
 
-        <div className="p-3.5 sm:px-7 sm:py-5 border-t border-[var(--border-default)] flex items-center justify-between gap-1.5 sm:gap-3 shrink-0 bg-white w-full">
+        <div className="p-3.5 sm:px-7 sm:py-5 border-t border-[var(--border-default)] shrink-0 bg-white w-full">
+          <BlockedActionHint blockers={blockers} />
+          <div className="flex items-center justify-between gap-1.5 sm:gap-3 w-full">
           {step > 1 && (
             <Button
               onClick={() => setStep(s => s - 1)}
@@ -188,6 +206,7 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
               <span className="truncate">Confirm Shop Dispatch</span>
             </Button>
           )}
+          </div>
         </div>
     </Modal>
   );
