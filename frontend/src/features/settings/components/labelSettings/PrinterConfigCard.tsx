@@ -1,7 +1,7 @@
 import { Printer } from "lucide-react";
-import { toast } from "sonner";
 import { CardSection, F, T } from "./primitives";
 import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { usePrintSareeTags } from "@/features/weavers";
 
 export function PrinterConfigCard({
   printer, setPrinter, connectionType, setConnectionType, printerConnected,
@@ -10,6 +10,7 @@ export function PrinterConfigCard({
   connectionType: string; setConnectionType: (v: string) => void;
   printerConnected: boolean;
 }) {
+  const printSareeTags = usePrintSareeTags();
   return (
     <CardSection title="Printer Configuration">
       <div style={{ marginBottom: 12 }}>
@@ -54,12 +55,17 @@ export function PrinterConfigCard({
           marginTop: 16,
         }}
       >
+        {/* Was a fake toast with no real print call. Sends an actual tag
+            through the browser's print dialog — same path every other
+            printed tag in the app uses — so this genuinely proves output
+            reaches whatever printer you pick there, not just a canned
+            success message. */}
         <Button
           variant="secondary"
           size="sm"
           iconLeft={Printer}
           disabled={!printerConnected}
-          onClick={() => toast.success(`Test label sent to ${printer || "printer"}`)}
+          onClick={() => printSareeTags([{ sareeId: "TEST-PRINT-001", sareeTypeName: "Test Label" }])}
         >
           Send Test Print
         </Button>
