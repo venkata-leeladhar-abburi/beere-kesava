@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router";
+import { useListDetailScroll } from "@/shared/ui/ScrollToTop";
 import { BulkOrder, useBulkOrders, resolveOrderMoney } from "@/features/bulk-orders";
 import { INVOICES } from "@/features/payments";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -143,6 +144,7 @@ export function CustomersPage() {
   // page used from Production / All Orders, so there is one place order details live.
   const [viewingBulkOrder, setViewingBulkOrder] = useState<{ order: BulkOrder; tab: "overview" | "sarees" | "payments" | "quotations" } | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const { openDetail, backToList } = useListDetailScroll();
 
   const retailList = React.useMemo(() => {
     const backendRetail = (customers || []).filter(c => c.type === "RETAIL");
@@ -215,7 +217,7 @@ export function CustomersPage() {
       <BulkOrderDetailPage
         order={viewingBulkOrder.order}
         initialTab={viewingBulkOrder.tab}
-        onBack={() => setViewingBulkOrder(null)}
+        onBack={() => backToList(() => setViewingBulkOrder(null))}
       />
     );
   }
@@ -230,7 +232,7 @@ export function CustomersPage() {
           customer={selectedWholesaleCust}
           wholesaleTab={wholesaleTab}
           setWholesaleTab={setWholesaleTab}
-          onBack={() => setSelectedWholesaleCust(null)}
+          onBack={() => backToList(() => setSelectedWholesaleCust(null))}
           onSave={updated => {
             if (selectedWholesaleCust.id) {
               updateCustomer(selectedWholesaleCust.id, {
@@ -259,7 +261,7 @@ export function CustomersPage() {
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
           }}
-          onViewBulkOrder={(order, tab) => setViewingBulkOrder({ order, tab })}
+          onViewBulkOrder={(order, tab) => openDetail(() => setViewingBulkOrder({ order, tab }))}
           onViewCard={setViewingCard}
           wholesaleOrderDateFilter={wholesaleOrderDateFilter}
           setWholesaleOrderDateFilter={setWholesaleOrderDateFilter}
@@ -271,7 +273,7 @@ export function CustomersPage() {
           customer={modalRetail}
           retailModalTab={retailModalTab}
           setRetailModalTab={setRetailModalTab}
-          onBack={() => setModalRetail(null)}
+          onBack={() => backToList(() => setModalRetail(null))}
           retailPurchaseDateFilter={retailPurchaseDateFilter}
           setRetailPurchaseDateFilter={setRetailPurchaseDateFilter}
         />
@@ -284,8 +286,8 @@ export function CustomersPage() {
             setWholesaleView={setWholesaleView}
             showAddWholesale={showAddWholesale}
             setShowAddWholesale={setShowAddWholesale}
-            onView={w => { setSelectedWholesaleCust(w); setWholesaleTab("Overview"); }}
-            onEdit={w => { setSelectedWholesaleCust(w); setWholesaleTab("Edit Profile"); }}
+            onView={w => openDetail(() => { setSelectedWholesaleCust(w); setWholesaleTab("Overview"); })}
+            onEdit={w => openDetail(() => { setSelectedWholesaleCust(w); setWholesaleTab("Edit Profile"); })}
           />
         </div>
 
@@ -305,7 +307,7 @@ export function CustomersPage() {
             setRetailSort={setRetailSort}
             retailCities={retailCities}
             filteredRetail={filteredRetail}
-            onViewHistory={setModalRetail}
+            onViewHistory={c => openDetail(() => setModalRetail(c))}
             onDownloadConfirm={setDownloadConfirmRetail}
           />
         </div>

@@ -7,7 +7,7 @@ import { useRatesPricing } from "@/features/pricing";
 import { BulkOrderDetailPage } from "@/features/bulk-orders";
 import { useBatches } from "../contexts/BatchContext";
 
-import { scrollToTop } from "@/shared/ui/ScrollToTop";
+import { useListDetailScroll } from "@/shared/ui/ScrollToTop";
 
 import { F } from "./theme";
 import type { BulkOrder } from "./types";
@@ -47,15 +47,14 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
   const [tallyBatchId, setTallyBatchId] = useState<string | null>(null);
   const { setPendingOpenBatchId } = useBatches();
 
+  const { openDetail, backToList } = useListDetailScroll();
+
   if (viewingOrder) {
     return (
       <BulkOrderDetailPage
         order={viewingOrder.order}
         initialTab={viewingOrder.tab}
-        onBack={() => {
-          scrollToTop();
-          setViewingOrder(null);
-        }}
+        onBack={() => backToList(() => setViewingOrder(null))}
       />
     );
   }
@@ -64,10 +63,7 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
     return (
       <BatchTallyPage
         batchId={tallyBatchId}
-        onBack={() => {
-          scrollToTop();
-          setTallyBatchId(null);
-        }}
+        onBack={() => backToList(() => setTallyBatchId(null))}
         onOpenCreation={() => {
           setPendingOpenBatchId(tallyBatchId);
           onNavigate?.("Batches");
@@ -83,11 +79,8 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
       <StatsStrip />
       <AllSareesSection />
       <div style={{ background: "#F7F2EA", paddingBottom: 48, flex: 1 }}>
-        <BulkOrdersSection superadmin={superadmin} onNavigate={onNavigate} onOpenOrder={(order, tab) => {
-          scrollToTop();
-          setViewingOrder({ order, tab });
-        }} />
-        <ActiveBatchesSection onNavigate={onNavigate} onOpenTally={id => { window.scrollTo(0, 0); setTallyBatchId(id); }} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
+        <BulkOrdersSection superadmin={superadmin} onNavigate={onNavigate} onOpenOrder={(order, tab) => openDetail(() => setViewingOrder({ order, tab }))} />
+        <ActiveBatchesSection onNavigate={onNavigate} onOpenTally={id => openDetail(() => setTallyBatchId(id))} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
         <DefectiveSareesSection superadmin={superadmin} onNavigate={onNavigate} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
         <ProductionAnalyticsSection />
         <DesignLibraryLinkCard onNavigate={onNavigate} />

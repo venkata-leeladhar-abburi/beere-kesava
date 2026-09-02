@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useListDetailScroll } from "@/shared/ui/ScrollToTop";
 import { motion } from "motion/react";
 import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { useBulkOrders } from "../contexts/BulkOrderContext";
@@ -24,6 +25,7 @@ const F = { display: "'Plus Jakarta Sans', sans-serif", ui: "'Inter', sans-serif
 export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => void; superadmin?: boolean }) {
   const { bulkOrders, isLoading, isError, error, refetch } = useBulkOrders();
   const [viewingOrder, setViewingOrder] = useState<{ order: BulkOrder; tab: "overview" | "payments" } | null>(null);
+  const { openDetail, backToList } = useListDetailScroll();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "on-track" | "at-risk" | "completed">("all");
@@ -73,7 +75,7 @@ export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => v
       <BulkOrderDetailPage
         order={viewingOrder.order}
         initialTab={viewingOrder.tab}
-        onBack={() => setViewingOrder(null)}
+        onBack={() => backToList(() => setViewingOrder(null))}
       />
     );
   }
@@ -153,7 +155,7 @@ export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => v
                 animate={{ opacity: 1, y: 0 }} 
                 transition={{ delay: i * 0.04 }}
               >
-                <BulkOrderCard o={o} superadmin={superadmin} onView={(order) => setViewingOrder({ order, tab: "overview" })} onSlip={(order) => setViewingOrder({ order, tab: "payments" })} />
+                <BulkOrderCard o={o} superadmin={superadmin} onView={(order) => openDetail(() => setViewingOrder({ order, tab: "overview" }))} onSlip={(order) => openDetail(() => setViewingOrder({ order, tab: "payments" }))} />
               </motion.div>
             ))}
           </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useListDetailScroll } from "@/shared/ui/ScrollToTop";
 import { useLocation } from "react-router";
 import { AnimatePresence } from "motion/react";
 import { toast } from "sonner";
@@ -94,6 +95,7 @@ export function VendorsPage() {
   const [vendorsLoading, setVendorsLoading] = useState(true);
   const [vendorsError, setVendorsError] = useState<unknown>(null);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
+  const { openDetail, backToList } = useListDetailScroll();
   // Command palette "New Vendor" action deep-links here with ?new=1 to open
   // the add-vendor form straight away.
   const [showAddForm, setShowAddForm] = useState(() => new URLSearchParams(location.search).get("new") === "1");
@@ -165,7 +167,7 @@ export function VendorsPage() {
     try {
       await vendorsApi.remove(v.id);
       setVendors(prev => prev.filter(x => x.id !== v.id));
-      setSelectedVendor(null);
+      backToList(() => setSelectedVendor(null));
       toast.success("Vendor deleted");
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Failed to delete vendor");
@@ -174,7 +176,7 @@ export function VendorsPage() {
   return (
     <div style={{ background: T.silkCream, minHeight: "100dvh", display: "flex", flexDirection: "column", paddingBottom: 0 }}>
       {selectedVendor ? (
-        <VendorProfile vendor={selectedVendor} onBack={() => setSelectedVendor(null)} onUpdate={v => { void handleUpdate(v); }} onDelete={v => { void handleDelete(v); }} />
+        <VendorProfile vendor={selectedVendor} onBack={() => backToList(() => setSelectedVendor(null))} onUpdate={v => { void handleUpdate(v); }} onDelete={v => { void handleDelete(v); }} />
       ) : (
         <>
           <VendorsHeroStats vendors={vendorsWithRollup} onAddClick={() => setShowAddForm(true)} />
@@ -191,7 +193,7 @@ export function VendorsPage() {
           <div id="vend-directory">
             <VendorDirectorySection
               vendors={vendorsWithRollup}
-              onSelectVendor={setSelectedVendor}
+              onSelectVendor={v => openDetail(() => setSelectedVendor(v))}
               onAddClick={() => setShowAddForm(true)}
               loading={vendorsLoading}
               error={vendorsError}
