@@ -9,18 +9,19 @@ import { Button } from "./primitives";
 // negotiates a low resolution (sometimes 640×480), which isn't enough to
 // resolve a printed Code128's thin bars up close — the camera opens and the
 // live view looks fine, but nothing ever decodes. Asking for a real
-// resolution and the rear camera with continuous autofocus fixes that; every
-// constraint here is a hint the browser is free to ignore on hardware that
-// can't meet it, so this degrades safely on a weaker device.
+// resolution fixes that. `ideal` (not `exact`) on every field here so a
+// camera that can't meet it just gets its closest match instead of the
+// whole request failing — an `advanced: [{ focusMode: "continuous" }]` block
+// was tried here too, but that constraint isn't reliably supported (plenty
+// of desktop webcams reject it outright), and an unsupported `advanced`
+// entry can fail the ENTIRE getUserMedia call on some browsers — worse than
+// no focus hint at all, since it broke the camera rather than just not
+// improving it. Left out for that reason.
 const SCAN_CONSTRAINTS: MediaStreamConstraints = {
   video: {
     facingMode: { ideal: "environment" },
     width: { ideal: 1920 },
     height: { ideal: 1080 },
-    // Not in the standard MediaTrackConstraints type, but Chrome/Android
-    // honor it when present — continuous autofocus matters more than
-    // resolution for a barcode held a few inches from the lens.
-    advanced: [{ focusMode: "continuous" } as unknown as MediaTrackConstraintSet],
   },
 };
 
@@ -80,24 +81,40 @@ export function CameraScannerModal({
     setError(null);
 
     const reader = new BrowserMultiFormatReader(SCAN_HINTS);
+    const onFrame = (result: import("@zxing/library").Result | undefined, _err: unknown, controls: IScannerControls) => {
+      controlsRef.current = controls;
+      if (cancelled) return;
+      if (result) {
+        controls.stop();
+        onDetected(extractScannedId(result.getText()));
+      }
+      // NotFoundException fires continuously between frames with no
+      // barcode in view — that's the normal steady state, not a failure.
+    };
+
     reader
-      .decodeFromConstraints(SCAN_CONSTRAINTS, videoRef.current ?? undefined, (result, _err, controls) => {
-        controlsRef.current = controls;
-        if (cancelled) return;
-        if (result) {
-          controls.stop();
-          onDetected(extractScannedId(result.getText()));
-        }
-        // NotFoundException fires continuously between frames with no
-        // barcode in view — that's the normal steady state, not a failure.
-      })
+      .decodeFromConstraints(SCAN_CONSTRAINTS, videoRef.current ?? undefined, onFrame)
       .catch((e: unknown) => {
         if (cancelled) return;
-        setError(
-          e instanceof Error && e.name === "NotAllowedError"
-            ? "Camera access was denied — allow camera permission and try again."
-            : "Couldn't access the camera on this device.",
-        );
+        if (e instanceof Error && e.name === "NotAllowedError") {
+          setError("Camera access was denied — allow camera permission and try again.");
+          return;
+        }
+        // The 1920×1080/rear-camera request itself can fail on hardware that
+        // doesn't like it (some desktop webcams reject specific resolutions
+        // outright) even though `ideal` should degrade gracefully — fall
+        // back to whatever default camera the browser is willing to give us
+        // rather than leaving the scanner dead.
+        reader
+          .decodeFromVideoDevice(undefined, videoRef.current ?? undefined, onFrame)
+          .catch((fallbackErr: unknown) => {
+            if (cancelled) return;
+            setError(
+              fallbackErr instanceof Error && fallbackErr.name === "NotAllowedError"
+                ? "Camera access was denied — allow camera permission and try again."
+                : "Couldn't access the camera on this device.",
+            );
+          });
       });
 
     return () => {
