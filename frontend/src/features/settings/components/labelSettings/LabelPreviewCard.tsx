@@ -1,11 +1,12 @@
 import { Printer } from "lucide-react";
-import { toast } from "sonner";
 import { BarcodePreview, F, T } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
+import { usePrintSareeTags } from "@/features/weavers";
 
 export function LabelPreviewCard({ fields }: {
   fields: { barcode: boolean; code: boolean; weaver: boolean; date: boolean; branding: boolean };
 }) {
+  const printSareeTags = usePrintSareeTags();
   return (
     <div className="w-full xl:w-[48%] xl:max-w-[480px] xl:flex-shrink-0">
       <div
@@ -213,9 +214,22 @@ export function LabelPreviewCard({ fields }: {
           Actual print size: 100mm × 50mm on TSC TE244
         </div>
 
-        {/* Print test label button */}
+        {/* Print test label button — was a fake toast with no real print
+            call, so "testing" this never actually told you whether a
+            printer was set up correctly. Now sends a real tag (same mock
+            data as the preview above) through the same print path every
+            other tag in the app uses. */}
         <div style={{ marginTop: 16, display: "flex", justifyContent: "center" }}>
-          <Button variant="secondary" size="sm" iconLeft={Printer} onClick={() => toast.success("Test label sent to printer")}>
+          <Button
+            variant="secondary" size="sm" iconLeft={Printer}
+            onClick={() => printSareeTags([{
+              sareeId: "RAVI-L2-001",
+              sareeTypeName: "Kanjivaram",
+              weaverName: fields.weaver ? "Ravi Kumar" : null,
+              loomNumber: fields.weaver ? 2 : null,
+              date: fields.date ? new Date().toISOString() : null,
+            }])}
+          >
             Print Test Label
           </Button>
         </div>

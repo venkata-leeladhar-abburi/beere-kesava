@@ -171,12 +171,10 @@ function MobileMetrics() {
 // MOBILE — PERFORMANCE
 // ═══════════════════════════════════════════════════════════════════════════════
 function MobilePerformance() {
-  const { qcPassRate, paymentsCollectedPct, isLoading } = useDashboardAnalytics();
-  // "Inventory" has no backend source — raw-material stock tracking is not
-  // implemented (documented gap, same as desktop ThreeCol.tsx).
+  const { qcPassRate, inStockPct, paymentsCollectedPct, isLoading } = useDashboardAnalytics();
   const progBars = [
     { label: "Production (QC Pass)", pct: isLoading ? 0 : qcPassRate, color: T.antiqueGold },
-    { label: "Inventory", pct: 0, color: T.royalBurgundy },
+    { label: "Inventory", pct: isLoading ? 0 : inStockPct, color: T.royalBurgundy },
     { label: "Payments Collected", pct: isLoading ? 0 : paymentsCollectedPct, color: DARK_MAROON },
   ];
   return (

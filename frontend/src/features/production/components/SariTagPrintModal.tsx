@@ -4,6 +4,7 @@ import { SariTagPhysicalLabel, SareeProps } from "./SariTagPhysicalLabel";
 import { SariTagPrintSettings } from "./SariTagPrintSettings";
 import { IconButton } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
+import { usePrintSareeTags, type SareeTagData } from "@/features/weavers";
 
 const T = {
   darkBurgundy: "#3D0E1A",
@@ -29,10 +30,42 @@ export function SariTagPrintModal({ saree, onClose }: Props) {
   const [labelSize, setLabelSize]       = useState("100mm × 50mm");
   const [printing, setPrinting]         = useState(false);
   const [printed, setPrinted]           = useState(false);
+  const printSareeTags = usePrintSareeTags();
 
+  // Was a fake setTimeout that flipped straight to "printed" without ever
+  // calling window.print() — nothing reached any printer, real or not. Now
+  // builds the same SareeTagData the rest of the app's tag-print buttons
+  // use (Inventory, External Purchases, Worker Staff history) and sends it
+  // through the same real print path, so this modal produces an identical,
+  // actually-printable tag instead of a dead-end preview.
   const handlePrint = () => {
+    const weightGrams = saree.weight ? Number(saree.weight.replace(/g$/i, "")) || null : null;
+    const tag: SareeTagData = isExternal
+      ? {
+          sareeId: saree.id,
+          isExternal: true,
+          sareeTypeCode: saree.sareeTypeCode ?? null,
+          sareeTypeName: saree.sareeType,
+          supplierShortName: saree.supplierShortName ?? null,
+          supplierName: saree.supplier ?? null,
+          invoiceNumber: saree.invoiceNumber ?? null,
+          serial: saree.serial ?? null,
+          sellingPrice: saree.sellingPrice ?? null,
+          costPrice: saree.costPrice ?? null,
+        }
+      : {
+          sareeId: saree.id,
+          designCode: saree.design,
+          sareeTypeCode: saree.sareeTypeCode ?? null,
+          sareeTypeName: saree.sareeType,
+          weight: weightGrams,
+          weaverName: showWeaver ? saree.weaver : null,
+          loomNumber: saree.source === "factory" ? saree.loom : null,
+          date: showDate ? saree.qcDate : null,
+        };
+    printSareeTags(Array.from({ length: Math.max(1, copies) }, () => tag));
     setPrinting(true);
-    setTimeout(() => { setPrinting(false); setPrinted(true); }, 1800);
+    setTimeout(() => { setPrinting(false); setPrinted(true); }, 400);
   };
 
   return (

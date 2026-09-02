@@ -29,6 +29,20 @@ export interface SalesSummaryReport {
   wholesale: { totalSales: number; count: number };
 }
 
+/** paymentsCollectedPct here spans every invoice ever raised, unlike
+ *  outstandingPayments (which only covers invoices still owed) — the one to
+ *  use for "what fraction of everything invoiced has actually been paid". */
+export interface ProductionAnalyticsReport {
+  activeBatchesCount: number;
+  weaversWorkingCount: number;
+  designCodesCount: number;
+  overdueInvoicesCount: number;
+  paymentsCollectedPct: number;
+  rawMaterialStockKg: number;
+  dispatchCount: number;
+  inStockSareesCount: number;
+}
+
 export type ReportFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "QUARTERLY";
 
 export interface ScheduledReportItem {
@@ -93,6 +107,7 @@ export const reportsApi = {
   outstandingPayments: () => apiClient.get<OutstandingPaymentsReport>("/reports/outstanding-payments"),
   productionSummary: () => apiClient.get<ProductionSummaryReport>("/reports/production-summary"),
   salesSummary: () => apiClient.get<SalesSummaryReport>("/reports/sales-summary"),
+  productionAnalytics: () => apiClient.get<ProductionAnalyticsReport>("/reports/production-analytics"),
   listSchedules: () => apiClient.get<{ items: ScheduledReportItem[] }>("/reports/schedules"),
   // Dates an unsaved schedule would fire on — same server-side maths the
   // scheduler uses, so the preview cannot disagree with reality.

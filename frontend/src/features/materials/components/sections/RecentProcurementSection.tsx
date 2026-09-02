@@ -11,6 +11,19 @@ import { EntityCode } from "@/shared/ui/domain";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
 import { toInitials } from "@/shared/lib/initials";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
+import { useDocument } from "../../../../shared/ui/document";
+import { GrnLabelSheet, type GrnLabel } from "../../../portals/components/worker/GrnLabelSheet";
+
+/** DDMMYY, e.g. 2026-09-02 -> "020926" — same format every other tag uses. */
+function ddmmyy(dateStr?: string | null): string | undefined {
+  if (!dateStr) return undefined;
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return undefined;
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+  return `${dd}${mm}${yy}`;
+}
 
 export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurchases: () => void }) {
   const { isMobile, px } = useContext(MobileCtx);
@@ -42,6 +55,22 @@ export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurc
 
   const pag = usePagination(allRecentItems, 8);
   const [viewItem, setViewItem] = useState<(typeof allRecentItems)[number] | null>(null);
+  const { print } = useDocument();
+
+  // Was a Print button with no onClick at all — clicking it did nothing.
+  // Same GrnLabelSheet real print path the GRN receiving flow itself uses.
+  const printItem = (r: (typeof allRecentItems)[number]) => {
+    const label: GrnLabel = {
+      code: r.rawItem.itemCode || `${r.grnId}-${r.itemId}`,
+      materialType: r.type,
+      quantity: r.quantity,
+      description: r.description,
+      grnBatchId: r.grnId,
+      vendor: r.vendor,
+      receivedDate: ddmmyy(r.grnRaw.receivedDate),
+    };
+    print(<GrnLabelSheet labels={[label]} />);
+  };
 
   return (
     <section id="mat-recent" style={{ padding: `44px ${px}px 0` }}>
@@ -122,7 +151,7 @@ export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurc
                       <Button onClick={() => setViewItem(r)} variant="secondary" size="sm" iconLeft={Eye} className="flex-1">
                         View
                       </Button>
-                      <Button variant="primary" size="sm" iconLeft={Printer} className="flex-1">
+                      <Button onClick={() => printItem(r)} variant="primary" size="sm" iconLeft={Printer} className="flex-1">
                         Print
                       </Button>
                     </div>

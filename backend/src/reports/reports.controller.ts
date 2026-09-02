@@ -24,6 +24,17 @@ export class ReportsController {
     return this.reportsService.getSalesSummary();
   }
 
+  // Powers the Overview dashboard's "In Stock"/"Payments Collected" figures —
+  // paymentsCollectedPct here is computed across every invoice ever raised
+  // (unlike getOutstandingPayments, which only covers invoices still owed),
+  // so it's the one that actually answers "what fraction of everything
+  // invoiced has been paid" rather than "of what's still owed, how much of
+  // that has trickled in".
+  @Get("production-analytics")
+  getProductionAnalytics() {
+    return this.reportsService.getProductionAnalytics();
+  }
+
   @Get("schedules")
   listSchedules() {
     return this.reportsService.listSchedules();

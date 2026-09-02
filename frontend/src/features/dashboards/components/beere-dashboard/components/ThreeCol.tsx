@@ -15,14 +15,14 @@ function formatMonthLabel(month: string): string {
 }
 
 export function ProductionProgress() {
-  const { qcPassRate, paymentsCollectedPct, isLoading, isError } = useDashboardAnalytics();
+  const { qcPassRate, inStockPct, paymentsCollectedPct, isLoading, isError } = useDashboardAnalytics();
 
-  // "Inventory" has no backend source — raw-material stock tracking is not
-  // implemented (same documented gap as the Materials feature). Left as a
-  // fixed placeholder rather than inventing a number.
+  // "Inventory" = % of QC-passed production still sitting in stock
+  // (undispatched); "Payments Collected" = % of everything ever invoiced
+  // that's actually been paid — see useDashboardAnalytics.ts.
   const progBars = [
     { label: "Production (QC Pass)", pct: isLoading ? 0 : qcPassRate, color: "#6B1A2A", err: isError },
-    { label: "Inventory", pct: 0, color: "#845E04", err: false },
+    { label: "Inventory", pct: isLoading ? 0 : inStockPct, color: "#845E04", err: isError },
     { label: "Payments Collected", pct: isLoading ? 0 : paymentsCollectedPct, color: "#A0506A", err: isError },
   ];
 

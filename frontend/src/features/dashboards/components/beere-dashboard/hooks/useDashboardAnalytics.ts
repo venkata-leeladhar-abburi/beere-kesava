@@ -41,6 +41,16 @@ export function useDashboardAnalytics() {
     staleTime: 10_000,
   });
 
+  // Payments Collected needs every invoice ever raised, not just the ones
+  // still outstanding — outstandingPayments above excludes fully-paid
+  // invoices entirely, which made this tile read 0% collected even when
+  // real money had come in (see productionAnalytics's own doc comment).
+  const productionAnalytics = useQuery({
+    queryKey: ["reports", "production-analytics"],
+    queryFn: () => reportsApi.productionAnalytics(),
+    staleTime: 10_000,
+  });
+
   const purchaseRequests = useQuery({
     queryKey: ["purchase-requests", "dashboard-pending"],
     queryFn: () => purchaseRequestsApi.list(100),
@@ -67,6 +77,7 @@ export function useDashboardAnalytics() {
     void weavers.refetch();
     void sareeTypes.refetch();
     void outstanding.refetch();
+    void productionAnalytics.refetch();
     void purchaseRequests.refetch();
     void dispatches.refetch();
   };
@@ -111,9 +122,12 @@ export function useDashboardAnalytics() {
 
   const overdueInvoicesCount = (outstanding.data?.items ?? []).filter((i) => i.status === "OVERDUE").length;
 
-  const totalInvoiced = (outstanding.data?.items ?? []).reduce((s, i) => s + i.total, 0);
-  const totalCollected = (outstanding.data?.items ?? []).reduce((s, i) => s + i.paid, 0);
-  const paymentsCollectedPct = totalInvoiced > 0 ? Math.round((totalCollected / totalInvoiced) * 100) : 0;
+  const paymentsCollectedPct = productionAnalytics.data?.paymentsCollectedPct ?? 0;
+
+  // What fraction of QC-passed production is still sitting in stock
+  // (undispatched) — the "Inventory" progress bar was a hardcoded 0% before,
+  // wired to nothing.
+  const inStockPct = (qc?.PASSED ?? 0) > 0 ? Math.round((inStockSareesCount / (qc?.PASSED ?? 1)) * 100) : 0;
 
   const pendingApprovalsCount = (purchaseRequests.data?.items ?? []).filter((r) => r.status === "PENDING").length;
 
@@ -127,6 +141,7 @@ export function useDashboardAnalytics() {
     weaversWorkingCount,
     sareeTypeCodesCount,
     inStockSareesCount,
+    inStockPct,
     overdueInvoicesCount,
     paymentsCollectedPct,
     pendingApprovalsCount,
