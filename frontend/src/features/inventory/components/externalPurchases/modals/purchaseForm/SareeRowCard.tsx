@@ -68,7 +68,7 @@ export function SareeRowCard({
           onClick={() => removeSareeRow(s._uid)}
         />
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: 10, marginBottom: 10 }}>
         <Field label="Saree Type">
           <Input
             size="sm"
@@ -95,7 +95,7 @@ export function SareeRowCard({
         </Field>
       </div>
       {/* Price per quantity × quantity = buying price */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 0.75fr 1fr", gap: 10, marginBottom: 10 }}>
+      <div className="grid grid-cols-1 sm:[grid-template-columns:1fr_0.75fr_1fr]" style={{ gap: 10, marginBottom: 10 }}>
         {/* eslint-disable-next-line no-restricted-syntax -- input adornment / field label unit annotation, not a rendered money value */}
         <Field label="Price / Quantity (₹)">
           <NumberInput
@@ -134,7 +134,7 @@ export function SareeRowCard({
       </div>
 
       {/* Markup drives selling price and profit */}
-      <div style={{ display: "grid", gridTemplateColumns: "0.75fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
+      <div className="grid grid-cols-1 sm:[grid-template-columns:0.75fr_1fr_1fr]" style={{ gap: 10, marginBottom: 10 }}>
         <Field label="Sell % (markup)">
           <NumberInput
             size="sm"
@@ -181,7 +181,7 @@ export function SareeRowCard({
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 180px", gap: 10 }}>
+      <div className="grid grid-cols-1 sm:[grid-template-columns:1fr_180px]" style={{ gap: 10 }}>
         <Field label="Notes (optional)">
           <Textarea
             value={s.notes}

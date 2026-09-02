@@ -32,7 +32,8 @@ describe("QcService.updateDeduction", () => {
       },
     };
     auditLog = { recordAction: jest.fn() };
-    service = new QcService(prisma, auditLog);
+    const notifications = { notifyRole: jest.fn() };
+    service = new QcService(prisma, auditLog, notifications as any);
   });
 
   it("recomputes payable from the new deduction", async () => {
