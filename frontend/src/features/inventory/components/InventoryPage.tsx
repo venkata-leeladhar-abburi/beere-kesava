@@ -138,8 +138,13 @@ export function InventoryPage({
               onClearSelection={() => setSelected(new Set())}
             />
 
-            {/* All Sarees Inventory — same table used on the Production page */}
-            <div style={{ ...card, borderRadius: 16, padding: 20 }}>
+            {/* All Sarees Inventory — same table used on the Production page.
+                id is scrollIntoView's target after a scan (see handleScan in
+                useInventoryPageState) so a saree scanned from anywhere on the
+                page — its selected row sorts to the top of page 1 there —
+                actually ends up on screen instead of just reordering off
+                past the current scroll position. */}
+            <div id="inv-all-sarees" style={{ ...card, borderRadius: 16, padding: 20 }}>
               <WeaverSareesSection
                 ownerType="all"
                 persistKey="inventory-all-sarees"

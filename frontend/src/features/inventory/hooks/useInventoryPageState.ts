@@ -267,6 +267,16 @@ export function useInventoryPageState() {
 
     setSelected(prev => new Set(prev).add(match.sareeId));
     show(`Selected ${match.sareeId}`);
+    // The selected row sorts to the top of page 1 inside WeaverSareesSection,
+    // but that alone doesn't move the user's scroll position — on a long
+    // list (very likely on mobile) the newly-selected saree would sort to
+    // the top of a table the user isn't currently looking at. Scroll it into
+    // view so "selected" is actually visible, not just true in state.
+    // Deferred a tick so the re-sort/re-render from setSelected above has
+    // already committed before the scroll measures the page.
+    setTimeout(() => {
+      document.getElementById("inv-all-sarees")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
   }, [mirroredRows, selected, isPickableNow, dispatchedSareeIds]);
 
   // Awaited, unlike before: the mutation rolls its optimistic row back when the
