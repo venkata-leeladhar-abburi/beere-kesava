@@ -226,12 +226,14 @@ export function NewSaleFlow() {
         lines={cart}
         custName={custName}
         phone={phone}
+        custAddress={custAddress}
         payment={payment}
+        payRef={payRef}
         total={total}
         billRef={saleRefs[0]}
+        saleRefs={saleRefs}
         isMobile={isMobile}
         isTablet={isTablet}
-        fmtPrice={fmtPrice}
         onClose={() => setShowBill(false)}
       />
     );
