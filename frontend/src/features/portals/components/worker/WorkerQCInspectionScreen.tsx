@@ -10,6 +10,7 @@ import { Button, IconButton, NumberInput, Textarea } from "../../../../shared/ui
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { useImageUpload } from "@/shared/hooks/useImageUpload";
+import { resolveAssetUrl } from "@/shared/api/uploads";
 
 interface WorkerQCInspectionScreenProps {
   inspecting: SareeItem;
@@ -188,7 +189,7 @@ export function WorkerQCInspectionScreen({
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                   <div style={{ width: 60, height: 60, background: "#F5E8D0", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${T.bdr}`, position: "relative", overflow: "hidden" }}>
                     {photoUrl ? (
-                      <img src={photoUrl} alt="Defect" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img src={resolveAssetUrl(photoUrl) ?? undefined} alt="Defect" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
                       <Camera size={22} color={T.muted} />
                     )}
@@ -230,7 +231,11 @@ export function WorkerQCInspectionScreen({
                 fullWidth
                 iconLeft={result === "semi_approved" ? CheckCircle2 : XCircle}
                 onClick={result === "semi_approved" ? confirmSemiApproved : confirmDefective}
-                disabled={defectTypes.length === 0 || !hasPhoto || (result === "semi_approved" && deductionAmount === "")}
+                // Deduction is deliberately not required: whether a defect costs
+                // the weaver anything is a judgement call, and it can be added
+                // or revised later from Defective History. Blocking the verdict
+                // on it meant staff typed a placeholder 0 just to proceed.
+                disabled={defectTypes.length === 0 || !hasPhoto}
                 className={`h-[52px] rounded-full ${result === "semi_approved" ? "bg-[#C89B47] hover:bg-[#C89B47]" : "bg-[#C0392B] hover:bg-[#C0392B]"}`}>
                 Confirm — {result === "semi_approved" ? "Semi-Approve" : "Mark as Defective"}
               </Button>

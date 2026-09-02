@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
@@ -6,6 +6,7 @@ import { resolveWeaverScope } from "../auth/weaver-scope";
 import { UserRole } from "../generated/prisma/client";
 import { CreateQcRecordDto } from "./dto/create-qc-record.dto";
 import { ListQcQueryDto } from "./dto/list-qc-query.dto";
+import { UpdateQcDeductionDto } from "./dto/update-qc-deduction.dto";
 import { QcService } from "./qc.service";
 
 // Production/operational module — WORKER has full read/write; WEAVER can
@@ -32,6 +33,16 @@ export class QcController {
   // Goods & Dispatch page reuses the same inventory stats as the admin
   // portal (Total in Inventory / Pending Finishing / Ready for Dispatch),
   // which needs this figure to match rather than always reading 0.
+
+  // Adding or revising a defect deduction after the verdict — see
+  // QcService.updateDeduction. WEAVER is excluded (the class-level roles let
+  // them read their own records; they must not edit what they are paid).
+  @Patch(":id/deduction")
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
+  updateDeduction(@Param("id") id: string, @Body() dto: UpdateQcDeductionDto) {
+    return this.qcService.updateDeduction(id, dto);
+  }
+
   @Get("ready-for-finishing")
   @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN, UserRole.SHOP)
   findReadyForFinishing() {

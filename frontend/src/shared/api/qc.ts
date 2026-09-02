@@ -61,4 +61,9 @@ export const qcApi = {
   readyForFinishing: () => apiClient.get<BackendReadyForFinishingRecord[]>("/qc/ready-for-finishing"),
 
   create: (payload: CreateQcRecordPayload) => apiClient.post<BackendQcRecord>("/qc", payload),
+
+  // Adds or revises the deduction on an existing verdict — entering one at
+  // inspection time is optional, so Defective History can set it afterwards.
+  updateDeduction: (id: string, payload: { deduction: number; actorId?: string }) =>
+    apiClient.patch<BackendQcRecord>(`/qc/${id}/deduction`, payload),
 };

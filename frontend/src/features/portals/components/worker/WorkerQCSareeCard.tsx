@@ -51,7 +51,7 @@ export function WorkerQCSareeCard({
           </div>
           <div
             style={{ fontFamily: F.m }}
-            className="text-[13.5px] font-bold text-[#4A061B] tracking-tight truncate"
+            className="text-[13.5px] font-bold text-[#4A061B] tracking-tight break-all"
             title={`Saree ID: ${s.id}`}
           >
             {s.id}

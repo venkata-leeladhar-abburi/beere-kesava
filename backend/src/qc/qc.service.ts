@@ -5,6 +5,7 @@ import { Prisma, QcResult } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateQcRecordDto } from "./dto/create-qc-record.dto";
 import { ListQcQueryDto } from "./dto/list-qc-query.dto";
+import { UpdateQcDeductionDto } from "./dto/update-qc-deduction.dto";
 
 // Real name of who performed the check — QcRecord.inspectedById was always
 // stored, but findAll never joined it, so every QC record looked the same
@@ -185,6 +186,55 @@ export class QcService {
       throw new ForbiddenException(`QC record for ${sareeId} does not belong to you`);
     }
     return record;
+  }
+
+
+  /**
+   * Revises the deduction on an already-recorded QC verdict, recomputing
+   * payable from it. Entering a deduction during inspection is optional —
+   * whether a defect costs the weaver anything is often decided after
+   * speaking to them — so Defective History has to be able to add or change
+   * it afterwards.
+   *
+   * PASSED records are refused: a saree that cleared QC has no defect to
+   * withhold against, and allowing it here would let a full making charge be
+   * silently zeroed out of a weaver's payment with no defect on record.
+   */
+  async updateDeduction(id: string, dto: UpdateQcDeductionDto) {
+    const record = await this.prisma.qcRecord.findUnique({ where: { id } });
+    if (!record) {
+      throw new NotFoundException(`QC record ${id} not found`);
+    }
+    if (record.result === QcResult.PASSED) {
+      throw new BadRequestException(
+        "A passed QC record has no deduction to revise — re-inspect the saree instead",
+      );
+    }
+
+    const makingCharge = Number(record.makingCharge);
+    // Same bound computeQcPayment applies at creation, so an edit can't push
+    // payable negative or above the saree's making charge.
+    const deduction = Math.min(Math.max(dto.deduction, 0), makingCharge);
+    const payable = makingCharge - deduction;
+
+    const updated = await this.prisma.qcRecord.update({
+      where: { id },
+      data: { deduction, payable },
+      include: qcRecordInclude,
+    });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "QC",
+      action: `Revised deduction on saree ${record.sareeId} to ${deduction}`,
+      entityType: "QcRecord",
+      entityId: record.sareeId,
+      recordLabel: record.sareeId,
+      oldValue: String(record.deduction),
+      newValue: String(deduction),
+    });
+
+    return updated;
   }
 
   // Sarees that fully passed QC and have no finishing assignment yet — the

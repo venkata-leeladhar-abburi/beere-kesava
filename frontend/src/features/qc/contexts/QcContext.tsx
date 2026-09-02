@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { useRatesPricing } from "@/features/pricing";
 import { type SareeTypeRecord } from "@/features/pricing";
 import { BackendQcRecord, BackendQcResult, qcApi } from "../../../shared/api/qc";
@@ -124,6 +125,8 @@ export interface RecordQcInput {
 interface QcContextValue {
   qcRecords: QcRecord[];
   recordQc: (input: RecordQcInput) => Promise<void>;
+  /** Adds or revises the deduction on an existing verdict (Defective History). */
+  updateDeduction: (recordId: string, deduction: number) => Promise<void>;
   getQcForSaree: (sareeId: string) => QcRecord | undefined;
   getQcForWeaver: (weaverId: string) => QcRecord[];
   getQcForLoom: (factoryLoomId: string) => QcRecord[];
@@ -245,6 +248,24 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
   const recordQc = (input: RecordQcInput): Promise<void> =>
     recordQcMutation.mutateAsync(input).then(() => undefined);
 
+const updateDeductionMutation = useMutation({
+    mutationFn: ({ recordId, deduction }: { recordId: string; deduction: number }) =>
+      qcApi.updateDeduction(recordId, { deduction, actorId: user?.id }),
+    onSuccess: () => {
+      // Refetch-only for the same reason recordQc is — a cached QC row is
+      // assembled from lookups the PATCH response doesn't carry.
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Deduction updated");
+    },
+    onError: (err) => {
+      console.error("Failed to update deduction:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to update deduction");
+    },
+  });
+
+  const updateDeduction = (recordId: string, deduction: number): Promise<void> =>
+    updateDeductionMutation.mutateAsync({ recordId, deduction }).then(() => undefined);
+
   const getQcForSaree = useCallback(
     (sareeId: string) => qcRecords.find(r => r.sareeId === sareeId),
     [qcRecords],
@@ -261,7 +282,7 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <QcContext.Provider value={{ qcRecords, recordQc, getQcForSaree, getQcForWeaver, getQcForLoom, isError, error, isLoading, refetch: () => void refetch() }}>
+    <QcContext.Provider value={{ qcRecords, recordQc, updateDeduction, getQcForSaree, getQcForWeaver, getQcForLoom, isError, error, isLoading, refetch: () => void refetch() }}>
       {children}
     </QcContext.Provider>
   );
@@ -270,6 +291,7 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
 const FALLBACK: QcContextValue = {
   qcRecords: [],
   recordQc: () => Promise.reject(new Error("recordQc requires a QcProvider")),
+  updateDeduction: () => Promise.reject(new Error("updateDeduction requires a QcProvider")),
   getQcForSaree: () => undefined,
   getQcForWeaver: () => [],
   getQcForLoom: () => [],

@@ -77,6 +77,11 @@ export interface DefectiveLogItem {
   batchId?: string | null;
   makingCharge?: string;
   payable?: string;
+  // Raw numbers behind the formatted strings above — the Defective History
+  // deduction editor needs to seed its input and clamp against the making
+  // charge, which it can't do from "₹1,000".
+  deductionValue?: number;
+  makingChargeValue?: number;
   notes?: string;
   photoUrl?: string | null;
   inspectedBy?: string;

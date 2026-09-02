@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { AlertTriangle, Camera } from "lucide-react";
 import { T, F, DefectiveLogItem } from "./WorkerQCTypes";
 import { Modal } from "../../../../shared/ui/overlay/Modal";
-import { Button } from "../../../../shared/ui/primitives";
+import { Button, NumberInput } from "../../../../shared/ui/primitives";
+import { useQc } from "@/features/qc";
+import { rupees, formatMoney } from "@/lib/domain/money";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
 
 interface WorkerQCDefectiveDetailModalProps {
@@ -22,6 +24,27 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 export function WorkerQCDefectiveDetailModal({ item, onClose }: WorkerQCDefectiveDetailModalProps) {
   const isSemi = item.result === "semi";
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
+  // Deduction is optional at inspection time — whether a defect costs the
+  // weaver anything is often settled after talking to them — so it is added
+  // or revised here instead.
+  const { updateDeduction } = useQc();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<number | "">(item.deductionValue ?? "");
+  const [saving, setSaving] = useState(false);
+  const maxDeduction = item.makingChargeValue;
+
+  const overCharge = maxDeduction != null && Number(draft || 0) > maxDeduction;
+
+  const saveDeduction = async () => {
+    if (draft === "" || overCharge) return;
+    setSaving(true);
+    try {
+      await updateDeduction(item.recordId, Number(draft));
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  };
   // ImageZoomModal must be a sibling of <Modal>, not a child — Radix
   // Dialog.Content is translated (transform: translate(-50%,-50%)), and a
   // `position: fixed` descendant of a transformed ancestor is positioned
@@ -86,7 +109,40 @@ export function WorkerQCDefectiveDetailModal({ item, onClose }: WorkerQCDefectiv
         )}
 
         <Row label="Making Charge" value={item.makingCharge} />
-        <Row label="Deduction" value={<span style={{ color: T.crim }}>{item.deduction}</span>} />
+        <Row
+          label="Deduction"
+          value={
+            editing ? (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <NumberInput
+                  value={draft}
+                  onValueChange={v => setDraft(v)}
+                  step={0.01}
+                  placeholder="0"
+                  className="w-[130px] font-mono"
+                />
+                <Button size="sm" variant="primary" onClick={() => void saveDeduction()} disabled={draft === "" || overCharge || saving}>
+                  {saving ? "Saving…" : "Save"}
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => { setDraft(item.deductionValue ?? ""); setEditing(false); }} disabled={saving}>
+                  Cancel
+                </Button>
+              </span>
+            ) : (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                <span style={{ color: T.crim }}>{item.deduction}</span>
+                <Button size="sm" variant="link" onClick={() => setEditing(true)} className="p-0 h-auto">
+                  {item.deductionValue ? "Edit" : "Add"}
+                </Button>
+              </span>
+            )
+          }
+        />
+        {editing && overCharge && (
+          <div style={{ fontFamily: F.u, fontSize: 12, color: T.crim, textAlign: "right", padding: "4px 0" }}>
+            Cannot exceed the {formatMoney(rupees(maxDeduction ?? 0))} making charge.
+          </div>
+        )}
         <Row label="Payable to Weaver" value={<span style={{ color: T.green }}>{item.payable}</span>} />
       </Modal.Body>
       <Modal.Footer>

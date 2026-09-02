@@ -47,7 +47,10 @@ function DefectiveCard({ d, onView, onViewPhoto }: { d: DefectiveLogItem; onView
             )}
 
             <div className="min-w-0 flex-1">
-              <div style={{ fontFamily: F.m }} className="text-[13.5px] font-bold text-[#6E0F2D] truncate">
+              {/* Saree IDs run long ("RAMOJI RAO-L1-B001-002"); truncate hid the
+                  trailing serial, which is the part that tells two sarees in a
+                  batch apart. Wraps instead, matching WorkerQCPassedCard. */}
+              <div title={d.id} style={{ fontFamily: F.m }} className="text-[13.5px] font-bold text-[#6E0F2D] break-all">
                 {d.id}
               </div>
               <div style={{ fontFamily: F.u }} className="text-[13.5px] font-medium text-[#4F4A45] mt-0.5 truncate">

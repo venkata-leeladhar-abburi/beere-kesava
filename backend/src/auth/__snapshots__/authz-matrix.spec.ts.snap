@@ -1240,6 +1240,16 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "public": false,
     "roles": [
       "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "PATCH /qc/:id/deduction",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
       "SHOP",
       "SUPERADMIN",
       "WORKER",

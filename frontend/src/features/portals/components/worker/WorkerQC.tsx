@@ -17,6 +17,7 @@ import {
 } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";
 import { WorkerQCInspectionScreen } from "./WorkerQCInspectionScreen";
+import { WorkerQCPassPhotoModal } from "./WorkerQCPassPhotoModal";
 import { WorkerQCSareeCard } from "./WorkerQCSareeCard";
 import { WorkerQCDefectiveSection } from "./WorkerQCDefectiveSection";
 import { WorkerQCSemiDefectiveSection } from "./WorkerQCSemiDefectiveSection";
@@ -114,6 +115,11 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   // shop floor it was routinely missed, leaving no way to tell a saved
   // verdict apart from a tap that never registered.
   const [completion, setCompletion] = useState<{ sareeId: string; kind: "passed" | "semi" | "defective" } | null>(null);
+  // A Passed verdict needs photographic evidence as well, so the tap on
+  // "Passed" opens a capture step instead of recording the verdict outright.
+  const [passPhotoFor, setPassPhotoFor] = useState<SareeItem | null>(null);
+  const [passPhotoUrl, setPassPhotoUrl] = useState<string | null>(null);
+  const [passSaving, setPassSaving] = useState(false);
   const showCompletion = (sareeId: string, kind: "passed" | "semi" | "defective") => {
     setCompletion({ sareeId, kind });
   };
@@ -134,6 +140,8 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
       batchId: r.batchId,
       makingCharge: formatMoney(rupees(r.makingCharge)),
       payable: formatMoney(rupees(r.payable)),
+      deductionValue: Number(r.deduction),
+      makingChargeValue: Number(r.makingCharge),
       notes: r.notes,
       photoUrl: r.photoUrl,
       inspectedBy: r.inspectedBy,
@@ -227,7 +235,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     return rate ? Number(rate.charge) || 0 : 0;
   };
 
-  const saveQc = (s: SareeItem, result: "passed" | "semi" | "defective", semiDeduction = 0) => {
+  const saveQc = (s: SareeItem, result: "passed" | "semi" | "defective", semiDeduction = 0, passPhoto: string | null = null) => {
     const { typeName } = splitDesignField(s.design);
     return recordQc({
       sareeId: s.id,
@@ -242,13 +250,30 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
       defects: result === "passed" ? [] : defectTypes,
       semiDeduction,
       notes: result === "passed" ? undefined : notes || undefined,
-      photoUrl: result === "passed" ? undefined : photoUrl ?? undefined,
+      photoUrl: (result === "passed" ? passPhoto : photoUrl) ?? undefined,
       inspectedBy: "Worker Staff",
     });
   };
 
-  const markPassedDirect = (s: SareeItem) => {
-    saveQc(s, "passed").then(() => {
+  const startPassed = (s: SareeItem) => {
+    setPassPhotoUrl(null);
+    setPassPhotoFor(s);
+  };
+
+  const cancelPassed = () => {
+    setPassPhotoFor(null);
+    setPassPhotoUrl(null);
+  };
+
+  const confirmPassed = () => {
+    const s = passPhotoFor;
+    if (!s || !passPhotoUrl) return;
+    setPassSaving(true);
+    markPassedDirect(s, passPhotoUrl);
+  };
+
+  const markPassedDirect = (s: SareeItem, passPhoto: string) => {
+    saveQc(s, "passed", 0, passPhoto).then(() => {
       setInspected(p => new Set(p).add(s.id));
 
       const { code: designCode, typeName } = splitDesignField(s.design);
@@ -267,8 +292,12 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         bulkOrderRef: s.bulkOrderRef,
         status: "qc-passed-pending-finishing",
       });
+      setPassSaving(false);
+      setPassPhotoFor(null);
+      setPassPhotoUrl(null);
       showCompletion(s.id, "passed");
     }).catch((err) => {
+      setPassSaving(false);
       showError(`Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
     });
   };
@@ -322,6 +351,17 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         <div style={{ position: "fixed", bottom: 84, left: "50%", transform: "translateX(-50%)", zIndex: 9999, background: T.crim, color: "#FFF", borderRadius: 999, padding: "11px 22px", fontFamily: F.u, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 28px rgba(192,57,43,0.32)", display: "flex", alignItems: "center", gap: 8, maxWidth: "90vw" }}>
           <AlertTriangle size={15} style={{ flexShrink: 0 }} /> <span>{errorToast}</span>
         </div>
+      )}
+
+      {passPhotoFor && (
+        <WorkerQCPassPhotoModal
+          saree={passPhotoFor}
+          photoUrl={passPhotoUrl}
+          setPhotoUrl={setPassPhotoUrl}
+          onCancel={cancelPassed}
+          onConfirm={confirmPassed}
+          saving={passSaving}
+        />
       )}
 
       {completion && (() => {
@@ -394,7 +434,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
       key={s.id}
       saree={s}
       isDesktop={isDesktop}
-      onMarkPassed={markPassedDirect}
+      onMarkPassed={startPassed}
       onStartSemiApproved={startSemiApproved}
       onStartDefect={startDefect}
       onOpenDesignCode={setOpenDesignCode}
@@ -492,6 +532,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
             </>
           )}
         </SectionCard>
+        {toasts}
       </div>
     );
   }
@@ -582,6 +623,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
             </>
           )}
         </SectionCard>
+        {toasts}
       </div>
     );
   }
