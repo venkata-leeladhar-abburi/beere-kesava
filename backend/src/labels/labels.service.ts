@@ -38,13 +38,18 @@ export class LabelsService {
     });
   }
 
-  /** Code128 linear barcode PNG — used for printable material-batch / saree labels. */
+  /**
+   * Code128 linear barcode PNG — used for printable material-batch / saree
+   * labels. scale 4 (was 3) widens each bar module — a phone camera scanning
+   * a small printed tag a few inches away needs thicker bars to resolve
+   * reliably; 3 was thin enough to make real-world scans miss constantly.
+   */
   async generateBarcodePng(code: string): Promise<Buffer> {
     return bwipjs.toBuffer({
       bcid: "code128",
       text: code,
-      scale: 3,
-      height: 12,
+      scale: 4,
+      height: 14,
       includetext: true,
       textxalign: "center",
     });

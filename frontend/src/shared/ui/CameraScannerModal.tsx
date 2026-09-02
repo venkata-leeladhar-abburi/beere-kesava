@@ -1,8 +1,33 @@
 import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import type { IScannerControls } from "@zxing/browser";
+import { DecodeHintType, BarcodeFormat } from "@zxing/library";
 import { X, AlertCircle, ScanLine } from "lucide-react";
 import { Button } from "./primitives";
+
+// The default camera picked by decodeFromVideoDevice(undefined, ...) often
+// negotiates a low resolution (sometimes 640×480), which isn't enough to
+// resolve a printed Code128's thin bars up close — the camera opens and the
+// live view looks fine, but nothing ever decodes. Asking for a real
+// resolution and the rear camera with continuous autofocus fixes that; every
+// constraint here is a hint the browser is free to ignore on hardware that
+// can't meet it, so this degrades safely on a weaker device.
+const SCAN_CONSTRAINTS: MediaStreamConstraints = {
+  video: {
+    facingMode: { ideal: "environment" },
+    width: { ideal: 1920 },
+    height: { ideal: 1080 },
+    // Not in the standard MediaTrackConstraints type, but Chrome/Android
+    // honor it when present — continuous autofocus matters more than
+    // resolution for a barcode held a few inches from the lens.
+    advanced: [{ focusMode: "continuous" } as unknown as MediaTrackConstraintSet],
+  },
+};
+
+const SCAN_HINTS = new Map<DecodeHintType, unknown>([
+  [DecodeHintType.TRY_HARDER, true],
+  [DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.CODE_128, BarcodeFormat.QR_CODE]],
+]);
 
 /**
  * A saree tag carries two codes: a Code128 barcode (decodes to the bare
@@ -54,9 +79,9 @@ export function CameraScannerModal({
     let cancelled = false;
     setError(null);
 
-    const reader = new BrowserMultiFormatReader();
+    const reader = new BrowserMultiFormatReader(SCAN_HINTS);
     reader
-      .decodeFromVideoDevice(undefined, videoRef.current ?? undefined, (result, _err, controls) => {
+      .decodeFromConstraints(SCAN_CONSTRAINTS, videoRef.current ?? undefined, (result, _err, controls) => {
         controlsRef.current = controls;
         if (cancelled) return;
         if (result) {
