@@ -172,7 +172,13 @@ export function ScanSareeStep({
                       <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>
                         {l.type !== "—" ? l.type : l.name}
                         {l.weaver && l.weaver !== "—" ? ` · ${l.weaver}` : ""}
+                        {l.weight && l.weight !== "—" ? ` · ${l.weight}` : ""}
                       </div>
+                      {l.batchId && l.batchId !== "—" && (
+                        <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginTop: 2 }}>
+                          Batch {l.batchId}
+                        </div>
+                      )}
                     </div>
 
                     <div style={{ width: isMobile ? "100%" : 190, flexShrink: 0, marginTop: isMobile ? 10 : 0 }}>

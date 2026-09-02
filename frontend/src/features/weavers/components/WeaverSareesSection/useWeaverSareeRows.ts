@@ -24,7 +24,7 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
 
     const blank = (sareeId: string): WeaverSareeRow => ({
       sareeId, batchId: null, loomNumber: null, sareeTypeCode: null, sareeTypeName: null,
-      bulkOrderLabel: null, designCode: null, color: null, receivedPhotoUrl: null,
+      bulkOrderLabel: null, designCode: null, color: null, weight: null, receivedPhotoUrl: null,
       isAssigned: false, assignedDate: null, qcStatus: "pending",
       receivedDate: null, qcDate: null, defects: [], makingCharge: null, deduction: null,
       payable: null, finishingStatus: "none", finishingAssignedDate: null,
@@ -46,6 +46,7 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
         row.bulkOrderLabel = r.bulkOrderLabel ?? null;
         row.designCode = r.designCode ?? null;
         row.color = row.color ?? r.receivedColor ?? null;
+        row.weight = row.weight ?? (r.receivedWeight != null ? Number(r.receivedWeight) : null);
         row.receivedPhotoUrl = r.receivedPhotoUrl ?? null;
         row.isAssigned = true;
         row.assignedDate = b.createdAt;

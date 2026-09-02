@@ -15,8 +15,26 @@ export interface SareeTagData {
   sareeTypeCode?: string | null;
   sareeTypeName?: string | null;
   color?: string | null;
+  /** Weight in grams. */
+  weight?: number | null;
+  /** Full weaver name, printed with the loom number ("Ramoji Rao · Loom 1"). */
+  weaverName?: string | null;
+  loomNumber?: number | null;
+  /** Printed as DDMMYY (e.g. "020926"). */
+  date?: string | null;
   /** Printed on the tag when present — the shop's counter price. */
   retailPrice?: number | null;
+}
+
+/** DDMMYY, e.g. 2026-09-02 -> "020926". */
+function ddmmyy(dateStr?: string | null): string | null {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return null;
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+  return `${dd}${mm}${yy}`;
 }
 
 // ── Saree tag print sheet ─────────────────────────────────────────────────────
@@ -26,10 +44,12 @@ export interface SareeTagData {
 // the sheet just wraps as many tags as it's given.
 function TagCard({ r }: { r: SareeTagData }) {
   const typeLabel = r.sareeTypeCode ? `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}` : "—";
+  const weaverLine = [r.weaverName || null, r.loomNumber != null ? `Loom ${r.loomNumber}` : null].filter(Boolean).join(" · ");
+  const date = ddmmyy(r.date);
   return (
     <div
       style={{
-        width: "82mm", height: "40mm", boxSizing: "border-box",
+        width: "82mm", height: "46mm", boxSizing: "border-box",
         border: "0.3mm solid var(--doc-burgundy)", borderRadius: "1.5mm",
         padding: "3mm 4mm", display: "flex", flexDirection: "column", justifyContent: "space-between",
         breakInside: "avoid",
@@ -56,6 +76,17 @@ function TagCard({ r }: { r: SareeTagData }) {
         <span style={{ flexShrink: 0 }}>
           {r.retailPrice != null ? formatMoney(rupees(r.retailPrice)) : (r.color || "—")}
         </span>
+      </div>
+
+      {weaverLine && (
+        <div style={{ fontFamily: "var(--font-ui)", fontSize: "7.5pt", color: "var(--doc-ink-soft)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {weaverLine}
+        </div>
+      )}
+
+      <div style={{ display: "flex", justifyContent: "space-between", gap: "3mm", fontFamily: "var(--font-code)", fontSize: "7pt", color: "var(--doc-muted)" }}>
+        <span>{r.weight != null ? `${r.weight}g` : "—"}</span>
+        <span>{date || "—"}</span>
       </div>
     </div>
   );

@@ -13,6 +13,8 @@ export interface WeaverSareeRow {
   designCode: string | null;
   /** Body colour, as entered by Worker Staff at Receive Sarees (BatchSareeRow.receivedColor). */
   color: string | null;
+  /** Weight in grams, as entered by Worker Staff at Receive Sarees (BatchSareeRow.receivedWeight). */
+  weight: number | null;
   /** Photo captured by Worker Staff at Receive Sarees — same source as the worker portal's Received History. */
   receivedPhotoUrl: string | null;
 
