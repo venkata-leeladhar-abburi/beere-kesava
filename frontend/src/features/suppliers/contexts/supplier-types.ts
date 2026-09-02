@@ -105,6 +105,9 @@ export interface Supplier {
   code?: string;
   name: string;
   initials: string;
+  /** Admin-entered short label printed on an external-purchase saree tag in
+   *  place of the full name (e.g. "RAVI" for "Ravi Silks & Sons"). */
+  shortName?: string;
   contactName: string;
   phone: string;
   whatsapp?: string;

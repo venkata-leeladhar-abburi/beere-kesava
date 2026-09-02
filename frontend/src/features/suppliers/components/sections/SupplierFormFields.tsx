@@ -29,6 +29,9 @@ export function SupplierFormFields({
         <Field label="Business Name" required error={errors.name}>
           <Input id="business-name" value={form.name} onChange={e => set("name", e.target.value)} placeholder="Name of the business or shop" />
         </Field>
+        <Field label="Short Name" error={errors.shortName}>
+          <Input id="short-name" value={form.shortName} onChange={e => set("shortName", e.target.value)} placeholder="Printed on saree tags, e.g. RAVI" />
+        </Field>
         <Field label="Owner / Contact Name" required error={errors.contactName}>
           <Input id="owner-contact-name" value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="Who to speak to at this business" />
         </Field>

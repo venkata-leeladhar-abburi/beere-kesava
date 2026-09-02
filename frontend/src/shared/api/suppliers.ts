@@ -5,6 +5,7 @@ export interface BackendSupplier {
   code: string | null;
   name: string;
   initials: string | null;
+  shortName: string | null;
   contactName: string | null;
   phone: string | null;
   whatsapp: string | null;
@@ -27,6 +28,7 @@ export interface BackendSupplier {
 export interface CreateSupplierPayload {
   name: string;
   initials?: string;
+  shortName?: string;
   contactName?: string;
   phone?: string;
   whatsapp?: string;

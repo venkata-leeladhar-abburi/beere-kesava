@@ -21,9 +21,10 @@ export class ScanService {
       },
     });
 
-    if (!row) {
-      throw new NotFoundException(`No saree found for scanned code "${sareeId}"`);
-    }
+    // A scanned code with no matching production row (BatchSareeRow) may
+    // still be a real saree — one bought from an external supplier, which
+    // lives in PurchaseSareeLine instead. Try that before giving up.
+    if (!row) return this.lookupExternalPiece(sareeId);
 
     const [inventory, dispatches, latestSale, latestReturn] = await Promise.all([
       this.prisma.inventoryRecord.findUnique({ where: { sareeId } }),
@@ -82,6 +83,7 @@ export class ScanService {
 
     return {
       sareeId,
+      origin: "production" as const,
       batchId: row.batchId,
       recipientType: row.recipientType,
       weaver: row.weaver
@@ -117,6 +119,70 @@ export class ScanService {
       // over the saree type's shared SareeTypeRate.retailPrice when set.
       // Null for a saree received before this field existed.
       sellingPrice: row.receivedSellingPrice ? Number(row.receivedSellingPrice) : null,
+      // External-purchase-only fields — always null for a production saree.
+      supplier: null,
+      invoiceNumber: null,
+      serial: null,
+      costPrice: null,
+    };
+  }
+
+  /**
+   * A physical external-purchase piece's id is `{lineCode}-{pieceNo}`
+   * (buildSareePieceCode/pieceCodeFromLineCode on the frontend) — the line
+   * code itself is `{lineCode}-{serial}` where the serial is the purchase's
+   * per-line sequence number. Strip the trailing 2-digit piece number to get
+   * back to the PurchaseSareeLine.code this piece belongs to.
+   */
+  private async lookupExternalPiece(sareeId: string) {
+    const pieceMatch = sareeId.match(/^(.+)-(\d{2,})$/);
+    const lineCode = pieceMatch?.[1];
+    const pieceNo = pieceMatch ? Number(pieceMatch[2]) : null;
+
+    const line = lineCode
+      ? await this.prisma.purchaseSareeLine.findFirst({
+          where: { code: lineCode },
+          include: { purchase: { include: { supplier: true } } },
+        })
+      : null;
+
+    if (!line || pieceNo === null || pieceNo < 1 || pieceNo > line.quantity) {
+      throw new NotFoundException(`No saree found for scanned code "${sareeId}"`);
+    }
+
+    const serialMatch = lineCode!.match(/-(\d{3,4})$/);
+    // A piece already sent back to the supplier is the first
+    // `returnedQuantity` positions of the line (frontend's expandSareePieces
+    // convention) — not available stock, whichever way this ends up used.
+    const returned = pieceNo <= line.returnedQuantity;
+
+    return {
+      sareeId,
+      origin: "external" as const,
+      batchId: null,
+      recipientType: null,
+      weaver: null,
+      factoryLoom: null,
+      design: null,
+      sareeType: line.sareeType ? { code: null, type: line.sareeType } : null,
+      weight: line.weight ? Number(line.weight.replace(/g$/i, "")) || null : null,
+      color: line.color ?? null,
+      receivedDate: line.purchase.date,
+      batchDate: line.purchase.date,
+      qc: null,
+      finishing: null,
+      inventoryStatus: returned ? "RETURNED_TO_SUPPLIER" : null,
+      saleEligibility: returned ? ("DAMAGED_REVIEW_NEEDED" as const) : ("PASSED" as const),
+      atShop: !returned,
+      sellingPrice: Number(line.finalAmount),
+      supplier: line.purchase.supplier
+        ? { id: line.purchase.supplier.id, name: line.purchase.supplier.name, shortName: line.purchase.supplier.shortName }
+        : line.purchase.supplierName
+          ? { id: null, name: line.purchase.supplierName, shortName: null }
+          : null,
+      invoiceNumber: line.purchase.invoiceNumber ?? null,
+      serial: serialMatch ? serialMatch[1] : null,
+      costPrice: Number(line.price),
     };
   }
 }

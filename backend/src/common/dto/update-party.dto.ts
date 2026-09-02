@@ -15,6 +15,11 @@ export class UpdatePartyDto {
 
   @IsOptional()
   @IsString()
+  @Length(1, 20)
+  shortName?: string;
+
+  @IsOptional()
+  @IsString()
   contactName?: string;
 
   @IsOptional()

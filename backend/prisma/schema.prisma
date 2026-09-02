@@ -1176,6 +1176,11 @@ model Supplier {
   code            String?     @unique
   name            String
   initials        String?
+  // Short, admin-entered label printed on a saree tag in place of the full
+  // name (e.g. "RAVI" for "Ravi Silks & Sons") — distinct from `initials`,
+  // which is an auto-derived avatar abbreviation, not something an admin
+  // chooses for print.
+  shortName       String?
   contactName     String?
   phone           String?
   whatsapp        String?
@@ -1236,6 +1241,11 @@ model Vendor {
   code            String?     @unique
   name            String
   initials        String?
+  // Short, admin-entered label printed on a saree tag in place of the full
+  // name (e.g. "RAVI" for "Ravi Silks & Sons") — distinct from `initials`,
+  // which is an auto-derived avatar abbreviation, not something an admin
+  // chooses for print.
+  shortName       String?
   contactName     String?
   phone           String?
   whatsapp        String?

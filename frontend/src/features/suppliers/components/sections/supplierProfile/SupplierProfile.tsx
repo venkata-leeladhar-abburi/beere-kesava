@@ -72,7 +72,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
 
   // Every saree ever bought from this supplier, flattened for the inventory view.
   const allSarees = useMemo(
-    () => myPurchases.flatMap(p => p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier }))),
+    () => myPurchases.flatMap(p => p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier, supplierId: p.supplierId }))),
     [myPurchases]
   );
 
@@ -138,7 +138,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
 
   // Edit-profile form state, reset whenever a different supplier is opened.
   const [form, setForm] = useState<SupplierFormValues>({
-    name: supplier.name, contactName: supplier.contactName, phone: supplier.phone,
+    name: supplier.name, shortName: supplier.shortName || "", contactName: supplier.contactName, phone: supplier.phone,
     whatsapp: supplier.whatsapp || "", city: supplier.city, state: supplier.state,
     address: supplier.address, terms: supplier.terms, bankName: supplier.bankName || "",
     accountNo: supplier.accountNo || "", ifscCode: supplier.ifscCode || "", gstCode: supplier.gstCode,
@@ -149,7 +149,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
 
   React.useEffect(() => {
     setForm({
-      name: supplier.name, contactName: supplier.contactName, phone: supplier.phone,
+      name: supplier.name, shortName: supplier.shortName || "", contactName: supplier.contactName, phone: supplier.phone,
       whatsapp: supplier.whatsapp || "", city: supplier.city, state: supplier.state,
       address: supplier.address, terms: supplier.terms, bankName: supplier.bankName || "",
       accountNo: supplier.accountNo || "", ifscCode: supplier.ifscCode || "", gstCode: supplier.gstCode,

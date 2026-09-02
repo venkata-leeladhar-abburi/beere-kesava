@@ -1,5 +1,7 @@
 import { labelsApi } from "../../../shared/api/labels";
 import { EntityCode } from "../../../shared/ui/domain";
+import { formatMoney, rupees } from "@/lib/domain/money";
+import { encodeCostCipher } from "@/lib/domain/costCipher";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -34,6 +36,14 @@ export interface SareeProps {
   source: string;
   loom: number;
   supplier?: string;
+  /** External-purchase-only fields — printed on that branch of the tag. */
+  supplierShortName?: string | null;
+  invoiceNumber?: string | null;
+  serial?: string | null;
+  /** Retail/selling price, printed in plain rupees. */
+  sellingPrice?: number | null;
+  /** Buying/cost price — printed cost-ciphered (see costCipher.ts), never in plain rupees. */
+  costPrice?: number | null;
 }
 
 interface SariTagPhysicalLabelProps {
@@ -99,9 +109,39 @@ export function SariTagPhysicalLabel({
 
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, fontFamily: F.ui, fontSize: 12, color: "#1A1A1A" }}>
               <div><strong>{saree.sareeTypeCode || saree.sareeType}</strong></div>
-              <div style={{ color: T.taupe }}>Source: External Purchase</div>
-              <div style={{ color: T.taupe }}>{saree.supplier || "—"}</div>
+              <div style={{ color: T.taupe }}>{saree.supplierShortName || saree.supplier || "—"}</div>
               {showDate && <div style={{ color: T.taupe }}>{saree.qcDate}</div>}
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, gap: 8 }}>
+              <div>
+                <div style={{ fontFamily: F.ui, fontSize: 10, color: T.antiqueGold, fontWeight: 600 }}>INVOICE</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "#1A1A1A", fontWeight: 600, marginTop: 1 }}>
+                  {saree.invoiceNumber || "—"}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontFamily: F.ui, fontSize: 10, color: T.antiqueGold, fontWeight: 600 }}>SERIAL</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "#1A1A1A", fontWeight: 600, marginTop: 1 }}>
+                  {saree.serial || "—"}
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                {/* Cost price is never printed as a plain number — encoded via
+                    the LORD GANESH letter cipher (see costCipher.ts) so it
+                    isn't readable by a customer glancing at the tag, while
+                    staff who know the phrase can decode it back. */}
+                <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, fontWeight: 600 }}>COST</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: T.taupe, fontWeight: 600, marginTop: 1, letterSpacing: "0.5px" }}>
+                  {saree.costPrice != null ? encodeCostCipher(saree.costPrice) : "—"}
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontFamily: F.ui, fontSize: 10, color: T.antiqueGold, fontWeight: 600 }}>PRICE</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, fontWeight: 700, marginTop: 1 }}>
+                  {saree.sellingPrice != null ? formatMoney(rupees(saree.sellingPrice)) : "—"}
+                </div>
+              </div>
             </div>
 
             {showBranding && (
@@ -179,7 +219,7 @@ export function SariTagPhysicalLabel({
       <div style={{ textAlign: "center" }}>
         {isExternal ? (
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
-            External Purchase · {saree.supplier || "—"}
+            External Purchase · {saree.supplierShortName || saree.supplier || "—"}
           </div>
         ) : (
           <>

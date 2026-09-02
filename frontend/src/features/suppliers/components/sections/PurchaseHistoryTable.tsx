@@ -92,7 +92,7 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
       renderExpandedRow={p => (
         <div style={{ padding: "6px 16px 16px", background: "rgba(247,242,234,0.7)" }}>
           <SareeInventoryTable
-            rows={p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier }))}
+            rows={p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier, supplierId: p.supplierId }))}
             onUploadPhoto={(row: SareeRow, url: string) =>
               void updatePurchaseSarees(p.id, sarees =>
                 sarees.map(s => s.id === row.id ? { ...s, imageUrl: url } : s))}

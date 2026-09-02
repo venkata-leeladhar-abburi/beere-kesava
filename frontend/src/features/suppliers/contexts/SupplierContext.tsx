@@ -31,6 +31,7 @@ function toSupplier(s: BackendSupplier): Supplier {
     code: s.code ?? undefined,
     name: s.name,
     initials: s.initials ?? initialsOf(s.name),
+    shortName: s.shortName ?? undefined,
     contactName: s.contactName ?? "",
     phone: s.phone ?? "",
     whatsapp: s.whatsapp ?? undefined,
@@ -300,7 +301,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const addSupplierMutation = useMutation({
     mutationFn: (s: Omit<Supplier, "id" | "initials">) =>
       suppliersApi.create({
-        name: s.name, contactName: s.contactName, phone: s.phone, whatsapp: s.whatsapp,
+        name: s.name, shortName: s.shortName, contactName: s.contactName, phone: s.phone, whatsapp: s.whatsapp,
         city: s.city, state: s.state, address: s.address, gstCode: s.gstCode,
         specialty: s.specialty, terms: s.terms, bankName: s.bankName, accountNo: s.accountNo, ifscCode: s.ifscCode,
       }),
@@ -316,7 +317,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const updateSupplierMutation = useMutation({
     mutationFn: (args: { id: string; patch: Partial<Supplier> }) =>
       suppliersApi.update(args.id, {
-        name: args.patch.name, contactName: args.patch.contactName, phone: args.patch.phone,
+        name: args.patch.name, shortName: args.patch.shortName, contactName: args.patch.contactName, phone: args.patch.phone,
         whatsapp: args.patch.whatsapp, city: args.patch.city, state: args.patch.state,
         address: args.patch.address, gstCode: args.patch.gstCode, specialty: args.patch.specialty,
         terms: args.patch.terms, bankName: args.patch.bankName, accountNo: args.patch.accountNo, ifscCode: args.patch.ifscCode,

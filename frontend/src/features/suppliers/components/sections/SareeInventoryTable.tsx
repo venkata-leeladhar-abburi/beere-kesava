@@ -11,7 +11,7 @@ import { ChevronRight, ChevronDown, Image as ImageIcon, Printer, Camera, Upload,
 import { toast } from "sonner";
 import { resolveAssetUrl, uploadsApi } from "@/shared/api/uploads";
 import { T, F } from "../theme";
-import { SareeTag, expandSareePieces, remainingQuantity } from "../../contexts/SupplierContext";
+import { SareeTag, expandSareePieces, remainingQuantity, serialFromPieceCode, useSuppliers } from "../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
@@ -19,7 +19,7 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { SariTagPrintModal } from "@/features/production";
 import { useDocument } from "../../../../shared/ui/document";
 
-export type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string; supplier: string };
+export type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string; supplier: string; supplierId?: string };
 
 /** Optional per-piece badge/selection, supplied by callers that track
  * return-request state (e.g. the External Purchases saree list) — Order
@@ -60,6 +60,7 @@ export function SareeInventoryTable({
   // Which tile has its "Take photo / Choose file" chooser open.
   const [pickerKey, setPickerKey] = useState<string | null>(null);
   const { print } = useDocument();
+  const { suppliers } = useSuppliers();
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadTargetRef = useRef<UploadTarget | null>(null);
@@ -490,6 +491,11 @@ export function SareeInventoryTable({
             source: "external",
             loom: 0,
             supplier: printSaree.row.supplier,
+            supplierShortName: suppliers.find(s => s.id === printSaree.row.supplierId)?.shortName ?? null,
+            invoiceNumber: printSaree.row.invoiceNumber,
+            serial: serialFromPieceCode(printSaree.pieceId),
+            sellingPrice: printSaree.row.finalAmount,
+            costPrice: printSaree.row.price,
           }}
           onClose={() => setPrintSaree(null)}
         />

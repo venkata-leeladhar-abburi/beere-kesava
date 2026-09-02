@@ -124,7 +124,7 @@ export function SareeListModal({
   const [sarees, setSarees] = useState(purchase.sarees);
   useEffect(() => { setSarees(purchase.sarees); }, [purchase.sarees]);
 
-  const rows = sarees.map(s => ({ ...s, purchaseId: purchase.id, invoiceNumber: purchase.invoiceNumber, supplier: purchase.supplier }));
+  const rows = sarees.map(s => ({ ...s, purchaseId: purchase.id, invoiceNumber: purchase.invoiceNumber, supplier: purchase.supplier, supplierId: purchase.supplierId }));
 
   const persistSarees = (next: typeof sarees) => {
     setSarees(next);

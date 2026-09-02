@@ -165,7 +165,7 @@ export function SuppliersPage() {
                 onCancel={() => setShowAdd(false)}
                 onSave={(v, cardUrl) => {
                   addSupplier({
-                    name: v.name, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
+                    name: v.name, shortName: v.shortName || undefined, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
                     city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
                     specialty: v.specialty, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo, ifscCode: v.ifscCode,
                     notes: v.notes, visitingCard: cardUrl || undefined, status: "active", rating: 3,

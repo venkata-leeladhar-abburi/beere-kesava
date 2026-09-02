@@ -6,6 +6,7 @@ import { IconButton } from "../../../shared/ui/primitives";
 import { scanApi, ScanLookupResult } from "../../../shared/api/scan";
 import { LoadingState, ErrorState, EmptyState } from "../../../shared/ui/state";
 import { useAuthGate } from "../../../contexts/AuthContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -33,6 +34,7 @@ const F = {
 // ═══════════════════════════════════════════════════════════════════════════════
 interface SareeData {
   id:               string;
+  origin:           "production" | "external";
   batchId:          string;
   weaver:           string;
   fabricType:       string;
@@ -43,6 +45,11 @@ interface SareeData {
   dispatchDate:     string;
   productionStage:  string;
   status:           string;
+  /** External-purchase-only, blank for a production saree. */
+  supplierShortName: string;
+  invoiceNumber:     string;
+  serial:            string;
+  sellingPrice:      string;
 }
 
 /** DDMMYY, e.g. 2026-09-02 -> "020926" — same format the printed tag uses. */
@@ -64,7 +71,8 @@ function resultToSareeData(r: ScanLookupResult): SareeData {
       : "Unknown";
   return {
     id: r.sareeId,
-    batchId: r.batchId,
+    origin: r.origin,
+    batchId: r.batchId ?? "—",
     weaver: weaverName,
     fabricType: r.sareeType?.type ?? "—",
     fabricCode: r.sareeType?.code ?? "—",
@@ -78,6 +86,12 @@ function resultToSareeData(r: ScanLookupResult): SareeData {
         ? `QC: ${r.qc.result}`
         : "In Production",
     status: r.inventoryStatus ?? "In Production",
+    supplierShortName: r.supplier?.shortName || r.supplier?.name || "—",
+    invoiceNumber: r.invoiceNumber || "—",
+    serial: r.serial || "—",
+    // Authenticated internal view — the cost cipher is only for the printed
+    // tag; here both prices show in plain rupees.
+    sellingPrice: r.sellingPrice != null ? formatMoney(rupees(r.sellingPrice)) : "—",
   };
 }
 
@@ -85,6 +99,18 @@ function resultToSareeData(r: ScanLookupResult): SareeData {
 // DETAIL ROWS CONFIG
 // ═══════════════════════════════════════════════════════════════════════════════
 function detailRows(saree: SareeData) {
+  if (saree.origin === "external") {
+    return [
+      { label: "Supplier",                 value: saree.supplierShortName },
+      { label: "Invoice Number",           value: saree.invoiceNumber },
+      { label: "Serial Number",            value: saree.serial },
+      { label: "Saree Type",               value: saree.fabricType },
+      { label: "Colour",                   value: saree.colour },
+      { label: "Weight",                   value: saree.weight },
+      { label: "Selling Price",            value: saree.sellingPrice },
+      { label: "Date",                     value: saree.dispatchDate },
+    ];
+  }
   return [
     { label: "Batch Number",               value: saree.batchId },
     { label: "Weaver / Loom",              value: saree.weaver },

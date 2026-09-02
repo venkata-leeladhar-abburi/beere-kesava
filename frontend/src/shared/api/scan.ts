@@ -2,8 +2,13 @@ import { apiClient } from "./client";
 
 export interface ScanLookupResult {
   sareeId: string;
-  batchId: string;
-  recipientType: "WEAVER" | "FACTORY_LOOM";
+  /** "external" is a saree bought from a supplier (PurchaseSareeLine) —
+   *  batchId/recipientType/weaver/factoryLoom/design/qc/finishing are all
+   *  null for it, and supplier/invoiceNumber/serial/costPrice are populated
+   *  instead (all null for a "production" saree). */
+  origin: "production" | "external";
+  batchId: string | null;
+  recipientType: "WEAVER" | "FACTORY_LOOM" | null;
   /** `loomNumber` is which of the weaver's own looms produced this saree (parsed from the sareeId), not a factory loom. */
   weaver: { id: string; name: string; loomNumber: number | null } | null;
   /** `code` is the human-facing loom id ("Loom-002"); `loomNumber` is the legacy machine label. */
@@ -32,6 +37,13 @@ export interface ScanLookupResult {
   atShop: boolean;
   /** Worker-entered per-saree retail price from receipt, if set — overrides the type's shared rate. */
   sellingPrice: number | null;
+  /** External-purchase-only fields, all null for a "production" saree. */
+  supplier: { id: string | null; name: string; shortName: string | null } | null;
+  invoiceNumber: string | null;
+  serial: string | null;
+  /** Buying/cost price — never shown in plain rupees on a printed tag (see
+   *  costCipher.ts), but this authenticated scan result shows it plainly. */
+  costPrice: number | null;
 }
 
 export const scanApi = {
