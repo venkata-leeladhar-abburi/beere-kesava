@@ -9,9 +9,9 @@ import {
   MaterialIssueStatus,
   MaterialReturnStatus,
   MaterialType,
-  NotificationTargetType,
   Prisma,
   SignatureMethod,
+  UserRole,
   WarpSubtype,
 } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment, nameSegment } from "../id-generator/id-generator.service";
@@ -184,15 +184,10 @@ export class MaterialReturnsService {
     // in-app, on their own portal's Return Materials page. Push them an
     // in-app notification pointing at the record instead of texting anyone.
     if (dto.signatureMethod === SignatureMethod.REMOTE && dto.weaverId) {
-      const linkedUser = await this.prisma.user.findUnique({ where: { linkedWeaverId: dto.weaverId } });
-      if (linkedUser) {
-        await this.notifications.create({
-          targetType: NotificationTargetType.USER,
-          userId: linkedUser.id,
-          type: "material_signature_request",
-          payload: { recordId: record.id, recordKind: "RETURN" },
-        });
-      }
+      await this.notifications.notifyWeaver(dto.weaverId, "material_signature_request", {
+        recordId: record.id,
+        recordKind: "RETURN",
+      });
     }
 
     return record;
@@ -274,6 +269,12 @@ export class MaterialReturnsService {
       action: `Approved return ${id} from ${recipient ?? "recipient"}`,
       entityType: "MaterialReturnRecord",
       entityId: id,
+    });
+
+    await this.notifications.notifyRole(UserRole.ADMIN, "MATERIAL_SIGNATURE_COMPLETED", {
+      recordId: id,
+      recordKind: "RETURN",
+      weaverName: recipient ?? null,
     });
 
     return updated;

@@ -17,6 +17,7 @@ import { ShopInventory } from "./shop-staff/ShopInventory";
 import { NewSaleFlow } from "./shop-staff/NewSaleFlow";
 import { ProcessReturn } from "./shop-staff/ProcessReturn";
 import { CustomerProfiles } from "./shop-staff/CustomerProfiles";
+import { CustomerProfilePage } from "./shop-staff/CustomerProfilePage";
 import { SalesReport } from "./shop-staff/SalesReport";
 import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 import { MobileHeader } from "./shop-staff/MobileHeader";
@@ -26,11 +27,9 @@ import { AdminViewingBanner } from "@/shared/ui/portal/AdminStaffView";
 import { HomeSection } from "./shop-staff/desktop/HomeSection";
 import { SaleSection } from "./shop-staff/desktop/SaleSection";
 import { CustomersSection } from "./shop-staff/desktop/CustomersSection";
-import type { ShopCustomer } from "./shop-staff/desktop/CustomersSection";
 import { ReportsSection } from "./shop-staff/desktop/ReportsSection";
 import { ReturnSection } from "./shop-staff/desktop/ReturnSection";
 import { LowStockDialog } from "./shop-staff/desktop/LowStockDialog";
-import { CustomerProfileDialog } from "./shop-staff/desktop/CustomerProfileDialog";
 import { NotificationsSection } from "./shop-staff/desktop/NotificationsSection";
 
 export { UserProfileModal };
@@ -64,6 +63,10 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   else if (pathname.includes("/customers")) active = "customers";
   else if (pathname.includes("/reports")) active = canSeeReports ? "reports" : "home";
 
+  // /shop/customers/:id — one customer's full record, rendered as a page in
+  // place of the old cramped modal so it is linkable and has room for detail.
+  const customerDetailId = /^\/shop\/customers\/([^/]+)/.exec(pathname)?.[1] ?? null;
+
   const showReturn = pathname.includes("/return");
   const showNotifications = pathname.includes("/notifications");
 
@@ -94,7 +97,11 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   const [invLowStockPriority, setInvLowStockPriority] = useState<"urgent" | "normal">("urgent");
   const [invLowStockSent, setInvLowStockSent] = useState(false);
 
-  const [selectedCustomer, setSelectedCustomer] = useState<ShopCustomer | null>(null);
+  const openCustomer = (id: string) => routerNavigate(`/shop/customers/${id}`);
+  const closeCustomer = () => routerNavigate("/shop/customers");
+  // Carries the customer through so the sale flow opens with them already
+  // picked instead of dropping the operator back on the customer search.
+  const recordSaleFor = (id: string) => routerNavigate("/shop/sale", { state: { customerId: id } });
 
   useEffect(() => {
     if (pathname.includes("/reports") && !canSeeReports) {
@@ -125,7 +132,10 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
       // used to render the admin's whole Finished Goods table, which showed the
       // shop every saree in the factory, including ones still on the loom.
       case "inventory": return <ShopInventory />;
-      case "customers": return <CustomerProfiles />;
+      case "customers":
+        return customerDetailId
+          ? <CustomerProfilePage customerId={customerDetailId} onBack={closeCustomer} onRecordSale={recordSaleFor} />
+          : <CustomerProfiles onOpenCustomer={openCustomer} />;
       case "reports": return canSeeReports ? <SalesReport /> : null;
     }
   };
@@ -148,7 +158,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
 
         {/* ── Page Content ── */}
         <AnimatePresence mode="wait">
-          <motion.div key={showNotifications ? "notifications" : showReturn ? "return" : active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
+          <motion.div key={showNotifications ? "notifications" : showReturn ? "return" : customerDetailId ? `customer-${customerDetailId}` : active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
 
             {showNotifications && (
               <NotificationsSection bp={bp} isTablet={isTablet} />
@@ -169,7 +179,9 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
             )}
 
             {!showNotifications && !showReturn && active === "customers" && (
-              <CustomersSection bp={bp} isTablet={isTablet} canSeePrices={canSeePrices} setSelectedCustomer={setSelectedCustomer} />
+              customerDetailId
+                ? <CustomerProfilePage customerId={customerDetailId} onBack={closeCustomer} onRecordSale={recordSaleFor} />
+                : <CustomersSection bp={bp} isTablet={isTablet} canSeePrices={canSeePrices} onOpenCustomer={openCustomer} />
             )}
 
             {!showNotifications && !showReturn && active === "reports" && canSeeReports && (
@@ -193,12 +205,6 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
           onSend={() => { setShowInvLowStockDialog(false); setInvLowStockSent(true); }}
         />
 
-        <CustomerProfileDialog
-          customer={selectedCustomer}
-          onClose={() => setSelectedCustomer(null)}
-          canSeePrices={canSeePrices}
-          isTablet={isTablet}
-        />
 
         <AnimatePresence>
           {showProfileModal && (
@@ -218,8 +224,8 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
     <ShopPriceContext.Provider value={canSeePrices}>
     <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto", minHeight: "100dvh", background: "#FAFAFA", display: "flex", flexDirection: "column" as const, position: "relative" as const }}>
       <MobileHeader
-        title={showNotifications ? "Notifications" : showReturn ? "Process Return" : PAGE_TITLES[active]}
-        onBack={showNotifications ? () => routerNavigate("/shop/home") : showReturn ? () => setShowReturn(false) : onBack}
+        title={showNotifications ? "Notifications" : showReturn ? "Process Return" : customerDetailId ? "Customer Record" : PAGE_TITLES[active]}
+        onBack={showNotifications ? () => routerNavigate("/shop/home") : showReturn ? () => setShowReturn(false) : customerDetailId ? closeCustomer : onBack}
         activeTab={active}
         setActive={(tab) => { setShowReturn(false); setActive(tab); }}
         setShowReturn={setShowReturn}
@@ -233,7 +239,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
           button never covers the last row of a list */}
       <div id="main-content" style={{ flex: 1, overflowY: "auto" as const, paddingBottom: (showReturn || active === "home" || active === "inventory") ? "calc(140px + env(safe-area-inset-bottom, 0px))" : "calc(110px + env(safe-area-inset-bottom, 0px))" }}>
         <AnimatePresence mode="wait">
-          <motion.div key={showNotifications ? "notifications" : showReturn ? "return" : active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
+          <motion.div key={showNotifications ? "notifications" : showReturn ? "return" : customerDetailId ? `customer-${customerDetailId}` : active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
             {renderPage()}
           </motion.div>
         </AnimatePresence>

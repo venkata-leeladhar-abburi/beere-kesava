@@ -4,12 +4,14 @@ import { IdGeneratorService, businessSegment, nameSegment } from '../id-generato
 import { CreateDesignDispatchDto } from './dto/create-design-dispatch.dto';
 import { PaginatedResult } from '../common/pagination';
 import { DesignDispatch } from '../generated/prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class DesignDispatchesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateDesignDispatchDto) {
@@ -41,6 +43,16 @@ export class DesignDispatchesService {
         batches: dto.batches,
       },
     });
+
+    // Only a WEAVER recipient has a portal account to push to — a factory
+    // loom is a place, not a login, so those dispatches stay silent.
+    if (dto.recipientType === 'WEAVER') {
+      await this.notifications.notifyWeaver(dto.recipientId, 'WEAVER_DESIGN_ASSIGNED', {
+        designDispatchId: dispatch.id,
+        recipientName: dispatch.recipientName,
+        instructions: dispatch.instructions,
+      });
+    }
 
     return dispatch;
   }

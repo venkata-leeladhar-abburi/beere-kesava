@@ -188,51 +188,121 @@ This is the right architecture. Phase 6 extends it into a general permission-gat
 
 ## C.1 The registry
 
-One file defines every code in the business. Shape, label, icon, route and colour all derive from it.
+One file defines every code in the business. Shape, label, icon and route all derive from it.
+
+The registry **describes what the backend mints** — it does not prescribe a format the
+backend then has to be talked into. Codes are generated server-side only
+(`IdGeneratorService`; *"IDs must never be invented client-side"*), so the frontend never
+builds one. When a service changes how it mints an id, this registry is what has to move.
 
 ```ts
 export const ENTITY_CODES = {
-  weaver:      { prefix: 'WV',    pattern: 'WV-000',           label: 'Weaver',          icon: Icons.weaver,  route: '/weavers/:code' },
-  batch:       { prefix: 'BATCH', pattern: 'BATCH-000',        label: 'Batch',           icon: Icons.batch,   route: '/batches/:code' },
-  saree:       { prefix: 'SR',    pattern: 'SR-00000',         label: 'Saree',           icon: Icons.saree,   route: '/inventory/:code' },
-  design:      { prefix: 'DS',    pattern: 'DS-000',           label: 'Design',          icon: Icons.design },
-  loom:        { prefix: 'FL',    pattern: 'FL-000',           label: 'Loom',            icon: Icons.loom },
-  customer:    { prefix: 'CU',    pattern: 'CU-0000',          label: 'Customer',        icon: Icons.customer },
-  supplier:    { prefix: 'SUP',   pattern: 'SUP-000',          label: 'Supplier',        icon: Icons.supplier },
-  vendor:      { prefix: 'VEN',   pattern: 'VEN-000',          label: 'Vendor',          icon: Icons.vendor },
-  employee:    { prefix: 'EMP',   pattern: 'EMP-000',          label: 'Employee',        icon: Icons.employee },
+  // Entities — nextNamed(counter, segment): the visible prefix is the record's own name
+  weaver:      { shape: 'named', counterKey: 'WEAVER',        example: 'Padma-001',        label: 'Weaver',   icon: Icons.weaver, route: '/weavers/:code' },
+  supplier:    { shape: 'named', counterKey: 'SUPPLIER',      example: 'SreeDurga-001',    label: 'Supplier', icon: Icons.supplier },
+  vendor:      { shape: 'named', counterKey: 'VENDOR',        example: 'ShivaTraders-001', label: 'Vendor',   icon: Icons.vendor },
+  customer:    { shape: 'named', counterKey: ['CUST','WHL'],  example: 'Kamala-002',       label: 'Customer', icon: Icons.customer },
+  loom:        { shape: 'named', counterKey: 'LOOM',          example: 'Loom-001',         label: 'Loom',     icon: Icons.loom },
 
-  // Documents — year-scoped, financial year (Apr–Mar)
-  invoice:     { prefix: 'INV',   pattern: 'INV-FY-0000',      label: 'Invoice',         icon: Icons.invoice },
-  quotation:   { prefix: 'QTN',   pattern: 'QTN-FY-0000',      label: 'Quotation',       icon: Icons.quotation },
-  purchaseOrder:{prefix: 'PO',    pattern: 'PO-FY-0000',       label: 'Purchase Order',  icon: Icons.po },
-  goodsReceipt:{ prefix: 'GRN',   pattern: 'GRN-FY-0000',      label: 'Goods Receipt',   icon: Icons.grn },
-  challan:     { prefix: 'DC',    pattern: 'DC-FY-0000',       label: 'Delivery Challan',icon: Icons.challan },
-  payment:     { prefix: 'PAY',   pattern: 'PAY-FY-0000',      label: 'Payment',         icon: Icons.payment },
-  order:       { prefix: 'ORD',   pattern: 'ORD-FY-0000',      label: 'Order',           icon: Icons.order },
+  // nextFormatted(prefix) — fixed prefix, global counter
+  batch:       { shape: 'prefixed', prefix: 'BATCH',     example: 'BATCH-086', label: 'Batch',    icon: Icons.batch, route: '/batches/:code' },
+  employee:    { shape: 'prefixed', prefix: ['SUPER','ADMIN','STAFF','SHOP','ACCT','FIN'],
+                                                         example: 'ACCT-003',  label: 'Employee', icon: Icons.employee },
+  payment:     { shape: 'prefixed', prefix: 'REFERENCE', example: 'REFERENCE-118', label: 'Payment', icon: Icons.payment },
+
+  // Documents — nextScoped(prefix, parentCode): the parent's code is embedded,
+  // and the counter is per-parent, so each customer's invoices start at -001
+  invoice:      { shape: 'scoped', prefix: 'INV', example: 'INV-Kamala-002-014',        label: 'Invoice',        icon: Icons.invoice },
+  quotation:    { shape: 'scoped', prefix: 'QUO', example: 'QUO-Kamala-002-003',        label: 'Quotation',      icon: Icons.quotation },
+  purchaseOrder:{ shape: 'scoped', prefix: 'PO',  example: 'PO-ShivaTraders-001-007',   label: 'Purchase Order', icon: Icons.purchaseOrder },
+  goodsReceipt: { shape: 'scoped', prefix: 'GRN', example: 'GRN-ShivaTraders-001-007',  label: 'Goods Receipt',  icon: Icons.goodsReceipt },
+  challan:      { shape: 'scoped', prefix: 'DC',  parentIsFinancialYear: true,
+                                                  example: 'DC-2627-042',               label: 'Delivery Challan', icon: Icons.challan },
+  order:        { shape: 'scoped', prefix: 'ORD', example: 'ORD-Kamala-002-005',        label: 'Order',          icon: Icons.order },
+
+  // Not counter-generated
+  saree:       { shape: 'freeform', example: 'PADMA-L3-B12-007', label: 'Saree',  icon: Icons.saree, route: '/inventory/:code' },
+  design:      { shape: 'freeform', example: 'DS-FLORAL-01',     label: 'Design', icon: Icons.design },
 } as const;
 ```
 
-## C.2 Format rules
+**Every prefix the backend mints is registered**, including those nothing renders through
+`<EntityCode>` yet — an unregistered prefix is how the last round of drift started:
+
+```ts
+  // Party-scoped payments — only the generic `payment` above is a flat counter
+  supplierPayment: { shape: 'scoped', prefix: 'SP',  example: 'SP-SreeDurga-001-004' },
+  vendorPayment:   { shape: 'scoped', prefix: 'VP',  example: 'VP-ShivaTraders-001-002' },
+  purchase:        { shape: 'scoped', prefix: 'EXT', example: 'EXT-SreeDurga-001-009' },
+  supplierReturn:  { shape: 'scoped', prefix: 'RR',  parentMayBeUuid: true,
+                                                     example: 'RR-SreeDurga-001-002' },
+  materialIssue:   { shape: 'scoped', prefix: 'MIR', example: 'MIR-Padma-001-003' },
+  materialReturn:  { shape: 'scoped', prefix: 'MRR', example: 'MRR-Loom-001-003' },
+  warpRequest:     { shape: 'scoped', prefix: 'WR',  example: 'WR-Padma-001-006' },
+  rateRequest:     { shape: 'scoped', prefix: 'RCR', example: 'RCR-ACCT-003-002' },
+  designDispatch:  { shape: 'scoped', prefix: 'DISP',example: 'DISP-Padma-001-004' },
+  sale:            { shape: 'scoped', prefix: ['RETAIL','WHOLESALE'], example: 'RETAIL-Kamala-002-011' },
+  saleReturn:      { shape: 'named',  counterKey: 'RET', example: 'SreeDurga-004' },
+  firm:            { shape: 'prefixed', prefix: 'FIRM',  example: 'FIRM-002' },
+```
+
+Three of these are worth knowing about before reading a code off a screen:
+
+- **`saleReturn` is `named`, not prefixed.** `nextNamed('RET', …)` puts the counter name in
+  the IdCounter row, not in the code, so a sale return is shaped exactly like a supplier
+  code and only context separates `SreeDurga-004` the return from `SreeDurga-004` the
+  supplier. This is why `parseAnyCode` refuses to guess at `named` codes at all.
+- **`sale` is one type with two prefixes.** The channel picks `RETAIL` or `WHOLESALE`, and
+  with it whether the customer segment reads as a business or a first name.
+- **`supplierReturn` has legacy ids with a UUID parent.** Its fallback used to be
+  `purchase.supplier.code ?? purchase.supplier.id` where every other service falls back to
+  a name segment. The service now matches the others, but ids it already minted are
+  primary keys and were not rewritten, so `parentMayBeUuid` keeps the parser accepting
+  them. Nothing new is minted in that shape.
+
+## C.2 The three shapes
+
+Everything `IdGeneratorService` produces is one of three shapes, plus two ids it doesn't
+produce at all.
+
+| Shape | Form | Example | Minted by |
+|---|---|---|---|
+| **named** | `<Segment>-NNN` | `SreeDurga-001` | `nextNamed(counter, segment)` |
+| **prefixed** | `<PREFIX>-NNN` | `BATCH-086` | `nextFormatted(prefix)` |
+| **scoped** | `<PREFIX>-<Parent>-NNN` | `INV-Kamala-002-014` | `nextScoped(prefix, parentCode)` |
+| **freeform** | no fixed shape | `PADMA-L3-B12-007` | composed by hand, or operator-typed |
 
 | Rule | Spec | Fixes |
 |---|---|---|
-| **Uppercase alphabetic prefix** | `WV`, `BATCH`, `INV` | — |
-| **Zero-padded serial**, fixed width | `WV-001` not `WV-1` | sorting |
-| **Documents carry the financial year** | `INV-2627-0142` = FY 2026–27, invoice 142 | the 3-shape invoice problem |
+| **Zero-padded serial**, min width 3 | `SreeDurga-001` not `SreeDurga-1` | sorting |
 | **Hyphen separator only** | never `/`, `_`, space | parsing |
-| **No name-based prefixes** | `RAVI-…` → `WV-001` | collisions |
-| **One shape per entity** | enforced by `pattern` | 3 invoice formats → 1 |
+| **One shape per entity** | enforced by `shape` + the registry tests | 3 invoice formats → 1 |
+| **A name segment is alphanumeric** | `Sree Traders & Co` → `SreeTraders` | parsing |
+| **A scope parent may be bare** | `INV-Kamala-014` for a customer with no code yet | pre-code records |
 
-**Financial-year segment:** `2627` for 1 Apr 2026 – 31 Mar 2027. Four digits, unambiguous, sorts correctly, and matches how Indian accounting actually scopes documents.
+**Name segments, not name prefixes.** The audit's `RAVI-…` finding was about *collisions* —
+two weavers named Ravi sharing an id space. That is fixed by the counter, which is shared
+across the whole entity type: the second Ravi is `Ravi-002`, never a duplicate. So a
+`named` code legitimately leads with the record's name; what it must not do is derive its
+*serial* from that name.
+
+**The financial year scopes exactly two types**, both sides of the same handover:
+`DC-2627-042` leaves the factory and `SGR-2627-014` acknowledges it at the shop counter.
+Every other document scopes on a parent record, so `INV-2627-0142` is **not** a valid
+invoice code; a real one names its customer: `INV-Kamala-002-014`.
+
+**A scope parent is the parent's code, or a bare segment.** Every scoping service reads
+`parent.code ?? businessSegment(parent.name)`, so a record created before codes existed
+scopes on `Kamala` rather than `Kamala-002`. Both parse; what separates a bare segment
+from a financial year is the leading letter, which is what keeps `INV-2627-0142` invalid.
 
 ## C.3 The `<EntityCode>` component
 
 This is where mono finally belongs — and the only place it appears.
 
 ```tsx
-<EntityCode type="weaver" value="WV-002" />
-<EntityCode type="invoice" value="INV-2627-0142" link copyable />
+<EntityCode type="weaver" value="Padma-001" />
+<EntityCode type="invoice" value="INV-Kamala-002-014" link copyable />
 ```
 
 ```
@@ -248,12 +318,12 @@ white-space: nowrap
 | Prop | Behaviour |
 |---|---|
 | `link` | Renders as a link to `registry.route`, `--text-brand`, underline on hover |
-| `copyable` | Click copies; a check icon confirms for 1.5s; toast "Copied INV-2627-0142" |
+| `copyable` | Click copies; a check icon confirms for 1.5s; toast "Copied INV-Kamala-002-014" |
 | `icon` | Prepends the entity icon at 12px, `--text-tertiary` |
-| `truncate` | Long codes ellipsise from the middle: `INV-2627-…142`, full value in a tooltip |
+| `truncate` | Long codes ellipsise from the middle: `INV-Kamala-…-014`, full value in a tooltip |
 | `size` | `sm` 12px · `md` 13px (default) |
 
-**Accessible name** is `"{label} {value}"` → *"Invoice INV-2627-0142"* — a screen reader reading `INV-2627-0142` character-by-character is meaningless without the entity name.
+**Accessible name** is `"{label} {value}"` → *"Invoice INV-Kamala-002-014"* — a screen reader reading `INV-Kamala-002-014` character-by-character is meaningless without the entity name.
 
 ## C.4 Bringing mono back to 1,206 → ~code cells
 
@@ -277,12 +347,31 @@ Triage:
 
 ## C.5 Code generation & validation
 
+There is no `nextCode`. The backend is the only thing that mints an id, so the registry
+only ever validates and splits a code the API already returned.
+
 ```ts
-nextCode('invoice', { fy: '2627', lastSerial: 141 })   // → 'INV-2627-0142'
-parseCode('INV-2627-0142')  // → { type:'invoice', fy:'2627', serial:142, valid:true }
-isValidCode('INV-999')      // → false — missing FY segment
+parseCode('invoice', 'INV-Kamala-002-014')
+// → { type:'invoice', segment:'Kamala-002', serial:14, valid:true }
+
+parseCode('supplier', 'SreeDurga-001')
+// → { type:'supplier', segment:'SreeDurga', serial:1, valid:true }
+
+isValidCode('invoice', 'INV-2627-0142')   // → false — scoped on a year, not a customer
+isValidCode('supplier', 'SUP-7141A9E5')   // → false — a UUID slice, not a code
+
+parseAnyCode('BATCH-086')      // → { type:'batch', serial:86, valid:true }
+parseAnyCode('SreeDurga-001')  // → null — named codes carry no identifying prefix
 ```
-`<CodeInput>` (Phase 3) takes `entityType` and applies the mask, uppercase, and live validation. Users never type a code freehand.
+
+`parseCode` takes the type explicitly: `named` codes lead with the record's own name, so
+nothing about `SreeDurga-001` marks it as a supplier rather than a vendor. `parseAnyCode`
+infers a type from the leading prefix and is therefore only useful for `prefixed` and
+`scoped` codes.
+
+`<CodeInput>` (Phase 3) takes `entityType` and applies uppercase and live validation.
+Masking is only meaningful for `prefixed` and `scoped` types — a `named` code's segment
+is whatever the record is called.
 
 ---
 
@@ -572,7 +661,7 @@ One card component per entity, driven by the registry so identity, status and co
 ```
 ┌─────────────────────────────────────────┐
 │  ┌────┐  Ravi Kumar            ● Active │  avatar · name (title-sm) · StatusPill
-│  │ RK │  WV-001                         │  EntityCode
+│  │ RK │  Padma-001                      │  EntityCode
 │  └────┘  Dharmavaram, AP                │  meta, body-sm --text-secondary
 ├─────────────────────────────────────────┤
 │  Sarees      12    Looms       3        │  StatTile grid
@@ -589,9 +678,9 @@ One card component per entity, driven by the registry so identity, status and co
 
 | Card | Identity | Primary metrics | Status | Progress |
 |---|---|---|---|---|
-| **Weaver** | avatar, name, `WV-`, village | sarees, looms, current batch | person | batch completion |
+| **Weaver** | avatar, name, code, village | sarees, looms, current batch | person | batch completion |
 | **Customer** | avatar/initials, name, `CU-`, city | orders, outstanding, last order | person + payment | credit used |
-| **Supplier** | logo/initials, name, `SUP-`, city | POs, spend, rating | person | — |
+| **Supplier** | logo/initials, name, code, city | POs, spend, rating | person | — |
 | **Vendor** | name, `VEN-`, service | jobs, outstanding | person + payment | — |
 | **Saree** | image, design name, `SR-`, type | weight, price, weaver | inventory + production | — |
 | **Batch** | `BATCH-`, design, weaver | sarees, days elapsed | production | completion |
@@ -667,7 +756,7 @@ Then delete `features/payments/utils/format.ts` and repoint its importers.
 ### Step 2 — Build the domain layer *(3–4 days)*
 ```
 lib/domain/
-  codes.ts        registry, nextCode, parseCode, isValidCode
+  codes.ts        registry, parseCode, parseAnyCode, isValidCode
   status.ts       5 taxonomies, tone map, transition rules
   money.ts        Paise type, formatMoney, arithmetic helpers
   units.ts        weight/length/count promotion
@@ -735,7 +824,7 @@ Migrate to the registry shapes. Data migration is a backend concern; the fronten
 - [ ] `"Active"`, `"Completed"`, `"QC Passed"` are compile errors
 - [ ] `retail`/`wholesale`, `login`/`logout`, `Match`/`Short`/`Excess` moved out of `status`
 - [ ] `rg "fontFamily: F.mono"` reduced from **1,206** to under **150**
-- [ ] One invoice number shape; `INV-999` and `INV-CS-…` migrated
+- [ ] One invoice number shape (`INV-<CustomerCode>-NNN`); `INV-999`, `INV-2026-001` and `INV-CS-…` migrated
 - [ ] No name-prefixed codes (`RAVI-`, `PADMA-`, `SURESH-`)
 - [ ] Every entity code renders via `<EntityCode>` with an accessible name
 - [ ] `DataAccessProvider` gates `cost`, `sell`, `margin`, `payroll`, `customer-pii`

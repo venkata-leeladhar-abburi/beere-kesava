@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { motion, AnimatePresence } from "motion/react";
 
-import { Calendar, AlertTriangle, FileText, Download, Package, Scissors, Boxes, Users, Store, BarChart3, UsersRound, BellRing, Wallet, ChevronDown } from "lucide-react";
+import { Calendar, AlertTriangle, Download, Package, Scissors, Boxes, Users, Store, BarChart3, UsersRound, BellRing, Wallet, ChevronDown } from "lucide-react";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 
@@ -43,7 +43,7 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
   periodLabel: string; priorLabel: string | null;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { exportCsv, exportPdf, canExport } = useReportPeriod();
+  const { exportExcel, canExport } = useReportPeriod();
   const activeReportTab = REPORT_TABS.find(t => t.key === activeTab) ?? REPORT_TABS[0];
 
   return (
@@ -328,10 +328,7 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
 
             {/* Download buttons */}
             <div style={{ display: "flex", gap: 9, flexShrink: 0 }}>
-              <Button variant="secondary" iconLeft={FileText} onClick={exportPdf}>
-                Download PDF
-              </Button>
-              <Button variant="primary" iconLeft={Download} onClick={exportCsv} disabled={!canExport}>
+              <Button variant="primary" iconLeft={Download} onClick={exportExcel} disabled={!canExport}>
                 Download Excel
               </Button>
             </div>

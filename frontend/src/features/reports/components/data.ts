@@ -5,7 +5,7 @@ import { BarChart2, Clock, Calendar, Download, FileText } from "lucide-react";
 export const REPORTS_CHIPS = [
   { value: "8",        label: "Report Categories"      },
   { value: "All Periods", label: "Date Range Support"  },
-  { value: "PDF & Excel", label: "Export Formats"      },
+  { value: "Excel (.xlsx)", label: "Export Format"     },
   { value: "5 Active", label: "Scheduled Reports"      },
 ];
 
@@ -41,7 +41,7 @@ export const REPORT_METRICS = [
     ico: React.createElement(Download, { size: 22, color: "rgba(245,232,208,0.90)" }),
     label: "Downloads This Month",
     val: "18",
-    sub: "PDF: 12 · Excel: 6",
+    sub: "Excel workbooks",
     hi: false,
   },
   {

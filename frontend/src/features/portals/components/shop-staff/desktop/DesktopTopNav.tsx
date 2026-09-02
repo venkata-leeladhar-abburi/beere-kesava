@@ -9,6 +9,7 @@ import { Button, IconButton } from "../../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "../../../../../shared/ui/overlay";
 import type { Role } from "../../../../../contexts/AuthContext";
 import { CATEGORY_ACCENT, CATEGORY_ICON, useShopNotifications } from "../notificationsModel";
+import { usePendingShopDispatchCount } from "../IncomingDispatchSection";
 import { toInitials } from "@/shared/lib/initials";
 
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
@@ -38,6 +39,7 @@ export function DesktopTopNav({
   const name = user?.name || "Naidu PAVAN";
   const initials = name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "NP";
   const { notifications, unreadCount, markAllRead, markRead } = useShopNotifications(20);
+  const pendingReceipts = usePendingShopDispatchCount();
   const recent = notifications.slice(0, 8);
 
   return (
@@ -78,6 +80,20 @@ export function DesktopTopNav({
               >
                 {React.cloneElement(tab.icon as React.ReactElement<{ size?: number; color?: string }>, { size: 16, color: isActive ? "#E7C983" : "rgba(245,232,208,0.80)" })}
                 {isTablet ? (tab.id === "inventory" ? "Stock" : tab.id === "sale" ? "Sale" : tab.label) : tab.label}
+                {/* Consignments waiting to be received sit under Inventory and
+                    are invisible everywhere else — they are not stock yet. */}
+                {tab.id === "inventory" && pendingReceipts > 0 && (
+                  <span
+                    aria-label={`${pendingReceipts} consignment(s) to receive`}
+                    style={{
+                      marginLeft: 2, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 999,
+                      background: "#C89B47", color: "#2A0815", fontSize: 11, fontWeight: 700,
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    }}
+                  >
+                    {pendingReceipts}
+                  </span>
+                )}
               </Button>
             );
           })}

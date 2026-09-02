@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
-import { NotificationTargetType, Prisma, PurchaseOrderStatus, UserRole } from "../generated/prisma/client";
+import { fromGrams, toGrams } from "../common/weight-units.util";
+import { Prisma, PurchaseOrderStatus, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -61,6 +62,17 @@ export class PurchaseOrdersService {
       entityType: "PurchaseOrder",
       entityId: po.id,
       recordLabel: poNumber,
+    });
+
+    // A PO sits at PENDING until superadmin approves it, so raising one is
+    // an ask, not just a record.
+    await this.notifications.notifyRole(UserRole.SUPERADMIN, "PURCHASE_ORDER_RAISED", {
+      purchaseOrderId: po.id,
+      poNumber,
+      vendorName: vendor.name,
+      totalValue: Number(po.totalValue),
+      urgency: po.urgency,
+      itemCount: po.items.length,
     });
 
     return po;
@@ -214,19 +226,82 @@ export class PurchaseOrdersService {
 
     // Superadmin has no other reliable way to learn stock arrived — the PO
     // status change alone isn't visible without polling, so push it.
-    await this.notifications.create({
-      targetType: NotificationTargetType.ROLE,
-      role: UserRole.SUPERADMIN,
-      type: "po_stock_received",
-      payload: {
-        purchaseOrderId: id,
-        poNumber: po.poNumber,
-        vendorName: updated.vendor.name,
-        grnId,
-      },
+    await this.notifications.notifyRole(UserRole.SUPERADMIN, "po_stock_received", {
+      purchaseOrderId: id,
+      poNumber: po.poNumber,
+      vendorName: updated.vendor.name,
+      grnId,
     });
 
+    await this.reportGrnQuantityMismatch(updated, grnReceipt?.id);
+
     return updated;
+  }
+
+  /**
+   * Compare what was ordered against what actually turned up, line by line.
+   *
+   * Only lines the receiving screen explicitly paired (GrnItem.poItemId) are
+   * checked — guessing the pairing from materialType + name is exactly what
+   * that column exists to avoid, and a wrong guess here would raise a
+   * discrepancy alert against a shipment that is fine. Quantities are
+   * normalised through grams because a PO line ordered in KG is routinely
+   * received in grams.
+   */
+  private async reportGrnQuantityMismatch(
+    po: Prisma.PurchaseOrderGetPayload<{ include: { vendor: true; items: true } }>,
+    grnReceiptId?: string,
+  ) {
+    if (!grnReceiptId) return;
+
+    const grnItems = await this.prisma.grnItem.findMany({
+      where: { grnId: grnReceiptId, poItemId: { not: null } },
+      select: { poItemId: true, quantity: true, unit: true, rejectedQuantity: true },
+    });
+    if (grnItems.length === 0) return;
+
+    const receivedByPoItem = new Map<string, number>();
+    for (const item of grnItems) {
+      // Rejected quantity physically arrived but was refused, so it does not
+      // count towards fulfilling the order.
+      const netGrams =
+        toGrams(Number(item.quantity), item.unit) - toGrams(Number(item.rejectedQuantity), item.unit);
+      receivedByPoItem.set(item.poItemId!, (receivedByPoItem.get(item.poItemId!) ?? 0) + netGrams);
+    }
+
+    const discrepancies = po.items
+      .filter((poItem) => receivedByPoItem.has(poItem.id))
+      .map((poItem) => {
+        const orderedGrams = toGrams(Number(poItem.quantity), poItem.unit);
+        const receivedGrams = receivedByPoItem.get(poItem.id)!;
+        return {
+          name: poItem.name,
+          materialType: poItem.materialType,
+          unit: poItem.unit,
+          ordered: Number(poItem.quantity),
+          received: Number(fromGrams(receivedGrams, poItem.unit).toFixed(3)),
+          shortByGrams: Number((orderedGrams - receivedGrams).toFixed(3)),
+        };
+      })
+      // Sub-gram differences are rounding, not a shortage.
+      .filter((line) => Math.abs(line.shortByGrams) >= 1);
+
+    if (discrepancies.length === 0) return;
+
+    await this.notifications.notifyRole(UserRole.SUPERADMIN, "GRN_QUANTITY_MISMATCH", {
+      purchaseOrderId: po.id,
+      poNumber: po.poNumber,
+      vendorName: po.vendor.name,
+      lineCount: discrepancies.length,
+      lines: discrepancies,
+    });
+    await this.notifications.notifyRole(UserRole.ACCOUNTANT, "GRN_QUANTITY_MISMATCH", {
+      purchaseOrderId: po.id,
+      poNumber: po.poNumber,
+      vendorName: po.vendor.name,
+      lineCount: discrepancies.length,
+      lines: discrepancies,
+    });
   }
 
   // Blocked (not cascaded) if a GRN receipt or vendor bill is already linked

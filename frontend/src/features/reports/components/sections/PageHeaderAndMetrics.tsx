@@ -27,7 +27,7 @@ export function ReportsHeader() {
         </div>
         {/* Body */}
         <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", fontWeight: 400, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", lineHeight: 1.6 }}>
-          View detailed reports for every part of the business — production, payments, weavers, sales, and customers. Compare periods, download as PDF or Excel, and schedule automatic delivery.
+          View detailed reports for every part of the business — production, payments, weavers, sales, and customers. Compare periods, download as Excel, and schedule automatic delivery.
         </p>
       </div>
     </header>

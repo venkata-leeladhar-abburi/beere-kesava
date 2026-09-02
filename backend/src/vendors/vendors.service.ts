@@ -5,8 +5,9 @@ import { ListPartyQueryDto } from "../common/dto/list-party-query.dto";
 import { UpdatePartyDto } from "../common/dto/update-party.dto";
 import { PaginatedResult } from "../common/pagination";
 import { normalizeMobile } from "../common/phone.util";
-import { Prisma } from "../generated/prisma/client";
+import { PartyStatus, Prisma, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
@@ -15,6 +16,7 @@ export class VendorsService {
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
     private readonly idGenerator: IdGeneratorService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   // Nothing in the schema stops the same vendor being added twice (`code` is
@@ -43,7 +45,20 @@ export class VendorsService {
     // "<BusinessName>-NNN", e.g. "ShivaTraders-001" — the sequence is a single
     // counter shared across all vendors, not per name.
     const code = await this.idGenerator.nextNamed("VENDOR", businessSegment(dto.name));
-    return this.prisma.vendor.create({ data: { ...dto, code } });
+    const vendor = await this.prisma.vendor.create({ data: { ...dto, code } });
+
+    // A new trading party is who the company's money and material now flow
+    // through, so it is announced rather than left to be noticed in a list.
+    await this.notifications.notifyRole(UserRole.ADMIN, "VENDOR_ADDED", {
+      vendorId: vendor.id,
+      code,
+      name: vendor.name,
+      contactName: vendor.contactName,
+      city: vendor.city,
+      phone: vendor.phone,
+    });
+
+    return vendor;
   }
 
   async findAll(
@@ -85,8 +100,27 @@ export class VendorsService {
   }
 
   async update(id: string, dto: UpdatePartyDto) {
-    await this.findOne(id);
-    return this.prisma.vendor.update({ where: { id }, data: dto });
+    const existing = await this.findOne(id);
+    const updated = await this.prisma.vendor.update({ where: { id }, data: dto });
+
+    // Only a real status transition is announced. update() is the generic
+    // edit endpoint, so a phone-number correction that re-sends the same
+    // status must not read as a deactivation.
+    if (dto.status && dto.status !== existing.status) {
+      await this.notifications.notifyRole(
+        UserRole.ADMIN,
+        dto.status === PartyStatus.ACTIVE ? "VENDOR_REACTIVATED" : "VENDOR_STATUS_CHANGED",
+        {
+          vendorId: id,
+          code: updated.code,
+          name: updated.name,
+          previousStatus: existing.status,
+          status: updated.status,
+        },
+      );
+    }
+
+    return updated;
   }
 
   async remove(id: string) {
@@ -101,6 +135,12 @@ export class VendorsService {
         entityType: "Vendor",
         entityId: id,
         recordLabel: vendor.name,
+      });
+
+      await this.notifications.notifyRole(UserRole.ADMIN, "VENDOR_REMOVED", {
+        vendorId: id,
+        code: vendor.code,
+        name: vendor.name,
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {

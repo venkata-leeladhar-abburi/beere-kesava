@@ -38,7 +38,7 @@ function MoneyChartTip({ active, payload, label, moneyVisible }: TooltipProps<Va
 
 export function ProfitLossReport() {
   const { firms, financials: allFinancials, isLoading, error, refetch } = useFirms();
-  const { inCurrent, exportCsv, canExport } = useReportPeriod();
+  const { inCurrent, exportExcel, canExport } = useReportPeriod();
   const moneyVisible = useMoneyVisible();
 
   // Ledger entries are filtered to the selected period before anything is
@@ -337,7 +337,7 @@ export function ProfitLossReport() {
             <div style={{ padding: "12px 20px", background: "rgba(200,155,71,0.06)", borderTop: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", gap: 10 }}>
               <FileText size={13} color={T.antiqueGold} />
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Download the ledger as a spreadsheet for your monthly records and year-end accounting.</span>
-              <Button variant="primary" size="sm" className="ml-auto" onClick={exportCsv} disabled={!canExport}>Download Ledger CSV</Button>
+              <Button variant="primary" size="sm" className="ml-auto" onClick={exportExcel} disabled={!canExport}>Download Ledger Excel</Button>
             </div>
           </DownloadGate>
         </div>

@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { resolvePeriod, inRange, type CustomDates, type DateRange, type PeriodKey } from "./period";
-import { downloadCsv, exportFilename, printReport } from "./export";
+import { downloadXlsx, exportFilename } from "./export";
 import { reportsApi } from "../../../shared/api/reports";
 
-/** What a report section offers up for CSV export. */
+/** What a report section offers up for Excel export. */
 export interface ReportExport {
   /** Report name, used for the file name. */
   name: string;
@@ -28,8 +28,7 @@ interface ReportPeriodValue {
   inPrior: (value: string | Date | null | undefined) => boolean;
   /** Set by the visible report section so the toolbar can export its data. */
   setExport: (e: ReportExport | null) => void;
-  exportCsv: () => void;
-  exportPdf: () => void;
+  exportExcel: () => void;
   canExport: boolean;
 }
 
@@ -54,18 +53,22 @@ export function ReportPeriodProvider({ children }: { children: React.ReactNode }
       inPrior: v => (prior ? inRange(prior, v) : false),
       setExport,
       canExport: !!reportExport && reportExport.rows.length > 0,
-      exportCsv: () => {
-        if (!reportExport) return;
+      exportExcel: () => {
+        if (!reportExport || reportExport.rows.length === 0) return;
         const periodLabel = current?.label ?? "All time";
-        downloadCsv(exportFilename(reportExport.name, periodLabel), reportExport.headers, reportExport.rows);
+        downloadXlsx(
+          exportFilename(reportExport.name, periodLabel),
+          reportExport.name,
+          reportExport.headers,
+          reportExport.rows,
+        );
         // Recorded so the page's own "Reports Generated" / "Downloads This
         // Month" counters reflect real activity. A failure here must not
         // break the download the user actually asked for.
         void reportsApi
-          .recordDownload({ reportName: reportExport.name, fileType: "CSV", filtersUsed: { period: periodLabel } })
+          .recordDownload({ reportName: reportExport.name, fileType: "XLSX", filtersUsed: { period: periodLabel } })
           .catch(() => undefined);
       },
-      exportPdf: printReport,
     };
   }, [period, custom, compareOn, reportExport]);
 
@@ -79,7 +82,7 @@ export function useReportPeriod(): ReportPeriodValue {
 }
 
 /**
- * Registers the visible section's rows for the toolbar's Download buttons.
+ * Registers the visible section's rows for the toolbar's Download button.
  * Sections call this with their already period-filtered data.
  */
 export function useRegisterExport(payload: ReportExport): void {

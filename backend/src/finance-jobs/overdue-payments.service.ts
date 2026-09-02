@@ -43,7 +43,7 @@ export class OverduePaymentsService {
     // loaded whole, and this set only grows as invoices age.
     const overdueInvoices = await this.prisma.invoice.findMany({
       where: overdueInvoiceWhere,
-      select: { id: true, customerId: true, dueDate: true, total: true, paid: true },
+      select: { id: true, code: true, customerId: true, dueDate: true, total: true, paid: true },
     });
 
     // One statement for the whole set instead of an UPDATE per row.
@@ -61,6 +61,9 @@ export class OverduePaymentsService {
         type: "invoice_overdue",
         payload: {
           invoiceId: invoice.id,
+          // The card renders as "Invoice Overdue — <number>"; without the
+          // human-facing code it could only show a uuid.
+          invoiceNumber: invoice.code,
           customerId: invoice.customerId,
           dueDate: invoice.dueDate,
           outstanding: Number(invoice.total) - Number(invoice.paid),

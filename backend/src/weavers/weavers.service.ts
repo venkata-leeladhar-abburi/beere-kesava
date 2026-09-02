@@ -1,8 +1,9 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { Prisma } from "../generated/prisma/client";
+import { Prisma, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService, nameSegment } from "../id-generator/id-generator.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateWeaverDto } from "./dto/create-weaver.dto";
 import { ListWeaversQueryDto } from "./dto/list-weavers-query.dto";
@@ -72,6 +73,7 @@ export class WeaversService {
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
     private readonly idGenerator: IdGeneratorService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateWeaverDto) {
@@ -208,6 +210,14 @@ export class WeaversService {
         entityType: "Weaver",
         entityId: id,
         recordLabel: weaver.name,
+      });
+
+      // Addressed to ADMIN only — the weaver's own login was just deleted
+      // alongside the record, so there is nobody on the other side to tell.
+      await this.notifications.notifyRole(UserRole.ADMIN, "WEAVER_DEACTIVATED", {
+        weaverId: id,
+        weaverName: weaver.name,
+        hadPortalAccess: !!weaver.linkedUser,
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {

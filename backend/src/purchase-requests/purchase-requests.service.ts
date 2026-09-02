@@ -1,7 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { Prisma, PurchaseRequestStatus } from "../generated/prisma/client";
+import { Prisma, PurchaseRequestStatus, UserRole } from "../generated/prisma/client";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreatePurchaseRequestDto } from "./dto/create-purchase-request.dto";
 import { DecidePurchaseRequestDto } from "./dto/decide-purchase-request.dto";
@@ -12,6 +13,7 @@ export class PurchaseRequestsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreatePurchaseRequestDto) {
@@ -46,6 +48,17 @@ export class PurchaseRequestsService {
       entityType: "PurchaseRequest",
       entityId: request.id,
       recordLabel: dto.sareeType,
+    });
+
+    // Purchase requests are approved by superadmin, so that is who has to
+    // see it — an unapproved request is simply stock that never arrives.
+    await this.notifications.notifyRole(UserRole.SUPERADMIN, "PURCHASE_REQUEST_RAISED", {
+      purchaseRequestId: request.id,
+      sareeType: request.sareeType,
+      quantity: Number(request.quantity),
+      estimatedAmount: request.estimatedAmount ? Number(request.estimatedAmount) : null,
+      urgency: request.urgency,
+      requestedByName: `${requester.firstName} ${requester.lastName}`.trim(),
     });
 
     return request;
@@ -113,6 +126,21 @@ export class PurchaseRequestsService {
       oldValue: request.status,
       newValue: dto.decision,
     });
+
+    // Straight back to whoever raised it, not to a role — nobody else is
+    // waiting on this particular decision.
+    await this.notifications.notifyUser(
+      request.requestedById,
+      dto.decision === PurchaseRequestStatus.APPROVED
+        ? "PURCHASE_REQUEST_APPROVED"
+        : "PURCHASE_REQUEST_REJECTED",
+      {
+        purchaseRequestId: id,
+        sareeType: request.sareeType,
+        quantity: Number(request.quantity),
+        decisionNote: dto.decisionNote ?? null,
+      },
+    );
 
     return updated;
   }

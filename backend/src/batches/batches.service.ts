@@ -2,9 +2,10 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { toGrams } from "../common/weight-units.util";
-import { BatchStatus, MaterialType, Prisma, QcResult, RecipientType } from "../generated/prisma/client";
+import { BatchStatus, MaterialType, Prisma, QcResult, RecipientType, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { MaterialReturnsService } from "../material-returns/material-returns.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { AssignBatchRowDto } from "./dto/assign-batch-row.dto";
@@ -47,6 +48,7 @@ export class BatchesService {
     private readonly idGenerator: IdGeneratorService,
     private readonly auditLog: AuditLogService,
     private readonly materialReturns: MaterialReturnsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateBatchDto) {
@@ -203,6 +205,17 @@ export class BatchesService {
       recordLabel: sareeId ?? `${batchId}-${serial}`,
     });
 
+    // Only a weaver has a portal to be told in; a factory loom is a place,
+    // not a login, so those assignments stay silent.
+    if (dto.weaverId) {
+      await this.notifications.notifyWeaver(dto.weaverId, "WEAVER_LOOM_ROW_ASSIGNED", {
+        batchId,
+        sareeId,
+        rowCount: 1,
+        designCode,
+      });
+    }
+
     return updatedRow;
   }
 
@@ -357,6 +370,21 @@ export class BatchesService {
       recordLabel: batchId,
     });
 
+    // One card per weaver carrying their row count — not one per row. A
+    // 60-row batch split across four weavers should read as four
+    // assignments, not sixty.
+    const rowsByWeaver = new Map<string, number>();
+    for (const item of dto.rows) {
+      if (!item.weaverId) continue;
+      rowsByWeaver.set(item.weaverId, (rowsByWeaver.get(item.weaverId) ?? 0) + 1);
+    }
+    for (const [weaverId, rowCount] of rowsByWeaver) {
+      await this.notifications.notifyWeaver(weaverId, "WEAVER_LOOM_ROW_ASSIGNED", {
+        batchId,
+        rowCount,
+      });
+    }
+
     return this.findOne(batchId);
   }
 
@@ -480,6 +508,13 @@ export class BatchesService {
       recordLabel: row.sareeId,
     });
 
+    await this.notifications.notifyRole(UserRole.ADMIN, "BATCH_ROW_RECEIVED", {
+      batchId,
+      serial,
+      sareeId: row.sareeId,
+      weight: Number(dto.weight),
+    });
+
     return updatedRow;
   }
 
@@ -530,6 +565,21 @@ export class BatchesService {
       recordLabel: row.sareeId ?? undefined,
     });
 
+    // Only a correction is worth announcing. A clean tally is the expected
+    // outcome and would drown the feed; a corrected one means Worker Staff's
+    // entry disagreed with what admin actually weighed.
+    if (corrected) {
+      await this.notifications.notifyRole(UserRole.ADMIN, "BATCH_TALLY_MISMATCH", {
+        batchId,
+        serial,
+        sareeId: row.sareeId,
+        correctedWeight: dto.weight ?? null,
+        correctedWarpG: dto.warpG ?? null,
+        correctedReshamG: dto.reshamG ?? null,
+        correctedJariReels: dto.jariReels ?? null,
+      });
+    }
+
     return updatedRow;
   }
 
@@ -555,6 +605,11 @@ export class BatchesService {
       recordLabel: id,
       oldValue: BatchStatus.DRAFT,
       newValue: BatchStatus.ACTIVE,
+    });
+
+    await this.notifications.notifyRole(UserRole.ADMIN, "BATCH_FINALIZED", {
+      batchId: id,
+      rowCount: updated.rows.length,
     });
 
     return updated;

@@ -165,7 +165,10 @@ export function SareeListModal({
             <tr key={s.id}>
               <td>{i + 1}</td>
               <td style={{ fontFamily: "var(--font-code)" }}>{s.id}</td>
-              <td style={{ fontFamily: "var(--font-code)" }}>{s.lineCode} · pc {s.pieceNo}/{s.lineQuantity}</td>
+              <td style={{ fontFamily: "var(--font-code)" }}>
+                {s.lineCode} · pc {s.pieceNo}/{s.lineQuantity}
+                {s.returned && " · returned"}
+              </td>
               <td>{s.sareeType || "—"}</td>
               <td>{s.color || "—"}</td>
               <td>{s.weight}</td>
@@ -179,7 +182,10 @@ export function SareeListModal({
         </tbody>
         <tfoot>
           <tr style={{ fontWeight: 700 }}>
-            <td colSpan={6}>Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}</td>
+            <td colSpan={6}>
+              Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""} with us
+              {pieces.length - totals.pieces > 0 && `, ${pieces.length - totals.pieces} returned`}
+            </td>
             <td data-num>{formatMoney(rupees(totals.buying))}</td>
             <td aria-label="Not applicable">—</td>
             <td data-num>{formatMoney(rupees(totals.selling))}</td>

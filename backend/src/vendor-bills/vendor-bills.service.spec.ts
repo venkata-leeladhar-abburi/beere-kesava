@@ -1,3 +1,4 @@
+import { notificationsStub } from "../common/testing/notifications.stub";
 import { NotFoundException } from "@nestjs/common";
 import { VendorBillStatus } from "../generated/prisma/client";
 import { VendorBillsService } from "./vendor-bills.service";
@@ -13,7 +14,7 @@ describe("VendorBillsService.recomputeStatus", () => {
       vendorPayment: { aggregate: jest.fn() },
     };
     auditLog = { recordAction: jest.fn() };
-    service = new VendorBillsService(prisma, auditLog);
+    service = new VendorBillsService(prisma, auditLog, notificationsStub());
   });
 
   it("throws NotFoundException for an unknown bill id", async () => {

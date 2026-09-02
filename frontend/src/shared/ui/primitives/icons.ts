@@ -24,6 +24,7 @@ import {
   Palette, UserCircle2, Building2, Wrench, IdCard,
   FileSignature, ClipboardList, PackageCheck, Truck, ShoppingCart,
   WifiOff, ShieldAlert, TimerOff,
+  Store, ShoppingBag, PackageOpen, Undo2, RotateCcw, Waves, Send, Tag, BadgeIndianRupee,
   type LucideIcon,
 } from "lucide-react";
 
@@ -89,6 +90,18 @@ export const Icons = {
   goodsReceipt: PackageCheck,
   challan: Truck,
   order: ShoppingCart,
+  firm: Store,
+  purchase: ShoppingBag,
+  supplierPayment: BadgeIndianRupee,
+  vendorPayment: BadgeIndianRupee,
+  supplierReturn: Undo2,
+  materialIssue: PackageOpen,
+  materialReturn: RotateCcw,
+  warpRequest: Waves,
+  rateRequest: Tag,
+  designDispatch: Send,
+  sale: ShoppingCart,
+  saleReturn: Undo2,
 } as const;
 
 export type IconName = keyof typeof Icons;

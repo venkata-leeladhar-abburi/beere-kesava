@@ -191,22 +191,32 @@ export function computeFinalAmount(price: number, sellPercent: number, quantity 
   return (price + (price * sellPercent) / 100) * qty;
 }
 
-/** Total pieces across saree lines — each line may cover more than one piece. */
+/** Pieces of a line still with us — the bought quantity minus the ones that
+ * have gone back to the supplier. Counts shown to users are this, not the
+ * original quantity, so a returned saree stops being counted as stock. */
+export function remainingQuantity(s: Pick<SareeTag, "quantity" | "returnedQuantity">): number {
+  const qty = Number(s.quantity) || 1;
+  return Math.max(0, qty - Math.min(Number(s.returnedQuantity) || 0, qty));
+}
+
+/** Total pieces across saree lines — each line may cover more than one piece,
+ * and pieces returned to the supplier no longer count. */
 export function totalPieces(sarees: SareeTag[]): number {
-  return sarees.reduce((sum, s) => sum + (Number(s.quantity) || 1), 0);
+  return sarees.reduce((sum, s) => sum + remainingQuantity(s), 0);
 }
 
-/** What the line cost us: buying price per piece × pieces. */
-export function lineBuying(s: Pick<SareeTag, "price" | "quantity">): number {
-  return (Number(s.price) || 0) * (Number(s.quantity) || 1);
+/** What the line cost us: buying price per piece × pieces still with us. */
+export function lineBuying(s: Pick<SareeTag, "price" | "quantity" | "returnedQuantity">): number {
+  return (Number(s.price) || 0) * remainingQuantity(s);
 }
 
-/** What the line should sell for — buying plus markup, across all pieces. */
-export function lineSelling(s: Pick<SareeTag, "price" | "sellPercent" | "quantity">): number {
-  return computeFinalAmount(Number(s.price) || 0, Number(s.sellPercent) || 0, Number(s.quantity) || 1);
+/** What the line should sell for — buying plus markup, across the pieces we
+ * still hold; returned pieces are netted out. */
+export function lineSelling(s: Pick<SareeTag, "price" | "sellPercent" | "quantity" | "returnedQuantity">): number {
+  return computeFinalAmount(Number(s.price) || 0, Number(s.sellPercent) || 0, remainingQuantity(s));
 }
 
-export function lineProfit(s: Pick<SareeTag, "price" | "sellPercent" | "quantity">): number {
+export function lineProfit(s: Pick<SareeTag, "price" | "sellPercent" | "quantity" | "returnedQuantity">): number {
   return lineSelling(s) - lineBuying(s);
 }
 
@@ -248,6 +258,9 @@ export function expandSareePieces<T extends SareeTag>(sarees: T[]): (T & SareePi
       // The line only tracks *how many* pieces came back, not which — treat
       // the first `returnedQuantity` pieces of the line as the returned ones.
       returned: i + 1 <= returnedQty,
+      // Restated per piece so money helpers net this piece out on its own
+      // rather than reading the whole line's returned count against qty 1.
+      returnedQuantity: i + 1 <= returnedQty ? 1 : 0,
     }));
   });
 }
@@ -268,11 +281,22 @@ export interface PurchaseTotals {
   profit: number;
 }
 
-/** Roll a set of saree lines up into buying / selling / profit totals. */
-export function purchaseTotals(sarees: Pick<SareeTag, "price" | "sellPercent" | "quantity">[]): PurchaseTotals {
+/** What the purchase was invoiced for — every piece bought, ignoring anything
+ * later returned. The supplier's bill doesn't shrink when stock goes back, so
+ * bill figures use this rather than the netted `purchaseTotals`. */
+export function invoicedSelling(sarees: Pick<SareeTag, "price" | "sellPercent" | "quantity">[]): number {
+  return sarees.reduce(
+    (sum, s) => sum + computeFinalAmount(Number(s.price) || 0, Number(s.sellPercent) || 0, Number(s.quantity) || 1),
+    0,
+  );
+}
+
+/** Roll a set of saree lines up into buying / selling / profit totals, with
+ * returned pieces netted out — see `invoicedSelling` for the gross figure. */
+export function purchaseTotals(sarees: Pick<SareeTag, "price" | "sellPercent" | "quantity" | "returnedQuantity">[]): PurchaseTotals {
   return sarees.reduce<PurchaseTotals>(
     (acc, s) => {
-      acc.pieces += Number(s.quantity) || 1;
+      acc.pieces += remainingQuantity(s);
       acc.buying += lineBuying(s);
       acc.selling += lineSelling(s);
       acc.profit += lineProfit(s);

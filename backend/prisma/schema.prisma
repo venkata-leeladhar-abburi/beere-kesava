@@ -154,6 +154,22 @@ enum InventoryRawType {
   RETURN
 }
 
+/// Outcome recorded for one saree when the shop physically receives a SHOP
+/// dispatch. Anything other than RECEIVED is a discrepancy the admin has to see.
+enum ShopReceiptItemStatus {
+  RECEIVED
+  DAMAGED
+  MISSING
+}
+
+/// How far a SHOP dispatch has got through receiving at the shop counter.
+/// WHOLESALE dispatches never leave PENDING — they are not received by us.
+enum DispatchReceiptStatus {
+  PENDING
+  PARTIALLY_RECEIVED
+  RECEIVED
+}
+
 enum SareeOrigin {
   WEAVER
   FACTORY_LOOM
@@ -341,6 +357,7 @@ model User {
   inspectedQcRecords       QcRecord[]               @relation("InspectedBy")
   assignedFinishings       FinishingAssignment[]    @relation("AssignedBy")
   dispatchedRecords        DispatchRecord[]         @relation("DispatchedBy")
+  shopReceipts             ShopReceipt[]            @relation("ShopReceivedBy")
   raisedQuotations         Quotation[]              @relation("RaisedBy")
   requestedPurchases       PurchaseRequest[]        @relation("RequestedBy")
   decidedPurchases         PurchaseRequest[]        @relation("DecidedBy")
@@ -968,20 +985,68 @@ model DispatchRecord {
   dispatchedById      String?
   dispatchedBy        User?        @relation("DispatchedBy", fields: [dispatchedById], references: [id])
 
-  sarees  DispatchSaree[]
-  invoice Invoice?
+  /// Receiving state at the shop counter. A SHOP dispatch starts PENDING and
+  /// only its sarees marked RECEIVED on a ShopReceipt become sellable shop
+  /// stock (see InventoryService.findShopStock). Left PENDING for WHOLESALE.
+  receiptStatus DispatchReceiptStatus @default(PENDING)
+
+  sarees   DispatchSaree[]
+  invoice  Invoice?
+  receipts ShopReceipt[]
 
   @@index([paymentDueDate])
   @@index([customerId])
 }
 
 model DispatchSaree {
-  id         String         @id @default(uuid())
-  dispatchId String
-  dispatch   DispatchRecord @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
-  sareeId    String
+  id            String                 @id @default(uuid())
+  dispatchId    String
+  dispatch      DispatchRecord         @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  sareeId       String
+  /// Denormalised copy of this piece's ShopReceiptItem verdict. The shop-stock
+  /// query filters on it directly — joining through the receipt for every
+  /// saree on every read would be the same answer at several times the cost.
+  /// Null while the consignment has not been received at all.
+  receiptStatus ShopReceiptItemStatus?
+  receivedAt    DateTime?
 
   @@unique([dispatchId, sareeId])
+  @@index([receiptStatus])
+}
+
+/// Shop Goods Receipt — the shop counter acknowledging a consignment that
+/// admin dispatched to it. One GRN per receiving session; a short consignment
+/// can be received again later, so a dispatch may have several.
+model ShopReceipt {
+  id           String            @id @default(uuid())
+  /// SGR-<FY>-NNN, allocated server-side like every other business id. Not
+  /// GRN — that prefix is the vendor goods receipt raised against a purchase
+  /// order, and is scoped to the vendor rather than the financial year.
+  code         String            @unique
+  dispatchId   String
+  dispatch     DispatchRecord    @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  receivedAt   DateTime          @default(now())
+  /// Shop staff member who did the receiving. Nullable for the same reason
+  /// DispatchRecord.dispatchedById is — an unresolvable actor must not reject
+  /// the receipt.
+  receivedById String?
+  receivedBy   User?             @relation("ShopReceivedBy", fields: [receivedById], references: [id])
+  notes        String?
+  items        ShopReceiptItem[]
+
+  @@index([dispatchId])
+}
+
+model ShopReceiptItem {
+  id        String                @id @default(uuid())
+  receiptId String
+  receipt   ShopReceipt           @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  sareeId   String
+  status    ShopReceiptItemStatus
+  /// Why a piece is DAMAGED or MISSING, in the receiver's words.
+  remarks   String?
+
+  @@unique([receiptId, sareeId])
 }
 
 model InventoryRecord {
@@ -1036,41 +1101,41 @@ model Saree {
 }
 
 model SaleRecord {
-  saleRef       String       @id
-  sareeId       String
-  saree         Saree        @relation(fields: [sareeId], references: [id])
-  channel       SalesChannel
-  date          DateTime     @default(now())
-  customerId    String
-  customer      Customer     @relation(fields: [customerId], references: [id])
-  amount        Decimal      @db.Decimal(12, 2)
+  saleRef        String       @id
+  sareeId        String
+  saree          Saree        @relation(fields: [sareeId], references: [id])
+  channel        SalesChannel
+  date           DateTime     @default(now())
+  customerId     String
+  customer       Customer     @relation(fields: [customerId], references: [id])
+  amount         Decimal      @db.Decimal(12, 2)
   // How the customer paid at the counter — "cash" | "upi" | "card" | "other",
   // captured in NewSaleFlow's payment step. Nullable: older rows predate this
   // field, and wholesale sales (invoiced separately) never set it.
-  paymentMethod String?
+  paymentMethod  String?
   // UPI transaction id or last-4 card digits, when the method has one.
-  paymentRef    String?
+  paymentRef     String?
   // Shop Staff / Accountant user who recorded this sale — multiple users can
   // hold either role, so the role alone doesn't say who actually sold it.
-  soldById      String?
-  soldBy        User?        @relation("SaleSoldBy", fields: [soldById], references: [id])
+  soldById       String?
+  soldBy         User?        @relation("SaleSoldBy", fields: [soldById], references: [id])
   // Firm this sale's revenue is booked against. Null = not yet connected to a
   // firm; an accountant links retail sales to a firm from the Firms page, and
   // FirmActivityService then counts them as realized income for that firm.
   // A sale belongs to at most one firm — re-linking moves it.
-  firmId        String?
-  firm          Firm?        @relation("FirmRetailSales", fields: [firmId], references: [id])
+  firmId         String?
+  firm           Firm?        @relation("FirmRetailSales", fields: [firmId], references: [id])
   // When and by whom the link was made — the link is an accounting decision,
   // not a property of the sale, so it carries its own audit trail.
-  firmLinkedAt  DateTime?
+  firmLinkedAt   DateTime?
   firmLinkedById String?
-  firmLinkedBy  User?        @relation("SaleFirmLinkedBy", fields: [firmLinkedById], references: [id])
+  firmLinkedBy   User?        @relation("SaleFirmLinkedBy", fields: [firmLinkedById], references: [id])
   // Free-text note the accountant attaches when connecting the sale.
-  firmLinkNote  String?
+  firmLinkNote   String?
   // True when the link was made by the active-firm rule at sale time rather
   // than by a person picking the sale. Keeps "the system did this" separate
   // from "someone decided this" in the audit trail.
-  firmLinkedAuto Boolean     @default(false)
+  firmLinkedAuto Boolean      @default(false)
 
   @@index([sareeId])
   @@index([firmId])
@@ -1695,6 +1760,7 @@ model GrnReceipt {
 
   items          GrnItem[]
   purchaseOrders PurchaseOrder[]
+
   @@index([createdAt])
 }
 

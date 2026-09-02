@@ -26,8 +26,10 @@ import { validateEnv } from "./config/env.validation";
 import { CustomersModule } from "./customers/customers.module";
 import { DesignLibraryModule } from "./design-library/design-library.module";
 import { DispatchModule } from "./dispatch/dispatch.module";
+import { ShopReceiptsModule } from "./shop-receipts/shop-receipts.module";
 import { FactoryLoomsModule } from "./factory-looms/factory-looms.module";
 import { FinanceJobsModule } from "./finance-jobs/finance-jobs.module";
+import { OpsJobsModule } from "./ops-jobs/ops-jobs.module";
 import { FinishingModule } from "./finishing/finishing.module";
 import { FirmsModule } from "./firms/firms.module";
 import { IdGeneratorModule } from "./id-generator/id-generator.module";
@@ -107,6 +109,7 @@ import { WhatsAppModule } from "./whatsapp/whatsapp.module";
     BulkOrdersModule,
     InventoryModule,
     DispatchModule,
+    ShopReceiptsModule,
     QuotationsModule,
     SalesModule,
     RatesModule,
@@ -116,6 +119,7 @@ import { WhatsAppModule } from "./whatsapp/whatsapp.module";
     PaymentsModule,
     VendorBillsModule,
     FinanceJobsModule,
+    OpsJobsModule,
     NotificationsModule,
     LabelsModule,
     ScanModule,

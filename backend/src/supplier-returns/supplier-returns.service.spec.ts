@@ -1,3 +1,4 @@
+import { notificationsStub } from "../common/testing/notifications.stub";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { SupplierReturnsService } from "./supplier-returns.service";
 import { CreateSupplierReturnRequestDto } from "./dto/create-supplier-return-request.dto";
@@ -35,7 +36,7 @@ describe("SupplierReturnsService", () => {
     };
     idGenerator = { nextScoped: jest.fn().mockResolvedValue("RR-RaviSilks-001-001") };
     auditLog = { recordAction: jest.fn() };
-    service = new SupplierReturnsService(prisma, idGenerator, auditLog);
+    service = new SupplierReturnsService(prisma, idGenerator, auditLog, notificationsStub());
   });
 
   describe("create", () => {
@@ -46,6 +47,17 @@ describe("SupplierReturnsService", () => {
       expect(prisma.supplierReturnRequest.create).toHaveBeenCalledWith(
         expect.objectContaining({ data: expect.objectContaining({ id: "RR-RaviSilks-001-001", quantity: 3 }) }),
       );
+    });
+
+    it("falls back to the supplier's name segment, never its UUID, when it has no code", async () => {
+      prisma.purchase.findUnique.mockResolvedValue({
+        ...purchase,
+        supplier: { id: "7141a9e5-2b1c-4d3e-8f90-a1b2c3d4e5f6", name: "Ravi Silks", code: null },
+      });
+
+      await service.create(createDto());
+
+      expect(idGenerator.nextScoped).toHaveBeenCalledWith("RR", "RaviSilks");
     });
 
     it("rejects a purchase with no registered supplier rather than guessing one", async () => {

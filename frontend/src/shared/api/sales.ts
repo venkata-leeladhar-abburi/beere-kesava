@@ -194,9 +194,20 @@ export const salesApi = {
   create: async (payload: CreateSalePayload) =>
     normalizeSale(await apiClient.post<RawSaleRecord>("/sales", payload)),
 
-  /** GET /sales — paginated list of all sales */
-  list: async (pageSize = 100): Promise<PaginatedResponse<BackendSaleRecord>> => {
-    const res = await apiClient.get<PaginatedResponse<RawSaleRecord>>(`/sales?pageSize=${pageSize}`);
+  /**
+   * GET /sales — paginated list of sales. Pass `customerId` to pull one
+   * customer's full purchase history instead of slicing the global list, which
+   * silently truncated any customer whose sales fell outside the first page.
+   */
+  list: async (
+    pageSize = 100,
+    opts?: { customerId?: string; channel?: SalesChannel; page?: number },
+  ): Promise<PaginatedResponse<BackendSaleRecord>> => {
+    const params = new URLSearchParams({ pageSize: String(pageSize) });
+    if (opts?.page) params.set("page", String(opts.page));
+    if (opts?.customerId) params.set("customerId", opts.customerId);
+    if (opts?.channel) params.set("channel", opts.channel);
+    const res = await apiClient.get<PaginatedResponse<RawSaleRecord>>(`/sales?${params.toString()}`);
     return { ...res, items: res.items.map(normalizeSale) };
   },
 

@@ -159,6 +159,8 @@ export default function App() {
             <Route path="/shop" element={<ShopLayout />}>
               <Route index element={<Navigate to="home" replace />} />
               <Route path=":tab" element={<ShopHomePage />} />
+              {/* Detail routes under a tab — today /shop/customers/:customerId. */}
+              <Route path=":tab/:detailId" element={<ShopHomePage />} />
             </Route>
 
             {/* Accountant Portal */}

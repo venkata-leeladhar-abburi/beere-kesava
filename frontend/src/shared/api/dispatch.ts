@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import type { DispatchReceiptStatus } from "./shop-receipts";
 
 export type BackendDispatchType = "SHOP" | "WHOLESALE";
 
@@ -39,6 +40,9 @@ export interface BackendDispatchRecord {
   notes: string | null;
   expectedDelivery: string | null;
   specialInstructions: string | null;
+  /** How far the shop counter has got through receiving this consignment.
+   *  Always PENDING for wholesale — nobody here receives those goods. */
+  receiptStatus: DispatchReceiptStatus;
   /** Who actually raised this dispatch — null for records predating this attribution. */
   dispatchedBy: { id: string; firstName: string; lastName: string } | null;
   sarees: BackendDispatchSaree[];

@@ -3,8 +3,9 @@ import * as ExcelJS from "exceljs";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { loadImportWorkbook } from "../common/storage/import-workbook";
-import { Prisma } from "../generated/prisma/client";
+import { Prisma, UserRole } from "../generated/prisma/client";
 import { businessSegment, IdGeneratorService } from "../id-generator/id-generator.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { PurchasesService } from "../purchases/purchases.service";
 import { VendorBillsService } from "../vendor-bills/vendor-bills.service";
@@ -45,6 +46,7 @@ export class PaymentsService {
     private readonly vendorBillsService: VendorBillsService,
     private readonly purchasesService: PurchasesService,
     private readonly idGenerator: IdGeneratorService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async createWeaverPayment(dto: CreateWeaverPaymentDto) {
@@ -77,6 +79,15 @@ export class PaymentsService {
       entityId: payment.id,
       recordLabel: weaver.name,
       newValue: String(dto.amountPaid),
+    });
+
+    // The weaver's own portal is the only place they see their earnings, so
+    // a payment is pushed to them rather than left to be discovered there.
+    await this.notifications.notifyWeaver(dto.weaverId, "WEAVER_PAYMENT_PAID", {
+      weaverPaymentId: payment.id,
+      weaverName: weaver.name,
+      amountPaid: Number(dto.amountPaid),
+      utrNumber: dto.utrNumber ?? null,
     });
 
     return payment;
@@ -151,6 +162,13 @@ export class PaymentsService {
       newValue: String(dto.amount),
     });
 
+    await this.notifications.notifyRole(UserRole.ACCOUNTANT, "SUPPLIER_PAYMENT_PAID", {
+      supplierPaymentId: payment.id,
+      supplierName: supplier.name,
+      amount: Number(dto.amount),
+      purchaseId: dto.purchaseId ?? null,
+    });
+
     return payment;
   }
 
@@ -221,6 +239,13 @@ export class PaymentsService {
       entityId: payment.id,
       recordLabel: vendor.name,
       newValue: String(dto.amount),
+    });
+
+    await this.notifications.notifyRole(UserRole.ACCOUNTANT, "VENDOR_PAYMENT_PAID", {
+      vendorPaymentId: payment.id,
+      vendorName: vendor.name,
+      amount: Number(dto.amount),
+      billId: dto.billId ?? null,
     });
 
     return payment;
@@ -643,6 +668,12 @@ export class PaymentsService {
     }
 
     const totalAmount = validRows.reduce((sum, r) => sum + Number(r.amountPaid), 0);
+
+    // One summary card for the whole upload — the per-row WEAVER_PAYMENT_PAID
+    // pushes are skipped here (createMany bypasses createWeaverPayment), so
+    // without this an import of 200 rows would announce nothing at all.
+    await this.notifyImportFinished(recordedById, "WEAVER", validRows.length, errors.length, totalAmount);
+
     return { created: validRows.length, failed: errors.length, errors, totalAmount };
   }
 
@@ -786,6 +817,29 @@ export class PaymentsService {
       }
     }
 
+    await this.notifyImportFinished(recordedById, "VENDOR", created, errors.length, totalAmount);
+
     return { created, failed: errors.length, errors, totalAmount };
+  }
+
+  /**
+   * Import feedback goes to the person who uploaded the file, not to a role —
+   * nobody else is waiting on it, and a role broadcast would put one clerk's
+   * spreadsheet in everyone's feed.
+   */
+  private async notifyImportFinished(
+    recordedById: string | undefined,
+    kind: "WEAVER" | "VENDOR",
+    created: number,
+    failed: number,
+    totalAmount: number,
+  ) {
+    if (!recordedById) return;
+    await this.notifications.notifyUser(recordedById, "PAYMENT_IMPORT_COMPLETED", {
+      kind,
+      created,
+      failed,
+      totalAmount,
+    });
   }
 }

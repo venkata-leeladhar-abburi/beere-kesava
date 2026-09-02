@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { IdGeneratorService } from "../id-generator/id-generator.service";
-import { Prisma, SupplierReturnStatus } from "../generated/prisma/client";
+import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
+import { Prisma, SupplierReturnStatus, UserRole } from "../generated/prisma/client";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateSupplierReturnRequestDto } from "./dto/create-supplier-return-request.dto";
 import { DecideSupplierReturnRequestDto } from "./dto/decide-supplier-return-request.dto";
@@ -22,6 +23,7 @@ export class SupplierReturnsService {
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
     private readonly auditLog: AuditLogService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateSupplierReturnRequestDto) {
@@ -63,7 +65,16 @@ export class SupplierReturnsService {
       );
     }
 
-    const id = await this.idGenerator.nextScoped("RR", purchase.supplier.code ?? purchase.supplier.id);
+    // Falls back to the supplier's name segment, not its UUID: every other
+    // scoping service reads `code ?? businessSegment(name)`, and a raw UUID
+    // here produced ids like "RR-7141a9e5-2b1c-…-002" that no code parser
+    // could split. Suppliers created since SuppliersService started minting
+    // codes always take the first branch; the fallback only covers rows that
+    // predate it. Existing RR- ids keep their UUID form — they are primary
+    // keys, so they are not rewritten.
+    const supplierSegment =
+      purchase.supplier.code ?? businessSegment(purchase.supplier.name, "Supplier");
+    const id = await this.idGenerator.nextScoped("RR", supplierSegment);
 
     const request = await this.prisma.supplierReturnRequest.create({
       data: {
@@ -85,6 +96,16 @@ export class SupplierReturnsService {
       entityType: "SupplierReturnRequest",
       entityId: id,
       recordLabel: id,
+    });
+
+    // Pending requests hold stock reserved against the line, so an
+    // undecided one quietly blocks pieces from being sold.
+    await this.notifications.notifyRole(UserRole.ADMIN, "SUPPLIER_RETURN_RAISED", {
+      supplierReturnId: id,
+      supplierName: purchase.supplier.name,
+      quantity: dto.quantity,
+      reason: dto.reason ?? null,
+      purchaseId: dto.purchaseId,
     });
 
     return request;
@@ -181,6 +202,14 @@ export class SupplierReturnsService {
       recordLabel: id,
       oldValue: request.status,
       newValue: dto.decision,
+    });
+
+    await this.notifications.notifyUser(request.requestedById, "SUPPLIER_RETURN_DECIDED", {
+      supplierReturnId: id,
+      supplierName: request.supplier.name,
+      quantity: request.quantity,
+      decision: dto.decision,
+      decisionNote: dto.decisionNote ?? null,
     });
 
     return updated;
