@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { X, Printer, Undo2 } from "lucide-react";
 import {
   Purchase,
-  lineProfit, purchaseTotals, expandSareePieces, withPieceImage,
+  lineProfit, purchaseTotals, expandSareePieces, withPieceImage, serialFromPieceCode,
   SareeInventoryTable, type PieceExtra,
   useSuppliers,
 } from "@/features/suppliers";
@@ -16,6 +16,7 @@ import { T, F } from "../theme";
 import { Button, IconButton, Textarea } from "../../../../../shared/ui/primitives";
 import { Modal } from "../../../../../shared/ui/overlay";
 import { useDocument } from "../../../../../shared/ui/document";
+import { usePrintSareeTags, type SareeTagData } from "@/features/weavers/components/WeaverSareesSection/SareeTagPrint";
 
 /** Full saree/barcode breakdown for one purchase — grouped by serial number
  * (one row per purchase line), matching the Suppliers → Order History view,
@@ -27,10 +28,11 @@ export function SareeListModal({
   purchase: Purchase;
   onClose: () => void;
 }) {
-  const { print } = useDocument();
+  const printSareeTags = usePrintSareeTags();
+  const { print: printSummary } = useDocument();
   const { user } = useAuth();
   const qc = useQueryClient();
-  const { updatePurchase } = useSuppliers();
+  const { updatePurchase, suppliers } = useSuppliers();
   const requestedById = user?.id ?? STOPGAP_ACTING_USER_ID;
 
   // Pending return requests reserve pieces the same way an APPROVED one
@@ -139,9 +141,34 @@ export function SareeListModal({
 
   const totals = purchaseTotals(purchase.sarees);
 
+  // One real physical tag per piece — barcode, invoice, serial, ciphered
+  // cost, plain selling price. Previously "Print All Barcodes" produced a
+  // single text summary table with no barcode graphic and no price column
+  // at all — despite the label, it printed zero barcodes.
+  const supplierShortName = suppliers.find(sup => sup.id === purchase.supplierId)?.shortName ?? null;
+  const printAllBarcodes = () => {
+    const tags: SareeTagData[] = pieces
+      .filter(p => !p.returned)
+      .map(p => ({
+        sareeId: p.id,
+        isExternal: true,
+        sareeTypeName: p.sareeType || null,
+        color: p.color || null,
+        supplierShortName,
+        supplierName: purchase.supplier,
+        invoiceNumber: purchase.invoiceNumber,
+        serial: serialFromPieceCode(p.id),
+        sellingPrice: p.finalAmount,
+        costPrice: p.price,
+      }));
+    printSareeTags(tags);
+  };
+
   // A plain print table, not <DataTable> — DataTable's sort/hover chrome and
   // the per-row "Print" barcode button aren't meaningful on paper. Same data,
-  // same column order minus the interactive Barcode column.
+  // same column order minus the interactive Barcode column. Kept as a
+  // separate reference sheet (with a profit column, which the physical tags
+  // deliberately never show) alongside the real per-piece tags above.
   const printTable = (
     <div style={{ padding: "16mm" }}>
       <div style={{ marginBottom: "4mm" }}>
@@ -313,11 +340,19 @@ export function SareeListModal({
             <Button
               variant="primary"
               iconLeft={Printer}
-              onClick={() => print(printTable)}
+              onClick={printAllBarcodes}
               fullWidth
               className="rounded-full"
             >
               Print All Barcodes
+            </Button>
+            <Button
+              variant="secondary"
+              iconLeft={Printer}
+              onClick={() => printSummary(printTable)}
+              className="flex-none rounded-full"
+            >
+              Print Summary Sheet
             </Button>
             <Button
               variant="secondary"

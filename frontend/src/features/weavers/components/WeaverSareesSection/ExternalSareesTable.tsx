@@ -1,13 +1,16 @@
 import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Image as ImageIcon } from "lucide-react";
+import { Image as ImageIcon, Printer } from "lucide-react";
 import { Pagination, UsePaginationReturn } from "../../../../shared/ui/DataPagination";
 import { T } from "./theme";
 import { WeaverSareeRow } from "./types";
 import { inr, fmtDate, externalSerialOf } from "./utils";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
+import { Button } from "../../../../shared/ui/primitives";
 import { StatusPill } from "../../../../shared/ui/domain";
+import { useSuppliers } from "@/features/suppliers";
+import { usePrintSareeTags, type SareeTagData } from "./SareeTagPrint";
 
 interface ExternalSareesTableProps {
   pageRows: WeaverSareeRow[];
@@ -18,9 +21,31 @@ interface ExternalSareesTableProps {
 
 export function ExternalSareesTable({ pageRows, canSeeMoney, pag, responsive = false }: ExternalSareesTableProps) {
   const [preview, setPreview] = useState<string | null>(null);
+  const { suppliers } = useSuppliers();
+  const printSareeTags = usePrintSareeTags();
 
   /** The piece's own photo when it has one, otherwise the purchase line's. */
   const photoOf = (r: WeaverSareeRow) => r.receivedPhotoUrl ?? r.external?.linePhotoUrl ?? null;
+
+  /** Inventory's own name-match lookup — the stock ledger carries the
+   *  supplier's name, not its id, so this is a best-effort match rather than
+   *  a real FK join. Falls back to the full name on the tag if it misses. */
+  const printTag = (r: WeaverSareeRow) => {
+    const supplierName = r.stock?.supplier ?? null;
+    const tag: SareeTagData = {
+      sareeId: r.sareeId,
+      isExternal: true,
+      sareeTypeName: r.sareeTypeName,
+      color: r.color,
+      supplierShortName: suppliers.find(s => s.name === supplierName)?.shortName ?? null,
+      supplierName,
+      invoiceNumber: r.stock?.invoiceNumber ?? null,
+      serial: externalSerialOf(r.sareeId),
+      sellingPrice: r.stock?.finalAmount ?? null,
+      costPrice: r.stock?.costPrice ?? null,
+    };
+    printSareeTags([tag]);
+  };
 
   const columns: ColumnDef<WeaverSareeRow>[] = [
     {
@@ -117,6 +142,14 @@ export function ExternalSareesTable({ pageRows, canSeeMoney, pag, responsive = f
         cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{r.stock ? inr(r.stock.finalAmount) : "—"}</span>,
       } as ColumnDef<WeaverSareeRow>,
     ] : []),
+    {
+      id: "tag", header: "Tag", accessor: () => null, type: "actions",
+      cell: (_v, r) => (
+        <Button variant="secondary" size="sm" iconLeft={Printer} onClick={() => printTag(r)} className="whitespace-nowrap">
+          Print
+        </Button>
+      ),
+    },
   ];
 
   return (

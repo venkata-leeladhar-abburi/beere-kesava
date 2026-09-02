@@ -17,7 +17,7 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { SariTagPrintModal } from "@/features/production";
-import { useDocument } from "../../../../shared/ui/document";
+import { usePrintSareeTags, type SareeTagData } from "../../../weavers/components/WeaverSareesSection/SareeTagPrint";
 
 export type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string; supplier: string; supplierId?: string };
 
@@ -59,7 +59,7 @@ export function SareeInventoryTable({
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
   // Which tile has its "Take photo / Choose file" chooser open.
   const [pickerKey, setPickerKey] = useState<string | null>(null);
-  const { print } = useDocument();
+  const printSareeTags = usePrintSareeTags();
   const { suppliers } = useSuppliers();
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -186,38 +186,26 @@ export function SareeInventoryTable({
     return next;
   });
 
+  /** One real physical tag per piece — barcode, invoice, serial, ciphered
+   *  cost, plain selling price. Previously this printed a single text table
+   *  (Saree Code/Type/Colour/Weight, no price, no barcode graphic at all) —
+   *  "Print All" didn't actually print any barcodes. */
+  const toExternalTagData = (row: SareeRow, p: ReturnType<typeof expandSareePieces>[number]): SareeTagData => ({
+    sareeId: p.id,
+    isExternal: true,
+    sareeTypeName: p.sareeType || null,
+    color: p.color || null,
+    supplierShortName: suppliers.find(sup => sup.id === row.supplierId)?.shortName ?? null,
+    supplierName: row.supplier,
+    invoiceNumber: row.invoiceNumber,
+    serial: serialFromPieceCode(p.id),
+    sellingPrice: p.finalAmount,
+    costPrice: p.price,
+  });
+
   const printAllForRow = (s: SareeRow) => {
-    const pieces = expandSareePieces([s]);
-    const printTable = (
-      <div style={{ padding: "16mm" }}>
-        <div style={{ marginBottom: "4mm" }}>
-          <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "14pt", color: "var(--doc-burgundy)" }}>
-            {s.id} — Saree Barcodes
-          </div>
-          <div style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-code)", color: "var(--doc-muted)" }}>{s.supplier}</div>
-        </div>
-        {/* eslint-disable-next-line no-restricted-syntax -- printable document template */}
-        <table className="bk-doc__table">
-          <thead>
-            <tr>
-              {/* eslint-disable-next-line no-restricted-syntax -- printable document template */}
-              {["Saree Code", "Type", "Colour", "Weight"].map(h => <th key={h}>{h}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {pieces.map(p => (
-              <tr key={p.id}>
-                <td style={{ fontFamily: "var(--font-code)" }}>{p.id}</td>
-                <td>{p.sareeType || "—"}</td>
-                <td>{p.color || "—"}</td>
-                <td>{p.weight || "—"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-    print(printTable);
+    const pieces = expandSareePieces([s]).filter(p => !p.returned);
+    printSareeTags(pieces.map(p => toExternalTagData(s, p)));
   };
 
   const columns: ColumnDef<SareeRow>[] = [
