@@ -52,6 +52,15 @@ export function useInventoryPageState() {
     [dispatches]
   );
 
+  // Sarees already on a raised quotation. Same reasoning as
+  // `dispatchedSareeIds` below: a remembered row is a snapshot taken before
+  // the quotation existed, so it still reads as pickable and the saree could
+  // be quoted a second time. `quotations` is the live record, so it decides.
+  const quotedSareeIds = useMemo(
+    () => new Set(quotations.flatMap(q => q.sarees.map(s => s.sareeId))),
+    [quotations]
+  );
+
   // ── Unified Records ────────────────────────────────────────────────────────
   const allRecords = useMemo(() => {
     const list: InventoryRecord[] = [];
@@ -178,8 +187,9 @@ export function useInventoryPageState() {
   // still reads `dispatched: false`. `dispatchedSareeIds` is the live record,
   // so it decides that half of the rule.
   const isPickableNow = useCallback(
-    (r: WeaverSareeRow) => isSareePickable(r) && !dispatchedSareeIds.has(r.sareeId),
-    [dispatchedSareeIds],
+    (r: WeaverSareeRow) =>
+      isSareePickable(r) && !dispatchedSareeIds.has(r.sareeId) && !quotedSareeIds.has(r.sareeId),
+    [dispatchedSareeIds, quotedSareeIds],
   );
 
   const selectedRows = useMemo(

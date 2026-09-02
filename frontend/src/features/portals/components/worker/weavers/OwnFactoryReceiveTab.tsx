@@ -1,9 +1,9 @@
 /* eslint-disable no-restricted-syntax */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  Camera, UploadCloud, CheckCircle2, AlertTriangle,
+  Camera, CheckCircle2, AlertTriangle,
   Plus, Printer, RotateCcw,
 } from "lucide-react";
 import { C, F, card } from "../tokens";
@@ -21,8 +21,6 @@ import { DefectPhotoPrompt } from "./DefectPhotoPrompt";
 import { SareeSelectionTable } from "./SareeSelectionTable";
 import { ReceiveRecipientPicker, type RecipientOption } from "./ReceiveRecipientPicker";
 import { Button, Input, NumberInput } from "../../../../../shared/ui/primitives";
-import { resolveAssetUrl } from "@/shared/api/uploads";
-import { useImageUpload } from "@/shared/hooks/useImageUpload";
 
 interface RejectedSaree {
   id: string;
@@ -108,20 +106,6 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
 
   const [sareeColor, setSareeColor] = useState("");
   const [sareeWeight, setSareeWeight] = useState("");
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const hasPhoto = photoUrl !== null;
-  const setHasPhoto = (v: boolean) => { if (!v) setPhotoUrl(null); };
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
-  // The received-saree photo is evidence kept on the batch row, so it goes to
-  // object storage and we hold the stored path — not a base64 data URL, which
-  // never reached the server at all before.
-  const { upload: uploadPhoto, uploading: photoUploading, error: photoError } = useImageUpload();
-  const handlePhotoFile = async (file: File | undefined) => {
-    if (!file) return;
-    const url = await uploadPhoto(file);
-    if (url) setPhotoUrl(url);
-  };
   const [matEdits, setMatEdits] = useState<Partial<MatSplit>>({});
   // Type this receipt is booked under — see SareeTypePicker. Mirrors the
   // weaver receive screen so both paths behave identically.
@@ -159,7 +143,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
   })), [LOOMS]);
 
   const resetEntryFields = useCallback(() => {
-    setSareeColor(""); setSareeWeight(""); setPhotoUrl(null); setMatEdits({}); setTypeOverride(null);
+    setSareeColor(""); setSareeWeight(""); setMatEdits({}); setTypeOverride(null);
   }, []);
 
   const pickLoom = useCallback((loomId: string) => {
@@ -202,7 +186,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
   const effectiveTypeCode = typeOverride ?? assignedTypeCode;
 
   const canSaveSaree =
-    selectedSareeNos.size > 0 && !!sareeColor && !!sareeWeight && !!effectiveTypeCode && hasPhoto && !isSaving;
+    selectedSareeNos.size > 0 && !!sareeColor && !!sareeWeight && !!effectiveTypeCode && !isSaving;
 
   const saveSaree = async () => {
     if (!selectedLoom || !currentBatch || selectedSareeNos.size === 0 || !canSaveSaree) return;
@@ -220,7 +204,6 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
         await receiveRow(currentBatch.id, no, {
           weight: parseFloat(sareeWeight),
           color: sareeColor,
-          photoUrl: photoUrl ?? undefined,
           warpG: Number.isFinite(warpG) ? warpG : undefined,
           reshamG: Number.isFinite(reshamG) ? reshamG : undefined,
           jariReels: Number.isFinite(jariReels) ? jariReels : undefined,
@@ -230,7 +213,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
           id: s.sareeId, weaver: loomLabel, wcode: "", batch: currentBatch.id,
           weight: `${sareeWeight}g`, date: dateStr,
           color: sareeColor, status: "Pending QC",
-          photoUrl, loomNumber: selectedLoom.loomNumber,
+          loomNumber: selectedLoom.loomNumber,
           sareeType: effectiveTypeCode ?? currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
         });
       }
@@ -305,7 +288,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
           </div>
           {selectedSareeNos.size > 1 && (
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 10 }}>
-              Color, weight and photo entered below apply to all {selectedSareeNos.size} selected sarees.
+              Color and weight entered below apply to all {selectedSareeNos.size} selected sarees.
             </div>
           )}
 
@@ -315,7 +298,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
               className="h-12 text-sm" />
           </div>
 
-          <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 10, marginBottom: 10 }}>
+          <div style={{ marginBottom: 10 }}>
             <div>
               <FieldLabel>Weight (grams)</FieldLabel>
               <div style={{ position: "relative" }}>
@@ -328,44 +311,6 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
                   <span style={{ fontFamily: F.u, fontSize: 12, color: weightOk ? C.green : C.crim }}>
                     {weightOk ? "OK" : "Too low"}
                   </span>
-                </div>
-              )}
-            </div>
-            <div>
-              <FieldLabel>Photo</FieldLabel>
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                style={{ display: "none" }}
-                onChange={e => { void handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
-                aria-label="Camera photo input"
-              />
-              <input
-                ref={galleryInputRef}
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                onChange={e => { void handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
-                aria-label="Gallery photo input"
-              />
-              {!hasPhoto ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <Button variant="primary" size="sm" iconLeft={Camera} disabled={photoUploading} onClick={() => cameraInputRef.current?.click()} className="h-11 rounded-[12px] bg-[#6E0F2D] hover:bg-[#4A061B]">
-                    {photoUploading ? "Uploading…" : "Camera"}
-                  </Button>
-                  <Button variant="secondary" size="sm" iconLeft={UploadCloud} disabled={photoUploading} onClick={() => galleryInputRef.current?.click()} className="h-11 rounded-[12px] border-[#6E0F2D] text-[#6E0F2D]">
-                    Gallery
-                  </Button>
-                  {photoError && <span style={{ fontSize: 11, color: "#C0392B" }}>{photoError}</span>}
-                </div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 82, backgroundImage: `url(${resolveAssetUrl(photoUrl)})`, backgroundSize: "cover", backgroundPosition: "center", borderRadius: 8, border: `1px solid ${C.bdr}`, position: "relative" }}>
-                  <div style={{ position: "absolute", top: -4, right: -4, width: 18, height: 18, background: C.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <CheckCircle2 size={10} color="#FFF" />
-                  </div>
-                  <Button variant="link" onClick={() => setHasPhoto(false)} className="absolute bottom-[3px] right-[5px] p-0 text-xs text-white bg-black/40 rounded px-1">Retake</Button>
                 </div>
               )}
             </div>
@@ -385,7 +330,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
             onEdit={setMatEdits}
           />
 
-          {sareeColor && sareeWeight && hasPhoto && (
+          {sareeColor && sareeWeight && (
             <div style={{ textAlign: "center", marginBottom: 10 }}>
               <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 2 }}>
                 {selectedSareeNos.size === 1 ? "Saree ID" : `Saree IDs (${selectedSareeNos.size})`}
@@ -398,7 +343,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
 
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => setShowTagPrint(true)}
-              disabled={!sareeColor || !sareeWeight || !hasPhoto}
+              disabled={!sareeColor || !sareeWeight}
               className="h-11 rounded-full border-[rgba(200,155,71,0.55)] text-[#845E04]">
               Print Tag{selectedSareeNos.size > 1 ? "s" : ""}
             </Button>
@@ -441,7 +386,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
                   id: s.sareeId, weaver: loomLabel, wcode: "", batch: currentBatch.id,
                   weight: sareeWeight ? `${sareeWeight}g` : "—", date: dateStr,
                   color: sareeColor || "—", status: "Defective",
-                  photoUrl, loomNumber: selectedLoom.loomNumber,
+                  loomNumber: selectedLoom.loomNumber,
                   sareeType: effectiveTypeCode ?? currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
                 });
               });

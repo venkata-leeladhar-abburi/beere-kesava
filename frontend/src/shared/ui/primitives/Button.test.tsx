@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Button } from "./Button";
 import { IconButton } from "./IconButton";
 
@@ -11,6 +11,49 @@ describe("Button", () => {
     const btn = screen.getByRole("button", { name: "Add customer" });
     fireEvent.click(btn);
     expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it("ignores repeat clicks while an async handler is still in flight", async () => {
+    // The Raise Quotation bug: the modal only closes once the POST resolves,
+    // so every extra click in the meantime raised another quotation.
+    let release!: () => void;
+    const onClick = vi.fn(() => new Promise<void>(resolve => { release = resolve; }));
+    render(<Button onClick={onClick}>Raise Quotation</Button>);
+    const btn = screen.getByRole("button", { name: /Raise Quotation/ });
+
+    fireEvent.click(btn);
+    fireEvent.click(btn);
+    fireEvent.click(btn);
+
+    expect(onClick).toHaveBeenCalledOnce();
+    expect(btn).toBeDisabled();
+
+    release();
+    await waitFor(() => expect(btn).not.toBeDisabled());
+  });
+
+  it("re-enables after a failed async handler so the action can be retried", async () => {
+    const onClick = vi.fn(() => Promise.reject(new Error("network")));
+    render(<Button onClick={onClick}>Save</Button>);
+    const btn = screen.getByRole("button", { name: "Save" });
+
+    fireEvent.click(btn);
+    await waitFor(() => expect(btn).not.toBeDisabled());
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it("leaves a synchronous handler able to fire repeatedly", () => {
+    // Filters, toggles and steppers return undefined and must stay rapid-fire.
+    const onClick = vi.fn();
+    render(<Button onClick={onClick}>Next</Button>);
+    const btn = screen.getByRole("button", { name: "Next" });
+
+    fireEvent.click(btn);
+    fireEvent.click(btn);
+    fireEvent.click(btn);
+
+    expect(onClick).toHaveBeenCalledTimes(3);
+    expect(btn).not.toBeDisabled();
   });
 
   it("defaults to the secondary variant so it never silently becomes a primary CTA", () => {

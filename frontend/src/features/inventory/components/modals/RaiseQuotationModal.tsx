@@ -24,13 +24,17 @@ import { DocumentViewer, QuotationDocument, toQuotationItems, DEFAULT_LETTERHEAD
 export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, initialBulkOrderRef, initialCustomerId }: {
   sarees: FinishingReturn[];
   available: FinishingReturn[];
-  onConfirm: (inv: InvoiceData, customerId: string, bulkOrderRef: string | undefined, picked: FinishingReturn[]) => void;
+  onConfirm: (inv: InvoiceData, customerId: string, bulkOrderRef: string | undefined, picked: FinishingReturn[]) => void | Promise<void>;
   onClose: () => void;
   initialBulkOrderRef?: string;
   initialCustomerId?: string;
 }) {
   const today = new Date().toISOString().slice(0, 10);
   const [step, setStep] = useState(1);
+  // Guards the whole POST, not just the click. Without it every extra click
+  // while the request was in flight raised another quotation — each one
+  // consuming the next saree off the selection.
+  const [submitting, setSubmitting] = useState(false);
   const [customerId, setCustomerId] = useState(initialCustomerId || "");
   const [customerSearch, setCustomerSearch] = useState("");
   const [bulkOrderRef, setBulkOrderRef] = useState(initialBulkOrderRef || "");
@@ -58,6 +62,23 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
   const STEPS = ["Customer", "Quotation", "Sarees"];
   const QUOTE_STEP = 2;
   const nextDisabled = (step === 1 && !canNext1) || (step === QUOTE_STEP && !canQuote);
+
+  const submitQuotation = async () => {
+    // Belt and braces: React batches state updates, so a second click landing
+    // in the same tick would see `submitting` still false via the disabled
+    // prop alone.
+    if (submitting || !canQuote) return;
+    setSubmitting(true);
+    try {
+      await onConfirm(inv, customerId, bulkOrderRef || undefined, picked);
+      // Deliberately not re-enabled on success: the caller closes the modal,
+      // and flipping back to enabled first would show a live button for a
+      // frame on an already-submitted quotation.
+    } catch {
+      // The caller surfaces the error toast; re-enable so it can be retried.
+      setSubmitting(false);
+    }
+  };
 
   return (
     <Modal open onOpenChange={o => !o && onClose()} size="xl">
@@ -216,15 +237,20 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
             </Button>
           ) : (
             <Button
-              onClick={() => onConfirm(inv, customerId, bulkOrderRef || undefined, picked)}
-              disabled={!canQuote}
+              onClick={() => void submitQuotation()}
+              // Stays disabled for the whole round trip, not just until the
+              // click handler returns — raising a quotation is a POST, and the
+              // modal only closes once it resolves.
+              disabled={!canQuote || submitting}
+              loading={submitting}
+              loadingLabel="Raising quotation"
               variant="primary"
               size="lg"
               iconLeft={Send}
               fullWidth
               className="rounded-full bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)] shadow-[0_4px_20px_rgba(110,15,45,0.25)]"
             >
-              Raise Quotation
+              {submitting ? "Raising…" : "Raise Quotation"}
             </Button>
           )}
         </div>

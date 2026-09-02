@@ -135,6 +135,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
     disabled,
     asChild = false,
     children,
+    onClick,
     ...props
   },
   ref
@@ -142,22 +143,58 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
   const Comp = asChild ? Slot : "button";
   const showHitArea = size === "sm" || size === "md";
 
+  // Double-submit guard. An async onClick (raising a quotation, receiving a
+  // saree, saving a batch) only closes its modal once the request resolves, so
+  // between the click and the response the button sat live — and every extra
+  // click fired the whole handler again, creating duplicate records. Any
+  // handler that returns a promise now holds the button disabled until it
+  // settles, so this can't recur on a button nobody remembered to guard.
+  //
+  // Purely synchronous handlers return undefined and are untouched.
+  const [pending, setPending] = React.useState(false);
+  // Survives the unmount that a successful submit usually causes — setting
+  // state on a gone component is a no-op warning at best.
+  const mounted = React.useRef(true);
+  React.useEffect(() => () => { mounted.current = false; }, []);
+
+  const handleClick = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (pending) return;
+      const result = onClick?.(event) as unknown;
+      if (!result || typeof (result as PromiseLike<unknown>).then !== "function") return;
+      setPending(true);
+      const clear = () => { if (mounted.current) setPending(false); };
+      // Both settle paths are handled here rather than via .finally(), which
+      // would re-reject and surface as an unhandled rejection on top of
+      // whatever the caller already does. A promise that rejects this far up
+      // had no handler of its own, so it is logged rather than swallowed.
+      Promise.resolve(result).then(clear, (error: unknown) => {
+        clear();
+        console.error("Button onClick failed:", error);
+      });
+    },
+    [onClick, pending],
+  );
+
+  const busy = loading || pending;
+
   return (
     <Comp
       ref={ref as never}
       data-slot="button"
-      aria-busy={loading || undefined}
-      disabled={disabled || loading}
+      aria-busy={busy || undefined}
+      disabled={disabled || busy}
+      onClick={onClick ? handleClick : undefined}
       className={cn(buttonVariants({ variant, size, fullWidth, className }))}
       {...props}
     >
       {showHitArea && (
         <span aria-hidden="true" className="absolute inset-x-0 pointer-events-none" style={{ inset: `${HIT_AREA_INSET[size]}` }} />
       )}
-      {loading ? <Icon icon={Icons.spinner} size="sm" className="animate-spin" decorative /> : resolveIcon(iconLeft)}
-      {loading && <span className="sr-only">{loadingLabel}</span>}
+      {busy ? <Icon icon={Icons.spinner} size="sm" className="animate-spin" decorative /> : resolveIcon(iconLeft)}
+      {busy && <span className="sr-only">{loadingLabel}</span>}
       {children}
-      {!loading && resolveIcon(iconRight)}
+      {!busy && resolveIcon(iconRight)}
     </Comp>
   );
 });

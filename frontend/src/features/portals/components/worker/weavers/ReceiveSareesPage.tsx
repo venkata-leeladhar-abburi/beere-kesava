@@ -1,9 +1,9 @@
 /* eslint-disable no-restricted-syntax */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  Camera, UploadCloud, CheckCircle2, AlertTriangle,
+  Camera, CheckCircle2, AlertTriangle,
   Plus, Printer, RotateCcw,
 } from "lucide-react";
 import { C, F, card } from "../tokens";
@@ -23,8 +23,6 @@ import { SareeSelectionTable } from "./SareeSelectionTable";
 import { ReceiveRecipientPicker, type RecipientOption } from "./ReceiveRecipientPicker";
 import { Button, Input, NumberInput } from "../../../../../shared/ui/primitives";
 import { toPaise, fromPaise } from "../../../../../lib/gst";
-import { resolveAssetUrl } from "@/shared/api/uploads";
-import { useImageUpload } from "@/shared/hooks/useImageUpload";
 import { useAuth } from "../../../../../contexts/AuthContext";
 import { isApiError } from "@/shared/api/client";
 import { Modal } from "@/shared/ui/overlay/Modal";
@@ -144,20 +142,6 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
   // Retail selling price for this specific saree — optional; when left
   // blank, the New Sale flow falls back to the saree type's shared rate.
   const [sareePrice, setSareePrice] = useState("");
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const hasPhoto = photoUrl !== null;
-  const setHasPhoto = (v: boolean) => { if (!v) setPhotoUrl(null); };
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
-  // The received-saree photo is evidence kept on the batch row, so it goes to
-  // object storage and we hold the stored path — not a base64 data URL, which
-  // never reached the server at all before.
-  const { upload: uploadPhoto, uploading: photoUploading, error: photoError } = useImageUpload();
-  const handlePhotoFile = async (file: File | undefined) => {
-    if (!file) return;
-    const url = await uploadPhoto(file);
-    if (url) setPhotoUrl(url);
-  };
   const [matEdits, setMatEdits] = useState<Partial<MatSplit>>({});
   // Type this receipt is booked under — seeded from the batch row's assigned
   // type, overridable per receipt (see SareeTypePicker). `null` means "not
@@ -200,13 +184,13 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
     setSelectedWeaver(w);
     setSelectedBatchId(w ? (batches[w.id]?.[0]?.id ?? null) : null);
     setSelectedSareeNos(new Set());
-    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({}); setTypeOverride(null);
+    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setMatEdits({}); setTypeOverride(null);
   }, [WEAVERS, batches]);
 
   const pickBatch = useCallback((batchId: string) => {
     setSelectedBatchId(batchId);
     setSelectedSareeNos(new Set());
-    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({}); setTypeOverride(null);
+    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setMatEdits({}); setTypeOverride(null);
   }, []);
 
   const selectSareeSlot = (no: number) => {
@@ -218,21 +202,21 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
       else next.add(no);
       return next;
     });
-    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
+    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setMatEdits({});
   };
 
   const toggleAllSarees = () => {
     const pending = currentBatch?.sarees.filter(s => s.status === "pending") ?? [];
     const allSelected = pending.length > 0 && pending.every(s => selectedSareeNos.has(s.no));
     setSelectedSareeNos(allSelected ? new Set() : new Set(pending.map(s => s.no)));
-    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({}); setTypeOverride(null);
+    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setMatEdits({}); setTypeOverride(null);
   };
 
   // A type is required, not optional: QcService refuses a saree with none
   // ("has no saree type assigned yet"), which would strand it between receipt
   // and QC with nothing on screen explaining why.
   const canSaveSaree =
-    selectedSareeNos.size > 0 && !!sareeColor && !!sareeWeight && !!effectiveTypeCode && hasPhoto && !isSaving;
+    selectedSareeNos.size > 0 && !!sareeColor && !!sareeWeight && !!effectiveTypeCode && !isSaving;
 
   const saveSaree = async () => {
     if (!selectedWeaver || !currentBatch || selectedSareeNos.size === 0 || !canSaveSaree) return;
@@ -255,7 +239,6 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
           await receiveRow(currentBatch.id, no, {
             weight: parseFloat(sareeWeight),
             color: sareeColor,
-            photoUrl: photoUrl ?? undefined,
             warpG: Number.isFinite(warpG) ? warpG : undefined,
             reshamG: Number.isFinite(reshamG) ? reshamG : undefined,
             jariReels: Number.isFinite(jariReels) ? jariReels : undefined,
@@ -280,11 +263,11 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
           id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.id, weaverCode: selectedWeaver.code, batch: currentBatch.id,
           weight: `${sareeWeight}g`, date: dateStr,
           color: sareeColor, status: "Pending QC",
-          photoUrl, loomNumber: s.weaverLoom ?? currentBatch.loomNumber ?? null,
+          loomNumber: s.weaverLoom ?? currentBatch.loomNumber ?? null,
           sareeType: effectiveTypeCode ?? currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
         });
       }
-      setSelectedSareeNos(new Set()); setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({}); setTypeOverride(null);
+      setSelectedSareeNos(new Set()); setSareeColor(""); setSareeWeight(""); setSareePrice(""); setMatEdits({}); setTypeOverride(null);
     } finally {
       setIsSaving(false);
     }
@@ -366,7 +349,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                 </div>
                 {selectedSareeNos.size > 1 && (
                   <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 10 }}>
-                    Color, weight and photo entered below apply to all {selectedSareeNos.size} selected sarees.
+                    Color and weight entered below apply to all {selectedSareeNos.size} selected sarees.
                   </div>
                 )}
 
@@ -387,7 +370,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
 
 
 
-                <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 10, marginBottom: 10 }}>
+                <div style={{ marginBottom: 10 }}>
                   <div>
                     <FieldLabel>Weight (grams)</FieldLabel>
                     <div style={{ position: "relative" }}>
@@ -403,44 +386,6 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                       </div>
                     )}
                   </div>
-                  <div>
-                    <FieldLabel>Photo</FieldLabel>
-                    <input
-                      ref={cameraInputRef}
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      style={{ display: "none" }}
-                      onChange={e => { void handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
-                      aria-label="Camera photo input"
-                    />
-                    <input
-                      ref={galleryInputRef}
-                      type="file"
-                      accept="image/*"
-                      style={{ display: "none" }}
-                      onChange={e => { void handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
-                      aria-label="Gallery photo input"
-                    />
-                    {!hasPhoto ? (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        <Button variant="primary" size="sm" iconLeft={Camera} disabled={photoUploading} onClick={() => cameraInputRef.current?.click()} className="h-11 rounded-[12px] bg-[#6E0F2D] hover:bg-[#4A061B]">
-                          {photoUploading ? "Uploading…" : "Camera"}
-                        </Button>
-                        <Button variant="secondary" size="sm" iconLeft={UploadCloud} disabled={photoUploading} onClick={() => galleryInputRef.current?.click()} className="h-11 rounded-[12px] border-[#6E0F2D] text-[#6E0F2D]">
-                          Gallery
-                        </Button>
-                        {photoError && <span style={{ fontSize: 11, color: "#C0392B" }}>{photoError}</span>}
-                      </div>
-                    ) : (
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 82, backgroundImage: `url(${resolveAssetUrl(photoUrl)})`, backgroundSize: "cover", backgroundPosition: "center", borderRadius: 8, border: `1px solid ${C.bdr}`, position: "relative" }}>
-                        <div style={{ position: "absolute", top: -4, right: -4, width: 18, height: 18, background: C.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <CheckCircle2 size={10} color="#FFF" />
-                        </div>
-                        <Button variant="link" onClick={() => setHasPhoto(false)} className="absolute bottom-[3px] right-[5px] p-0 text-xs text-white bg-black/40 rounded px-1">Retake</Button>
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 <MaterialSplitPanel
@@ -450,7 +395,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                   onEdit={setMatEdits}
                 />
 
-                {sareeColor && sareeWeight && hasPhoto && (
+                {sareeColor && sareeWeight && (
                   <div style={{ textAlign: "center", marginBottom: 10 }}>
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 2 }}>
                       {selectedSareeNos.size === 1 ? "Saree ID" : `Saree IDs (${selectedSareeNos.size})`}
@@ -479,7 +424,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
 
             {currentBatch && selectedSareeNos.size === 0 && !allDone && (
               <div style={{ margin: "10px 16px 0", padding: "10px 14px", background: "rgba(110,15,45,0.04)", border: `1px dashed ${C.bdr}`, borderRadius: 10, textAlign: "center" }}>
-                <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Tap one or more pending sarees above (or Select All) to record color, weight and photo.</span>
+                <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Tap one or more pending sarees above (or Select All) to record color and weight.</span>
               </div>
             )}
 
@@ -504,14 +449,14 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                         id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.id, weaverCode: selectedWeaver.code, batch: currentBatch.id,
                         weight: sareeWeight ? `${sareeWeight}g` : "—", date: dateStr,
                         color: sareeColor || "—", status: "Defective",
-                        photoUrl, loomNumber: s.weaverLoom ?? currentBatch.loomNumber ?? null,
+                        loomNumber: s.weaverLoom ?? currentBatch.loomNumber ?? null,
                         sareeType: effectiveTypeCode ?? currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
                       });
                     });
                   }
                   setShowDefectPrompt(false);
                   setSelectedSareeNos(new Set());
-                  setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
+                  setSareeColor(""); setSareeWeight(""); setSareePrice(""); setMatEdits({});
                 }}
               />
             )}
