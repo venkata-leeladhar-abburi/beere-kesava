@@ -15,28 +15,19 @@ export function externalSerialOf(sareeId: string): string | null {
 
 /** Whether a saree may be ticked for a quotation or a dispatch.
  *
- *  Mirrors DispatchService.create's rejection rule exactly — QC passed, and not
- *  already DISPATCHED / SOLD / DAMAGED_REVIEW_NEEDED.
- *
- *  A clean QC pass is the real precondition: DispatchService.create rejects
- *  anything else outright ("Saree(s) have not passed QC and cannot be
- *  dispatched"), so allowing sarees still in production or awaiting QC to be
- *  ticked only walked the operator into a server error they could do nothing
- *  about. Semi-approved and defective sarees need a QC decision first, and a
- *  saree already on a dispatch record is off the shelf.
+ *  Mirrors DispatchService.create's rejection rule exactly — not already
+ *  DISPATCHED / SOLD / DAMAGED_REVIEW_NEEDED. QC/finishing status is no
+ *  longer a precondition (product decision): whatever is selected in
+ *  Inventory must be dispatchable to Shop or Wholesale regardless of
+ *  whether it has passed QC or finished, since a saree already off the
+ *  shelf (dispatched/sold) or flagged for damage review is the only thing
+ *  that genuinely can't be dispatched again.
  *
  *  Exported so the inventory page resolves its selection through the very same
  *  rule the table's checkboxes use: what you can tick is exactly what the
- *  dispatch/quotation modals receive, and exactly what the server accepts.
- *
- *  External-purchase sarees never go through QC at all — they arrive
- *  already finished from the supplier, so `qcStatus` on those rows just sits
- *  at its "pending" default forever (see useExternalPurchaseRows.ts). Gating
- *  them on `qcStatus === "passed"` the same way as woven sarees permanently
- *  blocked every external saree from being picked at all. */
+ *  dispatch/quotation modals receive, and exactly what the server accepts. */
 export const isSareePickable = (r: WeaverSareeRow): boolean =>
-  (r.stock?.origin === "external" || r.qcStatus === "passed")
-  && !r.dispatched
+  !r.dispatched
   && !r.sold
   && r.finishingStatus !== "rejected";
 
@@ -46,10 +37,6 @@ export function pickBlockedReason(r: WeaverSareeRow): string | undefined {
   if (r.sold) return "Already sold — it is no longer in stock";
   if (r.dispatched) return "Already dispatched";
   if (r.finishingStatus === "rejected") return "Came back damaged from finishing — needs review before it can be dispatched";
-  if (r.stock?.origin === "external") return undefined;
-  if (r.qcStatus === "defective") return "Failed QC — needs a decision before it can be dispatched";
-  if (r.qcStatus === "semi") return "Semi-approved — needs a QC decision before it can be dispatched";
-  if (r.qcStatus !== "passed") return "Not QC-passed yet — it cannot be dispatched or quoted";
   return undefined;
 }
 

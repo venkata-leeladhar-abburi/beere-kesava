@@ -3,5 +3,5 @@
 export { WeaverSareesSection } from "./WeaverSareesSection/index";
 export type { WeaverSareeRow, ExternalPieceInfo } from "./WeaverSareesSection/types";
 export { useExternalPurchaseRows } from "./WeaverSareesSection/useExternalPurchaseRows";
-export { isSareePickable, pickBlockedReason } from "./WeaverSareesSection/utils";
+export { isSareePickable, pickBlockedReason, externalSerialOf } from "./WeaverSareesSection/utils";
 export { usePrintSareeTags, type SareeTagData } from "./WeaverSareesSection/SareeTagPrint";

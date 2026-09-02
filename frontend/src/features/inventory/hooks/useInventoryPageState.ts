@@ -49,6 +49,11 @@ export function useInventoryPageState() {
   const [viewingItem, setViewingItem]         = useState<InventoryRecord | null>(null);
   const [modal,    setModal]                  = useState<"shop" | "wholesale" | "quotation" | null>(null);
   const [scanMsg,  setScanMsg]                = useState("");
+  // Non-blocking detail card shown next to the scan box after a successful
+  // scan — a modal on every scan would break bulk-scanning several sarees
+  // in a row, so this is a persisted inline panel instead (cleared by the
+  // next scan attempt, not a timer, so there's time to actually read it).
+  const [scanDetail, setScanDetail]           = useState<WeaverSareeRow | null>(null);
   const [quotationDispatch, setQuotationDispatch] = useState<Quotation | null>(null);
   const [resumeDispatch, setResumeDispatch]   = useState<DispatchRecord | null>(null);
   const [viewingInvoice, setViewingInvoice]   = useState<DispatchRecord | null>(null);
@@ -269,6 +274,7 @@ export function useInventoryPageState() {
   const handleScan = useCallback((rawId: string) => {
     const id = rawId.trim();
     const show = (msg: string) => { setScanMsg(msg); setTimeout(() => setScanMsg(""), 2500); };
+    setScanDetail(null);
     if (!id) return show("Scan a barcode or type a saree ID.");
 
     const match = allRows.find(r => r.sareeId.toLowerCase() === id.toLowerCase());
@@ -283,6 +289,7 @@ export function useInventoryPageState() {
     if (selected.has(match.sareeId)) return show(`${match.sareeId} is already selected.`);
 
     setSelected(prev => new Set(prev).add(match.sareeId));
+    setScanDetail(match);
     show(`Selected ${match.sareeId}`);
     // The selected row sorts to the top of page 1 inside WeaverSareesSection,
     // but that alone doesn't move the user's scroll position — on a long
@@ -450,6 +457,8 @@ export function useInventoryPageState() {
     setModal,
     scanMsg,
     setScanMsg,
+    scanDetail,
+    setScanDetail,
     quotationDispatch,
     setQuotationDispatch,
     resumeDispatch,

@@ -79,13 +79,13 @@ export class DispatchService {
       if (missing.length > 0) {
         throw new NotFoundException(`Saree(s) not found in inventory: ${missing.join(", ")}`);
       }
-      const notQcPassed = unrecorded.filter((id) => !wovenById.get(id)!.qcPassed);
-      if (notQcPassed.length > 0) {
-        throw new BadRequestException(
-          `Saree(s) have not passed QC and cannot be dispatched: ${notQcPassed.join(", ")}`,
-        );
-      }
 
+      // QC/finishing status no longer gates dispatch (product decision —
+      // whatever is selected in Inventory, dispatching it to Shop or
+      // Wholesale must succeed and mark it dispatched, regardless of
+      // qcPassed or finishing state). The on-demand InventoryRecord opened
+      // here is immediately overwritten to DISPATCHED below either way, so
+      // its starting status is only ever visible for the instant in between.
       await this.prisma.inventoryRecord.createMany({
         data: unrecorded.map((sareeId) => {
           const row = wovenById.get(sareeId)!;

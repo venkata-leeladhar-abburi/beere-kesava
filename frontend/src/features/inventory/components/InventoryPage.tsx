@@ -74,6 +74,7 @@ export function InventoryPage({
     modal,
     setModal,
     scanMsg,
+    scanDetail,
     quotationDispatch,
     setQuotationDispatch,
     resumeDispatch,
@@ -131,6 +132,7 @@ export function InventoryPage({
               selectedCount={selected.size}
               dispatchableSelectedCount={dispatchableSelected.length}
               scanMsg={scanMsg}
+              scanDetail={scanDetail}
               onScan={handleScan}
               canDispatchShop={canDispatchShop}
               canDispatchWholesale={canDispatchWholesale}

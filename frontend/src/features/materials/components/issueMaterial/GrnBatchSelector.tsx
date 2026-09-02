@@ -262,6 +262,8 @@ export function GrnBatchSelector({ grnBatches, materialType, value, selectedLine
           </div>
           <div style={{ marginTop: 2 }}>
             From <strong style={{ color: T.luxuryBrown }}>{selectedBatch.grnBatchId}</strong>
+            {" · "}<strong style={{ color: T.luxuryBrown }}>{selectedBatch.vendor}</strong>
+            {" · received "}<strong style={{ color: T.luxuryBrown }}>{selectedBatch.dateReceived}</strong>
             {selectedBatch.poNumber && <> · Purchase Order <strong style={{ color: T.luxuryBrown }}>{selectedBatch.poNumber}</strong></>}
           </div>
 

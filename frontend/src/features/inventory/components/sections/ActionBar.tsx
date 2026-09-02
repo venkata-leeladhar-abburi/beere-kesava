@@ -4,12 +4,18 @@ import { Scan, X, ShoppingBag, Users, FileText } from "lucide-react";
 import { T, F, EASE, card } from "../theme";
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 import { CameraScannerModal } from "../../../../shared/ui/CameraScannerModal";
+import { WeaverSareeRow, externalSerialOf } from "@/features/weavers";
+import { formatMoney, rupees } from "@/lib/domain/money";
 
 interface ActionBarProps {
   hasAnyDispatchAction: boolean;
   selectedCount: number;
   dispatchableSelectedCount: number;
   scanMsg: string;
+  /** The saree a scan just matched — shown as a non-blocking detail card so
+   *  scanning several sarees in a row (a normal bulk-dispatch workflow)
+   *  never gets interrupted by a modal. Cleared by the next scan attempt. */
+  scanDetail?: WeaverSareeRow | null;
   onScan: (sareeId: string) => void;
   canDispatchShop: boolean;
   canDispatchWholesale: boolean;
@@ -18,11 +24,73 @@ interface ActionBarProps {
   onClearSelection: () => void;
 }
 
+/** All the fields printed on that saree's tag — supplier short name,
+ *  invoice, serial, saree type, weight/colour, cost + selling price for an
+ *  external-purchase piece; weaver/loom/weight/date for a woven one. */
+function ScanDetailCard({ r }: { r: WeaverSareeRow }) {
+  const isExternal = r.stock?.origin === "external";
+  const inr = (n: number) => formatMoney(rupees(n));
+
+  const fields: { label: string; value: string }[] = isExternal
+    ? [
+        { label: "Supplier", value: r.stock?.supplier || "—" },
+        { label: "Invoice No.", value: r.stock?.invoiceNumber || "—" },
+        { label: "Serial No.", value: externalSerialOf(r.sareeId) || "—" },
+        { label: "Saree Type", value: r.sareeTypeName || "—" },
+        { label: "Colour", value: r.color || "—" },
+        { label: "Weight", value: r.stock?.weight || "—" },
+        { label: "Cost Price", value: r.stock?.costPrice != null ? inr(r.stock.costPrice) : "—" },
+        { label: "Selling Price", value: r.stock?.finalAmount != null ? inr(r.stock.finalAmount) : "—" },
+      ]
+    : [
+        { label: "Weaver / Loom", value: [r.ownerLabel, r.loomNumber != null ? `Loom ${r.loomNumber}` : null].filter(Boolean).join(" · ") || "—" },
+        { label: "Saree Type", value: r.sareeTypeName || "—" },
+        { label: "Colour", value: r.color || "—" },
+        { label: "Weight", value: r.weight != null ? `${r.weight}g` : "—" },
+        { label: "Batch", value: r.batchId || "—" },
+        { label: "Date", value: r.qcDate || r.receivedDate || r.assignedDate || "—" },
+      ];
+
+  return (
+    <div
+      style={{
+        marginTop: 2,
+        background: "#FFF",
+        border: `1px solid ${T.borderDef}`,
+        borderRadius: 10,
+        padding: "12px 14px",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8, gap: 8 }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 13, color: T.royalBurgundy }}>{r.sareeId}</span>
+        {isExternal && (
+          <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.antiqueGold, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>
+            External Purchase
+          </span>
+        )}
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 10 }}>
+        {fields.map(f => (
+          <div key={f.label}>
+            <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px", marginBottom: 2 }}>
+              {f.label}
+            </div>
+            <div style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown, wordBreak: "break-word" as const }}>
+              {f.value}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ActionBar({
   hasAnyDispatchAction,
   selectedCount,
   dispatchableSelectedCount,
   scanMsg,
+  scanDetail,
   onScan,
   canDispatchShop,
   canDispatchWholesale,
@@ -95,6 +163,8 @@ export function ActionBar({
             {scanMsg}
           </div>
         )}
+
+        {scanDetail && <ScanDetailCard r={scanDetail} />}
       </div>
 
       {/* Action bar — always visible so the dispatch routes are discoverable

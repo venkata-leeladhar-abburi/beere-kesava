@@ -11,7 +11,6 @@
  * value the Issue Material scanner matches against, and the whole point of the
  * tag is to identify this one material, not the delivery it arrived in.
  */
-import { ScannableCode } from "@/shared/ui/domain";
 import { labelsApi } from "@/shared/api/labels";
 
 export interface GrnLabel {
@@ -66,18 +65,14 @@ function LabelTile({ label }: { label: GrnLabel }) {
           {label.receivedDate && <div>{label.receivedDate}</div>}
         </div>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2mm", flexShrink: 0 }}>
-        <ScannableCode value={label.code} size={100} />
-        {/* Server-generated Code128, alongside the QR rather than instead of
-            it — QR alone stays the primary code (see ScannableCode's own
-            comment: it survives the smudging a yarn/dye drum tag picks up
-            far better than a linear barcode's thin lines do), but a plain
-            barcode reader that can't decode QR still needs something to
-            scan. */}
+      {/* Barcode only, same style as the saree tags (SareeTagPrint.tsx) —
+          no QR alongside it. The code itself is already printed in the text
+          column on the left, so it isn't repeated here. */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, width: "34mm", height: "100%" }}>
         <img
           src={labelsApi.barcodeUrl(label.code)}
           alt={`Barcode for ${label.code}`}
-          style={{ width: "30mm", height: "10mm", objectFit: "contain" }}
+          style={{ width: "100%", height: "16mm", objectFit: "contain" }}
         />
       </div>
     </div>
