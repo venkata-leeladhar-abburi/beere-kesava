@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { motion, useInView } from "motion/react";
-import { Download, FileText, Calendar, type LucideIcon } from "lucide-react";
+import { Download, Calendar, type LucideIcon } from "lucide-react";
 import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
@@ -266,7 +266,7 @@ export function SumCard({ icon, label, value, sub, hi = false, crimsonHi = false
  * live period selection, and the buttons export the visible section's rows.
  */
 export function ReportDLBar({ note }: { note?: string }) {
-  const { label, priorLabel, compareOn, exportCsv, exportPdf, canExport } = useReportPeriod();
+  const { label, priorLabel, compareOn, exportExcel, canExport } = useReportPeriod();
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0" style={{ background: T.warmIvory, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 20px", marginBottom: 24, boxShadow: "0 2px 8px rgba(74,6,27,0.04)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -281,10 +281,7 @@ export function ReportDLBar({ note }: { note?: string }) {
       </div>
       <DownloadGate>
         <div className="w-full sm:w-auto flex flex-wrap gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-[rgba(110,15,45,0.08)] sm:border-transparent mt-1 sm:mt-0">
-          <Button variant="secondary" size="sm" iconLeft={FileText} onClick={exportPdf}>
-            Download PDF
-          </Button>
-          <Button variant="primary" size="sm" iconLeft={Download} onClick={exportCsv} disabled={!canExport}>
+          <Button variant="primary" size="sm" iconLeft={Download} onClick={exportExcel} disabled={!canExport}>
             Download Excel
           </Button>
         </div>

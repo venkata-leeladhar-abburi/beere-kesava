@@ -1,7 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Check, TrendingUp, TrendingDown, PlusCircle, FileSpreadsheet, ChevronDown, ChevronUp, Minus,
+  Check, TrendingUp, TrendingDown, PlusCircle, ChevronDown, ChevronUp, Minus,
   AlertTriangle, Pencil, Trash2,
 } from "lucide-react";
 import {
@@ -141,44 +141,6 @@ export function AddEntryForm({ type, onSave, onCancel, initial, saveLabel }: {
   );
 }
 
-export function ExcelUploadBtn({ onImport, type }: { onImport: (rows: Omit<FinancialEntry, "id">[]) => void; type: "income" | "expense" }) {
-  const ref = React.useRef<HTMLInputElement>(null);
-  const defaultCat = type === "income" ? "Wholesale Sale" : "Weaver Payments";
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async evt => {
-      try {
-        const XLSX = await import("xlsx");
-        const wb = XLSX.read(evt.target?.result, { type: "binary" });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows: Record<string, string>[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
-        const entries: Omit<FinancialEntry, "id">[] = rows
-          .filter(r => r["Description"] && r["Amount"])
-          .map(r => ({
-            description: String(r["Description"]),
-            amount: fromPaise(toPaise(Number(String(r["Amount"]).replace(/[^0-9.]/g, "")) || 0)),
-            date: r["Date"] ? String(r["Date"]) : today(),
-            category: (r["Category"] || defaultCat) as IncomeCategory | ExpenseCategory,
-          }))
-          .filter(e => e.amount > 0);
-        if (entries.length > 0) onImport(entries);
-      } catch { alert("Could not read Excel file. Please check format."); }
-    };
-    reader.readAsBinaryString(file);
-    e.target.value = "";
-  }
-  return (
-    <>
-      <Input type="file" accept=".xlsx,.xls,.csv" ref={ref} onChange={handleFile} containerClassName="hidden" />
-      <Button onClick={() => ref.current?.click()} variant="tertiary" size="sm" iconLeft={FileSpreadsheet}>
-        Import Excel
-      </Button>
-    </>
-  );
-}
-
 /**
  * Migrated onto <DataTable> — design-system/04-DATA-DISPLAY.md Part S.
  * Was a hand-rolled grid-as-table (header divs + EntryRow grid divs) with no
@@ -293,11 +255,10 @@ function EntryTable({ entries, type, duplicates, onEdit, onDelete }: {
   );
 }
 
-export function FinSection({ title, icon, entries, color, bg: _bg, onAdd, onBulkImport, type, duplicates, onUpdate, onDelete }: {
+export function FinSection({ title, icon, entries, color, bg: _bg, onAdd, type, duplicates, onUpdate, onDelete }: {
   title: string; icon: React.ReactNode;
   entries: FinancialEntry[]; color: string; bg: string;
   onAdd: (e: Omit<FinancialEntry, "id">) => void;
-  onBulkImport?: (rows: Omit<FinancialEntry, "id">[]) => void;
   type: "income" | "expense";
   duplicates?: Map<string, DuplicateMatch>;
   onUpdate?: (entryId: string, e: Omit<FinancialEntry, "id">) => void;
@@ -306,12 +267,8 @@ export function FinSection({ title, icon, entries, color, bg: _bg, onAdd, onBulk
   const [open, setOpen]       = React.useState(true);
   const [adding, setAdding]   = React.useState(false);
   const [editing, setEditing] = React.useState<FinancialEntry | null>(null);
-  const [importMsg, setImportMsg] = React.useState("");
   const dupCount = duplicates ? entries.filter(e => duplicates.has(e.id)).length : 0;
   const total = entries.reduce((s, e) => s + e.amount, 0);
-  function handleImport(rows: Omit<FinancialEntry, "id">[]) {
-    if (onBulkImport) { onBulkImport(rows); setImportMsg(`${rows.length} row${rows.length > 1 ? "s" : ""} imported`); setTimeout(() => setImportMsg(""), 3000); }
-  }
   return (
     <div className="mb-6 rounded-2xl border border-[#E8DCC4] overflow-hidden bg-white shadow-sm">
       <div
@@ -356,8 +313,6 @@ export function FinSection({ title, icon, entries, color, bg: _bg, onAdd, onBulk
                   Add Entry
                 </Button>
               </div>
-              {onBulkImport && <ExcelUploadBtn onImport={handleImport} type={type} />}
-              {importMsg && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 4 }}><Check size={12} /> {importMsg}</span>}
             </div>
             {dupCount > 0 && (
               <div style={{ margin: "12px 14px 14px", padding: "12px 16px", background: "rgba(200,155,71,0.10)", border: "1px solid rgba(200,155,71,0.32)", borderRadius: 12, display: "flex", gap: 10, alignItems: "flex-start" }}>
@@ -389,7 +344,7 @@ export function FinSection({ title, icon, entries, color, bg: _bg, onAdd, onBulk
             </AnimatePresence>
             {entries.length === 0 && !adding ? (
               <div style={{ padding: "24px 18px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe, background: "#FFF" }}>
-                No {title.toLowerCase()} recorded yet. Add entries manually or import from Excel.
+                No {title.toLowerCase()} recorded yet. Add entries manually.
               </div>
             ) : entries.length > 0 && (
               <div style={{ background: "#FFF" }}>

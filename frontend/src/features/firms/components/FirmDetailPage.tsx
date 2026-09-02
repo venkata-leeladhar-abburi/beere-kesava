@@ -124,7 +124,7 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments, initialTa
 }) {
   const {
     firms, getFirmFinancials, addIncomeEntry, addExpenseEntry, addMiscEntry,
-    bulkAddIncome, bulkAddExpenses, updateEntry, deleteEntry,
+    updateEntry, deleteEntry,
   } = useFirms();
   const confirm = useConfirm();
   const { documents, payments, isLoading, isError, error, refetch } = useFirmActivity(firm.id);
@@ -620,7 +620,6 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments, initialTa
                 title="Income" type="income" icon={<TrendingUp size={16} color={T.green} />}
                 entries={manualIncome} color={T.green} bg={T.greenBg}
                 onAdd={e => addIncomeEntry(firm.id, e as Omit<FinancialEntry, "id">)}
-                onBulkImport={rows => bulkAddIncome(firm.id, rows)}
                 duplicates={incomeDuplicates}
                 onUpdate={(entryId, e) => updateEntry(firm.id, entryId, e)}
                 onDelete={e => void handleDeleteEntry(e)}
@@ -629,7 +628,6 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments, initialTa
                 title="Expenses" type="expense" icon={<TrendingDown size={16} color={T.crimson} />}
                 entries={manualExpenses} color={T.crimson} bg={T.crimsonBg}
                 onAdd={e => addExpenseEntry(firm.id, e as Omit<FinancialEntry, "id">)}
-                onBulkImport={rows => bulkAddExpenses(firm.id, rows)}
                 duplicates={expenseDuplicates}
                 onUpdate={(entryId, e) => updateEntry(firm.id, entryId, e)}
                 onDelete={e => void handleDeleteEntry(e)}

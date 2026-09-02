@@ -162,8 +162,6 @@ interface FirmsContextValue {
   addIncomeEntry: (firmId: string, entry: Omit<FinancialEntry, "id">) => void;
   addExpenseEntry: (firmId: string, entry: Omit<FinancialEntry, "id">) => void;
   addMiscEntry: (firmId: string, entry: Omit<MiscEntry, "id">) => void;
-  bulkAddIncome: (firmId: string, entries: Omit<FinancialEntry, "id">[]) => void;
-  bulkAddExpenses: (firmId: string, entries: Omit<FinancialEntry, "id">[]) => void;
   /** Corrects a hand-typed entry in place — manual rows are the only part of
    *  the ledger that can carry a typo, so they're the only editable part. */
   updateEntry: (firmId: string, entryId: string, entry: Omit<FinancialEntry, "id"> | Omit<MiscEntry, "id">) => void;
@@ -275,23 +273,6 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  const bulkAddEntriesMutation = useMutation({
-    // One request per entry, but issued together rather than in a sequential
-    // await-loop: the database is remote, so a 20-row paste was paying 20 full
-    // round trips end to end instead of overlapping them.
-    mutationFn: (args: { firmId: string; payloads: CreateFinancialEntryPayload[] }) =>
-      Promise.all(args.payloads.map(payload => firmsApi.addEntry(args.firmId, payload))),
-    onSuccess: (created, args) => {
-      seedFinancials(args.firmId, fin => applyEntriesToFinancials(fin, created));
-      void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
-      void queryClient.invalidateQueries({ queryKey: ["firms", "activity", args.firmId] });
-      toast.success("Entries added");
-    },
-    onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Failed to add entries");
-    },
-  });
-
   // Editing/deleting an entry changes the firm's totals, so the auto-tracked
   // activity query is invalidated alongside the manual one — otherwise the
   // summary strip keeps showing the pre-edit figure until a hard refresh.
@@ -353,30 +334,6 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
       },
     });
 
-  const bulkAddIncome = (firmId: string, entries: Omit<FinancialEntry, "id">[]) =>
-    bulkAddEntriesMutation.mutate({
-      firmId,
-      payloads: entries.map((entry) => ({
-        kind: "INCOME" as const,
-        category: entry.category,
-        description: entry.description,
-        amount: entry.amount,
-        date: entry.date,
-      })),
-    });
-
-  const bulkAddExpenses = (firmId: string, entries: Omit<FinancialEntry, "id">[]) =>
-    bulkAddEntriesMutation.mutate({
-      firmId,
-      payloads: entries.map((entry) => ({
-        kind: "EXPENSE" as const,
-        category: entry.category,
-        description: entry.description,
-        amount: entry.amount,
-        date: entry.date,
-      })),
-    });
-
   // Mirrors the add* helpers' encoding: a misc entry carries its income/
   // expense sense in the category string, everything else in `kind`.
   const updateEntry = (
@@ -430,8 +387,6 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
         addIncomeEntry,
         addExpenseEntry,
         addMiscEntry,
-        bulkAddIncome,
-        bulkAddExpenses,
         updateEntry,
         deleteEntry,
         getFirmFinancials,
@@ -454,8 +409,6 @@ const FALLBACK_FIRMS: FirmsContextValue = {
   addIncomeEntry: () => {},
   addExpenseEntry: () => {},
   addMiscEntry: () => {},
-  bulkAddIncome: () => {},
-  bulkAddExpenses: () => {},
   updateEntry: () => {},
   deleteEntry: async () => {},
   getFirmFinancials: (firmId: string) => ({

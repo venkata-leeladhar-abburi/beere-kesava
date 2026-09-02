@@ -11,7 +11,7 @@ import { ChevronRight, ChevronDown, Image as ImageIcon, Printer, Camera, Upload,
 import { toast } from "sonner";
 import { resolveAssetUrl, uploadsApi } from "@/shared/api/uploads";
 import { T, F } from "../theme";
-import { SareeTag, expandSareePieces } from "../../contexts/SupplierContext";
+import { SareeTag, expandSareePieces, remainingQuantity } from "../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
@@ -265,8 +265,18 @@ export function SareeInventoryTable({
       cell: (_v, s) => <span style={mono(T.taupe)}>{s.purchaseId}</span>,
     },
     {
-      id: "qty", header: "Quantity", accessor: s => s.quantity,
-      cell: (_v, s) => <span style={mono(T.luxuryBrown)}>{s.quantity ?? 1} pcs</span>,
+      // Returned pieces are no longer ours, so the count shown is what is left.
+      id: "qty", header: "Quantity", accessor: s => remainingQuantity(s),
+      cell: (_v, s) => {
+        const left = remainingQuantity(s);
+        const returned = (Number(s.quantity) || 1) - left;
+        return (
+          <span style={mono(T.luxuryBrown)}>
+            {left} pcs
+            {returned > 0 && <span style={{ fontFamily: F.ui, fontSize: 11, color: T.crimson }}> ({returned} returned)</span>}
+          </span>
+        );
+      },
     },
     {
       id: "type", header: "Type", accessor: s => s.sareeType,
@@ -297,8 +307,8 @@ export function SareeInventoryTable({
       cell: (_v, s) => <span style={mono("#8B6018", { fontWeight: 700 })}>{formatMoney(rupees(s.finalAmount))}</span>,
     },
     {
-      id: "profit", header: "Profit", accessor: s => (s.finalAmount - s.price) * (s.quantity ?? 1),
-      cell: (_v, s) => <span style={mono(T.green, { fontWeight: 700 })}>{formatMoney(rupees((s.finalAmount - s.price) * (s.quantity ?? 1)))}</span>,
+      id: "profit", header: "Profit", accessor: s => (s.finalAmount - s.price) * remainingQuantity(s),
+      cell: (_v, s) => <span style={mono(T.green, { fontWeight: 700 })}>{formatMoney(rupees((s.finalAmount - s.price) * remainingQuantity(s)))}</span>,
     },
     {
       id: "barcodes", header: "Barcodes", accessor: () => null, type: "actions",
@@ -321,11 +331,15 @@ export function SareeInventoryTable({
         expandedIds={expandedIds}
         renderExpandedRow={s => {
           const pieces = expandSareePieces([s]);
+          const withUs = pieces.filter(p => !p.returned).length;
           return (
             <div style={{ padding: "10px 16px 16px 56px", background: "rgba(247,242,234,0.6)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>
-                  {pieces.length} saree{pieces.length !== 1 ? "s" : ""} under serial {s.id.split("-").pop()}
+                  {withUs} saree{withUs !== 1 ? "s" : ""} under serial {s.id.split("-").pop()}
+                  {pieces.length - withUs > 0 && (
+                    <span style={{ fontWeight: 600, color: T.crimson }}> · {pieces.length - withUs} returned</span>
+                  )}
                 </div>
                 <Button variant="primary" size="sm" iconLeft={Printer} onClick={() => printAllForRow(s)}>
                   Print All Barcodes

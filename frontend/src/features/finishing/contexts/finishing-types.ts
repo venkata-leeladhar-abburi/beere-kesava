@@ -138,6 +138,9 @@ export interface DispatchRecord {
   /** Server-relative path to the uploaded LR receipt, once one is attached. */
   receiptUrl?: string | null;
   quotationRef?: string;
+  /** Shop dispatches only — whether the counter has receipted the goods.
+   *  Until they have, the sarees are in transit and are not shop stock. */
+  receiptStatus?: "PENDING" | "PARTIALLY_RECEIVED" | "RECEIVED";
 }
 
 export interface FinishingContextValue {

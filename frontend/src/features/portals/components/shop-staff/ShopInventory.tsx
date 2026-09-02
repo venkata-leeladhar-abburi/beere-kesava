@@ -11,6 +11,8 @@ import { DateFilterBar, DEFAULT_DATE_FILTER, matchesDateFilter, type DateFilterS
 import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
 import { usePrintSareeTags } from "@/features/weavers";
 import { ShopReturnsSection } from "./ShopReturnsSection";
+import { IncomingDispatchSection } from "./IncomingDispatchSection";
+import { ReceivedHistorySection } from "./ReceivedHistorySection";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 /**
@@ -474,6 +476,17 @@ function ShopInventory() {
           { label: "Sold", value: soldCount, sub: "Already billed", icon: CheckCircle }
         ]} 
       />
+
+      {/* Incoming first: a consignment sitting unreceived is the one thing on
+          this page that needs doing, and nothing below it is stock until it
+          has been. Its receipt history follows, then returns. */}
+      <div style={{ marginTop: 32 }}>
+        <IncomingDispatchSection />
+      </div>
+
+      <div style={{ marginTop: 32 }}>
+        <ReceivedHistorySection />
+      </div>
 
       {/* Returns — their own stock, and the gate that lets them be sold. */}
       <div style={{ marginTop: 32 }}>

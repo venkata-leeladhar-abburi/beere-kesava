@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Truck, Users, ShoppingBag, Clock, CheckCircle2, Trash2, FileText, Pencil, LayoutGrid, LayoutList } from "lucide-react";
+import { Truck, Users, ShoppingBag, Clock, CheckCircle2, Trash2, FileText, Pencil, LayoutGrid, LayoutList, PackageCheck } from "lucide-react";
 import { DispatchRecord, useFinishing } from "@/features/finishing";
 import { useCustomers } from "@/features/customers";
 import { T, F } from "../theme";
@@ -126,6 +126,26 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
         : d.invoiceNumber
           ? <EntityCode type="invoice" value={d.invoiceNumber} />
           : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</span>,
+    },
+    {
+      // Whether the shop counter has acknowledged the goods. Wholesale goods
+      // left the business, so there is nothing for us to receive — the cell is
+      // blank there rather than falsely reading "Pending".
+      id: "receipt", header: "Shop receipt", accessor: d => (d.type === "shop" ? d.receiptStatus ?? "PENDING" : ""), width: 140, priority: 2,
+      cell: (_v, d) => {
+        if (d.type !== "shop") return <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</span>;
+        const status = d.receiptStatus ?? "PENDING";
+        const meta = {
+          RECEIVED: { label: "Received", color: "#0F766E", bg: "rgba(15,118,110,0.10)", border: "rgba(15,118,110,0.28)" },
+          PARTIALLY_RECEIVED: { label: "Part received", color: "#845E04", bg: "rgba(200,155,71,0.16)", border: "rgba(200,155,71,0.34)" },
+          PENDING: { label: "In transit", color: "#8B6018", bg: "rgba(200,155,71,0.10)", border: "rgba(200,155,71,0.26)" },
+        }[status];
+        return (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: meta.bg, color: meta.color, border: `1px solid ${meta.border}`, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
+            <PackageCheck size={11} />{meta.label}
+          </span>
+        );
+      },
     },
     {
       id: "sarees", header: "Sarees", accessor: d => d.sareeIds.length, type: "number", width: 95,
@@ -262,6 +282,21 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
                     {d.type === "wholesale" ? <Users size={12} /> : <ShoppingBag size={12} />}{d.type}
                   </span>
                 </div>
+
+                {/* Shop dispatches only — has the counter actually receipted it. */}
+                {d.type === "shop" && (() => {
+                  const status = d.receiptStatus ?? "PENDING";
+                  const meta = {
+                    RECEIVED: { label: "Received at shop", color: "#0F766E", bg: "rgba(15,118,110,0.10)", border: "rgba(15,118,110,0.28)" },
+                    PARTIALLY_RECEIVED: { label: "Partly received", color: "#845E04", bg: "rgba(200,155,71,0.16)", border: "rgba(200,155,71,0.34)" },
+                    PENDING: { label: "In transit — not yet received", color: "#8B6018", bg: "rgba(200,155,71,0.10)", border: "rgba(200,155,71,0.26)" },
+                  }[status];
+                  return (
+                    <span style={{ alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: 5, background: meta.bg, color: meta.color, border: `1px solid ${meta.border}`, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 11, fontWeight: 700 }}>
+                      <PackageCheck size={12} />{meta.label}
+                    </span>
+                  );
+                })()}
 
                 {/* 2-Column Info Grid */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "10px 12px", background: "rgba(110,15,45,0.03)", borderRadius: 10, border: `1px solid ${T.borderDef}` }}>

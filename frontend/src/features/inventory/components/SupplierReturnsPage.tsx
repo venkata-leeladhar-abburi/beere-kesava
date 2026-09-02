@@ -6,6 +6,7 @@ import { CheckCircle2, Image as ImageIcon, RotateCcw, X, LayoutGrid, List, Clock
 import { useAuth } from "@/contexts/AuthContext";
 import { STOPGAP_ACTING_USER_ID } from "@/shared/api/purchase-requests";
 import { BackendSupplierReturnStatus, supplierReturnsApi } from "@/shared/api/supplier-returns";
+import { resolveAssetUrl } from "@/shared/api/uploads";
 import { Button, SearchInput } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../shared/ui/state";
@@ -17,6 +18,14 @@ import { T, F } from "./externalPurchases/theme";
 import { SectionCard } from "./externalPurchases/common/primitives";
 
 type StatusFilter = "ALL" | BackendSupplierReturnStatus;
+
+/** "12 Mar 2026" — stored timestamps are ISO strings; invalid ones render as an em dash. */
+const formatDate = (iso: string | null | undefined) => {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+};
 
 const STATUS_STYLE: Record<BackendSupplierReturnStatus, { bg: string; color: string; label: string }> = {
   PENDING: { bg: "rgba(200,155,71,0.12)", color: "#8B6018", label: "Pending" },
@@ -61,6 +70,7 @@ export function SupplierReturnsPage() {
         r.purchaseId.toLowerCase().includes(q) ||
         r.supplier.name.toLowerCase().includes(q) ||
         r.sareeLine.code.toLowerCase().includes(q) ||
+        (r.purchase?.invoiceNumber ?? "").toLowerCase().includes(q) ||
         (r.reason && r.reason.toLowerCase().includes(q))
       );
     }
@@ -100,10 +110,10 @@ export function SupplierReturnsPage() {
     },
     {
       id: "photo", header: "Photo", accessor: r => r.sareeLine.imageUrl,
-      cell: (_v, r) => r.sareeLine.imageUrl ? (
-        <button type="button" onClick={() => setPreview(r.sareeLine.imageUrl)} className="p-0 border-0 bg-transparent cursor-pointer">
-          <img src={r.sareeLine.imageUrl} alt={r.sareeLine.code}
-            style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
+      cell: (_v, r) => resolveAssetUrl(r.sareeLine.imageUrl) ? (
+        <button type="button" onClick={() => setPreview(resolveAssetUrl(r.sareeLine.imageUrl))} className="p-0 border-0 bg-transparent cursor-pointer">
+          <img src={resolveAssetUrl(r.sareeLine.imageUrl) ?? undefined} alt={r.sareeLine.code}
+            style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", border: `1px solid ${T.borderDef}`, background: T.silkCream }} />
         </button>
       ) : (
         <div style={{ width: 40, height: 40, borderRadius: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -113,7 +123,14 @@ export function SupplierReturnsPage() {
     },
     {
       id: "purchase", header: "From Purchase", accessor: r => r.purchaseId,
-      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{r.purchaseId}</span>,
+      cell: (_v, r) => (
+        <div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{r.purchaseId}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" as const }}>
+            {r.purchase?.invoiceNumber ? `Inv ${r.purchase.invoiceNumber}` : "No invoice"}
+          </div>
+        </div>
+      ),
     },
     {
       id: "supplier", header: "Supplier", accessor: r => r.supplier.name,
@@ -130,15 +147,34 @@ export function SupplierReturnsPage() {
     },
     {
       id: "quantity", header: "Pieces", accessor: r => r.quantity,
-      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{r.quantity}</span>,
+      cell: (_v, r) => (
+        <div>
+          <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{r.quantity}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" as const }}>
+            of {r.sareeLine.quantity} on line
+          </div>
+        </div>
+      ),
     },
     {
       id: "reason", header: "Reason", accessor: r => r.reason ?? "", priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, maxWidth: 220 }}>{r.reason || "—"}</span>,
+      cell: (_v, r) => (
+        <div style={{ maxWidth: 220 }}>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: r.reason ? T.luxuryBrown : T.taupe }}>{r.reason || "—"}</div>
+          {r.decisionNote && (
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontStyle: "italic" }}>Note: {r.decisionNote}</div>
+          )}
+        </div>
+      ),
     },
     {
       id: "requestedBy", header: "Requested By", accessor: r => `${r.requestedBy.firstName} ${r.requestedBy.lastName}`, priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>{r.requestedBy.firstName} {r.requestedBy.lastName}</span>,
+      cell: (_v, r) => (
+        <div style={{ whiteSpace: "nowrap" as const }}>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{r.requestedBy.firstName} {r.requestedBy.lastName}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{formatDate(r.createdAt)}</div>
+        </div>
+      ),
     },
     {
       id: "status", header: "Status", accessor: r => r.status, type: "status",
@@ -148,11 +184,22 @@ export function SupplierReturnsPage() {
       },
     },
     {
+      id: "decision", header: "Decided By", accessor: r => (r.decidedBy ? `${r.decidedBy.firstName} ${r.decidedBy.lastName}` : ""), priority: 3,
+      cell: (_v, r) => r.status === "PENDING" ? (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Awaiting</span>
+      ) : (
+        <div style={{ whiteSpace: "nowrap" as const }}>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>
+            {r.decidedBy ? `${r.decidedBy.firstName} ${r.decidedBy.lastName}` : "—"}
+          </div>
+          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{formatDate(r.decidedAt)}</div>
+        </div>
+      ),
+    },
+    {
       id: "actions", header: "Actions", accessor: () => null, type: "actions",
       cell: (_v, r) => r.status !== "PENDING" ? (
-        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>
-          {r.decidedBy ? `${r.decidedBy.firstName} ${r.decidedBy.lastName}` : "—"}
-        </span>
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>—</span>
       ) : (
         <div style={{ display: "flex", gap: 6 }}>
           <Button
@@ -382,9 +429,9 @@ export function SupplierReturnsPage() {
                     </div>
 
                     <div className="flex items-start gap-3">
-                      {r.sareeLine.imageUrl ? (
-                        <button type="button" onClick={() => setPreview(r.sareeLine.imageUrl)} className="p-0 border-0 bg-transparent cursor-pointer shrink-0">
-                          <img src={r.sareeLine.imageUrl} alt={r.sareeLine.code} style={{ width: 50, height: 50, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
+                      {resolveAssetUrl(r.sareeLine.imageUrl) ? (
+                        <button type="button" onClick={() => setPreview(resolveAssetUrl(r.sareeLine.imageUrl))} className="p-0 border-0 bg-transparent cursor-pointer shrink-0">
+                          <img src={resolveAssetUrl(r.sareeLine.imageUrl) ?? undefined} alt={r.sareeLine.code} style={{ width: 50, height: 50, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}`, background: T.silkCream }} />
                         </button>
                       ) : (
                         <div style={{ width: 50, height: 50, borderRadius: 10, background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -402,10 +449,11 @@ export function SupplierReturnsPage() {
                       <div>
                         <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>From Purchase</div>
                         <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{r.purchaseId}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{r.purchase?.invoiceNumber ? `Inv ${r.purchase.invoiceNumber}` : "No invoice"}</div>
                       </div>
                       <div>
                         <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Pieces</div>
-                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{r.quantity}</div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{r.quantity} <span style={{ fontFamily: F.ui, fontWeight: 400, color: T.taupe }}>of {r.sareeLine.quantity}</span></div>
                       </div>
                     </div>
 
@@ -415,10 +463,16 @@ export function SupplierReturnsPage() {
                       </div>
                     )}
 
+                    {r.decisionNote && (
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                        Note: {r.decisionNote}
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between pt-1 border-t border-[rgba(110,15,45,0.06)]" style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                      <span>Req: {r.requestedBy.firstName} {r.requestedBy.lastName}</span>
+                      <span>Req: {r.requestedBy.firstName} {r.requestedBy.lastName} · {formatDate(r.createdAt)}</span>
                       {r.status !== "PENDING" && r.decidedBy && (
-                        <span>Decided: {r.decidedBy.firstName} {r.decidedBy.lastName}</span>
+                        <span>Decided: {r.decidedBy.firstName} {r.decidedBy.lastName} · {formatDate(r.decidedAt)}</span>
                       )}
                     </div>
 

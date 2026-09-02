@@ -5,7 +5,7 @@ import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 export * from "./supplier-types";
 export * from "./usePurchasePhotos";
-import { Supplier, Purchase, SareeTag, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchaseTotals, parseINR } from "./supplier-types";
+import { Supplier, Purchase, SareeTag, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, invoicedSelling, parseINR } from "./supplier-types";
 import { BackendSupplier, suppliersApi } from "../../../shared/api/suppliers";
 import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
 import { supplierPaymentsApi } from "../../../shared/api/payments";
@@ -456,7 +456,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
           sareeCount: totalPieces(local.sarees),
           gstNumber: local.gstNumber ?? "",
           invoiceNumber: local.invoiceNumber ?? "",
-          billAmount: local.billAmount || formatMoney(rupees(purchaseTotals(local.sarees).selling)),
+          billAmount: local.billAmount || formatMoney(rupees(invoicedSelling(local.sarees))),
           status: "Pending",
           notes: local.notes ?? "",
           invoiceFileName: local.invoiceFileName,

@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { customersApi } from '../../../../shared/api/customers';
 import { inventoryApi } from '../../../../shared/api/inventory';
@@ -200,6 +201,36 @@ export function NewSaleFlow() {
     setIsEditingCustomer(false);
     setIsNewCustomer(false);
   };
+
+  // Opened from a customer's record page with "Record New Sale" — start on the
+  // saree step with that customer already attached, instead of making the
+  // operator find them again in the search list.
+  const location = useLocation();
+  const preselectId = (location.state as { customerId?: string } | null)?.customerId ?? null;
+  const preselectApplied = useRef(false);
+
+  const { data: preselectCustomer } = useQuery({
+    queryKey: ["customers-find-newsale", preselectId],
+    queryFn: () => customersApi.findOne(preselectId!),
+    enabled: !!preselectId,
+  });
+
+  useEffect(() => {
+    if (!preselectCustomer || preselectApplied.current) return;
+    preselectApplied.current = true;
+    handleSelectCustomer({
+      id: preselectCustomer.id,
+      name: preselectCustomer.name,
+      phone: preselectCustomer.phone ?? "—",
+      purchases: preselectCustomer.totalPurchases ?? 0,
+      total: formatMoney(rupees(Number(preselectCustomer.totalSpend ?? 0))),
+      lastPurchase: new Date(preselectCustomer.lastPurchaseDate ?? preselectCustomer.createdAt)
+        .toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
+      initials: preselectCustomer.name,
+    });
+    setCustAddress(preselectCustomer.address ?? "");
+    setStep(2);
+  }, [preselectCustomer]);
 
   const handleAddNew = () => {
     setSelectedCustomer(null);

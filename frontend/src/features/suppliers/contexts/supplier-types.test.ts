@@ -12,6 +12,8 @@ import {
   lineBuying,
   lineSelling,
   lineProfit,
+  remainingQuantity,
+  invoicedSelling,
   expandSareePieces,
   withPieceImage,
   purchaseTotals,
@@ -119,6 +121,29 @@ describe("pricing math", () => {
     expect(totals.buying).toBe(2000);   // 500*2 + 1000*1
     expect(totals.selling).toBe(2300);  // (500+100)*2 + (1000+100)*1
     expect(totals.profit).toBe(300);
+  });
+
+  it("nets returned pieces out of the line and purchase totals", () => {
+    const returnedLine = { price: 500, sellPercent: 20, quantity: 3, returnedQuantity: 1 };
+    expect(remainingQuantity(returnedLine)).toBe(2);
+    expect(lineBuying(returnedLine)).toBe(1000);
+    expect(lineSelling(returnedLine)).toBe(1200);
+    expect(lineProfit(returnedLine)).toBe(200);
+    expect(totalPieces([returnedLine] as SareeTag[])).toBe(2);
+    expect(purchaseTotals([returnedLine]).pieces).toBe(2);
+  });
+
+  it("invoicedSelling keeps the as-invoiced figure, ignoring returns", () => {
+    const lines = [
+      { price: 500, sellPercent: 20, quantity: 3, returnedQuantity: 1 },
+      { price: 1000, sellPercent: 10, quantity: 1 },
+    ];
+    expect(invoicedSelling(lines)).toBe(2900); // (500+100)*3 + (1000+100)*1
+    expect(purchaseTotals(lines).selling).toBe(2300); // returned piece netted out
+  });
+
+  it("clamps a returned count larger than the quantity to zero remaining", () => {
+    expect(remainingQuantity({ quantity: 2, returnedQuantity: 5 })).toBe(0);
   });
 });
 
