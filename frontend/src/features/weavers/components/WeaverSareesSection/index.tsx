@@ -43,7 +43,7 @@ function loadPersistedTab(persistKey: string | undefined): TabKey {
 }
 
 // ── Main section ─────────────────────────────────────────────────────────────
-export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver", selectable = false, selectedIds, onToggleRow, onToggleAll, onVisibleChange, persistKey }: {
+export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver", selectable = false, selectedIds, onToggleRow, onToggleAll, onVisibleChange, onAllRowsChange, persistKey }: {
   /** Weaver id (WV-00X) or factory loom id (FL-00X), depending on ownerType. Unused when ownerType is "all". */
   weaverId?: string;
   weaverName?: string;
@@ -56,6 +56,13 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   onToggleAll?: (visibleIds: string[]) => void;
   /** Fired whenever the currently visible (filtered + sorted) row list changes. */
   onVisibleChange?: (rows: WeaverSareeRow[]) => void;
+  /** Fired whenever the complete, tab-independent row set changes — every
+   *  saree this section knows about, not just whatever tab happens to be
+   *  open. Scanning needs this: matching only against `onVisibleChange`
+   *  meant a saree scanned while on "Assigned" silently failed to match
+   *  unless the operator had also switched to "External" at some point
+   *  first, since that's the only tab external-purchase sarees pass through. */
+  onAllRowsChange?: (rows: WeaverSareeRow[]) => void;
   /** When set, the active tab survives a refresh (sessionStorage, scoped to
    *  this key) instead of always reopening on "Assigned". Omit it for
    *  transient hosts (a picker modal, a drawer) where starting fresh every
@@ -118,7 +125,12 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   // ── Tab membership ──────────────────────────────────────────────────────────
   const inTab = (r: WeaverSareeRow, t: TabKey) => {
     switch (t) {
-      case "assigned": return r.isAssigned;
+      // External-purchase sarees never go through the "assigned to a batch"
+      // step production sarees do (they arrive already finished, bought
+      // outright) — but they're stock the moment they're purchased, so they
+      // belong in the default "Assigned" view too, not only under the
+      // separate "External" tab.
+      case "assigned": return r.isAssigned || r.stock?.origin === "external";
       case "produced": return r.stock !== null && r.stock.origin !== "external";
       case "qcpassed": return r.qcStatus === "passed";
       case "semi": return r.qcStatus === "semi";
@@ -285,37 +297,60 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, selectable, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment]);
 
+  // Rows that should float to the top of `visible` — populated only for a
+  // selection that lands *off* the currently-displayed page (a barcode scan
+  // finding a saree deep in the list), never for a checkbox clicked on a row
+  // already on screen. Keying the sort off live `selectedIds` instead used to
+  // resort (and, combined with the page-1 jump below, repaginate) the whole
+  // table on every single click — a second click could then land on whatever
+  // saree had shifted into that screen position rather than the one the user
+  // meant to check, which is what "selecting row 3 selects rows 1-3" was.
+  const floatToTopRef = useRef<Set<string>>(new Set());
+  const [floatTick, setFloatTick] = useState(0);
+
   const visible = useMemo(() => rowsForTab(tab)
     .filter(r => inTab(r, tab) && passesFilters(r, tab) && matchesDateFilter(tabDate(r, tab), dateFilter))
     .sort((a, b) => {
-      // Selected rows (picked via Scan or a checkbox) float to the top —
-      // otherwise scanning a saree deep in a long list selects it with no
-      // visible feedback unless the user already happens to be on the right
-      // page. Everything else keeps its normal date/id ordering.
-      const aSel = selectedIds?.has(a.sareeId) ? 1 : 0;
-      const bSel = selectedIds?.has(b.sareeId) ? 1 : 0;
+      const aSel = floatToTopRef.current.has(a.sareeId) ? 1 : 0;
+      const bSel = floatToTopRef.current.has(b.sareeId) ? 1 : 0;
       if (aSel !== bSel) return bSel - aSel;
       const da = tabDate(a, tab), db = tabDate(b, tab);
       if (da && db) return new Date(db).getTime() - new Date(da).getTime();
       return a.sareeId.localeCompare(b.sareeId);
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rows, selectable, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment, selectedIds]);
+    [rows, selectable, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment, floatTick]);
 
   // Pagination applies only to what's rendered — `visible` itself stays the full
   // filtered set so select-all and the parent's onVisibleChange (scan / bulk
   // actions) keep working across every matching row, not just the current page.
   const pag = usePagination(visible, 10);
-  // `pag` (from usePagination) is a new object every render, so it can't be
-  // added as a dep without resetting the page on every unrelated render;
-  // only its setPage function (stable across renders) is actually needed here.
-  // Also jumps to page 1 on a selection change — selected rows sort to the
-  // top of `visible` above, so this is what actually makes a freshly-scanned
-  // saree visible without a manual page flip when it wasn't already on the
-  // current page.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { pag.setPage(1); }, [tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment, selectedIds]);
   const pageRows = pag.pageItems;
+
+  // Decide, per selection change, whether it needs floating to the top (and a
+  // jump to page 1 to reveal it) — only true for an id that wasn't already
+  // showing on the current page. A row deselected later is unpinned too, so
+  // it settles back into normal order instead of staying stuck at the top.
+  const prevSelectedRef = useRef<Set<string>>(selectedIds ?? new Set());
+  const currentPageIdsRef = useRef<Set<string>>(new Set());
+  currentPageIdsRef.current = new Set(pageRows.map(r => r.sareeId));
+  useEffect(() => {
+    const prev = prevSelectedRef.current;
+    const current = selectedIds ?? new Set<string>();
+    const newlyAdded = [...current].filter(id => !prev.has(id));
+    const newlyRemoved = [...prev].filter(id => !current.has(id));
+    const offScreenAdds = newlyAdded.filter(id => !currentPageIdsRef.current.has(id));
+    prevSelectedRef.current = new Set(current);
+
+    let floatChanged = false;
+    offScreenAdds.forEach(id => { floatToTopRef.current.add(id); floatChanged = true; });
+    newlyRemoved.forEach(id => { if (floatToTopRef.current.delete(id)) floatChanged = true; });
+    if (floatChanged) setFloatTick(t => t + 1);
+    if (offScreenAdds.length > 0) pag.setPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedIds]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { pag.setPage(1); }, [tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment]);
 
   // Keep the parent in sync with the currently visible rows (for Scan / bulk actions), without looping.
   const onVisibleChangeRef = useRef(onVisibleChange);
@@ -323,6 +358,15 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   useEffect(() => {
     onVisibleChangeRef.current?.(visible);
   }, [visible]);
+
+  // Separately, the complete tab-independent row set — scanning must match
+  // against every saree this section knows about, not just whichever tab
+  // happens to be open (see onAllRowsChange's own doc comment above).
+  const onAllRowsChangeRef = useRef(onAllRowsChange);
+  onAllRowsChangeRef.current = onAllRowsChange;
+  useEffect(() => {
+    onAllRowsChangeRef.current?.(rows);
+  }, [rows]);
 
   const TABS: { key: TabKey; label: string; color: string }[] = [
     { key: "assigned", label: "Assigned", color: T.royalBurgundy },
@@ -599,7 +643,17 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
             : `No sarees match this view${filtersActive ? " with the current filters." : "."}`}
         </div>
       ) : isExternalTab ? (
-        <ExternalSareesTable pageRows={pageRows} canSeeMoney={canSeeMoney} pag={pag} responsive={false} />
+        <ExternalSareesTable
+          pageRows={pageRows}
+          canSeeMoney={canSeeMoney}
+          pag={pag}
+          responsive={false}
+          selectable={selectable}
+          selectedIds={selectedIds}
+          onToggleRow={onToggleRow}
+          onToggleAll={onToggleAll}
+          visible={visible}
+        />
       ) : (
         <MainSareesTable
           pageRows={pageRows}

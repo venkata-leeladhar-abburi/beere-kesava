@@ -34,6 +34,12 @@ export function useInventoryPageState() {
   // ── Selection States ────────────────────────────────────────────────────────
   const [selected, setSelected]               = useState<Set<string>>(new Set());
   const [mirroredRows, setMirroredRows]       = useState<WeaverSareeRow[]>([]);
+  // Every saree the table knows about, independent of which tab is open —
+  // scanning matches against this, not `mirroredRows` (which is only ever
+  // whatever the *current* tab shows). Without this, scanning an
+  // external-purchase saree while sitting on "Assigned" failed with "not in
+  // this list" unless the operator had switched to the "External" tab first.
+  const [allRows, setAllRows]                 = useState<WeaverSareeRow[]>([]);
   // The table only ever reports the rows its current tab + filters show, but a
   // selection outlives a tab switch — so every row that has been on screen is
   // remembered here, keyed by saree id. Without this, ticking two sarees on
@@ -165,8 +171,7 @@ export function useInventoryPageState() {
   // ── Selection helpers ──
   // Every row the table has shown, remembered so a selection survives the tab
   // switch, filter or search that scrolls it out of `mirroredRows`.
-  const rememberRows = useCallback((rows: WeaverSareeRow[]) => {
-    setMirroredRows(rows);
+  const rememberInSeen = useCallback((rows: WeaverSareeRow[]) => {
     setSeenRows(prev => {
       const next = new Map(prev);
       let changed = false;
@@ -174,6 +179,18 @@ export function useInventoryPageState() {
       return changed ? next : prev;
     });
   }, []);
+  const rememberRows = useCallback((rows: WeaverSareeRow[]) => {
+    setMirroredRows(rows);
+    rememberInSeen(rows);
+  }, [rememberInSeen]);
+  // Tab-independent: a saree scanned while sitting on a different tab still
+  // needs a `seenRows` entry, or it would resolve as "selected" in state
+  // while silently vanishing from the dispatch/quotation modals that filter
+  // through `seenRows`.
+  const rememberAllRows = useCallback((rows: WeaverSareeRow[]) => {
+    setAllRows(rows);
+    rememberInSeen(rows);
+  }, [rememberInSeen]);
 
   // The one resolution of "what is currently ticked", shared by the action bar,
   // the three dispatch modals and the confirm handlers. It runs the same
@@ -254,7 +271,7 @@ export function useInventoryPageState() {
     const show = (msg: string) => { setScanMsg(msg); setTimeout(() => setScanMsg(""), 2500); };
     if (!id) return show("Scan a barcode or type a saree ID.");
 
-    const match = mirroredRows.find(r => r.sareeId.toLowerCase() === id.toLowerCase());
+    const match = allRows.find(r => r.sareeId.toLowerCase() === id.toLowerCase());
     if (!match) return show(`No saree "${id}" in this list.`);
     // Same rule as the checkboxes — scanning must not slip a saree past a gate
     // the table would have blocked, or it would vanish again downstream.
@@ -277,7 +294,7 @@ export function useInventoryPageState() {
     setTimeout(() => {
       document.getElementById("inv-all-sarees")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 0);
-  }, [mirroredRows, selected, isPickableNow, dispatchedSareeIds]);
+  }, [allRows, selected, isPickableNow, dispatchedSareeIds]);
 
   // Awaited, unlike before: the mutation rolls its optimistic row back when the
   // server rejects the dispatch, so firing and forgetting made a failed shop
@@ -426,6 +443,7 @@ export function useInventoryPageState() {
     setSelected,
     mirroredRows,
     rememberVisibleRows: rememberRows,
+    rememberAllRows,
     viewingItem,
     setViewingItem,
     modal,

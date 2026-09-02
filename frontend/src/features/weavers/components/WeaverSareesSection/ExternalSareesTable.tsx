@@ -7,19 +7,32 @@ import { WeaverSareeRow } from "./types";
 import { inr, fmtDate, externalSerialOf } from "./utils";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
-import { Button } from "../../../../shared/ui/primitives";
+import { Button, Checkbox } from "../../../../shared/ui/primitives";
 import { StatusPill } from "../../../../shared/ui/domain";
 import { useSuppliers } from "@/features/suppliers";
 import { usePrintSareeTags, type SareeTagData } from "./SareeTagPrint";
+import { isSareePickable, pickBlockedReason } from "./utils";
 
 interface ExternalSareesTableProps {
   pageRows: WeaverSareeRow[];
   canSeeMoney: boolean;
   pag: UsePaginationReturn;
   responsive?: boolean;
+  /** Same selection contract MainSareesTable uses — omit all three to render
+   *  no checkbox column at all (read-only usages, e.g. the weaver drawer). */
+  selectable?: boolean;
+  selectedIds?: Set<string>;
+  onToggleRow?: (sareeId: string) => void;
+  /** All rows currently matching the tab's filters, not just this page —
+   *  "select all" ticks every pickable one, mirroring MainSareesTable. */
+  visible?: WeaverSareeRow[];
+  onToggleAll?: (visibleIds: string[]) => void;
 }
 
-export function ExternalSareesTable({ pageRows, canSeeMoney, pag, responsive = false }: ExternalSareesTableProps) {
+export function ExternalSareesTable({
+  pageRows, canSeeMoney, pag, responsive = false,
+  selectable, selectedIds, onToggleRow, visible, onToggleAll,
+}: ExternalSareesTableProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const { suppliers } = useSuppliers();
   const printSareeTags = usePrintSareeTags();
@@ -48,6 +61,30 @@ export function ExternalSareesTable({ pageRows, canSeeMoney, pag, responsive = f
   };
 
   const columns: ColumnDef<WeaverSareeRow>[] = [
+    ...(selectable ? [{
+      id: "select",
+      header: (() => {
+        const dispatchableVisible = (visible ?? pageRows).filter(isSareePickable).map(r => r.sareeId);
+        return (
+          <Checkbox
+            checked={dispatchableVisible.length > 0 && dispatchableVisible.every(id => selectedIds?.has(id))}
+            onCheckedChange={() => onToggleAll?.(dispatchableVisible)}
+          />
+        );
+      })(),
+      accessor: () => null,
+      cell: (_v: unknown, r: WeaverSareeRow) => {
+        const dispatchable = isSareePickable(r);
+        return (
+          <Checkbox
+            checked={!!selectedIds?.has(r.sareeId)}
+            onCheckedChange={() => dispatchable && onToggleRow?.(r.sareeId)}
+            disabled={!dispatchable}
+            title={pickBlockedReason(r)}
+          />
+        );
+      },
+    } as ColumnDef<WeaverSareeRow>] : []),
     {
       id: "photo", header: "Photo", accessor: r => photoOf(r), priority: 1,
       cell: (_v, r) => {

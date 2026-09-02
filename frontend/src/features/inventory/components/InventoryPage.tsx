@@ -68,6 +68,7 @@ export function InventoryPage({
     selected,
     setSelected,
     rememberVisibleRows,
+    rememberAllRows,
     viewingItem,
     setViewingItem,
     modal,
@@ -153,6 +154,7 @@ export function InventoryPage({
                 onToggleRow={toggleSareeRow}
                 onToggleAll={toggleAllVisible}
                 onVisibleChange={rememberVisibleRows}
+                onAllRowsChange={rememberAllRows}
               />
             </div>
           </div>
