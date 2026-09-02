@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { Prisma, VendorBillStatus } from "../generated/prisma/client";
+import { Prisma, UserRole, VendorBillStatus } from "../generated/prisma/client";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateVendorBillDto } from "./dto/create-vendor-bill.dto";
 import { ListVendorBillsQueryDto } from "./dto/list-vendor-bills-query.dto";
@@ -12,6 +13,7 @@ export class VendorBillsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateVendorBillDto) {
@@ -20,8 +22,9 @@ export class VendorBillsService {
       throw new NotFoundException(`Vendor ${dto.vendorId} not found`);
     }
 
+    let po = null;
     if (dto.poId) {
-      const po = await this.prisma.purchaseOrder.findUnique({ where: { id: dto.poId } });
+      po = await this.prisma.purchaseOrder.findUnique({ where: { id: dto.poId } });
       if (!po) {
         throw new NotFoundException(`Purchase order ${dto.poId} not found`);
       }
@@ -53,6 +56,32 @@ export class VendorBillsService {
       recordLabel: vendor.name,
       newValue: String(dto.amount),
     });
+
+    await this.notifications.notifyRole(UserRole.ACCOUNTANT, "VENDOR_BILL_CREATED", {
+      vendorBillId: bill.id,
+      vendorName: vendor.name,
+      amount: Number(dto.amount),
+      poNumber: po?.poNumber ?? null,
+      dueDate: bill.dueDate,
+    });
+
+    // A bill that disagrees with the order it is billing against is the one
+    // thing here nobody should have to notice by hand. A PO raised without
+    // prices sits at ₹0, which is "not priced yet" rather than a mismatch,
+    // so it is not compared.
+    const orderedValue = po ? Number(po.totalValue) : 0;
+    if (po && orderedValue > 0 && Math.abs(orderedValue - Number(dto.amount)) >= 1) {
+      const payload = {
+        vendorBillId: bill.id,
+        vendorName: vendor.name,
+        poNumber: po.poNumber,
+        billedAmount: Number(dto.amount),
+        orderedValue,
+        difference: Number((Number(dto.amount) - orderedValue).toFixed(2)),
+      };
+      await this.notifications.notifyRole(UserRole.ACCOUNTANT, "VENDOR_BILL_MISMATCH", payload);
+      await this.notifications.notifyRole(UserRole.SUPERADMIN, "VENDOR_BILL_MISMATCH", payload);
+    }
 
     return bill;
   }

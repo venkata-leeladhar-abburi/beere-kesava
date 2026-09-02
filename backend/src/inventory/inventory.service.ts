@@ -204,7 +204,16 @@ export class InventoryService {
     // as a wholesale return without ever being on a lorry.
     const [consignments, returns] = await Promise.all([
       this.prisma.dispatchSaree.findMany({
-        where: { dispatch: { type: "SHOP", ...(dispatchId ? { id: dispatchId } : {}) } },
+        // Only pieces the shop counter has actually receipted (GRN — see
+        // ShopReceiptsService). A dispatch that has left the factory but not
+        // been received is in transit: it is neither factory stock (it is on a
+        // DispatchSaree row, so findAll() excludes it) nor sellable here. A
+        // piece receipted MISSING or DAMAGED stays out for the same reason —
+        // it is not on the shelf to sell.
+        where: {
+          receiptStatus: "RECEIVED",
+          dispatch: { type: "SHOP", ...(dispatchId ? { id: dispatchId } : {}) },
+        },
         include: { dispatch: true },
         orderBy: { dispatch: { dispatchDate: "desc" } },
       }),

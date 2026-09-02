@@ -1,3 +1,4 @@
+import { notificationsStub } from "../common/testing/notifications.stub";
 import { ConflictException, NotFoundException } from "@nestjs/common";
 import { WeaversService } from "./weavers.service";
 import { Prisma } from "../generated/prisma/client";
@@ -54,7 +55,7 @@ describe("WeaversService", () => {
     };
     auditLog = { recordAction: jest.fn() };
     idGenerator = { nextNamed: jest.fn().mockResolvedValue("Padma-001") };
-    service = new WeaversService(prisma, auditLog, idGenerator);
+    service = new WeaversService(prisma, auditLog, idGenerator, notificationsStub());
   });
 
   describe("getWeaverStats", () => {

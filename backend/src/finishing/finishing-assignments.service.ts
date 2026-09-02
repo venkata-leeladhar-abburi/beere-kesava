@@ -1,7 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { FinishingAssignmentStatus, Prisma, QcResult } from "../generated/prisma/client";
+import { FinishingAssignmentStatus, Prisma, QcResult, UserRole } from "../generated/prisma/client";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateFinishingAssignmentDto } from "./dto/create-finishing-assignment.dto";
 import { ListFinishingAssignmentsQueryDto } from "./dto/list-finishing-assignments-query.dto";
@@ -25,6 +26,7 @@ export class FinishingAssignmentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   // Bulk-assigns one or more QC-passed sarees to a finishing staff member —
@@ -84,6 +86,15 @@ export class FinishingAssignmentsService {
       entityType: "FinishingAssignment",
       entityId: dto.sareeIds.join(","),
       recordLabel: dto.sareeIds.join(", "),
+    });
+
+    // One card for the whole assignment, not one per saree — this flow is
+    // explicitly a bulk assign.
+    await this.notifications.notifyRole(UserRole.ADMIN, "FINISHING_SENT", {
+      finishingStaffId: dto.finishingStaffId,
+      finishingStaffName: `${staff.firstName} ${staff.lastName}`.trim(),
+      sareeCount: dto.sareeIds.length,
+      quotationRef: dto.quotationRef ?? null,
     });
 
     return created;
@@ -193,6 +204,21 @@ export class FinishingAssignmentsService {
       oldValue: FinishingAssignmentStatus.AWAITING_RETURN,
       newValue: FinishingAssignmentStatus.RETURNED,
     });
+
+    // A damaged return needs someone to make a call on it (the inventory row
+    // above is parked in DAMAGED_REVIEW_NEEDED), so it is separated from the
+    // routine clean return rather than sharing its success card.
+    await this.notifications.notifyRole(
+      UserRole.ADMIN,
+      dto.condition === "DAMAGED" ? "FINISHING_RETURN_DAMAGED" : "FINISHING_RETURN_RECEIVED",
+      {
+        assignmentId: id,
+        sareeId: assignment.sareeId,
+        condition: dto.condition,
+        damageType: dto.damageType ?? null,
+        damageSeverity: dto.damageSeverity ?? null,
+      },
+    );
 
     return updated;
   }

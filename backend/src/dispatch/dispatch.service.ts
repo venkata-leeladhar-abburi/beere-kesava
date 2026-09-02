@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { DispatchType, Prisma } from "../generated/prisma/client";
+import { DispatchType, Prisma, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment, financialYearCode } from "../id-generator/id-generator.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateDispatchDto } from "./dto/create-dispatch.dto";
 import { ListDispatchQueryDto } from "./dto/list-dispatch-query.dto";
@@ -23,6 +24,7 @@ export class DispatchService {
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
     private readonly idGenerator: IdGeneratorService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateDispatchDto) {
@@ -173,6 +175,18 @@ export class DispatchService {
       entityId: created.id,
       recordLabel: dto.lrNumber ?? invoiceNumber ?? challanNumber ?? created.id,
     });
+
+    // The shop counter has to know a consignment is on its way before it can
+    // receive it, so a SHOP dispatch is pushed to the shop's feed rather than
+    // waiting to be spotted in the Incoming list.
+    if (dto.type === DispatchType.SHOP) {
+      await this.notifications.notifyRole(UserRole.SHOP, "SHOP_DISPATCH_INCOMING_STOCK", {
+        dispatchId: created.id,
+        challanNumber,
+        lrNumber: dto.lrNumber ?? null,
+        sareeCount: dto.sareeIds.length,
+      });
+    }
 
     return this.findOne(created.id);
   }

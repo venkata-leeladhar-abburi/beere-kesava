@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { CustomerType, InvoiceStatus, Prisma } from "../generated/prisma/client";
+import { CustomerType, InvoiceStatus, Prisma, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateInvoiceDto } from "./dto/create-invoice.dto";
 import { CreatePaymentDto } from "./dto/create-payment.dto";
@@ -22,6 +23,7 @@ export class InvoicesService {
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
     private readonly auditLog: AuditLogService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateInvoiceDto) {
@@ -61,6 +63,14 @@ export class InvoicesService {
       entityId: created.id,
       recordLabel: code,
       newValue: String(dto.total),
+    });
+
+    await this.notifications.notifyRole(UserRole.ACCOUNTANT, "INVOICE_CREATED", {
+      invoiceId: created.id,
+      invoiceNumber: code,
+      customerName: customer.name,
+      total: Number(dto.total),
+      dueDate: created.dueDate,
     });
 
     return this.findOne(created.id);
@@ -141,6 +151,21 @@ export class InvoicesService {
       oldValue: String(invoice.paid),
       newValue: String(newPaid),
     });
+
+    // Settling in full is the event people actually wait for, so it is a
+    // distinct card rather than another part-payment line in the feed.
+    await this.notifications.notifyRole(
+      UserRole.ACCOUNTANT,
+      newStatus === InvoiceStatus.PAID ? "INVOICE_PAID" : "INVOICE_PAYMENT_RECEIVED",
+      {
+        invoiceId,
+        invoiceNumber: invoice.code,
+        amount: dto.amount,
+        paid: newPaid,
+        total: Number(invoice.total),
+        outstanding: Number(invoice.total) - newPaid,
+      },
+    );
 
     return this.findOne(invoiceId);
   }

@@ -2,7 +2,8 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
-import { RateRequestStatus } from "../generated/prisma/client";
+import { RateRequestStatus, UserRole } from "../generated/prisma/client";
+import { NotificationsService } from "../notifications/notifications.service";
 
 export interface CreateRateRequestDto {
   sareeTypeCode: string;
@@ -19,6 +20,7 @@ export class RateRequestsService {
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
     private readonly auditLog: AuditLogService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async list(status?: RateRequestStatus) {
@@ -65,6 +67,16 @@ export class RateRequestsService {
       recordLabel: item.id,
     });
 
+    // A pending rate request blocks pricing, so it goes to the approvers'
+    // feed instead of sitting in the Approvals queue unseen.
+    await this.notifications.notifyRole(UserRole.ADMIN, "WEAVER_RATE_REQUEST_RAISED", {
+      rateRequestId: item.id,
+      sareeTypeCode: item.sareeTypeCode,
+      requestedByName: `${item.requestedBy.firstName} ${item.requestedBy.lastName}`.trim(),
+      oldMakingCharge: Number(item.oldMakingCharge),
+      newMakingCharge: Number(item.newMakingCharge),
+    });
+
     return item;
   }
 
@@ -108,6 +120,14 @@ export class RateRequestsService {
       newValue: "APPROVED",
     });
 
+    // Back to whoever asked — they cannot act on the new rate until they know
+    // the catalog actually changed.
+    await this.notifications.notifyUser(item.requestedById, "WEAVER_RATE_REQUEST_APPROVED", {
+      rateRequestId: item.id,
+      sareeTypeCode: item.sareeTypeCode,
+      newMakingCharge: Number(item.newMakingCharge),
+    });
+
     return item;
   }
 
@@ -135,6 +155,12 @@ export class RateRequestsService {
       recordLabel: item.id,
       oldValue: existing.status,
       newValue: "REJECTED",
+    });
+
+    await this.notifications.notifyUser(item.requestedById, "WEAVER_RATE_REQUEST_REJECTED", {
+      rateRequestId: item.id,
+      sareeTypeCode: item.sareeTypeCode,
+      reason: item.reason,
     });
 
     return item;

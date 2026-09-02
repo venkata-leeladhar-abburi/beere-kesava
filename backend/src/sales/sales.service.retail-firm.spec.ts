@@ -1,3 +1,4 @@
+import { notificationsStub } from "../common/testing/notifications.stub";
 import { SalesService } from "./sales.service";
 import { SalesChannel } from "../generated/prisma/client";
 
@@ -11,7 +12,7 @@ describe("SalesService — active retail firm", () => {
 
   beforeEach(() => {
     prisma = { firm: { findFirst: jest.fn().mockResolvedValue(null) } };
-    service = new SalesService(prisma, {} as any, {} as any);
+    service = new SalesService(prisma, {} as any, {} as any, notificationsStub());
   });
 
   const link = (channel: SalesChannel) =>

@@ -1,3 +1,4 @@
+import { notificationsStub } from "../common/testing/notifications.stub";
 import { WarpRequestsService } from "./warp-requests.service";
 
 describe("WarpRequestsService.list (weaver self-scoping)", () => {
@@ -8,7 +9,7 @@ describe("WarpRequestsService.list (weaver self-scoping)", () => {
     prisma = {
       warpRequest: { findMany: jest.fn().mockResolvedValue([]) },
     };
-    service = new WarpRequestsService(prisma, {} as any, { recordAction: jest.fn() } as any);
+    service = new WarpRequestsService(prisma, {} as any, { recordAction: jest.fn() } as any, notificationsStub());
   });
 
   it("filters by weaverId when the controller passes one (WEAVER-role caller)", async () => {

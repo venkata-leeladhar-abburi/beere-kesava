@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { Prisma } from "../generated/prisma/client";
+import { Prisma, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { CreateBulkOrderDto } from "./dto/create-bulk-order.dto";
@@ -22,6 +23,7 @@ export class BulkOrdersService {
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
     private readonly auditLog: AuditLogService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateBulkOrderDto) {
@@ -63,6 +65,18 @@ export class BulkOrdersService {
       recordLabel: ref,
     });
 
+    // Both floors need this one: production has to be planned against the
+    // due date, and accounts has to bill it.
+    const placedPayload = {
+      bulkOrderRef: ref,
+      customerName: customer.name,
+      total: Number(order.total),
+      dueDate: order.dueDate,
+      designCode: order.designCode,
+    };
+    await this.notifications.notifyRole(UserRole.ADMIN, "BULK_ORDER_PLACED", placedPayload);
+    await this.notifications.notifyRole(UserRole.ACCOUNTANT, "BULK_ORDER_PLACED", placedPayload);
+
     return order;
   }
 
@@ -102,7 +116,7 @@ export class BulkOrdersService {
   }
 
   async update(ref: string, dto: UpdateBulkOrderDto) {
-    await this.findOne(ref);
+    const existing = await this.findOne(ref);
     const { actorId, ...rest } = dto;
     const updated = await this.prisma.bulkOrder.update({
       where: { ref },
@@ -121,6 +135,22 @@ export class BulkOrdersService {
       entityId: ref,
       recordLabel: ref,
     });
+
+    // update() is the generic edit endpoint, so money is picked out of it by
+    // comparing against what was there before — a status-only or count-only
+    // edit must not announce a payment that never happened.
+    const paidBefore = Number(existing.amountPaid);
+    const paidNow = Number(updated.amountPaid);
+    if (paidNow > paidBefore) {
+      await this.notifications.notifyRole(UserRole.ACCOUNTANT, "BULK_ORDER_PAYMENT_RECEIVED", {
+        bulkOrderRef: ref,
+        customerName: updated.customer.name,
+        amount: paidNow - paidBefore,
+        amountPaid: paidNow,
+        amountDue: Number(updated.amountDue),
+        paymentStatus: updated.paymentStatus,
+      });
+    }
 
     return updated;
   }

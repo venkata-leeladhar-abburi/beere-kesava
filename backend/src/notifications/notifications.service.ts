@@ -35,6 +35,31 @@ export class NotificationsService {
     return notification;
   }
 
+  /** Broadcast to every holder of a role. Thin wrapper over create() so call sites read as one line. */
+  async notifyRole(role: UserRole, type: string, payload?: Record<string, unknown>) {
+    return this.create({ targetType: NotificationTargetType.ROLE, role, type, payload });
+  }
+
+  /** Push to one person. */
+  async notifyUser(userId: string, type: string, payload?: Record<string, unknown>) {
+    return this.create({ targetType: NotificationTargetType.USER, userId, type, payload });
+  }
+
+  /**
+   * Push to the portal account linked to a weaver. Weavers are a domain
+   * record, not a login — only those with a User row carrying
+   * `linkedWeaverId` can receive anything, so this is a no-op (not an error)
+   * for a weaver who has never been given portal access.
+   */
+  async notifyWeaver(weaverId: string, type: string, payload?: Record<string, unknown>) {
+    const linkedUser = await this.prisma.user.findUnique({
+      where: { linkedWeaverId: weaverId },
+      select: { id: true },
+    });
+    if (!linkedUser) return null;
+    return this.notifyUser(linkedUser.id, type, payload);
+  }
+
   /**
    * Scoped to the caller. A non-admin sees exactly two things: notifications
    * addressed to them personally, and notifications broadcast to their role.

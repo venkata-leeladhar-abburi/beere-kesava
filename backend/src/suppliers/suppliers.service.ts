@@ -4,8 +4,9 @@ import { CreatePartyDto } from "../common/dto/create-party.dto";
 import { ListPartyQueryDto } from "../common/dto/list-party-query.dto";
 import { UpdatePartyDto } from "../common/dto/update-party.dto";
 import { PaginatedResult } from "../common/pagination";
-import { Prisma } from "../generated/prisma/client";
+import { PartyStatus, Prisma, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
@@ -14,13 +15,27 @@ export class SuppliersService {
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
     private readonly idGenerator: IdGeneratorService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreatePartyDto) {
     // "<BusinessName>-NNN", e.g. "ShivaTraders-001" — the sequence is a single
     // counter shared across all suppliers, not per name.
     const code = await this.idGenerator.nextNamed("SUPPLIER", businessSegment(dto.name));
-    return this.prisma.supplier.create({ data: { ...dto, code } });
+    const supplier = await this.prisma.supplier.create({ data: { ...dto, code } });
+
+    // A new trading party is who the company's money and material now flow
+    // through, so it is announced rather than left to be noticed in a list.
+    await this.notifications.notifyRole(UserRole.ADMIN, "SUPPLIER_ADDED", {
+      supplierId: supplier.id,
+      code,
+      name: supplier.name,
+      contactName: supplier.contactName,
+      city: supplier.city,
+      phone: supplier.phone,
+    });
+
+    return supplier;
   }
 
   async findAll(
@@ -62,8 +77,27 @@ export class SuppliersService {
   }
 
   async update(id: string, dto: UpdatePartyDto) {
-    await this.findOne(id);
-    return this.prisma.supplier.update({ where: { id }, data: dto });
+    const existing = await this.findOne(id);
+    const updated = await this.prisma.supplier.update({ where: { id }, data: dto });
+
+    // Only a real status transition is announced. update() is the generic
+    // edit endpoint, so a phone-number correction that re-sends the same
+    // status must not read as a deactivation.
+    if (dto.status && dto.status !== existing.status) {
+      await this.notifications.notifyRole(
+        UserRole.ADMIN,
+        dto.status === PartyStatus.ACTIVE ? "SUPPLIER_REACTIVATED" : "SUPPLIER_STATUS_CHANGED",
+        {
+          supplierId: id,
+          code: updated.code,
+          name: updated.name,
+          previousStatus: existing.status,
+          status: updated.status,
+        },
+      );
+    }
+
+    return updated;
   }
 
   async remove(id: string) {
@@ -78,6 +112,12 @@ export class SuppliersService {
         entityType: "Supplier",
         entityId: id,
         recordLabel: supplier.name,
+      });
+
+      await this.notifications.notifyRole(UserRole.ADMIN, "SUPPLIER_REMOVED", {
+        supplierId: id,
+        code: supplier.code,
+        name: supplier.name,
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {

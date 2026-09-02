@@ -1,3 +1,4 @@
+import { notificationsStub } from "../common/testing/notifications.stub";
 import { BadRequestException, ConflictException, NotFoundException } from "@nestjs/common";
 import { BatchesService } from "./batches.service";
 import { BatchStatus, QcResult, RecipientType } from "../generated/prisma/client";
@@ -121,7 +122,7 @@ describe("BatchesService", () => {
       createAutoReturnForReceipt: jest.fn().mockResolvedValue(null),
       createAutoReturnForReceiptByWeight: jest.fn().mockResolvedValue(null),
     };
-    service = new BatchesService(prisma, idGenerator, auditLog, materialReturns);
+    service = new BatchesService(prisma, idGenerator, auditLog, materialReturns, notificationsStub());
   });
 
   describe("create", () => {

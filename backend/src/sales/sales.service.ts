@@ -6,8 +6,10 @@ import {
   SalesChannel,
   SareeOrigin,
   SareeStatus,
+  UserRole,
 } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment, nameSegment } from "../id-generator/id-generator.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateReturnDto } from "./dto/create-return.dto";
 import { CreateSaleDto } from "./dto/create-sale.dto";
@@ -61,6 +63,7 @@ export class SalesService {
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
     private readonly auditLog: AuditLogService,
+    private readonly notifications: NotificationsService,
   ) {}
 
 
@@ -225,6 +228,14 @@ export class SalesService {
       newValue: String(dto.amount),
     });
 
+    await this.notifications.notifyRole(UserRole.ADMIN, "SHOP_SALE_RECORDED", {
+      saleRef,
+      sareeId: dto.sareeId,
+      channel: dto.channel,
+      customerName: customer.name,
+      amount: Number(dto.amount),
+    });
+
     const sale = await this.findOneSale(saleRef);
 
     return sale;
@@ -307,7 +318,10 @@ export class SalesService {
   async findAllSales(
     query: ListSaleQueryDto,
   ): Promise<PaginatedResult<Prisma.SaleRecordGetPayload<{ include: typeof saleInclude }>>> {
-    const where: Prisma.SaleRecordWhereInput = { channel: query.channel };
+    const where: Prisma.SaleRecordWhereInput = {
+      channel: query.channel,
+      ...(query.customerId ? { customerId: query.customerId } : {}),
+    };
 
     const [items, total] = await Promise.all([
       this.prisma.saleRecord.findMany({
@@ -648,6 +662,11 @@ export class SalesService {
       recordLabel: returnRef,
     });
 
+    await this.notifications.notifyRole(UserRole.ADMIN, "SHOP_RETURN_TO_INVENTORY", {
+      returnRef,
+      sareeId: record.sareeId,
+    });
+
     return this.findOneReturn(returnRef);
   }
 
@@ -717,6 +736,15 @@ export class SalesService {
       entityType: "ReturnRecord",
       entityId: returnRef,
       recordLabel: returnRef,
+    });
+
+    await this.notifications.notifyRole(UserRole.ADMIN, "SHOP_SALE_RETURNED", {
+      returnRef,
+      sareeId: dto.sareeId,
+      customerName: sale.customer.name,
+      reason: dto.reason ?? null,
+      refundAmount: dto.refundAmount ? Number(dto.refundAmount) : null,
+      restocked,
     });
 
     return this.findOneReturn(returnRef);

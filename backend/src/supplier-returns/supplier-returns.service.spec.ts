@@ -1,3 +1,4 @@
+import { notificationsStub } from "../common/testing/notifications.stub";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { SupplierReturnsService } from "./supplier-returns.service";
 import { CreateSupplierReturnRequestDto } from "./dto/create-supplier-return-request.dto";
@@ -35,7 +36,7 @@ describe("SupplierReturnsService", () => {
     };
     idGenerator = { nextScoped: jest.fn().mockResolvedValue("RR-RaviSilks-001-001") };
     auditLog = { recordAction: jest.fn() };
-    service = new SupplierReturnsService(prisma, idGenerator, auditLog);
+    service = new SupplierReturnsService(prisma, idGenerator, auditLog, notificationsStub());
   });
 
   describe("create", () => {

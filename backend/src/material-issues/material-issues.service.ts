@@ -3,7 +3,7 @@ import { PaginatedResult } from "../common/pagination";
 import { StorageService } from "../common/storage/storage.service";
 import { deductStock, restoreStock } from "../common/raw-material-stock.util";
 import { fromGrams, toGrams } from "../common/weight-units.util";
-import { MaterialIssueStatus, NotificationTargetType, Prisma, SignatureMethod } from "../generated/prisma/client";
+import { MaterialIssueStatus, MaterialType, Prisma, SignatureMethod, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment, nameSegment } from "../id-generator/id-generator.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -141,18 +141,56 @@ export class MaterialIssuesService {
     // in-app, on their own portal's Confirm Materials page. Push them an
     // in-app notification pointing at the record instead of texting anyone.
     if (dto.signatureMethod === SignatureMethod.REMOTE && dto.weaverId) {
-      const linkedUser = await this.prisma.user.findUnique({ where: { linkedWeaverId: dto.weaverId } });
-      if (linkedUser) {
-        await this.notifications.create({
-          targetType: NotificationTargetType.USER,
-          userId: linkedUser.id,
-          type: "material_signature_request",
-          payload: { recordId: record.id, recordKind: "ISSUE" },
-        });
-      }
+      await this.notifications.notifyWeaver(dto.weaverId, "material_signature_request", {
+        recordId: record.id,
+        recordKind: "ISSUE",
+      });
     }
 
+    // Issuing is the only thing that draws raw material down, so this is the
+    // one place a reorder threshold can actually be crossed. Checked after
+    // the transaction commits, against the freshly decremented rows, so the
+    // figure announced is the real one rather than a pre-deduction read.
+    await this.warnOnLowStock(dto.items.map((item) => item.materialType));
+
     return record;
+  }
+
+  /**
+   * Push a warning when an issue has taken a material to or below its
+   * reorder level. Deliberately addressed to ADMIN alone: admins and
+   * superadmins both receive every role's traffic (NotificationsGateway
+   * .handleConnection joins them to every room, and NotificationsService
+   * .scopeFor leaves their REST feed unscoped), so a second SUPERADMIN row
+   * would only be a duplicate both roles then see twice.
+   */
+  private async warnOnLowStock(materialTypes: MaterialType[]) {
+    const distinct = [...new Set(materialTypes)];
+    if (distinct.length === 0) return;
+
+    const rows = await this.prisma.rawMaterialStock.findMany({
+      where: { materialType: { in: distinct } },
+      select: { id: true, name: true, materialType: true, currentStock: true, reorderLevel: true, unit: true },
+    });
+
+    for (const row of rows) {
+      const currentStock = Number(row.currentStock);
+      const reorderLevel = Number(row.reorderLevel);
+      if (currentStock > reorderLevel) continue;
+
+      await this.notifications.notifyRole(
+        UserRole.ADMIN,
+        currentStock <= 0 ? "RAW_MATERIAL_OUT_OF_STOCK" : "RAW_MATERIAL_LOW_STOCK",
+        {
+          stockId: row.id,
+          materialName: row.name,
+          materialType: row.materialType,
+          currentStock,
+          reorderLevel,
+          unit: row.unit,
+        },
+      );
+    }
   }
 
   async findAll(
@@ -198,7 +236,7 @@ export class MaterialIssuesService {
         `Material issue must be PENDING_SIGNATURE to be signed (currently ${record.status})`,
       );
     }
-    return this.prisma.materialIssueRecord.update({
+    const signed = await this.prisma.materialIssueRecord.update({
       where: { id },
       data: {
         status: MaterialIssueStatus.SIGNED,
@@ -208,6 +246,17 @@ export class MaterialIssuesService {
       },
       include: includeItems,
     });
+
+    // Closes the loop on the remote-signature request pushed at create():
+    // whoever issued the material has no other way to learn the weaver
+    // actually accepted it.
+    await this.notifications.notifyRole(UserRole.ADMIN, "MATERIAL_SIGNATURE_COMPLETED", {
+      recordId: id,
+      recordKind: "ISSUE",
+      weaverName: signed.weaver?.name ?? null,
+    });
+
+    return signed;
   }
 
   async cancel(id: string) {

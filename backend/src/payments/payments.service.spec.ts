@@ -1,3 +1,4 @@
+import { notificationsStub } from "../common/testing/notifications.stub";
 import { NotFoundException } from "@nestjs/common";
 import * as ExcelJS from "exceljs";
 import { PaymentsService } from "./payments.service";
@@ -76,7 +77,7 @@ describe("PaymentsService", () => {
       nextFormatted: jest.fn().mockImplementation((prefix: string) => Promise.resolve(`${prefix}-${String(++idCounter).padStart(3, "0")}`)),
       nextScoped: jest.fn().mockImplementation((prefix: string, parentCode: string) => Promise.resolve(`${prefix}-${parentCode}-${String(++idCounter).padStart(3, "0")}`)),
     };
-    service = new PaymentsService(prisma, auditLog, vendorBills, purchases, idGenerator);
+    service = new PaymentsService(prisma, auditLog, vendorBills, purchases, idGenerator, notificationsStub());
   });
 
   describe("createWeaverPayment", () => {

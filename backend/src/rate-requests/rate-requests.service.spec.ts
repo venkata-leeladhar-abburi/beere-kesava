@@ -1,3 +1,4 @@
+import { notificationsStub } from "../common/testing/notifications.stub";
 import { NotFoundException } from "@nestjs/common";
 import { RateRequestsService } from "./rate-requests.service";
 
@@ -14,7 +15,7 @@ describe("RateRequestsService.approve", () => {
       rateChangeRequest: { findUnique: jest.fn() },
       $transaction: jest.fn(),
     };
-    service = new RateRequestsService(prisma, idGenerator, auditLog);
+    service = new RateRequestsService(prisma, idGenerator, auditLog, notificationsStub());
   });
 
   it("throws NotFoundException when the rate change request doesn't exist", async () => {

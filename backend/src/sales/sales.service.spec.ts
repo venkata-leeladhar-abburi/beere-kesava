@@ -1,3 +1,4 @@
+import { notificationsStub } from "../common/testing/notifications.stub";
 import { BadRequestException, ConflictException, NotFoundException } from "@nestjs/common";
 import { SalesService } from "./sales.service";
 import { RegisterReturnedSareeDto } from "./dto/register-returned-saree.dto";
@@ -26,7 +27,7 @@ describe("SalesService.registerReturnedSaree", () => {
     };
     idGenerator = { nextNamed: jest.fn().mockResolvedValue("RET-SreeKesava-001") };
     auditLog = { recordAction: jest.fn() };
-    service = new SalesService(prisma, idGenerator, auditLog);
+    service = new SalesService(prisma, idGenerator, auditLog, notificationsStub());
   });
 
   it("registers the saree and its return in a single transaction, held out of stock", async () => {
@@ -161,7 +162,7 @@ describe("SalesService.createReturn", () => {
     };
     idGenerator = { nextNamed: jest.fn().mockResolvedValue("RET-SreeGaneshSilks-001") };
     auditLog = { recordAction: jest.fn() };
-    service = new SalesService(prisma, idGenerator, auditLog);
+    service = new SalesService(prisma, idGenerator, auditLog, notificationsStub());
   });
 
   it("reads the id segment off the wholesale customer's business name", async () => {
@@ -217,7 +218,7 @@ describe("SalesService.sendReturnToInventory", () => {
       $transaction: jest.fn().mockResolvedValue([]),
     };
     auditLog = { recordAction: jest.fn() };
-    service = new SalesService(prisma, { nextNamed: jest.fn() } as any, auditLog);
+    service = new SalesService(prisma, { nextNamed: jest.fn() } as any, auditLog, notificationsStub());
   });
 
   it("flips the return, the saree and the stock row together", async () => {

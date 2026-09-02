@@ -1,7 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { Prisma, QcResult } from "../generated/prisma/client";
+import { Prisma, QcResult, UserRole } from "../generated/prisma/client";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateQcRecordDto } from "./dto/create-qc-record.dto";
 import { ListQcQueryDto } from "./dto/list-qc-query.dto";
@@ -38,6 +39,7 @@ export class QcService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateQcRecordDto) {
@@ -141,6 +143,25 @@ export class QcService {
       recordLabel: dto.sareeId,
       newValue: dto.result,
     });
+
+    // A clean PASSED is the expected outcome and says nothing anyone has to
+    // act on. SEMI and DEFECTIVE both send the saree back for rework, so they
+    // go to the office *and* to the weaver who has to redo it.
+    if (dto.result !== QcResult.PASSED) {
+      const type =
+        dto.result === QcResult.DEFECTIVE ? "BATCH_QC_FAILED" : "BATCH_QC_SEMI_DEFECT";
+      const payload = {
+        sareeId: dto.sareeId,
+        batchId: row.batchId,
+        result: dto.result,
+        defects: dto.defects ?? [],
+        deduction,
+      };
+      await this.notifications.notifyRole(UserRole.ADMIN, type, payload);
+      if (row.weaverId) {
+        await this.notifications.notifyWeaver(row.weaverId, type, payload);
+      }
+    }
 
     return record;
   }
