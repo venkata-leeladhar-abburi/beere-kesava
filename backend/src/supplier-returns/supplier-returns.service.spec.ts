@@ -48,6 +48,17 @@ describe("SupplierReturnsService", () => {
       );
     });
 
+    it("falls back to the supplier's name segment, never its UUID, when it has no code", async () => {
+      prisma.purchase.findUnique.mockResolvedValue({
+        ...purchase,
+        supplier: { id: "7141a9e5-2b1c-4d3e-8f90-a1b2c3d4e5f6", name: "Ravi Silks", code: null },
+      });
+
+      await service.create(createDto());
+
+      expect(idGenerator.nextScoped).toHaveBeenCalledWith("RR", "RaviSilks");
+    });
+
     it("rejects a purchase with no registered supplier rather than guessing one", async () => {
       prisma.purchase.findUnique.mockResolvedValue({ id: "EXT-2026-002", supplierId: null, supplier: null });
 

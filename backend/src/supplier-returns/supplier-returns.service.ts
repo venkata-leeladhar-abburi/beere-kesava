@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { IdGeneratorService } from "../id-generator/id-generator.service";
+import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { Prisma, SupplierReturnStatus } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateSupplierReturnRequestDto } from "./dto/create-supplier-return-request.dto";
@@ -63,7 +63,16 @@ export class SupplierReturnsService {
       );
     }
 
-    const id = await this.idGenerator.nextScoped("RR", purchase.supplier.code ?? purchase.supplier.id);
+    // Falls back to the supplier's name segment, not its UUID: every other
+    // scoping service reads `code ?? businessSegment(name)`, and a raw UUID
+    // here produced ids like "RR-7141a9e5-2b1c-…-002" that no code parser
+    // could split. Suppliers created since SuppliersService started minting
+    // codes always take the first branch; the fallback only covers rows that
+    // predate it. Existing RR- ids keep their UUID form — they are primary
+    // keys, so they are not rewritten.
+    const supplierSegment =
+      purchase.supplier.code ?? businessSegment(purchase.supplier.name, "Supplier");
+    const id = await this.idGenerator.nextScoped("RR", supplierSegment);
 
     const request = await this.prisma.supplierReturnRequest.create({
       data: {

@@ -16,7 +16,7 @@ import { SupplierPaymentDetailModal } from "./SupplierPaymentDetailModal";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { EntityCode, Money } from "@/shared/ui/domain";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 type SupplierStatusKey = "Paid" | "Pending" | "Overdue";
@@ -451,19 +451,12 @@ export function SupplierPaymentsSection() {
 
                       {/* Header badges: ID & Last activity date */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-                        <span style={{
-                          fontFamily: F.mono,
-                          fontSize: 11,
-                          fontWeight: 700,
-                          color: T.royalBurgundy,
-                          background: "rgba(110,15,45,0.07)",
-                          border: "1px solid rgba(110,15,45,0.12)",
-                          borderRadius: 8,
-                          padding: "3px 9px",
-                          letterSpacing: "0.4px",
-                        }}>
-                          SUP-{r.supplier.id.substring(0, 8).toUpperCase()}
-                        </span>
+                        <EntityCode
+                          type="supplier"
+                          value={r.supplier.code || r.supplier.id}
+                          size="sm"
+                          className="font-bold text-[#6E0F2D] bg-[rgba(110,15,45,0.07)] border border-[rgba(110,15,45,0.12)] rounded-lg px-[9px] py-[3px] break-all whitespace-normal max-w-full"
+                        />
                         <span style={{
                           fontFamily: F.mono,
                           fontSize: 11,
