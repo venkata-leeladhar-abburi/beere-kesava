@@ -16,7 +16,7 @@ import { EntityCode } from "@/shared/ui/domain";
 import { uploadsApi, resolveAssetUrl } from "../../../shared/api/uploads";
 import { ApiError } from "../../../shared/api/client";
 
-export { AddDesignModal, SlipModal } from "./DesignModals";
+export { AddDesignModal, SlipModal, EditDispatchModal } from "./DesignModals";
 
 // Section banner card — dark maroon gradient header (icon + title + subtitle
 // + actions) atop a white padded body, matching the pattern used across the

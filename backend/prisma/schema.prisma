@@ -756,6 +756,12 @@ model MaterialReturnRecord {
   deductionAmount    Decimal?             @db.Decimal(12, 2)
   deductionReason    String?
   notes              String?
+  // True only for the synthetic records createAutoReturnForReceipt(ByWeight)
+  // creates when a saree is received — material that never left the saree, so
+  // no weaver physically returned anything. Manual weaver-return admin flows
+  // never set this. Kept separate from `notes` text-sniffing so "returned
+  // from weavers" reporting can filter these out reliably.
+  isAutoRecorded     Boolean              @default(false)
 
   items MaterialReturnItem[]
 

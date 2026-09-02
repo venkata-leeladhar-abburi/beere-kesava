@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { IdGeneratorService, businessSegment, nameSegment } from '../id-generator/id-generator.service';
 import { CreateDesignDispatchDto } from './dto/create-design-dispatch.dto';
+import { UpdateDesignDispatchDto } from './dto/update-design-dispatch.dto';
+import { NotFoundException } from '@nestjs/common';
 import { PaginatedResult } from '../common/pagination';
 import { DesignDispatch } from '../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -78,5 +80,31 @@ export class DesignDispatchesService {
       },
       orderBy: { sentAt: 'desc' },
     });
+  }
+
+  async update(id: string, dto: UpdateDesignDispatchDto) {
+    await this.ensureExists(id);
+    return this.prisma.designDispatch.update({
+      where: { id },
+      data: {
+        instructions: dto.instructions,
+        colorSlipImageUrl: dto.colorSlipImageUrl,
+        designGraphImageUrl: dto.designGraphImageUrl,
+      },
+    });
+  }
+
+  async remove(id: string) {
+    await this.ensureExists(id);
+    await this.prisma.designDispatch.delete({ where: { id } });
+    return { id };
+  }
+
+  private async ensureExists(id: string) {
+    const dispatch = await this.prisma.designDispatch.findUnique({ where: { id } });
+    if (!dispatch) {
+      throw new NotFoundException(`Design dispatch ${id} not found`);
+    }
+    return dispatch;
   }
 }

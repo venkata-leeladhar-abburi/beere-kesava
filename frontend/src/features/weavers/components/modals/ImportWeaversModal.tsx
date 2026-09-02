@@ -7,6 +7,7 @@ import { Status, ParsedWeaverRow } from "../types";
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { weaversApi } from "../../../../shared/api/weavers";
+import { IMPORT_FILE_ACCEPT } from "../../../payments/utils/importFile";
 
 export function ImportWeaversModal({ open, onClose, onImported }: {
   open: boolean; onClose: () => void; onImported: () => void;
@@ -167,7 +168,7 @@ export function ImportWeaversModal({ open, onClose, onImported }: {
           </div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>.xlsx, .xls, or .csv</div>
           <Input
-            ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" containerClassName="hidden"
+            ref={fileInputRef} type="file" accept={IMPORT_FILE_ACCEPT} containerClassName="hidden"
             onChange={e => { const f = e.target.files?.[0]; if (f) parseFile(f); }}
           />
         </div>

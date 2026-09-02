@@ -23,7 +23,10 @@ import { ListMaterialReturnsQueryDto } from "./dto/list-material-returns-query.d
 
 const MRR_ID_PREFIX_BASE = "MRR";
 
-const includeItems = { items: true } satisfies Prisma.MaterialReturnRecordInclude;
+const includeItems = {
+  items: true,
+  receivedBy: { select: { id: true, firstName: true, lastName: true } },
+} satisfies Prisma.MaterialReturnRecordInclude;
 
 export interface OutstandingGroup {
   materialType: string;
@@ -500,6 +503,7 @@ export class MaterialReturnsService {
         receivedById: params.receivedById,
         status: MaterialReturnStatus.APPROVED,
         signatureCaptured: false,
+        isAutoRecorded: true,
         notes: withExcessNote("Auto-recorded: material weight returned with received saree", excesses),
         items: { create: itemsToCreate },
       },
@@ -576,6 +580,7 @@ export class MaterialReturnsService {
         receivedById: params.receivedById,
         status: MaterialReturnStatus.APPROVED,
         signatureCaptured: false,
+        isAutoRecorded: true,
         notes: withExcessNote(
           "Auto-recorded: saree received weight drawn down from outstanding material",
           excessGrams > 0 ? [{ grams: excessGrams }] : [],

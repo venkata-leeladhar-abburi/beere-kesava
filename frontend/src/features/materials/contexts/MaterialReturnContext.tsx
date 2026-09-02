@@ -46,6 +46,10 @@ export interface MaterialReturnRecord {
   deductionReason?: string;
   notes?: string;
   status: "pending-signature" | "approved" | "cancelled";
+  // True only for records the backend auto-generates when a saree is received
+  // (see MaterialReturnContext.tsx's backendRecordToFrontend) — no weaver
+  // physically returned material for these, so summary UI must exclude them.
+  isAutoRecorded: boolean;
 }
 
 export interface WeaverOutstandingLine {
@@ -96,7 +100,7 @@ function backendRecordToFrontend(
     batchId: r.batchId ?? undefined,
     factoryLoomId: r.factoryLoomId ?? undefined,
     factoryLoomNumber: r.factoryLoomId ? loomLookup.get(r.factoryLoomId) : undefined,
-    receivedBy: "Admin (Kesava Rao)",
+    receivedBy: r.receivedBy ? `${r.receivedBy.firstName} ${r.receivedBy.lastName}`.trim() : "Unknown",
     receivedAt: r.receivedAt,
     materials: r.items.map(backendItemToFrontend),
     signatureMethod: r.signatureMethod === "REMOTE" ? "remote" : "here",
@@ -107,6 +111,7 @@ function backendRecordToFrontend(
     deductionReason: r.deductionReason ?? undefined,
     notes: r.notes ?? undefined,
     status: r.status === "PENDING_SIGNATURE" ? "pending-signature" : r.status === "APPROVED" ? "approved" : "cancelled",
+    isAutoRecorded: r.isAutoRecorded,
   };
 }
 
@@ -294,6 +299,7 @@ const FALLBACK_MATERIAL_RETURN: MaterialReturnContextValue = {
     signatureMethod: "here",
     signatureCaptured: false,
     status: "approved",
+    isAutoRecorded: false,
   }),
   deleteReturnRecord: async () => {},
   getRecordsForWeaver: () => [],

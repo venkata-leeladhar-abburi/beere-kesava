@@ -83,7 +83,16 @@ export function ReturnHistorySection({
       id: "status", header: "Status", accessor: r => r.status, type: "status",
       cell: (_v, r) => {
         const badge = STATUS_BADGE[r.status];
-        return <span style={{ background: badge.bg, color: badge.color, borderRadius: 999, padding: "4px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, whiteSpace: "nowrap" }}>{badge.label}</span>;
+        return (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+            <span style={{ background: badge.bg, color: badge.color, borderRadius: 999, padding: "4px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>{badge.label}</span>
+            {r.isAutoRecorded && (
+              <span title="Auto-recorded from a saree receipt — no weaver physically returned this material" style={{ background: "rgba(110,15,45,0.06)", color: T.taupe, borderRadius: 999, padding: "3px 8px", fontFamily: F.ui, fontSize: 11, fontWeight: 600 }}>
+                Auto
+              </span>
+            )}
+          </span>
+        );
       },
     },
     {

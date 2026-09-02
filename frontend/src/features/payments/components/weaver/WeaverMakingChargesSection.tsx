@@ -48,7 +48,7 @@ function toWeaverRecord(
   accruedDeduction: number | undefined,
   totalPaid: number | undefined,
 ): WeaverRecord {
-  return {
+  const record: WeaverRecord = {
     id: w.id,
     code: w.code,
     name: w.name,
@@ -57,7 +57,10 @@ function toWeaverRecord(
     village: w.village || "—",
     sb: 0, hz: 0, ps: 0, bs: 0, st: 0,
     advance: latestPayment?.deduction ? Number(latestPayment.deduction) : 0,
-    status: latestPayment ? "Paid" : "Pending",
+    // Placeholder — a payment having been recorded at all isn't the same as
+    // being paid in full (a partial payment satisfies `latestPayment` too),
+    // so this is overwritten below from the actual balance.
+    status: "Pending",
     uploadedAmount: latestPayment ? Number(latestPayment.amountPaid) : undefined,
     uploadedDeduction: latestPayment?.deduction !== undefined && latestPayment?.deduction !== null ? Number(latestPayment.deduction) : undefined,
     uploadedNoOfSarees: latestPayment?.noOfSarees ?? undefined,
@@ -75,6 +78,14 @@ function toWeaverRecord(
     accruedDeduction,
     totalPaid,
   };
+  // "Paid" means the balance is actually settled (net <= 0), not merely that
+  // a payment exists — a partial payment leaves latestPayment truthy while
+  // real money is still owed. Require some charges/payment on record too, so
+  // a weaver with nothing charged and nothing paid (net == 0) still reads
+  // "Pending" rather than "Paid".
+  const hasActivity = calcCharges(record) > 0 || calcPaid(record) > 0;
+  record.status = hasActivity && calcNet(record) <= 0 ? "Paid" : "Pending";
+  return record;
 }
 
 export function WeaverMakingChargesSection() {

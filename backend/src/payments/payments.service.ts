@@ -504,7 +504,7 @@ export class PaymentsService {
     const weaverIds = new Set<string>();
     const rowsRaw: { rowNumber: number; weaverId: string; amountPaid: number; firmRaw?: string; data: Prisma.WeaverPaymentCreateManyInput }[] = [];
 
-    sheet.eachRow((row, rowNumber) => {
+    sheet.eachRow((row: ExcelJS.Row, rowNumber: number) => {
       if (rowNumber === 1) return;
       const weaverId = asString(cell(row, "weaverId"));
       const amountPaid = asNumber(cell(row, "amountPaid"));
@@ -730,7 +730,7 @@ export class PaymentsService {
     const rows: Row[] = [];
     const errors: ImportRowError[] = [];
 
-    sheet.eachRow((row, rowNumber) => {
+    sheet.eachRow((row: ExcelJS.Row, rowNumber: number) => {
       if (rowNumber === 1) return;
       const poNumber = asString(cell(row, "poNumber"));
       const amountPaid = asNumber(cell(row, "amountPaid"));

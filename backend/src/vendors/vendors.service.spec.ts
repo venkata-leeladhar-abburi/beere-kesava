@@ -5,7 +5,8 @@ import { VendorsService } from "./vendors.service";
 describe("VendorsService duplicate guard", () => {
   const prisma = { vendor: { findFirst: jest.fn(), create: jest.fn() } };
   const idGenerator = { nextNamed: jest.fn().mockResolvedValue("ShivaTraders-001") };
-  const service = new VendorsService(prisma as never, {} as never, idGenerator as never);
+  const notifications = { notifyRole: jest.fn() };
+  const service = new VendorsService(prisma as never, {} as never, idGenerator as never, notifications as never);
 
   const dto = {
     name: "Shiva Traders",

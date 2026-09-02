@@ -225,17 +225,17 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
 
   const liveBatchRows: BatchRow[] = grnItems.flatMap(grn =>
     grn.items.map(item => {
-      const remaining = item.quantity - (item.rejectedQuantity ?? 0);
+      const remaining = item.availableQuantity;
       const statusType: StatusType = remaining > 10 ? "good" : remaining > 0 ? "warning" : "empty";
       return {
         id: grn.id,
         rowKey: `${grn.id}-${item.id}`,
         type: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
-        details: `${item.name}${item.grade ? ` (${item.grade})` : ""}`,
+        details: `${item.description?.trim() || item.name}${item.grade ? ` (${item.grade})` : ""}`,
         vendor: grn.supplierName,
         date: grn.receivedDate ? new Date(grn.receivedDate).toLocaleDateString("en-IN") : "—",
-        received: item.quantity,
-        given: item.rejectedQuantity ?? 0,
+        received: item.receivedQuantity,
+        given: item.issuedQuantity,
         remaining,
         statusType,
       };

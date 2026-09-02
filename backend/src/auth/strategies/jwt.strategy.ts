@@ -41,14 +41,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   // Whatever is returned here becomes req.user.
   async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
     if (payload.sub) {
-      if (payload.role === UserRole.WEAVER) {
+      // `sub` is User.id whenever a User row exists for this session (including
+      // linked-weaver User rows with role=WEAVER); only the weaver-only fallback
+      // login path puts a real Weaver.id in `sub`. Check User first, then Weaver.
+      const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+      if (!user) {
         const weaver = await this.prisma.weaver.findUnique({ where: { id: payload.sub } });
         if (!weaver) {
-          throw new UnauthorizedException("Session invalid or weaver no longer exists");
-        }
-      } else {
-        const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
-        if (!user) {
           throw new UnauthorizedException("Session invalid or user no longer exists");
         }
       }

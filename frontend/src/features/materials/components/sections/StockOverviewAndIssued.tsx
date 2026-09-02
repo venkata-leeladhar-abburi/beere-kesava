@@ -233,15 +233,17 @@ export function IssuedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string)
 
 // Real-data counterpart to IssuedThisMonthCard above, same layout — sourced
 // from MaterialReturnContext (backed by the material-returns DB table) rather
-// than any mock. Only APPROVED returns are counted, since those are the ones
-// that actually restored stock (a still-pending-signature return hasn't).
+// than any mock. Only counts returns that are (a) APPROVED by an admin and
+// (b) actually returned by a weaver — `isAutoRecorded` records are synthetic
+// drawdowns the backend creates when a saree is received (the material never
+// left the saree, so no weaver returned anything) and must not appear here.
 export function ReturnedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string) => void }) {
   const { isMobile, px } = useContext(MobileCtx);
   const { returnRecords, isError: returnError } = useMaterialReturn();
 
   const now = new Date();
   const thisMonthRecords = returnRecords.filter(r => {
-    if (r.status !== "approved") return false;
+    if (r.status !== "approved" || r.isAutoRecorded) return false;
     const d = new Date(r.receivedAt);
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
