@@ -2,7 +2,8 @@ import { useState } from "react";
 import {
   Image as ImageSquare, Workflow as Graph, Save as FloppyDisk, AlertCircle as WarningCircle,
 } from "lucide-react";
-import { DesignEntry } from "../contexts/DesignLibraryContext";
+import { DesignEntry, DispatchRecord } from "../contexts/DesignLibraryContext";
+
 import { T, F } from "./theme";
 import { WeaverCombobox, UploadZone, labelStyle } from "./DesignLibraryComponents";
 import { Button, Input, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
@@ -126,6 +127,44 @@ export function SlipModal({ design, onClose, onSave }: { design: DesignEntry; on
         </Button>
         <Button onClick={() => onSave(slip, graph)} variant="primary" size="lg" className="flex-[2]" iconLeft={FloppyDisk}>
           {design.hasColorSlip ? "Update Slip" : "Upload Slip"}
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+}
+
+export function EditDispatchModal({ dispatch, onClose, onSave }: {
+  dispatch: DispatchRecord;
+  onClose: () => void;
+  onSave: (patch: { instructions: string; colorSlipImage: string | null; designGraphImage: string | null }) => void;
+}) {
+  const [instructions, setInstructions] = useState(dispatch.instructions);
+  const [slip, setSlip] = useState<string | null>(dispatch.colorSlipImage);
+  const [graph, setGraph] = useState<string | null>(dispatch.designGraphImage);
+
+  return (
+    <Modal open onOpenChange={o => !o && onClose()} size="sm">
+      <Modal.Header title="Edit Dispatch" subtitle={`Dispatch to ${dispatch.recipientName}`} />
+      <Modal.Body>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 4, paddingBottom: 20 }}>
+          <div>
+            <label style={labelStyle} htmlFor="edit-dispatch-instructions">Description / Dispatch Instructions <span style={{ color: T.royalBurgundy }}>*</span></label>
+            <Textarea id="edit-dispatch-instructions" value={instructions} onChange={e => setInstructions(e.target.value)} rows={3} placeholder="Provide precise guidelines for weaving style, tension, spacing, or borders…" />
+          </div>
+          <UploadZone label="Color Slip" hint="Upload custom slip image" icon={ImageSquare} preview={slip} onFile={setSlip} />
+          <UploadZone label="Design Graph" hint="Upload custom graph image" icon={Graph} preview={graph} onFile={setGraph} />
+        </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1">
+          Cancel
+        </Button>
+        <Button
+          onClick={() => onSave({ instructions: instructions.trim(), colorSlipImage: slip, designGraphImage: graph })}
+          disabled={!instructions.trim()}
+          variant="primary" size="lg" className="flex-[2]" iconLeft={FloppyDisk}
+        >
+          Save Changes
         </Button>
       </Modal.Footer>
     </Modal>

@@ -22,6 +22,7 @@ export interface BackendMaterialReturnRecord {
   loomNumber: string | null;
   batchId: string | null;
   receivedById: string;
+  receivedBy: { id: string; firstName: string; lastName: string } | null;
   receivedAt: string;
   signatureMethod: BackendSignatureMethod | null;
   signatureCaptured: boolean;
@@ -31,6 +32,10 @@ export interface BackendMaterialReturnRecord {
   deductionAmount: string | null;
   deductionReason: string | null;
   notes: string | null;
+  // True only for the synthetic records the backend creates when a saree is
+  // received (material never physically left the saree) — no weaver returned
+  // anything, so these must never be shown as a real "weaver return".
+  isAutoRecorded: boolean;
   items: BackendMaterialReturnItem[];
 }
 

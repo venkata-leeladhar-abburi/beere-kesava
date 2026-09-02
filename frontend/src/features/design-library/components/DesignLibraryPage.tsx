@@ -4,9 +4,10 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Image as ImageSquare, Workflow as Graph,
   Send as PaperPlaneTilt, CalendarCheck, User, Building2 as Buildings, FileText, SlidersHorizontal,
+  Pencil, Trash2,
 } from "lucide-react";
 
-import { useDesignLibrary, DesignEntry } from "../contexts/DesignLibraryContext";
+import { useDesignLibrary, DesignEntry, DispatchRecord } from "../contexts/DesignLibraryContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
 import { weaversApi } from "../../../shared/api/weavers";
@@ -14,18 +15,22 @@ import { weaversApi } from "../../../shared/api/weavers";
 import { T, F } from "./theme";
 import {
   FadeUp, SectionCard, UploadZone, labelStyle,
-  DesignCodeCard, AddDesignModal, SlipModal,
+  DesignCodeCard, AddDesignModal, SlipModal, EditDispatchModal,
 } from "./DesignLibraryComponents";
-import { Button, SearchInput, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
+import { Button, SearchInput, Textarea, Select, SelectItem, IconButton } from "../../../shared/ui/primitives";
 import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../shared/ui/state";
+import { ConfirmDialog } from "../../../shared/ui/ConfirmDialog";
 
 export { DesignCodeCard };
 
 export function DesignLibraryPage() {
-  const { addDesign, updateDesign, dispatches: dispatchHistory, addDispatch, isLoading, isError, error, refetch } = useDesignLibrary();
+  const { addDesign, updateDesign, dispatches: dispatchHistory, addDispatch, updateDispatch, deleteDispatch, isLoading, isError, error, refetch } = useDesignLibrary();
   const [showAdd, setShowAdd] = useState(false);
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
   const [slipDesign, setSlipDesign] = useState<DesignEntry | null>(null);
+  const [editDispatch, setEditDispatch] = useState<DispatchRecord | null>(null);
+  const [deleteDispatchTarget, setDeleteDispatchTarget] = useState<DispatchRecord | null>(null);
+  const [deletingDispatch, setDeletingDispatch] = useState(false);
 
   const { data: weaversRes } = useQuery({
     queryKey: ["weavers-list"],
@@ -309,22 +314,26 @@ export function DesignLibraryPage() {
                                 </div>
                               </div>
 
-                              <span style={{
-                                fontFamily: F.ui,
-                                fontSize: 12,
-                                fontWeight: 700,
-                                background: isWeaver ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.12)",
-                                color: isWeaver ? T.royalBurgundy : "#8B6018",
-                                border: `1px solid ${isWeaver ? "rgba(110,15,45,0.18)" : "rgba(200,155,71,0.25)"}`,
-                                borderRadius: 20,
-                                padding: "4px 11px",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 5,
-                              }}>
-                                {isWeaver ? <User size={12} /> : <Buildings size={12} />}
-                                <span>{h.recipientName}</span>
-                              </span>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span style={{
+                                  fontFamily: F.ui,
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  background: isWeaver ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.12)",
+                                  color: isWeaver ? T.royalBurgundy : "#8B6018",
+                                  border: `1px solid ${isWeaver ? "rgba(110,15,45,0.18)" : "rgba(200,155,71,0.25)"}`,
+                                  borderRadius: 20,
+                                  padding: "4px 11px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 5,
+                                }}>
+                                  {isWeaver ? <User size={12} /> : <Buildings size={12} />}
+                                  <span>{h.recipientName}</span>
+                                </span>
+                                <IconButton label={`Edit dispatch to ${h.recipientName}`} icon={Pencil} size="sm" variant="ghost" onClick={() => setEditDispatch(h)} />
+                                <IconButton label={`Delete dispatch to ${h.recipientName}`} icon={Trash2} size="sm" variant="danger" onClick={() => setDeleteDispatchTarget(h)} />
+                              </div>
                             </div>
 
                             {/* Instructions Box */}
@@ -420,6 +429,29 @@ export function DesignLibraryPage() {
             onSave={(slip, graph) => {
               updateDesign(slipDesign.code, { colorSlipPhoto: slip, designGraph: graph, hasColorSlip: !!slip, hasGraph: !!graph });
               setSlipDesign(null);
+            }}
+          />
+        )}
+        {editDispatch && (
+          <EditDispatchModal key="edit-dispatch" dispatch={editDispatch} onClose={() => setEditDispatch(null)}
+            onSave={patch => {
+              updateDispatch(editDispatch.id, patch);
+              setEditDispatch(null);
+            }}
+          />
+        )}
+        {deleteDispatchTarget && (
+          <ConfirmDialog
+            key="delete-dispatch"
+            title="Delete this dispatch?"
+            message={`This will permanently remove the dispatch to ${deleteDispatchTarget.recipientName} from the sent history log.`}
+            loading={deletingDispatch}
+            onCancel={() => setDeleteDispatchTarget(null)}
+            onConfirm={() => {
+              setDeletingDispatch(true);
+              deleteDispatch(deleteDispatchTarget.id);
+              setDeletingDispatch(false);
+              setDeleteDispatchTarget(null);
             }}
           />
         )}

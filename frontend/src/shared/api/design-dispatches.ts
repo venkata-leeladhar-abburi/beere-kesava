@@ -30,4 +30,15 @@ export const designDispatchesApi = {
 
   listByWeaver: (weaverId: string) =>
     apiClient.get<BackendDesignDispatch[]>(`/design-dispatches/weaver/${weaverId}`),
+
+  update: (
+    id: string,
+    data: {
+      instructions?: string;
+      colorSlipImageUrl?: string | null;
+      designGraphImageUrl?: string | null;
+    },
+  ) => apiClient.patch<BackendDesignDispatch>(`/design-dispatches/${id}`, data),
+
+  delete: (id: string) => apiClient.delete(`/design-dispatches/${id}`),
 };

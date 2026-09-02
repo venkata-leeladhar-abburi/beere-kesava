@@ -80,6 +80,8 @@ interface DesignLibraryContextValue {
   getDesign: (code: string) => DesignEntry | undefined;
   dispatches: DispatchRecord[];
   addDispatch: (d: Omit<DispatchRecord, "id" | "sentAt">) => DispatchRecord;
+  updateDispatch: (id: string, patch: Partial<Pick<DispatchRecord, "instructions" | "colorSlipImage" | "designGraphImage">>) => void;
+  deleteDispatch: (id: string) => void;
   getDispatchesForWeaver: (weaverId: string) => DispatchRecord[];
   isError: boolean;
   error: unknown;
@@ -202,6 +204,35 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
     },
   });
 
+  const updateDispatchMutation = useMutation({
+    mutationFn: (args: { id: string; patch: Partial<Pick<DispatchRecord, "instructions" | "colorSlipImage" | "designGraphImage">> }) =>
+      designDispatchesApi.update(args.id, {
+        instructions: args.patch.instructions,
+        colorSlipImageUrl: args.patch.colorSlipImage !== undefined ? toStoredAssetPath(args.patch.colorSlipImage) : undefined,
+        designGraphImageUrl: args.patch.designGraphImage !== undefined ? toStoredAssetPath(args.patch.designGraphImage) : undefined,
+      }),
+    onSuccess: (updated: BackendDesignDispatch) => {
+      queryClient.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, prev =>
+        (prev ?? []).map(d => d.id === updated.id ? backendDispatchToRecord(updated) : d)
+      );
+      toast.success("Dispatch updated");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update dispatch");
+    },
+  });
+
+  const deleteDispatchMutation = useMutation({
+    mutationFn: (id: string) => designDispatchesApi.delete(id),
+    onSuccess: (_res, id) => {
+      queryClient.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, prev => (prev ?? []).filter(d => d.id !== id));
+      toast.success("Dispatch deleted");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to delete dispatch");
+    },
+  });
+
   const addDesign = (d: DesignEntry) => addDesignMutation.mutate(d);
   const updateDesign = (code: string, patch: Partial<DesignEntry>) => updateDesignMutation.mutate({ code, patch });
   const getDesign = useCallback((code: string) => designs.find(d => d.code === code), [designs]);
@@ -218,13 +249,18 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
     return created;
   };
 
+  const updateDispatch = (id: string, patch: Partial<Pick<DispatchRecord, "instructions" | "colorSlipImage" | "designGraphImage">>) =>
+    updateDispatchMutation.mutate({ id, patch });
+
+  const deleteDispatch = (id: string) => deleteDispatchMutation.mutate(id);
+
   const getDispatchesForWeaver = useCallback(
     (weaverId: string) => dispatches.filter(d => d.recipientType === "weaver" && d.recipientId === weaverId),
     [dispatches]
   );
 
   return (
-    <DesignLibraryContext.Provider value={{ designs, addDesign, updateDesign, getDesign, dispatches, addDispatch, getDispatchesForWeaver, isError, error, isLoading, refetch: () => void refetch() }}>
+    <DesignLibraryContext.Provider value={{ designs, addDesign, updateDesign, getDesign, dispatches, addDispatch, updateDispatch, deleteDispatch, getDispatchesForWeaver, isError, error, isLoading, refetch: () => void refetch() }}>
       {children}
     </DesignLibraryContext.Provider>
   );
@@ -237,6 +273,8 @@ const FALLBACK_DESIGN_LIBRARY: DesignLibraryContextValue = {
   getDesign: () => undefined,
   dispatches: [],
   addDispatch: (d) => ({ id: "", sentAt: "", ...d } as DispatchRecord),
+  updateDispatch: () => {},
+  deleteDispatch: () => {},
   getDispatchesForWeaver: () => [],
   isError: false,
   error: null,
