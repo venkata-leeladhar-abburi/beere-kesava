@@ -35,7 +35,7 @@ export interface BulkOrder {
 
 export type BatchStage = "weaving" | "submitted" | "qc-passed" | "finishing";
 
-export interface WeaverRef { name: string; id: string; initials: string; bg: string }
+export interface WeaverRef { name: string; id: string; code?: string | null; initials: string; bg: string }
 
 export interface Batch {
   id: string; stage: BatchStage; sareeCode: string; sareeTypeName: string; rate: number;

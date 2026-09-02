@@ -381,7 +381,7 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
       id: "weavers", header: "Weaver(s)", accessor: b => b.weavers,
       cell: (_v, b) => (
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {b.weavers.map(w => <div key={w.id} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, whiteSpace: "nowrap", fontWeight: 500 }}>{w.name} <span style={{ color: T.taupe }}>({w.id})</span></div>)}
+          {b.weavers.map(w => <div key={w.id} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, whiteSpace: "nowrap", fontWeight: 500 }}>{w.name} {w.code && <span style={{ color: T.taupe }}>({w.code})</span>}</div>)}
         </div>
       ),
     },
