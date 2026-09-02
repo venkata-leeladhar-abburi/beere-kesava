@@ -1,8 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { UserRole, AccessLevel } from "../../generated/prisma/client";
 import { JWT_SECRET } from "../jwt-secret";
+import { PrismaService } from "../../prisma/prisma.service";
 
 export interface JwtPayload {
   sub: string | undefined;
@@ -29,7 +30,7 @@ export interface AuthenticatedUser {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly prisma: PrismaService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -38,7 +39,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   // Whatever is returned here becomes req.user.
-  validate(payload: JwtPayload): AuthenticatedUser {
+  async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
+    if (payload.sub) {
+      if (payload.role === UserRole.WEAVER) {
+        const weaver = await this.prisma.weaver.findUnique({ where: { id: payload.sub } });
+        if (!weaver) {
+          throw new UnauthorizedException("Session invalid or weaver no longer exists");
+        }
+      } else {
+        const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+        if (!user) {
+          throw new UnauthorizedException("Session invalid or user no longer exists");
+        }
+      }
+    }
+
     return {
       id: payload.sub,
       mobile: payload.mobile,
