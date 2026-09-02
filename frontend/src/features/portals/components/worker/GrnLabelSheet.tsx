@@ -27,21 +27,24 @@ export interface GrnLabel {
 const mono = "var(--font-code, ui-monospace, monospace)";
 const ui = "var(--font-ui, system-ui, sans-serif)";
 
+// Same compact vertical layout as the saree tags (SareeTagPrint.tsx): a
+// small header row, one full-width barcode with its code printed below it,
+// then a couple of tight detail lines — barcode only, no QR.
 function LabelTile({ label }: { label: GrnLabel }) {
   return (
     <div
       style={{
         // Fixed physical size so a label is the same on screen and on paper,
         // and so tiles land predictably on a sticker sheet.
-        width: "88mm",
-        height: "52mm",
+        width: "82mm",
+        height: "46mm",
         boxSizing: "border-box",
-        border: "1px solid #000",
-        borderRadius: "2mm",
-        padding: "4mm",
+        border: "0.3mm solid #000",
+        borderRadius: "1.5mm",
+        padding: "3mm 4mm",
         display: "flex",
-        gap: "4mm",
-        alignItems: "flex-start",
+        flexDirection: "column",
+        justifyContent: "space-between",
         background: "#FFFFFF",
         color: "#000000",
         // A label split across a page break is a wasted sticker.
@@ -49,32 +52,36 @@ function LabelTile({ label }: { label: GrnLabel }) {
         pageBreakInside: "avoid",
       }}
     >
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", height: "100%" }}>
-        <div style={{ fontFamily: mono, fontSize: "3.6mm", fontWeight: 700, letterSpacing: "0.02em", wordBreak: "break-all", lineHeight: 1.25 }}>
-          {label.code}
-        </div>
-        <div style={{ fontFamily: ui, fontSize: "3.6mm", fontWeight: 700, marginTop: "1.6mm" }}>
-          {label.materialType} · {label.quantity}
-        </div>
-        {label.description && (
-          <div style={{ fontFamily: ui, fontSize: "2.9mm", marginTop: "1mm", lineHeight: 1.3 }}>{label.description}</div>
-        )}
-        <div style={{ marginTop: "auto", fontFamily: ui, fontSize: "2.6mm", lineHeight: 1.45 }}>
-          <div style={{ fontFamily: mono }}>{label.grnBatchId}</div>
-          {label.vendor && <div>{label.vendor}</div>}
-          {label.receivedDate && <div>{label.receivedDate}</div>}
-        </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <span style={{ fontFamily: ui, fontWeight: 700, fontSize: "8pt" }}>Beere Kesava &amp; Brothers Silks</span>
+        <span style={{ fontFamily: mono, fontSize: "7pt", color: "#555" }}>{label.grnBatchId}</span>
       </div>
-      {/* Barcode only, same style as the saree tags (SareeTagPrint.tsx) —
-          no QR alongside it. The code itself is already printed in the text
-          column on the left, so it isn't repeated here. */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, width: "34mm", height: "100%" }}>
+
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1mm" }}>
         <img
           src={labelsApi.barcodeUrl(label.code)}
           alt={`Barcode for ${label.code}`}
-          style={{ width: "100%", height: "16mm", objectFit: "contain" }}
+          style={{ width: "100%", maxWidth: "68mm", height: "11mm", objectFit: "contain" }}
         />
+        <span style={{ fontFamily: mono, fontWeight: 700, fontSize: "9.5pt", wordBreak: "break-all" as const, textAlign: "center" }}>{label.code}</span>
       </div>
+
+      <div style={{ display: "flex", justifyContent: "space-between", gap: "3mm", fontFamily: ui, fontSize: "7.5pt", color: "#333" }}>
+        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {label.materialType} · {label.quantity}
+        </span>
+        {label.vendor && <span style={{ flexShrink: 0 }}>{label.vendor}</span>}
+      </div>
+
+      {label.description && (
+        <div style={{ fontFamily: ui, fontSize: "7pt", color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {label.description}
+        </div>
+      )}
+
+      {label.receivedDate && (
+        <div style={{ fontFamily: mono, fontSize: "7pt", color: "#555" }}>{label.receivedDate}</div>
+      )}
     </div>
   );
 }

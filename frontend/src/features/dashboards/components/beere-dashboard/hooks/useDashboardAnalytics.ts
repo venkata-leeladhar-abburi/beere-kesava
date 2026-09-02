@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { reportsApi } from "../../../../../shared/api/reports";
 import { batchesApi } from "../../../../../shared/api/batches";
 import { weaversApi } from "../../../../../shared/api/weavers";
-import { designLibraryApi } from "../../../../../shared/api/design-library";
 import { purchaseRequestsApi } from "../../../../../shared/api/purchase-requests";
 import { dispatchApi } from "../../../../../shared/api/dispatch";
+import { ratesApi } from "../../../../../shared/api/rates";
 
 export function useDashboardAnalytics() {
   const production = useQuery({
@@ -25,9 +25,13 @@ export function useDashboardAnalytics() {
     staleTime: 10_000,
   });
 
-  const designs = useQuery({
-    queryKey: ["design-library", "dashboard-analytics"],
-    queryFn: () => designLibraryApi.list(100),
+  // "Saree Codes" means the saree TYPE catalog (KJ-001, BS-001, …) — the
+  // Design Library is a separate, per-piece reference-photo catalog that
+  // this business doesn't currently use (0 rows), so counting it here
+  // always showed "0 codes" even with real saree types on file.
+  const sareeTypes = useQuery({
+    queryKey: ["rates", "dashboard-analytics"],
+    queryFn: () => ratesApi.list(100),
     staleTime: 10_000,
   });
 
@@ -61,7 +65,7 @@ export function useDashboardAnalytics() {
     void production.refetch();
     void batches.refetch();
     void weavers.refetch();
-    void designs.refetch();
+    void sareeTypes.refetch();
     void outstanding.refetch();
     void purchaseRequests.refetch();
     void dispatches.refetch();
@@ -85,11 +89,7 @@ export function useDashboardAnalytics() {
   const activeWeaversInDb = (weavers.data?.items ?? []).filter((w) => w.status === "ACTIVE").length;
   const weaversWorkingCount = Math.max(weaversWorkingOnBatches.size, activeWeaversInDb, weavers.data?.total ?? 0);
 
-  const designCodesFromLibrary = (designs.data?.items ?? []).map((d) => d.code);
-  const designCodesFromBatches = allBatches.flatMap((b) =>
-    b.rows.filter((r) => r.designCode).map((r) => r.designCode!),
-  );
-  const designCodesCount = new Set([...designCodesFromLibrary, ...designCodesFromBatches]).size;
+  const sareeTypeCodesCount = (sareeTypes.data?.items ?? []).length;
 
   // Backend already computes this as QC-passed OR finished-via-quotation,
   // deduplicated by saree — do not clamp it up to the raw row count, which
@@ -125,7 +125,7 @@ export function useDashboardAnalytics() {
     totalSareesProduced,
     activeBatchesCount,
     weaversWorkingCount,
-    designCodesCount,
+    sareeTypeCodesCount,
     inStockSareesCount,
     overdueInvoicesCount,
     paymentsCollectedPct,

@@ -4,7 +4,8 @@ import { purchasesApi, type BackendPurchase, type BackendPurchaseSareeLine } fro
 import { resolveAssetUrl } from "@/shared/api/uploads";
 import { pieceCodeFromLineCode, computeFinalAmount } from "@/features/suppliers";
 import { useAuthGate } from "@/contexts/AuthContext";
-import type { UnifiedSaree } from "@/features/customers";
+import { useFinishing } from "@/features/finishing";
+import { useSales, type UnifiedSaree } from "@/features/customers";
 import type { WeaverSareeRow } from "./types";
 
 /**
@@ -29,6 +30,14 @@ export function useExternalPurchaseRows(enabled: boolean): {
   // check), so other portals would just 403 on this.
   // check), but we now allow SHOP so inventory can load external purchases.
   const allowed = useAuthGate("accountant", "admin", "superadmin", "shop");
+  // Neither of these was ever consulted before — every external-purchase row
+  // hardcoded dispatched:false and sold:false regardless of what actually
+  // happened to it, so a saree dispatched from Inventory stayed shown (and
+  // pickable again) as if it never left. useWeaverSareeRows.ts already
+  // computes both correctly for production sarees the same way.
+  const { dispatches } = useFinishing();
+  const { soldSareeIds } = useSales();
+  const dispatchedSareeIds = useMemo(() => new Set(dispatches.flatMap(d => d.sareeIds)), [dispatches]);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["purchases", "external-inventory"],
@@ -42,11 +51,11 @@ export function useExternalPurchaseRows(enabled: boolean): {
   return useMemo(() => ({
     isLoading,
     isError,
-    rows: (data?.items ?? []).flatMap(purchaseRows),
-  }), [data, isLoading, isError]);
+    rows: (data?.items ?? []).flatMap(p => purchaseRows(p, dispatchedSareeIds, soldSareeIds)),
+  }), [data, isLoading, isError, dispatchedSareeIds, soldSareeIds]);
 }
 
-function purchaseRows(p: BackendPurchase): WeaverSareeRow[] {
+function purchaseRows(p: BackendPurchase, dispatchedSareeIds: Set<string>, soldSareeIds: Set<string>): WeaverSareeRow[] {
   const supplier = p.supplier?.name ?? p.supplierName ?? "—";
   const location = p.location
     ?? (p.supplier ? `${p.supplier.city ?? ""}, ${p.supplier.state ?? ""}`.replace(/^, |, $/, "") : "");
@@ -64,13 +73,13 @@ function purchaseRows(p: BackendPurchase): WeaverSareeRow[] {
       // `returnedQuantity` pieces are treated as the returned ones, exactly as
       // expandSareePieces does for the purchase screens.
       const returned = pieceNo <= returnedQty;
-      return pieceRow({ p, line, pieceNo, qty, price, sellPercent, returned, supplier, location, paymentStatus });
+      return pieceRow({ p, line, pieceNo, qty, price, sellPercent, returned, supplier, location, paymentStatus, dispatchedSareeIds, soldSareeIds });
     });
   });
 }
 
 function pieceRow({
-  p, line, pieceNo, qty, price, sellPercent, returned, supplier, location, paymentStatus,
+  p, line, pieceNo, qty, price, sellPercent, returned, supplier, location, paymentStatus, dispatchedSareeIds, soldSareeIds,
 }: {
   p: BackendPurchase;
   line: BackendPurchaseSareeLine;
@@ -82,6 +91,8 @@ function pieceRow({
   supplier: string;
   location: string;
   paymentStatus: "Paid" | "Pending" | "Partial";
+  dispatchedSareeIds: Set<string>;
+  soldSareeIds: Set<string>;
 }): WeaverSareeRow {
   const sareeId = pieceCodeFromLineCode(line.code, pieceNo);
   const purchaseDate = p.date?.split("T")[0] ?? null;
@@ -139,8 +150,11 @@ function pieceRow({
     finishingStatus: "none",
     finishingAssignedDate: null,
     finishingCompletedDate: null,
-    dispatched: false,
-    sold: false,
+    // Previously hardcoded false regardless of what actually happened to
+    // this piece — a saree dispatched from Inventory kept showing (and
+    // stayed pickable) here as if it never left.
+    dispatched: dispatchedSareeIds.has(sareeId),
+    sold: soldSareeIds.has(sareeId),
     stock,
     ownerKind: null,
     ownerId: null,

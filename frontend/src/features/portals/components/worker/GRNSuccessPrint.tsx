@@ -1,5 +1,5 @@
 import { CheckCircle2, Printer } from "lucide-react";
-import { C, F, card } from "./tokens";
+import { C, F } from "./tokens";
 import { GrnReceiptItem } from "../../../../shared/api/rawMaterials";
 import { Button } from "../../../../shared/ui/primitives";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
@@ -84,21 +84,41 @@ export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
       <div style={{ padding: "4px 20px 12px", fontFamily: F.u, fontSize: 13, color: C.muted }}>Print labels for all batches in {grnBatchId}</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "0 20px 16px" }}>
         {batches.map((b) => (
-          <div key={b.code} style={{ ...card, padding: 14 }}>
-            <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg, marginBottom: 2 }}>{b.code}</div>
-            <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginBottom: 2 }}>{b.grnBatchId}</div>
-            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 2 }}>{b.materialType} · {b.quantity}</div>
-            {b.description && <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted, marginBottom: 4 }}>{b.description}</div>}
-            {b.receivedDate && <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginBottom: 8 }}>{b.receivedDate}</div>}
-            {/* The same code that prints, so what's on screen is what the
-                scanner will read off the tag. Barcode only, same style as
-                the saree tags — no QR alongside it. */}
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 8, marginTop: b.receivedDate ? 0 : 8 }}>
-              <img
-                src={labelsApi.barcodeUrl(b.code)}
-                alt={`Barcode for ${b.code}`}
-                style={{ width: "100%", maxWidth: 160, height: 40, objectFit: "contain" }}
-              />
+          <div key={b.code} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {/* A mini replica of the physical tag itself — same bordered
+                card, header row, and centered barcode-then-code layout as
+                GrnLabelSheet's printed LabelTile, so what's on screen looks
+                like what comes off the printer, not just a plain data list. */}
+            <div style={{ border: `1px solid ${C.burg}33`, borderRadius: 8, padding: "10px 12px", background: "#FFF" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6, gap: 6 }}>
+                <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 11, color: C.text }}>Beere Kesava &amp; Brothers Silks</span>
+                <span style={{ fontFamily: F.m, fontSize: 10, color: C.muted, flexShrink: 0 }}>{b.grnBatchId}</span>
+              </div>
+
+              {/* The same code that prints, so what's on screen is what the
+                  scanner will read off the tag. Barcode only, same style as
+                  the saree tags — no QR alongside it. */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                <img
+                  src={labelsApi.barcodeUrl(b.code)}
+                  alt={`Barcode for ${b.code}`}
+                  style={{ width: "100%", maxWidth: 160, height: 36, objectFit: "contain" }}
+                />
+                <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 11, color: C.text, textAlign: "center", wordBreak: "break-all" }}>{b.code}</span>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 6, marginTop: 6, fontFamily: F.u, fontSize: 11, color: C.muted }}>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.materialType} · {b.quantity}</span>
+                {b.vendor && <span style={{ flexShrink: 0 }}>{b.vendor}</span>}
+              </div>
+              {b.description && (
+                <div style={{ fontFamily: F.u, fontSize: 10.5, color: C.muted, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {b.description}
+                </div>
+              )}
+              {b.receivedDate && (
+                <div style={{ fontFamily: F.m, fontSize: 10.5, color: C.muted, marginTop: 2 }}>{b.receivedDate}</div>
+              )}
             </div>
             <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => print(<GrnLabelSheet labels={[b]} />)} className="rounded-[7px] border-[rgba(110,15,45,0.12)] bg-[#FFF8E7] text-[#6E0F2D] hover:bg-[#FFF8E7]">
               Print

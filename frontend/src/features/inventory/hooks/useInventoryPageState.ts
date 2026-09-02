@@ -90,7 +90,11 @@ export function useInventoryPageState() {
         sareeType: s.sareeType,
         weaverName: s.weaverName,
         date: s.qcPassDate,
-        status: "QC Passed",
+        // A saree can be dispatched straight from here (QC-passed, still
+        // technically "pending finishing") without ever being dropped from
+        // `readySarees` — same reasoning as the returns/external branches
+        // below, which already defer to `dispatchedSareeIds` the same way.
+        status: dispatchedSareeIds.has(s.id) ? "Dispatched" : "QC Passed",
         rawType: "readySaree",
         originalId: s.id,
         bulkOrderRef: boRef,
@@ -158,8 +162,48 @@ export function useInventoryPageState() {
       });
     });
 
-    return list;
-  }, [readySarees, returns, bulkOrders, batches, dispatchedSareeIds, externalRows]);
+    // A saree can legitimately appear in more than one source above at once
+    // (e.g. still lingering in `readySarees` while it also has a `returns`
+    // entry) — harmless while their statuses matched by construction, but
+    // once every branch independently defers to `dispatchedSareeIds`, the
+    // same physical saree could get counted under two different entries.
+    // Dedupe by id before adding anything else, and let "Dispatched" — the
+    // one status backed by a real, unambiguous record (`dispatches` itself)
+    // — always win over a stale/duplicate entry for the same saree.
+    const dedupedById = new Map<string, InventoryRecord>();
+    for (const rec of list) {
+      const existing = dedupedById.get(rec.id);
+      if (!existing || rec.status === "Dispatched") dedupedById.set(rec.id, rec);
+    }
+
+    // 4. Dispatched sarees not already covered above. A saree dispatched
+    // straight out of the normal weaver → QC → finishing pipeline (never
+    // appearing in `returns`, and dropped from `readySarees` the moment it's
+    // no longer awaiting finishing) fell out of every count here entirely —
+    // "Dispatched" in this sidebar undercounted the real total shown by the
+    // Dispatched tab / Dispatch History, both of which read `dispatches`
+    // directly. Any saree in `dispatchedSareeIds` is dispatched, full stop;
+    // it belongs in this list even with no return/external record behind it.
+    dispatchedSareeIds.forEach(sareeId => {
+      if (dedupedById.has(sareeId)) return;
+      const row = batches.flatMap(b => b.rows).find(r => r.sareeId === sareeId);
+      const dispatch = dispatches.find(d => d.sareeIds.includes(sareeId));
+      dedupedById.set(sareeId, {
+        id: sareeId,
+        designCode: row?.designCode ?? "—",
+        sareeType: row?.sareeTypeName || row?.sareeTypeCode || "—",
+        weaverName: row?.weaverName ?? "—",
+        date: dispatch?.dispatchDate ?? "",
+        status: "Dispatched",
+        rawType: "readySaree",
+        originalId: sareeId,
+        bulkOrderRef: row?.bulkOrderRef,
+        batchId: row ? batches.find(b => b.rows.includes(row))?.batchId : undefined,
+      });
+    });
+
+    return [...dedupedById.values()];
+  }, [readySarees, returns, bulkOrders, batches, dispatches, dispatchedSareeIds, externalRows]);
 
   // ── Stats ──────────────────────────────────────────────────────────────────
   const total        = allRecords.length;

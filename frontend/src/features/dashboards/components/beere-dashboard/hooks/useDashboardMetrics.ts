@@ -8,7 +8,7 @@ import { formatMoney, rupees } from "../../../../../lib/domain/money";
  * Fetches live dashboard metrics from:
  *  - GET /reports/outstanding-payments  (pending payments total)
  *  - GET /reports/production-summary    (sarees produced, QC ready)
- *  - GET /dispatch                      (dispatched sarees, wholesale-only)
+ *  - GET /dispatch                      (dispatched sarees, shop + wholesale)
  *  - GET /weavers                       (active weaver count)
  */
 export function useDashboardMetrics() {
@@ -66,19 +66,16 @@ export function useDashboardMetrics() {
   const dispatchedSareeIds = new Set(
     (dispatches.data?.items ?? []).flatMap((d) => d.sarees.map((s) => s.sareeId)),
   );
-  // Wholesale-only, matching this tile's "Wholesale dispatches" sub-label —
-  // counts sarees dispatched, not dispatch runs (one truck can carry many).
-  const wholesaleDispatchedCount = (dispatches.data?.items ?? [])
-    .filter((d) => d.type === "WHOLESALE")
-    .reduce((sum, d) => sum + d.sarees.length, 0);
-
   // QC-passed sarees still on the shelf: a SEMI verdict sends a saree back to
   // the weaver for rework rather than to sale, so it no longer belongs here,
   // and anything already dispatched has to be subtracted too — otherwise this
   // just grows forever instead of reflecting current stock.
   const qcPassed = production.data?.qcByResult?.PASSED ?? 0;
   const readyForSale = Math.max(0, qcPassed - dispatchedSareeIds.size);
-  const dispatchedCount = wholesaleDispatchedCount;
+  // Every dispatched saree, Shop and Wholesale combined, deduplicated by id —
+  // was wholesale-only before, undercounting against the real total shown on
+  // the Inventory page (which counts both dispatch types the same way).
+  const dispatchedCount = dispatchedSareeIds.size;
 
   const formatCurrency = (n: number) => formatMoney(rupees(n), { compact: true });
 
@@ -114,7 +111,7 @@ export function useDashboardMetrics() {
       {
         label: "Dispatched",
         val: String(dispatchedCount),
-        sub: "Wholesale dispatches",
+        sub: "Shop & Wholesale",
         hi: false,
       },
     ],

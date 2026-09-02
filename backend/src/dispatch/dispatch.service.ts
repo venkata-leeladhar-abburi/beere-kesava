@@ -75,7 +75,41 @@ export class DispatchService {
       });
       const wovenById = new Map(wovenRows.map((r) => [r.sareeId!, r]));
 
-      const missing = unrecorded.filter((id) => !wovenById.has(id));
+      // Anything still unresolved may be a real saree too — one bought from
+      // an external supplier, which lives in PurchaseSareeLine instead of
+      // BatchSareeRow (see ScanService.lookupExternalPiece, same piece-id
+      // convention: "{lineCode}-{pieceNo}"). Dispatching one of these used to
+      // 404 outright, so it silently never left "With Us" no matter how many
+      // times an operator picked it in Inventory and hit Dispatch.
+      const stillMissing = unrecorded.filter((id) => !wovenById.has(id));
+      const externalById = new Map<string, { batchId: null; bulkOrderRef: null }>();
+      if (stillMissing.length > 0) {
+        const parsed = stillMissing
+          .map((sareeId) => {
+            const m = sareeId.match(/^(.+)-(\d{2,})$/);
+            return m ? { sareeId, lineCode: m[1]!, pieceNo: Number(m[2]) } : null;
+          })
+          .filter((p): p is { sareeId: string; lineCode: string; pieceNo: number } => p !== null);
+        if (parsed.length > 0) {
+          const lines = await this.prisma.purchaseSareeLine.findMany({
+            where: { code: { in: parsed.map((p) => p.lineCode) } },
+            select: { code: true, quantity: true, returnedQuantity: true },
+          });
+          const lineByCode = new Map(lines.map((l) => [l.code, l]));
+          for (const p of parsed) {
+            const line = lineByCode.get(p.lineCode);
+            if (!line || p.pieceNo < 1 || p.pieceNo > line.quantity) continue;
+            if (p.pieceNo <= line.returnedQuantity) {
+              throw new BadRequestException(
+                `Saree ${p.sareeId} was returned to the supplier and cannot be dispatched`,
+              );
+            }
+            externalById.set(p.sareeId, { batchId: null, bulkOrderRef: null });
+          }
+        }
+      }
+
+      const missing = stillMissing.filter((id) => !externalById.has(id));
       if (missing.length > 0) {
         throw new NotFoundException(`Saree(s) not found in inventory: ${missing.join(", ")}`);
       }
@@ -88,13 +122,14 @@ export class DispatchService {
       // its starting status is only ever visible for the instant in between.
       await this.prisma.inventoryRecord.createMany({
         data: unrecorded.map((sareeId) => {
-          const row = wovenById.get(sareeId)!;
+          const row = wovenById.get(sareeId);
+          const ext = row ? null : externalById.get(sareeId)!;
           return {
             sareeId,
             status: "QC_PASSED" as const,
             rawType: "READY_SAREE" as const,
-            batchId: row.batchId,
-            bulkOrderRef: row.bulkOrderRef,
+            batchId: row ? row.batchId : ext!.batchId,
+            bulkOrderRef: row ? row.bulkOrderRef : ext!.bulkOrderRef,
           };
         }),
         skipDuplicates: true,

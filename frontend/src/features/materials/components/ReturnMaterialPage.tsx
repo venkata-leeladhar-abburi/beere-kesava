@@ -213,9 +213,13 @@ export function ReturnMaterialPage() {
     }
   }
 
-  // History filtering
-  const weaverNames = ["All Weavers", ...Array.from(new Set(returnRecords.map(r => r.weaverName).filter((n): n is string => !!n)))];
-  const filteredHistory = returnRecords.filter(r => {
+  // History filtering — auto-recorded returns (material drawn down automatically
+  // when a saree is received, not a real weaver handover — see MaterialReturnContext)
+  // are kept in the database for the outstanding-balance math, but have no place
+  // in a history of returns someone actually recorded and signed for.
+  const manualReturnRecords = returnRecords.filter(r => !r.isAutoRecorded);
+  const weaverNames = ["All Weavers", ...Array.from(new Set(manualReturnRecords.map(r => r.weaverName).filter((n): n is string => !!n)))];
+  const filteredHistory = manualReturnRecords.filter(r => {
     const matchSearch = !histSearch ||
       (r.weaverName ?? "").toLowerCase().includes(histSearch.toLowerCase()) ||
       r.id.toLowerCase().includes(histSearch.toLowerCase());

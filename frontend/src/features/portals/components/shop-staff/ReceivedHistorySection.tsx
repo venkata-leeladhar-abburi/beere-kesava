@@ -171,44 +171,34 @@ export function ReceivedHistorySection() {
           onClearFilters={() => { setSearch(""); setDateFilter(DEFAULT_DATE_FILTER); }}
           emptyTitle="No receipts yet"
           emptyDescription="Consignments received at this counter will be listed here."
-        />
-
-        {/* Expanded detail sits below the table rather than inside it: the
-            per-saree verdicts are a second table's worth of content, and
-            nesting one inside a row breaks the responsive card layout. */}
-        {filtered.filter(r => expanded.has(r.id)).map(r => (
-          <div
-            key={r.id}
-            style={{ marginTop: 14, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px", background: C.white }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontFamily: F.u, fontWeight: 700, fontSize: 13.5, color: C.text, marginBottom: 8 }}>
-              <EntityCode type="shopReceipt" value={r.code} size="sm" copyable />
-              <span>· {consignmentLabel(r.dispatch)}</span>
+          expandedIds={expanded}
+          renderExpandedRow={r => (
+            <div style={{ padding: "12px 16px 16px", background: "rgba(0,0,0,0.015)" }}>
               {r.dispatch.dispatchedBy && (
-                <span style={{ fontWeight: 500, color: C.muted }}>
-                  {" "}· dispatched by {r.dispatch.dispatchedBy.firstName} {r.dispatch.dispatchedBy.lastName}
-                </span>
+                <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted, marginBottom: r.notes ? 4 : 8 }}>
+                  Dispatched by {r.dispatch.dispatchedBy.firstName} {r.dispatch.dispatchedBy.lastName}
+                </div>
               )}
+              {r.notes && (
+                <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted, marginBottom: 8 }}>Note: {r.notes}</div>
+              )}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {r.items.map(item => {
+                  const meta = STATUS_META[item.status];
+                  const Icon = meta.icon;
+                  return (
+                    <div key={item.id} style={{ display: "flex", gap: 8, alignItems: "baseline", fontFamily: F.u, fontSize: 12.5 }}>
+                      <Icon size={13} color={meta.color} style={{ flexShrink: 0, alignSelf: "center" }} />
+                      <span style={{ fontWeight: 600, color: C.text }}>{item.sareeId}</span>
+                      <span style={{ color: meta.color }}>{meta.label}</span>
+                      {item.remarks && <span style={{ color: C.muted }}>— {item.remarks}</span>}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            {r.notes && (
-              <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted, marginBottom: 10 }}>Note: {r.notes}</div>
-            )}
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {r.items.map(item => {
-                const meta = STATUS_META[item.status];
-                const Icon = meta.icon;
-                return (
-                  <div key={item.id} style={{ display: "flex", gap: 8, alignItems: "baseline", fontFamily: F.u, fontSize: 12.5 }}>
-                    <Icon size={13} color={meta.color} style={{ flexShrink: 0, alignSelf: "center" }} />
-                    <span style={{ fontWeight: 600, color: C.text }}>{item.sareeId}</span>
-                    <span style={{ color: meta.color }}>{meta.label}</span>
-                    {item.remarks && <span style={{ color: C.muted }}>— {item.remarks}</span>}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+          )}
+        />
       </SectionCard>
     </div>
   );

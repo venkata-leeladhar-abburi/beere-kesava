@@ -12,6 +12,7 @@ import type { StatusValueOf } from "@/lib/domain/status";
 import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { DataTable, ViewToggle, type ColumnDef, type DataView } from "../../../../../shared/ui/data";
 import { ImageZoomModal, type ZoomImage } from "../../../../../shared/ui/ImageZoomModal";
+import { usePrintSareeTags, type SareeTagData } from "@/features/weavers";
 
 const QC_RESULT_TO_STATUS: Record<string, ReceivedSareeLog["status"]> = {
   passed: "Passed QC",
@@ -48,6 +49,7 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
   const [dataView, setDataView] = useState<DataView>("table");
   const { qcRecords } = useQc();
   const { batches: allBatches } = useBatches();
+  const printSareeTags = usePrintSareeTags();
 
   // The color/weight/photo entered by Worker Staff at receipt live on the
   // batch row itself (receivedWeight/receivedColor/receivedPhotoUrl), not on
@@ -163,6 +165,25 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
 
   const muted = <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>—</span>;
 
+  // Same tag design and same barcode-generation endpoint Inventory's saree
+  // tables print from (SareeTagPrint.tsx) — not the separate QR-only
+  // TagPreviewScreen/SareeTagSheet this section's bulk "Print Tags" action
+  // below still uses, so a tag printed from either place is identical.
+  const printRowTag = (h: HistoryRow) => {
+    const weightGrams = h.weight ? Number(h.weight.replace(/g$/i, "")) || null : null;
+    const tag: SareeTagData = {
+      sareeId: h.id,
+      batchId: h.batch !== "—" ? h.batch : null,
+      sareeTypeCode: h.sareeType ?? null,
+      color: h.color !== "—" ? h.color : null,
+      weight: weightGrams,
+      weaverName: h.weaver,
+      loomNumber: h.loomNumber != null ? Number(h.loomNumber) || null : null,
+      date: h.isoDate ?? null,
+    };
+    printSareeTags([tag]);
+  };
+
   const columns: ColumnDef<HistoryRow>[] = [
     {
       id: "sareeId", header: "Saree ID", accessor: h => h.id, priority: 1,
@@ -247,6 +268,18 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
     {
       id: "status", header: "Status", accessor: h => h.status, priority: 1,
       cell: (_v, h) => <StatusPill taxonomy="production" status={HISTORY_STATUS_TO_PRODUCTION[h.status]} size="sm" />,
+    },
+    {
+      id: "tag", header: "Tag", accessor: () => null, type: "actions",
+      cell: (_v, h) => (
+        <Button
+          variant="secondary" size="sm" iconLeft={Printer}
+          onClick={e => { e.stopPropagation(); printRowTag(h); }}
+          className="whitespace-nowrap"
+        >
+          Print
+        </Button>
+      ),
     },
   ];
 

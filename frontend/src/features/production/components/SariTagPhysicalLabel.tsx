@@ -15,24 +15,13 @@ const F = {
   mono:    "'JetBrains Mono', monospace",
 };
 
-/** Barcode plus a small QR alongside it — a barcode's thin bars are
- *  unreliable to scan off a phone/laptop screen (glare, refresh flicker)
- *  even though they read fine off print, so the QR (far more robust for
- *  that case) prints next to it rather than replacing it. */
 function BarcodeStrip({ code }: { code: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
-      <img
-        src={labelsApi.barcodeUrl(code)}
-        alt={`Barcode for ${code}`}
-        style={{ flex: 1, minWidth: 0, height: 44, objectFit: "contain" }}
-      />
-      <img
-        src={labelsApi.qrCodeUrl(code)}
-        alt={`QR code to scan ${code}'s details`}
-        style={{ width: 44, height: 44, objectFit: "contain", flexShrink: 0 }}
-      />
-    </div>
+    <img
+      src={labelsApi.barcodeUrl(code)}
+      alt={`Barcode for ${code}`}
+      style={{ width: "100%", height: 44, objectFit: "contain" }}
+    />
   );
 }
 

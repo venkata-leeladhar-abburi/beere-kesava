@@ -9,6 +9,8 @@ import {
   useSuppliers,
 } from "@/features/suppliers";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFinishing } from "@/features/finishing";
+import { useSales } from "@/features/customers";
 import { STOPGAP_ACTING_USER_ID } from "@/shared/api/purchase-requests";
 import { supplierReturnsApi } from "@/shared/api/supplier-returns";
 import { formatMoney, rupees } from "@/lib/domain/money";
@@ -34,6 +36,12 @@ export function SareeListModal({
   const qc = useQueryClient();
   const { updatePurchase, suppliers } = useSuppliers();
   const requestedById = user?.id ?? STOPGAP_ACTING_USER_ID;
+  // "With Us" here only ever meant "not returned to the supplier" — it never
+  // checked whether the piece had actually been dispatched or sold to a
+  // customer, so a dispatched piece kept showing "With Us" indefinitely.
+  const { dispatches } = useFinishing();
+  const { soldSareeIds } = useSales();
+  const dispatchedSareeIds = useMemo(() => new Set(dispatches.flatMap(d => d.sareeIds)), [dispatches]);
 
   // Pending return requests reserve pieces the same way an APPROVED one
   // removes them — fetched here so "With Us" doesn't show a piece that's
@@ -106,6 +114,8 @@ export function SareeListModal({
   const pieceExtra = (pieceId: string): PieceExtra | undefined => {
     const s = pieces.find(p => p.id === pieceId);
     if (!s) return undefined;
+    if (soldSareeIds.has(pieceId)) return { badge: { label: "Sold", color: T.taupe, bg: "rgba(105,99,94,0.10)" }, selectable: false };
+    if (dispatchedSareeIds.has(pieceId)) return { badge: { label: "Dispatched", color: T.royalBurgundy, bg: "rgba(110,15,45,0.08)" }, selectable: false };
     if (s.returned) return { badge: { label: "Returned", color: T.crimson, bg: "rgba(192,57,43,0.08)" }, selectable: false };
     if (s.pending) return { badge: { label: "Return Pending", color: T.antiqueGold, bg: "rgba(200,155,71,0.10)" }, selectable: false };
     return { badge: { label: "With Us", color: T.green, bg: "rgba(30,102,64,0.08)" }, selectable: true };

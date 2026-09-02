@@ -78,24 +78,13 @@ function TagCard({ r }: { r: SareeTagData }) {
         <span style={{ fontFamily: "var(--font-code)", fontSize: "7pt", color: "var(--doc-muted)" }}>{r.batchId || "—"}</span>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "2mm" }}>
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: "1mm" }}>
-          <img
-            src={labelsApi.barcodeUrl(r.sareeId)}
-            alt={`Barcode for ${r.sareeId}`}
-            style={{ width: "100%", height: "11mm", objectFit: "contain" }}
-          />
-          <span style={{ fontFamily: "var(--font-code)", fontWeight: 700, fontSize: "9.5pt", color: "var(--doc-ink)" }}>{r.sareeId}</span>
-        </div>
-        {/* A barcode's thin bars are unreliable to scan off a phone/laptop
-            screen (glare, refresh flicker) even though they read fine off
-            print — the QR is far more robust for that case, so both are
-            printed side by side rather than picking one. */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1mm" }}>
         <img
-          src={labelsApi.qrCodeUrl(r.sareeId)}
-          alt={`QR code to scan ${r.sareeId}'s details`}
-          style={{ width: "13mm", height: "13mm", objectFit: "contain", flexShrink: 0 }}
+          src={labelsApi.barcodeUrl(r.sareeId)}
+          alt={`Barcode for ${r.sareeId}`}
+          style={{ width: "100%", maxWidth: "68mm", height: "11mm", objectFit: "contain" }}
         />
+        <span style={{ fontFamily: "var(--font-code)", fontWeight: 700, fontSize: "9.5pt", color: "var(--doc-ink)" }}>{r.sareeId}</span>
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", gap: "3mm", fontFamily: "var(--font-ui)", fontSize: "7.5pt", color: "var(--doc-ink-soft)" }}>
@@ -143,22 +132,13 @@ function ExternalTagCard({ r }: { r: SareeTagData }) {
         <span style={{ fontFamily: "var(--font-ui)", fontSize: "7pt", color: "var(--doc-muted)" }}>{supplierLabel}</span>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "2mm" }}>
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: "1mm" }}>
-          <img
-            src={labelsApi.barcodeUrl(r.sareeId)}
-            alt={`Barcode for ${r.sareeId}`}
-            style={{ width: "100%", height: "11mm", objectFit: "contain" }}
-          />
-          <span style={{ fontFamily: "var(--font-code)", fontWeight: 700, fontSize: "9.5pt", color: "var(--doc-ink)" }}>{r.sareeId}</span>
-        </div>
-        {/* Same reasoning as the production tag above — QR alongside the
-            barcode, since a barcode is unreliable to scan off a screen. */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1mm" }}>
         <img
-          src={labelsApi.qrCodeUrl(r.sareeId)}
-          alt={`QR code to scan ${r.sareeId}'s details`}
-          style={{ width: "13mm", height: "13mm", objectFit: "contain", flexShrink: 0 }}
+          src={labelsApi.barcodeUrl(r.sareeId)}
+          alt={`Barcode for ${r.sareeId}`}
+          style={{ width: "100%", maxWidth: "68mm", height: "11mm", objectFit: "contain" }}
         />
+        <span style={{ fontFamily: "var(--font-code)", fontWeight: 700, fontSize: "9.5pt", color: "var(--doc-ink)" }}>{r.sareeId}</span>
       </div>
 
       <div style={{ fontFamily: "var(--font-ui)", fontSize: "7.5pt", color: "var(--doc-ink-soft)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>

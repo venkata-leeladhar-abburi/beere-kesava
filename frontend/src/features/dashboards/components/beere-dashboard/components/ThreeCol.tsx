@@ -128,14 +128,14 @@ export function SareesProduced({ compact }: { compact?: boolean }) {
 }
 
 export function FeaturedProduct({ compact }: { compact?: boolean }) {
-  const { weaversWorkingCount, designCodesCount, qcPassRate, overdueInvoicesCount, inStockSareesCount, dispatchedCount, isLoading, isError } = useDashboardAnalytics();
+  const { weaversWorkingCount, sareeTypeCodesCount, qcPassRate, overdueInvoicesCount, inStockSareesCount, dispatchedCount, isLoading, isError } = useDashboardAnalytics();
   const v = (n: number) => (isError ? "Error" : isLoading ? "—" : String(n));
   return (
     <Card style={{ flex: 1, display: "flex", flexDirection: "column", padding: 0, overflow: "hidden" }}>
       <div className="grid grid-cols-1 md:grid-cols-2" style={{ flex: 1 }}>
         {[
           { label: "Weavers", val: `${v(weaversWorkingCount)} active`, vc: T.luxuryBrown, rb: true, bb: true },
-          { label: "Saree Codes", val: `${v(designCodesCount)} codes`, vc: T.luxuryBrown, rb: false, bb: true },
+          { label: "Saree Codes", val: `${v(sareeTypeCodesCount)} codes`, vc: T.luxuryBrown, rb: false, bb: true },
           { label: "QC Pass", val: `${v(qcPassRate)}%`, vc: T.green, rb: true, bb: true },
           { label: "Overdue", val: `${v(overdueInvoicesCount)} invoices`, vc: "#C0392B", rb: false, bb: true, alert: overdueInvoicesCount > 0 },
           { label: "Inventory", val: `${v(inStockSareesCount)} in stock`, vc: T.luxuryBrown, rb: true, bb: false },

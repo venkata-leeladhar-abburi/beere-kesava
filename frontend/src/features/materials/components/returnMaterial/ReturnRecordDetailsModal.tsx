@@ -5,6 +5,7 @@ import { resolveSignatureUrl } from "../../../../shared/api/material-issues";
 import { F, T } from "../issueMaterial/theme";
 import { SectionPill } from "../issueMaterial/primitives";
 import { materialIcon } from "../issueMaterial/materialFormatters";
+import { displayQuantity } from "./materialFormatters";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
@@ -42,7 +43,7 @@ export function ReturnRecordDetailsModal({ record, onClose }: { record: Material
     },
     {
       id: "qty", header: "Qty", accessor: m => m.quantity,
-      cell: (_v, m) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{m.quantity} {m.unit}</span>,
+      cell: (_v, m) => { const { quantity, unit } = displayQuantity(m); return <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{quantity} {unit}</span>; },
     },
   ];
 
@@ -118,12 +119,15 @@ export function ReturnRecordDetailsModal({ record, onClose }: { record: Material
           <div>
             <SectionPill label="Stock Impact" />
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
-              {record.materials.map((m) => (
-                // Material line items have no unique id/sku field; composite key combines the item's own fields.
-                <div key={`${m.materialType}-${m.quantity}-${m.unit}`} style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}>
-                  <CheckCircle2 size={13} color={T.green} /> Restored {m.quantity} {m.unit} of {m.materialType} back into raw material stock
-                </div>
-              ))}
+              {record.materials.map((m) => {
+                const { quantity, unit } = displayQuantity(m);
+                return (
+                  // Material line items have no unique id/sku field; composite key combines the item's own fields.
+                  <div key={`${m.materialType}-${m.quantity}-${m.unit}`} style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}>
+                    <CheckCircle2 size={13} color={T.green} /> Restored {quantity} {unit} of {m.materialType} back into raw material stock
+                  </div>
+                );
+              })}
             </div>
           </div>
 
