@@ -32,7 +32,7 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
   // Weaver-related entries from the real action log drive it now.
   const { data: actionsRes, isLoading, isError } = useQuery({
     queryKey: ["weaver-activities", WEAVER_ACTIVITY_MODULES],
-    queryFn: () => auditLogApi.listActions({ modules: WEAVER_ACTIVITY_MODULES, pageSize: 500 }),
+    queryFn: () => auditLogApi.listActions({ modules: WEAVER_ACTIVITY_MODULES, pageSize: 200 }),
   });
 
   const activities: WeaverActivity[] = React.useMemo(

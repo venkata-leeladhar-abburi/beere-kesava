@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, Length, Max, Min } from "class-validator";
+import { IsInt, IsNotEmpty, IsOptional, IsString, Length, Max, Min } from "class-validator";
 
 /** Shared shape for Supplier and Vendor create payloads — identical fields in the schema. */
 export class CreatePartyDto {
@@ -35,9 +35,9 @@ export class CreatePartyDto {
   @IsString()
   address?: string;
 
-  @IsOptional()
   @IsString()
-  gstCode?: string;
+  @IsNotEmpty()
+  gstCode!: string;
 
   @IsOptional()
   @IsString()
@@ -47,17 +47,17 @@ export class CreatePartyDto {
   @IsString()
   terms?: string;
 
-  @IsOptional()
   @IsString()
-  bankName?: string;
+  @IsNotEmpty()
+  bankName!: string;
 
-  @IsOptional()
   @IsString()
-  accountNo?: string;
+  @IsNotEmpty()
+  accountNo!: string;
 
-  @IsOptional()
   @IsString()
-  ifscCode?: string;
+  @IsNotEmpty()
+  ifscCode!: string;
 
   @IsOptional()
   @IsInt()

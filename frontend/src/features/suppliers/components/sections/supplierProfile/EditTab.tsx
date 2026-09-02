@@ -22,7 +22,16 @@ export function EditTab({
   // passed straight to onSave rather than written back through setForm first —
   // that older path saved whatever the parent had already rendered, so the
   // defaulted number only landed if a deferred re-render happened to win.
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
+
   const handleSave = () => {
+    const errs: Record<string, string> = {};
+    if (!form.bankName.trim())  errs.bankName = "Required";
+    if (!form.accountNo.trim()) errs.accountNo = "Required";
+    if (!form.ifscCode?.trim()) errs.ifscCode = "Required";
+    if (!form.gstCode.trim())   errs.gstCode = "Required";
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+    setErrors({});
     const values = { ...form, whatsapp: form.whatsapp?.trim() ? form.whatsapp : form.phone };
     setForm(values);
     onSave(values);
@@ -43,7 +52,7 @@ export function EditTab({
           </Button>
         </div>
       </div>
-      <SupplierFormFields form={form} setForm={setForm} errors={{}} cardPreview={cardPreview} onCardChange={setCardPreview} />
+      <SupplierFormFields form={form} setForm={setForm} errors={errors} cardPreview={cardPreview} onCardChange={setCardPreview} />
     </div>
   );
 }

@@ -74,18 +74,18 @@ export function SupplierFormFields({
             style={{ ...inp, resize: "none", lineHeight: 1.5 }} />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-          <Field label="Bank Name">
+          <Field label="Bank Name" required error={errors.bankName}>
             <Input id="bank-name" value={form.bankName} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" />
           </Field>
-          <Field label="Account Number">
+          <Field label="Account Number" required error={errors.accountNo}>
             <Input id="account-number" value={form.accountNo} onChange={e => set("accountNo", e.target.value)} placeholder="Account No." />
           </Field>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-          <Field label="IFSC Code">
+          <Field label="IFSC Code" required error={errors.ifscCode}>
             <Input id="ifsc-code" value={form.ifscCode || ""} onChange={e => set("ifscCode", e.target.value)} placeholder="IFSC Code" />
           </Field>
-          <Field label="GST Number">
+          <Field label="GST Number" required error={errors.gstCode}>
             <Input id="gst-number" value={form.gstCode} onChange={e => set("gstCode", e.target.value.toUpperCase())} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)"
               className="font-mono text-[13px]" />
           </Field>

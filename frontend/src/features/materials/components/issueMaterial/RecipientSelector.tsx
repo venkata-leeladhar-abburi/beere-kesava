@@ -102,16 +102,16 @@ export function RecipientSelector({
           </div>
         ) : (
           <>
-            <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+            <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 12 }}>
               <div style={{ width: 46, height: 46, borderRadius: "50%", background: selectedWeaver.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{toInitials(selectedWeaver.initials)}</span>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{selectedWeaver.name} <EntityCode type="weaver" value={selectedWeaver.code} size="sm" /></div>
+              <div style={{ flex: "1 1 160px", minWidth: 0 }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>{selectedWeaver.name} <EntityCode type="weaver" value={selectedWeaver.code} size="sm" /></div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{selectedWeaver.village} · {selectedWeaver.looms} active looms</div>
               </div>
-              <span style={{ background: STATUS_CFG[selectedWeaver.status].bg, color: STATUS_CFG[selectedWeaver.status].color, borderRadius: 999, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>{STATUS_CFG[selectedWeaver.status].label}</span>
-              <Button onClick={() => { setSelectedWeaverId(null); setSelectedLoom(""); setSelectedBatchId(null); }} variant="link" size="sm">Change</Button>
+              <span style={{ background: STATUS_CFG[selectedWeaver.status].bg, color: STATUS_CFG[selectedWeaver.status].color, borderRadius: 999, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, flexShrink: 0 }}>{STATUS_CFG[selectedWeaver.status].label}</span>
+              <Button onClick={() => { setSelectedWeaverId(null); setSelectedLoom(""); setSelectedBatchId(null); }} variant="link" size="sm" className="shrink-0">Change</Button>
             </div>
             {/* Loom selector */}
             <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "16px 20px", marginBottom: 12 }}>
@@ -174,15 +174,15 @@ export function RecipientSelector({
           </div>
         ) : (
           <>
-            <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+            <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 12 }}>
               <div style={{ width: 46, height: 46, borderRadius: 14, background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <Factory size={22} color="#FFF" />
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{selectedFactoryLoom.loomNumber} <EntityCode type="loom" value={loomLabel(selectedFactoryLoom)} size="sm" /></div>
+              <div style={{ flex: "1 1 160px", minWidth: 0 }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>{selectedFactoryLoom.loomNumber} <EntityCode type="loom" value={loomLabel(selectedFactoryLoom)} size="sm" /></div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{selectedFactoryLoom.location} · Operator: {selectedFactoryLoom.operatorName}</div>
               </div>
-              <Button onClick={() => { setSelectedLoomId(null); setSelectedBatchId(null); }} variant="link" size="sm">Change</Button>
+              <Button onClick={() => { setSelectedLoomId(null); setSelectedBatchId(null); }} variant="link" size="sm" className="shrink-0">Change</Button>
             </div>
             {/* Batch selector */}
             <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "16px 20px" }}>

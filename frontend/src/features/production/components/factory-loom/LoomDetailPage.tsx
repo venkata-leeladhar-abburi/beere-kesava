@@ -355,6 +355,10 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                         pagination
                         columns={[
                           {
+                            id: "serial", header: "S.No", accessor: (row: typeof rowsInBatch[number]) => rowsInBatch.indexOf(row) + 1,
+                            cell: (_v, row) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{rowsInBatch.indexOf(row) + 1}</span>,
+                          },
+                          {
                             id: "sareeId", header: "Saree ID", accessor: (row: typeof rowsInBatch[number]) => row.sareeId, priority: 1,
                             cell: (_v, row) => row.sareeId
                               ? <EntityCode type="saree" value={row.sareeId} size="sm" />

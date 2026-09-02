@@ -2,16 +2,18 @@ import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft, Search, ShoppingBag, Star, Users, IndianRupee, CalendarDays,
-  Phone, MapPin, CreditCard, RotateCcw, Receipt, User as UserIcon,
+  Phone, MapPin, CreditCard, RotateCcw, Receipt, User as UserIcon, X, FileText,
 } from "lucide-react";
 
 import { C, F, PageHero, PortalStatsStrip, SectionCard, useCanSeePrices, type PortalStat } from "./theme";
-import { Button, Input } from "@/shared/ui/primitives";
+import { Button, Input, IconButton } from "@/shared/ui/primitives";
+import { Modal } from "@/shared/ui/overlay";
 import { LoadingState, ErrorState, EmptyState } from "@/shared/ui/state";
 import { DateFilterBar, matchesDateFilter, DEFAULT_DATE_FILTER, type DateFilterState } from "@/shared/ui/DateFilterBar";
 import { Pagination, usePagination } from "@/shared/ui/DataPagination";
-import { customersApi } from "@/shared/api/customers";
+import { customersApi, type BackendCustomer } from "@/shared/api/customers";
 import { salesApi, type BackendSaleRecord } from "@/shared/api/sales";
+import { DocumentViewer, RetailBillDocument, DEFAULT_LETTERHEAD_FIRM } from "@/shared/ui/document";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { toInitials } from "@/shared/lib/initials";
 import { useResponsive } from "@/hooks/useResponsive";
@@ -55,6 +57,7 @@ export function CustomerProfilePage({ customerId, onBack, onRecordSale }: {
   const [search, setSearch] = useState("");
   const [channel, setChannel] = useState<ChannelFilter>("all");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [billSale, setBillSale] = useState<BackendSaleRecord | null>(null);
 
   const customerQ = useQuery({
     queryKey: ["shop-customer-profile", customerId],
@@ -246,7 +249,13 @@ export function CustomerProfilePage({ customerId, onBack, onRecordSale }: {
             <>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {pag.pageItems.map(s => (
-                  <SaleRow key={s.saleRef} sale={s} canSeePrices={canSeePrices} isMobile={isMobile} />
+                  <SaleRow
+                    key={s.saleRef}
+                    sale={s}
+                    canSeePrices={canSeePrices}
+                    isMobile={isMobile}
+                    onViewBill={s.channel === "RETAIL" ? () => setBillSale(s) : undefined}
+                  />
                 ))}
               </div>
               <Pagination
@@ -290,7 +299,51 @@ export function CustomerProfilePage({ customerId, onBack, onRecordSale }: {
           </SectionCard>
         )}
       </div>
+
+      {billSale && customer && (
+        <BillViewModal sale={billSale} customer={customer} onClose={() => setBillSale(null)} />
+      )}
     </div>
+  );
+}
+
+/**
+ * The exact RetailBillDocument sent to the customer on WhatsApp — a single
+ * saved sale carries everything it needs (saree, price, payment, who rang it
+ * up), so re-printing it later from the customer's history looks identical
+ * to what they walked out with.
+ */
+function BillViewModal({ sale, customer, onClose }: {
+  sale: BackendSaleRecord;
+  customer: BackendCustomer;
+  onClose: () => void;
+}) {
+  const design = sale.saree?.designCode ?? undefined;
+  const type = sale.saree?.sareeType?.type ?? sale.saree?.sareeTypeCode ?? undefined;
+
+  return (
+    <Modal open onOpenChange={o => !o && onClose()} size="xl">
+      <div style={{ display: "flex", flexDirection: "column", height: "85vh" }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", padding: "8px 8px 0", flexShrink: 0 }}>
+          <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose} />
+        </div>
+        <DocumentViewer fileName={sale.saleRef} documentTitle={`Retail Bill ${sale.saleRef}`} className="flex-1">
+          <RetailBillDocument
+            billRef={sale.saleRef}
+            billDate={fullDate(sale.saleDate)}
+            firm={DEFAULT_LETTERHEAD_FIRM}
+            customerName={customer.name}
+            customerPhone={customer.phone ?? undefined}
+            customerAddress={customer.address ?? undefined}
+            lines={[{ sareeId: sale.sareeId, type, design, soldPrice: Number(sale.amount) }]}
+            total={Number(sale.amount)}
+            paymentMethod={sale.paymentMethod ?? undefined}
+            paymentRef={sale.paymentRef ?? undefined}
+            soldBy={actorName(sale.soldBy) ?? undefined}
+          />
+        </DocumentViewer>
+      </div>
+    </Modal>
   );
 }
 
@@ -316,7 +369,9 @@ function Field({ icon: Icon, label, value }: { icon: typeof UserIcon; label: str
   );
 }
 
-function SaleRow({ sale, canSeePrices, isMobile }: { sale: BackendSaleRecord; canSeePrices: boolean; isMobile: boolean }) {
+function SaleRow({ sale, canSeePrices, isMobile, onViewBill }: {
+  sale: BackendSaleRecord; canSeePrices: boolean; isMobile: boolean; onViewBill?: () => void;
+}) {
   const design = sale.saree?.designCode ?? "—";
   const type = sale.saree?.sareeType?.type ?? sale.saree?.sareeTypeCode ?? "—";
   return (
@@ -348,14 +403,25 @@ function SaleRow({ sale, canSeePrices, isMobile }: { sale: BackendSaleRecord; ca
           </div>
         </div>
       </div>
-      {canSeePrices && (
-        <div style={{
-          fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold, flexShrink: 0,
-          marginTop: isMobile ? 10 : 0, alignSelf: isMobile ? "flex-end" : "center",
-        }}>
-          {money(Number(sale.amount))}
-        </div>
-      )}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 14, flexShrink: 0,
+        marginTop: isMobile ? 10 : 0, alignSelf: isMobile ? "flex-end" : "center",
+      }}>
+        {onViewBill && (
+          <Button
+            onClick={onViewBill}
+            size="sm"
+            className="h-9 gap-1.5 rounded-full border border-[rgba(110,15,45,0.18)] bg-transparent px-3.5 font-semibold text-[#6E0F2D] hover:bg-[#6E0F2D]/10"
+          >
+            <FileText size={14} /> View Bill
+          </Button>
+        )}
+        {canSeePrices && (
+          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>
+            {money(Number(sale.amount))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

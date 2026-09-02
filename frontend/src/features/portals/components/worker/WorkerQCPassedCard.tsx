@@ -1,5 +1,6 @@
 import { CheckCircle2, Calendar, Tag } from "lucide-react";
 import { F } from "./WorkerQCTypes";
+import type { ZoomImage } from "../../../../shared/ui/ImageZoomModal";
 
 export function WorkerQCPassedCard({
   id,
@@ -8,6 +9,8 @@ export function WorkerQCPassedCard({
   sareeType,
   payable,
   inspectedBy,
+  photoUrl,
+  onViewPhoto,
 }: {
   id: string;
   weaver: string;
@@ -15,6 +18,8 @@ export function WorkerQCPassedCard({
   sareeType?: string;
   payable: string;
   inspectedBy?: string;
+  photoUrl?: string | null;
+  onViewPhoto?: (image: ZoomImage) => void;
 }) {
   return (
     <div className="group relative flex flex-col justify-between rounded-[20px] bg-[#FFFDFB] border border-[#F0E5D8] p-5 text-left shadow-[0_4px_20px_rgba(74,6,27,0.05)] hover:shadow-[0_8px_24px_rgba(74,6,27,0.09)] transition-all duration-200 overflow-hidden">
@@ -22,9 +27,21 @@ export function WorkerQCPassedCard({
       <div>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3.5 min-w-0 flex-1">
-            <div className="w-14 h-14 rounded-[14px] bg-[#F0FAF4] border border-[#C9E8D4] text-[#1F774E] flex items-center justify-center flex-shrink-0 shadow-2xs">
-              <CheckCircle2 size={24} />
-            </div>
+            {photoUrl ? (
+              <button
+                type="button"
+                onClick={() => onViewPhoto?.({ url: photoUrl, label: `Saree photo — ${id}` })}
+                title="View saree photo"
+                aria-label={`View saree photo for ${id}`}
+                className="w-14 h-14 rounded-[14px] border border-[#C9E8D4] overflow-hidden flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
+              >
+                <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+              </button>
+            ) : (
+              <div className="w-14 h-14 rounded-[14px] bg-[#F0FAF4] border border-[#C9E8D4] text-[#1F774E] flex items-center justify-center flex-shrink-0 shadow-2xs">
+                <CheckCircle2 size={24} />
+              </div>
+            )}
 
             <div className="min-w-0 flex-1">
               <div title={id} style={{ fontFamily: F.m }} className="text-[13.5px] font-bold text-[#6E0F2D] break-all">

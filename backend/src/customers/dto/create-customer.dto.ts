@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsString, IsUUID, Length } from "class-validator";
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Length, ValidateIf } from "class-validator";
 import { CustomerType } from "../../generated/prisma/client";
 
 export class CreateCustomerDto {
@@ -32,20 +32,26 @@ export class CreateCustomerDto {
   @IsString()
   address?: string;
 
-  @IsOptional()
+  // Wholesale trades as a business and needs settlement details on file;
+  // retail customers are walk-in individuals, so GST and bank details stay optional.
+  @ValidateIf((o: CreateCustomerDto) => o.type === CustomerType.WHOLESALE)
   @IsString()
+  @IsNotEmpty()
   gstCode?: string;
 
-  @IsOptional()
+  @ValidateIf((o: CreateCustomerDto) => o.type === CustomerType.WHOLESALE)
   @IsString()
+  @IsNotEmpty()
   bankName?: string;
 
-  @IsOptional()
+  @ValidateIf((o: CreateCustomerDto) => o.type === CustomerType.WHOLESALE)
   @IsString()
+  @IsNotEmpty()
   accountNumber?: string;
 
-  @IsOptional()
+  @ValidateIf((o: CreateCustomerDto) => o.type === CustomerType.WHOLESALE)
   @IsString()
+  @IsNotEmpty()
   ifscCode?: string;
 
   @IsOptional()

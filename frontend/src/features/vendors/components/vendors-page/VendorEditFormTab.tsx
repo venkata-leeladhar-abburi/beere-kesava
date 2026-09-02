@@ -10,6 +10,7 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
   const set = <K extends keyof Vendor>(k: K, v: Vendor[K]) => setForm(p => ({ ...p, [k]: v }));
 
   const [cardUrl, setCardUrl] = React.useState<string | null>(vendor.visitingCard || null);
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setForm(vendor);
@@ -17,6 +18,11 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
   }, [vendor]);
 
   const handleSave = () => {
+    if (!form.bankName?.trim() || !form.accountNo?.trim() || !form.ifscCode?.trim() || !form.gstCode?.trim()) {
+      setError("Bank name, account number, IFSC code and GST number are required.");
+      return;
+    }
+    setError(null);
     const finalWhatsapp = form.whatsapp?.trim() ? form.whatsapp : form.phone;
     onUpdate?.({ ...form, whatsapp: finalWhatsapp, visitingCard: cardUrl ?? "" });
   };
@@ -101,18 +107,18 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
             <Textarea value={form.address} onChange={e => set("address", e.target.value)} placeholder="Full address for delivery and billing" rows={3} className="resize-none" />
           </Field>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-            <Field label="Bank Name" id="bank-name">
+            <Field label="Bank Name" required id="bank-name">
               <Input value={form.bankName || ""} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" />
             </Field>
-            <Field label="Account Number" id="account-number">
+            <Field label="Account Number" required id="account-number">
               <Input value={form.accountNo || ""} onChange={e => set("accountNo", e.target.value)} placeholder="Account No." />
             </Field>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-            <Field label="IFSC Code" id="ifsc-code">
+            <Field label="IFSC Code" required id="ifsc-code">
               <Input value={form.ifscCode || ""} onChange={e => set("ifscCode", e.target.value)} placeholder="IFSC Code" />
             </Field>
-            <Field label="GST Number" id="gst-number">
+            <Field label="GST Number" required id="gst-number">
               <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN" />
             </Field>
           </div>
@@ -120,6 +126,9 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
           <Field label="Notes" id="notes">
             <Textarea value={form.notes || ""} onChange={e => set("notes", e.target.value)} placeholder="Any special instructions or supplier notes..." rows={3} className="resize-none" />
           </Field>
+          {error && (
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: "#C0392B" }}>{error}</div>
+          )}
         </div>
       </div>
     </div>

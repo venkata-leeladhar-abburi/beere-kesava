@@ -209,8 +209,10 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [matFilter, setMatFilter] = useState("All Materials");
   const [statusFilter, setStatusFilter] = useState("All Status");
+  const [vendorFilter, setVendorFilter] = useState("All Vendors");
   const [search, setSearch] = useState("");
   const [statusDropOpen, setStatusDropOpen] = useState(false);
+  const [vendorDropOpen, setVendorDropOpen] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState<BatchRow | null>(null);
   const [barcodeBatch, setBarcodeBatch] = useState<BatchRow | null>(null);
 
@@ -242,11 +244,14 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
 
   const batchSource = liveBatchRows;
 
+  const vendorOptions = ["All Vendors", ...Array.from(new Set(batchSource.map(b => b.vendor))).sort()];
+
   const filtered = batchSource.filter(b => {
     const matchMat = matFilter === "All Materials" || b.type === matFilter.replace(" Only", "");
     const matchStatus = statusFilter === "All Status" || b.statusType === STATUS_FILTER_MAP[statusFilter];
+    const matchVendor = vendorFilter === "All Vendors" || b.vendor === vendorFilter;
     const matchSearch = search === "" || b.id.toLowerCase().includes(search.toLowerCase()) || b.vendor.toLowerCase().includes(search.toLowerCase());
-    return matchMat && matchStatus && matchSearch;
+    return matchMat && matchStatus && matchVendor && matchSearch;
   });
 
   return (
@@ -304,11 +309,20 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
               options: STATUS_FILTERS.map(f => ({ value: f, label: f })),
               onChange: setStatusFilter,
             },
+            {
+              id: "vendor",
+              label: "Vendor",
+              value: vendorFilter,
+              defaultValue: "All Vendors",
+              options: vendorOptions.map(f => ({ value: f, label: f })),
+              onChange: setVendorFilter,
+            },
           ]}
           onResetAll={() => {
             setSearch("");
             setMatFilter("All Materials");
             setStatusFilter("All Status");
+            setVendorFilter("All Vendors");
             setDateFilter(DEFAULT_DATE_FILTER);
           }}
         />
@@ -336,13 +350,14 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
           </div>
 
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <div style={{ width: 240 }}>
+            <div style={{ width: 280 }}>
               <SearchInput
+                size="sm"
                 aria-label="Search by batch number or vendor name"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 onSearch={setSearch}
-                placeholder="Search by batch number or vendor name..."
+                placeholder="Search batch ID or vendor..."
               />
             </div>
 
@@ -377,6 +392,31 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
               </DropdownMenuContent>
             </DropdownMenu>
 
+            <DropdownMenu open={vendorDropOpen} onOpenChange={setVendorDropOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant={vendorFilter !== "All Vendors" ? "primary" : "secondary"}
+                  size="sm"
+                  iconLeft={Filter}
+                  iconRight={vendorDropOpen ? ChevronUp : ChevronDown}
+                >
+                  {vendorFilter}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="!min-w-[180px] !p-0 !rounded-[10px] !overflow-hidden !max-h-[280px] !overflow-y-auto" style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}` }}>
+                {vendorOptions.map(f => (
+                  <DropdownMenuItem
+                    key={f}
+                    onClick={() => setVendorFilter(f)}
+                    className={`!rounded-none ${vendorFilter === f ? "!font-bold" : "!font-medium"}`}
+                  >
+                    <span style={{ color: vendorFilter === f ? T.royalBurgundy : T.luxuryBrown }}>{f}</span>
+                    {vendorFilter === f && <Check size={13} color={T.royalBurgundy} style={{ marginLeft: "auto" }} />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
               <Button
                 onClick={() => setView("card")}
@@ -405,10 +445,11 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
         </div>
       </div>
 
-      {(statusFilter !== "All Status" || matFilter !== "All Materials" || search) && (
+      {(statusFilter !== "All Status" || matFilter !== "All Materials" || vendorFilter !== "All Vendors" || search) && (
         <div style={{ marginBottom: 12, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
           Showing <strong style={{ color: T.luxuryBrown }}>{filtered.length}</strong> of {batchSource.length} batches
           {statusFilter !== "All Status" && <> · Status: <strong style={{ color: T.royalBurgundy }}>{statusFilter}</strong></>}
+          {vendorFilter !== "All Vendors" && <> · Vendor: <strong style={{ color: T.royalBurgundy }}>{vendorFilter}</strong></>}
         </div>
       )}
 
@@ -418,8 +459,8 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
         ) : isError ? (
           <ErrorState error={undefined} onRetry={() => void refetch()} />
         ) : filtered.length === 0 ? (
-          (statusFilter !== "All Status" || matFilter !== "All Materials" || search) ? (
-            <FilteredEmptyState onClearFilters={() => { setStatusFilter("All Status"); setMatFilter("All Materials"); setSearch(""); }} />
+          (statusFilter !== "All Status" || matFilter !== "All Materials" || vendorFilter !== "All Vendors" || search) ? (
+            <FilteredEmptyState onClearFilters={() => { setStatusFilter("All Status"); setMatFilter("All Materials"); setVendorFilter("All Vendors"); setSearch(""); }} />
           ) : (
             <EmptyState title="No batches yet" description="Materials received via GRN will show up here as batches." />
           )

@@ -23,8 +23,14 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
   const [ifscCode, setIfscCode] = React.useState(customer.ifscCode);
   const [gstNumber, setGstNumber] = React.useState(customer.gstNumber || "");
   const [notes, setNotes] = React.useState(customer.notes || "");
+  const [error, setError] = React.useState<string | null>(null);
 
   const handleSave = () => {
+    if (!bankName.trim() || !accountNumber.trim() || !ifscCode.trim() || !gstNumber.trim()) {
+      setError("Bank name, account number, IFSC code and GST number are required.");
+      return;
+    }
+    setError(null);
     onSave({
       ...customer,
       name,
@@ -80,22 +86,22 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
           <Field label="Business Address">
             <Textarea placeholder="Full address for delivery and billing" rows={2} value={address} onChange={e => setAddress(e.target.value)} />
           </Field>
-          <Field label="Payment Terms *">
+          <Field label="Payment Terms">
             <Input type="text" value={terms} onChange={e => setTerms(e.target.value)} placeholder="e.g. 30 days" />
           </Field>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-            <Field label="Bank Name">
+            <Field label="Bank Name *">
               <Input type="text" value={bankName} onChange={e => setBankName(e.target.value)} placeholder="For any refunds" />
             </Field>
-            <Field label="Account Number">
+            <Field label="Account Number *">
               <Input type="text" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="Account No." />
             </Field>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-            <Field label="IFSC Code">
+            <Field label="IFSC Code *">
               <Input type="text" value={ifscCode} onChange={e => setIfscCode(e.target.value)} placeholder="e.g. HDFC0001842" />
             </Field>
-            <Field label="GST Number">
+            <Field label="GST Number *">
               <Input type="text" value={gstNumber} onChange={e => setGstNumber(e.target.value)} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" />
             </Field>
           </div>
@@ -106,6 +112,9 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
         </div>
       </div>
 
+      {error && (
+        <div style={{ fontFamily: "var(--font-ui)", fontSize: 13, color: "#C0392B" }}>{error}</div>
+      )}
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 16, marginTop: 16, paddingTop: 16, borderTop: `1px solid ${T.borderDef}` }}>
         <Button onClick={() => setWholesaleTab("Overview")} variant="tertiary">Cancel</Button>
         <Button onClick={handleSave} variant="primary">✓ Save Changes</Button>

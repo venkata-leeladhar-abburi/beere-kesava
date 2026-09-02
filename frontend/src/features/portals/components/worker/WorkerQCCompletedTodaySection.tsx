@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { CheckCircle2, LayoutGrid, LayoutList } from "lucide-react";
+import { CheckCircle2, ImageOff, LayoutGrid, LayoutList } from "lucide-react";
 import { T, F, PassedLogItem } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";
 import { WorkerQCPassedCard } from "./WorkerQCPassedCard";
+import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { EntityCode } from "../../../../shared/ui/domain";
@@ -26,12 +27,38 @@ export function WorkerQCCompletedTodaySection({ items, isDesktop, isTablet }: Wo
   );
   const filteredItems = items.filter(p => !canFilterByStaff || !staffFilter || p.inspectedBy === staffFilter);
 
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const cols = isDesktop ? "repeat(auto-fill, minmax(280px, 1fr))" : isTablet ? "repeat(2, 1fr)" : "1fr";
   const ITEMS_PER_PAGE = isDesktop ? 20 : isTablet ? 10 : 5;
   const pag = usePagination(filteredItems, ITEMS_PER_PAGE);
+  const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
 
   const columns: ColumnDef<PassedLogItem>[] = [
+    {
+      id: "photo",
+      header: "Photo",
+      accessor: p => p.photoUrl ?? "",
+      priority: 3,
+      cell: (_v, p) =>
+        p.photoUrl ? (
+          <button
+            type="button"
+            onClick={() => setZoomImage({ url: p.photoUrl!, label: `Saree photo — ${p.id}` })}
+            title="View saree photo"
+            aria-label={`View saree photo for ${p.id}`}
+            className="w-10 h-10 rounded-[10px] border border-[#C9E8D4] overflow-hidden flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
+          >
+            <img src={p.photoUrl} alt="" className="w-full h-full object-cover" />
+          </button>
+        ) : (
+          <div
+            title="No photo on file"
+            className="w-10 h-10 rounded-[10px] bg-[#FAF8F5] border border-dashed border-[#D6C7B2] flex items-center justify-center text-[#A38D70] flex-shrink-0"
+          >
+            <ImageOff size={16} />
+          </div>
+        ),
+    },
     {
       id: "sareeId",
       header: "Saree ID",
@@ -142,7 +169,7 @@ export function WorkerQCCompletedTodaySection({ items, isDesktop, isTablet }: Wo
             {viewMode === "card" ? (
               <div style={{ display: "grid", gridTemplateColumns: cols, gap: 16 }}>
                 {pag.pageItems.map((p) => (
-                  <WorkerQCPassedCard key={p.recordId || p.id} id={p.id} weaver={p.weaver} date={p.date} sareeType={p.sareeType} payable={p.payable} inspectedBy={p.inspectedBy} />
+                  <WorkerQCPassedCard key={p.recordId || p.id} id={p.id} weaver={p.weaver} date={p.date} sareeType={p.sareeType} payable={p.payable} inspectedBy={p.inspectedBy} photoUrl={p.photoUrl} onViewPhoto={setZoomImage} />
                 ))}
               </div>
             ) : (
@@ -172,6 +199,7 @@ export function WorkerQCCompletedTodaySection({ items, isDesktop, isTablet }: Wo
           </>
         )}
       </SectionCard>
+      <ImageZoomModal image={zoomImage} onClose={() => setZoomImage(null)} />
     </div>
   );
 }

@@ -57,6 +57,8 @@ export interface SareeItem {
   sareeTypeCode?: string;
   loomNumber?: number | null;
   isoDate?: string;
+  /** Color noted by Worker Staff when the saree was received — shown as-is in QC. */
+  color?: string | null;
 }
 
 export type InspectionResult = "defective" | "semi_approved" | null;
@@ -102,6 +104,7 @@ export interface PassedLogItem {
   /** Who performed this QC check — same field already carried by the
    * defective/semi log, just previously dropped when building this one. */
   inspectedBy?: string;
+  photoUrl?: string | null;
 }
 
 // NOTE: the QUEUE and DEFECTIVE_LOG fixtures that used to live here held

@@ -10,6 +10,7 @@ import type { BulkOrder } from "../contexts/BulkOrderContext";
 import { useBulkOrders } from "../contexts/BulkOrderContext";
 import { useFinishing, DispatchRecord, Quotation } from "@/features/finishing";
 import { useBatches } from "@/features/production";
+import { useQc } from "@/features/qc";
 import { SareeWeightTallyList, type TallyRowItem, type TallyCorrection } from "@/features/production";
 import { useRatesPricing } from "@/features/pricing";
 import { autoMaterialSplit } from "@/features/portals";
@@ -190,6 +191,15 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     [batches],
   );
 
+  const { qcRecords } = useQc();
+  // Receipt-time photo capture was removed — fall back to the QC pass/fail
+  // photo, joined by sareeId.
+  const qcPhotoBySareeId = useMemo(() => {
+    const m = new Map<string, string | null | undefined>();
+    for (const q of qcRecords) if (q.sareeId) m.set(q.sareeId, q.photoUrl);
+    return m;
+  }, [qcRecords]);
+
   const tallyItems: TallyRowItem[] = useMemo(
     () => linkedSarees
       .filter(s => s.batchId && s.serial !== undefined)
@@ -201,7 +211,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           batchId: s.batchId as string,
           weaverName: s.weaverName,
           sareeTypeCode: s.sareeTypeCode ?? null,
-          receivedPhotoUrl: row?.receivedPhotoUrl ?? null,
+          receivedPhotoUrl: row?.receivedPhotoUrl ?? qcPhotoBySareeId.get(s.id) ?? null,
           actualWeight: row?.receivedWeight ? Number(row.receivedWeight) : null,
           actualWarpG: row?.receivedWarpG ? Number(row.receivedWarpG) : null,
           actualReshamG: row?.receivedReshamG ? Number(row.receivedReshamG) : null,

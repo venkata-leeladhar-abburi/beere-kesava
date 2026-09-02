@@ -7,7 +7,13 @@ describe("VendorsService duplicate guard", () => {
   const idGenerator = { nextNamed: jest.fn().mockResolvedValue("ShivaTraders-001") };
   const service = new VendorsService(prisma as never, {} as never, idGenerator as never);
 
-  const dto = { name: "Shiva Traders", phone: "+91 98765 43210" } as CreatePartyDto;
+  const dto = {
+    name: "Shiva Traders",
+    phone: "+91 98765 43210",
+    bankName: "State Bank of India",
+    accountNo: "1234567890",
+    ifscCode: "SBIN0001234",
+  } as CreatePartyDto;
 
   beforeEach(() => jest.clearAllMocks());
 
@@ -25,7 +31,12 @@ describe("VendorsService duplicate guard", () => {
     prisma.vendor.findFirst.mockResolvedValue(null);
     prisma.vendor.create.mockResolvedValue({});
 
-    await service.create({ name: "Shiva Traders" });
+    await service.create({
+      name: "Shiva Traders",
+      bankName: "State Bank of India",
+      accountNo: "1234567890",
+      ifscCode: "SBIN0001234",
+    } as CreatePartyDto);
     expect(prisma.vendor.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({ where: { name: { equals: "Shiva Traders", mode: "insensitive" } } }),
     );

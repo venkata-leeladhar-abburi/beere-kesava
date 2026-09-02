@@ -205,7 +205,7 @@ export function WholesaleCustomersSection({
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   <Field label="Business Address"><Textarea placeholder="Full address for delivery and billing" rows={2} value={form.address} onChange={e => updateField("address", e.target.value)} /></Field>
-                  <Field label="Payment Terms *">
+                  <Field label="Payment Terms">
                     <Select value={form.paymentTerms} onValueChange={v => updateField("paymentTerms", v)}>
                       <SelectItem value="30 days">30 days</SelectItem>
                       <SelectItem value="45 days">45 days</SelectItem>

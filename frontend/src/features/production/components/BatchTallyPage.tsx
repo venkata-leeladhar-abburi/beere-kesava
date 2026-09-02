@@ -1,6 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Scale, ChevronLeft, UserRound, Layers, TrendingUp } from "lucide-react";
 import { useBatches, type SareeRow } from "../contexts/BatchContext";
+import { useQc } from "@/features/qc";
 import { useRatesPricing } from "@/features/pricing";
 import { T, F } from "./theme";
 import { rowComplete, weaverBreakdown, bulkOrderBreakdown } from "./sections/batches/ContextBatchCard";
@@ -21,7 +22,15 @@ import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
  */
 export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: string; onBack: () => void; onOpenCreation: () => void }) {
   const { batches, tallyRow, isLoading, isError, error, refetch } = useBatches();
+  const { qcRecords } = useQc();
   const b = batches.find(br => br.batchId === batchId);
+  // Receipt-time photo capture was removed — fall back to the QC pass/fail
+  // photo, joined by sareeId.
+  const qcPhotoBySareeId = useMemo(() => {
+    const m = new Map<string, string | null | undefined>();
+    for (const q of qcRecords) if (q.sareeId) m.set(q.sareeId, q.photoUrl);
+    return m;
+  }, [qcRecords]);
 
   const { getSareeTypeByCode } = useRatesPricing();
   const [busyKey, setBusyKey] = useState<string | null>(null);
@@ -73,7 +82,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
       bulkOrderLabel: r.bulkOrderLabel,
       qcPassed: !!r.qcPassed,
       sareeTypeCode: r.sareeTypeCode,
-      receivedPhotoUrl: r.receivedPhotoUrl,
+      receivedPhotoUrl: r.receivedPhotoUrl ?? (r.sareeId ? qcPhotoBySareeId.get(r.sareeId) : null) ?? null,
       actualWeight: r.receivedWeight ? Number(r.receivedWeight) : null,
       actualWarpG: r.receivedWarpG ? Number(r.receivedWarpG) : null,
       actualReshamG: r.receivedReshamG ? Number(r.receivedReshamG) : null,

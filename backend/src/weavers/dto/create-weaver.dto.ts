@@ -1,4 +1,4 @@
-import { IsEmail, IsInt, IsOptional, IsString, IsUUID, Length, Matches, Min } from "class-validator";
+import { IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Length, Matches, Min } from "class-validator";
 
 export class CreateWeaverDto {
   // The acting user's id, for the action feed. Still passed explicitly by
@@ -48,15 +48,15 @@ export class CreateWeaverDto {
   @Matches(/^\+?[0-9]{10,15}$/, { message: "phone must be a valid phone number" })
   phone!: string;
 
-  @IsOptional()
   @IsString()
-  bankName?: string;
+  @IsNotEmpty()
+  bankName!: string;
 
-  @IsOptional()
   @IsString()
-  accountNo?: string;
+  @IsNotEmpty()
+  accountNo!: string;
 
-  @IsOptional()
   @IsString()
-  ifsc?: string;
+  @IsNotEmpty()
+  ifsc!: string;
 }

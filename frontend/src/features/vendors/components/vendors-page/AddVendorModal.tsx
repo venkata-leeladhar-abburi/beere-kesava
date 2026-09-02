@@ -37,6 +37,10 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
     if (!form.contactName.trim()) errs.contactName = "Required";
     if (!form.phone.trim()) errs.phone = "Required";
     if (!form.city.trim()) errs.city = "Required";
+    if (!form.bankName.trim()) errs.bankName = "Required";
+    if (!form.accountNo.trim()) errs.accountNo = "Required";
+    if (!form.ifscCode.trim()) errs.ifscCode = "Required";
+    if (!form.gstCode.trim()) errs.gstCode = "Required";
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     const initials = form.name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
     setSaving(true);
@@ -144,18 +148,18 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
               <Textarea value={form.address} onChange={e => set("address", e.target.value)} placeholder="Full address for delivery and billing" rows={3} className="resize-none" />
             </Field>
             <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-              <Field label="Bank Name" id="bank-name">
+              <Field label="Bank Name" required error={errors.bankName} id="bank-name">
                 <Input value={form.bankName} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" />
               </Field>
-              <Field label="Account Number" id="account-number">
+              <Field label="Account Number" required error={errors.accountNo} id="account-number">
                 <Input value={form.accountNo} onChange={e => set("accountNo", e.target.value)} placeholder="Account No." />
               </Field>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-              <Field label="IFSC Code" id="ifsc-code">
+              <Field label="IFSC Code" required error={errors.ifscCode} id="ifsc-code">
                 <Input value={form.ifscCode} onChange={e => set("ifscCode", e.target.value)} placeholder="IFSC Code" />
               </Field>
-              <Field label="GST Number" id="gst-number">
+              <Field label="GST Number" required error={errors.gstCode} id="gst-number">
                 <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN" />
               </Field>
             </div>

@@ -2,15 +2,13 @@ import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useBatches } from "@/features/production";
 import { useFinishing } from "@/features/finishing";
-import { useDesignLibrary } from "@/features/design-library";
 import { useQc } from "@/features/qc";
-import { DesignCodeCard } from "@/features/design-library";
 import { SareeTypeCard } from "@/features/pricing";
 import { useRatesPricing } from "@/features/pricing";
 import { AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
-  ChevronLeft, CheckCircle2, Search, AlertTriangle, ClipboardCheck, User, Package,
+  ChevronLeft, CheckCircle2, Search, AlertTriangle, ClipboardCheck, User, Package, LayoutGrid, Table2,
 } from "lucide-react";
 import {
   T, F, SareeItem, InspectionResult, DefectiveLogItem, PassedLogItem, splitDesignField,
@@ -19,6 +17,7 @@ import { SectionCard } from "./primitives";
 import { WorkerQCInspectionScreen } from "./WorkerQCInspectionScreen";
 import { WorkerQCPassPhotoModal } from "./WorkerQCPassPhotoModal";
 import { WorkerQCSareeCard } from "./WorkerQCSareeCard";
+import { WorkerQCSareeTable } from "./WorkerQCSareeTable";
 import { WorkerQCDefectiveSection } from "./WorkerQCDefectiveSection";
 import { WorkerQCSemiDefectiveSection } from "./WorkerQCSemiDefectiveSection";
 import { WorkerQCCompletedTodaySection } from "./WorkerQCCompletedTodaySection";
@@ -47,11 +46,8 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     () => new Set(dispatches.flatMap(d => d.sareeIds)),
     [dispatches],
   );
-  const { getDesign } = useDesignLibrary();
   const { getSareeTypeByName, getSareeTypeByCode } = useRatesPricing();
-  const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
   const [openSareeTypeCode, setOpenSareeTypeCode] = useState<string | null>(null);
-  const openDesign = openDesignCode ? getDesign(openDesignCode) : undefined;
   const openSareeType = openSareeTypeCode ? getSareeTypeByCode(openSareeTypeCode) : undefined;
 
   const contextRows = useMemo<SareeItem[]>(() => {
@@ -80,13 +76,14 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
             wcode: r.weaverId ?? "",
             weaverCode: r.weaverCode ?? undefined,
             design: [r.designCode, r.sareeTypeName].filter(Boolean).join(" · "),
-            weight: 0,
+            weight: r.receivedWeight ? Number(r.receivedWeight) || 0 : 0,
             std: 850,
-            submitted: "Pending weighing",
+            submitted: r.receivedWeight ? "Weighed at receiving" : "Pending weighing",
             bulkOrderLabel: r.bulkOrderLabel ?? undefined,
             bulkOrderRef: r.bulkOrderRef ?? undefined,
             sareeTypeCode: r.sareeTypeCode ?? undefined,
             loomNumber: r.weaverLoom ?? null,
+            color: r.receivedColor ?? null,
           }))
       );
   }, [batches, dispatchedSareeIds]);
@@ -163,6 +160,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
       payable: formatMoney(rupees(r.payable)),
       isoDate: r.qcDate,
       inspectedBy: r.inspectedBy,
+      photoUrl: r.photoUrl,
     }))
     .sort((a, b) => b.isoDate.localeCompare(a.isoDate)),
   [qcRecords]);
@@ -182,6 +180,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   const [selectedBatchQC, setSelectedBatchQC] = useState<string | null>(null);
   const [weaverSearch, setWeaverSearch] = useState("");
   const [qcPage, setQcPage] = useState(1);
+  const [qcViewMode, setQcViewMode] = useState<"table" | "card">("table");
 
   const pending = ALL_QUEUE.filter(s => !inspected.has(s.id) && matchesDateFilter(s.isoDate, qcDateFilter));
 
@@ -437,10 +436,49 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
       onMarkPassed={startPassed}
       onStartSemiApproved={startSemiApproved}
       onStartDefect={startDefect}
-      onOpenDesignCode={setOpenDesignCode}
       onOpenSareeTypeCode={setOpenSareeTypeCode}
     />
   );
+
+  const ViewModeToggle = () => (
+    <div className="inline-flex items-center rounded-xl border border-[#EAE5E1] bg-white p-1 gap-1">
+      <button
+        type="button"
+        onClick={() => setQcViewMode("table")}
+        aria-label="Table view"
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors cursor-pointer ${
+          qcViewMode === "table" ? "bg-[#6E0F2D] text-white" : "text-[#69635E] hover:bg-[#FAF8F6]"
+        }`}
+      >
+        <Table2 size={14} /> Table
+      </button>
+      <button
+        type="button"
+        onClick={() => setQcViewMode("card")}
+        aria-label="Card view"
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors cursor-pointer ${
+          qcViewMode === "card" ? "bg-[#6E0F2D] text-white" : "text-[#69635E] hover:bg-[#FAF8F6]"
+        }`}
+      >
+        <LayoutGrid size={14} /> Cards
+      </button>
+    </div>
+  );
+
+  const renderSarees = (sarees: SareeItem[]) =>
+    qcViewMode === "table" ? (
+      <WorkerQCSareeTable
+        sarees={sarees}
+        onMarkPassed={startPassed}
+        onStartSemiApproved={startSemiApproved}
+        onStartDefect={startDefect}
+        onOpenSareeTypeCode={setOpenSareeTypeCode}
+      />
+    ) : (
+      <div style={{ display: "grid", gridTemplateColumns: cols, gap: isDesktop ? 14 : 10, padding: pad }}>
+        {sarees.map(renderCard)}
+      </div>
+    );
 
   if (selectedWeaverQC !== null) {
     const wg = weaverGroups.find(w => w.name === selectedWeaverQC);
@@ -467,9 +505,12 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
           title={selectedWeaverQC}
           subtitle={`${wSarees.length} saree${wSarees.length !== 1 ? "s" : ""} pending QC`}
           actions={
-            <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 14px", borderRadius: 999 }}>
-              {wSarees.length} pending
-            </span>
+            <div className="flex items-center gap-2.5">
+              <ViewModeToggle />
+              <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 14px", borderRadius: 999 }}>
+                {wSarees.length} pending
+              </span>
+            </div>
           }
         >
           {isLoading ? (
@@ -483,9 +524,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
             </div>
           ) : (
             <>
-              <div style={{ display: "grid", gridTemplateColumns: cols, gap: isDesktop ? 14 : 10, padding: pad }}>
-                {pageSarees.map(renderCard)}
-              </div>
+              {renderSarees(pageSarees)}
 
               {totalPages > 1 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t border-[#EAE5E1]">
@@ -562,9 +601,12 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
           title={`Batch: ${selectedBatchQC}`}
           subtitle={`${bSarees.length} saree${bSarees.length !== 1 ? "s" : ""} waiting inspection`}
           actions={
-            <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 14px", borderRadius: 999 }}>
-              {bSarees.length} pending
-            </span>
+            <div className="flex items-center gap-2.5">
+              <ViewModeToggle />
+              <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 14px", borderRadius: 999 }}>
+                {bSarees.length} pending
+              </span>
+            </div>
           }
         >
           {bSarees.length === 0 ? (
@@ -574,9 +616,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
             </div>
           ) : (
             <>
-              <div style={{ display: "grid", gridTemplateColumns: cols, gap: isDesktop ? 14 : 10, padding: pad }}>
-                {pageSarees.map(renderCard)}
-              </div>
+              {renderSarees(pageSarees)}
 
               {totalPages > 1 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t border-[#EAE5E1]">
@@ -812,7 +852,6 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
       />
 
       <AnimatePresence>
-        {openDesign && <DesignCodeCard design={openDesign} onClose={() => setOpenDesignCode(null)} />}
         {openSareeType && <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />}
       </AnimatePresence>
 

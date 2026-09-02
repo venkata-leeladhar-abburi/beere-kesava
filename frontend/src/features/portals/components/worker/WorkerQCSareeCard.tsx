@@ -2,15 +2,14 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  Palette,
   Tag,
   Scale,
+  Palette,
   User,
   Factory,
   Package,
-  Clock,
 } from "lucide-react";
-import { F, SareeItem, variance, splitDesignField, initials } from "./WorkerQCTypes";
+import { F, SareeItem, splitDesignField, initials } from "./WorkerQCTypes";
 import { useRatesPricing } from "@/features/pricing";
 
 interface WorkerQCSareeCardProps {
@@ -19,7 +18,6 @@ interface WorkerQCSareeCardProps {
   onMarkPassed: (s: SareeItem) => void;
   onStartSemiApproved: (s: SareeItem) => void;
   onStartDefect: (s: SareeItem) => void;
-  onOpenDesignCode: (code: string) => void;
   onOpenSareeTypeCode: (typeCode: string) => void;
 }
 
@@ -28,14 +26,13 @@ export function WorkerQCSareeCard({
   onMarkPassed,
   onStartSemiApproved,
   onStartDefect,
-  onOpenDesignCode,
   onOpenSareeTypeCode,
 }: WorkerQCSareeCardProps) {
   const { getSareeTypeByName } = useRatesPricing();
-  const v = variance(s.weight, s.std);
 
-  const { code: designCode, typeName } = splitDesignField(s.design);
+  const { typeName } = splitDesignField(s.design);
   const typeRec = typeName ? getSareeTypeByName(typeName) : undefined;
+  const sareeCode = s.sareeTypeCode ?? typeRec?.code ?? "—";
   const weaverInitials = initials(s.weaver);
 
   return (
@@ -142,41 +139,8 @@ export function WorkerQCSareeCard({
 
 
 
-      {/* Weight Spec Box */}
+      {/* Details Box: Weaver, Saree Type/Code, Weight, Color */}
       <div className="rounded-2xl border border-[#F0E5D8] bg-[#FAF8F5] p-3.5 sm:p-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Scale size={15} className="text-[#9F7315]" />
-            <span
-              style={{ fontFamily: F.u }}
-              className="text-[10px] font-bold text-[#9F7315] uppercase tracking-wider"
-            >
-              WEIGHT SPEC
-            </span>
-          </div>
-
-          {s.weight > 0 ? (
-            <span
-              style={{ fontFamily: F.u }}
-              className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${
-                v.ok
-                  ? "bg-[#F0FAF4] border border-[#C9E8D4] text-[#1F774E]"
-                  : "bg-[#FEF5F3] border border-[#FED3CD] text-[#AB3832]"
-              }`}
-            >
-              {v.ok ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
-              {v.ok ? "Within Spec" : `${v.d > 0 ? "+" : ""}${v.d}g`}
-            </span>
-          ) : (
-            <span
-              style={{ fontFamily: F.u }}
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-[#8D5802] bg-[#FEF6EC] border border-[#F6D9BA] px-2.5 py-0.5 rounded-full"
-            >
-              <Clock size={12} /> Weighing Pending
-            </span>
-          )}
-        </div>
-
         {/* Weaver Info Block */}
         <div className="mb-2.5 px-3 py-2 rounded-xl bg-[#FAF8F6] border border-[#EAE5E1] flex items-center justify-between">
           <div className="min-w-0 flex-1">
@@ -203,94 +167,61 @@ export function WorkerQCSareeCard({
           )}
         </div>
 
-        {/* Design Code & Saree Type Specs Box */}
+        {/* Saree Type & Saree Code Box */}
         <div className="mb-2.5 p-2.5 rounded-xl bg-[#FAF8F6] border border-[#EAE5E1] space-y-1.5">
-          <div className="flex items-center justify-between text-[12px]">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <Palette size={13} className="text-[#845E04] flex-shrink-0" />
-              <span style={{ fontFamily: F.u }} className="text-[#69635E] text-[11px]">Design:</span>
-              <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenDesignCode(designCode);
-                }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    onOpenDesignCode(designCode);
-                  }
-                }}
-                style={{ fontFamily: F.m }}
-                className="font-bold text-[#6E0F2D] cursor-pointer hover:underline truncate"
-              >
-                {designCode}
-              </span>
-            </div>
-          </div>
-
           {typeName && (
-            <div className="flex items-center gap-1.5 text-[12px] pt-1.5 border-t border-[#EAE5E1]/70">
+            <div className="flex items-center gap-1.5 text-[12px]">
               <Tag size={13} className="text-[#1F774E] flex-shrink-0" />
-              <span style={{ fontFamily: F.u }} className="text-[#69635E] text-[11px]">Type:</span>
+              <span style={{ fontFamily: F.u }} className="text-[#69635E] text-[11px]">Saree Type:</span>
               <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (typeRec) onOpenSareeTypeCode(typeRec.code);
-                }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    if (typeRec) onOpenSareeTypeCode(typeRec.code);
-                  }
-                }}
                 style={{ fontFamily: F.u }}
-                className={`font-semibold text-[#1D1814] truncate ${typeRec ? "cursor-pointer hover:underline" : ""}`}
+                className="font-semibold text-[#1D1814] truncate"
               >
                 {typeName}
               </span>
             </div>
           )}
+
+          <div className="flex items-center gap-1.5 text-[12px] pt-1.5 border-t border-[#EAE5E1]/70">
+            <Package size={13} className="text-[#845E04] flex-shrink-0" />
+            <span style={{ fontFamily: F.u }} className="text-[#69635E] text-[11px]">Saree Code:</span>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                if (sareeCode !== "—") onOpenSareeTypeCode(sareeCode);
+              }}
+              role={sareeCode !== "—" ? "button" : undefined}
+              tabIndex={sareeCode !== "—" ? 0 : undefined}
+              onKeyDown={(e) => {
+                if ((e.key === "Enter" || e.key === " ") && sareeCode !== "—") {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  onOpenSareeTypeCode(sareeCode);
+                }
+              }}
+              style={{ fontFamily: F.m }}
+              className={`font-bold text-[#6E0F2D] truncate ${sareeCode !== "—" ? "cursor-pointer hover:underline" : ""}`}
+            >
+              {sareeCode}
+            </span>
+          </div>
         </div>
 
-        {/* Weight Specification & Variance Card */}
-        <div className="p-2.5 rounded-xl bg-white border border-[#EAE5E1]">
-          <div className="flex items-center justify-between mb-1">
-            <span style={{ fontFamily: F.u }} className="text-[10px] font-semibold text-[#69635E] uppercase tracking-wider flex items-center gap-1">
-              <Scale size={11} className="text-[#845E04]" /> Weight Spec
+        {/* Received Weight & Color */}
+        <div className="p-2.5 rounded-xl bg-white border border-[#EAE5E1] flex items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5">
+            <Scale size={13} className="text-[#845E04] flex-shrink-0" />
+            <span style={{ fontFamily: F.u }} className="text-[10px] font-semibold text-[#69635E] uppercase tracking-wider">Weight</span>
+            <span style={{ fontFamily: F.m }} className="text-[13px] font-bold text-[#1D1814]">
+              {s.weight > 0 ? `${s.weight}g` : "—"}
             </span>
-            {s.weight > 0 ? (
-              <span
-                style={{ fontFamily: F.u }}
-                className={`inline-flex items-center gap-1 text-[11px] font-semibold ${
-                  v.ok ? "text-[#1F774E]" : "text-[#AB3832]"
-                }`}
-              >
-                {v.ok ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
-                {v.ok ? "Within Spec" : `${v.d > 0 ? "+" : ""}${v.d}g`}
-              </span>
-            ) : (
-              <span style={{ fontFamily: F.u }} className="inline-flex items-center gap-1 text-[11px] font-medium text-[#845E04] bg-[rgba(200,155,71,0.12)] px-2 py-0.5 rounded-full">
-                <Clock size={11} /> Weighing Pending
-              </span>
-            )}
           </div>
-
-          <div className="flex items-baseline justify-between pt-0.5">
-            <div style={{ fontFamily: F.m }} className="text-[13px] font-bold text-[#1D1814]">
-              {s.weight > 0 ? `${s.weight}g` : "0g"}
-              <span style={{ fontFamily: F.u }} className="text-[11px] font-normal text-[#69635E] ml-1">
-                / {s.std}g std
-              </span>
-            </div>
-            <div style={{ fontFamily: F.u }} className="text-[11px] text-[#69635E]">
-              {s.submitted}
-            </div>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Palette size={13} className="text-[#845E04] flex-shrink-0" />
+            <span style={{ fontFamily: F.u }} className="text-[10px] font-semibold text-[#69635E] uppercase tracking-wider">Color</span>
+            <span style={{ fontFamily: F.u }} className="text-[12.5px] font-semibold text-[#1D1814] truncate">
+              {s.color || "—"}
+            </span>
           </div>
         </div>
       </div>

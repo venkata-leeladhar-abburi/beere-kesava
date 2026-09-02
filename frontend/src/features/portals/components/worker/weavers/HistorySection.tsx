@@ -86,7 +86,9 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
         sareeType: r.sareeTypeCode ?? undefined,
         bulkOrder: r.bulkOrderLabel ?? undefined,
         loomNumber: row?.weaverLoom ?? undefined,
-        photoUrl: row?.receivedPhotoUrl ?? undefined,
+        // Receipt-time photo capture was removed — the saree's photo is now
+        // taken at QC pass time instead, so fall back to that.
+        photoUrl: row?.receivedPhotoUrl ?? r.photoUrl ?? undefined,
         receivedBy: row?.receivedBy ?? undefined,
       };
     }),

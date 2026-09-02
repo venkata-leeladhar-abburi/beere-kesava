@@ -147,7 +147,7 @@ export function WorkerQCSemiDefectiveSection({
   isDesktop,
   isTablet,
 }: WorkerQCSemiDefectiveSectionProps) {
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const cols = isDesktop ? "repeat(4, 1fr)" : isTablet ? "repeat(2, 1fr)" : "1fr";
   const filteredSemiLog = semiLog.filter(d => matchesDateFilter(d.isoDate || d.date, semiFilter));
   const [viewing, setViewing] = useState<DefectiveLogItem | null>(null);
@@ -156,6 +156,31 @@ export function WorkerQCSemiDefectiveSection({
   const pag = usePagination(filteredSemiLog, ITEMS_PER_PAGE);
 
   const columns: ColumnDef<DefectiveLogItem>[] = [
+    {
+      id: "photo",
+      header: "Photo",
+      accessor: d => d.photoUrl ?? "",
+      priority: 3,
+      cell: (_v, d) =>
+        d.photoUrl ? (
+          <button
+            type="button"
+            onClick={() => setZoomImage({ url: d.photoUrl!, label: `Defect photo — ${d.id}` })}
+            title="View defect photo"
+            aria-label={`View defect photo for ${d.id}`}
+            className="w-10 h-10 rounded-[10px] border border-[#EAE5E1] overflow-hidden flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
+          >
+            <img src={d.photoUrl} alt="" className="w-full h-full object-cover" />
+          </button>
+        ) : (
+          <div
+            title="No photo on file"
+            className="w-10 h-10 rounded-[10px] bg-[#FAF8F5] border border-dashed border-[#D6C7B2] flex items-center justify-center text-[#A38D70] flex-shrink-0"
+          >
+            <ImageOff size={16} />
+          </div>
+        ),
+    },
     {
       id: "sareeId",
       header: "Saree ID",

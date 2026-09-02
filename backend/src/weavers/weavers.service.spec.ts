@@ -21,6 +21,9 @@ describe("WeaversService", () => {
       photoUrl: "https://example.test/p.jpg",
       email: "padma@example.test",
       phone: "9000000000",
+      bankName: "State Bank of India",
+      accountNo: "1234567890",
+      ifsc: "SBIN0001234",
       ...overrides,
     });
 

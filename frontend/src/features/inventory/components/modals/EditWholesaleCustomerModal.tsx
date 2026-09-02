@@ -34,6 +34,10 @@ export function EditWholesaleCustomerModal({ customer, onClose }: { customer: Cu
   const handleSave = () => {
     const errs: Record<string, string> = {};
     if (!form.name.trim()) errs.name = "Required";
+    if (!form.bankName.trim()) errs.bankName = "Required";
+    if (!form.accountNumber.trim()) errs.accountNumber = "Required";
+    if (!form.ifscCode.trim()) errs.ifscCode = "Required";
+    if (!form.gstCode.trim()) errs.gstCode = "Required";
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     updateCustomer(customer.id, {
       name: form.name.trim(),
@@ -41,10 +45,10 @@ export function EditWholesaleCustomerModal({ customer, onClose }: { customer: Cu
       phone: form.phone.trim() || undefined,
       city: form.city.trim() || undefined,
       address: form.address.trim() || undefined,
-      gstCode: form.gstCode.trim() || undefined,
-      bankName: form.bankName.trim() || undefined,
-      accountNumber: form.accountNumber.trim() || undefined,
-      ifscCode: form.ifscCode.trim() || undefined,
+      gstCode: form.gstCode.trim(),
+      bankName: form.bankName.trim(),
+      accountNumber: form.accountNumber.trim(),
+      ifscCode: form.ifscCode.trim(),
     });
     onClose();
   };
@@ -91,18 +95,18 @@ export function EditWholesaleCustomerModal({ customer, onClose }: { customer: Cu
           <Field label="Address" id="edit-customer-address">
             <Input value={form.address} onChange={e => set("address", e.target.value)} placeholder="Full delivery address" />
           </Field>
-          <Field label="GST Number" id="edit-customer-gst">
-            <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="GSTIN, if registered" />
+          <Field label="GST Number" required error={errors.gstCode} id="edit-customer-gst">
+            <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="GSTIN" />
           </Field>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-            <Field label="Bank Name" id="edit-customer-bank-name">
+            <Field label="Bank Name" required error={errors.bankName} id="edit-customer-bank-name">
               <Input value={form.bankName} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" />
             </Field>
-            <Field label="Account Number" id="edit-customer-account-number">
+            <Field label="Account Number" required error={errors.accountNumber} id="edit-customer-account-number">
               <Input value={form.accountNumber} onChange={e => set("accountNumber", e.target.value)} placeholder="Account No." />
             </Field>
           </div>
-          <Field label="IFSC Code" id="edit-customer-ifsc">
+          <Field label="IFSC Code" required error={errors.ifscCode} id="edit-customer-ifsc">
             <Input value={form.ifscCode} onChange={e => set("ifscCode", e.target.value)} placeholder="e.g. HDFC0001842" />
           </Field>
         </div>

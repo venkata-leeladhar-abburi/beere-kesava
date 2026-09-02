@@ -1,24 +1,29 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, UserRound, ShoppingBag, MapPin, CreditCard } from "lucide-react";
+import { ChevronLeft, UserRound, ShoppingBag, MapPin, CreditCard, FileText, X } from "lucide-react";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "../theme";
 import { RetailCustomer } from "../types";
-import { Button } from "../../../../shared/ui/primitives";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
-import { salesApi } from "../../../../shared/api/sales";
+import { salesApi, type BackendSaleRecord } from "../../../../shared/api/sales";
 import { useRatesPricing } from "@/features/pricing";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
 import { SectionCard } from "@/shared/ui/SectionCard";
+import { Modal } from "@/shared/ui/overlay";
+import { DocumentViewer, RetailBillDocument, DEFAULT_LETTERHEAD_FIRM } from "@/shared/ui/document";
 
 interface RetailPurchaseRow {
+  saleRef: string;
   date: string;
   items: { id: string; type: string }[];
   price: number;
   returned: boolean;
+  refundAmount: number;
+  sale: BackendSaleRecord;
 }
 
 export interface RetailDetailSectionProps {
@@ -34,10 +39,17 @@ export interface RetailDetailSectionProps {
 export function RetailDetailSection({
   customer, retailModalTab, setRetailModalTab, onBack, retailPurchaseDateFilter, setRetailPurchaseDateFilter,
 }: RetailDetailSectionProps) {
+  const [billSale, setBillSale] = useState<BackendSaleRecord | null>(null);
+
   const purchaseColumns: ColumnDef<RetailPurchaseRow>[] = [
     {
       id: "date", header: "Sale Date", accessor: r => r.date,
-      cell: (_v, r) => <span style={{ color: T.taupe }}>{r.date}</span>,
+      cell: (_v, r) => (
+        <div>
+          <div style={{ color: T.taupe }}>{r.date}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: T.royalBurgundy, marginTop: 2 }}>{r.saleRef}</div>
+        </div>
+      ),
     },
     {
       id: "items", header: "Sarees (ID & Type)", accessor: r => r.items, priority: 1,
@@ -59,32 +71,47 @@ export function RetailDetailSection({
     {
       id: "return", header: "Return", accessor: r => r.returned, priority: 3,
       cell: (_v, r) => r.returned
-        ? <span style={{ color: T.crimson, fontWeight: 600 }}>Returned</span>
+        ? <span style={{ color: T.crimson, fontWeight: 600 }}>Returned{r.refundAmount > 0 ? ` (−${formatMoney(rupees(r.refundAmount))})` : ""}</span>
         : <span style={{ color: T.taupe }}>—</span>,
+    },
+    {
+      id: "bill", header: "Bill", accessor: r => r.saleRef, priority: 3,
+      cell: (_v, r) => (
+        <Button
+          onClick={() => setBillSale(r.sale)}
+          size="sm"
+          className="h-8 gap-1.5 rounded-full border border-[rgba(110,15,45,0.18)] bg-transparent px-3 font-semibold text-[#6E0F2D] hover:bg-[#6E0F2D]/10"
+        >
+          <FileText size={13} /> View Bill
+        </Button>
+      ),
     },
   ];
 
   const { getSareeTypeByCode } = useRatesPricing();
 
+  // Server-filtered to this customer (same approach as the shop-staff portal's
+  // customer profile page), so the history is complete instead of whatever
+  // happened to fall inside the global first page.
   const { data: salesRes } = useQuery({
-    queryKey: ["sales-list-retail-detail"],
-    queryFn: () => salesApi.list(200),
+    queryKey: ["sales-list-retail-detail", customer.id],
+    queryFn: () => salesApi.list(500, { customerId: customer.id }),
   });
   const { data: returnsRes } = useQuery({
     queryKey: ["returns-list-retail-detail"],
-    queryFn: () => salesApi.listReturns(200),
+    queryFn: () => salesApi.listReturns(500),
   });
 
   // ReturnRecord has no saleRef FK — a saree only has one active sale at a
   // time, so sareeId is the closest usable link back to "was this returned".
-  const returnedSareeIds = useMemo(
-    () => new Set((returnsRes?.items ?? []).map(r => r.sareeId)),
+  const refundBySareeId = useMemo(
+    () => new Map((returnsRes?.items ?? []).map(r => [r.sareeId, Number(r.refundAmount ?? 0)])),
     [returnsRes],
   );
 
   const customerSales = useMemo(
-    () => (salesRes?.items ?? []).filter(s => s.channel === "RETAIL" && s.customerId === customer.id),
-    [salesRes, customer.id],
+    () => (salesRes?.items ?? []).filter(s => s.channel === "RETAIL"),
+    [salesRes],
   );
 
   const retailPurchaseRows: RetailPurchaseRow[] = useMemo(() => customerSales
@@ -92,18 +119,23 @@ export function RetailDetailSection({
       const typeCode = s.saree?.sareeTypeCode;
       const typeLabel = typeCode ? (getSareeTypeByCode(typeCode)?.type ?? typeCode) : (s.saree?.designCode ?? "—");
       return {
+        saleRef: s.saleRef,
         date: new Date(s.saleDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
         items: [{ id: s.sareeId, type: typeLabel }],
         price: Number(s.amount),
-        returned: returnedSareeIds.has(s.sareeId),
+        returned: refundBySareeId.has(s.sareeId),
+        refundAmount: refundBySareeId.get(s.sareeId) ?? 0,
+        sale: s,
       };
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .filter(row => matchesDateFilter(row.date, retailPurchaseDateFilter)),
-  [customerSales, returnedSareeIds, getSareeTypeByCode, retailPurchaseDateFilter]);
+  [customerSales, refundBySareeId, getSareeTypeByCode, retailPurchaseDateFilter]);
 
   const totalPurchases = retailPurchaseRows.length;
-  const totalSpent = retailPurchaseRows.reduce((sum, r) => sum + r.price, 0);
+  // "Total Spent" nets out refunds on returned sales, matching what the
+  // customer actually paid rather than the gross amount rung up.
+  const totalSpent = retailPurchaseRows.reduce((sum, r) => sum + (r.price - r.refundAmount), 0);
   const avgPerVisit = totalPurchases > 0 ? Math.round(totalSpent / totalPurchases) : 0;
   const totalReturns = retailPurchaseRows.filter(r => r.returned).length;
 
@@ -262,7 +294,7 @@ export function RetailDetailSection({
               responsive
               columns={purchaseColumns}
               data={retailPurchaseRows}
-              getRowId={r => r.date + r.items.map(i => i.id).join(",")}
+              getRowId={r => r.saleRef}
               emptyTitle="No purchases in this period"
             />
           </div>
@@ -297,6 +329,35 @@ export function RetailDetailSection({
             </div>
           </div>
         </SectionCard>
+      )}
+
+      {billSale && (
+        <Modal open onOpenChange={o => !o && setBillSale(null)} size="xl">
+          <div style={{ display: "flex", flexDirection: "column", height: "85vh" }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", padding: "8px 8px 0", flexShrink: 0 }}>
+              <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={() => setBillSale(null)} />
+            </div>
+            <DocumentViewer fileName={billSale.saleRef} documentTitle={`Retail Bill ${billSale.saleRef}`} className="flex-1">
+              <RetailBillDocument
+                billRef={billSale.saleRef}
+                billDate={new Date(billSale.saleDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                firm={DEFAULT_LETTERHEAD_FIRM}
+                customerName={customer.name}
+                customerPhone={customer.phone && customer.phone !== "—" ? customer.phone : undefined}
+                lines={[{
+                  sareeId: billSale.sareeId,
+                  type: billSale.saree?.sareeType?.type ?? billSale.saree?.sareeTypeCode ?? undefined,
+                  design: billSale.saree?.designCode ?? undefined,
+                  soldPrice: Number(billSale.amount),
+                }]}
+                total={Number(billSale.amount)}
+                paymentMethod={billSale.paymentMethod ?? undefined}
+                paymentRef={billSale.paymentRef ?? undefined}
+                soldBy={[billSale.soldBy?.firstName, billSale.soldBy?.lastName].filter(Boolean).join(" ").trim() || undefined}
+              />
+            </DocumentViewer>
+          </div>
+        </Modal>
       )}
     </div>
   );

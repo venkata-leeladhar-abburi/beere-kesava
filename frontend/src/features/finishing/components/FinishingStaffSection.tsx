@@ -7,6 +7,7 @@ import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 import { SectionCard } from "./common/primitives";
 import { ImageZoomModal, type ZoomImage } from "../../../shared/ui/ImageZoomModal";
 import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
+import { resolveAssetUrl } from "@/shared/api/uploads";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -149,7 +150,7 @@ function buildAssignmentColumns(returns: FinishingReturn[], onViewPhoto: (image:
         return ret?.damagePhotoUrl ? (
           <button
             type="button"
-            onClick={() => onViewPhoto({ url: ret.damagePhotoUrl!, label: `Damage photo — ${a.sareeId}` })}
+            onClick={() => onViewPhoto({ url: resolveAssetUrl(ret.damagePhotoUrl)!, label: `Damage photo — ${a.sareeId}` })}
             style={{ width: 26, height: 26, borderRadius: 6, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer", padding: 0, margin: "0 auto" }}
             title="View damage photo"
           >

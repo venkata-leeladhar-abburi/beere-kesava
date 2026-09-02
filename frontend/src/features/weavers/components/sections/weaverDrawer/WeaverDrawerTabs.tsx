@@ -71,6 +71,10 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
                           pagination
                           columns={[
                             {
+                              id: "serial", header: "S.No", accessor: (row: SareeRow) => weaverSareesInBatch.indexOf(row) + 1,
+                              cell: (_v, row: SareeRow) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{weaverSareesInBatch.indexOf(row) + 1}</span>,
+                            },
+                            {
                               id: "sareeId", header: "Saree ID", accessor: (row: SareeRow) => row.sareeId, priority: 1,
                               cell: (_v, row: SareeRow) => row.sareeId
                                 ? <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>{row.sareeId}</span>

@@ -11,6 +11,7 @@ import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFi
 import { Pagination, usePagination } from "../../../../../shared/ui/DataPagination";
 import { ImageZoomModal, type ZoomImage } from "../../../../../shared/ui/ImageZoomModal";
 import { LoadingState, ErrorState } from "../../../../../shared/ui/state";
+import { resolveAssetUrl } from "@/shared/api/uploads";
 
 // ── Section C — Assignment History & Tracking ─────────────────────────────────
 
@@ -54,7 +55,7 @@ function StaffAssignmentsMobileList({ data, returns, onViewPhoto }: { data: Fini
                 {ret?.damagePhotoUrl && (
                   <button
                     type="button"
-                    onClick={() => onViewPhoto({ url: ret.damagePhotoUrl!, label: `Damage photo — ${a.sareeId}` })}
+                    onClick={() => onViewPhoto({ url: resolveAssetUrl(ret.damagePhotoUrl)!, label: `Damage photo — ${a.sareeId}` })}
                     style={{ width: 26, height: 26, flexShrink: 0, borderRadius: 6, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer", padding: 0 }}
                     title="View damage photo"
                   >
@@ -301,7 +302,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
       cell: (v, a) => v ? (
         <button
           type="button"
-          onClick={() => setZoomImage({ url: v as string, label: `Damage photo — ${a.sareeId}` })}
+          onClick={() => setZoomImage({ url: resolveAssetUrl(v as string)!, label: `Damage photo — ${a.sareeId}` })}
           style={{ width: 28, height: 28, borderRadius: 6, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer", padding: 0 }}
           title="View damage photo"
         >

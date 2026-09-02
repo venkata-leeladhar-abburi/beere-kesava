@@ -73,6 +73,9 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
       row.sareeTypeName = row.sareeTypeName ?? q.sareeTypeName;
       row.bulkOrderLabel = row.bulkOrderLabel ?? q.bulkOrderLabel;
       row.qcStatus = q.result;
+      // Receipt-time photo capture was removed — the saree's photo is now
+      // taken at QC time instead, so fall back to that.
+      row.receivedPhotoUrl = row.receivedPhotoUrl ?? q.photoUrl ?? null;
       row.receivedDate = q.receivedDate;
       row.qcDate = q.qcDate;
       row.defects = q.defects;

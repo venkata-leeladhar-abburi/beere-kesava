@@ -69,6 +69,10 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
       setError("First name, last name and mobile number are required.");
       return;
     }
+    if (!form.bankName.trim() || !form.accountNo.trim() || !form.ifsc.trim()) {
+      setError("Bank name, account number and IFSC code are required.");
+      return;
+    }
     const looms = form.looms.trim() ? Number(form.looms) : undefined;
     if (form.looms.trim() && (Number.isNaN(looms) || (looms ?? 0) < 0)) {
       setError("Number of looms must be a valid non-negative number.");
@@ -82,9 +86,9 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
       village: form.village.trim() || undefined,
       looms,
       photoUrl: form.photoUrl,
-      bankName: form.bankName.trim() || undefined,
-      accountNo: form.accountNo.trim() || undefined,
-      ifsc: form.ifsc.trim() || undefined,
+      bankName: form.bankName.trim(),
+      accountNo: form.accountNo.trim(),
+      ifsc: form.ifsc.trim(),
     });
   };
 
@@ -136,9 +140,9 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
         Bank Account Details
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 24, marginBottom: 24 }}>
-        <Field label="Bank Name"><Input placeholder="E.g., State Bank of India" value={form.bankName} onChange={set("bankName")} /></Field>
-        <Field label="Account Number"><Input placeholder="Account number" value={form.accountNo} onChange={set("accountNo")} /></Field>
-        <Field label="IFSC Code"><Input placeholder="11-character IFSC code" value={form.ifsc} onChange={set("ifsc")} /></Field>
+        <Field label="Bank Name *"><Input placeholder="E.g., State Bank of India" value={form.bankName} onChange={set("bankName")} /></Field>
+        <Field label="Account Number *"><Input placeholder="Account number" value={form.accountNo} onChange={set("accountNo")} /></Field>
+        <Field label="IFSC Code *"><Input placeholder="11-character IFSC code" value={form.ifsc} onChange={set("ifsc")} /></Field>
       </div>
 
       {error && (

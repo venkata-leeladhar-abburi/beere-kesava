@@ -96,7 +96,9 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
             defects: r.defects,
             qcDate: new Date(r.qcDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
             deduction: rupees(Math.round(Number(r.deduction))),
-            photoUrl: row?.receivedPhotoUrl ?? null,
+            // Receipt-time photo capture was removed — the saree's photo is
+            // now taken at QC pass/fail time instead, so fall back to that.
+            photoUrl: row?.receivedPhotoUrl ?? r.photoUrl ?? null,
           };
         }),
     [qcRecords, weaverLookup, rowLookup],
