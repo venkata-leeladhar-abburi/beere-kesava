@@ -6,7 +6,7 @@ import { C, F, TEAL, Chip, PortalStatsStrip, PageHero, SectionCard } from "./the
 import { sareeTypeName, sareeTypeText } from "./stock-format";
 import { inventoryApi, type ShopStockItem } from "../../../../shared/api/inventory";
 import { Button, Input, IconButton, MultiSelect } from "../../../../shared/ui/primitives";
-import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { DataTable, ViewToggle, type ColumnDef, type DataView } from "../../../../shared/ui/data";
 import { DateFilterBar, DEFAULT_DATE_FILTER, matchesDateFilter, type DateFilterState } from "../../../../shared/ui/DateFilterBar";
 import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
 import { usePrintSareeTags } from "@/features/weavers";
@@ -167,6 +167,7 @@ function ShopInventory() {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [view, setView] = useState<ViewMode>("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [dataView, setDataView] = useState<DataView>("table");
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["shop-stock"],
@@ -445,7 +446,7 @@ function ShopInventory() {
       getRowId={r => r.sareeId}
       caption={caption}
       density="compact"
-      responsive
+      view={dataView}
       pagination
       loading={isLoading}
       error={isError}
@@ -584,11 +585,14 @@ function ShopInventory() {
           <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, lineHeight: 1.5 }}>
             Showing {filtered.length} of {stock.length} sarees · {filtered.filter(s => s.status !== "sold").length} available
           </div>
-          {filtersActive && (
-            <Button variant="link" size="sm" onClick={clearFilters} className="p-0 text-xs underline text-[#69635E]">
-              Clear filters
-            </Button>
-          )}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {filtersActive && (
+              <Button variant="link" size="sm" onClick={clearFilters} className="p-0 text-xs underline text-[#69635E]">
+                Clear filters
+              </Button>
+            )}
+            <ViewToggle value={dataView} onChange={setDataView} />
+          </div>
         </div>
 
       {/* Selection bar — the one thing you can do to a set of sarees from here

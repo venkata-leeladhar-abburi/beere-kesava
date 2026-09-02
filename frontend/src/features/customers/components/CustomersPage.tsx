@@ -33,8 +33,8 @@ import { resolveAssetUrl, toStoredAssetPath } from "@/shared/api/uploads";
  */
 export function CustomersPage() {
   const location = useLocation();
-  const [wholesaleView, setWholesaleView] = useState<"card"|"list"|"table">("card");
-  const [retailView, setRetailView] = useState<"card"|"list">("card");
+  const [wholesaleView, setWholesaleView] = useState<"card"|"list"|"table">("table");
+  const [retailView, setRetailView] = useState<"card"|"list">("list");
   const [showAddWholesale, setShowAddWholesale] = useState(() => new URLSearchParams(location.search).get("new") === "1");
   const { customers = [], updateCustomer } = useCustomers();
   const { bulkOrders } = useBulkOrders();

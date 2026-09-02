@@ -19,6 +19,9 @@ import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/stat
 import { rupees } from "@/lib/domain/money";
 import { EntityCode, Money } from "@/shared/ui/domain";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { ViewToggle, type DataView } from "../../../../shared/ui/data/ViewToggle";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 
 const TopDivider = () => (
   <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginBottom: 12 }}>
@@ -225,12 +228,106 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
   );
 }
 
+function BulkOrderProducedCell({ o }: { o: BulkOrder }) {
+  const { bulkOrders } = useBulkOrders();
+  const { readySarees, returns, quotations } = useFinishing();
+  const producedCount = computeBulkOrderProducedSareeIds(o.ref, bulkOrders, readySarees, returns, quotations).size;
+  const pct = o.total > 0 ? Math.round((producedCount / o.total) * 100) : 0;
+  const cfg = ORDER_CFG[o.status];
+  return (
+    <div style={{ minWidth: 140 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
+        <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{producedCount}/{o.total}</span>
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.barColor }}>{pct}%</span>
+      </div>
+      <div style={{ height: 6, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden" }}>
+        <div style={{ width: `${pct}%`, height: "100%", background: cfg.barColor, borderRadius: 99 }} />
+      </div>
+    </div>
+  );
+}
+
 export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder }: { onNavigate?: (tab: string) => void; superadmin?: boolean; onOpenOrder: (order: BulkOrder, tab: "overview" | "payments") => void }) {
   const [showCreate, setShowCreate] = useState(false);
   const [successRef, setSuccessRef] = useState<string | null>(null);
+  const [view, setView] = useState<DataView>("table");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const { bulkOrders, addBulkOrder, nextOrderRef, isLoading, isError, error, refetch } = useBulkOrders();
-  const pag = usePagination(bulkOrders, 10);
-  const atRiskCount = bulkOrders.filter(o => o.status === "at-risk" || o.status === "overdue").length;
+  const filteredOrders = bulkOrders.filter(o => matchesDateFilter(o.createdDate, dateFilter));
+  const pag = usePagination(filteredOrders, 10);
+  const atRiskCount = filteredOrders.filter(o => o.status === "at-risk" || o.status === "overdue").length;
+
+  const columns: ColumnDef<BulkOrder>[] = [
+    {
+      id: "customer", header: "Customer", accessor: o => o.customer, priority: 1,
+      cell: (_v, o) => (
+        <div>
+          <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{o.customer}</div>
+          <EntityCode type="order" value={o.ref} size="sm" />
+        </div>
+      ),
+    },
+    {
+      id: "status", header: "Status", accessor: o => o.status, type: "status",
+      cell: (_v, o) => {
+        const cfg = ORDER_CFG[o.status];
+        const PhStatusIcon = cfg.PhIcon;
+        return (
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: cfg.badgeBg, borderRadius: 8, padding: "4px 10px" }}>
+            <PhStatusIcon size={14} color={cfg.badgeColor} />
+            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor }}>{STATUS_LABELS[o.status](o)}</span>
+          </div>
+        );
+      },
+    },
+    {
+      id: "due", header: "Delivery Deadline", accessor: o => o.due,
+      cell: (_v, o) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{o.due}</span>,
+    },
+    {
+      id: "progress", header: "Sarees Produced", accessor: o => o.total,
+      cell: (_v, o) => <BulkOrderProducedCell o={o} />,
+    },
+    {
+      id: "issues", header: "Issues", accessor: o => (o.shortage ?? 0) + (o.overdueBy ?? 0), priority: 3,
+      cell: (_v, o) => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {!!o.shortage && <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.crimson }}>Shortage: {o.shortage}</span>}
+          {!!o.overdueBy && <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.crimson }}>Overdue by {o.overdueBy}d</span>}
+          {!o.shortage && !o.overdueBy && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</span>}
+        </div>
+      ),
+    },
+    {
+      id: "amountDue", header: "Est. Order Value", type: "currency", priority: 3, accessor: o => o.amountDue ?? 0,
+      cell: (_v, o) => (o.amountDue ?? 0) > 0 ? <Money value={rupees(o.amountDue ?? 0)} /> : <span style={{ color: T.taupe }}>—</span>,
+    },
+    {
+      id: "tallied", header: "Tallied", priority: 3, accessor: o => o.tallied ?? false,
+      cell: (_v, o) => {
+        if (!superadmin) return <span style={{ color: T.taupe }}>—</span>;
+        return o.tallied ? <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.green }}>Tallied by {o.talliedBy}</span> : <span style={{ color: T.taupe }}>—</span>;
+      },
+    },
+    {
+      id: "createdBy", header: "Created By", priority: 3, accessor: o => o.createdBy?.name ?? "",
+      cell: (_v, o) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{o.createdBy?.name ?? "—"}</span>,
+    },
+    {
+      id: "action", header: "Action", type: "actions", accessor: () => null,
+      cell: (_v, o) => (
+        <div style={{ display: "flex", gap: 6 }}>
+          <Button onClick={(e) => { e.stopPropagation(); onOpenOrder(o, "overview"); }} variant="secondary" size="sm">
+            <PhEye size={13} /> View
+          </Button>
+          <Button onClick={(e) => { e.stopPropagation(); onOpenOrder(o, "payments"); }} variant="secondary" size="sm">
+            <CurrencyInr size={13} /> Payment
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div id="prod-bulk-orders" className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36 }}>
       <FadeUp>
@@ -280,12 +377,33 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
             </div>
           )}
 
+          {!isLoading && !isError && bulkOrders.length > 0 && (
+            <div className="px-2.5 sm:px-5 md:px-6 pt-4 flex flex-wrap items-center justify-between gap-3 overflow-x-auto section-nav-scroll">
+              <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+              <ViewToggle value={view} onChange={setView} />
+            </div>
+          )}
+
           {isLoading ? (
             <div style={{ padding: 20 }}><LoadingState variant="skeleton" rows={4} /></div>
           ) : isError ? (
             <ErrorState error={error} onRetry={refetch} />
           ) : bulkOrders.length === 0 ? (
             <EmptyState title="No bulk orders yet" description="Bulk orders raised for wholesale customers will show up here." />
+          ) : filteredOrders.length === 0 ? (
+            <EmptyState title="No bulk orders in this timeline" description="Try a different date range, or clear the filter to see all orders." />
+          ) : view === "table" ? (
+            <div className="p-2.5 sm:p-5 md:p-6">
+              <DataTable
+                columns={columns}
+                data={filteredOrders}
+                getRowId={o => o.ref}
+                view="table"
+                onRowClick={o => onOpenOrder(o, "overview")}
+                pagination
+                itemLabel="orders"
+              />
+            </div>
           ) : (
             <div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 sm:gap-5 p-2.5 sm:p-5 md:p-6 items-stretch">

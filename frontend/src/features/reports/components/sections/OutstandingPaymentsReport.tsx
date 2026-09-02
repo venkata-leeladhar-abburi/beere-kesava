@@ -23,7 +23,7 @@ const PAYMENT_STATUS_KEY: Record<string, StatusValueOf<"payment">> = {
 };
 
 export function OutstandingPaymentsReport() {
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const { data, isLoading, isError } = useQuery({
     queryKey: ["reports", "outstanding-payments"],
     queryFn: () => reportsApi.outstandingPayments(),

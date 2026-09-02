@@ -33,7 +33,7 @@ export function IssuanceHistorySection({
   setViewRecord: (r: MaterialIssueRecord) => void;
   totalCount?: number;
 }) {
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const { isLoading, isError, error, refetch } = useMaterialIssue();
 
   const columns: ColumnDef<MaterialIssueRecord>[] = [

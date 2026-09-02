@@ -48,7 +48,7 @@ function SupplierStatusBadge({ status }: { status: SupplierStatusKey }) {
 export function SupplierPaymentsSection() {
   const { suppliers, purchases, payments, addPayment, statsFor, isLoading, isError, refetch } = useSuppliers();
 
-  const [view, setView] = useState<"card" | "table">("card");
+  const [view, setView] = useState<"card" | "table">("table");
   const [statusFilter, setStatusFilter] = useState("All Bill Status");
   const [supplierFilter, setSupplierFilter] = useState("All Suppliers");
   const [search, setSearch] = useState("");

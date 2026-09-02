@@ -1,7 +1,10 @@
 
+import { useState } from "react";
 import { AlertCircle, AlertTriangle, CheckCircle2, History, ListChecks, Package, RotateCcw } from "lucide-react";
 
 import { C, F, BG_IMAGE, MyBatchEntry, Tab5 } from "../theme";
+import { DataTable, ViewToggle, type ColumnDef, type ViewMode } from "@/shared/ui/data";
+import { isRowProduced, formatDueDate } from "../batchCompletion";
 
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 
@@ -67,6 +70,8 @@ export function BatchesSection({
   setActive: (t: Tab5) => void;
 }) {
   const { user } = useAuth();
+  const [activeView, setActiveView] = useState<ViewMode>("table");
+  const [completedView, setCompletedView] = useState<ViewMode>("table");
   const {
     batches,
     isLoading: batchesLoading,
@@ -140,6 +145,73 @@ export function BatchesSection({
       ? `${user.name} · ${user.empId}`
       : user.name
     : "—";
+
+  const activeBatchColumns: ColumnDef<MyBatchEntry>[] = [
+    {
+      id: "batchId", header: "Batch ID", priority: 1, accessor: b => b.batchId,
+      cell: (_v, b) => <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 15, color: C.burg }}>{b.batchId}</span>,
+    },
+    {
+      id: "status", header: "Status", priority: 2, type: "badge", accessor: b => b.status,
+      cell: (_v, b) => (
+        <span style={{ fontFamily: F.u, fontSize: 12, color: b.status === "active" ? C.green : C.gold, background: b.status === "active" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.15)", borderRadius: 999, padding: "4px 12px", fontWeight: 600 }}>
+          {b.status === "active" ? "Weaving in Progress" : "Draft"}
+        </span>
+      ),
+    },
+    {
+      id: "sarees", header: "Sarees Assigned", priority: 2, type: "number", accessor: b => b.myRows.length,
+    },
+    {
+      id: "produced", header: "Produced", priority: 2, accessor: b => b.myRows.filter(isRowProduced).length,
+      cell: (_v, b) => {
+        const total = b.myRows.length || 1;
+        const produced = b.myRows.filter(isRowProduced).length;
+        return <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{produced} of {b.myRows.length} ({Math.round((produced / total) * 100)}%)</span>;
+      },
+    },
+    {
+      id: "qc", header: "QC Passed", priority: 2, accessor: b => b.myRows.filter(r => r.qcPassed === true).length,
+      cell: (_v, b) => {
+        const total = b.myRows.length || 1;
+        const passed = b.myRows.filter(r => r.qcPassed === true).length;
+        return <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{passed} of {b.myRows.length} ({Math.round((passed / total) * 100)}%)</span>;
+      },
+    },
+    {
+      id: "rework", header: "Rework", priority: 2, type: "number", accessor: b => b.myRows.filter(r => r.awaitingRework === true).length,
+    },
+    {
+      id: "due", header: "Due Date", priority: 2, accessor: b => b.dueDate,
+      cell: (_v, b) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{formatDueDate(b.dueDate) || "—"}</span>,
+    },
+  ];
+
+  const completedBatchColumns: ColumnDef<MyBatchEntry>[] = [
+    {
+      id: "batchId", header: "Batch ID", priority: 1, accessor: b => b.batchId,
+      cell: (_v, b) => <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 15, color: C.burg }}>{b.batchId}</span>,
+    },
+    {
+      id: "status", header: "Status", priority: 2, type: "badge", accessor: () => "completed",
+      cell: () => (
+        <span style={{ fontFamily: F.u, fontSize: 12, color: "#1D4ED8", background: "rgba(29,78,216,0.10)", borderRadius: 999, padding: "4px 12px", fontWeight: 600 }}>
+          Completed
+        </span>
+      ),
+    },
+    {
+      id: "sarees", header: "Sarees Assigned", priority: 2, type: "number", accessor: b => b.myRows.length,
+    },
+    {
+      id: "qc", header: "QC Passed", priority: 2, accessor: b => b.myRows.length,
+      cell: (_v, b) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.green }}>{b.myRows.length} of {b.myRows.length} (100%)</span>,
+    },
+    {
+      id: "due", header: "Due Date", priority: 2, accessor: b => b.dueDate,
+      cell: (_v, b) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{formatDueDate(b.dueDate) || "—"}</span>,
+    },
+  ];
 
   if (batchesSubPage === "history") {
     return <BatchHistoryPage onBack={() => setBatchesSubPage("main")} defaultFilter="all" />;
@@ -315,81 +387,85 @@ export function BatchesSection({
             title="Active Batches"
             subtitle={`You can have a maximum of ${MAX_ACTIVE_BATCHES} active batches at a time. Complete one before a new batch is assigned.`}
             right={
-              <button
-                onClick={() => setBatchesSubPage("history")}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "8px 18px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(110,15,45,0.18)",
-                  background: "rgba(110,15,45,0.06)",
-                  color: "#6E0F2D",
-                  fontFamily: F.u,
-                  fontWeight: 600,
-                  fontSize: 14,
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(110,15,45,0.14)";
-                  e.currentTarget.style.color = "#6E0F2D";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(110,15,45,0.06)";
-                  e.currentTarget.style.color = "#6E0F2D";
-                }}
-              >
-                <History size={15} color={C.burg} /> View All History
-              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <ViewToggle value={activeView} onChange={setActiveView} />
+                <button
+                  onClick={() => setBatchesSubPage("history")}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "8px 18px",
+                    borderRadius: 999,
+                    border: "1px solid rgba(110,15,45,0.18)",
+                    background: "rgba(110,15,45,0.06)",
+                    color: "#6E0F2D",
+                    fontFamily: F.u,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(110,15,45,0.14)";
+                    e.currentTarget.style.color = "#6E0F2D";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(110,15,45,0.06)";
+                    e.currentTarget.style.color = "#6E0F2D";
+                  }}
+                >
+                  <History size={15} color={C.burg} /> View All History
+                </button>
+              </div>
             }
           />
           <div style={{ height: 8 }} />
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: isTablet ? "1fr" : "1fr 1fr",
-              gap: isTablet ? 18 : 24,
-              marginBottom: 20,
-            }}
-          >
-            {batchesLoading ? (
-              <div style={{ gridColumn: "1 / -1" }}>
-                <LoadingState variant="skeleton" rows={4} />
+          {batchesLoading ? (
+            <div style={{ marginBottom: 20 }}>
+              <LoadingState variant="skeleton" rows={4} />
+            </div>
+          ) : batchesError ? (
+            // Never show the "no batches" empty state on a load failure —
+            // that reads as "you have no work" when the real cause is a
+            // failed/expired session.
+            <div style={{ marginBottom: 20 }}>
+              <ErrorState error={batchesError} onRetry={refetchBatches} />
+            </div>
+          ) : myActiveBatches.length === 0 ? (
+            <div
+              style={{
+                padding: "40px 20px",
+                textAlign: "center" as const,
+                background: C.cream,
+                borderRadius: 20,
+                border: `1px solid ${C.bdr}`,
+                marginBottom: 20,
+              }}
+            >
+              <Package size={32} color={C.muted} style={{ margin: "0 auto 12px" }} />
+              <div style={{ fontFamily: F.u, fontSize: 16, color: C.muted }}>
+                No active batches assigned to you yet.
               </div>
-            ) : batchesError ? (
-              // Never show the "no batches" empty state on a load failure —
-              // that reads as "you have no work" when the real cause is a
-              // failed/expired session.
-              <div style={{ gridColumn: "1 / -1" }}>
-                <ErrorState error={batchesError} onRetry={refetchBatches} />
-              </div>
-            ) : (
-              <>
-                {myActiveBatches.map((b, idx) => (
-                  <DesktopActiveBatchCard key={b.batchId} b={b} idx={idx} bp={bp} />
-                ))}
-                {myActiveBatches.length === 0 && (
-                  <div
-                    style={{
-                      gridColumn: "1 / -1",
-                      padding: "40px 20px",
-                      textAlign: "center" as const,
-                      background: C.cream,
-                      borderRadius: 20,
-                      border: `1px solid ${C.bdr}`,
-                    }}
-                  >
-                    <Package size={32} color={C.muted} style={{ margin: "0 auto 12px" }} />
-                    <div style={{ fontFamily: F.u, fontSize: 16, color: C.muted }}>
-                      No active batches assigned to you yet.
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+            </div>
+          ) : activeView === "table" ? (
+            <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: "auto", marginBottom: 20 }}>
+              <DataTable columns={activeBatchColumns} data={myActiveBatches} getRowId={b => b.batchId} view="table" />
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isTablet ? "1fr" : "1fr 1fr",
+                gap: isTablet ? 18 : 24,
+                marginBottom: 20,
+              }}
+            >
+              {myActiveBatches.map((b, idx) => (
+                <DesktopActiveBatchCard key={b.batchId} b={b} idx={idx} bp={bp} />
+              ))}
+            </div>
+          )}
           {myActiveBatches.length >= MAX_ACTIVE_BATCHES && (
             <div
               style={{
@@ -418,34 +494,37 @@ export function BatchesSection({
             subtitle="Recent completed batches — your track record of finished work."
             accent="#1F774E"
             right={
-              <button
-                onClick={() => setBatchesSubPage("completed")}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "8px 18px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(31,119,78,0.25)",
-                  background: "rgba(31,119,78,0.06)",
-                  color: "#1F774E",
-                  fontFamily: F.u,
-                  fontWeight: 600,
-                  fontSize: 14,
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(31,119,78,0.14)";
-                  e.currentTarget.style.color = "#1F774E";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(31,119,78,0.06)";
-                  e.currentTarget.style.color = "#1F774E";
-                }}
-              >
-                <ListChecks size={15} color="#1F774E" /> See All Completed
-              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <ViewToggle value={completedView} onChange={setCompletedView} />
+                <button
+                  onClick={() => setBatchesSubPage("completed")}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "8px 18px",
+                    borderRadius: 999,
+                    border: "1px solid rgba(31,119,78,0.25)",
+                    background: "rgba(31,119,78,0.06)",
+                    color: "#1F774E",
+                    fontFamily: F.u,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(31,119,78,0.14)";
+                    e.currentTarget.style.color = "#1F774E";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(31,119,78,0.06)";
+                    e.currentTarget.style.color = "#1F774E";
+                  }}
+                >
+                  <ListChecks size={15} color="#1F774E" /> See All Completed
+                </button>
+              </div>
             }
           />
           <div style={{ height: 8 }} />
@@ -470,6 +549,10 @@ export function BatchesSection({
               <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 4 }}>
                 A batch moves here once QC has passed on every saree you wove.
               </div>
+            </div>
+          ) : completedView === "table" ? (
+            <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: "auto" }}>
+              <DataTable columns={completedBatchColumns} data={completedBatches.slice(0, 4)} getRowId={b => b.batchId} view="table" />
             </div>
           ) : (
             <div

@@ -1,12 +1,13 @@
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useBatches } from "@/features/production";
 
-import { useWeaverPayments } from "@/features/weavers";
+import { useWeaverPayments, type WeaverPaymentRecord } from "@/features/weavers";
 
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { useCurrentWeaver } from "./useCurrentWeaver";
 import { Check, AlertTriangle } from "lucide-react";
+import { DataTable, ViewToggle, type ColumnDef, type ViewMode } from "@/shared/ui/data";
 
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
@@ -28,6 +29,8 @@ import { LoadingState, ErrorState } from "@/shared/ui/state";
 
 
 export function PaymentLedgerPage() {
+  const [chargesView, setChargesView] = useState<ViewMode>("table");
+  const [historyView, setHistoryView] = useState<ViewMode>("table");
   const { getPaymentsForWeaver, isLoading: paymentsLoading, isError: paymentsError, error: paymentsErrorObj, refetch: refetchPayments } = useWeaverPayments();
   const { getQcForWeaver, isLoading: qcLoading, isError: qcError, error: qcErrorObj, refetch: refetchQc } = useQc();
   useBatches();
@@ -138,6 +141,78 @@ export function PaymentLedgerPage() {
     },
   ], [totalSareesCount, passedSarees.length, grossChargesVal, deductionsVal, failedSarees.length, netAmountVal, currentMonthLabel, statIcons]);
 
+  const chargesByTypeColumns: ColumnDef<typeof chargesByType[number]>[] = [
+    {
+      id: "type", header: "Saree Type", priority: 1, accessor: t => t.name,
+      cell: (_v, t) => (
+        <div>
+          <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15.5, color: C.text }}>{t.name}</div>
+          <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{t.code}</div>
+        </div>
+      ),
+    },
+    {
+      id: "count", header: "Sarees", priority: 2, accessor: t => t.count,
+      cell: (_v, t) => <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{t.count} sarees</span>,
+    },
+    {
+      id: "rate", header: "Rate / Saree", priority: 2, accessor: t => t.rate,
+      cell: (_v, t) => <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 14, color: C.text }}>{fmtAmt(t.rate)}</span>,
+    },
+    {
+      id: "subtotal", header: "Subtotal", priority: 2, accessor: t => t.subtotal,
+      cell: (_v, t) => <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.burg }}>{fmtAmt(t.subtotal)}</span>,
+    },
+  ];
+
+  const paymentHistoryColumns: ColumnDef<WeaverPaymentRecord>[] = [
+    {
+      id: "date", header: "Payment Date", priority: 1, accessor: p => p.paymentDate || p.uploadedAt,
+      cell: (_v, p) => (
+        <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: C.text }}>
+          {new Date(p.paymentDate || p.uploadedAt).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
+        </span>
+      ),
+    },
+    {
+      id: "sarees", header: "Sarees", priority: 2, accessor: p => p.noOfSarees ?? 0,
+      cell: (_v, p) => <span style={{ fontFamily: F.u, fontSize: 13.5, color: C.muted }}>{p.noOfSarees ? `${p.noOfSarees} sarees` : "—"}</span>,
+    },
+    {
+      id: "amount", header: "Amount Paid", priority: 2, accessor: p => p.amountPaid,
+      cell: (_v, p) => <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.gold }}>{fmtAmt(p.amountPaid)}</span>,
+    },
+    {
+      id: "deduction", header: "Deduction", priority: 2, accessor: p => p.deduction ?? 0,
+      cell: (_v, p) => p.deduction ? <span style={{ fontFamily: F.m, fontSize: 12.5, color: C.crim }}>{fmtAmt(p.deduction)}</span> : <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted }}>—</span>,
+    },
+    {
+      id: "batchNo", header: "Batch No.", priority: 2, accessor: p => p.batchNo ?? "",
+      cell: (_v, p) => <span style={{ fontFamily: F.m, fontSize: 12.5, color: C.text }}>{p.batchNo || "—"}</span>,
+    },
+    {
+      id: "loomNumber", header: "Loom Number", priority: 2, accessor: p => p.loomNumber ?? "",
+      cell: (_v, p) => <span style={{ fontFamily: F.m, fontSize: 12.5, color: C.text }}>{p.loomNumber || "—"}</span>,
+    },
+    {
+      id: "firm", header: "Paid By", priority: 2, accessor: p => p.firmName,
+      cell: (_v, p) => <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.text }}>{p.firmName || "Beere Kesava Silks"}</span>,
+    },
+    {
+      id: "utr", header: "UTR Reference", priority: 2, accessor: p => p.utrNumber,
+      cell: (_v, p) => <span style={{ fontFamily: F.m, fontSize: 12.5, color: C.text, wordBreak: "break-all" }}>{p.utrNumber || "N/A"}</span>,
+    },
+    {
+      id: "status", header: "Status", priority: 2, type: "badge", accessor: () => "Paid",
+      cell: () => (
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(30,102,64,0.10)", color: C.green, borderRadius: 999, padding: "3px 10px" }}>
+          <Check size={12} color={C.green} />
+          <span style={{ fontFamily: F.m, fontSize: 11.5, color: C.green, fontWeight: 600 }}>Paid</span>
+        </span>
+      ),
+    },
+  ];
+
   if (weaverLoading || paymentsLoading) {
     return (
       <div style={{ paddingBottom: 32 }}>
@@ -224,7 +299,10 @@ export function PaymentLedgerPage() {
 
       {/* ── CHARGES BY SAREE TYPE ── */}
       <div style={{ margin: "24px 20px 0" }}>
-        <SectionHeading title="Charges by Saree Type" />
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+          <SectionHeading title="Charges by Saree Type" />
+          {chargesByType.length > 0 && <ViewToggle value={chargesView} onChange={setChargesView} />}
+        </div>
         <div style={{ fontFamily: F.u, fontSize: 13.5, color: C.muted, marginTop: 4, marginBottom: 16 }}>
           Your gross making charge this month, broken down by saree type — sarees × rate for that type.
         </div>
@@ -238,37 +316,13 @@ export function PaymentLedgerPage() {
             <div style={{ fontFamily: F.u, fontSize: 13.5, color: C.muted }}>No sarees QC'd yet this month.</div>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
-            {chargesByType.map((t) => (
-              <div key={t.code} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "18px 20px", boxShadow: "0 4px 16px rgba(44,24,16,0.06)" }}>
-                {/* Header row: Name + Subtotal */}
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 12, paddingBottom: 12, borderBottom: `1px solid ${C.bdr}` }}>
-                  <div>
-                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15.5, color: C.text }}>{t.name}</div>
-                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{t.code}</div>
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.burg }}>{fmtAmt(t.subtotal)}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 1 }}>Subtotal</div>
-                  </div>
-                </div>
-
-                {/* Details row: Quantity + Rate */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                  <div>
-                    <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted }}>Sarees: </span>
-                    <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{t.count} sarees</span>
-                  </div>
-                  <div>
-                    <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted }}>Rate / Saree: </span>
-                    <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 14, color: C.text }}>{fmtAmt(t.rate)}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, overflow: "auto", boxShadow: "0 4px 16px rgba(44,24,16,0.06)" }}>
+              <DataTable columns={chargesByTypeColumns} data={chargesByType} getRowId={t => t.code} view={chargesView} />
+            </div>
 
             {/* Total Summary Strip */}
-            <div style={{ background: C.cream, border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ background: C.cream, border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
               <div>
                 <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>Total Making Charges</div>
                 <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{totalSareesCount} sarees produced</div>
@@ -334,57 +388,23 @@ export function PaymentLedgerPage() {
 
       {/* ── PAYMENT HISTORY ── */}
       <div style={{ margin: "0 20px" }}>
-        <SectionHeading title="Payment History" />
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+          <SectionHeading title="Payment History" />
+          {myPayments.length > 0 && <ViewToggle value={historyView} onChange={setHistoryView} />}
+        </div>
         {myPayments.length === 0 ? (
           <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 18, padding: "24px 20px", textAlign: "center" as const }}>
             <div style={{ fontFamily: F.u, fontSize: 13.5, color: C.muted }}>No payment records uploaded yet.</div>
           </div>
         ) : (
-          myPayments.map((rec) => {
-            const dateStr = new Date(rec.paymentDate || rec.uploadedAt).toLocaleDateString("en-GB", { month: "short", year: "numeric" });
-            return (
-              <div key={rec.id} style={{ margin: "0 0 12px", background: "#FFF", border: `1px solid ${C.bdr}`, borderLeft: `4px solid ${C.green}`, borderRadius: 16, padding: "18px 20px", boxShadow: "0 4px 16px rgba(44,24,16,0.06)" }}>
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                  <div>
-                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: C.text }}>{dateStr}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 13.5, color: C.muted, marginTop: 2 }}>{rec.noOfSarees ? `${rec.noOfSarees} sarees` : "—"}</div>
-                  </div>
-                  <div style={{ textAlign: "right" as const }}>
-                    <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.gold }}>{fmtAmt(rec.amountPaid)}</div>
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 4, background: "rgba(30,102,64,0.10)", color: C.green, borderRadius: 999, padding: "3px 10px" }}>
-                      <Check size={12} color={C.green} />
-                      <span style={{ fontFamily: F.m, fontSize: 11.5, color: C.green, fontWeight: 600 }}>✓ Paid</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.bdr}`, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 12px" }}>
-                  <div>
-                    <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted, marginBottom: 2 }}>UTR Reference</div>
-                    <div style={{ fontFamily: F.m, fontSize: 12.5, color: C.text, wordBreak: "break-all" as const }}>{rec.utrNumber || "N/A"}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted, marginBottom: 2 }}>Paid By</div>
-                    <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.text }}>{rec.firmName || "Beere Kesava Silks"}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted, marginBottom: 2 }}>Batch No.</div>
-                    <div style={{ fontFamily: F.m, fontSize: 12.5, color: C.text }}>{rec.batchNo || "—"}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted, marginBottom: 2 }}>Loom Number</div>
-                    <div style={{ fontFamily: F.m, fontSize: 12.5, color: C.text }}>{rec.loomNumber || "—"}</div>
-                  </div>
-                  {!!rec.deduction && (
-                    <div>
-                      <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted, marginBottom: 2 }}>Deduction</div>
-                      <div style={{ fontFamily: F.m, fontSize: 12.5, color: C.crim }}>{fmtAmt(rec.deduction)}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })
+          <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 18, overflow: "auto", boxShadow: "0 4px 16px rgba(44,24,16,0.06)" }}>
+            <DataTable
+              columns={paymentHistoryColumns}
+              data={myPayments}
+              getRowId={p => p.id ?? `${p.paymentDate ?? p.uploadedAt}-${p.amountPaid}-${p.utrNumber ?? ""}`}
+              view={historyView}
+            />
+          </div>
         )}
       </div>
     </div>

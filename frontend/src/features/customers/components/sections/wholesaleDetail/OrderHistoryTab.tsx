@@ -26,7 +26,7 @@ export interface OrderHistoryTabProps {
 export function OrderHistoryTab({
   custOrders, custOrderMoney, wholesaleOrderDateFilter, setWholesaleOrderDateFilter, onViewBulkOrder,
 }: OrderHistoryTabProps) {
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
 
   const rows = custOrders.filter(o => matchesDateFilter(o.due, wholesaleOrderDateFilter));
   const rowsOrdered = rows.reduce((a, o) => a + o.total, 0);

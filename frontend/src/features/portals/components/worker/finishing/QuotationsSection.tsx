@@ -8,13 +8,14 @@ import { SectionCard } from "../primitives";
 import { StaffPickerModal } from "./StaffPickerModal";
 import { useSareeDetails, formatDate, formatWeight, type SareeDetail } from "./sareeDetails";
 import { Button } from "../../../../../shared/ui/primitives";
-import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { DataTable, ViewToggle, type ColumnDef } from "../../../../../shared/ui/data";
 import { Pagination, usePagination } from "../../../../../shared/ui/DataPagination";
 import { EntityCode, Money } from "@/shared/ui/domain";
 import { rupees } from "@/lib/domain/money";
 import { useAuth } from "../../../../../contexts/AuthContext";
 import { LoadingState, ErrorState } from "../../../../../shared/ui/state";
 import { STOPGAP_ACTING_USER_ID } from "../../../../../shared/api/purchase-requests";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 
 // ── Quotations — assign for finishing & receive back against a quotation ───────
 
@@ -140,14 +141,122 @@ function buildSareeColumns(): ColumnDef<QuotationRow>[] {
   ];
 }
 
-/** Two-line label/value used in the quotation header strip. */
-function Fact({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div style={{ minWidth: 0 }}>
-      <div style={{ fontFamily: F.u, fontSize: 10, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{label}</div>
-      <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis" }}>{value}</div>
-    </div>
-  );
+interface QuotationListRow {
+  q: Quotation;
+  received: number;
+  pendingSarees: QuotationSaree[];
+  inFinishingSarees: QuotationSaree[];
+  canAssign: boolean;
+  canReceive: boolean;
+  totalWeight: number;
+}
+
+function buildQuotationColumns(opts: {
+  isOpen: (id: string) => boolean;
+  onToggle: (id: string) => void;
+  onAssign: (id: string) => void;
+  onReceive: (q: Quotation) => void;
+}): ColumnDef<QuotationListRow>[] {
+  return [
+    {
+      id: "quotation", header: "Quotation", accessor: r => r.q.quotationNumber, priority: 1, sortable: true,
+      cell: (_v, r) => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{r.q.quotationNumber}</span>
+            <QuotationStatusBadge status={r.q.status} />
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)] flex-wrap">
+            <Building2 size={12} className="shrink-0" />
+            <span className="font-medium text-[var(--text-primary)]">{r.q.customerName}</span>
+            {r.q.customerCity && <span>· {r.q.customerCity}</span>}
+            {r.q.customerPhone && (
+              <span className="inline-flex items-center gap-1">· <Phone size={11} /> {r.q.customerPhone}</span>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "raised", header: "Raised", accessor: r => r.q.quotationDate, priority: 2, sortable: true,
+      cell: (_v, r) => (
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{formatDate(r.q.quotationDate)}</span>
+          <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>by {r.q.raisedBy}</span>
+        </div>
+      ),
+    },
+    {
+      id: "sarees", header: "Sarees", accessor: r => r.q.sarees.length, align: "end", priority: 2, sortable: true,
+      cell: (_v, r) => (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+          <span style={{ fontFamily: F.d, fontWeight: 800, fontSize: 14, color: C.text }}>
+            {r.received}/{r.q.sarees.length} <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 400, color: C.muted }}>received</span>
+          </span>
+          <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>{r.totalWeight > 0 ? formatWeight(r.totalWeight) : "weight n/a"}</span>
+        </div>
+      ),
+    },
+    {
+      id: "bulkOrder", header: "Bulk Order", accessor: r => r.q.bulkOrderRef ?? "", priority: 3,
+      cell: (_v, r) => r.q.bulkOrderRef
+        ? <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{r.q.bulkOrderRef}</span>
+        : <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>General stock</span>,
+    },
+    {
+      id: "total", header: "Total", accessor: r => r.q.grandTotal, type: "currency", align: "end", priority: 2, sortable: true,
+      cell: (_v, r) => (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+          <Money value={rupees(r.q.grandTotal)} />
+          <span style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>{r.q.applyGst ? `incl. ${r.q.gstPct}% GST` : "no GST"}</span>
+        </div>
+      ),
+    },
+    {
+      id: "finishing", header: "Finishing Staff", accessor: r => r.q.finishingStaffName ?? "", priority: 3,
+      cell: (_v, r) => r.q.finishingStaffName
+        ? <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{r.q.finishingStaffName}</span>
+        : <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Not assigned</span>,
+    },
+    {
+      id: "sareesDetail", header: "Details", accessor: r => r.q.sarees.length, priority: 3, width: 150,
+      cell: (_v, r) => {
+        const open = opts.isOpen(r.q.id);
+        return (
+          <button
+            type="button"
+            onClick={e => { e.stopPropagation(); opts.onToggle(r.q.id); }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.burg, background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
+          >
+            <Receipt size={13} color={C.muted} />
+            {open ? "Hide" : "Show"} sarees
+            <ChevronDown size={13} color={C.muted} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+          </button>
+        );
+      },
+    },
+    {
+      id: "actions", header: "Actions", accessor: () => null, type: "actions", priority: 2, width: 220,
+      cell: (_v, r) => (
+        (r.canAssign || r.canReceive) ? (
+          <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+            {r.canAssign && (
+              <Button variant="primary" iconLeft={Users} onClick={() => opts.onAssign(r.q.id)}
+                className="min-w-0 px-2 text-[11px] whitespace-nowrap justify-center h-[32px] rounded-lg bg-[#6E0F2D] hover:bg-[#6E0F2D]">
+                Assign {r.pendingSarees.length}
+              </Button>
+            )}
+            {r.canReceive && (
+              <Button variant="primary" iconLeft={ArrowDownToLine} onClick={() => opts.onReceive(r.q)}
+                className="min-w-0 px-2 text-[11px] whitespace-nowrap justify-center h-[32px] rounded-lg bg-gradient-to-br from-[#1E5A3A] to-[#1E6640] text-xs font-bold">
+                Receive {r.inFinishingSarees.length}
+              </Button>
+            )}
+          </div>
+        ) : <Dash />
+      ),
+    },
+  ];
 }
 
 export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
@@ -158,6 +267,8 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
   const [pickerFor, setPickerFor] = useState<string | null>(null);
   const [toast, setToast] = useState("");
   const [expandedSarees, setExpandedSarees] = useState<Set<string>>(new Set());
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
 
   const columns = useMemo(buildSareeColumns, []);
 
@@ -170,7 +281,13 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
     });
   };
 
-  const active = useMemo(() => quotations.filter(q => q.status !== "dispatched").sort((a, b) => b.createdAt - a.createdAt), [quotations]);
+  const active = useMemo(
+    () => quotations
+      .filter(q => q.status !== "dispatched")
+      .filter(q => matchesDateFilter(q.quotationDate, dateFilter))
+      .sort((a, b) => b.createdAt - a.createdAt),
+    [quotations, dateFilter]
+  );
   const pag = usePagination(active, 5);
 
   const handleAssign = (staff: { id: string; name: string }) => {
@@ -194,145 +311,84 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
     setToast(`${inFinishingIds.length} saree${inFinishingIds.length > 1 ? "s" : ""} received against ${q.quotationNumber}`);
   };
 
+  const listRows: QuotationListRow[] = useMemo(() => pag.pageItems.map(q => {
+    const received = q.sarees.filter(s => s.finishingStatus === "received").length;
+    const pendingSarees = q.sarees.filter(s => s.finishingStatus === "pending");
+    const inFinishingSarees = q.sarees.filter(s => s.finishingStatus === "in-finishing");
+    const rows: QuotationRow[] = q.sarees.map(s => ({
+      ...s,
+      detail: details.get(s.sareeId),
+      price: q.prices[s.sareeId],
+    }));
+    const totalWeight = rows.reduce((sum, r) => sum + (r.detail?.weightG ?? 0), 0);
+    return {
+      q, received, pendingSarees, inFinishingSarees,
+      canAssign: pendingSarees.length > 0,
+      canReceive: inFinishingSarees.length > 0,
+      totalWeight,
+    };
+  }), [pag.pageItems, details]);
+
+  const listColumns = useMemo(() => buildQuotationColumns({
+    isOpen: id => expandedSarees.has(id),
+    onToggle: toggleSareesExpanded,
+    onAssign: id => setPickerFor(id),
+    onReceive: handleReceive,
+  }), [expandedSarees]);
+
   return (
     <SectionCard
       icon={FileText}
       title="Quotations for Finishing"
       subtitle="Orders raised from Inventory that need finishing work."
       actions={
-        <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
-          {active.length} active
-        </span>
+        <div className="flex items-center gap-2">
+          <ViewToggle value={viewMode} onChange={setViewMode} />
+          <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
+            {active.length} active
+          </span>
+        </div>
       }
     >
+      <div style={{ marginBottom: 14, overflowX: "auto" }} className="section-nav-scroll">
+        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+      </div>
+
       {isLoading ? (
         <LoadingState variant="skeleton" rows={4} />
       ) : isError ? (
         <ErrorState error={error} onRetry={refetch} />
       ) : active.length === 0 ? (
         <div style={{ padding: "24px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
-          No quotations awaiting finishing.
+          {dateFilter.mode === "all" ? "No quotations awaiting finishing." : "No quotations match this timeline."}
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {active.map(q => {
-            const received = q.sarees.filter(s => s.finishingStatus === "received").length;
-            const pendingSarees = q.sarees.filter(s => s.finishingStatus === "pending");
-            const inFinishingSarees = q.sarees.filter(s => s.finishingStatus === "in-finishing");
-            const canAssign = pendingSarees.length > 0;
-            const canReceive = inFinishingSarees.length > 0;
-            const isOpen = expandedSarees.has(q.id);
-            const rows: QuotationRow[] = q.sarees.map(s => ({
-              ...s,
-              detail: details.get(s.sareeId),
-              price: q.prices[s.sareeId],
-            }));
-            const totalWeight = rows.reduce((sum, r) => sum + (r.detail?.weightG ?? 0), 0);
-
-            return (
-              <div key={q.id} style={{ border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 16, overflow: "hidden", background: "#FFF", boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)" }}>
-                {/* Header */}
-                <div className="flex items-start gap-3 p-3 sm:p-4 bg-[rgba(110,15,45,0.03)] border-b border-[rgba(110,15,45,0.08)] w-full">
-                  <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                    <FileText size={20} color={C.burg} />
-                  </div>
-                  <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 w-full flex-wrap">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{q.quotationNumber}</span>
-                        <QuotationStatusBadge status={q.status} />
-                      </div>
-                      <div style={{ fontFamily: F.d, fontWeight: 800, fontSize: 16, color: C.text }} className="shrink-0">
-                        {received}/{q.sarees.length} <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 400, color: C.muted }}>received</span>
+          <div className="overflow-x-auto section-nav-scroll">
+            <div className={isMobile ? "min-w-[900px]" : undefined}>
+              <DataTable
+                columns={listColumns}
+                data={listRows}
+                getRowId={r => r.q.id}
+                view={viewMode}
+                expandedIds={expandedSarees}
+                renderExpandedRow={r => (
+                  <div style={{ padding: isMobile ? 10 : 12, background: "rgba(110,15,45,0.015)" }}>
+                    <div className="overflow-x-auto section-nav-scroll">
+                      <div className={isMobile ? "min-w-[900px]" : "min-w-[1040px]"}>
+                        <DataTable
+                          columns={columns}
+                          data={r.q.sarees.map(s => ({ ...s, detail: details.get(s.sareeId), price: r.q.prices[s.sareeId] }))}
+                          getRowId={sr => sr.sareeId}
+                          density="compact"
+                        />
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)] flex-wrap">
-                      <Building2 size={12} className="shrink-0" />
-                      <span className="font-medium text-[var(--text-primary)]">{q.customerName}</span>
-                      {q.customerCity && <span>· {q.customerCity}</span>}
-                      {q.customerPhone && (
-                        <span className="inline-flex items-center gap-1">· <Phone size={11} /> {q.customerPhone}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quotation facts — the raw ISO timestamp used to be printed verbatim here */}
-                <div
-                  className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"
-                  style={{ gap: 12, padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)`, background: "#FFF" }}
-                >
-                  <Fact label="Raised on" value={formatDate(q.quotationDate)} />
-                  <Fact label="Raised by" value={q.raisedBy} />
-                  <Fact label="Sarees" value={`${q.sarees.length} · ${totalWeight > 0 ? formatWeight(totalWeight) : "weight n/a"}`} />
-                  <Fact label="Bulk order" value={q.bulkOrderRef ?? "General stock"} />
-                  <Fact
-                    label={q.applyGst ? `Total (incl. ${q.gstPct}% GST)` : "Total"}
-                    value={<Money value={rupees(q.grandTotal)} />}
-                  />
-                  <Fact
-                    label="Finishing"
-                    value={q.finishingStaffName ?? <span style={{ color: C.muted, fontWeight: 400 }}>Not assigned</span>}
-                  />
-                </div>
-
-                {/* Sarees — collapsed by default so a big quotation doesn't eat the whole page */}
-                <div>
-                  <div
-                    onClick={() => toggleSareesExpanded(q.id)}
-                    role="button" tabIndex={0} aria-expanded={isOpen}
-                    onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleSareesExpanded(q.id); } }}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "10px 16px", cursor: "pointer", background: isOpen ? "rgba(110,15,45,0.02)" : "transparent" }}
-                  >
-                    <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, display: "inline-flex", alignItems: "center", gap: 7 }}>
-                      <Receipt size={14} color={C.muted} />
-                      {q.sarees.length} saree{q.sarees.length !== 1 ? "s" : ""} in this quotation
-                      {pendingSarees.length > 0 && (
-                        <span style={{ ...GOLD, borderRadius: 999, fontSize: 11 }}>{pendingSarees.length} pending</span>
-                      )}
-                      {inFinishingSarees.length > 0 && (
-                        <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: "#B85C00", background: "rgba(248,140,0,0.12)", border: "1px solid rgba(248,140,0,0.28)", borderRadius: 999, padding: "3px 9px" }}>
-                          {inFinishingSarees.length} in finishing
-                        </span>
-                      )}
-                    </span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.burg }}>{isOpen ? "Hide" : "Show"}</span>
-                      <ChevronDown size={14} color={C.muted} style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
-                    </div>
-                  </div>
-
-                  {isOpen && (
-                    <div style={{ borderTop: `1px solid rgba(110,15,45,0.06)`, padding: isMobile ? 10 : 12, background: "rgba(110,15,45,0.015)" }}>
-                      <div className="overflow-x-auto section-nav-scroll">
-                        <div className={isMobile ? "min-w-[900px]" : "min-w-[1040px]"}>
-                          <DataTable columns={columns} data={rows} getRowId={r => r.sareeId} density="compact" />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions */}
-                {(canAssign || canReceive) && (
-                  <div className="flex items-center gap-1.5 sm:gap-2 p-3 sm:p-4 border-t border-[rgba(110,15,45,0.08)] w-full flex-nowrap min-w-0">
-                    {canAssign && (
-                      <Button variant="primary" iconLeft={Users} onClick={() => setPickerFor(q.id)}
-                        className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center h-[38px] rounded-xl bg-[#6E0F2D] hover:bg-[#6E0F2D]">
-                        Assign {pendingSarees.length} to Finishing
-                      </Button>
-                    )}
-                    {canReceive && (
-                      <Button variant="primary" iconLeft={ArrowDownToLine} onClick={() => handleReceive(q)}
-                        className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center h-[38px] rounded-xl bg-gradient-to-br from-[#1E5A3A] to-[#1E6640] text-xs font-bold">
-                        Receive {inFinishingSarees.length} Back
-                      </Button>
-                    )}
                   </div>
                 )}
-              </div>
-            );
-          })}
+              />
+            </div>
+          </div>
           <Pagination
             page={pag.page}
             pageCount={pag.pageCount}

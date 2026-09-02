@@ -84,7 +84,7 @@ export function DispatchHistorySection({ dispatches, firms, onResume, onDelete, 
 }
 
 function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { rows: DispatchRecord[]; firms: { id: string; firmName: string }[]; onResume: (d: DispatchRecord) => void; onDelete?: (d: DispatchRecord) => void; onViewInvoice?: (d: DispatchRecord) => void; }) {
-  const [view, setView] = useState<"card" | "table">("card");
+  const [view, setView] = useState<"card" | "table">("table");
   const pag = usePagination(rows, 10);
   const { customers } = useCustomers();
   const { isLoading, isError, error, refetch } = useFinishing();

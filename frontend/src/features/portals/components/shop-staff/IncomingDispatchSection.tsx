@@ -11,7 +11,7 @@ import {
 } from "../../../../shared/api/shop-receipts";
 import { Button } from "../../../../shared/ui/primitives";
 import { EntityCode } from "../../../../shared/ui/domain";
-import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
+import { DataTable, ViewToggle, type ColumnDef, type DataView } from "../../../../shared/ui/data";
 
 /**
  * Consignments the factory has dispatched to this shop that nobody at the
@@ -52,8 +52,54 @@ const awaiting = (d: PendingShopDispatch): number =>
 export function IncomingDispatchSection() {
   const [receiving, setReceiving] = useState<PendingShopDispatch | null>(null);
   const [confirmed, setConfirmed] = useState<string | null>(null);
+  const [dataView, setDataView] = useState<DataView>("table");
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  const columns: ColumnDef<PendingShopDispatch>[] = [
+    {
+      id: "consignment", header: "Consignment", priority: 1, sortable: true,
+      accessor: d => consignmentLabel(d),
+      cell: (_v, d) => (
+        <span style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
+          <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{consignmentLabel(d)}</span>
+          {d.receiptStatus === "PARTIALLY_RECEIVED" && (
+            <Chip label="Partly received" color="#845E04" bg="rgba(200,155,71,0.18)" />
+          )}
+        </span>
+      ),
+    },
+    {
+      id: "awaiting", header: "Awaiting", type: "text", priority: 1, sortable: true,
+      accessor: d => awaiting(d),
+      cell: (_v, d) => (
+        <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
+          {awaiting(d)} of {d.sarees.length} saree(s)
+        </span>
+      ),
+    },
+    {
+      id: "dispatched", header: "Dispatched", type: "date", priority: 2, sortable: true,
+      accessor: d => d.dispatchDate,
+      cell: (_v, d) => <span style={{ fontFamily: F.u, fontSize: 13 }}>{fmtDate(d.dispatchDate)}</span>,
+    },
+    {
+      id: "dispatchedBy", header: "Dispatched by", priority: 3,
+      accessor: d => d.dispatchedBy ? `${d.dispatchedBy.firstName} ${d.dispatchedBy.lastName}`.trim() : "—",
+    },
+    {
+      id: "transport", header: "Transport", priority: 3,
+      accessor: d => [d.lrNumber ? `LR ${d.lrNumber}` : null, d.transportCompany].filter(Boolean).join(" · ") || "—",
+    },
+    {
+      id: "actions", header: "Actions", type: "actions", accessor: () => null,
+      cell: (_v, d) => (
+        <Button variant="primary" size="md" iconLeft={PackageCheck} onClick={() => setReceiving(d)}>
+          Receive
+        </Button>
+      ),
+    },
+  ];
+
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: shopReceiptKeys.pending,
     queryFn: () => shopReceiptsApi.listPending(),
   });
@@ -67,9 +113,12 @@ export function IncomingDispatchSection() {
         subtitle="Sarees dispatched to this shop, waiting to be received at the counter"
         bodyPadding="20px"
         actions={
-          pending.length > 0 ? (
-            <Chip label={`${pending.length} to receive`} color="#845E04" bg="rgba(200,155,71,0.18)" />
-          ) : undefined
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {pending.length > 0 && (
+              <Chip label={`${pending.length} to receive`} color="#845E04" bg="rgba(200,155,71,0.18)" />
+            )}
+            <ViewToggle value={dataView} onChange={setDataView} />
+          </div>
         }
       >
         {confirmed && (
@@ -89,51 +138,19 @@ export function IncomingDispatchSection() {
           </div>
         )}
 
-        {isLoading && <LoadingState label="Loading incoming consignments…" />}
-        {isError && (
-          <ErrorState error={error} onRetry={() => void refetch()} />
-        )}
-        {!isLoading && !isError && pending.length === 0 && (
-          <EmptyState
-            icon="goodsReceipt"
-            title="Nothing waiting"
-            description="Every consignment sent to this shop has been received."
-          />
-        )}
-
-        {!isLoading && !isError && pending.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {pending.map(d => (
-              <div
-                key={d.id}
-                style={{
-                  display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", justifyContent: "space-between",
-                  border: `1px solid ${C.bdr}`, borderRadius: 12, background: C.white, padding: "12px 14px",
-                }}
-              >
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>
-                      {consignmentLabel(d)}
-                    </span>
-                    {d.receiptStatus === "PARTIALLY_RECEIVED" && (
-                      <Chip label="Partly received" color="#845E04" bg="rgba(200,155,71,0.18)" />
-                    )}
-                  </div>
-                  <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted, marginTop: 3 }}>
-                    {awaiting(d)} of {d.sarees.length} saree(s) awaiting receipt · dispatched {fmtDate(d.dispatchDate)}
-                    {d.dispatchedBy ? ` by ${d.dispatchedBy.firstName} ${d.dispatchedBy.lastName}`.trimEnd() : ""}
-                    {d.lrNumber ? ` · LR ${d.lrNumber}` : ""}
-                    {d.transportCompany ? ` · ${d.transportCompany}` : ""}
-                  </div>
-                </div>
-                <Button variant="primary" size="md" iconLeft={PackageCheck} onClick={() => setReceiving(d)}>
-                  Receive
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
+        <DataTable
+          columns={columns}
+          data={pending}
+          getRowId={d => d.id}
+          caption="Consignments awaiting receipt at this shop"
+          view={dataView}
+          density="compact"
+          loading={isLoading}
+          error={isError}
+          onRetry={() => void refetch()}
+          emptyTitle="Nothing waiting"
+          emptyDescription="Every consignment sent to this shop has been received."
+        />
       </SectionCard>
 
       {receiving && (

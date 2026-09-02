@@ -201,7 +201,7 @@ export function FinishingStaffSection({
   setOpen,
   returns,
 }: FinishingStaffSectionProps) {
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
   const pag = usePagination(filteredRows, 10);
 

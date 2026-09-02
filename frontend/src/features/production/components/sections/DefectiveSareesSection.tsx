@@ -14,6 +14,7 @@ import { qcApi } from "../../../../shared/api/qc";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { useBatches } from "@/features/production";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { ViewToggle, type DataView } from "../../../../shared/ui/data/ViewToggle";
 import { rupees, formatMoney, addMoney, type Paise } from "@/lib/domain/money";
 import { EntityCode } from "@/shared/ui/domain";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
@@ -58,6 +59,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
   const [dlDefectType, setDlDefectType] = useState("All Defect Types");
   const [dlPeriod, setDlPeriod] = useState("This Month");
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
+  const [view, setView] = useState<DataView>("table");
 
   const { data: qcRecords = [], isLoading: qcLoading, isError: qcError } = useQuery({
     queryKey: ["qc", "all"],
@@ -292,13 +294,18 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                   ))}
                 </Select>
               </div>
+              <ViewToggle value={view} onChange={setView} />
+            </div>
+
+            <div className="md:hidden flex justify-end mb-3">
+              <ViewToggle value={view} onChange={setView} />
             </div>
 
             {/* Table View */}
             <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 24px rgba(74,6,27,0.07)", overflow: "hidden", marginBottom: 16 }}>
               <div className="overflow-x-auto w-full">
                 <DataTable
-                  responsive={false}
+                  view={view}
                   columns={columns}
                   data={filteredData}
                   getRowId={r => r.id}

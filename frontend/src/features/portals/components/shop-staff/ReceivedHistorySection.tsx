@@ -7,7 +7,7 @@ import { consignmentLabel } from "./ReceiveDispatchModal";
 import { shopReceiptsApi, shopReceiptKeys, type ShopReceipt, type ShopReceiptItemStatus } from "../../../../shared/api/shop-receipts";
 import { Input } from "../../../../shared/ui/primitives";
 import { EntityCode } from "../../../../shared/ui/domain";
-import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { DataTable, ViewToggle, type ColumnDef, type DataView } from "../../../../shared/ui/data";
 import { DateFilterBar, DEFAULT_DATE_FILTER, matchesDateFilter, type DateFilterState } from "../../../../shared/ui/DateFilterBar";
 
 /**
@@ -44,6 +44,7 @@ export function ReceivedHistorySection() {
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [dataView, setDataView] = useState<DataView>("table");
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: shopReceiptKeys.history,
@@ -150,8 +151,9 @@ export function ReceivedHistorySection() {
           />
         </div>
 
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" as const }}>
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+          <ViewToggle value={dataView} onChange={setDataView} />
         </div>
 
         <DataTable
@@ -160,7 +162,7 @@ export function ReceivedHistorySection() {
           getRowId={r => r.id}
           caption="Shop goods receipts raised at this counter"
           density="compact"
-          responsive
+          view={dataView}
           pagination
           loading={isLoading}
           error={isError}

@@ -1,13 +1,11 @@
 import { useMemo, useState } from "react";
-import { CheckCircle2, ImageOff, LayoutGrid, LayoutList } from "lucide-react";
+import { CheckCircle2, ImageOff } from "lucide-react";
 import { T, F, PassedLogItem } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";
-import { WorkerQCPassedCard } from "./WorkerQCPassedCard";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
-import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { DataTable, ViewToggle, type ColumnDef } from "../../../../shared/ui/data";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { EntityCode } from "../../../../shared/ui/domain";
-import { Button } from "../../../../shared/ui/primitives";
 import { StaffFilterSelect } from "../../../../shared/ui/StaffFilterSelect";
 import { useAuth } from "../../../../contexts/AuthContext";
 
@@ -27,8 +25,7 @@ export function WorkerQCCompletedTodaySection({ items, isDesktop, isTablet }: Wo
   );
   const filteredItems = items.filter(p => !canFilterByStaff || !staffFilter || p.inspectedBy === staffFilter);
 
-  const [viewMode, setViewMode] = useState<"card" | "table">("table");
-  const cols = isDesktop ? "repeat(auto-fill, minmax(280px, 1fr))" : isTablet ? "repeat(2, 1fr)" : "1fr";
+  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const ITEMS_PER_PAGE = isDesktop ? 20 : isTablet ? 10 : 5;
   const pag = usePagination(filteredItems, ITEMS_PER_PAGE);
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
@@ -128,32 +125,7 @@ export function WorkerQCCompletedTodaySection({ items, isDesktop, isTablet }: Wo
       >
         {items.length > 0 && (
           <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-            <div className="flex items-center border border-[#E8DCC4] rounded-[12px] overflow-hidden bg-white shrink-0">
-              <Button
-                type="button"
-                onClick={() => setViewMode("card")}
-                variant="ghost"
-                className={`h-auto rounded-none gap-1.5 py-1.5 px-3.5 text-[12px] font-bold ${
-                  viewMode === "card"
-                    ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                    : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-                }`}
-              >
-                <LayoutGrid size={14} /> Card View
-              </Button>
-              <Button
-                type="button"
-                onClick={() => setViewMode("table")}
-                variant="ghost"
-                className={`h-auto rounded-none gap-1.5 py-1.5 px-3.5 text-[12px] font-bold ${
-                  viewMode === "table"
-                    ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                    : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-                }`}
-              >
-                <LayoutList size={14} /> Table View
-              </Button>
-            </div>
+            <ViewToggle value={viewMode} onChange={setViewMode} />
             {canFilterByStaff && (
               <StaffFilterSelect names={staffNames} value={staffFilter} onChange={(v) => { setStaffFilter(v); pag.setPage(1); }} />
             )}
@@ -166,21 +138,24 @@ export function WorkerQCCompletedTodaySection({ items, isDesktop, isTablet }: Wo
           </div>
         ) : (
           <>
-            {viewMode === "card" ? (
-              <div style={{ display: "grid", gridTemplateColumns: cols, gap: 16 }}>
-                {pag.pageItems.map((p) => (
-                  <WorkerQCPassedCard key={p.recordId || p.id} id={p.id} weaver={p.weaver} date={p.date} sareeType={p.sareeType} payable={p.payable} inspectedBy={p.inspectedBy} photoUrl={p.photoUrl} onViewPhoto={setZoomImage} />
-                ))}
-              </div>
-            ) : (
+            {viewMode === "table" ? (
               <div className="w-full overflow-x-auto" style={{ border: `1.5px solid ${T.bdr}`, borderRadius: 12, overflow: "hidden" }}>
                 <DataTable
                   columns={columns}
                   data={pag.pageItems}
                   getRowId={p => p.recordId || p.id}
+                  view="table"
                   pagination={false}
                 />
               </div>
+            ) : (
+              <DataTable
+                columns={columns}
+                data={pag.pageItems}
+                getRowId={p => p.recordId || p.id}
+                view="cards"
+                pagination={false}
+              />
             )}
 
             <div className="mt-6 pt-4 border-t border-[#EAE5E1]">

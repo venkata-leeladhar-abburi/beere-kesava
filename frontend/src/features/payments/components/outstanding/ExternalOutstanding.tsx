@@ -15,7 +15,7 @@ interface SupplierRollup { supplier: string; purchases: number; bought: number; 
 // ── External purchases outstanding — purchase-wise, per supplier ─────────────
 export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: UnifiedSaree[]; search: string; ageFilter: AgeKey }) {
   const [open, setOpen] = useState<string | null>(null);
-  const [supplierViewMode, setSupplierViewMode] = useState<"card" | "table">("card");
+  const [supplierViewMode, setSupplierViewMode] = useState<"card" | "table">("table");
   const all = useMemo(() => purchaseOutstanding(sarees), [sarees]);
 
   const rows = useMemo(() => {

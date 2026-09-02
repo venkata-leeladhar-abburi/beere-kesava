@@ -13,7 +13,7 @@ const RANK_PAGE = 5;
 function RankTable({ title, sub, ranks, unitLabel, icon }: { title: string; sub: string; ranks: SellerRank[]; unitLabel: string; icon: LucideIcon }) {
   const max = Math.max(1, ...ranks.map(r => r.sold));
   const [shown, setShown] = useState(RANK_PAGE);
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
 
   const visible = ranks.slice(0, shown);
   const remaining = ranks.length - visible.length;

@@ -161,7 +161,7 @@ export function WeaverMakingChargesSection() {
   const isError = weaversError || paymentsError || productionRowsError;
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [view, setView] = useState<"card" | "list" | "table">("card");
+  const [view, setView] = useState<"card" | "list" | "table">("table");
   const [search, setSearch] = useState("");
   const [selWeaver, setSelWeaver] = useState<WeaverRecord | null>(null);
 

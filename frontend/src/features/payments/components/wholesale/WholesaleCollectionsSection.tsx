@@ -76,7 +76,7 @@ export function WholesaleCollectionsSection() {
         .filter(inv => inv.customer?.type === "WHOLESALE")
         .map(backendInvoiceToFrontend),
   });
-  const [view, setView] = useState<"card" | "list" | "table">("card");
+  const [view, setView] = useState<"card" | "list" | "table">("table");
   const [search, setSearch] = useState("");
 
   const [downloadModal, setDownloadModal] = useState(false);

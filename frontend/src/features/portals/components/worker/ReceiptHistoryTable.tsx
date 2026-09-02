@@ -84,7 +84,7 @@ interface ReceiptHistoryTableProps {
 export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compact = false }: ReceiptHistoryTableProps) {
   const [historySearch, setHistorySearch] = useState("");
   const [historyDateFilter, setHistoryDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const [tagsRecord, setTagsRecord] = useState<ReceiptRecord | null>(null);
 
   const { data: rawGrns } = useQuery({

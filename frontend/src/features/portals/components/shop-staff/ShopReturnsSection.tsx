@@ -8,7 +8,7 @@ import { C, F, Chip, SectionCard } from "./theme";
 import { salesApi, type ReturnStockItem } from "../../../../shared/api/sales";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
 import { Button, IconButton, Input, MultiSelect } from "../../../../shared/ui/primitives";
-import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { DataTable, ViewToggle, type ColumnDef, type DataView } from "../../../../shared/ui/data";
 import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
 import { DateFilterBar, DEFAULT_DATE_FILTER, matchesDateFilter, type DateFilterState } from "../../../../shared/ui/DateFilterBar";
@@ -104,6 +104,7 @@ export function ShopReturnsSection() {
   const [zoom, setZoom] = useState<ZoomImage | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sendError, setSendError] = useState<string | null>(null);
+  const [dataView, setDataView] = useState<DataView>("table");
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["return-stock"],
@@ -411,6 +412,7 @@ export function ShopReturnsSection() {
                   Clear filters
                 </Button>
               )}
+              <ViewToggle value={dataView} onChange={setDataView} />
             </div>
           </div>
 
@@ -471,7 +473,7 @@ export function ShopReturnsSection() {
               getRowId={r => r.returnRef}
               caption="Sarees returned to this shop"
               density="compact"
-              responsive
+              view={dataView}
               pagination
               isFiltered={filtersActive}
               onClearFilters={clearFilters}

@@ -452,7 +452,7 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
 
   const totalSarees = grouped.reduce((s, r) => s + r.noOfSarees, 0);
 
-  const [prodViewMode, setProdViewMode] = useState<"card" | "table">("card");
+  const [prodViewMode, setProdViewMode] = useState<"card" | "table">("table");
 
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "20px 22px", marginBottom: 28, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>

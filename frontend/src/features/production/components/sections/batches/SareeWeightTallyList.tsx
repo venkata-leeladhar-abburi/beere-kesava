@@ -6,6 +6,8 @@ import type { SareeTypeRecord } from "@/features/pricing";
 import { Button, NumberInput } from "../../../../../shared/ui/primitives";
 import { EntityCode } from "@/shared/ui/domain";
 import { ImageZoomModal, type ZoomImage } from "../../../../../shared/ui/ImageZoomModal";
+import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { ViewToggle, type DataView } from "../../../../../shared/ui/data/ViewToggle";
 
 function TallyPhotoThumb({ url, sareeId, onView }: { url: string | null | undefined; sareeId: string | null; onView: (image: ZoomImage) => void }) {
   return url ? (
@@ -187,34 +189,38 @@ function EditRow({
   );
 }
 
-export function SareeWeightTallyList({
+interface TallyDerived {
+  rate: SareeTypeRecord | undefined;
+  weighed: boolean;
+  expectedWeight: number;
+  expectedWarpG: number;
+  expectedReshamG: number;
+  expectedJariReels: number;
+  short: boolean;
+  key: string;
+  busy: boolean;
+}
+
+function TallyCardList({
   items,
   getSareeTypeByCode,
   onToggleTally,
+  editingKey,
+  setEditingKey,
   onSaveCorrection,
   busyKey,
+  setZoomImage,
 }: {
   items: TallyRowItem[];
   getSareeTypeByCode: (code: string) => SareeTypeRecord | undefined;
   onToggleTally: (item: TallyRowItem, tallied: boolean) => void;
-  /** Persists an admin correction to the received weight/material values, then marks the row tallied. */
+  editingKey: string | null;
+  setEditingKey: (key: string | null) => void;
   onSaveCorrection: (item: TallyRowItem, correction: TallyCorrection) => void;
-  /** `${batchId}-${serial}` of the row currently being saved, if any. */
   busyKey?: string | null;
+  setZoomImage: (image: ZoomImage | null) => void;
 }) {
-  const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
-
-  if (items.length === 0) {
-    return (
-      <div style={{ textAlign: "center" as const, padding: "28px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-        No sarees to tally yet.
-      </div>
-    );
-  }
-
   return (
-    <>
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {items.map(item => {
         const rate = item.sareeTypeCode ? getSareeTypeByCode(item.sareeTypeCode) : undefined;
@@ -351,7 +357,226 @@ export function SareeWeightTallyList({
         );
       })}
     </div>
-    <ImageZoomModal image={zoomImage} onClose={() => setZoomImage(null)} />
+  );
+}
+
+function tallyKey(item: TallyRowItem): string {
+  return `${item.batchId}-${item.serial}`;
+}
+
+function deriveTally(item: TallyRowItem, getSareeTypeByCode: (code: string) => SareeTypeRecord | undefined, busyKey: string | null | undefined): TallyDerived {
+  const rate = item.sareeTypeCode ? getSareeTypeByCode(item.sareeTypeCode) : undefined;
+  const weighed = item.actualWeight !== null;
+  const expectedWeight = rate ? Number(rate.stdWeight) || 0 : 0;
+  const expectedWarpG = rate ? Number(rate.warpWeight) || 0 : 0;
+  const expectedReshamG = rate ? Number(rate.reshamWeight) || 0 : 0;
+  const expectedJariReels = rate ? Number(rate.jariWeight) || 0 : 0;
+  const short = weighed && expectedWeight > 0 && (item.actualWeight ?? 0) < expectedWeight * 0.95;
+  const key = tallyKey(item);
+  const busy = busyKey === key;
+  return { rate, weighed, expectedWeight, expectedWarpG, expectedReshamG, expectedJariReels, short, key, busy };
+}
+
+function TallyTableView({
+  items,
+  getSareeTypeByCode,
+  onToggleTally,
+  editingKey,
+  setEditingKey,
+  onSaveCorrection,
+  busyKey,
+  setZoomImage,
+}: {
+  items: TallyRowItem[];
+  getSareeTypeByCode: (code: string) => SareeTypeRecord | undefined;
+  onToggleTally: (item: TallyRowItem, tallied: boolean) => void;
+  editingKey: string | null;
+  setEditingKey: (key: string | null) => void;
+  onSaveCorrection: (item: TallyRowItem, correction: TallyCorrection) => void;
+  busyKey?: string | null;
+  setZoomImage: (image: ZoomImage | null) => void;
+}) {
+  const columns: ColumnDef<TallyRowItem>[] = [
+    {
+      id: "saree", header: "Saree", accessor: item => item.serial, priority: 1,
+      cell: (_v, item) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <TallyPhotoThumb url={item.receivedPhotoUrl} sareeId={item.sareeId} onView={setZoomImage} />
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const }}>
+              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>Saree {item.serial}</span>
+              {item.sareeId && <EntityCode type="saree" value={item.sareeId} size="sm" />}
+            </div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
+              {item.weaverLoom ? `Loom ${item.weaverLoom} · ` : ""}{item.weaverName || "Unassigned"}
+            </div>
+            {item.bulkOrderLabel && (
+              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: "#047857" }}>↳ Order: {item.bulkOrderLabel}</div>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "qc", header: "QC", accessor: item => item.qcPassed ?? null, priority: 3,
+      cell: (_v, item) => item.qcPassed === undefined ? <span style={{ color: T.taupe }}>—</span> : (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider ${item.qcPassed ? "bg-emerald-100/70 text-emerald-800 border border-emerald-300/50" : "bg-amber-100/70 text-amber-800 border border-amber-300/50"}`}>
+          {item.qcPassed ? "QC PASSED" : "IN PROGRESS"}
+        </span>
+      ),
+    },
+    {
+      id: "weight", header: "Weight (g)", accessor: item => item.actualWeight,
+      cell: (_v, item) => {
+        const { expectedWeight, short } = deriveTally(item, getSareeTypeByCode, busyKey);
+        return (
+          <span style={{ color: short ? "#be123c" : T.luxuryBrown, fontWeight: 700 }}>
+            {item.actualWeight === null ? "—" : trimNum(item.actualWeight, 0)}
+            {expectedWeight > 0 && <span style={{ fontSize: 11, fontWeight: 400, color: T.taupe }}> / {trimNum(expectedWeight, 0)}g</span>}
+          </span>
+        );
+      },
+    },
+    {
+      id: "warp", header: "Warp (g)", accessor: item => item.actualWarpG, priority: 3,
+      cell: (_v, item) => <span>{item.actualWarpG === null ? "—" : trimNum(item.actualWarpG, 0)}</span>,
+    },
+    {
+      id: "resham", header: "Resham (g)", accessor: item => item.actualReshamG, priority: 3,
+      cell: (_v, item) => <span>{item.actualReshamG === null ? "—" : trimNum(item.actualReshamG, 0)}</span>,
+    },
+    {
+      id: "jari", header: "Jari (reels)", accessor: item => item.actualJariReels, priority: 3,
+      cell: (_v, item) => <span>{item.actualJariReels === null ? "—" : trimNum(item.actualJariReels, 2)}</span>,
+    },
+    {
+      id: "status", header: "Status", accessor: item => item.tallied ?? false, type: "status",
+      cell: (_v, item) => {
+        const { weighed, short } = deriveTally(item, getSareeTypeByCode, busyKey);
+        if (!weighed) return <span style={{ fontSize: 12, color: T.taupe, fontStyle: "italic" }}>Not weighed yet</span>;
+        if (short && !item.tallied) return <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, color: "#be123c" }}><AlertTriangle size={13} /> Shortfall</span>;
+        if (item.tallied && item.talliedBy) return <span style={{ fontSize: 12, color: T.taupe }}>Tallied by {item.talliedBy}</span>;
+        return <span style={{ color: T.taupe }}>—</span>;
+      },
+    },
+    {
+      id: "action", header: "Action", type: "actions", accessor: () => null,
+      cell: (_v, item) => {
+        const { weighed, busy, key } = deriveTally(item, getSareeTypeByCode, busyKey);
+        return (
+          <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+            <Button
+              onClick={() => setEditingKey(editingKey === key ? null : key)}
+              variant="tertiary" size="sm" iconLeft={Pencil}
+              disabled={!weighed || busy}
+              title={!weighed ? "Worker Staff hasn't weighed this saree yet" : "Correct the recorded weight/material"}
+            >
+              Edit
+            </Button>
+            {item.tallied ? (
+              <Button onClick={() => onToggleTally(item, false)} variant="secondary" size="sm" iconLeft={CheckCircle2} disabled={busy}>
+                Tallied
+              </Button>
+            ) : (
+              <Button
+                onClick={() => onToggleTally(item, true)}
+                variant="secondary" size="sm" iconLeft={Scale}
+                disabled={!weighed || busy}
+                title={!weighed ? "Worker Staff hasn't weighed this saree yet" : undefined}
+              >
+                Tally
+              </Button>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
+
+  const expandedIds = editingKey ? new Set([editingKey]) : new Set<string>();
+
+  return (
+    <DataTable
+      view="table"
+      columns={columns}
+      data={items}
+      getRowId={tallyKey}
+      emptyTitle="No sarees to tally yet."
+      expandedIds={expandedIds}
+      renderExpandedRow={item => {
+        const { busy } = deriveTally(item, getSareeTypeByCode, busyKey);
+        return (
+          <div style={{ padding: 16, background: "#FFFDF9" }}>
+            <EditRow
+              item={item}
+              busy={busy}
+              onCancel={() => setEditingKey(null)}
+              onSave={correction => { onSaveCorrection(item, correction); setEditingKey(null); }}
+              onViewPhoto={setZoomImage}
+            />
+          </div>
+        );
+      }}
+    />
+  );
+}
+
+export function SareeWeightTallyList({
+  items,
+  getSareeTypeByCode,
+  onToggleTally,
+  onSaveCorrection,
+  busyKey,
+}: {
+  items: TallyRowItem[];
+  getSareeTypeByCode: (code: string) => SareeTypeRecord | undefined;
+  onToggleTally: (item: TallyRowItem, tallied: boolean) => void;
+  /** Persists an admin correction to the received weight/material values, then marks the row tallied. */
+  onSaveCorrection: (item: TallyRowItem, correction: TallyCorrection) => void;
+  /** `${batchId}-${serial}` of the row currently being saved, if any. */
+  busyKey?: string | null;
+}) {
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
+  const [view, setView] = useState<DataView>("table");
+
+  if (items.length === 0) {
+    return (
+      <div style={{ textAlign: "center" as const, padding: "28px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+        No sarees to tally yet.
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+        <ViewToggle value={view} onChange={setView} />
+      </div>
+      {view === "table" ? (
+        <TallyTableView
+          items={items}
+          getSareeTypeByCode={getSareeTypeByCode}
+          onToggleTally={onToggleTally}
+          editingKey={editingKey}
+          setEditingKey={setEditingKey}
+          onSaveCorrection={onSaveCorrection}
+          busyKey={busyKey}
+          setZoomImage={setZoomImage}
+        />
+      ) : (
+        <TallyCardList
+          items={items}
+          getSareeTypeByCode={getSareeTypeByCode}
+          onToggleTally={onToggleTally}
+          editingKey={editingKey}
+          setEditingKey={setEditingKey}
+          onSaveCorrection={onSaveCorrection}
+          busyKey={busyKey}
+          setZoomImage={setZoomImage}
+        />
+      )}
+      <ImageZoomModal image={zoomImage} onClose={() => setZoomImage(null)} />
     </>
   );
 }

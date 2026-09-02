@@ -58,7 +58,7 @@ export function FactoryLoomPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [view, setView] = useState<"card"|"table">("card");
+  const [view, setView] = useState<"card"|"table">("table");
   const [search, setSearch] = useState("");
   const [sf, setSf] = useState<"all"|"active"|"idle"|"maintenance">("all");
   const [showModal, setShowModal] = useState(false);

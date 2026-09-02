@@ -34,7 +34,7 @@ function formatCurrency(n: number | string) {
 export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport: (exporter: (format: "xlsx" | "csv") => Promise<void>) => void }) {
   const { isMobile, px } = useContext(MobileCtx);
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
-  const [vendorViewMode, setVendorViewMode] = useState<"card" | "table">("card");
+  const [vendorViewMode, setVendorViewMode] = useState<"card" | "table">("table");
 
   const { data: rawGrns, isLoading: grnsLoading, isError: grnsError, refetch: refetchGrns } = useQuery({
     queryKey: ["grn-receipts"],

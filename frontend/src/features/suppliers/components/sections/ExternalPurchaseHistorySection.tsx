@@ -24,7 +24,7 @@ function billOf(p: Purchase): number {
 
 export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purchase[] }) {
   const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const filtered = useMemo(() => purchases.filter(p => matchesDateFilter(p.date, filter)), [purchases, filter]);
 
   const columns: ColumnDef<Purchase>[] = [

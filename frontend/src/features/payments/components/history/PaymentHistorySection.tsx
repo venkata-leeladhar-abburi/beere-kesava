@@ -51,7 +51,7 @@ export function PaymentHistorySection() {
   const [typeFilter,   setTypeFilter]   = useState("All Payment Types");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [search,       setSearch]       = useState("");
-  const [view,         setView]         = useState<"card" | "list" | "table">("card");
+  const [view,         setView]         = useState<"card" | "list" | "table">("table");
   const [viewRecord,   setViewRecord]   = useState<PayHistRecord | null>(null);
 
   const { data: vendorsRes } = useQuery({ queryKey: ["history-vendors"], queryFn: () => vendorsApi.list() });

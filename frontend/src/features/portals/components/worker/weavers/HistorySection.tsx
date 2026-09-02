@@ -10,7 +10,7 @@ import { useBatches, type SareeRow } from "@/features/production";
 import { StatusPill } from "../../../../../shared/ui/domain";
 import type { StatusValueOf } from "@/lib/domain/status";
 import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
-import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { DataTable, ViewToggle, type ColumnDef, type DataView } from "../../../../../shared/ui/data";
 import { ImageZoomModal, type ZoomImage } from "../../../../../shared/ui/ImageZoomModal";
 
 const QC_RESULT_TO_STATUS: Record<string, ReceivedSareeLog["status"]> = {
@@ -45,6 +45,7 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showTagPrint, setShowTagPrint] = useState(false);
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
+  const [dataView, setDataView] = useState<DataView>("table");
   const { qcRecords } = useQc();
   const { batches: allBatches } = useBatches();
 
@@ -324,13 +325,16 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
         </div>
 
         {filtered.length > 0 && (
-          <div className="flex justify-end md:justify-start shrink-0">
+          <div className="flex justify-end md:justify-start shrink-0 items-center gap-2">
             <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-0.5 text-xs text-[#69635E] whitespace-nowrap">
               {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
               {allChecked ? "Deselect All" : "Select All"}
             </Button>
           </div>
         )}
+        <div className="flex justify-end shrink-0">
+          <ViewToggle value={dataView} onChange={setDataView} />
+        </div>
       </div>
 
       {/* Grouped table */}
@@ -349,7 +353,7 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
                     onRowClick={h => toggleRow(h.key)}
                     selectedIds={selected}
                     onSelectionChange={setSelected}
-                    responsive
+                    view={dataView}
                     density="compact"
                     pagination
                   />
@@ -376,7 +380,7 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
                     onRowClick={h => toggleRow(h.key)}
                     selectedIds={selected}
                     onSelectionChange={setSelected}
-                    responsive
+                    view={dataView}
                     density="compact"
                     pagination
                   />
