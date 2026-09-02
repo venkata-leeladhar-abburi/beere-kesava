@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Eye, RotateCcw, AlertTriangle, ImageOff, Calendar, Tag, Package, LayoutGrid, LayoutList } from "lucide-react";
+import { Eye, AlertTriangle, ImageOff } from "lucide-react";
 import { T, F, DefectiveLogItem } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";
 import { DateFilterBar, type DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { WorkerQCDefectiveDetailModal } from "./WorkerQCDefectiveDetailModal";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
-import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { DataTable, ViewToggle, type ColumnDef } from "../../../../shared/ui/data";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { EntityCode } from "../../../../shared/ui/domain";
 import { Button } from "../../../../shared/ui/primitives";
@@ -18,128 +18,6 @@ interface WorkerQCSemiDefectiveSectionProps {
   isTablet?: boolean;
 }
 
-function SemiDefectiveCard({ d, onView, onViewPhoto }: { d: DefectiveLogItem; onView: () => void; onViewPhoto: (image: ZoomImage) => void }) {
-  return (
-    <div className="group relative flex flex-col justify-between rounded-[20px] bg-[#FFFDFB] border border-[#F0E5D8] p-5 text-left shadow-[0_4px_20px_rgba(74,6,27,0.05)] hover:shadow-[0_8px_24px_rgba(74,6,27,0.09)] transition-all duration-200 overflow-hidden">
-      <div>
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3.5 min-w-0 flex-1">
-            {d.photoUrl ? (
-              <button
-                type="button"
-                onClick={() => onViewPhoto({ url: d.photoUrl!, label: `Defect photo — ${d.id}` })}
-                title="View defect photo"
-                aria-label={`View defect photo for ${d.id}`}
-                className="w-14 h-14 rounded-[14px] border border-[#EAE5E1] overflow-hidden flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
-              >
-                <img src={d.photoUrl} alt="" className="w-full h-full object-cover" />
-              </button>
-            ) : (
-              <div
-                title="No photo on file"
-                className="w-14 h-14 rounded-[14px] bg-[#FAF8F5] border border-dashed border-[#D6C7B2] flex items-center justify-center text-[#A38D70] flex-shrink-0"
-              >
-                <ImageOff size={20} />
-              </div>
-            )}
-
-            <div className="min-w-0 flex-1">
-              {/* See WorkerQCDefectiveSection: the trailing serial is the part
-                  that distinguishes sarees, so the ID wraps rather than clips. */}
-              <div title={d.id} style={{ fontFamily: F.m }} className="text-[13.5px] font-bold text-[#6E0F2D] break-all">
-                {d.id}
-              </div>
-              <div style={{ fontFamily: F.u }} className="text-[13.5px] font-medium text-[#4F4A45] mt-0.5 truncate">
-                {d.weaver}
-              </div>
-            </div>
-          </div>
-
-          <span style={{ fontFamily: F.u }} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEF9EE] border border-[#F6E3B8] text-[#845E04] text-[12px] font-bold flex-shrink-0">
-            <RotateCcw size={12} /> Semi
-          </span>
-        </div>
-
-        <div className="mt-4.5">
-          <div style={{ fontFamily: F.u }} className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase mb-2">
-            DEFECTS FOUND
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {d.defects.length === 0 ? (
-              <span style={{ fontFamily: F.u }} className="text-[13px] text-[#69635E]">—</span>
-            ) : (
-              d.defects.map(df => (
-                <span
-                  key={df}
-                  style={{ fontFamily: F.u }}
-                  className="inline-flex items-center px-3 py-1 rounded-lg bg-[#FEF9EE] border border-[#F6E3B8] text-[#845E04] text-[12.5px] font-semibold"
-                >
-                  {df}
-                </span>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="mt-4 pt-3.5 border-t border-[#F0E5D8]/70 grid grid-cols-2 gap-x-3 gap-y-3.5">
-          <div className="min-w-0">
-            <div style={{ fontFamily: F.u }} className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase">
-              INSPECTED
-            </div>
-            <div className="flex items-center gap-2 mt-1.5 text-[13.5px] font-bold text-[#1D1814]">
-              <Calendar size={15} className="text-[#C89B47] flex-shrink-0" />
-              <span style={{ fontFamily: F.u }}>{d.date}</span>
-            </div>
-            <div style={{ fontFamily: F.u }} className="mt-0.5 truncate text-[11.5px] font-medium text-[#89837E]">
-              Defected by {d.inspectedBy || "Worker Staff"}
-            </div>
-          </div>
-
-          <div className="min-w-0">
-            <div style={{ fontFamily: F.u }} className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase">
-              DEDUCTION
-            </div>
-            <div style={{ fontFamily: F.d }} className="text-[20px] font-bold text-[#6E0F2D] mt-0.5">
-              {d.deduction}
-            </div>
-          </div>
-
-          <div className="min-w-0 pt-3 border-t border-[#F0E5D8]/50">
-            <div style={{ fontFamily: F.u }} className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase">
-              SAREE TYPE
-            </div>
-            <div className="flex items-center gap-2 mt-1.5 text-[13px] font-semibold text-[#1D1814] min-w-0">
-              <Tag size={14} className="text-[#C89B47] flex-shrink-0" />
-              <span style={{ fontFamily: F.u }} className="truncate">{d.sareeType || "New saree type"}</span>
-            </div>
-          </div>
-
-          <div className="min-w-0 pt-3 border-t border-[#F0E5D8]/50">
-            <div style={{ fontFamily: F.u }} className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase">
-              BATCH
-            </div>
-            <div className="flex items-center gap-2 mt-1.5 text-[13px] font-bold text-[#1D1814] min-w-0">
-              <Package size={14} className="text-[#C89B47] flex-shrink-0" />
-              <span style={{ fontFamily: F.m }} className="truncate">{d.batchId || "—"}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-5 pt-1">
-        <button
-          type="button"
-          onClick={onView}
-          className="w-full py-2.5 rounded-xl bg-[#FFFDFB] border border-[#EAE5E1] text-[#6E0F2D] hover:bg-[#FEF4F5] hover:border-[#FEE8EB] font-bold text-[13.5px] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
-        >
-          <Eye size={16} className="text-[#6E0F2D]" />
-          <span style={{ fontFamily: F.u }}>View Details</span>
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export function WorkerQCSemiDefectiveSection({
   semiLog,
   semiFilter,
@@ -147,8 +25,7 @@ export function WorkerQCSemiDefectiveSection({
   isDesktop,
   isTablet,
 }: WorkerQCSemiDefectiveSectionProps) {
-  const [viewMode, setViewMode] = useState<"card" | "table">("table");
-  const cols = isDesktop ? "repeat(4, 1fr)" : isTablet ? "repeat(2, 1fr)" : "1fr";
+  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const filteredSemiLog = semiLog.filter(d => matchesDateFilter(d.isoDate || d.date, semiFilter));
   const [viewing, setViewing] = useState<DefectiveLogItem | null>(null);
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
@@ -228,6 +105,13 @@ export function WorkerQCSemiDefectiveSection({
       cell: (_v, d) => <span style={{ fontFamily: F.m, fontSize: 12, color: T.muted }}>{d.deduction || "—"}</span>,
     },
     {
+      id: "batch",
+      header: "Batch",
+      accessor: d => d.batchId ?? "—",
+      priority: 3,
+      cell: (_v, d) => <span style={{ fontFamily: F.m, fontSize: 12, color: T.muted }}>{d.batchId || "—"}</span>,
+    },
+    {
       id: "inspectedBy",
       header: "Defected By",
       accessor: d => d.inspectedBy ?? "—",
@@ -276,32 +160,7 @@ export function WorkerQCSemiDefectiveSection({
         }
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
-          <div className="flex items-center border border-[#E8DCC4] rounded-[12px] overflow-hidden bg-white shrink-0">
-            <Button
-              type="button"
-              onClick={() => setViewMode("card")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-1.5 px-3.5 text-[12px] font-bold ${
-                viewMode === "card"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-              }`}
-            >
-              <LayoutGrid size={14} /> Card View
-            </Button>
-            <Button
-              type="button"
-              onClick={() => setViewMode("table")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-1.5 px-3.5 text-[12px] font-bold ${
-                viewMode === "table"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-              }`}
-            >
-              <LayoutList size={14} /> Table View
-            </Button>
-          </div>
+          <ViewToggle value={viewMode} onChange={setViewMode} />
 
           <DateFilterBar filter={semiFilter} onChange={(f) => { setSemiFilter(f); pag.setPage(1); }} />
         </div>
@@ -312,21 +171,24 @@ export function WorkerQCSemiDefectiveSection({
           </div>
         ) : (
           <>
-            {viewMode === "card" ? (
-              <div style={{ display: "grid", gridTemplateColumns: cols, gap: 16 }}>
-                {pag.pageItems.map((d) => (
-                  <SemiDefectiveCard key={d.recordId || d.id} d={d} onView={() => setViewing(d)} onViewPhoto={setZoomImage} />
-                ))}
-              </div>
-            ) : (
+            {viewMode === "table" ? (
               <div className="w-full overflow-x-auto" style={{ border: `1.5px solid ${T.bdr}`, borderRadius: 12, overflow: "hidden" }}>
                 <DataTable
                   columns={columns}
                   data={pag.pageItems}
                   getRowId={d => d.recordId || d.id}
+                  view="table"
                   pagination={false}
                 />
               </div>
+            ) : (
+              <DataTable
+                columns={columns}
+                data={pag.pageItems}
+                getRowId={d => d.recordId || d.id}
+                view="cards"
+                pagination={false}
+              />
             )}
 
             <div className="mt-6 pt-4 border-t border-[#EAE5E1]">

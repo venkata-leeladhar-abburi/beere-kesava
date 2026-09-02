@@ -108,7 +108,7 @@ export function VendorPaymentsSection() {
     void queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] });
   };
 
-  const [view, setView] = useState<"card" | "list" | "table">("card");
+  const [view, setView] = useState<"card" | "list" | "table">("table");
   const [selVendor, setSelVendor] = useState("");
   const [payAmount, setPayAmount] = useState("");
   const [payDate, setPayDate] = useState(new Date().toISOString().slice(0, 10));

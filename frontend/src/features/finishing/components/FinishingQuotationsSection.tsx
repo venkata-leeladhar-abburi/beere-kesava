@@ -112,7 +112,7 @@ export function FinishingQuotationsSection({
   openQuotation,
   setOpenQuotation,
 }: FinishingQuotationsSectionProps) {
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
 
   return (
     <SectionCard

@@ -185,7 +185,7 @@ export function SareeSelectionTable({
   selectSareeSlot,
   onToggleAll,
 }: SareeSelectionTableProps) {
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const sortedSarees = [...currentBatch.sarees]
     .sort((a, b) => sareeSort === "status" ? a.status.localeCompare(b.status) : a.no - b.no);
   const pendingSarees = currentBatch.sarees.filter(s => s.status === "pending");

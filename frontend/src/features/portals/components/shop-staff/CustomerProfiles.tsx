@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Search, UserRound, Phone, ArrowRight, ShoppingBag, Star, Users } from 'lucide-react';
 
-import { C, F, Card, Chip, useCanSeePrices, PageHero, PortalStatsStrip, type PortalStat } from './theme';
+import { C, F, Chip, useCanSeePrices, PageHero, PortalStatsStrip, type PortalStat } from './theme';
 import { Button, Input } from "@/shared/ui/primitives";
-import { LoadingState, ErrorState, EmptyState } from "@/shared/ui/state";
-import { Pagination, usePagination } from "@/shared/ui/DataPagination";
 import { DateFilterBar, matchesDateFilter, DEFAULT_DATE_FILTER, type DateFilterState } from "@/shared/ui/DateFilterBar";
+import { DataTable, ViewToggle, type ColumnDef, type DataView } from "@/shared/ui/data";
 import { useQuery } from '@tanstack/react-query';
 import { customersApi } from "@/shared/api/customers";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -13,6 +12,20 @@ import { toInitials } from "@/shared/lib/initials";
 
 const SORTS = ["All", "Highest Spend", "Most Frequent", "Recent Visit", "Regular Only"] as const;
 type Sort = typeof SORTS[number];
+
+interface CustomerRow {
+  id: string;
+  name: string;
+  phone: string;
+  city: string;
+  purchases: number;
+  spend: number;
+  total: string;
+  lastPurchaseDate: string | null | undefined;
+  last: string;
+  regular: boolean;
+  initials: string;
+}
 
 /**
  * The customer list. Opening one navigates to /shop/customers/:id — the full
@@ -26,13 +39,14 @@ function CustomerProfiles({ onOpenCustomer }: { onOpenCustomer: (customerId: str
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<Sort>("All");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [dataView, setDataView] = useState<DataView>("table");
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["shop-customers-list"],
     queryFn: () => customersApi.list(200),
   });
 
-  const customers = useMemo(() => (data?.items ?? []).map(c => ({
+  const customers = useMemo<CustomerRow[]>(() => (data?.items ?? []).map(c => ({
     id: c.id,
     name: c.name,
     phone: c.phone ?? "—",
@@ -66,8 +80,6 @@ function CustomerProfiles({ onOpenCustomer }: { onOpenCustomer: (customerId: str
     return sorted;
   }, [customers, search, sort, dateFilter]);
 
-  const pag = usePagination(filtered, 12);
-
   const regularCount = customers.filter(c => c.regular).length;
   const activeToday = customers.filter(c =>
     c.lastPurchaseDate && new Date(c.lastPurchaseDate).toDateString() === new Date().toDateString()).length;
@@ -80,6 +92,57 @@ function CustomerProfiles({ onOpenCustomer }: { onOpenCustomer: (customerId: str
     ...(canSeePrices
       ? [{ label: "Lifetime value", value: formatMoney(rupees(lifetime)), sub: "All customers combined", icon: Users } as PortalStat]
       : []),
+  ];
+
+  const isFiltered = search.trim() !== "" || sort !== "All" || dateFilter.mode !== "all";
+  const clearFilters = () => { setSearch(""); setSort("All"); setDateFilter(DEFAULT_DATE_FILTER); };
+
+  const columns: ColumnDef<CustomerRow>[] = [
+    {
+      id: "name", header: "Customer", priority: 1, sortable: true,
+      accessor: c => c.name,
+      cell: (_v, c) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 34, height: 34, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <span style={{ fontFamily: F.d, fontSize: 13, fontWeight: 700, color: "#FFF" }}>{c.initials}</span>
+          </div>
+          <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14.5, color: C.text }}>{c.name}</span>
+          {c.regular && <Star size={14} fill={C.gold} color={C.gold} />}
+        </div>
+      ),
+    },
+    {
+      id: "phone", header: "Phone", type: "text", priority: 2, sortable: true,
+      accessor: c => c.phone,
+      cell: (_v, c) => (
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.m, fontSize: 13, color: C.muted }}>
+          <Phone size={13} color={C.muted} />{c.phone}
+        </span>
+      ),
+    },
+    {
+      id: "purchases", header: "Purchases", type: "number", priority: 2, sortable: true,
+      accessor: c => c.purchases,
+      cell: (_v, c) => <Chip label={`${c.purchases} purchases`} color={C.burg} bg="rgba(110,15,45,0.08)" />,
+    },
+    ...(canSeePrices ? [{
+      id: "total", header: "Total spend", type: "currency" as const, priority: 2, sortable: true,
+      accessor: (c: CustomerRow) => c.spend,
+      cell: (_v: unknown, c: CustomerRow) => <Chip label={c.total} color={C.gold} bg="rgba(200,155,71,0.12)" />,
+    } as ColumnDef<CustomerRow>] : []),
+    {
+      id: "last", header: "Last purchase", type: "date", priority: 2, sortable: true,
+      accessor: c => c.lastPurchaseDate ?? "",
+      cell: (_v, c) => <Chip label={`Last: ${c.last}`} color={C.muted} bg="rgba(139,112,96,0.08)" />,
+    },
+    {
+      id: "actions", header: "", type: "actions", accessor: () => null,
+      cell: (_v, c) => (
+        <Button variant="primary" size="sm" onClick={() => onOpenCustomer(c.id)} className="h-9 gap-1.5 rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none font-semibold text-xs">
+          <UserRound size={14} /> View <ArrowRight size={12} />
+        </Button>
+      ),
+    },
   ];
 
   return (
@@ -109,59 +172,32 @@ function CustomerProfiles({ onOpenCustomer }: { onOpenCustomer: (customerId: str
             >{s}</Button>
           ))}
         </div>
-        <div style={{ paddingBottom: 4 }}>
+        <div style={{ paddingBottom: 4, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" as const }}>
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+          <ViewToggle value={dataView} onChange={setDataView} />
         </div>
       </div>
 
-      {isLoading ? (
-        <div style={{ padding: "8px 20px 0" }}><LoadingState variant="skeleton" rows={4} /></div>
-      ) : isError ? (
-        <div style={{ padding: "8px 20px 0" }}><ErrorState error={undefined} onRetry={() => { void refetch(); }} /></div>
-      ) : filtered.length === 0 ? (
-        <div style={{ padding: "8px 20px 0" }}>
-          <EmptyState
-            title={customers.length === 0 ? "No customers yet" : "No customers match these filters"}
-            description={customers.length === 0 ? "Customers who make a purchase will show up here." : "Try a different search, sort, or period."}
-          />
-        </div>
-      ) : (
-        <>
-          <div style={{ padding: "8px 20px 0", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
-            {pag.pageItems.map(c => (
-              <Card key={c.id} style={{ padding: 20, border: `1.5px solid ${C.gold}` }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
-                  <div style={{ width: 54, height: 54, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF" }}>{c.initials}</span>
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.text }}>{c.name}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
-                      <Phone size={13} color={C.muted} />
-                      <span style={{ fontFamily: F.m, fontSize: 13, color: C.muted }}>{c.phone}</span>
-                    </div>
-                  </div>
-                  {c.regular && <Star size={20} fill={C.gold} color={C.gold} />}
-                </div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const, marginBottom: 16 }}>
-                  <Chip label={`${c.purchases} purchases`} color={C.burg} bg="rgba(110,15,45,0.08)" />
-                  {canSeePrices && <Chip label={c.total} color={C.gold} bg="rgba(200,155,71,0.12)" />}
-                  <Chip label={`Last: ${c.last}`} color={C.muted} bg="rgba(139,112,96,0.08)" />
-                </div>
-                <Button variant="primary" onClick={() => onOpenCustomer(c.id)} fullWidth className="h-[46px] gap-2 rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none font-semibold text-sm shadow-[0_2px_10px_rgba(110,15,45,0.28)]">
-                  <UserRound size={16} /> View Profile <ArrowRight size={14} />
-                </Button>
-              </Card>
-            ))}
-          </div>
-          <div style={{ padding: "0 20px" }}>
-            <Pagination
-              page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
-              onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="customers"
-            />
-          </div>
-        </>
-      )}
+      <div style={{ padding: "8px 20px 0" }}>
+        <DataTable
+          columns={columns}
+          data={filtered}
+          getRowId={c => c.id}
+          caption="Shop customer profiles"
+          view={dataView}
+          pagination
+          pageSize={12}
+          loading={isLoading}
+          error={isError}
+          onRetry={() => void refetch()}
+          isFiltered={isFiltered}
+          onClearFilters={clearFilters}
+          emptyTitle={customers.length === 0 ? "No customers yet" : "No customers match these filters"}
+          emptyDescription={customers.length === 0 ? "Customers who make a purchase will show up here." : "Try a different search, sort, or period."}
+          onRowClick={c => onOpenCustomer(c.id)}
+          itemLabel="customers"
+        />
+      </div>
     </div>
   );
 }

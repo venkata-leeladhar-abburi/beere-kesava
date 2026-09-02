@@ -12,6 +12,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { warpRequestsApi, BackendWarpRequest } from "../../../../../shared/api/warpRequests";
 import { prependToEnvelope } from "../../../../../lib/cacheUpdates";
+import { DataTable, ViewToggle, type ColumnDef, type ViewMode } from "@/shared/ui/data";
 
 /** Thin wrapper on the shared portal heading — see PaymentsSection. */
 function DSectionHeader({ label }: { label: string }) {
@@ -61,6 +62,7 @@ export function WarpSection({
   const [amounts, setAmounts] = useState<Record<MaterialKey, string>>({ warp: "", resham: "", jari: "" });
   const [reason, setReason] = useState("");
   const [warpSubmitted, setWarpSubmitted] = useState(false);
+  const [requestsView, setRequestsView] = useState<ViewMode>("table");
 
   const batchProgress = useMemo(() => {
     if (!activeBatch) return { total: 0, done: 0, pct: 0 };
@@ -130,6 +132,29 @@ export function WarpSection({
     { label: `${activeBatchId ?? "No Active Batch"} Progress`, val: activeBatch ? `${batchProgress.done}/${batchProgress.total}` : "0/0", sub: `${batchProgress.pct}% complete — ${isLocked ? "warp locked" : "warp unlocked"}` },
     { label: "Total Requests Raised", val: `${totalRequests}`, sub: "This month" },
     { label: "Approval Rate", val: `${approvalRate}%`, sub: `${approvedCount} approved, ${rejectedCount} rejected`, highlight: true },
+  ];
+
+  const requestColumns: ColumnDef<BackendWarpRequest>[] = [
+    {
+      id: "date", header: "Date", priority: 1, accessor: r => r.requestedAt,
+      cell: (_v, r) => <span style={{ fontFamily: F.m, fontSize: 13, color: C.muted }}>{new Date(r.requestedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</span>,
+    },
+    {
+      id: "material", header: "Material", priority: 2, accessor: r => `${r.lengthMeters}m ${r.warpType}${r.color ? ` (${r.color})` : ""}`,
+      cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: 15, fontWeight: 500, color: C.text }}>{r.lengthMeters}m {r.warpType}{r.color ? ` (${r.color})` : ""}</span>,
+    },
+    {
+      id: "status", header: "Status", priority: 2, type: "badge", accessor: r => r.status,
+      cell: (_v, r) => {
+        const isApproved = r.status === "APPROVED";
+        const isRejected = r.status === "REJECTED";
+        return (
+          <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: isApproved ? C.green : isRejected ? C.crim : C.gold }}>
+            {isApproved ? "Approved" : isRejected ? "Rejected" : "Pending"}
+          </span>
+        );
+      },
+    },
   ];
 
   return (
@@ -267,11 +292,12 @@ export function WarpSection({
               </div>
 
               <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 18, overflow: "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)" }}>
-                <div style={{ padding: "20px 26px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
+                <div style={{ padding: "20px 26px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ width: 5, height: 22, background: C.burg, borderRadius: 3 }} />
                     <span style={{ fontFamily: F.u, fontSize: 16, fontWeight: 700, color: C.text }}>Previous Requests</span>
                   </div>
+                  {myPrevRequests.length > 0 && <ViewToggle value={requestsView} onChange={setRequestsView} />}
                 </div>
 
                 {warpLoading ? (
@@ -287,24 +313,7 @@ export function WarpSection({
                     <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No previous warp requests recorded.</div>
                   </div>
                 ) : (
-                  myPrevRequests.map((r, i) => {
-                    const isApproved = r.status === "APPROVED";
-                    const isRejected = r.status === "REJECTED";
-                    const dateStr = new Date(r.requestedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-                    const matStr = `${r.lengthMeters}m ${r.warpType}${r.color ? ` (${r.color})` : ""}`;
-                    return (
-                      <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "18px 26px", borderBottom: i < myPrevRequests.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
-                        <div style={{ width: 10, height: 10, borderRadius: "50%", background: isApproved ? C.green : isRejected ? C.crim : C.gold, flexShrink: 0 }} />
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontFamily: F.m, fontSize: 13, color: C.muted, marginBottom: 3 }}>{dateStr}</div>
-                          <div style={{ fontFamily: F.u, fontSize: 16, fontWeight: 500, color: C.text }}>{matStr}</div>
-                        </div>
-                        <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: isApproved ? C.green : isRejected ? C.crim : C.gold }}>
-                          {isApproved ? "✓ Approved" : isRejected ? "✗ Rejected" : "⏳ Pending"}
-                        </span>
-                      </div>
-                    );
-                  })
+                  <DataTable columns={requestColumns} data={myPrevRequests} getRowId={r => r.id} view={requestsView} />
                 )}
               </div>
             </div>

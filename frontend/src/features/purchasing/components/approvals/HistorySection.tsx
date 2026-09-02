@@ -87,7 +87,7 @@ export function HistorySection({
   histPeriod: string;
   setHistPeriod: (v: string) => void;
 }) {
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
 
   const { data: actionsRes, isLoading, isError } = useQuery({
     queryKey: ["approval-history"],

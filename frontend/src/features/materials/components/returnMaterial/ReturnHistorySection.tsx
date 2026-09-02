@@ -34,7 +34,7 @@ export function ReturnHistorySection({
   setViewRecord: (r: MaterialReturnRecord) => void;
   totalCount?: number;
 }) {
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const { isLoading, isError, error, refetch } = useMaterialReturn();
 
   const columns: ColumnDef<MaterialReturnRecord>[] = [

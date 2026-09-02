@@ -73,7 +73,7 @@ function SalesReport() {
 
   const [tab, setTab] = useState<"sales" | "returns">("sales");
   // Mobile defaults to cards — a 7-column table is unreadable at 390px.
-  const [recordView, setRecordView] = useState<RecordView>("cards");
+  const [recordView, setRecordView] = useState<RecordView>("table");
   const [exportDialog, setExportDialog] = useState<{ label: string } | null>(null);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("excel");
   const [exportDone, setExportDone] = useState(false);

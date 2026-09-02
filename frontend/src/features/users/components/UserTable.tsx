@@ -157,7 +157,7 @@ export function UserTable({
   setEditingMember, setViewingMember, setEditingRow, setViewingRow,
   loading, loadError, onRetry, isFiltered, onClearFilters,
 }: UserTableProps) {
-  const [userView, setUserView] = useState<"card" | "table">("card");
+  const [userView, setUserView] = useState<"card" | "table">("table");
 
   return (
     <SectionCard

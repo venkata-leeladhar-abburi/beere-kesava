@@ -47,7 +47,7 @@ export function ExternalPurchasesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
   const [formModal, setFormModal] = useState<{ mode: "add" | "edit" | "request" | "request"; editId?: string } | null>(null);

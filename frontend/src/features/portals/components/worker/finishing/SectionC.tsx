@@ -99,7 +99,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
   const [conditionFilter, setConditionFilter] = useState<"all" | "awaiting" | "perfect" | "damaged">("all");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
 
   const returnBySaree = useMemo(() => {
     const map = new Map<string, FinishingReturn>();

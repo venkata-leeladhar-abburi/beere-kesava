@@ -19,7 +19,7 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
   const { batches, setPendingOpenBatchId, isLoading, isError, error, refetch } = useBatches();
   const contextBatches = batches.filter(b => b.status === "active" || b.status === "draft");
 
-  const [view,   setView]   = useState("card");
+  const [view,   setView]   = useState("table");
   const [filter, setFilter] = useState<BatchStage | null>(null);
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);

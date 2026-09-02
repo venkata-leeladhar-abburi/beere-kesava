@@ -40,7 +40,7 @@ export function SupplierReturnsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("PENDING");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const [decidingId, setDecidingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState<string | null>(null);

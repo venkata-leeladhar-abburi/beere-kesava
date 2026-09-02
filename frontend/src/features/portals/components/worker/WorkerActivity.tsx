@@ -15,7 +15,7 @@ import { useBatches } from "@/features/production";
 import { useQc } from "@/features/qc";
 import { Button, SearchInput, Select, SelectItem, StatusPill } from "@/shared/ui/primitives";
 import { FilterBar, FilterBarActive, type ActiveFilter } from "@/shared/ui/filter";
-import { DataTable, exportTable, type ColumnDef, type SortDirection } from "@/shared/ui/data";
+import { DataTable, ViewToggle, exportTable, type ColumnDef, type SortDirection, type DataView } from "@/shared/ui/data";
 import {
   DateFilterBar, DEFAULT_DATE_FILTER, matchesDateFilter, type DateFilterState,
 } from "@/shared/ui/DateFilterBar";
@@ -46,6 +46,7 @@ export function WorkerActivity({ isDesktop = true }: WorkerActivityProps) {
   // Controlled so the header stays clickable — DataTable's `sort` prop needs
   // its `onSortChange` partner or header clicks are a no-op.
   const [sort, setSort] = useState<{ columnId: string; direction: SortDirection }>({ columnId: "when", direction: "desc" });
+  const [dataView, setDataView] = useState<DataView>("table");
 
   const loading = qcLoading || batchesLoading;
   const error = qcError || batchesError;
@@ -228,6 +229,10 @@ export function WorkerActivity({ isDesktop = true }: WorkerActivityProps) {
 
             <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
 
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <ViewToggle value={dataView} onChange={setDataView} />
+            </div>
+
             <FilterBarActive filters={activeFilters} onClearAll={clearAll} />
           </div>
 
@@ -236,7 +241,7 @@ export function WorkerActivity({ isDesktop = true }: WorkerActivityProps) {
             columns={columns}
             data={filtered}
             getRowId={e => e.id}
-            responsive
+            view={dataView}
             density={isDesktop ? "default" : "compact"}
             loading={loading}
             error={error}

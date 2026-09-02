@@ -200,7 +200,7 @@ export function DrilldownTabs({ produced, sold, outstanding, showBatch = false, 
   showBatch?: boolean; showSource?: boolean; producedLabel?: string;
 }) {
   const [view, setView] = useState<TableMode>("outstanding");
-  const [displayMode, setDisplayMode] = useState<DisplayMode>("card");
+  const [displayMode, setDisplayMode] = useState<DisplayMode>("table");
 
   const tabs: { key: TableMode; label: string; rows: UnifiedSaree[]; color: string }[] = [
     { key: "produced",    label: producedLabel,  rows: produced,    color: T.luxuryBrown },

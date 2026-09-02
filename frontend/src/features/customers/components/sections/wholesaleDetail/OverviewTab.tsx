@@ -34,7 +34,7 @@ export function OverviewTab({
   setWholesaleTab: (t: WholesaleTab) => void;
   onViewBulkOrder: (order: BulkOrder, tab: "overview" | "sarees" | "payments" | "quotations") => void;
 }) {
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
 
   const orderColumns: ColumnDef<BulkOrder>[] = [
     {
