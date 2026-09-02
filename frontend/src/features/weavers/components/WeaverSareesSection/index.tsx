@@ -288,12 +288,19 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   const visible = useMemo(() => rowsForTab(tab)
     .filter(r => inTab(r, tab) && passesFilters(r, tab) && matchesDateFilter(tabDate(r, tab), dateFilter))
     .sort((a, b) => {
+      // Selected rows (picked via Scan or a checkbox) float to the top —
+      // otherwise scanning a saree deep in a long list selects it with no
+      // visible feedback unless the user already happens to be on the right
+      // page. Everything else keeps its normal date/id ordering.
+      const aSel = selectedIds?.has(a.sareeId) ? 1 : 0;
+      const bSel = selectedIds?.has(b.sareeId) ? 1 : 0;
+      if (aSel !== bSel) return bSel - aSel;
       const da = tabDate(a, tab), db = tabDate(b, tab);
       if (da && db) return new Date(db).getTime() - new Date(da).getTime();
       return a.sareeId.localeCompare(b.sareeId);
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rows, selectable, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment]);
+    [rows, selectable, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment, selectedIds]);
 
   // Pagination applies only to what's rendered — `visible` itself stays the full
   // filtered set so select-all and the parent's onVisibleChange (scan / bulk
@@ -302,8 +309,12 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   // `pag` (from usePagination) is a new object every render, so it can't be
   // added as a dep without resetting the page on every unrelated render;
   // only its setPage function (stable across renders) is actually needed here.
+  // Also jumps to page 1 on a selection change — selected rows sort to the
+  // top of `visible` above, so this is what actually makes a freshly-scanned
+  // saree visible without a manual page flip when it wasn't already on the
+  // current page.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { pag.setPage(1); }, [tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment]);
+  useEffect(() => { pag.setPage(1); }, [tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment, selectedIds]);
   const pageRows = pag.pageItems;
 
   // Keep the parent in sync with the currently visible rows (for Scan / bulk actions), without looping.
