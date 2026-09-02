@@ -3,7 +3,7 @@ import { lazyWithRetry as lazy } from "@/app/lazyWithRetry";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useNavigate, useParams } from "react-router";
 import { motion } from "motion/react";
-import { IndianRupee, Building2, FileBarChart2, Tags, LogOut, UserRound, Users, UserRound as UserIcon, Truck, Store, Factory, Package, ChevronDown, Menu, X } from "lucide-react";
+import { IndianRupee, Building2, LogOut, UserRound, Users, UserRound as UserIcon, Truck, Store, Factory, Package, ChevronDown, Menu, X } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { ErrorBoundary } from "../../../components/ErrorBoundary";
 import { useResponsive } from "../../../hooks/useResponsive";
@@ -17,10 +17,6 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 // PaymentsPage stays a static import since it's the default landing tab.
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const FirmsPage = lazy(() => import("../../firms/components/FirmsPage").then(m => ({ default: m.FirmsPage })));
-// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
-const ReportsPage = lazy(() => import("../../reports/components/ReportsPage").then(m => ({ default: m.ReportsPage })));
-// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
-const RatesPricingPage = lazy(() => import("../../pricing/components/RatesPricingPage").then(m => ({ default: m.RatesPricingPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const WeaversPage = lazy(() => import("../../weavers/components/WeaversPage").then(m => ({ default: m.WeaversPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
@@ -70,8 +66,6 @@ type NavItem = { key: string; label: string; slug: string; icon: IconComponent }
 const NAV: NavItem[] = [
   { key: "Payments",  label: "Payments",        slug: "payments",  icon: IndianRupee },
   { key: "Firms",     label: "Firms",           slug: "firms",     icon: Building2 },
-  { key: "Reports",   label: "Reports",         slug: "reports",   icon: FileBarChart2 },
-  { key: "Rates",     label: "Rates & Pricing", slug: "rates",     icon: Tags },
   { key: "Weavers",   label: "Weavers",         slug: "weavers",   icon: Users },
   { key: "Customers", label: "Customers",       slug: "customers", icon: UserIcon },
   { key: "Vendors",   label: "Vendors",         slug: "vendors",   icon: Truck },
@@ -425,10 +419,6 @@ export function AccountantDashboard({ onBack }: { onBack?: () => void } = {}) {
           <PaymentsPage />
         ) : active === "Firms" ? (
           <FirmsPage />
-        ) : active === "Reports" ? (
-          <ReportsPage />
-        ) : active === "Rates" ? (
-          <RatesPricingPage />
         ) : active === "Weavers" ? (
           <WeaversPage />
         ) : active === "Customers" ? (
