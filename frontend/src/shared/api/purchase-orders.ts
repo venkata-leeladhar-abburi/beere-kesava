@@ -35,7 +35,7 @@ export interface BackendPurchaseOrder {
     /** The receipt's own human-facing id, e.g. "GRN-SreeVignesh-004-002". */
     id: string;
     receivedDate?: string | null;
-    receivedBy?: { id: string; firstName: string; lastName: string } | null;
+    receivedBy?: { id: string; empId: string; firstName: string; lastName: string } | null;
     /** The firm the goods were actually received for — previously hardcoded
      *  to "Beere Kesava Silks (Head Firm)" on the vendor screen. */
     firm?: { id: string; firmName: string } | null;

@@ -25,6 +25,8 @@ export const F = {
 
 export interface Vendor {
   id: string;
+  /** Human-readable business id, e.g. "VENDOR-001" — shown to users instead of the raw uuid `id`. */
+  code?: string;
   name: string;
   city: string;
   type: string;

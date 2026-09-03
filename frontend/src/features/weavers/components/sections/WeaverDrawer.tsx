@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  ChevronLeft as ChevronLeftIcon, Layers3, MapPin, Phone, Camera, FileText, Save, ClipboardList,
+  ChevronLeft as ChevronLeftIcon, Layers3, MapPin, Phone, FileText, Save, ClipboardList,
   Smartphone, Landmark, Home, CreditCard, Activity, Edit3, PackageCheck, UserRound, Boxes, Trash2, X,
 } from "lucide-react";
 import { Send as PaperPlaneTilt } from "lucide-react";
@@ -23,7 +23,7 @@ import { useDesignLibrary, DispatchRecord } from "@/features/design-library";
 import { DispatchDetailsModal } from "@/features/production";
 import { BatchesTab, DispatchesTab, PaymentsTab, MaterialsTab } from "./weaverDrawer/WeaverDrawerTabs";
 import { EntityCode } from "../../../../shared/ui/domain";
-import { SUB_NAV_H, MOBILE_NAV_H } from "@/shared/ui/section-navigator-data";
+import { SUB_NAV_H, MOBILE_NAV_H, SECTION_NAV_H } from "@/shared/ui/section-navigator-data";
 import { useResponsive } from "@/hooks/useResponsive";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -35,6 +35,7 @@ import {
 } from "../../../../shared/api/weavers";
 import { toast } from "sonner";
 import { Button, Field, Input, PhoneInput, NumberInput } from "../../../../shared/ui/primitives";
+import { PhotoUploadField } from "../../../../shared/ui/PhotoUploadField";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { recordView, useConfirm } from "../../../../shared/ui/overlay";
 import {
@@ -70,6 +71,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
     bankName: weaver?.bankName || "",
     accountNo: weaver?.accountNo || "",
     ifsc: weaver?.ifsc || "",
+    photoUrl: weaver?.photo || "",
   });
 
   const updateWeaver = useMutation({
@@ -110,6 +112,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
       bankName: editForm.bankName,
       accountNo: editForm.accountNo,
       ifsc: editForm.ifsc,
+      photoUrl: editForm.photoUrl,
     });
   };
   const { isMobile } = useResponsive();
@@ -215,7 +218,11 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
           // sub-nav bar (SUB_NAV_H) pinned at top:0 — this bar must match
           // that, not the full topbar+subnav stack, or it floats mid-page
           // with a gap where the scrolled-away topbar used to be.
-          style={{ top: isMobile ? MOBILE_NAV_H : SUB_NAV_H }}
+          // On mobile there's no equivalent collapse: MobileTopNav (MOBILE_NAV_H)
+          // and the "Weavers" SectionNavigator (SECTION_NAV_H) both stay
+          // stacked and sticky the whole time, so this bar must clear both or
+          // it sticks under the section-nav pills and overlaps the hero banner.
+          style={{ top: isMobile ? MOBILE_NAV_H + SECTION_NAV_H : SUB_NAV_H }}
         >
           <Button
             onClick={onClose}
@@ -334,15 +341,13 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                 </Button>
               }
             >
-              <div className="mb-5 sm:mb-6 flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-5 p-4 sm:p-5 bg-[#FFFDF9] rounded-2xl border border-[#E8DCC4]">
-                <div className="w-20 h-20 rounded-full border-2 border-dashed border-[rgba(110,15,45,0.35)] bg-[rgba(110,15,45,0.06)] flex flex-col items-center justify-center cursor-pointer shrink-0">
-                  <Camera size={20} color={T.royalBurgundy} strokeWidth={1.5} />
-                  <span className="text-[11px] font-bold text-[#6E0F2D] mt-1">Upload Photo</span>
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-[#3B2314]">Profile Photo</div>
-                  <div className="text-xs text-[#8C7A6B] mt-1">JPG or PNG format · Maximum size 5MB</div>
-                </div>
+              <div className="mb-5 sm:mb-6 p-4 sm:p-5 bg-[#FFFDF9] rounded-2xl border border-[#E8DCC4]">
+                <PhotoUploadField
+                  labelText="Profile Photo"
+                  helpText="JPG or PNG format · Maximum size 5MB"
+                  photoUrl={editForm.photoUrl || null}
+                  onChange={url => setEditForm(p => ({ ...p, photoUrl: url }))}
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">

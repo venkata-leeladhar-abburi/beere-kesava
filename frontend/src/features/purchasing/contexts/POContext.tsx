@@ -42,7 +42,7 @@ export interface PurchaseOrder {
   rejectionReason?: string;
   grnId?: string;
   raisedBy: string;
-  receivedBy?: { id: string; firstName: string; lastName: string };
+  receivedBy?: { id: string; empId: string; firstName: string; lastName: string };
 }
 
 // A PO raised without a price entered stays at ₹0 on its own line items

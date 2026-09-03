@@ -176,9 +176,9 @@ export function WorkerGRN({
 
     if (m.materialType === "Jari") {
       if (m.unit === "Buns") {
-        return unitSel === "Buns" ? qtyVal : qtyVal / 4;
+        return unitSel === "Buns" ? qtyVal : qtyVal * 4;
       } else {
-        return unitSel === "Reels" ? qtyVal : qtyVal * 4;
+        return unitSel === "Reels" ? qtyVal : qtyVal / 4;
       }
     } else {
       if (m.unit.toLowerCase() === "kg") {
@@ -364,7 +364,7 @@ export function WorkerGRN({
               onClick={handleConfirm}
               disabled={!allFilled || !allApproved || !confirmedReceived || createGrnMutation.isPending}
               fullWidth
-              className="h-[52px] mt-1.5 gap-2 bg-[#6E0F2D] border-none rounded-full font-semibold text-white"
+              className="h-[52px] mt-1.5 gap-2 bg-[#6E0F2D] hover:bg-[#6E0F2D] active:bg-[#6E0F2D] border-none rounded-full font-semibold text-white"
             >
               <CheckCircle2 size={17} /> {createGrnMutation.isPending ? "Generating GRN..." : "Confirm Receipt — Generate GRN"}
             </Button>

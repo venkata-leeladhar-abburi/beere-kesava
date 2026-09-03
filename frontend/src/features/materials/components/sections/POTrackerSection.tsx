@@ -299,7 +299,7 @@ export function POTrackerSection({
                       )}
                       {po.status === "received" && po.receivedBy && (
                         <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>
-                          Received by <span style={{ color: T.royalBurgundy, fontWeight: 600 }}>{po.receivedBy.id.substring(0, 8)} - {po.receivedBy.firstName} {po.receivedBy.lastName}</span>
+                          Received by <span style={{ color: T.royalBurgundy, fontWeight: 600 }}>{po.receivedBy.empId} - {po.receivedBy.firstName} {po.receivedBy.lastName}</span>
                         </div>
                       )}
                     </div>

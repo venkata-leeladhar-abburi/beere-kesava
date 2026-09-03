@@ -78,7 +78,7 @@ export function POVendorDetailsSection({
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: T.luxuryBrown, lineHeight: 1.2 }}>{vendor.name}</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.10)", padding: "2px 8px", borderRadius: 5 }}>{vendor.id || "VEN-XXX"}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.10)", padding: "2px 8px", borderRadius: 5 }}>{vendor.code || "VEN-XXX"}</span>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>📍 {vendor.city}</span>
                 </div>
               </div>

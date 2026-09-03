@@ -17,6 +17,8 @@ import { useUrlFilters } from "../../../shared/ui/filter";
 import { ErrorState } from "../../../shared/ui/state";
 import { toInitials } from "@/shared/lib/initials";
 import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
+import { LuxuryStatsCard } from "../../../shared/ui/LuxuryStatsCard";
+import { imgPadmaVeni } from "../../../shared/constants/weaverImages";
 
 // ── Design tokens ─────────────────────────────────────────────────────────
 const T = {
@@ -38,13 +40,6 @@ const F = {
   ui:      "'Inter', sans-serif",
   mono:    "'JetBrains Mono', monospace",
 };
-const G = {
-  card:   "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
-  button: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
-  gold:   "linear-gradient(135deg, #C89B47 0%, #E7C983 100%)",
-};
-const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
-const NUM: React.CSSProperties = { fontVariantNumeric: "tabular-nums", fontFeatureSettings: '"tnum" 1, "lnum" 1' };
 
 // ── Data ──────────────────────────────────────────────────────────────────
 type Status = "active" | "qc" | "idle";
@@ -172,35 +167,19 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
     <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
 
       {/* ── HERO ── */}
-      <section className="px-4 md:px-7 xl:px-14" style={{ background: G.card, paddingTop: 56, position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(200,155,71,0.025) 60px, rgba(200,155,71,0.025) 61px)`, pointerEvents: "none" }} />
-        <div style={{ position: "absolute", inset: 0, backgroundImage: `repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(200,155,71,0.012) 80px, rgba(200,155,71,0.012) 81px)`, pointerEvents: "none" }} />
-        <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2 }} />
-
-        <div style={{ position: "relative", zIndex: 2 }}>
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, ease: EASE }}
-            style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
-            <div style={{ width: 20, height: 1, background: T.antiqueGold, opacity: 0.6 }} />
-            <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
-              Since 1999 · Weaver Management
-            </span>
-          </motion.div>
-
-          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
-            style={{ fontFamily: F.display, fontWeight: 400, fontSize: "clamp(32px, 3.5vw, 52px)", color: T.warmCream, margin: "0 0 12px", lineHeight: 1.1, letterSpacing: "-0.5px" }}>
-            Weavers{" "}
-            <span style={{ fontStyle: "italic", color: T.antiqueGold }}>& Production Overview</span>
-          </motion.h1>
-
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.25 }}
-            className="max-w-[540px]"
-            style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: "rgba(245,232,208,0.72)", margin: "0 0 0", lineHeight: 1.7 }}>
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
+        <div className="pl-4 md:pl-7 xl:pl-12 w-full xl:w-auto xl:basis-[65%] xl:max-w-[65%]" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 90 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>SINCE 1999 · WEAVER MANAGEMENT</div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 8vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Weavers</h1>
+            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 6vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Production Overview</span>
+          </div>
+          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: "0 0 20px", lineHeight: 1.6 }}>
             See all weavers, their current work, how they are performing, and manage their details.
-          </motion.p>
+          </p>
 
           {/* Status pills */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
-            style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 24 }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             {[
               { label: `${ALL_WEAVERS.length} Total Weavers`, color: T.antiqueGold, bg: "rgba(200,155,71,0.15)", border: "rgba(200,155,71,0.30)" },
               { label: `${activeCount} Currently Working`,     color: T.warmCream,   bg: "rgba(30,102,64,0.18)",  border: "rgba(30,102,64,0.35)" },
@@ -210,35 +189,33 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                 {p.label}
               </span>
             ))}
-          </motion.div>
-
-          {/* Metrics row */}
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.4, ease: EASE }}
-            style={{ display: "flex", gap: 0, marginTop: 40, borderTop: "1px solid rgba(245,232,208,0.08)" }}>
-            {[
-              { label: "Total Active Weavers",    val: `${rosterActiveCount}`,     sub: "All currently with the firm",     Icon: Users,        hi: false },
-              { label: "Total Sarees Woven",       val: `${totalSarees}`,           sub: "All-time, across all weavers",   Icon: Layers,       hi: true  },
-              { label: "Quality Check Pass Rate",  val: `${overallPassRate}%`,      sub: "Across all sarees woven",        Icon: CheckCircle2, hi: false },
-              { label: "Warp Requests Pending",    val: `${warpRequestsPending}`,   sub: "Awaiting admin approval",        Icon: Clock,        hi: false },
-              { label: "Total Paid to Weavers",    val: formatMoney(rupees(totalPaidToWeavers)), sub: "All-time payments recorded", Icon: Star, hi: false },
-            ].map((m, i) => (
-              <div key={m.label} style={{ flex: 1, padding: "20px 20px", borderRight: i < 4 ? "1px solid rgba(245,232,208,0.07)" : "none", display: "flex", alignItems: "center", gap: 14 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.18)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.35)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <m.Icon size={19} color={m.hi ? T.antiqueGold : "rgba(245,232,208,0.70)"} />
-                </div>
-                <div>
-                  <div style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 12, letterSpacing: "1.8px", textTransform: "uppercase", color: m.hi ? "rgba(200,155,71,0.85)" : "rgba(245,232,208,0.55)", marginBottom: 4 }}>{m.label}</div>
-                  <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 30, color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1, ...NUM }}>{m.val}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(245,232,208,0.60)", marginTop: 3 }}>{m.sub}</div>
-                </div>
-              </div>
-            ))}
-          </motion.div>
+          </div>
         </div>
-      </section>
+        <div className="hidden xl:block" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
+          <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, #0D0207 0%, rgba(13,2,7,0.7) 38%, rgba(13,2,7,0.1) 100%)` }} />
+          <img src={imgPadmaVeni} alt="Padma Veni — Master Weaver" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", filter: "brightness(0.75) saturate(0.90)" }} />
+        </div>
+      </header>
+
+      {/* ── STATS STRIP ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-12 xl:-mt-[72px]"
+        style={{ position: "relative", zIndex: 20 }}
+      >
+        <LuxuryStatsCard stats={[
+          { label: "Total Active Weavers", value: `${rosterActiveCount}`, sub: "All currently with the firm", icon: <Users size={22} color={T.warmCream} /> },
+          { label: "Total Sarees Woven", value: `${totalSarees}`, sub: "All-time, across all weavers", icon: <Layers size={22} color={T.warmCream} /> },
+          { label: "Quality Check Pass Rate", value: `${overallPassRate}%`, sub: "Across all sarees woven", icon: <CheckCircle2 size={22} color={T.warmCream} />, highlight: true, goldVal: true },
+          { label: "Warp Requests Pending", value: `${warpRequestsPending}`, sub: "Awaiting admin approval", icon: <Clock size={22} color={T.warmCream} /> },
+          { label: "Total Paid to Weavers", value: formatMoney(rupees(totalPaidToWeavers)), sub: "All-time payments recorded", icon: <Star size={22} color={T.warmCream} /> },
+        ]} />
+      </motion.div>
 
       {/* ── FILTER + SEARCH BAR ── */}
-      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "relative", zIndex: 10 }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "relative", zIndex: 10, marginTop: 32 }}>
         {/* Mobile Flipkart-style Collapsible Filter Bar */}
         <div className="md:hidden py-3">
           <MobileFilterBar

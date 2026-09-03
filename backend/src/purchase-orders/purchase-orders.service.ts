@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { fromGrams, toGrams } from "../common/weight-units.util";
 import { Prisma, PurchaseOrderStatus, UserRole } from "../generated/prisma/client";
-import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
+import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { ActorOnlyDto } from "./dto/actor-only.dto";
@@ -26,7 +26,11 @@ export class PurchaseOrdersService {
       throw new NotFoundException(`Vendor ${dto.vendorId} not found`);
     }
 
-    const poNumber = await this.idGenerator.nextScoped("PO", vendor.code ?? businessSegment(vendor.name, "Vendor"));
+    // Scoped on vendor.code when present, falling back to the vendor's own
+    // (always-unique) id — never to a name-derived slug, which several
+    // vendors with similar/identical names (or several with no code) could
+    // share, causing their PO numbers to collide/interleave.
+    const poNumber = await this.idGenerator.nextScoped("PO", vendor.code ?? vendor.id);
 
     const po = await this.prisma.purchaseOrder.create({
       data: {
@@ -98,7 +102,7 @@ export class PurchaseOrdersService {
           // ₹0 forever otherwise, even once the real prices actually paid
           // are known from receiving it. The frontend falls back to these
           // once the PO's own line items show ₹0.
-          grnReceipt: { include: { receivedBy: { select: { id: true, firstName: true, lastName: true } }, items: true, firm: { select: { id: true, firmName: true } } } }
+          grnReceipt: { include: { receivedBy: { select: { id: true, empId: true, firstName: true, lastName: true } }, items: true, firm: { select: { id: true, firmName: true } } } }
         },
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
@@ -118,7 +122,7 @@ export class PurchaseOrdersService {
         items: true,
         firm: { select: { id: true, firmName: true } },
         createdBy: { select: { firstName: true, lastName: true } },
-        grnReceipt: { include: { receivedBy: { select: { id: true, firstName: true, lastName: true } }, items: true, firm: { select: { id: true, firmName: true } } } },
+        grnReceipt: { include: { receivedBy: { select: { id: true, empId: true, firstName: true, lastName: true } }, items: true, firm: { select: { id: true, firmName: true } } } },
       },
     });
     if (!po) {
@@ -190,7 +194,7 @@ export class PurchaseOrdersService {
 
     const grnId =
       grnReceipt?.id ??
-      (await this.idGenerator.nextScoped("GRN", po.vendor.code ?? businessSegment(po.vendor.name, "Vendor")));
+      (await this.idGenerator.nextScoped("GRN", po.vendor.code ?? po.vendor.id));
     const actualReceivedDate = dto.actualReceivedDate ? new Date(dto.actualReceivedDate) : new Date();
 
     // The firm is chosen when the order is raised, not when it's received —

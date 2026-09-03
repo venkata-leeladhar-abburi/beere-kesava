@@ -45,7 +45,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
   useEffect(() => {
     if (!open) return;
     vendorsApi.list().then(res => setVendors(res.items.map(v => ({
-      id: v.id, name: v.name, city: v.city ?? "", type: v.specialty ?? "",
+      id: v.id, code: v.code ?? undefined, name: v.name, city: v.city ?? "", type: v.specialty ?? "",
       phone: v.phone ?? "", terms: v.terms ?? "", gstCode: v.gstCode ?? "",
       address: v.address ?? "", contactName: v.contactName ?? "",
     })))).catch(() => setVendors([]));

@@ -83,19 +83,29 @@ export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => v
   return (
     <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       {/* Page Header */}
-      <div className="px-4 md:px-7 xl:px-12" style={{ background: `linear-gradient(100deg, ${T.deepWine}, ${T.royalBurgundy})`, paddingTop: 34, paddingBottom: 34, color: "#FFFDF9" }}>
-        <div style={{ marginBottom: 22 }}>
-          <Button onClick={onBack} variant="tertiary" size="md" iconLeft={ArrowLeft}>
-            Back to Production
-          </Button>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ShoppingBag size={28} />
+      <div className="px-4 md:px-7 xl:px-12" style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", paddingTop: 40, paddingBottom: 40, color: "#FFFDF9", position: "relative", overflow: "hidden" }}>
+        <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2 }} />
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <div style={{ marginBottom: 22 }}>
+            <Button onClick={onBack} variant="tertiary" size="md" iconLeft={ArrowLeft}>
+              Back to Production
+            </Button>
           </div>
-          <div>
-            <h1 style={{ margin: 0, fontFamily: F.display, fontSize: 30, fontWeight: 700 }}>All Bulk Orders</h1>
-            <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,0.68)", fontSize: 14 }}>Complete wholesale customer production order queue.</p>
+          <div style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase", marginBottom: 14 }}>
+            Since 1999 · Wholesale Orders
+          </div>
+          <div className="flex items-start md:items-center flex-col md:flex-row" style={{ gap: 16 }}>
+            <div style={{ width: 56, height: 56, borderRadius: 16, flexShrink: 0, background: "rgba(200,155,71,0.15)", border: "1px solid rgba(200,155,71,0.30)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <ShoppingBag size={26} color="#E7C983" />
+            </div>
+            <div>
+              <h1 style={{ margin: 0, fontFamily: F.display, fontWeight: 400, fontSize: "clamp(28px, 4vw, 42px)", lineHeight: 1.1, letterSpacing: "-0.5px" }}>
+                All Bulk <span style={{ fontStyle: "italic", color: "#C89B47" }}>Orders</span>
+              </h1>
+              <p className="max-w-[520px]" style={{ margin: "8px 0 0", color: "rgba(245,232,208,0.72)", fontSize: 14, lineHeight: 1.6 }}>
+                Complete wholesale customer production order queue.
+              </p>
+            </div>
           </div>
         </div>
       </div>
