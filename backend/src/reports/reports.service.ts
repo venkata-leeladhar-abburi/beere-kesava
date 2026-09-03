@@ -62,12 +62,15 @@ export class ReportsService {
     const [invoices, bulkOrders] = await Promise.all([
       this.prisma.invoice.findMany({
         where: { status: { in: [InvoiceStatus.PENDING, InvoiceStatus.PARTIAL, InvoiceStatus.OVERDUE] } },
-        include: { customer: true },
+        // dispatch.dispatchedBy and dispatch.sarees are the only source an
+        // Invoice has for "who raised this" and "how many sarees it covers"
+        // — Invoice itself carries neither.
+        include: { customer: true, dispatch: { include: { dispatchedBy: true, sarees: true } } },
         orderBy: { dueDate: "asc" },
       }),
       this.prisma.bulkOrder.findMany({
         where: { paymentStatus: { in: [OrderPaymentStatus.PENDING, OrderPaymentStatus.PARTIAL] } },
-        include: { customer: true },
+        include: { customer: true, createdBy: true },
         orderBy: { dueDate: "asc" },
       }),
     ]);
@@ -81,7 +84,18 @@ export class ReportsService {
       id: invoice.code ?? invoice.id,
       customerCode: invoice.customer.code ?? invoice.customerId,
       customerName: invoice.customer.name,
+      // Who: the wholesale dispatch this invoice was raised for — an
+      // invoice with no linked dispatch (raised standalone) has no actor
+      // recorded anywhere in the schema, so this is "—" rather than a guess.
+      raisedBy: invoice.dispatch?.dispatchedBy
+        ? `${invoice.dispatch.dispatchedBy.firstName} ${invoice.dispatch.dispatchedBy.lastName}`.trim()
+        : "—",
+      // At what time: when the invoice itself was actually raised, not the
+      // due date (dueDate stays below — a payment deadline, not a "when").
+      raisedAt: invoice.invoiceDate,
       dueDate: invoice.dueDate ?? invoice.invoiceDate,
+      // How many: sarees covered by this invoice's dispatch, when there is one.
+      quantity: invoice.dispatch?.sarees.length ?? null,
       total: Number(invoice.total),
       paid: Number(invoice.paid),
       outstanding: Number(invoice.total) - Number(invoice.paid),
@@ -93,7 +107,10 @@ export class ReportsService {
       id: order.ref,
       customerCode: order.customer.code ?? order.customerId,
       customerName: order.customer.name,
+      raisedBy: order.createdBy ? `${order.createdBy.firstName} ${order.createdBy.lastName}`.trim() : "—",
+      raisedAt: order.createdDate,
       dueDate: order.dueDate,
+      quantity: order.total,
       total: Number(order.amountDue),
       paid: Number(order.amountPaid),
       outstanding: Number(order.amountDue) - Number(order.amountPaid),
@@ -112,10 +129,14 @@ export class ReportsService {
   }
 
   async getProductionSummary() {
-    const [totalSarees, qcCounts, finishingCounts] = await Promise.all([
+    const [totalSarees, qcCounts, finishingCounts, sarees] = await Promise.all([
       this.getProducedSareeCount(),
       this.prisma.qcRecord.groupBy({ by: ["result"], _count: { _all: true } }),
       this.prisma.finishingAssignment.groupBy({ by: ["status"], _count: { _all: true } }),
+      this.prisma.saree.findMany({
+        include: { weaver: true, factoryLoom: true, design: true, sareeType: true },
+        orderBy: { createdAt: "desc" },
+      }),
     ]);
 
     const qcByResult: Record<QcResult, number> = {
@@ -127,34 +148,406 @@ export class ReportsService {
       qcByResult[row.result] = row._count._all;
     }
 
+    // Every produced saree, full record — foreign keys shown as our own
+    // human-facing codes (weaver.code, factoryLoom.code) rather than raw
+    // uuids; batchId/purchaseId are already business keys (BATCH-2026-NNN,
+    // EXT-2026-NNN) so those pass through as-is.
+    const sareeRows = sarees.map((saree) => ({
+      sareeId: saree.id,
+      origin: saree.origin,
+      weaverCode: saree.weaver?.code ?? "—",
+      factoryLoomCode: saree.factoryLoom?.code ?? "—",
+      purchaseId: saree.purchaseId ?? "—",
+      batchId: saree.batchId ?? "—",
+      designCode: saree.designCode ?? "—",
+      designName: saree.design?.name ?? "—",
+      sareeTypeCode: saree.sareeTypeCode ?? "—",
+      weightG: saree.weightG != null ? Number(saree.weightG) : null,
+      costPrice: saree.costPrice != null ? Number(saree.costPrice) : null,
+      color: saree.color ?? "—",
+      sourceName: saree.sourceName ?? "—",
+      qcDate: saree.qcDate,
+      status: saree.status,
+      createdAt: saree.createdAt,
+    }));
+
     return {
       totalSareesProduced: totalSarees,
       qcByResult,
       finishingByStatus: Object.fromEntries(
         finishingCounts.map((row) => [row.status, row._count._all]),
       ),
+      sarees: sareeRows,
     };
   }
 
+  // Every row needs who handled it, what it was, when, and how many — a bare
+  // aggregate total told none of that (product feedback after the report
+  // used to just say "₹X, N sales" with no way to trace a single one of
+  // them back to a person or a date).
   async getSalesSummary() {
-    const [retailAgg, wholesaleAgg] = await Promise.all([
-      this.prisma.saleRecord.aggregate({ _sum: { amount: true }, _count: { _all: true } }),
+    const [retailSales, wholesaleDispatches] = await Promise.all([
+      this.prisma.saleRecord.findMany({
+        include: { customer: true, soldBy: true },
+        orderBy: { date: "desc" },
+      }),
+      this.prisma.dispatchRecord.findMany({
+        where: { type: DispatchType.WHOLESALE },
+        include: { customer: true, dispatchedBy: true, sarees: true },
+        orderBy: { dispatchDate: "desc" },
+      }),
+    ]);
+
+    const retailRows = retailSales.map((sale) => ({
+      saleRef: sale.saleRef,
+      soldBy: sale.soldBy ? `${sale.soldBy.firstName} ${sale.soldBy.lastName}`.trim() : "—",
+      soldAt: sale.date,
+      customerName: sale.customer.name,
+      sareeId: sale.sareeId,
+      // A retail sale is always exactly one saree — the count column exists
+      // so this reads the same shape as the wholesale rows below, where a
+      // dispatch legitimately covers more than one.
+      quantity: 1,
+      amount: Number(sale.amount),
+    }));
+
+    const wholesaleRows = wholesaleDispatches.map((dispatch) => ({
+      dispatchId: dispatch.id,
+      dispatchedBy: dispatch.dispatchedBy
+        ? `${dispatch.dispatchedBy.firstName} ${dispatch.dispatchedBy.lastName}`.trim()
+        : "—",
+      dispatchedAt: dispatch.dispatchDate,
+      customerName: dispatch.customer?.name ?? "—",
+      quantity: dispatch.sarees.length,
+      amount: Number(dispatch.grandTotal),
+    }));
+
+    // Flat, not nested under retail/wholesale: buildReportWorkbook only
+    // looks one level deep for arrays-of-records to turn into table sheets
+    // — a value that's itself an object (retail: { rows: [...], ... }) would
+    // fall through to the Summary sheet as one JSON-stringified cell instead
+    // of a real table. Top-level arrays become their own sheet; top-level
+    // scalars land together on Summary.
+    return {
+      retailSales: retailRows,
+      retailTotalSales: retailRows.reduce((sum, r) => sum + r.amount, 0),
+      retailCount: retailRows.length,
+      wholesaleSales: wholesaleRows,
+      wholesaleTotalSales: wholesaleRows.reduce((sum, r) => sum + r.amount, 0),
+      wholesaleTotalQuantity: wholesaleRows.reduce((sum, r) => sum + r.quantity, 0),
+      wholesaleCount: wholesaleRows.length,
+    };
+  }
+
+  /** Retail-only version of getSalesSummary — used by the "Retail Sales
+   *  Report" schedule so its workbook doesn't also carry wholesale rows
+   *  under the same sheet set (that's what made a "Wholesale Sales Report"
+   *  delivery look identical to a Retail one — both handlers called
+   *  getSalesSummary and got the combined retail+wholesale shape back). */
+  async getRetailSalesReport() {
+    const retailSales = await this.prisma.saleRecord.findMany({
+      include: { customer: true, soldBy: true },
+      orderBy: { date: "desc" },
+    });
+
+    const rows = retailSales.map((sale) => ({
+      saleRef: sale.saleRef,
+      soldBy: sale.soldBy ? `${sale.soldBy.firstName} ${sale.soldBy.lastName}`.trim() : "—",
+      soldAt: sale.date,
+      customerName: sale.customer.name,
+      sareeId: sale.sareeId,
+      quantity: 1,
+      amount: Number(sale.amount),
+    }));
+
+    return {
+      retailSales: rows,
+      totalSales: rows.reduce((sum, r) => sum + r.amount, 0),
+      totalQuantity: rows.length,
+      count: rows.length,
+      periodStart: rows.length ? rows[rows.length - 1].soldAt : null,
+      periodEnd: rows.length ? rows[0].soldAt : null,
+    };
+  }
+
+  /** Wholesale-only version of getSalesSummary — see getRetailSalesReport
+   *  for why this exists as a separate method rather than reusing the
+   *  combined one. */
+  async getWholesaleSalesReport() {
+    const dispatches = await this.prisma.dispatchRecord.findMany({
+      where: { type: DispatchType.WHOLESALE },
+      include: { customer: true, dispatchedBy: true, firm: true, sarees: true },
+      orderBy: { dispatchDate: "desc" },
+    });
+
+    // dispatchId shown as our own human-facing reference (invoice number,
+    // falling back to the delivery challan number) rather than the raw
+    // uuid primary key — DispatchRecord.id has no business-key format of
+    // its own, unlike Batch/Purchase/GRN ids.
+    const rows = dispatches.map((dispatch) => ({
+      dispatchId: dispatch.invoiceNumber ?? dispatch.challanNumber ?? dispatch.id,
+      dispatchedBy: dispatch.dispatchedBy
+        ? `${dispatch.dispatchedBy.firstName} ${dispatch.dispatchedBy.lastName}`.trim()
+        : "—",
+      dispatchedAt: dispatch.dispatchDate,
+      customerName: dispatch.customer?.name ?? "—",
+      quantity: dispatch.sarees.length,
+      amount: Number(dispatch.grandTotal),
+      invoiceNumber: dispatch.invoiceNumber ?? "—",
+      invoiceDate: dispatch.invoiceDate,
+      challanNumber: dispatch.challanNumber ?? "—",
+      pricePerSaree: dispatch.pricePerSaree != null ? Number(dispatch.pricePerSaree) : null,
+      totalAmount: Number(dispatch.totalAmount),
+      gstPct: dispatch.gstPct != null ? Number(dispatch.gstPct) : null,
+      grandTotal: Number(dispatch.grandTotal),
+      firmName: dispatch.firm?.firmName ?? "—",
+      lrNumber: dispatch.lrNumber ?? "—",
+      transportCompany: dispatch.transportCompany ?? "—",
+      vehicleNumber: dispatch.vehicleNumber ?? "—",
+      driverName: dispatch.driverName ?? "—",
+      expectedDelivery: dispatch.expectedDelivery,
+      paymentDueDate: dispatch.paymentDueDate,
+      bulkOrderRef: dispatch.bulkOrderRef ?? "—",
+      quotationRef: dispatch.quotationRef ?? "—",
+      notes: dispatch.notes ?? dispatch.specialInstructions ?? "—",
+    }));
+
+    return {
+      wholesaleSales: rows,
+      totalSales: rows.reduce((sum, r) => sum + r.amount, 0),
+      totalQuantity: rows.reduce((sum, r) => sum + r.quantity, 0),
+      count: rows.length,
+      periodStart: rows.length ? rows[rows.length - 1].dispatchedAt : null,
+      periodEnd: rows.length ? rows[0].dispatchedAt : null,
+    };
+  }
+
+  /** Every raw-material delivery — who received it, from which vendor, when,
+   *  and how much of each material. */
+  async getRawMaterialReport() {
+    const receipts = await this.prisma.grnReceipt.findMany({
+      include: { vendor: true, receivedBy: true, items: true },
+      orderBy: { receivedDate: "desc" },
+    });
+
+    const rows = receipts.flatMap((receipt) =>
+      receipt.items.map((item) => ({
+        grnId: receipt.id,
+        vendorName: receipt.vendor?.name ?? receipt.supplierName,
+        receivedBy: receipt.receivedBy
+          ? `${receipt.receivedBy.firstName} ${receipt.receivedBy.lastName}`.trim()
+          : "—",
+        receivedAt: receipt.receivedDate,
+        materialType: item.materialType,
+        materialName: item.name,
+        quantity: Number(item.quantity),
+        unit: item.unit,
+        totalPrice: Number(item.totalPrice),
+      })),
+    );
+
+    return {
+      materialReceipts: rows,
+      totalReceipts: receipts.length,
+      totalLineItems: rows.length,
+      totalSpend: rows.reduce((sum, r) => sum + r.totalPrice, 0),
+    };
+  }
+
+  /** Every payment made to a weaver — who recorded it, which weaver, when,
+   *  and for how many sarees. */
+  async getWeaverPaymentReport() {
+    const payments = await this.prisma.weaverPayment.findMany({
+      include: { weaver: true, recordedBy: true },
+      orderBy: { paymentDate: "desc" },
+    });
+
+    const rows = payments.map((payment) => ({
+      paymentId: payment.id,
+      weaverName: payment.weaver.name,
+      recordedBy: payment.recordedBy
+        ? `${payment.recordedBy.firstName} ${payment.recordedBy.lastName}`.trim()
+        : "—",
+      paidAt: payment.paymentDate,
+      // How many: the sarees this payment covers, when recorded — null for
+      // a general/advance payment not tied to a specific saree count.
+      quantity: payment.noOfSarees,
+      amount: Number(payment.amountPaid),
+      deduction: payment.deduction != null ? Number(payment.deduction) : 0,
+    }));
+
+    return {
+      weaverPayments: rows,
+      totalPayments: rows.length,
+      totalPaid: rows.reduce((sum, r) => sum + r.amount, 0),
+      totalDeducted: rows.reduce((sum, r) => sum + r.deduction, 0),
+    };
+  }
+
+  /** Every registered customer — who they are, what type, when they joined,
+   *  and how many orders/how much they've actually bought. */
+  async getCustomerReport() {
+    const customers = await this.prisma.customer.findMany({
+      include: {
+        invoices: { select: { total: true, invoiceDate: true } },
+        dispatchRecords: { where: { type: DispatchType.WHOLESALE }, select: { grandTotal: true, dispatchDate: true } },
+        bulkOrders: { select: { amountDue: true, amountPaid: true, createdDate: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const rows = customers.map((customer) => {
+      const orderDates = [
+        ...customer.invoices.map((i) => i.invoiceDate),
+        ...customer.dispatchRecords.map((d) => d.dispatchDate),
+        ...customer.bulkOrders.map((b) => b.createdDate),
+      ];
+      const lastOrderAt = orderDates.length > 0
+        ? new Date(Math.max(...orderDates.map((d) => d.getTime())))
+        : null;
+      const totalSpend =
+        customer.invoices.reduce((sum, i) => sum + Number(i.total), 0) +
+        customer.dispatchRecords.reduce((sum, d) => sum + Number(d.grandTotal), 0) +
+        customer.bulkOrders.reduce((sum, b) => sum + Number(b.amountPaid), 0);
+      const quantity = customer.invoices.length + customer.dispatchRecords.length + customer.bulkOrders.length;
+
+      return {
+        customerCode: customer.code ?? customer.id,
+        customerName: customer.name,
+        type: customer.type,
+        city: customer.city ?? "—",
+        joinedAt: customer.createdAt,
+        lastOrderAt,
+        quantity,
+        totalSpend,
+      };
+    });
+
+    return {
+      customers: rows,
+      totalCustomers: rows.length,
+      totalOrders: rows.reduce((sum, r) => sum + r.quantity, 0),
+      totalRevenue: rows.reduce((sum, r) => sum + r.totalSpend, 0),
+    };
+  }
+
+  /** Revenue (retail + wholesale) against cost (raw material + weaver
+   *  payments) as one line per source, so "who/what/when/how much" is
+   *  traceable the same way the other reports are, not just a net figure. */
+  async getProfitAndLossReport() {
+    const [retailAgg, wholesaleAgg, materialAgg, receiptDateAgg, weaverAgg] = await Promise.all([
+      this.prisma.saleRecord.aggregate({
+        _sum: { amount: true },
+        _count: { _all: true },
+        _min: { date: true },
+        _max: { date: true },
+      }),
       this.prisma.dispatchRecord.aggregate({
         where: { type: DispatchType.WHOLESALE },
         _sum: { grandTotal: true },
         _count: { _all: true },
+        _min: { dispatchDate: true },
+        _max: { dispatchDate: true },
+      }),
+      // Item-level totals: GrnItem carries the price, not a date of its own.
+      this.prisma.grnItem.aggregate({ _sum: { totalPrice: true }, _count: { _all: true } }),
+      // The date range those items were received on lives on the parent
+      // receipt instead, so it's a separate aggregate.
+      this.prisma.grnReceipt.aggregate({ _min: { receivedDate: true }, _max: { receivedDate: true } }),
+      this.prisma.weaverPayment.aggregate({
+        _sum: { amountPaid: true },
+        _count: { _all: true },
+        _min: { paymentDate: true },
+        _max: { paymentDate: true },
       }),
     ]);
 
+    const retailRevenue = Number(retailAgg._sum.amount ?? 0);
+    const wholesaleRevenue = Number(wholesaleAgg._sum.grandTotal ?? 0);
+    const materialCost = Number(materialAgg._sum.totalPrice ?? 0);
+    const weaverCost = Number(weaverAgg._sum.amountPaid ?? 0);
+    const totalRevenue = retailRevenue + wholesaleRevenue;
+    const totalCost = materialCost + weaverCost;
+
+    // Each line covers "from this time to this time" — the earliest and
+    // latest record date backing that line's figure — not just a bare total.
+    const lines = [
+      {
+        source: "Retail sales",
+        type: "Revenue" as const,
+        quantity: retailAgg._count._all,
+        amount: retailRevenue,
+        periodStart: retailAgg._min.date,
+        periodEnd: retailAgg._max.date,
+      },
+      {
+        source: "Wholesale dispatches",
+        type: "Revenue" as const,
+        quantity: wholesaleAgg._count._all,
+        amount: wholesaleRevenue,
+        periodStart: wholesaleAgg._min.dispatchDate,
+        periodEnd: wholesaleAgg._max.dispatchDate,
+      },
+      {
+        source: "Raw material purchases",
+        type: "Cost" as const,
+        quantity: materialAgg._count._all,
+        amount: materialCost,
+        periodStart: receiptDateAgg._min.receivedDate,
+        periodEnd: receiptDateAgg._max.receivedDate,
+      },
+      {
+        source: "Weaver payments",
+        type: "Cost" as const,
+        quantity: weaverAgg._count._all,
+        amount: weaverCost,
+        periodStart: weaverAgg._min.paymentDate,
+        periodEnd: weaverAgg._max.paymentDate,
+      },
+    ];
+
+    const allStarts = lines.map((l) => l.periodStart).filter((d): d is Date => d != null);
+    const allEnds = lines.map((l) => l.periodEnd).filter((d): d is Date => d != null);
+    const netProfit = totalRevenue - totalCost;
+    const result = netProfit >= 0 ? ("Profit" as const) : ("Loss" as const);
+    const resultAmount = Math.abs(netProfit);
+    const reportPeriodStart = allStarts.length ? new Date(Math.min(...allStarts.map((d) => d.getTime()))) : null;
+    const reportPeriodEnd = allEnds.length ? new Date(Math.max(...allEnds.map((d) => d.getTime()))) : null;
+
+    // Its own table, separate from the revenue/cost lines — not appended as
+    // an extra row mixed in with them.
+    const netResult = [
+      {
+        source: result === "Profit" ? "NET RESULT — PROFIT" : "NET RESULT — LOSS",
+        type: result,
+        quantity: lines.reduce((sum, l) => sum + l.quantity, 0),
+        amount: resultAmount,
+        periodStart: reportPeriodStart,
+        periodEnd: reportPeriodEnd,
+      },
+    ];
+
     return {
-      retail: {
-        totalSales: Number(retailAgg._sum.amount ?? 0),
-        count: retailAgg._count._all,
-      },
-      wholesale: {
-        totalSales: Number(wholesaleAgg._sum.grandTotal ?? 0),
-        count: wholesaleAgg._count._all,
-      },
+      lines,
+      netResult,
+      totalRevenue,
+      totalCost,
+      netProfit,
+      // Spelled out plainly rather than making the reader infer it from the
+      // sign of netProfit — "Profit" with the amount, or "Loss" with the
+      // amount, never a bare positive/negative number.
+      result,
+      resultAmount,
+      resultSummary:
+        result === "Profit"
+          ? `Profit of ₹${netProfit.toLocaleString("en-IN")}`
+          : `Loss of ₹${resultAmount.toLocaleString("en-IN")}`,
+      // What fraction of revenue was kept as profit (or lost as a shortfall
+      // beyond it, if negative) — the standard "how healthy is this" figure.
+      profitMarginPct: totalRevenue > 0 ? Math.round((netProfit / totalRevenue) * 1000) / 10 : null,
+      // The overall span the whole report covers, across every line.
+      reportPeriodStart,
+      reportPeriodEnd,
     };
   }
 

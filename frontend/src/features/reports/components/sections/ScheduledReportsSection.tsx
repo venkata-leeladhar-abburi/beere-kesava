@@ -38,15 +38,20 @@ import { useAuth } from "../../../../contexts/AuthContext";
 import { useConfirm } from "../../../../shared/ui/overlay";
 import { patchEnvelopeItems, prependToEnvelope, removeFromEnvelopeWhere } from "../../../../lib/cacheUpdates";
 
+// Every entry here must have a matching key in the backend's
+// ReportSchedulerService.REPORT_NAME_HANDLERS (the exact label string,
+// verbatim) — a mismatch here is what silently substituted the wrong
+// report's content for whatever was actually scheduled ("I scheduled
+// Retail but got a Bulk Order report").
 const REPORT_TYPES = [
-  "Raw Material Report",
   "Saree Production Report",
-  "Weaver Payment Report",
   "Retail Sales Report",
   "Wholesale Sales Report",
-  "Profit & Loss Report",
-  "Customer Report",
   "Overdue & Alerts Report",
+  "Raw Material Report",
+  "Weaver Payment Report",
+  "Customer Report",
+  "Profit & Loss Report",
 ];
 
 const FREQUENCY_OPTIONS: { value: ReportFrequency; label: string; hint: string }[] = [

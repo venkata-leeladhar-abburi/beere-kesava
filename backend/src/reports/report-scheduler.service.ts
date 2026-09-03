@@ -11,15 +11,30 @@ import { ReportsService } from "./reports.service";
 
 /**
  * Maps a ScheduledReport.reportName to the ReportsService method(s) that
- * produce its underlying data. New report types should be added here.
+ * produce its underlying data. Keyed by the exact label the frontend's
+ * ScheduledReportsSection.tsx REPORT_TYPES dropdown sends — reportName is
+ * stored as that human label verbatim, not a slug.
+ *
+ * This used to be keyed by an unrelated slug vocabulary
+ * ("outstanding-payments" / "production-summary" / "sales-summary") that
+ * schedule.reportName never actually contained, so every lookup missed and
+ * silently fell back to a hardcoded default (getOutstandingPayments) —
+ * every scheduled report, regardless of the type picked at creation, was
+ * generating the same outstanding-payments-and-bulk-orders content. That's
+ * the "I scheduled Retail but got Bulk Order" report. Keying by the real
+ * label fixes the lookup. Every REPORT_TYPES entry on the frontend must have
+ * a matching key here — keep both in sync.
  */
 const REPORT_NAME_HANDLERS: Record<string, (svc: ReportsService) => Promise<unknown>> = {
-  "outstanding-payments": (svc) => svc.getOutstandingPayments(),
-  "production-summary": (svc) => svc.getProductionSummary(),
-  "sales-summary": (svc) => svc.getSalesSummary(),
+  "Overdue & Alerts Report": (svc) => svc.getOutstandingPayments(),
+  "Saree Production Report": (svc) => svc.getProductionSummary(),
+  "Retail Sales Report": (svc) => svc.getRetailSalesReport(),
+  "Wholesale Sales Report": (svc) => svc.getWholesaleSalesReport(),
+  "Raw Material Report": (svc) => svc.getRawMaterialReport(),
+  "Weaver Payment Report": (svc) => svc.getWeaverPaymentReport(),
+  "Customer Report": (svc) => svc.getCustomerReport(),
+  "Profit & Loss Report": (svc) => svc.getProfitAndLossReport(),
 };
-
-const DEFAULT_REPORT_HANDLER = REPORT_NAME_HANDLERS["outstanding-payments"];
 
 /**
  * Polls active ScheduledReport rows every 15 minutes and generates the
@@ -83,10 +98,21 @@ export class ReportSchedulerService {
       return;
     }
 
-    // Resolve the handler for this report's name; fall back to a default
-    // summary if the name doesn't match a known report type, so a
-    // schedule never silently produces nothing.
-    const handler = REPORT_NAME_HANDLERS[schedule.reportName] ?? DEFAULT_REPORT_HANDLER;
+    // No fallback to a default report on a miss: a schedule for a report
+    // type with no real data source yet must not silently deliver a
+    // different report's content instead — that's the exact bug this
+    // lookup used to have (see REPORT_NAME_HANDLERS' comment). Skip and log
+    // loudly; nextRunAt still advances below so this doesn't retry every
+    // 15 minutes forever.
+    const handler = REPORT_NAME_HANDLERS[schedule.reportName];
+    if (!handler) {
+      this.logger.warn(
+        `ScheduledReport ${scheduleId} has reportName "${schedule.reportName}", which has no ` +
+          `ReportsService handler yet — skipping this run without generating or delivering anything.`,
+      );
+      await this.advanceSchedule(schedule);
+      return;
+    }
     const reportData = await handler(this.reportsService);
 
     this.logger.log(
@@ -114,6 +140,19 @@ export class ReportSchedulerService {
 
     // Advances even when delivery failed: leaving the schedule due would have
     // the 15-minute poll regenerate and re-send it for the rest of the day.
+    await this.advanceSchedule(schedule);
+  }
+
+  /** Moves a schedule's nextRunAt past now, whether or not this run actually
+   *  generated and delivered a report — a due schedule that's never advanced
+   *  gets re-picked-up by every 15-minute poll for the rest of the day. */
+  private async advanceSchedule(schedule: {
+    id: string;
+    frequency: ReportFrequency;
+    deliveryHour: number;
+    deliveryMinute: number;
+    createdAt: Date;
+  }): Promise<void> {
     const completedAt = new Date();
     await this.prisma.scheduledReport.update({
       where: { id: schedule.id },

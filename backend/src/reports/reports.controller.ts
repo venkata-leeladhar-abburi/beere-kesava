@@ -24,6 +24,16 @@ export class ReportsController {
     return this.reportsService.getSalesSummary();
   }
 
+  @Get("retail-sales")
+  getRetailSalesReport() {
+    return this.reportsService.getRetailSalesReport();
+  }
+
+  @Get("wholesale-sales")
+  getWholesaleSalesReport() {
+    return this.reportsService.getWholesaleSalesReport();
+  }
+
   // Powers the Overview dashboard's "In Stock"/"Payments Collected" figures —
   // paymentsCollectedPct here is computed across every invoice ever raised
   // (unlike getOutstandingPayments, which only covers invoices still owed),
@@ -33,6 +43,26 @@ export class ReportsController {
   @Get("production-analytics")
   getProductionAnalytics() {
     return this.reportsService.getProductionAnalytics();
+  }
+
+  @Get("raw-material")
+  getRawMaterialReport() {
+    return this.reportsService.getRawMaterialReport();
+  }
+
+  @Get("weaver-payments")
+  getWeaverPaymentReport() {
+    return this.reportsService.getWeaverPaymentReport();
+  }
+
+  @Get("customers")
+  getCustomerReport() {
+    return this.reportsService.getCustomerReport();
+  }
+
+  @Get("profit-loss")
+  getProfitAndLossReport() {
+    return this.reportsService.getProfitAndLossReport();
   }
 
   @Get("schedules")

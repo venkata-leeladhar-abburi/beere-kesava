@@ -42,12 +42,12 @@ export function LiveSummarySnapshot() {
     {
       icon: <Store size={18} color={T.antiqueGold} />,
       label: "Retail Sales (Live)",
-      value: sales ? `${formatMoney(rupees(sales.retail.totalSales))} · ${sales.retail.count} sarees` : "—",
+      value: sales ? `${formatMoney(rupees(sales.retailTotalSales))} · ${sales.retailCount} sarees` : "—",
     },
     {
       icon: <ShoppingBag size={18} color={T.antiqueGold} />,
       label: "Wholesale Dispatched (Live)",
-      value: sales ? `${formatMoney(rupees(sales.wholesale.totalSales))} · ${sales.wholesale.count} dispatches` : "—",
+      value: sales ? `${formatMoney(rupees(sales.wholesaleTotalSales))} · ${sales.wholesaleCount} dispatches` : "—",
     },
     {
       icon: <ShoppingBag size={18} color={T.crimson} />,
