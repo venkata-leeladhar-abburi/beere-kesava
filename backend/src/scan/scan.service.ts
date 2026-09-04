@@ -176,7 +176,7 @@ export class ScanService {
       atShop: !returned,
       sellingPrice: Number(line.finalAmount),
       supplier: line.purchase.supplier
-        ? { id: line.purchase.supplier.id, name: line.purchase.supplier.name, shortName: line.purchase.supplier.shortName }
+        ? { id: line.purchase.supplier.id, name: line.purchase.supplier.name, shortName: line.purchase.supplier.initials }
         : line.purchase.supplierName
           ? { id: null, name: line.purchase.supplierName, shortName: null }
           : null,

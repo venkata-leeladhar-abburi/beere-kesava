@@ -5,8 +5,8 @@ import { SectionCard } from "../primitives";
 import { type ReceivedSareeLog } from "./shared";
 import { TagPreviewScreen } from "./TagPreviewScreen";
 import { Button, Input, Combobox } from "../../../../../shared/ui/primitives";
-import { useQc } from "@/features/qc";
-import { useBatches, type SareeRow } from "@/features/production";
+import { useQc, type QcRecord } from "@/features/qc";
+import { useBatches } from "@/features/production";
 import { StatusPill } from "../../../../../shared/ui/domain";
 import type { StatusValueOf } from "@/lib/domain/status";
 import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
@@ -51,56 +51,70 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
   const { batches: allBatches } = useBatches();
   const printSareeTags = usePrintSareeTags();
 
-  // The color/weight/photo entered by Worker Staff at receipt live on the
-  // batch row itself (receivedWeight/receivedColor/receivedPhotoUrl), not on
-  // the QC record — join to it by sareeId so a QC'd saree's history entry
-  // still shows what was actually recorded on intake.
-  const rowLookup = useMemo(() => {
-    const m = new Map<string, SareeRow>();
-    for (const b of allBatches) for (const r of b.rows) if (r.sareeId) m.set(r.sareeId, r);
+  // Latest QC verdict per saree, keyed by sareeId, so a received row that has
+  // since been inspected shows its real status instead of "Pending QC"
+  // forever. A saree can be QC'd more than once (rework loop) — qcRecords is
+  // already ordered newest-first, so the first hit per id wins.
+  const latestQcBySaree = useMemo(() => {
+    const m = new Map<string, { result: QcRecord["result"]; photoUrl?: string | null }>();
+    for (const r of qcRecords) if (!m.has(r.sareeId)) m.set(r.sareeId, { result: r.result, photoUrl: r.photoUrl });
     return m;
-  }, [allBatches]);
+  }, [qcRecords]);
 
-  // Real QC-inspection history — the closest genuine equivalent to a
-  // "received from weaver/loom" log this schema actually has. A row belongs
-  // to either an outsourced weaver or one of the factory's own looms —
-  // either identity is enough to admit it, not just weaverName (which is
-  // null for factory-loom rows and previously hid them from this history
-  // entirely).
-  const qcHistory: HistoryRow[] = useMemo(() => qcRecords
-    .filter(r => r.weaverName || r.factoryLoomNumber)
-    .map(r => {
-      const row = rowLookup.get(r.sareeId);
-      return {
-        id: r.sareeId,
-        key: `${r.sareeId}-${r.qcDate}`,
-        weaver: r.weaverName ?? r.factoryLoomNumber ?? "Factory Loom",
-        wcode: r.weaverId ?? "",
-        weaverCode: row?.weaverCode ?? undefined,
-        batch: r.batchId ?? "—",
-        weight: row?.receivedWeight ? `${row.receivedWeight}g` : "—",
-        color: row?.receivedColor ?? "—",
-        date: new Date(r.qcDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
-        isoDate: r.qcDate,
-        status: QC_RESULT_TO_STATUS[r.result] ?? "Pending QC",
-        // The code ("KJ-001"), not the type's display name ("KANJIVARAM") —
-        // the code is what identifies a saree type on the floor, and it is
-        // what the batch's own Saree Type column already shows.
-        sareeType: r.sareeTypeCode ?? undefined,
-        bulkOrder: r.bulkOrderLabel ?? undefined,
-        loomNumber: row?.weaverLoom ?? undefined,
-        // Receipt-time photo capture was removed — the saree's photo is now
-        // taken at QC pass time instead, so fall back to that.
-        photoUrl: row?.receivedPhotoUrl ?? r.photoUrl ?? undefined,
-        receivedBy: row?.receivedBy ?? undefined,
-      };
-    }),
-  [qcRecords, rowLookup]);
+  // Received history sourced directly from the batch rows themselves — the
+  // backend persists receivedAt/receivedBy/receivedWeight/etc. on the row the
+  // moment Worker Staff receives it, well before any QC inspection happens.
+  // Building this off qcRecords (as before) meant a freshly received saree
+  // vanished from history until it was QC'd, and never showed who received
+  // it (receivedBy lived only on the row, not the QC record).
+  const qcHistory: HistoryRow[] = useMemo(() => {
+    const rows: HistoryRow[] = [];
+    for (const b of allBatches) {
+      for (const r of b.rows) {
+        if (!r.sareeId || !r.receivedAt) continue;
+        // Checked against the raw ids, not the resolved weaverName/
+        // factoryLoomNumber labels — BatchContext degrades those to null
+        // whenever the weavers/looms lookup fetch fails, and a row with a
+        // real weaverId/factoryLoomId but a blank label is still a real
+        // received saree, not one to drop from history.
+        if (!r.weaverId && !r.factoryLoomId) continue;
+        const qc = latestQcBySaree.get(r.sareeId);
+        rows.push({
+          id: r.sareeId,
+          key: `${r.sareeId}-${r.receivedAt}`,
+          weaver: r.weaverName ?? r.factoryLoomNumber ?? "Factory Loom",
+          wcode: r.weaverId ?? "",
+          weaverCode: r.weaverCode ?? undefined,
+          batch: b.batchId,
+          weight: r.receivedWeight ? `${r.receivedWeight}g` : "—",
+          color: r.receivedColor ?? "—",
+          date: new Date(r.receivedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+          isoDate: r.receivedAt,
+          status: qc ? (QC_RESULT_TO_STATUS[qc.result] ?? "Pending QC") : "Pending QC",
+          // The code ("KJ-001"), not the type's display name ("KANJIVARAM") —
+          // the code is what identifies a saree type on the floor, and it is
+          // what the batch's own Saree Type column already shows.
+          sareeType: r.sareeTypeCode ?? undefined,
+          bulkOrder: r.bulkOrderLabel ?? undefined,
+          loomNumber: r.weaverLoom ?? undefined,
+          // Receipt-time photo, falling back to the QC-pass photo if intake
+          // didn't capture one.
+          photoUrl: r.receivedPhotoUrl ?? qc?.photoUrl ?? undefined,
+          receivedBy: r.receivedBy ?? undefined,
+        });
+      }
+    }
+    return rows;
+  }, [allBatches, latestQcBySaree]);
 
+  // liveRecords covers the brief window between a receive click and the
+  // batches list refetch landing — anything already reflected in qcHistory
+  // (by sareeId) is dropped so a just-received saree doesn't show twice.
+  const seenIds = useMemo(() => new Set(qcHistory.map(h => h.id)), [qcHistory]);
   const allData: HistoryRow[] = useMemo(() => [
-    ...liveRecords.map(r => ({ ...r, sareeType: "—", key: `live-${r.id}` })),
+    ...liveRecords.filter(r => !seenIds.has(r.id)).map(r => ({ ...r, sareeType: "—", key: `live-${r.id}` })),
     ...qcHistory,
-  ], [liveRecords, qcHistory]);
+  ], [liveRecords, qcHistory, seenIds]);
 
   const uniqueEntities = useMemo(() => Array.from(new Set(allData.map(h => h.weaver))).sort(), [allData]);
   const uniqueBatches = useMemo(() => Array.from(new Set(allData.map(h => h.batch))).filter(b => b !== "—").sort(), [allData]);

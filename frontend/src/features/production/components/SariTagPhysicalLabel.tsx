@@ -131,7 +131,6 @@ export function SariTagPhysicalLabel({
                     the LORD GANESH letter cipher (see costCipher.ts) so it
                     isn't readable by a customer glancing at the tag, while
                     staff who know the phrase can decode it back. */}
-                <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, fontWeight: 600 }}>COST</div>
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: T.taupe, fontWeight: 600, marginTop: 1, letterSpacing: "0.5px" }}>
                   {saree.costPrice != null ? encodeCostCipher(saree.costPrice) : "—"}
                 </div>

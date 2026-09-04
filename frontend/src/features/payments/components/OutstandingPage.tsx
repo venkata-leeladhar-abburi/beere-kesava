@@ -4,6 +4,7 @@ import {
   AlertTriangle, Factory, Layers, Truck, TrendingUp, Users, Package, ShoppingBag,
 } from "lucide-react";
 import { useSales, isOutstanding } from "@/features/customers";
+import { useReportPeriodOptional } from "@/features/reports/components/PeriodContext";
 import type { IconComponent } from "../../../lib/icon";
 import { T, F } from "../theme";
 import type { AgeKey } from "./outstanding/primitives";
@@ -32,10 +33,18 @@ const OUT_TABS: { key: OutTab; label: string; desc: string; Icon: IconComponent 
 ];
 
 export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
-  const { sarees, isLoading: salesLoading, isError: salesError, error: salesErrorObj, refetch: refetchSales } = useSales();
+  const { sarees: allSarees, isLoading: salesLoading, isError: salesError, error: salesErrorObj, refetch: refetchSales } = useSales();
   const [tab, setTab] = useState<OutTab>("weaver");
   const [search, setSearch] = useState("");
   const [ageFilter, setAgeFilter] = useState<AgeKey>("all");
+
+  // Only set when embedded inside the Reports page — narrows the live unsold
+  // list to stock received/batched within the selected period.
+  const reportPeriod = useReportPeriodOptional();
+  const sarees = useMemo(
+    () => (reportPeriod ? allSarees.filter(s => reportPeriod.inCurrent(s.qcDate)) : allSarees),
+    [allSarees, reportPeriod],
+  );
 
   const totals = useMemo(() => {
     const out = sarees.filter(isOutstanding);

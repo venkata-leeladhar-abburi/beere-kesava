@@ -265,6 +265,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
           color: sareeColor, status: "Pending QC",
           loomNumber: s.weaverLoom ?? currentBatch.loomNumber ?? null,
           sareeType: effectiveTypeCode ?? currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
+          receivedBy: user?.name ?? null,
         });
       }
       setSelectedSareeNos(new Set()); setSareeColor(""); setSareeWeight(""); setSareePrice(""); setMatEdits({}); setTypeOverride(null);
@@ -451,6 +452,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                         color: sareeColor || "—", status: "Defective",
                         loomNumber: s.weaverLoom ?? currentBatch.loomNumber ?? null,
                         sareeType: effectiveTypeCode ?? currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
+                        receivedBy: user?.name ?? null,
                       });
                     });
                   }

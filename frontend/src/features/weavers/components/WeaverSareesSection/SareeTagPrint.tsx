@@ -115,7 +115,6 @@ function TagCard({ r }: { r: SareeTagData }) {
  *  (see costCipher.ts); selling price is plain rupees. */
 function ExternalTagCard({ r }: { r: SareeTagData }) {
   const typeLabel = r.sareeTypeCode ? `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}` : (r.sareeTypeName || "—");
-  const supplierLabel = r.supplierShortName || r.supplierName || "—";
   return (
     <div
       style={{
@@ -129,7 +128,6 @@ function ExternalTagCard({ r }: { r: SareeTagData }) {
         <span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "8pt", color: "var(--doc-burgundy)" }}>
           Beere Kesava &amp; Brothers Silks
         </span>
-        <span style={{ fontFamily: "var(--font-ui)", fontSize: "7pt", color: "var(--doc-muted)" }}>{supplierLabel}</span>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1mm" }}>
@@ -147,18 +145,15 @@ function ExternalTagCard({ r }: { r: SareeTagData }) {
 
       <div style={{ display: "flex", justifyContent: "space-between", gap: "2mm" }}>
         <div>
-          <div style={{ fontFamily: "var(--font-ui)", fontSize: "6pt", color: "var(--doc-gold, var(--doc-muted))", fontWeight: 600 }}>INVOICE</div>
           <div style={{ fontFamily: "var(--font-code)", fontSize: "7.5pt", color: "var(--doc-ink)", fontWeight: 600 }}>{r.invoiceNumber || "—"}</div>
         </div>
         <div>
-          <div style={{ fontFamily: "var(--font-ui)", fontSize: "6pt", color: "var(--doc-gold, var(--doc-muted))", fontWeight: 600 }}>SERIAL</div>
           <div style={{ fontFamily: "var(--font-code)", fontSize: "7.5pt", color: "var(--doc-ink)", fontWeight: 600 }}>{r.serial || "—"}</div>
         </div>
         {/* Cost price is never printed as a plain number — encoded via the
             LORD GANESH letter cipher (see costCipher.ts) so a customer can't
             read it while staff who know the phrase can decode it back. */}
         <div style={{ textAlign: "right" }}>
-          <div style={{ fontFamily: "var(--font-ui)", fontSize: "6pt", color: "var(--doc-muted)", fontWeight: 600 }}>COST</div>
           <div style={{ fontFamily: "var(--font-code)", fontSize: "7.5pt", color: "var(--doc-muted)", fontWeight: 600, letterSpacing: "0.4px" }}>
             {r.costPrice != null ? encodeCostCipher(r.costPrice) : "—"}
           </div>

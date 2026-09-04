@@ -33,7 +33,11 @@ export const REPORT_TABS: ReportTab[] = [
 
 // Tabs that show a live snapshot of "right now" — there is nothing dated to
 // filter, so the period selector is disabled rather than silently ignored.
-const LIVE_ONLY_TABS: ReportTabKey[] = ["overdue", "outstanding-payments", "outstanding"];
+// "outstanding" is excluded: its items carry a received/batch date, so the
+// period filter narrows today's unsold list down to stock that arrived in
+// that window (still live — it's not a historical snapshot of what was
+// unsold as of a past date).
+const LIVE_ONLY_TABS: ReportTabKey[] = ["overdue", "outstanding-payments"];
 
 export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActivePeriod, custom, setCustom, compareOn, setCompareOn, periodLabel, priorLabel }: {
   activeTab: ReportTabKey; setActiveTab: (k: ReportTabKey) => void;

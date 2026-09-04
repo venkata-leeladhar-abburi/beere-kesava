@@ -15,6 +15,7 @@ import { factoryLoomsApi } from "../../../../../shared/api/factory-looms";
 import { WeaverSigBlock } from "./WeaverSigBlock";
 import { TagPreviewScreen } from "./TagPreviewScreen";
 import { useRatesPricing } from "@/features/pricing";
+import { useAuth } from "../../../../../contexts/AuthContext";
 import { useBatches } from "@/features/production";
 import { useFinishing } from "@/features/finishing";
 import { DefectPhotoPrompt } from "./DefectPhotoPrompt";
@@ -38,6 +39,7 @@ interface RejectedSaree {
 // never picked by hand here.
 export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (rec: ReceivedSareeLog) => void }) {
   const { getSareeTypeByCode } = useRatesPricing();
+  const { user } = useAuth();
   const { data: loomsRes } = useQuery({
     queryKey: ["worker-receive-factory-looms"],
     queryFn: () => factoryLoomsApi.list(),
@@ -215,6 +217,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
           color: sareeColor, status: "Pending QC",
           loomNumber: selectedLoom.loomNumber,
           sareeType: effectiveTypeCode ?? currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
+          receivedBy: user?.name ?? null,
         });
       }
       setSelectedSareeNos(new Set());
@@ -388,6 +391,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
                   color: sareeColor || "—", status: "Defective",
                   loomNumber: selectedLoom.loomNumber,
                   sareeType: effectiveTypeCode ?? currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
+                  receivedBy: user?.name ?? null,
                 });
               });
             }

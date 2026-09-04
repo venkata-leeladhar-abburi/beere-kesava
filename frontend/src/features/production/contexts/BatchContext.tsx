@@ -420,8 +420,12 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       void queryClient.invalidateQueries({ queryKey: ["materialIssue", "receivedSarees"] });
     },
     onError: (err) => {
-       
+
       console.error("Failed to receive batch row:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to receive saree");
+      // The row is likely stale (e.g. already received from another tab/device) —
+      // resync so the UI stops offering an action the backend will keep rejecting.
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },
   });
 

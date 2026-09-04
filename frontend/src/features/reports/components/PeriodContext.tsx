@@ -81,6 +81,13 @@ export function useReportPeriod(): ReportPeriodValue {
   return ctx;
 }
 
+/** Like useReportPeriod, but returns null outside a <ReportPeriodProvider> instead of
+ *  throwing — for components (e.g. OutstandingPage) that render both embedded in
+ *  Reports and standalone on their own route. */
+export function useReportPeriodOptional(): ReportPeriodValue | null {
+  return useContext(ReportPeriodContext);
+}
+
 /**
  * Registers the visible section's rows for the toolbar's Download button.
  * Sections call this with their already period-filtered data.
