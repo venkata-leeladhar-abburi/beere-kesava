@@ -4,12 +4,18 @@ import { toast } from "sonner";
 
 export * from "./sales-types";
 export * from "./sales-seed";
-import { UnifiedSaree, SaleInfo, ReturnInfo, SalesContextValue, SareeOrigin, SareeSaleStatus } from "./sales-types";
+import { UnifiedSaree, SaleInfo, ReturnInfo, SalesContextValue, SareeOrigin, SareeSaleStatus, PurchaseSummary } from "./sales-types";
 import { SEED_PURCHASE_SUMMARIES } from "./sales-seed";
 
 import { inventoryApi } from "../../../shared/api/inventory";
 import { salesApi } from "../../../shared/api/sales";
+import { purchasesApi, type BackendPurchase } from "../../../shared/api/purchases";
+import { pieceCodeFromLineCode, computeFinalAmount } from "@/features/suppliers";
 import { useAuthGate } from "../../../contexts/AuthContext";
+
+const PURCHASE_STATUS: Record<BackendPurchase["status"], PurchaseSummary["status"]> = {
+  PAID: "Paid", PENDING: "Pending", PARTIAL: "Partial",
+};
 
 const SalesContext = createContext<SalesContextValue | null>(null);
 
@@ -43,17 +49,117 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
     enabled,
   });
 
-  const isError = isInventoryError || isSalesError || isReturnsError;
-  const error = inventoryError ?? salesError ?? returnsError ?? null;
-  const isLoading = isInventoryLoading || isSalesLoading || isReturnsLoading;
-  const refetch = useCallback(() => { void refetchInventory(); void refetchSales(); void refetchReturns(); }, [refetchInventory, refetchSales, refetchReturns]);
+  // External purchases never become an /inventory row (see
+  // useExternalPurchaseRows.ts) — they live only in Purchase +
+  // PurchaseSareeLine, so they have to be read from here and folded into
+  // `sarees` for external stock to show up anywhere in this context.
+  const { data: rawPurchases, isError: isPurchasesError, error: purchasesError, isLoading: isPurchasesLoading, refetch: refetchPurchases } = useQuery({
+    queryKey: ["backend-purchases-list", "full"],
+    queryFn: () => purchasesApi.list(100, 1, undefined, undefined, "full"),
+    enabled,
+  });
 
-  const sarees = useMemo<UnifiedSaree[]>(() => {
-    if (!rawInventory || rawInventory.length === 0) return [];
+  const isError = isInventoryError || isSalesError || isReturnsError || isPurchasesError;
+  const error = inventoryError ?? salesError ?? returnsError ?? purchasesError ?? null;
+  const isLoading = isInventoryLoading || isSalesLoading || isReturnsLoading || isPurchasesLoading;
+  const refetch = useCallback(() => { void refetchInventory(); void refetchSales(); void refetchReturns(); void refetchPurchases(); }, [refetchInventory, refetchSales, refetchReturns, refetchPurchases]);
+
+  const externalSarees = useMemo<UnifiedSaree[]>(() => {
+    if (!rawPurchases || rawPurchases.items.length === 0) return [];
     const salesMap = new Map((rawSales?.items ?? []).map(s => [s.sareeId, s]));
     const returnsMap = new Map((rawReturns?.items ?? []).map(r => [r.sareeId, r]));
 
-    return rawInventory.map(item => {
+    return rawPurchases.items.flatMap(p => {
+      const supplier = p.supplier?.name ?? p.supplierName ?? "External Supplier";
+      const location = p.location
+        ?? (p.supplier ? `${p.supplier.city ?? ""}, ${p.supplier.state ?? ""}`.replace(/^, |, $/, "") : "");
+      const purchaseDate = p.date?.split("T")[0] ?? null;
+
+      return p.sareeLines.flatMap(line => {
+        const qty = Number(line.quantity) || 1;
+        const price = Number(line.price) || 0;
+        const sellPercent = Number(line.sellPercent) || 0;
+        const returnedQty = Math.min(Number(line.returnedQuantity) || 0, qty);
+
+        return Array.from({ length: qty }, (_, i): UnifiedSaree => {
+          const pieceNo = i + 1;
+          const sareeId = pieceCodeFromLineCode(line.code, pieceNo);
+          const sale = salesMap.get(sareeId);
+          const ret = returnsMap.get(sareeId);
+          // A line only records HOW MANY pieces came back, not which — the
+          // first `returnedQuantity` pieces are treated as the returned
+          // ones, matching useExternalPurchaseRows.ts and the purchase screens.
+          const returnedToSupplier = pieceNo <= returnedQty;
+          const status: SareeSaleStatus = ret ? "returned"
+            : sale ? (sale.channel === "WHOLESALE" ? "wholesale" : "retail")
+            : "unsold";
+          const ageDays = purchaseDate
+            ? Math.max(0, Math.floor((Date.now() - new Date(purchaseDate).getTime()) / 86_400_000))
+            : 0;
+
+          return {
+            sareeId,
+            origin: "external",
+            purchaseId: p.id,
+            supplier,
+            supplierLocation: location || "—",
+            invoiceNumber: p.invoiceNumber ?? "—",
+            purchaseDate,
+            batchId: null,
+            designCode: "",
+            sareeTypeCode: "",
+            sareeTypeName: line.sareeType ?? "",
+            weight: line.weight ?? "",
+            qcDate: purchaseDate ?? "",
+            costPrice: price,
+            sellPercent,
+            finalAmount: computeFinalAmount(price, sellPercent, 1),
+            // A piece returned to the supplier is no longer stock at all —
+            // outstanding-stock views should not count it as unsold.
+            status: returnedToSupplier ? "returned" : status,
+            sale: sale ? {
+              saleRef: sale.saleRef,
+              channel: sale.channel === "WHOLESALE" ? "wholesale" : "retail",
+              date: new Date(sale.saleDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+              customer: "Counter Customer",
+              amount: Number(sale.amount),
+            } : null,
+            ret: ret ? {
+              returnRef: ret.returnRef,
+              date: new Date(ret.returnDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+              reason: ret.reason,
+              refundAmount: Number(ret.refundAmount ?? 0),
+              restocked: true,
+            } : null,
+            ageDays,
+          };
+        });
+      });
+    });
+  }, [rawPurchases, rawSales, rawReturns]);
+
+  const purchases = useMemo<PurchaseSummary[]>(() => {
+    if (!rawPurchases || rawPurchases.items.length === 0) return SEED_PURCHASE_SUMMARIES;
+    return rawPurchases.items.map(p => ({
+      id: p.id,
+      supplier: p.supplier?.name ?? p.supplierName ?? "External Supplier",
+      location: p.location ?? (p.supplier ? `${p.supplier.city ?? ""}, ${p.supplier.state ?? ""}`.replace(/^, |, $/, "") : ""),
+      date: p.date?.split("T")[0] ?? "",
+      invoiceNumber: p.invoiceNumber ?? "—",
+      gstNumber: p.supplier?.gstCode ?? "—",
+      billAmount: Number(p.billAmount) || 0,
+      paidAmount: p.status === "PAID" ? Number(p.billAmount) || 0 : 0,
+      status: PURCHASE_STATUS[p.status],
+      sareeCount: p.sareeCount,
+    }));
+  }, [rawPurchases]);
+
+  const sarees = useMemo<UnifiedSaree[]>(() => {
+    if (!rawInventory || rawInventory.length === 0) return externalSarees;
+    const salesMap = new Map((rawSales?.items ?? []).map(s => [s.sareeId, s]));
+    const returnsMap = new Map((rawReturns?.items ?? []).map(r => [r.sareeId, r]));
+
+    return [...rawInventory.map((item): UnifiedSaree => {
       const sale = salesMap.get(item.sareeId);
       const ret = returnsMap.get(item.sareeId);
       const isExt = item.source === "external";
@@ -110,8 +216,8 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
         } : null,
         ageDays,
       };
-    });
-  }, [rawInventory, rawSales, rawReturns]);
+    }), ...externalSarees];
+  }, [rawInventory, rawSales, rawReturns, externalSarees]);
 
   const recordSaleMutation = useMutation({
     mutationFn: (args: { sareeId: string; sale: SaleInfo }) => Promise.resolve(args),
@@ -156,8 +262,8 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ sarees, soldSareeIds, purchases: SEED_PURCHASE_SUMMARIES, recordSale, recordReturn, isError, error, isLoading, refetch }),
-    [sarees, soldSareeIds, isError, error, isLoading, refetch, recordSale, recordReturn],
+    () => ({ sarees, soldSareeIds, purchases, recordSale, recordReturn, isError, error, isLoading, refetch }),
+    [sarees, soldSareeIds, purchases, isError, error, isLoading, refetch, recordSale, recordReturn],
   );
   return <SalesContext.Provider value={value}>{children}</SalesContext.Provider>;
 }

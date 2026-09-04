@@ -233,8 +233,8 @@ export interface PurchaseOutstanding extends PurchaseSummary {
   dueAmount: number;        // bill outstanding
 }
 
-export function purchaseOutstanding(sarees: UnifiedSaree[]): PurchaseOutstanding[] {
-  return SEED_PURCHASE_SUMMARIES.map(p => {
+export function purchaseOutstanding(sarees: UnifiedSaree[], purchases: PurchaseSummary[] = SEED_PURCHASE_SUMMARIES): PurchaseOutstanding[] {
+  return purchases.map(p => {
     const rows = sarees.filter(s => s.purchaseId === p.id);
     const unsoldSarees = rows.filter(isOutstanding);
     const returnedSarees = rows.filter(s => s.status === "returned");

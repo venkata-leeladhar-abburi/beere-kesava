@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ChevronRight, RotateCcw, Truck, Building2, LayoutGrid, List } from "lucide-react";
 import { T, F } from "../../theme";
-import { UnifiedSaree, isSold, ageBucket, purchaseOutstanding } from "@/features/customers";
+import { UnifiedSaree, isSold, ageBucket, purchaseOutstanding, useSales } from "@/features/customers";
 import { Empty, ExportBtn, Pill, SectionCard, exportCsv, inr, tdMono } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { DrilldownTabs, SareeDetailTable } from "./SareeDetailTable";
@@ -16,7 +16,8 @@ interface SupplierRollup { supplier: string; purchases: number; bought: number; 
 export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: UnifiedSaree[]; search: string; ageFilter: AgeKey }) {
   const [open, setOpen] = useState<string | null>(null);
   const [supplierViewMode, setSupplierViewMode] = useState<"card" | "table">("table");
-  const all = useMemo(() => purchaseOutstanding(sarees), [sarees]);
+  const { purchases } = useSales();
+  const all = useMemo(() => purchaseOutstanding(sarees, purchases), [sarees, purchases]);
 
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();

@@ -285,11 +285,71 @@ export class InventoryService {
     }
     const rowBySaree = new Map(rows.map((r) => [r.sareeId!, r]));
 
+    // A dispatched piece with no BatchSareeRow was never woven here — it is an
+    // external purchase (or a hand-registered piece), living in the generic
+    // Saree table instead. Previously dropped outright ("nothing to display"),
+    // which meant a dispatched-and-received external purchase never appeared
+    // in shop stock at all.
+    const unwovenIds = dispatchedIds.filter((id) => !rowBySaree.has(id));
+    const unwovenSarees = unwovenIds.length
+      ? await this.prisma.saree.findMany({
+          where: { id: { in: unwovenIds } },
+          include: { sareeType: true },
+        })
+      : [];
+    const sareeById = new Map(unwovenSarees.map((s) => [s.id, s]));
+
     const dispatchedStock = dispatchedIds
-      // A saree dispatched to the shop but with no woven row behind it has
-      // nothing to display; skip rather than emit a card full of dashes.
-      .filter((id) => rowBySaree.has(id))
+      .filter((id) => rowBySaree.has(id) || sareeById.has(id))
       .map((sareeId): ShopStockItem => {
+        const unwoven = rowBySaree.has(sareeId) ? null : sareeById.get(sareeId)!;
+        if (unwoven) {
+          const consignment = latestBySaree.get(sareeId)!;
+          const dispatch = consignment.dispatch;
+          const sale = soldBySaree.get(sareeId);
+          const ret = latestReturn.get(sareeId) ?? null;
+          const backOnShelf = ret?.restocked === true && (!sale || ret.createdAt > sale.date);
+
+          return {
+            sareeId,
+            source: unwoven.origin === "EXTERNAL" ? "external" : "outsourced",
+            status: sale && !backOnShelf ? "sold" : "available",
+            weaverName: null,
+            weaverId: null,
+            weaverCode: null,
+            loomNumber: null,
+            designCode: unwoven.designCode,
+            sareeTypeCode: unwoven.sareeTypeCode,
+            sareeTypeLabel: unwoven.sareeType
+              ? `${unwoven.sareeTypeCode} · ${unwoven.sareeType.type}`
+              : unwoven.sareeTypeCode,
+            qcDate: (unwoven.qcDate ?? unwoven.createdAt).toISOString(),
+            saleRef: sale?.saleRef ?? null,
+            customer: sale?.customer?.name ?? null,
+            soldPrice: sale?.amount != null ? Number(sale.amount) : null,
+            soldDate: sale?.date.toISOString() ?? null,
+            retailPrice: unwoven.sareeType ? Number(unwoven.sareeType.retailPrice) : null,
+            dispatch: {
+              dispatchId: dispatch.id,
+              dispatchDate: dispatch.dispatchDate.toISOString(),
+              lrNumber: dispatch.lrNumber,
+              transportCompany: dispatch.transportCompany,
+              vehicleNumber: dispatch.vehicleNumber,
+              driverName: dispatch.driverName,
+              notes: dispatch.notes,
+              pendingTransport: dispatch.pendingTransport,
+              pendingReceipt: dispatch.pendingReceipt,
+            },
+            stockOrigin: backOnShelf ? "retail-return" : "dispatch",
+            returnRef: backOnShelf ? ret.returnRef : null,
+            returnReason: backOnShelf ? ret.reason : null,
+            returnDate: backOnShelf ? ret.createdAt.toISOString() : null,
+            returnedFrom: backOnShelf ? sale?.customer?.name ?? null : null,
+            photoUrl: backOnShelf ? ret.photoUrl : null,
+            color: unwoven.color,
+            weightG: unwoven.weightG != null ? Number(unwoven.weightG) : null,
+          };
+        }
         const row = rowBySaree.get(sareeId)!;
         const consignment = latestBySaree.get(sareeId)!;
         const dispatch = consignment.dispatch;

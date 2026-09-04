@@ -87,15 +87,28 @@ export class DispatchService {
         const parsed = stillMissing
           .map((sareeId) => {
             const m = sareeId.match(/^(.+)-(\d{2,})$/);
-            return m ? { sareeId, lineCode: m[1]!, pieceNo: Number(m[2]) } : null;
+            return m ? { sareeId, lineCode: m[1], pieceNo: Number(m[2]) } : null;
           })
           .filter((p): p is { sareeId: string; lineCode: string; pieceNo: number } => p !== null);
         if (parsed.length > 0) {
           const lines = await this.prisma.purchaseSareeLine.findMany({
             where: { code: { in: parsed.map((p) => p.lineCode) } },
-            select: { code: true, quantity: true, returnedQuantity: true },
+            select: {
+              code: true, quantity: true, returnedQuantity: true, purchaseId: true,
+              color: true, price: true, weight: true, sareeDate: true,
+              purchase: { select: { date: true } },
+            },
           });
           const lineByCode = new Map(lines.map((l) => [l.code, l]));
+          // Saree rows for external purchases are only ever created here, on
+          // demand at dispatch — Purchase + PurchaseSareeLine are the sole
+          // record of a purchased piece up to this point (see the schema
+          // comment on PurchaseSareeLine.code). Without one, this piece has
+          // nowhere to be found once it reaches the shop: findShopStock reads
+          // dispatched pieces off BatchSareeRow (woven) or Saree (everything
+          // else), so a dispatched external piece with neither would silently
+          // never appear in Shop Inventory.
+          const sareesToCreate: Prisma.SareeCreateManyInput[] = [];
           for (const p of parsed) {
             const line = lineByCode.get(p.lineCode);
             if (!line || p.pieceNo < 1 || p.pieceNo > line.quantity) continue;
@@ -105,6 +118,19 @@ export class DispatchService {
               );
             }
             externalById.set(p.sareeId, { batchId: null, bulkOrderRef: null });
+            sareesToCreate.push({
+              id: p.sareeId,
+              origin: "EXTERNAL",
+              purchaseId: line.purchaseId,
+              color: line.color,
+              costPrice: line.price,
+              weightG: line.weight ? Number(line.weight.replace(/[^\d.]/g, "")) || null : null,
+              qcDate: line.sareeDate ?? line.purchase.date,
+              status: "UNSOLD",
+            });
+          }
+          if (sareesToCreate.length > 0) {
+            await this.prisma.saree.createMany({ data: sareesToCreate, skipDuplicates: true });
           }
         }
       }
