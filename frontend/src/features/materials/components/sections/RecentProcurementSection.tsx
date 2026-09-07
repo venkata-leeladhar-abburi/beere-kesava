@@ -11,7 +11,7 @@ import { EntityCode } from "@/shared/ui/domain";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
 import { toInitials } from "@/shared/lib/initials";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
-import { useDocument } from "../../../../shared/ui/document";
+import { useDocument, useLabelStock } from "../../../../shared/ui/document";
 import { GrnLabelSheet, type GrnLabel } from "../../../portals/components/worker/GrnLabelSheet";
 
 /** DDMMYY, e.g. 2026-09-02 -> "020926" — same format every other tag uses. */
@@ -56,6 +56,7 @@ export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurc
   const pag = usePagination(allRecentItems, 8);
   const [viewItem, setViewItem] = useState<(typeof allRecentItems)[number] | null>(null);
   const { print } = useDocument();
+  const labelStock = useLabelStock();
 
   // Was a Print button with no onClick at all — clicking it did nothing.
   // Same GrnLabelSheet real print path the GRN receiving flow itself uses.
@@ -69,7 +70,7 @@ export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurc
       vendor: r.vendor,
       receivedDate: ddmmyy(r.grnRaw.receivedDate),
     };
-    print(<GrnLabelSheet labels={[label]} />);
+    print(<GrnLabelSheet labels={[label]} stock={labelStock} />);
   };
 
   return (

@@ -3,7 +3,7 @@ import { C, F } from "./tokens";
 import { GrnReceiptItem } from "../../../../shared/api/rawMaterials";
 import { Button } from "../../../../shared/ui/primitives";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
-import { useDocument } from "../../../../shared/ui/document";
+import { useDocument, useLabelStock } from "../../../../shared/ui/document";
 import { labelsApi } from "../../../../shared/api/labels";
 import { GrnLabelSheet, type GrnLabel } from "./GrnLabelSheet";
 
@@ -55,6 +55,7 @@ interface GRNPrintProps {
 
 export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
   const { print } = useDocument();
+  const labelStock = useLabelStock();
 
   const batches: GrnLabel[] = (grn?.items ?? []).map((item, i) => {
     const isJari = item.materialType === "JARI";
@@ -120,14 +121,14 @@ export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
                 <div style={{ fontFamily: F.m, fontSize: 10.5, color: C.muted, marginTop: 2 }}>{b.receivedDate}</div>
               )}
             </div>
-            <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => print(<GrnLabelSheet labels={[b]} />)} className="rounded-[7px] border-[rgba(110,15,45,0.12)] bg-[#FFF8E7] text-[#6E0F2D] hover:bg-[#FFF8E7]">
+            <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => print(<GrnLabelSheet labels={[b]} stock={labelStock} />)} className="rounded-[7px] border-[rgba(110,15,45,0.12)] bg-[#FFF8E7] text-[#6E0F2D] hover:bg-[#FFF8E7]">
               Print
             </Button>
           </div>
         ))}
       </div>
       <div style={{ padding: "0 20px" }}>
-        <Button variant="primary" fullWidth iconLeft={Printer} disabled={batches.length === 0} onClick={() => print(<GrnLabelSheet labels={batches} />)} className="rounded-[14px] bg-[#6E0F2D] hover:bg-[#6E0F2D] mb-2.5">Print All Labels</Button>
+        <Button variant="primary" fullWidth iconLeft={Printer} disabled={batches.length === 0} onClick={() => print(<GrnLabelSheet labels={batches} stock={labelStock} />)} className="rounded-[14px] bg-[#6E0F2D] hover:bg-[#6E0F2D] mb-2.5">Print All Labels</Button>
         {onReset && <Button variant="secondary" fullWidth onClick={onReset} className="rounded-[14px] border-[rgba(110,15,45,0.30)] text-[#6E0F2D]">Done — Skip Printing</Button>}
       </div>
     </div>

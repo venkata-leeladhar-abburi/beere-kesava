@@ -374,3 +374,54 @@
   h1, h2, h3 { break-after: avoid; }
   p { orphans: 3; widows: 3; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PHYSICAL LABEL STOCK — shared/ui/document/LabelSheet.tsx
+   ═══════════════════════════════════════════════════════════════════════════
+   Roll-printer stickers (default 50mm × 25mm), not A4 documents. The tile is
+   exactly the sticker, one per page, so the printer's own label gap advances
+   between them instead of tiles wrapping across a sheet and spilling off the
+   backing paper — which is what the 82×46mm A4-tiled labels did on the 50×25
+   roll actually loaded in the TSC TE244.
+
+   Tile type is sized in em against --label-unit (height/25), so the layout
+   stays proportional if a superadmin selects a different roll.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bk-label-sheet {
+  background: #FFFFFF;
+  color: #000000;
+  /* Binds to the @page rule LabelSheet writes for the configured stock. */
+  page: bk-label;
+}
+
+/* The QR inside a tile carries width/height attributes in px; the sticker is
+   measured in mm, so the class lets the tile's own box drive the size. */
+.bk-label-qr { width: 100%; height: 100%; display: block; }
+
+.bk-label-tile {
+  width: var(--label-w);
+  height: var(--label-h);
+  box-sizing: border-box;
+  overflow: hidden;         /* a sticker cannot grow — clip, never reflow the page */
+  background: #FFFFFF;
+  color: #000000;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* On screen (the preview inside a modal) the tiles sit in a row; in print each
+   one owns its own page. */
+.bk-label-sheet { display: flex; flex-wrap: wrap; gap: 4mm; }
+
+@media print {
+  .bk-label-sheet { display: block; gap: 0; }
+  .bk-label-tile { break-after: page; page-break-after: always; }
+  .bk-label-tile:last-child { break-after: auto; page-break-after: auto; }
+
+  /* Labels are pure black-on-white line art; forcing exact colour keeps the
+     barcode from being lightened by the browser's print colour adjustment. */
+  .bk-label-sheet, .bk-label-sheet * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

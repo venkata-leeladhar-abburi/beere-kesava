@@ -1,12 +1,24 @@
 import { Printer } from "lucide-react";
-import { BarcodePreview, F, T } from "./primitives";
+import { F, T } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
-import { usePrintSareeTags } from "@/features/weavers";
+import { usePrintSareeTags, SareeTagPreview } from "@/features/weavers";
+import { parseLabelSize } from "../../../../shared/ui/document";
 
-export function LabelPreviewCard({ fields }: {
+export function LabelPreviewCard({ fields, labelSize }: {
   fields: { barcode: boolean; code: boolean; weaver: boolean; date: boolean; branding: boolean };
+  /** The size being edited — the preview follows it live, before saving. */
+  labelSize: string;
 }) {
   const printSareeTags = usePrintSareeTags();
+  const stock = parseLabelSize(labelSize);
+  const previewTag = {
+    sareeId: "RAVI-L2-001",
+    sareeTypeName: "Kanjivaram",
+    weaverName: fields.weaver ? "Ravi Kumar" : null,
+    loomNumber: fields.weaver ? 2 : null,
+    date: fields.date ? new Date().toISOString() : null,
+    weight: 842,
+  };
   return (
     <div className="w-full xl:w-[48%] xl:max-w-[480px] xl:flex-shrink-0">
       <div
@@ -33,173 +45,12 @@ export function LabelPreviewCard({ fields }: {
           LIVE PREVIEW
         </div>
 
-        {/* Label preview box */}
-        <div
-          className="w-full max-w-[360px]"
-          style={{
-            minHeight: 180,
-            background: "white",
-            border: "1.5px solid #6E0F2D",
-            borderRadius: 8,
-            padding: "14px 16px",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.10)",
-            margin: "0 auto 20px",
-            boxSizing: "border-box",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-          }}
-        >
-          {/* Top row */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-            }}
-          >
-            {fields.branding && (
-              <span
-                style={{
-                  fontFamily: F.display,
-                  fontWeight: 700,
-                  fontSize: 12,
-                  color: T.royalBurgundy,
-                }}
-              >
-                BKB Silks
-              </span>
-            )}
-            <span
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 12,
-                color: T.taupe,
-                background: T.cream,
-                borderRadius: 4,
-                padding: "2px 5px",
-                marginLeft: "auto",
-              }}
-            >
-              Kanjivaram
-            </span>
-          </div>
-
-          {/* Barcode */}
-          {fields.barcode && (
-            <div style={{ margin: "4px 0 0" }}>
-              <BarcodePreview code="RAVI-L2-001" />
-              <div
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontWeight: 700,
-                  fontSize: 12,
-                  textAlign: "center",
-                  marginTop: 3,
-                  color: "#000",
-                }}
-              >
-                RAVI-L2-001
-              </div>
-            </div>
-          )}
-
-          {/* Bottom row */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-end",
-              marginTop: 6,
-            }}
-          >
-            {fields.weaver && (
-              <div>
-                <div
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 7,
-                    color: T.antiqueGold,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  WEAVER
-                </div>
-                <div
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontWeight: 700,
-                    fontSize: 12,
-                    color: "#000",
-                  }}
-                >
-                  Ravi Kumar
-                </div>
-              </div>
-            )}
-            {fields.date && (
-              <div style={{ textAlign: "center" }}>
-                <div
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 7,
-                    color: T.antiqueGold,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  QC DATE
-                </div>
-                <div
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontWeight: 700,
-                    fontSize: 12,
-                    color: "#000",
-                  }}
-                >
-                  10 Jun 2026
-                </div>
-              </div>
-            )}
-            <div style={{ textAlign: "right" }}>
-              <div
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 7,
-                  color: T.antiqueGold,
-                  textTransform: "uppercase",
-                }}
-              >
-                WEIGHT
-              </div>
-              <div
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontWeight: 700,
-                  fontSize: 12,
-                  color: "#000",
-                }}
-              >
-                842g
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom branding */}
-          {fields.branding && (
-            <div
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 6,
-                color: T.royalBurgundy,
-                opacity: 0.6,
-                textAlign: "right",
-                marginTop: 2,
-              }}
-            >
-              Beere Kesava &amp; Brothers Silks · Est. 1999
-            </div>
-          )}
+        {/* Label preview — the real printed tile, magnified. Rendering the
+            actual <SareeTagPreview> rather than a hand-built mock means the
+            preview cannot drift from what the printer produces, and it shows
+            the true proportions of the configured stock. */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16, overflowX: "auto" }}>
+          <SareeTagPreview tag={previewTag} stock={stock} zoom={3} />
         </div>
 
         {/* Caption */}
@@ -211,7 +62,7 @@ export function LabelPreviewCard({ fields }: {
             textAlign: "center",
           }}
         >
-          Actual print size: 100mm × 50mm on TSC TE244
+          Actual print size: {stock.widthMm}mm × {stock.heightMm}mm on TSC TE244
         </div>
 
         {/* Print test label button — was a fake toast with no real print
@@ -222,13 +73,7 @@ export function LabelPreviewCard({ fields }: {
         <div style={{ marginTop: 16, display: "flex", justifyContent: "center" }}>
           <Button
             variant="secondary" size="sm" iconLeft={Printer}
-            onClick={() => printSareeTags([{
-              sareeId: "RAVI-L2-001",
-              sareeTypeName: "Kanjivaram",
-              weaverName: fields.weaver ? "Ravi Kumar" : null,
-              loomNumber: fields.weaver ? 2 : null,
-              date: fields.date ? new Date().toISOString() : null,
-            }])}
+            onClick={() => printSareeTags([previewTag])}
           >
             Print Test Label
           </Button>

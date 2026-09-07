@@ -1663,7 +1663,7 @@ model Customer {
 
 model LabelSettings {
   id                       String   @id @default(uuid())
-  labelSize                String   @default("100mm × 50mm (Default)")
+  labelSize                String   @default("50mm × 25mm (Default)")
   showBarcode              Boolean  @default(true)
   showCode                 Boolean  @default(true)
   showWeaver               Boolean  @default(true)

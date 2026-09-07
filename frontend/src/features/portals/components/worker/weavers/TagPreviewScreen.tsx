@@ -3,7 +3,7 @@ import { Printer } from "lucide-react";
 import { C, F } from "../tokens";
 import { PageHeader } from "./shared";
 import { Button, Input } from "../../../../../shared/ui/primitives";
-import { useDocument } from "../../../../../shared/ui/document";
+import { useDocument, useLabelStock } from "../../../../../shared/ui/document";
 import { ScannableCode } from "../../../../../shared/ui/domain";
 import { SareeTagSheet } from "./SareeTagSheet";
 
@@ -22,13 +22,14 @@ interface TagPreviewScreenProps {
 export function TagPreviewScreen({ sareeIds, entityLabel, entityValue, onBack, onPrint }: TagPreviewScreenProps) {
   const dateStr = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
   const { print } = useDocument();
+  const labelStock = useLabelStock();
   const [copies, setCopies] = React.useState(1);
 
   const handlePrint = () => {
     const tags = Array.from({ length: Math.max(1, copies) }).flatMap(() =>
       sareeIds.map(sareeId => ({ sareeId, entityLabel, entityValue, date: dateStr })),
     );
-    print(<SareeTagSheet tags={tags} />);
+    print(<SareeTagSheet tags={tags} stock={labelStock} />);
     onPrint();
   };
   return (

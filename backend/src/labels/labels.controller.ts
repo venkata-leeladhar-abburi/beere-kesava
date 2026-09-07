@@ -29,11 +29,19 @@ export class LabelsController {
 
   @Public()
   @Get("barcode")
-  async getBarcode(@Query("code") code: string | undefined, @Res() res: Response) {
+  async getBarcode(
+    @Query("code") code: string | undefined,
+    @Query("text") text: string | undefined,
+    @Res() res: Response,
+  ) {
     if (!code) {
       throw new BadRequestException("Query parameter 'code' is required");
     }
-    const png = await this.labelsService.generateBarcodePng(code);
+    // `text=0` suppresses the human-readable line under the bars. Label tiles
+    // print the code themselves at a readable size; on a 50x25mm sticker there
+    // is no room to print it twice.
+    const includeText = text !== "0" && text !== "false";
+    const png = await this.labelsService.generateBarcodePng(code, includeText);
     res.setHeader("Content-Type", "image/png");
     res.send(png);
   }

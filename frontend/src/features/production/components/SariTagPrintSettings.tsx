@@ -72,7 +72,9 @@ export function SariTagPrintSettings({
         },
         {
           label: "Label Size", value: labelSize, setValue: setLabelSize,
-          options: ["100mm × 50mm", "100mm × 75mm", "50mm × 25mm"],
+          // The configured stock is always offered first, even if it isn't one
+          // of the presets — otherwise the field renders blank for it.
+          options: [...new Set([labelSize, "50mm × 25mm", "50mm × 40mm", "100mm × 50mm", "100mm × 75mm"])],
         },
       ].map(field => (
         <div key={field.label} style={{ marginBottom: 18 }}>

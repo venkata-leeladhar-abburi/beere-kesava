@@ -14,8 +14,9 @@ import type { ScanFields } from "./labelSettings/ScanPageSettingsCard";
 import { StickyFooter } from "./labelSettings/StickyFooter";
 import { labelsApi, LabelSettings } from "../../../shared/api/labels";
 import { LoadingState, ErrorState } from "../../../shared/ui/state";
+import { DEFAULT_LABEL_SIZE } from "../../../shared/ui/document";
 
-const DEFAULT_LABEL_SIZE = "100mm × 50mm (Default)";
+
 const DEFAULT_FIELDS: LabelFields = {
   barcode: true,
   code: true,
@@ -226,7 +227,7 @@ export function LabelSettingsPage() {
           >
           <SectionCard icon={Tag} title="Label & Barcode Settings" subtitle="Configure what prints on every saree label, and how it connects to your printer.">
             <div className="flex flex-col xl:flex-row gap-6 xl:gap-8 items-start w-full">
-              <LabelPreviewCard fields={fields} />
+              <LabelPreviewCard fields={fields} labelSize={labelSize} />
 
               {/* RIGHT COLUMN */}
               <div className="w-full flex-1 flex flex-col gap-5">

@@ -18,3 +18,4 @@ export { DeliveryChallanDocument, type ChallanLineItem, type DeliveryChallanDocu
 export { ReceiptDocument, type ReceiptDocumentProps } from "./ReceiptDocument";
 export { RetailBillDocument, type RetailBillLineItem, type RetailBillDocumentProps } from "./RetailBillDocument";
 export { StatementOfAccountDocument, type LedgerEntry, type AgeingBucket, type StatementOfAccountDocumentProps } from "./StatementOfAccountDocument";
+export { LabelSheet, useLabelStock, useTileStock, monoFitEm, innerWidthEm, parseLabelSize, LABEL_SIZE_OPTIONS, DEFAULT_LABEL_SIZE, DEFAULT_LABEL_STOCK, type LabelStock, type LabelSheetProps } from "./LabelSheet";

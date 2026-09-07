@@ -3,8 +3,9 @@
  * ═══════════════════════════════════════════════════════════════════════════
  * Printed via useDocument(), which isolates #document-print-root so the label
  * sheet prints alone rather than dragging the whole application onto the page.
- * Labels tile across A4 so a sheet of stickers can be run in one job; a single
- * label prints as one tile on an otherwise empty sheet.
+ * Each label prints on its own page sized to the physical sticker (default
+ * 50mm x 25mm, superadmin-configurable in Label Settings), so a roll printer
+ * feeds exactly one sticker per label.
  *
  * The code on the label is the line's own `itemCode`
  * ("GRN-SreeVignesh-004-002-1"), never the parent receipt id — that is the
@@ -12,6 +13,7 @@
  * tag is to identify this one material, not the delivery it arrived in.
  */
 import { labelsApi } from "@/shared/api/labels";
+import { LabelSheet, useTileStock, monoFitEm, innerWidthEm, type LabelStock } from "@/shared/ui/document";
 
 export interface GrnLabel {
   /** The scannable line code — also the human-readable id printed below it. */
@@ -26,84 +28,66 @@ export interface GrnLabel {
 
 const mono = "var(--font-code, ui-monospace, monospace)";
 const ui = "var(--font-ui, system-ui, sans-serif)";
+const ellipsis = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } as const;
 
-// Same compact vertical layout as the saree tags (SareeTagPrint.tsx): a
-// small header row, one full-width barcode with its code printed below it,
-// then a couple of tight detail lines — barcode only, no QR.
+// Same compact layout as the saree tags (SareeTagPrint.tsx): a small header
+// row, one full-width barcode with its code printed below it, then a single
+// detail line — barcode only, no QR. Sizes are in `em` against --label-unit
+// (set by <LabelSheet>), so the tile fills the configured sticker exactly
+// instead of the old fixed 82x46mm box, which overflowed the 50x25mm roll.
 function LabelTile({ label }: { label: GrnLabel }) {
+  const stock = useTileStock();
+  // Shrink to fit rather than ellipsise — a half-printed item code can't be
+  // typed back in when a scan fails.
+  const codeSize = monoFitEm(label.code.length, innerWidthEm(stock), 2.3, 1.5);
   return (
     <div
       style={{
-        // Fixed physical size so a label is the same on screen and on paper,
-        // and so tiles land predictably on a sticker sheet.
-        width: "82mm",
-        height: "46mm",
-        boxSizing: "border-box",
-        border: "0.3mm solid #000",
-        borderRadius: "1.5mm",
-        padding: "3mm 4mm",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        background: "#FFFFFF",
-        color: "#000000",
-        // A label split across a page break is a wasted sticker.
-        breakInside: "avoid",
-        pageBreakInside: "avoid",
+        width: "100%", height: "100%", boxSizing: "border-box",
+        border: "0.25mm solid #000", borderRadius: "0.8em",
+        padding: "1em 1.2em",
+        display: "flex", flexDirection: "column", justifyContent: "space-between",
+        background: "#FFFFFF", color: "#000000",
+        overflow: "hidden", lineHeight: 1.15,
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <span style={{ fontFamily: ui, fontWeight: 700, fontSize: "8pt" }}>Beere Kesava &amp; Brothers Silks</span>
-        <span style={{ fontFamily: mono, fontSize: "7pt", color: "#555" }}>{label.grnBatchId}</span>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: "1em", alignItems: "baseline" }}>
+        <span style={{ fontFamily: ui, fontWeight: 700, fontSize: "1.9em", ...ellipsis }}>
+          Beere Kesava &amp; Brothers Silks
+        </span>
+        <span style={{ fontFamily: mono, fontSize: "1.7em", flexShrink: 0 }}>{label.grnBatchId}</span>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1mm" }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
         <img
-          src={labelsApi.barcodeUrl(label.code)}
+          // The generator's baked-in caption is suppressed — the code is
+          // printed below at a readable size, and on a 25mm-tall sticker
+          // printing it twice only costs the bars their height.
+          src={labelsApi.barcodeUrl(label.code, { withText: false })}
           alt={`Barcode for ${label.code}`}
-          style={{ width: "100%", maxWidth: "68mm", height: "11mm", objectFit: "contain" }}
+          style={{ width: "100%", height: "9.4em", objectFit: "contain", display: "block" }}
         />
-        <span style={{ fontFamily: mono, fontWeight: 700, fontSize: "9.5pt", wordBreak: "break-all" as const, textAlign: "center" }}>{label.code}</span>
+        <span style={{ fontFamily: mono, fontWeight: 700, fontSize: `${codeSize}em`, maxWidth: "100%", ...ellipsis }}>
+          {label.code}
+        </span>
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", gap: "3mm", fontFamily: ui, fontSize: "7.5pt", color: "#333" }}>
-        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: "1em", fontFamily: ui, fontSize: "1.8em" }}>
+        <span style={{ minWidth: 0, ...ellipsis }}>
           {label.materialType} · {label.quantity}
         </span>
-        {label.vendor && <span style={{ flexShrink: 0 }}>{label.vendor}</span>}
+        {(label.vendor || label.receivedDate) && (
+          <span style={{ flexShrink: 0 }}>{label.vendor || label.receivedDate}</span>
+        )}
       </div>
-
-      {label.description && (
-        <div style={{ fontFamily: ui, fontSize: "7pt", color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {label.description}
-        </div>
-      )}
-
-      {label.receivedDate && (
-        <div style={{ fontFamily: mono, fontSize: "7pt", color: "#555" }}>{label.receivedDate}</div>
-      )}
     </div>
   );
 }
 
-export function GrnLabelSheet({ labels }: { labels: GrnLabel[] }) {
+export function GrnLabelSheet({ labels, stock }: { labels: GrnLabel[]; stock?: LabelStock }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "4mm",
-        padding: "8mm",
-        background: "#FFFFFF",
-        // print.css sets `@page { margin: 16mm 0 13mm }` for A4 documents;
-        // labels need even side margins instead, since nothing here is
-        // deliberately full-bleed the way a letterhead band is.
-        width: "194mm",
-      }}
-    >
-      {labels.map(label => (
-        <LabelTile key={label.code} label={label} />
-      ))}
-    </div>
+    <LabelSheet stock={stock}>
+      {labels.map(label => <LabelTile key={label.code} label={label} />)}
+    </LabelSheet>
   );
 }

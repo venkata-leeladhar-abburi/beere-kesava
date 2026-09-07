@@ -5,6 +5,7 @@ import { SariTagPrintSettings } from "./SariTagPrintSettings";
 import { IconButton } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 import { usePrintSareeTags, type SareeTagData } from "@/features/weavers";
+import { useLabelStock, parseLabelSize } from "@/shared/ui/document";
 
 const T = {
   darkBurgundy: "#3D0E1A",
@@ -27,7 +28,15 @@ export function SariTagPrintModal({ saree, onClose }: Props) {
   const [showBranding, setShowBranding] = useState(true);
   const [copies, setCopies]             = useState(1);
   const [printer, setPrinter]           = useState("TSC TE244");
-  const [labelSize, setLabelSize]       = useState("100mm × 50mm");
+  // Seeded from the configured stock (50mm × 25mm by default) and, unlike
+  // before, actually applied to the print below.
+  // Follows the configured stock until the operator picks something else in
+  // this modal — a plain useState would freeze on whatever the settings query
+  // had returned (the 50×25 default) at first render.
+  const configuredStock = useLabelStock();
+  const [labelSizeChoice, setLabelSize]  = useState<string | null>(null);
+  const labelSize = labelSizeChoice
+    ?? `${configuredStock.widthMm}mm × ${configuredStock.heightMm}mm`;
   const [printing, setPrinting]         = useState(false);
   const [printed, setPrinted]           = useState(false);
   const printSareeTags = usePrintSareeTags();
@@ -63,7 +72,10 @@ export function SariTagPrintModal({ saree, onClose }: Props) {
           loomNumber: saree.source === "factory" ? saree.loom : null,
           date: showDate ? saree.qcDate : null,
         };
-    printSareeTags(Array.from({ length: Math.max(1, copies) }, () => tag));
+    printSareeTags(
+      Array.from({ length: Math.max(1, copies) }, () => tag),
+      parseLabelSize(labelSize),
+    );
     setPrinting(true);
     setTimeout(() => { setPrinting(false); setPrinted(true); }, 400);
   };

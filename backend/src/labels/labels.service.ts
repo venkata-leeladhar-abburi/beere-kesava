@@ -9,6 +9,13 @@ import { UpdateLabelSettingsDto } from "./dto/update-label-settings.dto";
 // singleton (one shop-wide label/print configuration), not per-user.
 const LABEL_SETTINGS_SINGLETON_ID = "singleton";
 
+// The stock the roll printer is actually loaded with. Rows seeded before this
+// was known still carry the old A4-era default, which made every label print
+// oversized and run off the sticker; they are migrated forward on first read
+// (a superadmin who has deliberately chosen any other size is left alone).
+const LEGACY_LABEL_SIZE = "100mm × 50mm (Default)";
+const DEFAULT_LABEL_SIZE = "50mm × 25mm (Default)";
+
 @Injectable()
 export class LabelsService {
   constructor(
@@ -22,7 +29,13 @@ export class LabelsService {
       where: { id: LABEL_SETTINGS_SINGLETON_ID },
     });
     if (existing) {
-      return existing;
+      if (existing.labelSize !== LEGACY_LABEL_SIZE) {
+        return existing;
+      }
+      return this.prisma.labelSettings.update({
+        where: { id: LABEL_SETTINGS_SINGLETON_ID },
+        data: { labelSize: DEFAULT_LABEL_SIZE },
+      });
     }
     return this.prisma.labelSettings.create({
       data: { id: LABEL_SETTINGS_SINGLETON_ID },
@@ -44,13 +57,13 @@ export class LabelsService {
    * a small printed tag a few inches away needs thicker bars to resolve
    * reliably; 3 was thin enough to make real-world scans miss constantly.
    */
-  async generateBarcodePng(code: string): Promise<Buffer> {
+  async generateBarcodePng(code: string, includeText = true): Promise<Buffer> {
     return bwipjs.toBuffer({
       bcid: "code128",
       text: code,
       scale: 4,
       height: 14,
-      includetext: true,
+      includetext: includeText,
       textxalign: "center",
     });
   }
