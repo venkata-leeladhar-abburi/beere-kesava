@@ -5,6 +5,7 @@ import { Public } from "./decorators/public.decorator";
 import type { AuthenticatedUser } from "./strategies/jwt.strategy";
 import { AuthService } from "./auth.service";
 import { RequestOtpDto } from "./dto/request-otp.dto";
+import { SwitchRoleDto } from "./dto/switch-role.dto";
 import { VerifyOtpDto } from "./dto/verify-otp.dto";
 
 @Controller("auth")
@@ -31,6 +32,13 @@ export class AuthController {
   @Post("verify-otp")
   verifyOtp(@Body() dto: VerifyOtpDto, @Headers("user-agent") userAgent?: string) {
     return this.authService.verifyOtp(dto, userAgent);
+  }
+
+  // Not @Public(): swaps the session onto another portal assigned to the
+  // same person. AuthService re-checks the assignment against the database.
+  @Post("switch-role")
+  switchRole(@CurrentUser() user: AuthenticatedUser, @Body() dto: SwitchRoleDto) {
+    return this.authService.switchRole(user, dto.role);
   }
 
   // Not @Public(): a logout has to name the session it is closing, which

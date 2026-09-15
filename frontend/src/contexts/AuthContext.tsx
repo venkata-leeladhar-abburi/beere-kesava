@@ -16,6 +16,8 @@ export interface AuthState {
     email: string;
     mobile: string;
     role: string;
+    /** Every portal assigned to this person (backend enum values). */
+    roles?: string[];
     accessLevel?: string;
     dateAdded?: string | null;
   } | null;
@@ -25,6 +27,10 @@ interface AuthContextValue extends AuthState {
   login: (phone: string, token?: string, user?: AuthState["user"]) => void;
   selectRole: (role: Role | null) => void;
   logout: () => void;
+  /** Portals this person may use — more than one means login shows a picker. */
+  availableRoles: Role[];
+  /** Moves the session onto another assigned portal (re-issues the token). */
+  switchPortal: (role: Role) => Promise<void>;
   /**
    * The admin/superadmin role a user *came from* when they opened a staff
    * portal from their own dashboard. Null for a genuine staff login.
@@ -63,6 +69,14 @@ export const ADMIN_VIEW_KEY = "bk_original_admin_role";
  * be cleared on every login and logout, not just admin-view transitions.
  */
 const IMPERSONATE_WEAVER_KEY = "admin_impersonate_weaver_id";
+
+const KNOWN_ROLES: Role[] = ["superadmin", "admin", "worker", "weaver", "shop", "accountant"];
+
+function toRoles(raw: string[] | undefined, fallback: Role | null): Role[] {
+  const list = (raw ?? []).map(r => r.toLowerCase() as Role).filter(r => KNOWN_ROLES.includes(r));
+  const unique = [...new Set(list)];
+  return unique.length ? unique : fallback ? [fallback] : [];
+}
 
 function readAdminView(): Role | null {
   try {
@@ -130,11 +144,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.removeItem(ADMIN_VIEW_KEY);
       sessionStorage.removeItem(IMPERSONATE_WEAVER_KEY);
+      // Fresh idle clock — a stale value from an earlier session would make
+      // IdleLogout end this one the moment it starts.
+      localStorage.setItem("bk_last_activity", String(Date.now()));
     } catch { /* ignore */ }
     setAdminViewingAs(null);
     const normalizedRole = user?.role ? (user.role.toLowerCase() as Role) : null;
+    // Several portals assigned → no role yet; /select-role asks which one.
+    const roles = toRoles(user?.roles, normalizedRole);
     const effectiveToken = token || "demo-token-" + Date.now();
-    setState({ isAuthenticated: true, role: normalizedRole, phone, token: effectiveToken, user: user || null });
+    setState({
+      isAuthenticated: true,
+      role: roles.length > 1 ? null : normalizedRole,
+      phone,
+      token: effectiveToken,
+      user: user || null,
+    });
   }, []);
 
   // Entering or leaving a staff portal always writes the flag and then calls
@@ -142,6 +167,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const selectRole = useCallback((role: Role | null) => {
     setState(prev => ({ ...prev, role }));
     setAdminViewingAs(readAdminView());
+  }, []);
+
+  const switchPortal = useCallback(async (target: Role) => {
+    const res = await authApi.switchRole(target.toUpperCase());
+    // Written synchronously so requests fired by the next portal's first
+    // render already carry the new token (saveState runs a tick later).
+    try { localStorage.setItem("token", res.token); localStorage.removeItem(ADMIN_VIEW_KEY); } catch { /* ignore */ }
+    setAdminViewingAs(null);
+    setState(prev => ({
+      ...prev,
+      role: target,
+      token: res.token,
+      user: prev.user ? { ...prev.user, roles: res.roles } : prev.user,
+    }));
   }, []);
 
   const logout = useCallback(() => {
@@ -161,8 +200,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAdminViewingAs(null);
   }, []);
 
+  const availableRoles = React.useMemo(
+    () => toRoles(state.user?.roles, state.role),
+    [state.user?.roles, state.role],
+  );
+
   return (
-    <AuthContext.Provider value={{ ...state, login, selectRole, logout, adminViewingAs, clearAdminView, enterStaffView }}>
+    <AuthContext.Provider value={{ ...state, login, selectRole, logout, adminViewingAs, clearAdminView, enterStaffView, availableRoles, switchPortal }}>
       {children}
     </AuthContext.Provider>
   );

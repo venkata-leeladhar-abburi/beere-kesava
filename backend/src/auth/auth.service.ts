@@ -2,6 +2,7 @@ import { randomInt } from "crypto";
 import {
   HttpException,
   HttpStatus,
+  ForbiddenException,
   Injectable,
   Optional,
   ServiceUnavailableException,
@@ -16,6 +17,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { WhatsAppService } from "../whatsapp/whatsapp.service";
 import { RequestOtpDto } from "./dto/request-otp.dto";
 import { VerifyOtpDto } from "./dto/verify-otp.dto";
+import type { AuthenticatedUser } from "./strategies/jwt.strategy";
 import { OtpInspectorService } from "./testing/otp-inspector.service";
 import { AuditStatus, UserRole, AccessLevel, WhatsAppMessageKind, WhatsAppMessageStatus } from "../generated/prisma/client";
 
@@ -230,6 +232,7 @@ export class AuthService {
     });
 
     let role = user?.role || UserRole.ADMIN;
+    let roles: UserRole[] = user ? this.rolesOf(user) : [role];
     let userId = user?.id;
     let name = user ? `${user.firstName} ${user.lastName}` : "";
     let email = user?.email || "";
@@ -258,6 +261,7 @@ export class AuthService {
       }
 
       role = UserRole.WEAVER;
+      roles = [UserRole.WEAVER];
       userId = weaver.id;
       name = weaver.name;
       email = weaver.email;
@@ -297,10 +301,40 @@ export class AuthService {
         email,
         mobile: phone,
         role,
+        roles,
         accessLevel,
         dateAdded,
       },
     };
+  }
+
+  /** Primary role first, then any extra portals, without duplicates. */
+  private rolesOf(user: { role: UserRole; additionalRoles?: UserRole[] | null }): UserRole[] {
+    return [...new Set([user.role, ...(user.additionalRoles ?? [])])];
+  }
+
+  /**
+   * Re-issues the caller's token for another of their assigned portals.
+   * Roles are re-read from the database, never trusted from the old token,
+   * so a portal an admin has since removed can no longer be switched into.
+   */
+  async switchRole(current: AuthenticatedUser, target: UserRole) {
+    const user = current.id ? await this.prisma.user.findUnique({ where: { id: current.id } }) : null;
+    // Weaver-only sessions (no User row) have exactly one portal.
+    const roles = user ? this.rolesOf(user) : [current.role];
+    if (!roles.includes(target)) {
+      throw new ForbiddenException("That portal is not assigned to your account.");
+    }
+
+    const payload = {
+      sub: current.id,
+      mobile: current.mobile,
+      role: target,
+      name: current.name,
+      accessLevel: user?.accessLevel ?? current.accessLevel,
+      weaverId: user ? user.linkedWeaverId : (current.weaverId ?? null),
+    };
+    return { token: this.jwtService.sign(payload), role: target, roles };
   }
 
   /**

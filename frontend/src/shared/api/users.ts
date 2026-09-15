@@ -17,6 +17,7 @@ export interface BackendUser {
   mobile: string;
   email: string | null;
   role: BackendRole;
+  additionalRoles?: BackendRole[];
   accessLevel: BackendAccessLevel;
   status: BackendStatus;
   dateAdded: string;
@@ -67,6 +68,8 @@ export interface CreateUserPayload {
   mobile: string;
   email?: string;
   role: BackendRole;
+  /** Extra portals the person can switch into (never WEAVER/SUPERADMIN). */
+  additionalRoles?: BackendRole[];
   accessLevel?: BackendAccessLevel;
   // Only used when role is WEAVER — populates the linked Weaver record.
   photoUrl?: string;
@@ -84,6 +87,7 @@ export interface UpdateUserPayload {
   mobile?: string;
   email?: string;
   status?: BackendStatus;
+  additionalRoles?: BackendRole[];
 }
 
 export const usersApi = {

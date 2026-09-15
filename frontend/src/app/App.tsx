@@ -109,6 +109,7 @@ const AccountantHomePage      = lazy(() => import("./pages/accountant/HomePage")
 const MobileScanView = lazy(() => import("../features/scanning/components/MobileScanView").then(m => ({ default: m.MobileScanView })));
 
 import { ScrollToTop } from "../shared/ui/ScrollToTop";
+import { IdleLogout } from "./guards/IdleLogout";
 
 export default function App() {
   return (
@@ -118,6 +119,7 @@ export default function App() {
       <ConfirmProvider>
       <BrowserRouter>
         <ScrollToTop />
+        <IdleLogout />
         <SkipLink />
         <OfflineBanner />
         <GlobalCommandPalette />

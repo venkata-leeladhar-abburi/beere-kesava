@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
 import { normalizeMobile } from "../common/phone.util";
 import { nextSequenceId } from "../common/sequence-id.util";
@@ -49,7 +49,23 @@ export class UsersService {
     }
   }
 
+  /**
+   * Extra portals a User may switch into. WEAVER needs a linked Weaver row
+   * (only provisioned when it is the primary role) and SUPERADMIN is never
+   * handed out as a side-grant, so both are refused; the primary role is
+   * dropped as a duplicate.
+   */
+  private sanitizeAdditionalRoles(primary: UserRole, roles: UserRole[] | undefined): UserRole[] | undefined {
+    if (roles === undefined) return undefined;
+    const invalid = roles.filter((r) => r === UserRole.WEAVER || r === UserRole.SUPERADMIN);
+    if (invalid.length) {
+      throw new BadRequestException(`${invalid.join(", ")} cannot be assigned as an additional portal.`);
+    }
+    return [...new Set(roles.filter((r) => r !== primary))];
+  }
+
   async create(dto: CreateUserDto) {
+    const additionalRoles = this.sanitizeAdditionalRoles(dto.role, dto.additionalRoles) ?? [];
     const mobile = normalizeMobile(dto.mobile);
     await this.assertMobileAvailable(mobile);
     // Allocated before the transaction: the id counter is its own atomic
@@ -105,6 +121,7 @@ export class UsersService {
             mobile,
             email: dto.email,
             role: dto.role,
+            additionalRoles,
             accessLevel: dto.accessLevel ?? AccessLevel.FULL_ACCESS,
             linkedWeaverId: linkedWeaver?.id,
           },
@@ -153,7 +170,12 @@ export class UsersService {
   }
 
   async update(id: string, dto: UpdateUserDto) {
-    await this.findOne(id);
+    const existing = await this.findOne(id);
+    const additionalRoles = this.sanitizeAdditionalRoles(
+      dto.role ?? existing.role,
+      // A primary-role change alone must still drop that role from the extras.
+      dto.additionalRoles ?? (dto.role ? existing.additionalRoles : undefined),
+    );
 
     const mobile = dto.mobile === undefined ? undefined : normalizeMobile(dto.mobile);
     if (mobile !== undefined) {
@@ -163,7 +185,11 @@ export class UsersService {
     try {
       return await this.prisma.user.update({
         where: { id },
-        data: { ...dto, ...(mobile === undefined ? {} : { mobile }) },
+        data: {
+          ...dto,
+          ...(mobile === undefined ? {} : { mobile }),
+          ...(additionalRoles === undefined ? {} : { additionalRoles }),
+        },
       });
     } catch (error) {
       throw this.mapPrismaError(error);

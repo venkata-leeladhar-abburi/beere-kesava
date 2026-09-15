@@ -19,6 +19,8 @@ export interface VerifyOtpResponse {
     email: string;
     mobile: string;
     role: string;
+    /** Every portal assigned to this person, primary role first. */
+    roles?: string[];
     accessLevel: string;
     /** ISO date string — when this User/Weaver record was created. */
     dateAdded: string | null;
@@ -30,6 +32,9 @@ export const authApi = {
     apiClient.post<RequestOtpResponse>("/auth/request-otp", { phone }),
   verifyOtp: (phone: string, code: string) =>
     apiClient.post<VerifyOtpResponse>("/auth/verify-otp", { phone, code }),
+  /** Re-issues the token for another portal assigned to the same person. */
+  switchRole: (role: string) =>
+    apiClient.post<{ token: string; role: string; roles: string[] }>("/auth/switch-role", { role }),
   /** Closes the session in the login history. Needs the token, so it must be
    *  called before local credentials are cleared. */
   logout: () => apiClient.post<{ ok: boolean }>("/auth/logout", {}),

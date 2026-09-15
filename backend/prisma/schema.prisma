@@ -335,6 +335,10 @@ model User {
   mobile      String       @unique
   email       String?
   role        UserRole
+  // Extra portals this person may switch into besides their primary `role`.
+  // The primary role is what they land on when only one portal is assigned;
+  // with more than one, login shows a portal picker (see /auth/switch-role).
+  additionalRoles UserRole[] @default([])
   accessLevel AccessLevel  @default(FULL_ACCESS)
   status      ActiveStatus @default(ACTIVE)
   dateAdded   DateTime     @default(now())

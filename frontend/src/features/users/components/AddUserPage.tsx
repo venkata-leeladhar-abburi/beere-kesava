@@ -54,6 +54,7 @@ function backendUserToTableRow(u: BackendUser): TableRow {
     firstName: u.firstName,
     lastName: u.lastName,
     role: frontendRole,
+    additionalRoles: (u.additionalRoles ?? []).map(r => BACKEND_TO_FRONTEND_ROLE[r]),
     mobile: u.mobile,
     email: u.email || undefined,
     portal: ROLE_TO_PORTAL[frontendRole] ?? "",
@@ -86,6 +87,7 @@ export function AddUserPage() {
   const [mobile,         setMobile]         = useState("");
   const [email,          setEmail]          = useState("");
   const [role,           setRole]           = useState("");
+  const [additionalRoles, setAdditionalRoles] = useState<string[]>([]);
   const [accessLevel,    setAccessLevel]    = useState<AccessLevel>("Full Access");
   const [specialisation, setSpecialisation] = useState("");
   const [notes,          setNotes]          = useState("");
@@ -207,6 +209,7 @@ export function AddUserPage() {
         mobile,
         email: email.trim() || undefined,
         role: FRONTEND_TO_BACKEND_ROLE[role],
+        additionalRoles: additionalRoles.filter(r => r !== role).map(r => FRONTEND_TO_BACKEND_ROLE[r]),
         accessLevel: isAdmin ? frontendAccessLevelToBackend(accessLevel) : undefined,
         ...(isWeaver ? {
           photoUrl: weaverFields.photoUrl || undefined,
@@ -233,7 +236,7 @@ export function AddUserPage() {
 
   function resetForm() {
     setFirstName(""); setLastName(""); setMobile(""); setEmail("");
-    setRole(""); setAccessLevel("Full Access"); setSpecialisation(""); setNotes("");
+    setRole(""); setAdditionalRoles([]); setAccessLevel("Full Access"); setSpecialisation(""); setNotes("");
     setWeaverFields(EMPTY_WEAVER_FIELDS);
   }
 
@@ -283,6 +286,7 @@ export function AddUserPage() {
           lastName: updates.lastName,
           mobile: updates.mobile,
           email: updates.email || undefined,
+          additionalRoles: updates.additionalRoles.map(r => FRONTEND_TO_BACKEND_ROLE[r]),
         });
         setBackendUsers(prev => prev.map(u => (u.backendId === updated.id ? backendUserToTableRow(updated) : u)));
       }
@@ -521,6 +525,8 @@ export function AddUserPage() {
             setEmail={setEmail}
             role={role}
             setRole={setRole}
+            additionalRoles={additionalRoles}
+            setAdditionalRoles={setAdditionalRoles}
             portal={portal}
             autoEmpId={isFinishing ? nextFinishingEmpId : "Assigned automatically on save"}
             accessLevel={accessLevel}

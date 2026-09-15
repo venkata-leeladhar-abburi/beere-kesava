@@ -9,6 +9,7 @@ import {
 import { SectionCard, RoleBadge, AccessBadge } from "./UserBadges";
 import { Button, Field, Input, PhoneInput, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
 import { PhotoUploadField } from "../../../shared/ui/PhotoUploadField";
+import { AdditionalPortalsField } from "./AdditionalPortalsField";
 
 
 export interface WeaverFieldsState {
@@ -37,6 +38,8 @@ interface AddUserFormProps {
   setEmail: (v: string) => void;
   role: string;
   setRole: (v: string) => void;
+  additionalRoles: string[];
+  setAdditionalRoles: (v: string[]) => void;
   portal: string;
   autoEmpId: string;
   accessLevel: AccessLevel;
@@ -55,7 +58,7 @@ interface AddUserFormProps {
 export function AddUserForm({
   showSuccess, setShowSuccess, createdUser, isFinishing, isWeaver, isAdmin,
   firstName, setFirstName, lastName, setLastName, mobile, setMobile,
-  email, setEmail, role, setRole, portal, autoEmpId, accessLevel,
+  email, setEmail, role, setRole, additionalRoles, setAdditionalRoles, portal, autoEmpId, accessLevel,
   setAccessLevel, specialisation, setSpecialisation, notes, setNotes,
   weaverFields, setWeaverFields,
   canSubmit, handleSubmit, handleCancel
@@ -167,6 +170,11 @@ export function AddUserForm({
                     </Select>
                     {role && <div style={{ marginTop: 8 }}><RoleBadge role={role} /></div>}
                   </Field>
+
+                  {/* Extra portals — Finishing Staff has no login at all */}
+                  {role && !isFinishing && (
+                    <AdditionalPortalsField primaryRole={role} value={additionalRoles} onChange={setAdditionalRoles} />
+                  )}
 
                   {/* Portal Access — auto-filled */}
                   <Field label="Portal Access" hint="Auto-filled">

@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsOptional, IsString, Length, Matches } from "class-validator";
+import { ArrayUnique, IsArray, IsEmail, IsEnum, IsOptional, IsString, Length, Matches } from "class-validator";
 import { ActiveStatus, UserRole } from "../../generated/prisma/client";
 
 export class UpdateUserDto {
@@ -24,6 +24,14 @@ export class UpdateUserDto {
   @IsOptional()
   @IsEnum(UserRole)
   role?: UserRole;
+
+  // Extra portals besides `role` — the person picks one at login and can
+  // switch between them. WEAVER and SUPERADMIN are rejected by the service.
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsEnum(UserRole, { each: true })
+  additionalRoles?: UserRole[];
 
   @IsOptional()
   @IsEnum(ActiveStatus)

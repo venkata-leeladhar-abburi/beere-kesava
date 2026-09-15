@@ -13,14 +13,17 @@ import type { ReactNode } from "react";
 import { Navigate } from "react-router";
 import { useAuth, type Role } from "../../contexts/AuthContext";
 import { AccessDeniedState } from "../../shared/ui/state";
+import { PortalSwitcher } from "../../shared/ui/portal/PortalSwitcher";
 
 /** The prop is `allow` rather than `role` because jsx-a11y reads any JSX
  *  attribute named `role` as the ARIA one and rejects "admin"/"weaver"/… as
  *  invalid ARIA roles — a false positive on all six layouts. */
 export function RequireRole({ allow, children }: { allow: Role; children: ReactNode }) {
-  const { isAuthenticated, role: currentRole } = useAuth();
+  const { isAuthenticated, role: currentRole, availableRoles } = useAuth();
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  // Several portals assigned and none chosen yet → the portal picker.
+  if (currentRole === null && availableRoles.length > 1) return <Navigate to="/select-role" replace />;
 
   if (currentRole !== allow) {
     return (
@@ -37,5 +40,10 @@ export function RequireRole({ allow, children }: { allow: Role; children: ReactN
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <PortalSwitcher />
+    </>
+  );
 }

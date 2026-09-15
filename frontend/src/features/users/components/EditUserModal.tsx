@@ -3,12 +3,14 @@ import { TableRow } from "./utils";
 import { T, F } from "./theme";
 import { Button, Field, Input, PhoneInput } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
+import { AdditionalPortalsField } from "./AdditionalPortalsField";
 
 export interface UserEditFields {
   firstName: string;
   lastName: string;
   mobile: string;
   email: string;
+  additionalRoles: string[];
 }
 
 export function EditUserModal({ row, saving, error, onClose, onSave }: {
@@ -22,6 +24,9 @@ export function EditUserModal({ row, saving, error, onClose, onSave }: {
   const [lastName,  setLastName]  = useState(row.lastName);
   const [mobile,    setMobile]    = useState(row.mobile);
   const [email,     setEmail]     = useState(row.email ?? "");
+  const [additionalRoles, setAdditionalRoles] = useState<string[]>(row.additionalRoles ?? []);
+  // Weavers registered outside Add User have no User row to carry extra portals.
+  const canAssignPortals = Boolean(row.backendId);
 
   const canSave = firstName.trim() && lastName.trim() && mobile.trim();
 
@@ -47,6 +52,11 @@ export function EditUserModal({ row, saving, error, onClose, onSave }: {
           <Field label="Email" hint="Optional">
             <Input value={email} onChange={e => setEmail(e.target.value)} />
           </Field>
+          {canAssignPortals && (
+            <div className="md:col-span-2">
+              <AdditionalPortalsField primaryRole={row.role} value={additionalRoles} onChange={setAdditionalRoles} />
+            </div>
+          )}
         </div>
       </Modal.Body>
       <Modal.Footer>
@@ -55,7 +65,7 @@ export function EditUserModal({ row, saving, error, onClose, onSave }: {
         </Button>
         <Button
           variant="primary"
-          onClick={() => { if (canSave) onSave({ firstName, lastName, mobile, email }); }}
+          onClick={() => { if (canSave) onSave({ firstName, lastName, mobile, email, additionalRoles }); }}
           disabled={!canSave || saving}
         >
           {saving ? "Saving…" : "Save Changes"}
