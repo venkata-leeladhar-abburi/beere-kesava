@@ -7,7 +7,7 @@ import type { ValueType, NameType } from "recharts/types/component/DefaultToolti
 import { T, F } from "../theme";
 import { semantic } from "../../../../design-system/tokens";
 import { FadeUp, SilkSumCard, SectionCard, ReportDLBar } from "../common/primitives";
-import { ChartCard, ChartBand, TrackBar, BAND } from "../../../production/components/sections/chart-primitives";
+import { ChartCard, ChartBand, TrackBar, BAND } from "@/features/production";
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
 import { batchesApi } from "../../../../shared/api/batches";

@@ -9,7 +9,6 @@ import { T, F } from "../theme";
 import type { CodeCallbacks } from "../types";
 import { FadeUp, ProductionDialog } from "../common/primitives";
 import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
-import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { qcApi } from "../../../../shared/api/qc";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { useBatches } from "@/features/production";

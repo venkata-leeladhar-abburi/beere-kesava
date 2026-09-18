@@ -17,3 +17,6 @@ export { WorkerQC } from "./components/worker/WorkerQC";
 export { WorkerWeavers } from "./components/worker/WorkerWeavers";
 export * from "./components/worker/weavers/MaterialSplitPanel";
 export * from "./components/worker/ReceiptHistoryTable";
+// Printed by the Materials feature too — the GRN label is the same sheet
+// wherever it is raised from.
+export { GrnLabelSheet, type GrnLabel } from "./components/worker/GrnLabelSheet";

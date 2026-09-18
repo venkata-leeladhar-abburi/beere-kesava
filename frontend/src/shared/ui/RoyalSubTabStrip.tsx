@@ -12,9 +12,13 @@ export function RoyalSubTabStrip<T extends string = string>({
   onTabChange,
   className = "",
 }: {
-  tabs: readonly SubTabItem<T>[] | SubTabItem<T>[];
+  tabs: readonly SubTabItem<T>[];
   activeTab: T;
-  onTabChange: (key: any) => void;
+  // NoInfer: a setState handler's parameter is `T | ((prev: T) => T)`, and
+  // letting T be inferred from it drags that function type into the candidate
+  // set, fails `T extends string`, and silently widens every tab key to
+  // `string`. T is inferred from `tabs`/`activeTab` only.
+  onTabChange: (key: NoInfer<T>) => void;
   className?: string;
 }) {
   return (

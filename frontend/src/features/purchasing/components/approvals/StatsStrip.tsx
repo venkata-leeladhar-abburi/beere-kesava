@@ -1,5 +1,3 @@
-import { formatMoney, rupees } from "@/lib/domain/money";
-
 import { LuxuryStatsCard } from "../../../../shared/ui/LuxuryStatsCard";
 import { CheckCircle2, ShoppingBag, ShieldAlert, TrendingUp } from "lucide-react";
 

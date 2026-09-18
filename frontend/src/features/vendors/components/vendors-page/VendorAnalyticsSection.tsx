@@ -391,7 +391,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                     formatter={(v: number | string, _n: React.ReactNode, p: { payload: { orders: number; name: string } }) => [`${L(Number(v))} · ${p.payload.orders} orders`, p.payload.name]} />
                   <Bar dataKey="spend" radius={[10, 10, 10, 10]} label={{ position: "right", formatter: (v: number | string) => L(Number(v)), fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
                     {topVendors.map((v, i) => (
-                      <Cell key={v.id} fill={i === 0 ? T.royalBurgundy : i === 1 ? T.antiqueGold : i === 2 ? T.greenMid : "rgba(200,155,71,0.45)"} />
+                      <Cell key={v.id} fill={i < 3 ? semantic.chart.series[i] : semantic.chart.axis} />
                     ))}
                   </Bar>
                 </BarChart>

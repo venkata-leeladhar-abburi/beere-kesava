@@ -185,25 +185,23 @@ export function WorkerQCSareeCard({
           <div className="flex items-center gap-1.5 text-[12px] pt-1.5 border-t border-[#EAE5E1]/70">
             <Package size={13} className="text-[#845E04] flex-shrink-0" />
             <span style={{ fontFamily: F.u }} className="text-[#69635E] text-[11px]">Saree Code:</span>
-            <span
-              onClick={(e) => {
-                e.stopPropagation();
-                if (sareeCode !== "—") onOpenSareeTypeCode(sareeCode);
-              }}
-              role={sareeCode !== "—" ? "button" : undefined}
-              tabIndex={sareeCode !== "—" ? 0 : undefined}
-              onKeyDown={(e) => {
-                if ((e.key === "Enter" || e.key === " ") && sareeCode !== "—") {
+            {sareeCode !== "—" ? (
+              <button
+                type="button"
+                onClick={(e) => {
                   e.stopPropagation();
-                  e.preventDefault();
                   onOpenSareeTypeCode(sareeCode);
-                }
-              }}
-              style={{ fontFamily: F.m }}
-              className={`font-bold text-[#6E0F2D] truncate ${sareeCode !== "—" ? "cursor-pointer hover:underline" : ""}`}
-            >
-              {sareeCode}
-            </span>
+                }}
+                style={{ fontFamily: F.m, background: "none", border: "none", padding: 0 }}
+                className="font-bold text-[#6E0F2D] truncate cursor-pointer hover:underline"
+              >
+                {sareeCode}
+              </button>
+            ) : (
+              <span style={{ fontFamily: F.m }} className="font-bold text-[#6E0F2D] truncate">
+                {sareeCode}
+              </span>
+            )}
           </div>
         </div>
 

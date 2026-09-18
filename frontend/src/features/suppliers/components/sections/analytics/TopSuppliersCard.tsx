@@ -1,6 +1,7 @@
 // Row 2 left card: top suppliers by purchase value (horizontal bar chart).
 
 import React from "react";
+import { semantic } from "../../../../../design-system/tokens";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from "recharts";
 import type { ValueType, NameType, Payload } from "recharts/types/component/DefaultTooltipContent";
 import { Trophy } from "lucide-react";
@@ -99,7 +100,7 @@ export function TopSuppliersCard({
             <Bar dataKey="billed" radius={[10, 10, 10, 10]}
               label={{ position: "right", formatter: (v: number) => formatMoney(rupees(v)), fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
               {topSuppliers.map((s, i) => (
-                <Cell key={s.id} fill={i === 0 ? T.royalBurgundy : i === 1 ? T.antiqueGold : i === 2 ? T.greenMid : "rgba(200,155,71,0.45)"} />
+                <Cell key={s.id} fill={i < 3 ? semantic.chart.series[i] : semantic.chart.axis} />
               ))}
             </Bar>
           </BarChart>

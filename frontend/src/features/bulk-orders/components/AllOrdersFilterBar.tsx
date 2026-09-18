@@ -68,7 +68,7 @@ export function AllOrdersFilterBar({
         { value: "at-risk", label: "At Risk / Delayed" },
         { value: "completed", label: "Completed" },
       ],
-      onChange: (v: string) => setStatusFilter(v as any),
+      onChange: (v: string) => setStatusFilter(v as AllOrdersFilterBarProps["statusFilter"]),
     },
     {
       id: "payment",
@@ -80,7 +80,7 @@ export function AllOrdersFilterBar({
         { value: "partial", label: "Partial" },
         { value: "pending", label: "Pending" },
       ],
-      onChange: (v: string) => setPaymentFilter(v as any),
+      onChange: (v: string) => setPaymentFilter(v as AllOrdersFilterBarProps["paymentFilter"]),
     },
   ];
 

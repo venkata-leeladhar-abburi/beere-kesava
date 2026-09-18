@@ -458,7 +458,10 @@ export function SupplierPaymentsSection() {
                           className="font-bold text-[#6E0F2D] bg-[rgba(110,15,45,0.07)] border border-[rgba(110,15,45,0.12)] rounded-lg px-[9px] py-[3px] break-all whitespace-normal max-w-full"
                         />
                         <span style={{
-                          fontFamily: F.mono,
+                          // A date, not an entity code — Inter with tabular
+                          // figures keeps the digits aligned without mono.
+                          fontFamily: F.ui,
+                          fontVariantNumeric: "tabular-nums",
                           fontSize: 11,
                           color: T.taupe,
                           background: "rgba(200,155,71,0.08)",
@@ -492,7 +495,7 @@ export function SupplierPaymentsSection() {
                         flexDirection: "column",
                         gap: 8,
                       }}>
-                        <div style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px" }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px" }}>
                           PURCHASE & SETTLEMENT
                         </div>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -543,7 +546,7 @@ export function SupplierPaymentsSection() {
 
                       {/* STATUS & ACTIONS Header + Badge */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto" }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px" }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px" }}>
                           STATUS & ACTIONS
                         </span>
                         <span style={{

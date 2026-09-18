@@ -131,7 +131,14 @@ export function SectionCard({
 
 export function ModalOverlay({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
   const childrenArray = React.Children.toArray(children);
-  const header = childrenArray.find(child => React.isValidElement(child) && (child.type === ModalHeader || (child as any).type?.name === "ModalHeader"));
+  // The name check is the fallback for a ModalHeader that arrived through a
+  // wrapper (HMR, memo) rather than as the component itself.
+  const header = childrenArray.find(
+    child =>
+      React.isValidElement(child)
+      && (child.type === ModalHeader
+        || (typeof child.type === "function" && child.type.name === "ModalHeader")),
+  );
   const bodyChildren = childrenArray.filter(child => child !== header);
 
   return (

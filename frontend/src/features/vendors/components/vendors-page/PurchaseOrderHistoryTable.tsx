@@ -14,6 +14,23 @@ interface PurchaseOrderMaterial {
   grnItemCode?: string;
 }
 
+/**
+ * Keys for a PO's material lines. A line has no id of its own until a goods
+ * receipt matches it, and the same material can legitimately be ordered twice
+ * on one PO — so repeats of an identical line get an occurrence suffix. The
+ * position is folded in here rather than read off the render index, which
+ * would tie the key to the array order.
+ */
+function materialRows(materials: PurchaseOrderMaterial[]) {
+  const seen = new Map<string, number>();
+  return materials.map((m, i) => {
+    const base = m.grnItemCode ?? `${m.type}-${m.description}`;
+    const n = (seen.get(base) ?? 0) + 1;
+    seen.set(base, n);
+    return { m, key: n > 1 ? `${base}#${n}` : base, isLast: i === materials.length - 1 };
+  });
+}
+
 export interface PurchaseOrderHistoryRow {
   id: string;
   date: string;
@@ -42,10 +59,10 @@ export function PurchaseOrderHistoryTable({ orders }: { orders: PurchaseOrderHis
       id: "materials", header: "Materials", accessor: o => o.materials,
       cell: (_v, o) => (
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {o.materials.map((m, mi: number) => {
+          {materialRows(o.materials).map(({ m, key, isLast }) => {
             const mt = MAT_TAG_PO[m.type] || MAT_TAG_PO.Warp;
             return (
-              <div key={`${m.type}-${m.description}-${mi}`} style={{ display: "flex", alignItems: "flex-start", gap: 8, paddingBottom: 6, borderBottom: mi < o.materials.length - 1 ? `1px solid ${T.borderDef}` : "none" }}>
+              <div key={key} style={{ display: "flex", alignItems: "flex-start", gap: 8, paddingBottom: 6, borderBottom: isLast ? "none" : `1px solid ${T.borderDef}` }}>
                 <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 4, padding: "2px 6px", marginTop: 1 }}>{m.type}</span>
                 <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{m.description}</span>

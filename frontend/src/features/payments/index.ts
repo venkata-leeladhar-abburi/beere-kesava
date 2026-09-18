@@ -8,3 +8,6 @@ export * from "./components/OutstandingPage";
 export * from "./components/PaymentsPage";
 export * from "./data/invoices";
 export * from "./components/supplier/SupplierPayNowModal";
+// The accepted spreadsheet types are shared with every other import flow
+// (weaver roster, vendor bills) — one list, not a copy per feature.
+export * from "./utils/importFile";

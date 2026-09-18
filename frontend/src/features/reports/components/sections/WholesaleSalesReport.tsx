@@ -7,7 +7,7 @@ import { useBulkOrders } from "@/features/bulk-orders";
 import { T, F } from "../theme";
 import { FadeUp, SilkSumCard, SectionCard, ReportDLBar } from "../common/primitives";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
-import { ChartCard, ChartBand, TrackBar, BAND } from "../../../production/components/sections/chart-primitives";
+import { ChartCard, ChartBand, TrackBar, BAND } from "@/features/production";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import type { BulkOrder } from "@/features/bulk-orders";

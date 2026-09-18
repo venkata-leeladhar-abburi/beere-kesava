@@ -13,7 +13,7 @@ import {
   FadeUp, SilkSumCard, SectionCard, ReportDLBar, ChartTip,
   StatusPill,
 } from "../common/primitives";
-import { ChartCard, ChartBand, TrackBar, BAND } from "../../../production/components/sections/chart-primitives";
+import { ChartCard, ChartBand, TrackBar, BAND } from "@/features/production";
 import { batchesApi } from "../../../../shared/api/batches";
 import { qcApi } from "../../../../shared/api/qc";
 import { weaversApi } from "../../../../shared/api/weavers";

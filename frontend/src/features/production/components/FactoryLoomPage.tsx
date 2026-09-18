@@ -52,6 +52,8 @@ const FRONTEND_TO_BACKEND_STATUS: Record<FactoryLoom["status"], BackendLoomStatu
   maintenance: "MAINTENANCE",
 };
 
+type LoomStatusFilter = "all" | "active" | "idle" | "maintenance";
+
 // ── Main Page Export ──────────────────────────────────────────────────────────
 export function FactoryLoomPage() {
   const [looms, setLooms] = useState<FactoryLoom[]>([]);
@@ -61,7 +63,7 @@ export function FactoryLoomPage() {
   const [saving, setSaving] = useState(false);
   const [view, setView] = useState<"card"|"table">("table");
   const [search, setSearch] = useState("");
-  const [sf, setSf] = useState<"all"|"active"|"idle"|"maintenance">("all");
+  const [sf, setSf] = useState<LoomStatusFilter>("all");
   const [showModal, setShowModal] = useState(false);
   const [editLoom, setEditLoom] = useState<FactoryLoom|null>(null);
   const [selected, setSelected] = useState<FactoryLoom|null>(null);
@@ -302,7 +304,7 @@ export function FactoryLoomPage() {
                         value: st,
                         label: `${st.charAt(0).toUpperCase() + st.slice(1)} (${st === "all" ? looms.length : looms.filter(l => l.status === st).length})`,
                       })),
-                      onChange: (v: string) => setSf(v as any),
+                      onChange: (v: string) => setSf(v as LoomStatusFilter),
                     },
                   ]}
                   onResetAll={() => {

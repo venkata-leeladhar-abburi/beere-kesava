@@ -122,7 +122,7 @@ export function InactiveCustomersSection({
                 { value: "Wholesale", label: `Wholesale (${wholesaleCount})` },
                 { value: "Retail", label: `Retail (${retailCount})` },
               ],
-              onChange: (v: string) => setInactiveTypeFilter(v as any),
+              onChange: (v: string) => setInactiveTypeFilter(v as InactiveCustomersSectionProps["inactiveTypeFilter"]),
             },
             {
               id: "city",
@@ -147,7 +147,7 @@ export function InactiveCustomersSection({
                 { value: "10", label: "10+ months" },
                 { value: "12", label: "12+ months" },
               ],
-              onChange: (v: string) => setInactiveTimelineFilter(v as any),
+              onChange: (v: string) => setInactiveTimelineFilter(v as InactiveCustomersSectionProps["inactiveTimelineFilter"]),
             },
           ]}
           onResetAll={() => {

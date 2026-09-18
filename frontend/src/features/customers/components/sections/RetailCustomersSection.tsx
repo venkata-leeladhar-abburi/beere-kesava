@@ -349,7 +349,7 @@ export function RetailCustomersSection({
                 { value: "regular", label: `Regular Buyers (${filteredRetail.filter(r => r.regular).length})` },
                 { value: "inactive", label: `Inactive (${filteredRetail.filter(r => r.inactive).length})` },
               ],
-              onChange: (v: string) => setRetailStatusFilter(v as any),
+              onChange: (v: string) => setRetailStatusFilter(v as RetailCustomersSectionProps["retailStatusFilter"]),
             },
             {
               id: "city",
@@ -372,7 +372,7 @@ export function RetailCustomersSection({
                 { value: "purchases", label: "Sort: Total Purchases" },
                 { value: "recent", label: "Sort: Most Recent Visit" },
               ],
-              onChange: (v: string) => setRetailSort(v as any),
+              onChange: (v: string) => setRetailSort(v as RetailCustomersSectionProps["retailSort"]),
             },
           ]}
           onResetAll={() => {

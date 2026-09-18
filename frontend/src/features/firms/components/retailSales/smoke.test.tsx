@@ -6,9 +6,11 @@ import { ConnectRetailSalesSection } from "./ConnectRetailSalesSection";
 import { FirmRetailSalesTab } from "./FirmRetailSalesTab";
 import { ConfirmProvider } from "../../../../shared/ui/overlay";
 import { ConnectRetailSalesModal } from "./ConnectRetailSalesModal";
+import type { Firm } from "../../contexts/FirmsContext";
+import type * as FirmsApi from "../../../../shared/api/firms";
 
 vi.mock("../../../../shared/api/firms", async (orig) => {
-  const actual = await orig<any>();
+  const actual = await orig<typeof FirmsApi>();
   return {
     ...actual,
     firmsApi: {
@@ -21,7 +23,7 @@ vi.mock("../../../../shared/api/firms", async (orig) => {
   };
 });
 
-const FIRM: any = { id: "FIRM-001", firmName: "Kesava Silks", createdAt: "2026-01-01" };
+const FIRM: Firm = { id: "FIRM-001", firmName: "Kesava Silks", createdAt: "2026-01-01" };
 
 describe("retail sales UI mounts", () => {
   it("renders ConnectRetailSalesSection", () => {

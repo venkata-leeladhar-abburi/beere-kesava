@@ -1,4 +1,5 @@
 import React from "react";
+import { semantic } from "../../../../design-system/tokens";
 import { useQuery } from "@tanstack/react-query";
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -435,7 +436,7 @@ export function WeaverAnalytics() {
                       <RechartsTooltip cursor={{ fill: "rgba(200,155,71,0.06)" }} contentStyle={tip}
                         formatter={(v: number, _n: string, p: { payload: (typeof loomProductivity)[number] }) => [`${v} per loom · ${p.payload.looms} looms`, p.payload.name]} />
                       <Bar dataKey="perLoomR" radius={[10, 10, 10, 10]}>
-                        {loomProductivity.map(w => <Cell key={w.id} fill={w.perLoom >= avgPerLoom ? T.royalBurgundy : T.antiqueGold} />)}
+                        {loomProductivity.map(w => <Cell key={w.id} fill={w.perLoom >= avgPerLoom ? semantic.chart.series[0] : semantic.chart.series[1]} />)}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>

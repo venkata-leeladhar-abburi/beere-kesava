@@ -234,7 +234,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                   { value: "qc", label: `Pending QC (${qcCount})` },
                   { value: "idle", label: `No Active Batch (${idleCount})` },
                 ],
-                onChange: (v: string) => setStatusFilter(v as any),
+                onChange: (v: string) => setStatusFilter(v as "all" | Status),
               },
               {
                 id: "village",
@@ -257,7 +257,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                   { value: "output", label: "Sort: Total Sarees Woven" },
                   { value: "looms", label: "Sort: Looms" },
                 ],
-                onChange: (v: string) => setSortBy(v as any),
+                onChange: (v: string) => setSortBy(v as "name" | "output" | "looms"),
               },
             ]}
             onResetAll={() => {

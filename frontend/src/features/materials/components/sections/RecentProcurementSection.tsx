@@ -12,7 +12,7 @@ import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits
 import { toInitials } from "@/shared/lib/initials";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { useDocument, useLabelStock } from "../../../../shared/ui/document";
-import { GrnLabelSheet, type GrnLabel } from "../../../portals/components/worker/GrnLabelSheet";
+import { GrnLabelSheet, type GrnLabel } from "@/features/portals";
 
 /** DDMMYY, e.g. 2026-09-02 -> "020926" — same format every other tag uses. */
 function ddmmyy(dateStr?: string | null): string | undefined {

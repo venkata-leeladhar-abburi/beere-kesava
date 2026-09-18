@@ -8,7 +8,7 @@ import { T, F } from "../theme";
 import { FadeUp, SumCard, SectionCard, ReportDLBar, ChartTip, StatusPill } from "../common/primitives";
 import {
   ChartCard, ChartBand, TrackBar, BAND
-} from "../../../production/components/sections/chart-primitives";
+} from "@/features/production";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
 import { invoicesApi } from "../../../../shared/api/invoices";
@@ -291,7 +291,7 @@ export function CustomerReport() {
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{c.name}</span>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{formatMoney(rupees(c.total))}</span>
                 </div>
-                <TrackBar pct={Math.round((c.total / maxTop) * 100)} fill={T.antiqueGold} height={9} delay={i * 0.08} />
+                <TrackBar pct={Math.round((c.total / maxTop) * 100)} fill={semantic.chart.series[1]} height={9} delay={i * 0.08} />
               </div>
             ))}
           </div>

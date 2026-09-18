@@ -37,10 +37,11 @@ function summarizeAssignedBy(list: FinishingAssignment[]): string {
   return `${names.length} people`;
 }
 
+type FinishingStatusFilter = "all" | "awaiting" | "perfect" | "damaged";
 export function FinishingTrackingPage() {
   const { assignments, returns, quotations, isError, isLoading, refetch } = useFinishing();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "awaiting" | "perfect" | "damaged">("all");
+  const [statusFilter, setStatusFilter] = useState<FinishingStatusFilter>("all");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [open, setOpen] = useState<string | null>(null);
   const [openQuotation, setOpenQuotation] = useState<string | null>(null);
@@ -181,7 +182,7 @@ export function FinishingTrackingPage() {
                         { value: "perfect", label: "Received · Perfect" },
                         { value: "damaged", label: "Received · Damaged" },
                       ],
-                      onChange: (v: string) => setStatusFilter(v as any),
+                      onChange: (v: string) => setStatusFilter(v as FinishingStatusFilter),
                     },
                   ]}
                   onResetAll={() => {
@@ -210,7 +211,7 @@ export function FinishingTrackingPage() {
                       { key: "damaged", label: "Received · Damaged" },
                     ].map(f => (
                       <Button key={f.key} variant={statusFilter === f.key ? "primary" : "secondary"} size="sm"
-                        onClick={() => setStatusFilter(f.key as any)}>
+                        onClick={() => setStatusFilter(f.key as FinishingStatusFilter)}>
                         {f.label}
                       </Button>
                     ))}

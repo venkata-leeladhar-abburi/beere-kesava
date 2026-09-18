@@ -7,7 +7,7 @@ import { weaversApi } from "../../../../shared/api/weavers";
 import { qcApi } from "../../../../shared/api/qc";
 import { T, F } from "../theme";
 import { FadeUp, SilkSumCard, SectionCard, ReportDLBar } from "../common/primitives";
-import { ChartCard, ChartBand, TrackBar, BAND } from "../../../production/components/sections/chart-primitives";
+import { ChartCard, ChartBand, TrackBar, BAND } from "@/features/production";
 import { DataTable } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import { rupees, formatMoney } from "@/lib/domain/money";

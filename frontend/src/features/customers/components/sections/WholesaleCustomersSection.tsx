@@ -59,6 +59,8 @@ export interface WholesaleCustomersSectionProps {
   onEdit: (w: WholesaleCustomer) => void;
 }
 
+type WholesaleFilter = "all" | "active" | "dues" | "inactive";
+
 // ── SECTION 4: WHOLESALE CUSTOMERS ──────────────────────────────────────────
 export function WholesaleCustomersSection({
   wholesaleList, wholesaleView, setWholesaleView, showAddWholesale, setShowAddWholesale, onView, onEdit,
@@ -69,7 +71,7 @@ export function WholesaleCustomersSection({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [wholesaleSearch, setWholesaleSearch] = useState("");
-  const [wholesaleFilter, setWholesaleFilter] = useState<"all" | "active" | "dues" | "inactive">("all");
+  const [wholesaleFilter, setWholesaleFilter] = useState<WholesaleFilter>("all");
 
   const isInactive = (w: WholesaleCustomer) => monthsSinceLabel(w.lastOrder) >= 6;
 
@@ -351,7 +353,7 @@ export function WholesaleCustomersSection({
                   { value: "dues", label: "Has Dues (0)" },
                   { value: "inactive", label: "Inactive (0)" },
                 ],
-                onChange: (v: string) => setWholesaleFilter(v as any),
+                onChange: (v: string) => setWholesaleFilter(v as WholesaleFilter),
               },
             ]}
             onResetAll={() => {

@@ -221,7 +221,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           talliedAt: row?.talliedAt ?? null,
         };
       }),
-    [linkedSarees, rowBySareeId],
+    [linkedSarees, rowBySareeId, qcPhotoBySareeId],
   );
 
   const handleToggleSareeTally = async (item: TallyRowItem, tallied: boolean) => {

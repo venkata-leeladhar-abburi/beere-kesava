@@ -4,7 +4,7 @@ import {
   AlertTriangle, Factory, Layers, Truck, TrendingUp, Users, Package, ShoppingBag,
 } from "lucide-react";
 import { useSales, isOutstanding } from "@/features/customers";
-import { useReportPeriodOptional } from "@/features/reports/components/PeriodContext";
+import { useReportPeriodOptional } from "@/features/reports";
 import type { IconComponent } from "../../../lib/icon";
 import { T, F } from "../theme";
 import type { AgeKey } from "./outstanding/primitives";

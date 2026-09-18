@@ -11,7 +11,7 @@ import { T, F } from "../theme";
 import { FadeUp, SectionCard, ReportDLBar } from "../common/primitives";
 import {
   ChartCard, ChartBand, TrackBar, BAND
-} from "../../../production/components/sections/chart-primitives";
+} from "@/features/production";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { useReportPeriod, useRegisterExport } from "../PeriodContext";

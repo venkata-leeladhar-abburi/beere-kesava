@@ -18,7 +18,7 @@ import { T, F } from "../theme";
 import { Button, IconButton, Textarea } from "../../../../../shared/ui/primitives";
 import { Modal } from "../../../../../shared/ui/overlay";
 import { useDocument } from "../../../../../shared/ui/document";
-import { usePrintSareeTags, type SareeTagData } from "@/features/weavers/components/WeaverSareesSection/SareeTagPrint";
+import { usePrintSareeTags, type SareeTagData } from "@/features/weavers";
 
 /** Full saree/barcode breakdown for one purchase — grouped by serial number
  * (one row per purchase line), matching the Suppliers → Order History view,

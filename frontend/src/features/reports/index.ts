@@ -5,3 +5,5 @@
 // warning while existing cross-feature imports are migrated over.
 
 export * from "./components/ReportsPage";
+// Read by the Payments feature, which mirrors the reporting period.
+export * from "./components/PeriodContext";

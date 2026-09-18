@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ArrowLeft, ClipboardCheck, ArrowRight } from "lucide-react";
 import { ProductionDialog } from "@/features/production";
+import { EntityCode } from "@/shared/ui/domain";
 import { PageShell } from "../../../shared/ui/PageShell";
 import { Button } from "../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
@@ -98,13 +99,12 @@ export function QcHistoryPage({ onBack }: { onBack?: () => void }) {
                   <div>
                     {/* Top Row: Batch ID badge & Status Pill */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                      <div style={{
-                        background: "rgba(110,15,45,0.06)", border: `1px solid rgba(110,15,45,0.15)`,
-                        borderRadius: 8, padding: "4px 10px",
-                        fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy,
-                      }}>
-                        {q.batchId}
-                      </div>
+                      <EntityCode
+                        type="batch"
+                        value={q.batchId}
+                        size="sm"
+                        className="font-bold text-[#6E0F2D] bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.15)] rounded-lg px-2.5 py-1"
+                      />
                       <div style={{
                         background: "rgba(200,155,71,0.12)", border: `1px solid rgba(200,155,71,0.25)`,
                         borderRadius: 20, padding: "3px 10px",

@@ -7,7 +7,7 @@ import { Status, ParsedWeaverRow } from "../types";
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { weaversApi } from "../../../../shared/api/weavers";
-import { IMPORT_FILE_ACCEPT } from "../../../payments/utils/importFile";
+import { IMPORT_FILE_ACCEPT } from "@/features/payments";
 
 export function ImportWeaversModal({ open, onClose, onImported }: {
   open: boolean; onClose: () => void; onImported: () => void;

@@ -17,7 +17,7 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { SariTagPrintModal } from "@/features/production";
-import { usePrintSareeTags, type SareeTagData } from "../../../weavers/components/WeaverSareesSection/SareeTagPrint";
+import { usePrintSareeTags, type SareeTagData } from "@/features/weavers";
 
 export type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string; supplier: string; supplierId?: string };
 

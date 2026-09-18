@@ -7,9 +7,10 @@ export interface ViewOption<T extends string = string> {
 }
 
 export interface ViewSelectorProps<T extends string = string> {
-  options: readonly ViewOption<T>[] | ViewOption<T>[];
+  options: readonly ViewOption<T>[];
   activeView: T;
-  onViewChange: (key: any) => void;
+  // See RoyalSubTabStrip — T is inferred from `options`/`activeView` only.
+  onViewChange: (key: NoInfer<T>) => void;
   className?: string;
 }
 

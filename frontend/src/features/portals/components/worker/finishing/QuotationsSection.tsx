@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { AnimatePresence } from "motion/react";
 import { Users, ArrowDownToLine, FileText, Building2, ChevronDown, Phone, Receipt } from "lucide-react";
 import { C, F } from "../tokens";
@@ -239,7 +239,7 @@ function buildQuotationColumns(opts: {
       id: "actions", header: "Actions", accessor: () => null, type: "actions", priority: 2, width: 220,
       cell: (_v, r) => (
         (r.canAssign || r.canReceive) ? (
-          <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center gap-1.5" role="presentation" onClick={e => e.stopPropagation()}>
             {r.canAssign && (
               <Button variant="primary" iconLeft={Users} onClick={() => opts.onAssign(r.q.id)}
                 className="min-w-0 px-2 text-[11px] whitespace-nowrap justify-center h-[32px] rounded-lg bg-[#6E0F2D] hover:bg-[#6E0F2D]">
@@ -272,14 +272,14 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
 
   const columns = useMemo(buildSareeColumns, []);
 
-  const toggleSareesExpanded = (id: string) => {
+  const toggleSareesExpanded = useCallback((id: string) => {
     setExpandedSarees(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  };
+  }, []);
 
   const active = useMemo(
     () => quotations
@@ -304,12 +304,12 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
     setPickerFor(null);
   };
 
-  const handleReceive = (q: Quotation) => {
+  const handleReceive = useCallback((q: Quotation) => {
     const inFinishingIds = q.sarees.filter(s => s.finishingStatus === "in-finishing").map(s => s.sareeId);
     if (inFinishingIds.length === 0) return;
     receiveQuotationSarees(q.id, inFinishingIds, WORKER_NAME);
     setToast(`${inFinishingIds.length} saree${inFinishingIds.length > 1 ? "s" : ""} received against ${q.quotationNumber}`);
-  };
+  }, [receiveQuotationSarees]);
 
   const listRows: QuotationListRow[] = useMemo(() => pag.pageItems.map(q => {
     const received = q.sarees.filter(s => s.finishingStatus === "received").length;
@@ -334,7 +334,7 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
     onToggle: toggleSareesExpanded,
     onAssign: id => setPickerFor(id),
     onReceive: handleReceive,
-  }), [expandedSarees]);
+  }), [expandedSarees, toggleSareesExpanded, handleReceive]);
 
   return (
     <SectionCard

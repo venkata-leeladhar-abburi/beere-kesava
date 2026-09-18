@@ -156,7 +156,7 @@ export function SareeRowCard({
             placeholder="e.g. 25"
           />
         </Field>
-        <Field label="Selling Price (₹ / piece)">
+        <Field label="Selling Price (per piece)">
           <NumberInput
             size="sm"
             step={0.01}
