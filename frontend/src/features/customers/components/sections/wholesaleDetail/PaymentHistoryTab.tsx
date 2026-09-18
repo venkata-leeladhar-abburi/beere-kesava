@@ -50,7 +50,7 @@ export function PaymentHistoryTab({
 }) {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["invoices", "by-customer", customerId],
-    queryFn: () => invoicesApi.list({ customerId, pageSize: 200 }),
+    queryFn: () => invoicesApi.list({ customerId }),
     enabled: !!customerId,
   });
 

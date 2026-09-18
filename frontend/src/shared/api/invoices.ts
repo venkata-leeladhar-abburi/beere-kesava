@@ -58,11 +58,31 @@ export interface CreateInvoicePaymentPayload {
   firmId?: string;
 }
 
+// ListInvoicesQueryDto caps pageSize at 100 — asking for more is a 400, not a
+// bigger page. Callers derive totals, ageing and payment history client-side
+// over the whole set, so a single capped page silently dropped older invoices.
+// Walk every backend page and merge them.
+const INVOICES_MAX_PAGE_SIZE = 100;
+
 export const invoicesApi = {
-  list: (opts?: { pageSize?: number; customerId?: string }) => {
-    const params = new URLSearchParams({ pageSize: String(opts?.pageSize ?? 100) });
-    if (opts?.customerId) params.set("customerId", opts.customerId);
-    return apiClient.get<PaginatedResponse<BackendInvoice>>(`/invoices?${params.toString()}`);
+  list: async (opts?: { pageSize?: number; customerId?: string }): Promise<PaginatedResponse<BackendInvoice>> => {
+    const pageSize = Math.min(Math.max(opts?.pageSize ?? INVOICES_MAX_PAGE_SIZE, 1), INVOICES_MAX_PAGE_SIZE);
+    const fetchPage = (page: number) => {
+      const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+      if (opts?.customerId) params.set("customerId", opts.customerId);
+      return apiClient.get<PaginatedResponse<BackendInvoice>>(`/invoices?${params.toString()}`);
+    };
+
+    const first = await fetchPage(1);
+    const items = [...first.items];
+    let page = 1;
+    while (items.length < first.total) {
+      page += 1;
+      const next = await fetchPage(page);
+      if (next.items.length === 0) break;
+      items.push(...next.items);
+    }
+    return { items, total: first.total, page: 1, pageSize: items.length };
   },
 
   findOne: (id: string) => apiClient.get<BackendInvoice>(`/invoices/${id}`),
