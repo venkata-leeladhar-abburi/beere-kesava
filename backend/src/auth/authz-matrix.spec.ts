@@ -148,6 +148,12 @@ describe("authz matrix / guard coverage", () => {
     // token and ignores any client-supplied identity, so it cannot be aimed
     // at anyone else.
     "POST /auth/logout",
+    // Switching portals is a person moving between their OWN assigned roles,
+    // so every role can call it and a role list would name all of them. The
+    // control is in the handler: AuthService.switchRole re-reads the user
+    // from the database and refuses any role that is not already assigned to
+    // them, so the token it mints can never widen the caller's access.
+    "POST /auth/switch-role",
   ];
 
   // Mutating routes with no authorization at all and no accepted reason.
@@ -195,6 +201,15 @@ describe("authz matrix / guard coverage", () => {
     expect(routes.filter((r) => r.isPublic).map(routeId).sort()).toEqual([
       "GET /auth/testing/otp",
       "GET /health",
+      // Label rendering and the sticker dimensions that drive it. Public
+      // because print sheets and tag previews pull these straight into
+      // <img src>, which cannot send a bearer token. Read-only, and neither
+      // reveals anything about a saree: the barcode/QR endpoints render
+      // whatever code the caller already supplied, and the settings are the
+      // physical size of a sticker.
+      "GET /labels/barcode",
+      "GET /labels/qrcode",
+      "GET /labels/settings",
       // Serves uploaded photos/signatures/receipts. Public because the URLs
       // are consumed by <img src>/<a href>, which cannot send a bearer token
       // — the same unauthenticated exposure the express.static mount it

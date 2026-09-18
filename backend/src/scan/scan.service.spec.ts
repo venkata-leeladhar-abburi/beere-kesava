@@ -11,6 +11,9 @@ describe("ScanService.lookup — sale eligibility", () => {
 
   const wovenRow = {
     batchId: "b1",
+    // `batch` is a required relation the service always includes — the scan
+    // result reports the batch's own date alongside the saree's.
+    batch: { id: "b1", createdAt: new Date("2026-08-01") },
     recipientType: "WEAVER",
     weaver: null,
     factoryLoom: null,

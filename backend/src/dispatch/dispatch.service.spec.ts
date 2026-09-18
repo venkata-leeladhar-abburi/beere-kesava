@@ -29,6 +29,10 @@ describe("DispatchService.create — sarees with no InventoryRecord yet", () => 
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
       batchSareeRow: { findMany: jest.fn() },
+      // Anything not woven is looked for among externally purchased pieces
+      // before the dispatch is refused.
+      purchaseSareeLine: { findMany: jest.fn().mockResolvedValue([]) },
+      saree: { createMany: jest.fn() },
       dispatchRecord: {
         create: jest.fn().mockResolvedValue({ id: "d1" }),
         findUnique: jest.fn().mockResolvedValue({ id: "d1", sarees: [] }),
@@ -76,13 +80,22 @@ describe("DispatchService.create — sarees with no InventoryRecord yet", () => 
     expect(prisma.dispatchRecord.create).not.toHaveBeenCalled();
   });
 
-  it("rejects a woven saree that has not passed QC", async () => {
+  // QC state no longer gates dispatch (product decision, see the comment in
+  // DispatchService.create): whatever an operator selects in Inventory must
+  // dispatch and be marked as gone. The inventory row opened on demand is
+  // overwritten to DISPATCHED in the same call either way.
+  it("dispatches a woven saree that has not passed QC rather than refusing it", async () => {
     prisma.batchSareeRow.findMany.mockResolvedValue([
       { sareeId: "RAMARAO-L1-001", batchId: "b1", bulkOrderRef: null, qcPassed: false },
     ]);
 
-    await expect(service.create(dto())).rejects.toThrow(BadRequestException);
-    expect(prisma.dispatchRecord.create).not.toHaveBeenCalled();
+    await service.create(dto());
+
+    expect(prisma.dispatchRecord.create).toHaveBeenCalled();
+    expect(prisma.inventoryRecord.updateMany).toHaveBeenCalledWith({
+      where: { sareeId: { in: ["RAMARAO-L1-001"] } },
+      data: { status: "DISPATCHED" },
+    });
   });
 
   it("still blocks a saree whose inventory row says it has already gone", async () => {
