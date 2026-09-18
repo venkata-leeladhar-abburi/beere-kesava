@@ -11,6 +11,7 @@ export interface SupplierCardProps {
   name: string;
   logoSrc?: string;
   city?: string;
+  notes?: string;
   purchaseOrders: number;
   spend: Paise;
   rating?: number;
@@ -20,7 +21,7 @@ export interface SupplierCardProps {
   className?: string;
 }
 
-export function SupplierCard({ code, name, logoSrc, city, purchaseOrders, spend, rating, status, density, onClick, className }: SupplierCardProps) {
+export function SupplierCard({ code, name, logoSrc, city, notes, purchaseOrders, spend, rating, status, density, onClick, className }: SupplierCardProps) {
   return (
     <DomainCard
       avatarName={name}
@@ -28,6 +29,7 @@ export function SupplierCard({ code, name, logoSrc, city, purchaseOrders, spend,
       title={name}
       code={<EntityCode type="supplier" value={code} size="sm" />}
       meta={city}
+      notes={notes}
       status={<StatusPill taxonomy="person" status={status} size="sm" />}
       stats={[
         { label: "POs", value: purchaseOrders },

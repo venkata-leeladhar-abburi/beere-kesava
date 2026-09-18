@@ -43,6 +43,8 @@ export interface DomainCardProps {
    *  payment" combinations). */
   status?: React.ReactNode;
   meta?: string;
+  /** Free-text note captured when the entity was created. Shown verbatim. */
+  notes?: string;
   stats?: DomainCardStat[];
   progress?: number;
   progressLabel?: string;
@@ -59,6 +61,7 @@ export function DomainCard({
   code,
   status,
   meta,
+  notes,
   stats,
   progress,
   progressLabel,
@@ -171,7 +174,7 @@ export function DomainCard({
         </div>
       </div>
 
-      {(stats && stats.length > 0 || progress != null) && (
+      {(notes || (stats && stats.length > 0) || progress != null) && (
         <div style={{ padding: "8px 22px 18px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
           {stats && stats.length > 0 && (
             <div className="grid grid-cols-2 gap-3" style={{ background: "rgba(110,15,45,0.03)", padding: 12, borderRadius: 10, border: "1px solid rgba(200,155,71,0.2)" }}>
@@ -181,6 +184,13 @@ export function DomainCard({
                   <div className="text-[15px] font-bold text-[#6E0F2D]">{s.value}</div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {notes && (
+            <div>
+              <div className="text-[12px] font-medium text-[#8A7968] uppercase tracking-wider mb-1">Notes</div>
+              <div className="text-[13px] text-[#4A2B1D] leading-relaxed whitespace-pre-wrap break-words">{notes}</div>
             </div>
           )}
 

@@ -397,7 +397,7 @@ export function FactoryLoomPage() {
                 </div>
               ) : (
                 <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }} className="w-full overflow-x-auto section-nav-scroll p-2">
-                  <div className="min-w-[700px]">
+                  <div className="min-w-[840px]">
                     <DataTable
                       responsive={false}
                       pagination
@@ -413,6 +413,10 @@ export function FactoryLoomPage() {
                         {
                           id: "location", header: "Location", accessor: l => l.location, priority: 3,
                           cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{l.location || "—"}</span>,
+                        },
+                        {
+                          id: "notes", header: "Notes", accessor: l => l.notes || "", priority: 3,
+                          cell: (_v, l) => <span title={l.notes || undefined} style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, display: "inline-block", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", verticalAlign: "bottom" }}>{l.notes || "—"}</span>,
                         },
                         {
                           id: "status", header: "Status", accessor: l => l.status, type: "status",

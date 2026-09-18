@@ -168,6 +168,7 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick, lo
                 code={v.code || v.id}
                 name={v.name}
                 service={v.type}
+                notes={v.notes || undefined}
                 jobs={v.totalOrders}
                 outstanding={rupees(Number(v.outstanding) || 0)}
                 {...VENDOR_STATUS[v.status]}

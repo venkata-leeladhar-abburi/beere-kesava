@@ -56,6 +56,13 @@ export function LoomCard({ loom, batches, sarees, onView }: { loom: FactoryLoom;
           </div>
         </div>
 
+        {loom.notes && (
+          <div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.2px", textTransform: "uppercase", marginBottom: 3 }}>Notes</div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.45, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{loom.notes}</div>
+          </div>
+        )}
+
         <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
           {[{ v: ab, l: "Active Batches", c: T.royalBurgundy, bg: "rgba(110,15,45,0.06)" }, { v: done, l: "Sarees Done", c: T.green, bg: "rgba(30,102,64,0.07)" }, { v: tb, l: "Total Batches", c: T.antiqueGold, bg: "rgba(200,155,71,0.08)" }].map(s => (
             <div key={s.l} style={{ flex: 1, background: s.bg, borderRadius: 10, padding: "8px 12px", textAlign: "center" as const }}>

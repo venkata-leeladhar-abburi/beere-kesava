@@ -10,6 +10,7 @@ export interface VendorCardProps {
   code: string;
   name: string;
   service?: string;
+  notes?: string;
   jobs: number;
   outstanding: Paise;
   status: PersonStatus;
@@ -19,13 +20,14 @@ export interface VendorCardProps {
   className?: string;
 }
 
-export function VendorCard({ code, name, service, jobs, outstanding, status, paymentStatus, density, onClick, className }: VendorCardProps) {
+export function VendorCard({ code, name, service, notes, jobs, outstanding, status, paymentStatus, density, onClick, className }: VendorCardProps) {
   return (
     <DomainCard
       avatarName={name}
       title={name}
       code={<EntityCode type="vendor" value={code} size="sm" />}
       meta={service}
+      notes={notes}
       status={
         <span className="flex items-center gap-1.5">
           <StatusPill taxonomy="person" status={status} size="sm" />

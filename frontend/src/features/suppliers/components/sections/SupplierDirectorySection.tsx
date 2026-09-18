@@ -120,6 +120,7 @@ export function SupplierDirectorySection({
                   code={s.code || s.id}
                   name={s.name}
                   city={s.city}
+                  notes={s.notes || undefined}
                   purchaseOrders={stats.purchases.length}
                   spend={rupees(stats.totalPurchased)}
                   rating={s.rating || undefined}

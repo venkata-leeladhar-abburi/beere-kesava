@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Download, Eye, Edit, Plus, LayoutGrid, Table as TableIcon, MapPin, Building2, Users, AlertTriangle } from "lucide-react";
+import { ChevronDown, Download, Eye, Edit, Plus, LayoutGrid, Table as TableIcon, MapPin, Building2, Users, AlertTriangle, StickyNote } from "lucide-react";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { SectionCard, Pill, FadeUp } from "../common/primitives";
@@ -38,7 +38,7 @@ const EMPTY_WHOLESALE_FORM: WholesaleFormState = {
   phone: "",
   whatsapp: "",
   city: "",
-  state: "Andhra Pradesh",
+  state: "",
   address: "",
   paymentTerms: "30 days",
   bankName: "",
@@ -93,6 +93,7 @@ export function WholesaleCustomersSection({
     { id: "code", header: "Code", accessor: w => w.displayCode || w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy, fontSize: 13 }}>{w.displayCode || w.id}</span> },
     { id: "name", header: "Business Name", accessor: w => w.name, priority: 1, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
     { id: "city", header: "City", accessor: w => w.city, priority: 3, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
+    { id: "notes", header: "Notes", accessor: w => w.notes || "", priority: 3, cell: (_v, w) => <span title={w.notes || undefined} style={{ color: T.taupe, display: "inline-block", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", verticalAlign: "bottom" }}>{w.notes || "—"}</span> },
     { id: "orders", header: "Orders", accessor: w => w.orders, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.orders}</span> },
     { id: "outstanding", header: "Outstanding", accessor: w => w.out, cell: (_v, w) => <span style={{ color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>{formatMoney(rupees(Number(w.out) || 0))}</span> },
     {
@@ -106,6 +107,7 @@ export function WholesaleCustomersSection({
     { id: "code", header: "Code", accessor: w => w.displayCode || w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy, fontSize: 13 }}>{w.displayCode || w.id}</span> },
     { id: "name", header: "Business Name", accessor: w => w.name, priority: 1, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
     { id: "city", header: "City", accessor: w => w.city, priority: 3, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
+    { id: "notes", header: "Notes", accessor: w => w.notes || "", priority: 3, cell: (_v, w) => <span title={w.notes || undefined} style={{ color: T.taupe, display: "inline-block", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", verticalAlign: "bottom" }}>{w.notes || "—"}</span> },
     { id: "totalOrders", header: "Total Orders", accessor: w => w.orders, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.orders}</span> },
     { id: "totalSpend", header: "Total Spend", accessor: w => w.spend, cell: (_v, w) => <span style={{ color: T.antiqueGold, fontWeight: 600 }}>{formatMoney(rupees(Number(w.spend) || 0))}</span> },
     { id: "outstanding", header: "Outstanding", accessor: w => w.out, cell: (_v, w) => <span style={{ color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>{formatMoney(rupees(Number(w.out) || 0))}</span> },
@@ -148,7 +150,7 @@ export function WholesaleCustomersSection({
         accountNumber: form.accountNumber.trim() || undefined,
         ifscCode: form.ifscCode.trim() || undefined,
         whatsapp: form.whatsapp.trim() || undefined,
-        state: form.state || undefined,
+        state: form.state.trim() || undefined,
         paymentTerms: form.paymentTerms || undefined,
         notes: form.notes.trim() || undefined,
         visitingCardUrl: cardUrl || undefined,
@@ -194,12 +196,7 @@ export function WholesaleCustomersSection({
                   <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
                     <Field label="City *"><Input aria-label="City" type="text" placeholder="City" value={form.city} onChange={e => updateField("city", e.target.value)} /></Field>
                     <Field label="State *">
-                      <Select value={form.state} onValueChange={v => updateField("state", v)}>
-                        <SelectItem value="Andhra Pradesh">Andhra Pradesh</SelectItem>
-                        <SelectItem value="Telangana">Telangana</SelectItem>
-                        <SelectItem value="Tamil Nadu">Tamil Nadu</SelectItem>
-                        <SelectItem value="Karnataka">Karnataka</SelectItem>
-                      </Select>
+                      <Input aria-label="State" type="text" placeholder="State" value={form.state} onChange={e => updateField("state", e.target.value)} />
                     </Field>
                   </div>
                 </div>
@@ -422,8 +419,8 @@ export function WholesaleCustomersSection({
                   iconLeft={Download}
                   onClick={() => downloadDataAsCSV(
                     "wholesale_customers.csv",
-                    ["Code", "Name", "City", "Status", "Orders", "Spend", "Outstanding", "Last Order"],
-                    filteredWholesaleList.map(w => [w.displayCode || w.id, w.name, w.city, w.status, w.orders, w.spend, w.out, w.lastOrder]),
+                    ["Code", "Name", "City", "Notes", "Status", "Orders", "Spend", "Outstanding", "Last Order"],
+                    filteredWholesaleList.map(w => [w.displayCode || w.id, w.name, w.city, w.notes || "", w.status, w.orders, w.spend, w.out, w.lastOrder]),
                   )}
                 >Download</Button>
               </DownloadGate>
@@ -490,6 +487,18 @@ export function WholesaleCustomersSection({
                       </div>
                     </div>
 
+                    {w.notes && (
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <StickyNote size={20} color={T.royalBurgundy} />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Notes</div>
+                          <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.45, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{w.notes}</div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Card Bottom: GST, Credit Terms & Dues */}
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
                       <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -545,7 +554,7 @@ export function WholesaleCustomersSection({
         {/* Wholesale Table View */}
         {wholesaleView === "table" && (
           <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }} className="w-full overflow-x-auto section-nav-scroll p-2">
-            <div className="min-w-[850px]">
+            <div className="min-w-[1000px]">
               <DataTable columns={tableColumns} data={filteredWholesaleList} getRowId={w => w.id} loading={isLoading} error={!!loadError} onRetry={refetch} emptyTitle="No wholesale customers yet" pagination />
             </div>
           </div>
