@@ -5,12 +5,13 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Plus, Edit3, Eye, Building2, CreditCard, Phone,
   MapPin, Hash, IndianRupee, Trash2,
-  TrendingUp, TrendingDown, ChevronDown, ChevronUp, ChevronRight,
+  TrendingUp, TrendingDown, ChevronDown, ChevronUp, ChevronRight, AlertTriangle,
 } from "lucide-react";
 import {
   useFirms, Firm,
 } from "../contexts/FirmsContext";
 import { useFirmActivity, firmActivityKey } from "../hooks/useFirmActivity";
+import { findDuplicateEntries } from "./duplicateEntries";
 import { firmsApi } from "../../../shared/api/firms";
 
 import { T, F, EASE } from "./theme";
@@ -18,8 +19,6 @@ import { SectionCard } from "./primitives";
 import { LuxuryStatsCard } from "../../../shared/ui/LuxuryStatsCard";
 import { fmtAmt, fmtFull, initials, cardColor } from "./utils";
 import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
-import { Money } from "../../../shared/ui/domain";
-import { rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 import { useConfirm } from "../../../shared/ui/overlay";
 import { LoadingState, ErrorState, EmptyState } from "../../../shared/ui/state";
@@ -27,7 +26,15 @@ import { LoadingState, ErrorState, EmptyState } from "../../../shared/ui/state";
 
 
 
-type OverviewRow = { firm: Firm; inc: number; exp: number; net: number; entryCount: number; color: string };
+type OverviewRow = {
+  firm: Firm; inc: number; exp: number; net: number;
+  /** Committed, not settled — owed to the firm / owed by the firm. */
+  receivable: number; payable: number;
+  entryCount: number;
+  /** Manual rows that look like they restate an auto-tracked payment. */
+  dupCount: number;
+  color: string;
+};
 
 function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<OverviewRow>[] {
   return [
@@ -41,6 +48,12 @@ function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<Overv
           <div style={{ minWidth: 0 }}>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{r.firm.firmName}</div>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.firm.id}{r.firm.gstNumber ? ` · ${r.firm.gstNumber}` : ""}</div>
+            {r.dupCount > 0 && (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 5, fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.antiqueGold, background: T.bgGold, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "2px 7px" }}>
+                <AlertTriangle size={12} color={T.antiqueGold} />
+                {r.dupCount} possible duplicate{r.dupCount === 1 ? "" : "s"}
+              </div>
+            )}
           </div>
         </div>
       ),
@@ -70,6 +83,24 @@ function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<Overv
           <span style={{ display: "inline-block", fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: r.net >= 0 ? T.green : T.crimson, background: r.net >= 0 ? T.greenBg : T.crimsonBg, border: `1px solid ${r.net >= 0 ? "rgba(30,102,64,0.18)" : "rgba(192,57,43,0.18)"}`, borderRadius: 8, padding: "4px 10px" }}>
             {r.net >= 0 ? "+" : ""}{fmtFull(r.net)}
           </span>
+        </div>
+      ),
+    },
+    {
+      id: "receivable", header: "Receivable", type: "currency", align: "end", accessor: r => r.receivable, priority: 3,
+      cell: (_v, r) => (
+        <div style={{ textAlign: "right" as const }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: r.receivable > 0 ? T.green : T.taupe }}>{fmtFull(r.receivable)}</div>
+          {r.receivable > 0 && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>owed to firm</div>}
+        </div>
+      ),
+    },
+    {
+      id: "payable", header: "Payable", type: "currency", align: "end", accessor: r => r.payable, priority: 3,
+      cell: (_v, r) => (
+        <div style={{ textAlign: "right" as const }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: r.payable > 0 ? T.crimson : T.taupe }}>{fmtFull(r.payable)}</div>
+          {r.payable > 0 && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>firm owes</div>}
         </div>
       ),
     },
@@ -127,17 +158,35 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
     const fin = getFirmFinancials(firm.id);
     const manualInc = fin.income.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "income").reduce((s, m) => s + m.amount, 0);
     const manualExp = fin.expenses.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0);
-    const totals = activityQueries[i]?.data?.totals;
+    const activity = activityQueries[i]?.data;
+    const totals = activity?.totals;
+    const payments = activity?.payments ?? [];
     const inc = manualInc + (totals?.realizedIncome ?? 0);
     const exp = manualExp + (totals?.realizedExpense ?? 0);
-    const entryCount = fin.income.length + fin.expenses.length + fin.misc.length;
-    return { firm, inc, exp, net: inc - exp, entryCount };
+    // Every row behind these figures, not just the hand-typed ones — a firm
+    // whose whole ledger is auto-tracked used to read "0 entries".
+    const entryCount =
+      fin.income.length + fin.expenses.length + fin.misc.length
+      + payments.length + (activity?.documents.length ?? 0);
+    // Flagged, never subtracted: a manual row that restates a real payment is
+    // a suspicion only a person can settle (see duplicateEntries.ts).
+    const dupCount =
+      findDuplicateEntries(fin.income, payments, "INCOME").size
+      + findDuplicateEntries(fin.expenses, payments, "EXPENSE").size;
+    return {
+      firm, inc, exp, net: inc - exp,
+      receivable: totals?.pendingIncome ?? 0,
+      payable: totals?.pendingExpense ?? 0,
+      entryCount, dupCount,
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [firms, getFirmFinancials, activityQueries.map(q => q.dataUpdatedAt).join(",")]);
 
   const totInc = rows.reduce((s, r) => s + r.inc, 0);
   const totExp = rows.reduce((s, r) => s + r.exp, 0);
   const totNet = totInc - totExp;
+  const totReceivable = rows.reduce((s, r) => s + r.receivable, 0);
+  const totPayable = rows.reduce((s, r) => s + r.payable, 0);
 
   return (
     <div id="firm-overview" className="mx-4 md:mx-7 xl:mx-14" style={{ marginTop: 28, borderRadius: 22, overflow: "hidden", background: "#FFF", boxShadow: "0 4px 28px rgba(44,24,16,0.10)", border: `1px solid ${T.borderDef}` }}>
@@ -159,7 +208,7 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
               <div>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF", lineHeight: 1.2 }}>Business Overview</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 4, lineHeight: 1.4 }}>
-                  Live P&amp;L across all {firms.length} firms · entries manually tracked
+                  Live P&amp;L across all {firms.length} firms · settled money, plus what is still owed either way
                 </div>
               </div>
               <div className="shrink-0 p-1">
@@ -171,6 +220,8 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
                 { label: "Total Income",   val: totInc, color: "#4CAF82", bg: "rgba(76,175,130,0.15)" },
                 { label: "Total Expenses", val: totExp, color: "#E57373", bg: "rgba(229,115,115,0.15)" },
                 { label: "Net Balance",    val: totNet, color: totNet >= 0 ? "#4CAF82" : "#E57373", bg: totNet >= 0 ? "rgba(76,175,130,0.15)" : "rgba(229,115,115,0.15)" },
+                { label: "Receivable",    val: totReceivable, color: "#E7C983", bg: "rgba(231,201,131,0.15)" },
+                { label: "Payable",       val: totPayable, color: "#E7C983", bg: "rgba(231,201,131,0.15)" },
               ].map((c) => (
                 <div key={c.label} className="flex-1 min-w-[110px] text-right bg-[rgba(255,255,255,0.06)] border border-white/10 rounded-xl p-2.5 sm:px-3.5 sm:py-2.5">
                   <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 15, color: c.color, letterSpacing: "-0.5px" }}>{fmtAmt(c.val)}</div>
@@ -201,10 +252,10 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
               />
             )}
             {/* Totals row */}
-            <div className="grid grid-cols-1 md:grid-cols-[2fr_130px_130px_150px_80px_130px]" style={{ gap: 0, padding: "16px 28px", background: T.bgGold, borderTop: `1.5px solid ${T.borderGold}`, borderLeft: `4px solid ${T.antiqueGold}` }}>
+            <div className="grid grid-cols-1 md:grid-cols-[2fr_130px_130px_150px_130px_130px_80px_130px]" style={{ gap: 0, padding: "16px 28px", background: T.bgGold, borderTop: `1.5px solid ${T.borderGold}`, borderLeft: `4px solid ${T.antiqueGold}` }}>
               <div>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>All Firms Total</div>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{rows.length} firms · manual entries</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{rows.length} firms · settled and committed</div>
               </div>
               <div style={{ textAlign: "right" as const, fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.green }}>{fmtFull(totInc)}</div>
               <div style={{ textAlign: "right" as const, fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.crimson }}>{fmtFull(totExp)}</div>
@@ -213,6 +264,8 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
                   {totNet >= 0 ? "+" : ""}{fmtFull(totNet)}
                 </span>
               </div>
+              <div style={{ textAlign: "right" as const, fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: totReceivable > 0 ? T.green : T.taupe }}>{fmtFull(totReceivable)}</div>
+              <div style={{ textAlign: "right" as const, fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: totPayable > 0 ? T.crimson : T.taupe }}>{fmtFull(totPayable)}</div>
               <div /><div />
             </div>
           </motion.div>
@@ -388,8 +441,15 @@ export function FirmsPage() {
     const manualExp = fin.expenses.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0);
     return manualExp + (activityQueries[i]?.data?.totals.realizedExpense ?? 0);
   });
-  const totalPurchase = firmExpenseTotals.reduce((s, v) => s + v, 0);
-  const firmsWithBalanceCount = firmExpenseTotals.filter(v => v > 0).length;
+  // Money that has actually left the firms — vendor, supplier and weaver
+  // payments plus hand-entered expenses. It was previously labelled "Total
+  // Purchases", which it never was: weaver wages and misc expenses are in here
+  // too, and a raised-but-unpaid purchase order is not.
+  const totalSpent = firmExpenseTotals.reduce((s, v) => s + v, 0);
+  // Committed money across every firm — what the hero used to spend two tiles
+  // on ("firms with balance", "avg purchase") told nobody anything actionable.
+  const totalReceivable = firms.reduce((sum, _f, i) => sum + (activityQueries[i]?.data?.totals.pendingIncome ?? 0), 0);
+  const totalPayable = firms.reduce((sum, _f, i) => sum + (activityQueries[i]?.data?.totals.pendingExpense ?? 0), 0);
 
   function openFirmView(firmId: string, tab?: string) {
     setSearchParams(tab ? { firm: firmId, tab } : { firm: firmId });
@@ -479,9 +539,9 @@ export function FirmsPage() {
       >
         <LuxuryStatsCard stats={[
           { label: "REGISTERED FIRMS", value: String(firms.length), sub: "Active vendor accounts", icon: <Building2 size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
-          { label: "TOTAL PURCHASES", value: fmtAmt(totalPurchase), sub: "Across all registered firms", icon: <IndianRupee size={20} color="rgba(231,201,131,0.95)" />, highlight: true },
-          { label: "FIRMS WITH BALANCE", value: String(firmsWithBalanceCount), sub: "Active purchase records", icon: <CreditCard size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
-          { label: "AVG PURCHASE", value: firms.length ? fmtAmt(totalPurchase / firms.length) : <Money value={rupees(0)} />, sub: "Per registered firm", icon: <TrendingUp size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
+          { label: "TOTAL SPENT", value: fmtAmt(totalSpent), sub: "Payments actually made, all firms", icon: <IndianRupee size={20} color="rgba(231,201,131,0.95)" />, highlight: true },
+          { label: "RECEIVABLE", value: fmtAmt(totalReceivable), sub: "Owed to these firms, unsettled", icon: <TrendingUp size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
+          { label: "PAYABLE", value: fmtAmt(totalPayable), sub: "These firms owe, unsettled", icon: <CreditCard size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
         ]} />
       </motion.div>
 

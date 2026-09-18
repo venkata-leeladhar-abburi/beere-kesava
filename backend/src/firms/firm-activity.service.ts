@@ -6,7 +6,7 @@ import { PrismaService } from "../prisma/prisma.service";
  * ledger.
  *
  * A firm is named on real business documents (purchase orders, goods
- * receipts, quotations, wholesale dispatch invoices) long before any money
+ * receipts, wholesale dispatch invoices) long before any money
  * actually moves. Those documents were previously invisible on the Firms
  * page, which showed only manually-typed FirmFinancialEntry rows — so a firm
  * carrying ₹4L of raised purchase orders read as ₹0 until somebody
@@ -32,7 +32,6 @@ export type FirmActivityStatus = "PENDING" | "PARTIAL" | "PAID";
 export type FirmDocumentType =
   | "PURCHASE_ORDER"
   | "GOODS_RECEIPT"
-  | "QUOTATION"
   | "DISPATCH_INVOICE";
 
 export type FirmPaymentType = "WEAVER" | "VENDOR" | "SUPPLIER" | "INVOICE" | "RETAIL_SALE";
@@ -89,7 +88,6 @@ export class FirmActivityService {
     const [
       purchaseOrders,
       grnReceipts,
-      quotations,
       dispatches,
       weaverPayments,
       vendorPayments,
@@ -97,8 +95,10 @@ export class FirmActivityService {
       invoicePayments,
       retailSales,
     ] = await Promise.all([
+      // A rejected purchase order is a commitment that was called off — it
+      // is not money this firm owes, so it never reaches the payable figure.
       this.prisma.purchaseOrder.findMany({
-        where: { firmId },
+        where: { firmId, status: { not: "REJECTED" } },
         include: {
           vendor: { select: { name: true } },
           vendorBills: { include: { payments: { select: { amount: true } } } },
@@ -114,10 +114,6 @@ export class FirmActivityService {
           items: { select: { totalPrice: true } },
           purchaseOrders: { select: { id: true } },
         },
-      }),
-      this.prisma.quotation.findMany({
-        where: { firmId },
-        include: { customer: { select: { name: true } } },
       }),
       this.prisma.dispatchRecord.findMany({
         where: { firmId },
@@ -176,9 +172,34 @@ export class FirmActivityService {
       });
     }
 
-    for (const grn of grnReceipts) {
-      if (grn.purchaseOrders.length > 0) continue;
+    // An ad-hoc goods receipt has nothing to settle it against: vendor bills
+    // hang off purchase orders, and a GRN raised without a PO has no bill, so
+    // no payment can ever point at it. Left alone it would sit at its full
+    // value as "payable" forever, while the vendor payment that actually
+    // cleared it counted as an expense paid — the same rupee reported twice.
+    //
+    // So unallocated vendor payments (`billId` null — money paid to a vendor
+    // that settles no specific bill) are applied to that vendor's ad-hoc
+    // receipts oldest-first. Payments that DO name a bill are excluded: those
+    // already settle a purchase order above, and would otherwise pay twice.
+    const unallocatedByVendor = new Map<string, number>();
+    for (const p of vendorPayments) {
+      if (p.billId) continue;
+      unallocatedByVendor.set(
+        p.vendorId,
+        (unallocatedByVendor.get(p.vendorId) ?? 0) + num(p.amount),
+      );
+    }
+
+    const adhocReceipts = grnReceipts
+      .filter((grn) => grn.purchaseOrders.length === 0)
+      .sort((a, b) => a.receivedDate.getTime() - b.receivedDate.getTime());
+
+    for (const grn of adhocReceipts) {
       const amount = grn.items.reduce((s, i) => s + num(i.totalPrice), 0);
+      const pool = unallocatedByVendor.get(grn.vendorId) ?? 0;
+      const paid = Math.min(pool, amount);
+      unallocatedByVendor.set(grn.vendorId, pool - paid);
       documents.push({
         id: grn.id,
         type: "GOODS_RECEIPT",
@@ -187,31 +208,10 @@ export class FirmActivityService {
         party: grn.vendor.name || grn.supplierName,
         date: iso(grn.receivedDate),
         amount,
-        paidAmount: 0,
-        outstanding: amount,
-        status: "PENDING",
+        paidAmount: paid,
+        outstanding: Math.max(0, amount - paid),
+        status: statusOf(amount, paid),
         category: "Material Purchase",
-      });
-    }
-
-    for (const q of quotations) {
-      // A quotation is an offer, never a receivable — it is listed so the
-      // firm's pipeline is visible, but it is deliberately excluded from
-      // pending income (see totals below) so a quote that never converts
-      // can't inflate the firm's expected earnings.
-      const amount = num(q.grandTotal);
-      documents.push({
-        id: q.id,
-        type: "QUOTATION",
-        direction: "INCOME",
-        reference: q.quotationNumber,
-        party: q.customer.name,
-        date: iso(q.quotationDate),
-        amount,
-        paidAmount: 0,
-        outstanding: amount,
-        status: "PENDING",
-        category: "Wholesale Sale",
       });
     }
 
@@ -307,9 +307,8 @@ export class FirmActivityService {
         .filter((e) => e.kind === "EXPENSE" || (e.kind === "MISC" && e.category === "Misc Expense"))
         .reduce((s, e) => s + num(e.amount), 0);
 
-    // Quotations are excluded — an offer is not yet a receivable.
     const pendingIncome = documents
-      .filter((d) => d.direction === "INCOME" && d.type !== "QUOTATION")
+      .filter((d) => d.direction === "INCOME")
       .reduce((s, d) => s + d.outstanding, 0);
     const pendingExpense = documents
       .filter((d) => d.direction === "EXPENSE")
@@ -325,9 +324,6 @@ export class FirmActivityService {
         net: realizedIncome - realizedExpense,
         pendingIncome,
         pendingExpense,
-        quotedPipeline: documents
-          .filter((d) => d.type === "QUOTATION")
-          .reduce((s, d) => s + d.amount, 0),
       },
     };
   }

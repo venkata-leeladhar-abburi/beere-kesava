@@ -66,8 +66,8 @@ export interface CreateFinancialEntryPayload {
 }
 
 // ── Firm activity (auto-tracked) ──────────────────────────────────────────────
-// Documents that NAME this firm (purchase orders, goods receipts, quotations,
-// dispatch invoices) plus the payments actually recorded against it. Committed
+// Documents that NAME this firm (purchase orders, goods receipts, dispatch
+// invoices) plus the payments actually recorded against it. Committed
 // and realized money are kept apart — see FirmActivityService on the backend.
 
 export type FirmActivityDirection = "INCOME" | "EXPENSE";
@@ -75,7 +75,6 @@ export type FirmActivityStatus = "PENDING" | "PARTIAL" | "PAID";
 export type FirmDocumentType =
   | "PURCHASE_ORDER"
   | "GOODS_RECEIPT"
-  | "QUOTATION"
   | "DISPATCH_INVOICE";
 export type FirmPaymentType = "WEAVER" | "VENDOR" | "SUPPLIER" | "INVOICE" | "RETAIL_SALE";
 
@@ -114,7 +113,6 @@ export interface FirmActivity {
     net: number;
     pendingIncome: number;
     pendingExpense: number;
-    quotedPipeline: number;
   };
 }
 

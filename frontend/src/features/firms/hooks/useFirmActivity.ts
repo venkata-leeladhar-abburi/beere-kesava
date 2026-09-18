@@ -9,7 +9,6 @@ const EMPTY: FirmActivity["totals"] = {
   net: 0,
   pendingIncome: 0,
   pendingExpense: 0,
-  quotedPipeline: 0,
 };
 
 /**

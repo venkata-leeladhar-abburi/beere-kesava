@@ -2,8 +2,8 @@ import React, { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
   ArrowLeft, Edit, TrendingUp, TrendingDown, Building2, CreditCard, ShoppingBag,
-  User, FileText, Package, Receipt, Truck, Wallet, Link2,
-  AlertTriangle, ArrowUpRight,
+  User, Package, Receipt, Truck, Wallet, Link2,
+  AlertTriangle, ArrowUpRight, ArrowDownLeft,
 } from "lucide-react";
 import { useFirms, Firm, FinancialEntry, MiscEntry } from "../contexts/FirmsContext";
 import { useFirmActivity } from "../hooks/useFirmActivity";
@@ -28,7 +28,6 @@ import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 const DOC_CFG: Record<FirmDocumentType, { label: string; icon: React.ElementType }> = {
   PURCHASE_ORDER:   { label: "Purchase Order", icon: Package },
   GOODS_RECEIPT:    { label: "Goods Receipt",  icon: Receipt },
-  QUOTATION:        { label: "Quotation",      icon: FileText },
   DISPATCH_INVOICE: { label: "Dispatch / Invoice", icon: Truck },
 };
 
@@ -72,42 +71,84 @@ function SectionShell({ title, subtitle, icon: Icon, right, children }: {
 }
 
 // ── Summary: realized vs committed ────────────────────────────────────────────
-function SummaryStrip({ income, expense, net, pendingIncome, pendingExpense, quoted }: {
+// Two tiers, deliberately separated. The top row is money that has actually
+// moved and is what Net Balance is built from. The bottom pair is *committed*
+// money — documents raised in this firm's name that nobody has settled yet —
+// which is why it is never folded into the net figure.
+function MoneyCard({ label, caption, val, count, color, bg, border, icon }: {
+  label: string; caption: string; val: number; count?: number;
+  color: string; bg: string; border: string; icon: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl p-4 sm:p-5" style={{ background: bg, border: `1.5px solid ${border}` }}>
+      <div className="flex items-center gap-2 mb-2">
+        <span className="flex items-center justify-center rounded-lg shrink-0" style={{ width: 30, height: 30, background: "rgba(255,255,255,0.72)", border: `1px solid ${border}` }}>
+          {icon}
+        </span>
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{label}</span>
+      </div>
+      <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 24, lineHeight: 1.15, color, letterSpacing: "-0.5px" }}>{fmtFull(val)}</div>
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{caption}</span>
+        {count != null && (
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: T.taupe, background: "rgba(255,255,255,0.72)", border: `1px solid ${border}`, borderRadius: 6, padding: "1px 7px" }}>
+            {count} doc{count === 1 ? "" : "s"}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SummaryStrip({ income, expense, net, pendingIncome, pendingExpense, receivableCount, payableCount }: {
   income: number; expense: number; net: number;
-  pendingIncome: number; pendingExpense: number; quoted: number;
+  pendingIncome: number; pendingExpense: number;
+  receivableCount: number; payableCount: number;
 }) {
   return (
     <div style={{ marginBottom: 20 }}>
-      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 0, border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
-        {[
-          { label: "Income Received", val: income, color: T.green, bg: T.greenBg, icon: <TrendingUp size={16} color={T.green} /> },
-          { label: "Expenses Paid", val: expense, color: T.crimson, bg: T.crimsonBg, icon: <TrendingDown size={16} color={T.crimson} /> },
-          { label: "Net Balance", val: net, color: net >= 0 ? T.green : T.crimson, bg: net >= 0 ? T.greenBg : T.crimsonBg, icon: net >= 0 ? <TrendingUp size={16} color={T.green} /> : <TrendingDown size={16} color={T.crimson} /> },
-        ].map((s, i) => (
-          <div key={s.label} style={{ padding: "14px 18px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", background: s.bg }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
-              {s.icon}
-              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>{s.label}</span>
-            </div>
-            <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 18, color: s.color }}>{fmtFull(s.val)}</div>
-          </div>
-        ))}
+      <div className="mb-2 flex items-center gap-2">
+        <Wallet size={14} color={T.taupe} />
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Settled — money that has moved</span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <MoneyCard
+          label="Income Received" caption="Payments actually banked" val={income}
+          color={T.green} bg={T.greenBg} border="rgba(30,102,64,0.22)"
+          icon={<TrendingUp size={16} color={T.green} />}
+        />
+        <MoneyCard
+          label="Expenses Paid" caption="Payments actually made" val={expense}
+          color={T.crimson} bg={T.crimsonBg} border="rgba(192,57,43,0.22)"
+          icon={<TrendingDown size={16} color={T.crimson} />}
+        />
+        <MoneyCard
+          label="Net Balance" caption="Income received minus expenses paid" val={net}
+          color={net >= 0 ? T.green : T.crimson}
+          bg={net >= 0 ? T.greenBg : T.crimsonBg}
+          border={net >= 0 ? "rgba(30,102,64,0.22)" : "rgba(192,57,43,0.22)"}
+          icon={net >= 0 ? <TrendingUp size={16} color={T.green} /> : <TrendingDown size={16} color={T.crimson} />}
+        />
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-2.5 px-4 py-3" style={{ border: `1px solid ${T.borderGold}`, background: T.bgGold, borderRadius: 12 }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.antiqueGold, textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>
-          <Link2 size={14} /> Committed — not yet settled
-        </span>
-        {[
-          { label: "Receivable", val: pendingIncome, color: T.green },
-          { label: "Payable", val: pendingExpense, color: T.crimson },
-          { label: "Quoted pipeline", val: quoted, color: T.taupe },
-        ].map(s => (
-          <span key={s.label} style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-            {s.label}{" "}
-            <strong style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: s.color }}>{fmtFull(s.val)}</strong>
-          </span>
-        ))}
+      <div className="mt-4 mb-2 flex items-center gap-2">
+        <Link2 size={14} color={T.antiqueGold} />
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.antiqueGold, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Committed — raised, not yet settled</span>
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>· not counted in the net balance</span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <MoneyCard
+          label="Receivable" caption="Owed to this firm on unpaid invoices"
+          val={pendingIncome} count={receivableCount}
+          color={T.green} bg="#FFFDF9" border={T.borderGold}
+          icon={<ArrowDownLeft size={16} color={T.green} />}
+        />
+        <MoneyCard
+          label="Payable" caption="This firm owes on open purchase documents"
+          val={pendingExpense} count={payableCount}
+          color={T.crimson} bg="#FFFDF9" border={T.borderGold}
+          icon={<ArrowUpRight size={16} color={T.crimson} />}
+        />
       </div>
     </div>
   );
@@ -164,6 +205,8 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments, initialTa
   );
 
   const filtered = useMemo(() => {
+    const receivableDocs = visibleDocs.filter(d => d.direction === "INCOME" && d.outstanding > 0);
+    const payableDocs = visibleDocs.filter(d => d.direction === "EXPENSE" && d.outstanding > 0);
     const inc = visiblePayments.filter(p => p.direction === "INCOME").reduce((s, p) => s + p.amount, 0)
       + manualIncome.reduce((s, e) => s + e.amount, 0)
       + manualMisc.filter(m => m.type === "income").reduce((s, m) => s + m.amount, 0);
@@ -174,9 +217,10 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments, initialTa
       income: inc,
       expense: exp,
       net: inc - exp,
-      pendingIncome: visibleDocs.filter(d => d.direction === "INCOME" && d.type !== "QUOTATION").reduce((s, d) => s + d.outstanding, 0),
-      pendingExpense: visibleDocs.filter(d => d.direction === "EXPENSE").reduce((s, d) => s + d.outstanding, 0),
-      quoted: visibleDocs.filter(d => d.type === "QUOTATION").reduce((s, d) => s + d.amount, 0),
+      pendingIncome: receivableDocs.reduce((s, d) => s + d.outstanding, 0),
+      pendingExpense: payableDocs.reduce((s, d) => s + d.outstanding, 0),
+      receivableCount: receivableDocs.length,
+      payableCount: payableDocs.length,
     };
   }, [visiblePayments, visibleDocs, manualIncome, manualExpenses, manualMisc]);
 
@@ -256,7 +300,7 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments, initialTa
     },
     ...(onGoToPayments ? [{
       id: "action", header: "", type: "actions" as const, accessor: () => null,
-      cell: (_v: unknown, d: FirmDocument) => d.outstanding > 0 && d.type !== "QUOTATION" ? (
+      cell: (_v: unknown, d: FirmDocument) => d.outstanding > 0 ? (
         <Button variant="tertiary" size="sm" iconRight={ArrowUpRight} onClick={onGoToPayments} className="whitespace-nowrap">
           Record payment
         </Button>
@@ -506,7 +550,7 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments, initialTa
                   <AlertTriangle size={15} color={T.antiqueGold} style={{ flexShrink: 0, marginTop: 1 }} />
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.65 }}>
                     <strong style={{ color: T.antiqueGold }}>How this firm&rsquo;s ledger works:</strong>{" "}
-                    Purchase orders, goods receipts, quotations and dispatch invoices that name this firm appear automatically under{" "}
+                    Purchase orders, goods receipts and dispatch invoices that name this firm appear automatically under{" "}
                     <strong style={{ color: T.luxuryBrown }}>Linked Documents</strong> as soon as they&rsquo;re raised — as <em>committed</em>, not yet spent or earned.
                     When a payment is recorded against one, it moves into <strong style={{ color: T.luxuryBrown }}>Recorded Payments</strong> under its category and counts toward the net balance.
                     Anything outside that flow can still be captured by hand below.
@@ -546,7 +590,8 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments, initialTa
                   net={filtered.net}
                   pendingIncome={filtered.pendingIncome}
                   pendingExpense={filtered.pendingExpense}
-                  quoted={filtered.quoted}
+                  receivableCount={filtered.receivableCount}
+                  payableCount={filtered.payableCount}
                 />
               </div>
             </div>
@@ -572,7 +617,7 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments, initialTa
                 documents.length === 0 ? (
                   <EmptyState
                     title="No linked documents yet"
-                    description="Select this firm on a purchase order, quotation, or dispatch invoice and it will appear here automatically."
+                    description="Select this firm on a purchase order, goods receipt, or dispatch invoice and it will appear here automatically."
                   />
                 ) : (
                   <div style={{ padding: "26px 18px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
