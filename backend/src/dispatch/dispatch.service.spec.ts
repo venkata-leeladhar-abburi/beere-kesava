@@ -80,22 +80,25 @@ describe("DispatchService.create — sarees with no InventoryRecord yet", () => 
     expect(prisma.dispatchRecord.create).not.toHaveBeenCalled();
   });
 
-  // QC state no longer gates dispatch (product decision, see the comment in
-  // DispatchService.create): whatever an operator selects in Inventory must
-  // dispatch and be marked as gone. The inventory row opened on demand is
-  // overwritten to DISPATCHED in the same call either way.
-  it("dispatches a woven saree that has not passed QC rather than refusing it", async () => {
+  it("rejects a woven saree that has not passed QC", async () => {
     prisma.batchSareeRow.findMany.mockResolvedValue([
       { sareeId: "RAMARAO-L1-001", batchId: "b1", bulkOrderRef: null, qcPassed: false },
     ]);
 
-    await service.create(dto());
+    await expect(service.create(dto())).rejects.toThrow(BadRequestException);
+    expect(prisma.dispatchRecord.create).not.toHaveBeenCalled();
+    expect(prisma.inventoryRecord.createMany).not.toHaveBeenCalled();
+  });
 
-    expect(prisma.dispatchRecord.create).toHaveBeenCalled();
-    expect(prisma.inventoryRecord.updateMany).toHaveBeenCalledWith({
-      where: { sareeId: { in: ["RAMARAO-L1-001"] } },
-      data: { status: "DISPATCHED" },
-    });
+  // qcPassed is tri-state: null means the saree is still sitting in the QC
+  // queue, which must not dispatch either — "not refused" is not "passed".
+  it("rejects a woven saree that has not been inspected at all", async () => {
+    prisma.batchSareeRow.findMany.mockResolvedValue([
+      { sareeId: "RAMARAO-L1-001", batchId: "b1", bulkOrderRef: null, qcPassed: null },
+    ]);
+
+    await expect(service.create(dto())).rejects.toThrow(/not yet inspected/);
+    expect(prisma.dispatchRecord.create).not.toHaveBeenCalled();
   });
 
   it("still blocks a saree whose inventory row says it has already gone", async () => {

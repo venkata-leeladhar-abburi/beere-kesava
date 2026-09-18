@@ -75,6 +75,24 @@ export class DispatchService {
       });
       const wovenById = new Map(wovenRows.map((r) => [r.sareeId!, r]));
 
+      // QC gates dispatch: an uninspected or failed saree must not leave the
+      // building, whichever way it is going. `qcPassed` is tri-state — null is
+      // "never inspected", false is a recorded failure — so only an explicit
+      // true passes, matching SalesService.create and ScanService.lookup.
+      const notQcPassed = wovenRows.filter((r) => r.qcPassed !== true);
+      if (notQcPassed.length > 0) {
+        const failed = notQcPassed.filter((r) => r.qcPassed === false).map((r) => r.sareeId);
+        const uninspected = notQcPassed.filter((r) => r.qcPassed === null).map((r) => r.sareeId);
+        throw new BadRequestException(
+          [
+            failed.length > 0 ? `Saree(s) failed QC: ${failed.join(", ")}` : null,
+            uninspected.length > 0 ? `Saree(s) not yet inspected: ${uninspected.join(", ")}` : null,
+          ]
+            .filter(Boolean)
+            .join(". ") + ". They cannot be dispatched.",
+        );
+      }
+
       // Anything still unresolved may be a real saree too — one bought from
       // an external supplier, which lives in PurchaseSareeLine instead of
       // BatchSareeRow (see ScanService.lookupExternalPiece, same piece-id
@@ -140,12 +158,12 @@ export class DispatchService {
         throw new NotFoundException(`Saree(s) not found in inventory: ${missing.join(", ")}`);
       }
 
-      // QC/finishing status no longer gates dispatch (product decision —
-      // whatever is selected in Inventory, dispatching it to Shop or
-      // Wholesale must succeed and mark it dispatched, regardless of
-      // qcPassed or finishing state). The on-demand InventoryRecord opened
-      // here is immediately overwritten to DISPATCHED below either way, so
-      // its starting status is only ever visible for the instant in between.
+      // Finishing does not gate dispatch (product decision — a saree can go to
+      // shop or wholesale before finishing wraps up), but QC does, and every
+      // woven row reaching this point has passed it. The on-demand
+      // InventoryRecord is immediately overwritten to DISPATCHED below, so its
+      // QC_PASSED starting status is only ever visible for the instant in
+      // between — and it is now always true when it is written.
       await this.prisma.inventoryRecord.createMany({
         data: unrecorded.map((sareeId) => {
           const row = wovenById.get(sareeId);
