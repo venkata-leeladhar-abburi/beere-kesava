@@ -8,6 +8,9 @@ import {
   serialFromLineCode,
   serialFromPieceCode,
   computeFinalAmount,
+  sellingPerPiece,
+  sellPercentFromSelling,
+  formatSellPercent,
   totalPieces,
   lineBuying,
   lineSelling,
@@ -90,6 +93,29 @@ describe("pricing math", () => {
   it("computeFinalAmount defaults quantity to 1 and treats non-positive quantity as 1", () => {
     expect(computeFinalAmount(1000, 20)).toBe(1200);
     expect(computeFinalAmount(1000, 20, 0)).toBe(1200);
+  });
+
+  it("computeFinalAmount lands on whole paise, never a float tail", () => {
+    // 98.004% of 13,600 is 26,928.544 before rounding — a markup this shape is
+    // exactly what a hand-typed selling price back-computes to.
+    expect(computeFinalAmount(13600, 98.004, 2)).toBe(53857.08);
+  });
+
+  it("a hand-typed selling price round-trips through the stored markup", () => {
+    for (const [price, typed] of [[13600, 26928.55], [500, 749.99], [99999, 123456.78]]) {
+      const pct = sellPercentFromSelling(price, typed);
+      expect(sellingPerPiece(price, pct)).toBe(typed);
+    }
+  });
+
+  it("sellPercentFromSelling yields 0 when there is no buying price to mark up", () => {
+    expect(sellPercentFromSelling(0, 900)).toBe(0);
+  });
+
+  it("formatSellPercent trims a back-computed markup down to a readable figure", () => {
+    expect(formatSellPercent(97.9963)).toBe("98%");
+    expect(formatSellPercent(20)).toBe("20%");
+    expect(formatSellPercent(undefined)).toBe("0%");
   });
 
   const line = { price: 500, sellPercent: 20, quantity: 3 };

@@ -11,7 +11,7 @@ import { ChevronRight, ChevronDown, Image as ImageIcon, Printer, Camera, Upload,
 import { toast } from "sonner";
 import { resolveAssetUrl, uploadsApi } from "@/shared/api/uploads";
 import { T, F } from "../theme";
-import { SareeTag, expandSareePieces, remainingQuantity, serialFromPieceCode, useSuppliers } from "../../contexts/SupplierContext";
+import { SareeTag, expandSareePieces, formatSellPercent, remainingQuantity, serialFromPieceCode, useSuppliers } from "../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
@@ -289,7 +289,7 @@ export function SareeInventoryTable({
     },
     {
       id: "sellPct", header: "Sell %", accessor: s => s.sellPercent,
-      cell: (_v, s) => <span style={mono(T.taupe)}>{s.sellPercent}%</span>,
+      cell: (_v, s) => <span style={mono(T.taupe)}>{formatSellPercent(s.sellPercent)}</span>,
     },
     {
       id: "selling", header: "Selling Price", accessor: s => s.finalAmount,

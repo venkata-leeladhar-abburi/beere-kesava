@@ -84,7 +84,7 @@ export function CustomersPage() {
         accountNumber: c.accountNumber || "",
         ifscCode: c.ifscCode || "",
         whatsapp: c.whatsapp || "",
-        state: c.state || "Andhra Pradesh",
+        state: c.state || "",
         notes: c.notes || "",
       };
     });

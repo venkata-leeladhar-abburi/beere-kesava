@@ -1329,7 +1329,12 @@ model PurchaseSareeLine {
   sareeType        String?
   color            String?
   price            Decimal   @default(0) @db.Decimal(12, 2)
-  sellPercent      Decimal   @default(0) @db.Decimal(6, 2)
+  // 8 decimals, not 2: the External Purchase form lets a user type the selling
+  // price directly and stores the markup it implies, which is rarely a round
+  // percentage (₹13,600 -> ₹26,928.55 is 98.00404411%). Selling price is always
+  // re-derived from this column rather than stored beside it, so every decimal
+  // dropped here comes back as paise — then rupees — off what was typed.
+  sellPercent      Decimal   @default(0) @db.Decimal(13, 8)
   quantity         Int       @default(1)
   finalAmount      Decimal   @default(0) @db.Decimal(12, 2)
   notes            String?

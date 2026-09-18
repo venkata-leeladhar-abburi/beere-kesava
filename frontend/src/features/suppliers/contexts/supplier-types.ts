@@ -189,9 +189,57 @@ export function serialFromPieceCode(pieceCode: string): string | null {
   return pieceCode.match(/-(\d{3,4})-\d{2,}$/)?.[1] ?? null;
 }
 
+/** Rounds a rupee figure to whole paise — every amount this module produces
+ *  is a real payable number, never a float tail like 26928.499999999996 that
+ *  a back-computed markup percentage would otherwise leave behind. */
+function toPaiseRupees(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+/** What one piece sells for: buying price plus markup, rounded to paise. */
+export function sellingPerPiece(price: number, sellPercent: number): number {
+  return toPaiseRupees(price + (price * sellPercent) / 100);
+}
+
 export function computeFinalAmount(price: number, sellPercent: number, quantity = 1): number {
   const qty = quantity > 0 ? quantity : 1;
-  return (price + (price * sellPercent) / 100) * qty;
+  return toPaiseRupees(sellingPerPiece(price, sellPercent) * qty);
+}
+
+/**
+ * The inverse of `sellingPerPiece` — the markup implied by a selling price a
+ * user typed by hand. `sellPercent` stays the single stored source of truth
+ * for a line (every downstream total, report and returns calculation derives
+ * selling from it), so a manually-entered selling price is converted here
+ * rather than stored alongside it, which would let the two disagree.
+ *
+ * Kept to 8 decimals to match the column's precision. That is deliberately
+ * finer than it looks: at 4 decimals a ₹13,600 saree sold at ₹26,928.55 comes
+ * back as ₹26,928.54, because one ten-thousandth of a percent of 13,600 is
+ * still 1.36 paise. 8 decimals keeps the re-derived selling price on the typed
+ * figure once rounded to paise, even on a lakh-rupee saree. A zero buying price has no markup that
+ * can express a selling price, so it yields 0 — the caller keeps the field
+ * usable and the percentage fills in once a price is entered.
+ */
+export function sellPercentFromSelling(price: number, sellingPrice: number): number {
+  if (!(price > 0)) return 0;
+  const exact = ((sellingPrice - price) / price) * 100;
+  // Prefer the tidiest markup that still reproduces the typed price to the
+  // paise — ₹600 typed as ₹750 is a plain 25%, and showing it as 25.00000000
+  // in the Sell % field would only make the designer doubt the number.
+  for (const decimals of [0, 2, 4]) {
+    const rounded = Number(exact.toFixed(decimals));
+    if (sellingPerPiece(price, rounded) === toPaiseRupees(sellingPrice)) return rounded;
+  }
+  return Number(exact.toFixed(8));
+}
+
+/** Markup for display — a back-computed percentage like 97.9963 reads as
+ *  `98%` in a table; the stored 4-decimal value is what the money is
+ *  calculated from. */
+export function formatSellPercent(sellPercent: number | string | null | undefined): string {
+  const n = Number(sellPercent) || 0;
+  return `${Number(n.toFixed(2))}%`;
 }
 
 /** Pieces of a line still with us — the bought quantity minus the ones that

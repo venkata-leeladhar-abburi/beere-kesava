@@ -143,3 +143,14 @@ export function formatMoney(amount: Paise, opts: MoneyOpts = {}): string {
     signDisplay: sign ? "exceptZero" : "auto",
   }).format(rupeeValue);
 }
+
+/**
+ * Exact form — paise are shown only when the amount actually has them, so a
+ * round ₹81,600 still reads `₹81,600` while a manually-entered selling price
+ * of ₹26,928.55 keeps its paise instead of being rounded away by the
+ * screen-default 0 decimals (Part E.3). Used wherever a human types the
+ * amount by hand (External Purchase entry), not on summary tiles.
+ */
+export function formatMoneyExact(amount: Paise, opts: Omit<MoneyOpts, "decimals"> = {}): string {
+  return formatMoney(amount, { ...opts, decimals: amount % 100 === 0 ? 0 : 2 });
+}

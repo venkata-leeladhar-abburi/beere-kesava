@@ -1,9 +1,10 @@
+import * as React from "react";
 import { X, UploadCloud } from "lucide-react";
 import {
-  buildSareeCode, computeFinalAmount,
+  buildSareeCode, sellingPerPiece, sellPercentFromSelling,
   lineBuying, lineSelling, lineProfit, pieceCodeFromLineCode,
 } from "@/features/suppliers";
-import { formatMoney, rupees } from "@/lib/domain/money";
+import { formatMoneyExact, rupees } from "@/lib/domain/money";
 import { T, F } from "../../theme";
 import { SareeRow } from "../../types";
 import { inputStyle, labelStyle } from "../../common/primitives";
@@ -28,6 +29,12 @@ export function SareeRowCard({
   removeSareeRow: (uid: string) => void;
 }) {
   const { upload, uploading, error: uploadError } = useImageUpload();
+  // While the Selling Price field is being typed in, the raw keystrokes win:
+  // the field's own value is derived from price × markup, and re-deriving it
+  // mid-edit would fight the user over the paise they are still typing. The
+  // draft is dropped on blur, at which point the field shows the derived
+  // figure the stored markup actually produces.
+  const [sellingDraft, setSellingDraft] = React.useState<number | "" | null>(null);
   const price = Number(s.price) || 0;
   const sellPercent = Number(s.sellPercent) || 0;
   const quantity = Number(s.quantity) || 1;
@@ -100,6 +107,7 @@ export function SareeRowCard({
         <Field label="Price / Quantity (₹)">
           <NumberInput
             size="sm"
+            step={0.01}
             value={s.price || ""}
             onValueChange={(v) => updateSareeRow(s._uid, { price: Number(v) || 0 })}
             placeholder="e.g. 600"
@@ -125,37 +133,49 @@ export function SareeRowCard({
         <div>
           <span style={labelStyle}>Buying Price</span>
           <div style={{ ...inputStyle, height: 36, fontSize: 12, display: "flex", alignItems: "center", fontFamily: "var(--font-mono)", fontWeight: 700, color: T.luxuryBrown, background: T.silkCream }}>
-            {formatMoney(rupees(buying))}
+            {formatMoneyExact(rupees(buying))}
           </div>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 3 }}>
-            {formatMoney(rupees(price))} × {quantity}
+            {formatMoneyExact(rupees(price))} × {quantity}
           </div>
         </div>
       </div>
 
-      {/* Markup drives selling price and profit */}
+      {/* Markup and selling price drive each other — editing either one
+          rewrites the markup, which is what the line actually stores. */}
       <div className="grid grid-cols-1 sm:[grid-template-columns:0.75fr_1fr_1fr]" style={{ gap: 10, marginBottom: 10 }}>
         <Field label="Sell % (markup)">
           <NumberInput
             size="sm"
+            step={0.01}
             value={s.sellPercent || ""}
-            onValueChange={(v) => updateSareeRow(s._uid, { sellPercent: Number(v) || 0 })}
+            onValueChange={(v) => {
+              setSellingDraft(null);
+              updateSareeRow(s._uid, { sellPercent: Number(v) || 0 });
+            }}
             placeholder="e.g. 25"
           />
         </Field>
-        <div>
-          <span style={labelStyle}>Selling Price</span>
-          <div style={{ ...inputStyle, height: 36, fontSize: 12, display: "flex", alignItems: "center", fontFamily: "var(--font-mono)", fontWeight: 700, color: T.royalBurgundy, background: T.cream }}>
-            {formatMoney(rupees(selling))}
-          </div>
+        <Field label="Selling Price (₹ / piece)">
+          <NumberInput
+            size="sm"
+            step={0.01}
+            value={sellingDraft ?? (sellingPerPiece(price, sellPercent) || "")}
+            onValueChange={(v) => {
+              setSellingDraft(v);
+              updateSareeRow(s._uid, { sellPercent: sellPercentFromSelling(price, Number(v) || 0) });
+            }}
+            onBlur={() => setSellingDraft(null)}
+            placeholder="e.g. 750"
+          />
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 3 }}>
-            {formatMoney(rupees(computeFinalAmount(price, sellPercent)))} × {quantity}
+            {formatMoneyExact(rupees(selling))} for {quantity} pc
           </div>
-        </div>
+        </Field>
         <div>
           <span style={labelStyle}>Profit</span>
           <div style={{ ...inputStyle, height: 36, fontSize: 12, display: "flex", alignItems: "center", fontFamily: "var(--font-mono)", fontWeight: 700, color: T.green, background: "rgba(30,102,64,0.07)", borderColor: "rgba(30,102,64,0.22)" }}>
-            {formatMoney(rupees(profit))}
+            {formatMoneyExact(rupees(profit))}
           </div>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 3 }}>
             selling − buying

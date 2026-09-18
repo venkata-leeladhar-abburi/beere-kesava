@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 import { purchaseTotals } from "@/features/suppliers";
-import { formatMoney, rupees } from "@/lib/domain/money";
+import { formatMoneyExact, rupees } from "@/lib/domain/money";
 import { T, F } from "../../theme";
 import { Button } from "../../../../../../shared/ui/primitives";
 import { SareeRow } from "../../types";
@@ -64,7 +64,7 @@ export function SareeDetailsEditor({
               <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 4 }}>
                 {label}
               </div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color }}>{formatMoney(rupees(value))}</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color }}>{formatMoneyExact(rupees(value))}</div>
             </div>
           ))}
         </div>
@@ -90,9 +90,9 @@ export function SareeDetailsEditor({
             Total — {pieceCount} piece{pieceCount !== 1 ? "s" : ""}
           </span>
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
-            buying {formatMoney(rupees(totals.buying))} · selling{" "}
-            <strong style={{ color: T.royalBurgundy }}>{formatMoney(rupees(totals.selling))}</strong> · profit{" "}
-            <strong style={{ color: T.green }}>{formatMoney(rupees(totals.profit))}</strong>
+            buying {formatMoneyExact(rupees(totals.buying))} · selling{" "}
+            <strong style={{ color: T.royalBurgundy }}>{formatMoneyExact(rupees(totals.selling))}</strong> · profit{" "}
+            <strong style={{ color: T.green }}>{formatMoneyExact(rupees(totals.profit))}</strong>
           </span>
         </div>
       )}

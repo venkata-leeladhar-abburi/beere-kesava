@@ -9,6 +9,7 @@ import { getSareeColor } from "../utils";
 import { StatusBadge } from "../common/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { formatMoney, rupees } from "@/lib/domain/money";
+import { formatSellPercent } from "@/features/suppliers";
 
 const inr = (n: number) => formatMoney(rupees(n));
 
@@ -109,7 +110,7 @@ export function InventoryDetailModal({
                   {infoCell('Weight', ext?.weight || '—')}
                   {infoCell('Payment', <span style={{ color: ext?.paymentStatus === 'Paid' ? T.green : ext?.paymentStatus === 'Partial' ? '#C07A18' : T.crimson }}>{ext?.paymentStatus || '—'}</span>)}
                   {infoCell('Cost Price', <span style={{ fontFamily: "var(--font-mono)" }}>{ext?.costPrice != null ? inr(ext.costPrice) : '—'}</span>)}
-                  {infoCell('Markup', ext?.sellPercent != null ? `${ext.sellPercent}%` : '—')}
+                  {infoCell('Markup', ext?.sellPercent != null ? formatSellPercent(ext.sellPercent) : '—')}
                   {infoCell('Selling Price', <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy, fontWeight: 700 }}>{ext?.finalAmount != null ? inr(ext.finalAmount) : '—'}</span>)}
                 </div>
               </div>

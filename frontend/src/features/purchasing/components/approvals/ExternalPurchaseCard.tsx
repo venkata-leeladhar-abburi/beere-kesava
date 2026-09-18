@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { Check, X, Package } from "lucide-react";
 import {
   PurchaseRequest,
-  purchaseTotals, expandSareePieces, lineProfit,
+  purchaseTotals, expandSareePieces, lineProfit, formatSellPercent,
 } from "@/features/suppliers";
 import { T, F } from "./tokens";
 import { GreenBtn, CrimsonBtn } from "./SharedUI";
@@ -66,7 +66,7 @@ export function ExternalPurchaseCard({
     },
     {
       id: "sellPercent", header: "Sell %", accessor: s => s.sellPercent, priority: 3,
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.sellPercent}%</span>,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{formatSellPercent(s.sellPercent)}</span>,
     },
     {
       id: "finalAmount", header: "Selling Price", accessor: s => s.finalAmount,

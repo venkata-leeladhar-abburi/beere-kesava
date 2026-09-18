@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { X, Printer, Undo2 } from "lucide-react";
 import {
   Purchase,
-  lineProfit, purchaseTotals, expandSareePieces, withPieceImage, serialFromPieceCode,
+  lineProfit, purchaseTotals, expandSareePieces, withPieceImage, serialFromPieceCode, formatSellPercent,
   SareeInventoryTable, type PieceExtra,
   useSuppliers,
 } from "@/features/suppliers";
@@ -210,7 +210,7 @@ export function SareeListModal({
               <td>{s.color || "—"}</td>
               <td>{s.weight}</td>
               <td data-num>{formatMoney(rupees(s.price))}</td>
-              <td data-num>{s.sellPercent}%</td>
+              <td data-num>{formatSellPercent(s.sellPercent)}</td>
               <td data-num>{formatMoney(rupees(s.finalAmount))}</td>
               <td data-num>{formatMoney(rupees(lineProfit(s)))}</td>
               <td>{s.notes || "—"}</td>
