@@ -1,22 +1,13 @@
 import React from "react";
 import { useNavigate, Navigate } from "react-router";
-import { ShieldAlert, ChevronRight, LayoutDashboard, Crown, Hammer, Scissors, Store, Calculator, type LucideIcon } from "lucide-react";
-import { useAuth, type Role } from "../../contexts/AuthContext";
+import { ShieldAlert, ChevronRight } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
 import { useResponsive } from "../../hooks/useResponsive";
 import { T, F } from "../../lib/tokens";
 import { ROLE_ROUTES } from "../roleRoutes";
 import { roleLabel } from "../../shared/ui/portal/AdminStaffView";
-import { useSwitchPortal } from "../../shared/ui/portal/PortalSwitcher";
+import { useSwitchPortal, PORTAL_ICONS } from "../../shared/ui/portal/PortalSwitcher";
 import logo from "../../assets/logo.webp";
-
-const ROLE_ICONS: Record<Role, LucideIcon> = {
-  superadmin: Crown,
-  admin: LayoutDashboard,
-  worker: Hammer,
-  weaver: Scissors,
-  shop: Store,
-  accountant: Calculator,
-};
 
 /**
  * Portal picker. A person assigned more than one portal (User.additionalRoles)
@@ -60,7 +51,7 @@ export function RoleSelectPage() {
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left" }}>
               {availableRoles.map(r => {
-                const Icon = ROLE_ICONS[r];
+                const Icon = PORTAL_ICONS[r];
                 const busy = switching === r;
                 return (
                   <button

@@ -105,7 +105,7 @@ const MobileOverview = lazy(() => import('./beere-dashboard/mobile').then(m => (
 // ═══════════════════════════════════════════════════════════════════════════════
 // ROOT
 // ═══════════════════════════════════════════════════════════════════════════════
-export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
+export function BeereDashboard() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [grnHistory, setGrnHistory] = useState<ReceiptRecord[]>(() => GRN_INITIAL_HISTORY);
   const { data: rawMaterialStock } = useQuery({
@@ -213,7 +213,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   const dashboardContent = isMobile ? (
     <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui, display: "flex", flexDirection: "column" }}>
       <MobileMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} activeTab={mobileTab} setTab={navigateMobile} />
-      <MobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} onLogout={handleLogout} onProfile={() => setShowProfileModal(true)} onNotifications={() => navigateMobile("Notifications")} />
+      <MobileTopNav onMenuOpen={() => setMenuOpen(true)} onLogout={handleLogout} onProfile={() => setShowProfileModal(true)} onNotifications={() => navigateMobile("Notifications")} />
       {getSectionsForPage(mobileTab).length > 0 && (
         <SectionNavigator sections={getSectionsForPage(mobileTab)} stickyTop={MOBILE_NAV_H} padding="0 18px" />
       )}
@@ -374,7 +374,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
     </div>
   ) : (
     <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui, display: "flex", flexDirection: "column" }}>
-      <TopNav active={nav} set={navigate} onBack={onBack} onLogout={handleLogout} sections={getSectionsForPage(nav)} onProfile={() => setShowProfileModal(true)} onViewAs={viewAsStaff} />
+      <TopNav active={nav} set={navigate} onLogout={handleLogout} sections={getSectionsForPage(nav)} onProfile={() => setShowProfileModal(true)} onViewAs={viewAsStaff} />
       <ErrorBoundary variant="inline" resetKeys={[nav]}>
       <Suspense fallback={<TabLoadingFallback />}>
       {nav === "Materials" ? (

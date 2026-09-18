@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import {
-  ChevronLeft, ChevronDown, Bell,
+  ChevronDown, Bell,
   LogOut, UserRound, Users, Store, Eye, IndianRupee
 } from 'lucide-react';
 import { useResponsive } from "../../../../../hooks/useResponsive";
@@ -10,6 +10,7 @@ import { SectionNavigator, MAIN_NAV_H, SUB_NAV_H, getSectionsForPage } from '../
 import { T, F, G, EASE, findNavGroup, NAV_GROUPS } from '../theme';
 import { Button, IconButton } from '../../../../../shared/ui/primitives';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, Popover } from '../../../../../shared/ui/overlay';
+import { PortalSwitchMenuItems } from '../../../../../shared/ui/portal/PortalSwitcher';
 
 // Deliberately NOT built on shared/ui/nav's Topbar+Groupbar (design-system/
 // 05-OVERLAYS.md Part O.1/O.2). Those primitives are two stacked sticky bars
@@ -28,7 +29,6 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 export function TopNav({
   active,
   set,
-  onBack,
   onLogout,
   sections,
   onProfile,
@@ -36,7 +36,6 @@ export function TopNav({
 }: {
   active: string;
   set: (v: string) => void;
-  onBack?: () => void;
   onLogout?: () => void;
   sections?: import("../../../../../shared/ui/SectionNavigator").SectionNavItem[];
   onProfile?: () => void;
@@ -325,18 +324,25 @@ export function TopNav({
             </Popover.Trigger>
             <Popover.Content align="end" sideOffset={10} className="!w-[360px] !max-w-[360px] !p-0 !overflow-hidden" style={{ zIndex: "var(--z-tooltip)" }}>
               <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => { set("Notifications"); setShowNotif(false); }}>
+                <button
+                  type="button"
+                  onClick={() => { set("Notifications"); setShowNotif(false); }}
+                  style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", background: "none", border: "none", padding: 0, font: "inherit" }}
+                >
                   <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Notifications</span>
                   <span style={{ background: T.royalBurgundy, color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, borderRadius: 999, padding: "2px 7px" }}>{unreadCount}</span>
-                </div>
+                </button>
                 <span style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, cursor: "pointer" }}>Mark all read</span>
               </div>
               <div style={{ padding: "24px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
                 No new notifications.
               </div>
-              <div
+              <button
+                type="button"
                 onClick={() => { set("Notifications"); setShowNotif(false); }}
                 style={{
+                  width: "100%",
+                  border: "none",
                   padding: "12px 20px",
                   borderTop: "1px solid rgba(110,15,45,0.08)",
                   background: "rgba(110,15,45,0.03)",
@@ -349,7 +355,7 @@ export function TopNav({
                 }}
               >
                 View All Notifications →
-              </div>
+              </button>
             </Popover.Content>
           </Popover>
           <DropdownMenu open={showProfile} onOpenChange={o => { setShowProfile(o); if (o) setShowNotif(false); }}>
@@ -402,10 +408,13 @@ export function TopNav({
                 <DropdownMenuItem onClick={() => onViewAs?.("shop")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
                   <Eye size={15} color={T.taupe} /> View as Shop Staff
                 </DropdownMenuItem>
+                {/* Only for someone actually assigned a second portal — this
+                    used to be a "Switch Portal" row that just logged you out. */}
+                <PortalSwitchMenuItems
+                  onBeforeSwitch={() => setShowProfile(false)}
+                  itemClassName="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]"
+                />
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onBack?.()} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
-                  <ChevronLeft size={15} color={T.taupe} /> Switch Portal
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onLogout?.()} destructive className="!h-auto !py-[11px] !px-[18px]">
                   <LogOut size={15} color="#C0392B" /> Logout
                 </DropdownMenuItem>

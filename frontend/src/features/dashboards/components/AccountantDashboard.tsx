@@ -11,6 +11,7 @@ import { PaymentsPage } from "@/features/payments";
 import { DownloadAccessProvider } from "../../../shared/ui/DownloadAccess";
 import { Button, IconButton } from "../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, Drawer } from "../../../shared/ui/overlay";
+import { PortalSwitchMenuItems, PortalSwitchButtonRows } from "../../../shared/ui/portal/PortalSwitcher";
 
 // Lazily loaded so the initial dashboard bundle doesn't pay for every tab's
 // page — only the active tab's chunk is fetched, on first navigation to it.
@@ -188,6 +189,10 @@ function TopNav({ active, set, onLogout, onProfile }: {
                     <UserRound size={15} color="#7A6B63" /> View Profile
                   </DropdownMenuItem>
                 )}
+                <PortalSwitchMenuItems
+                  onBeforeSwitch={() => setShowProfile(false)}
+                  itemClassName="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]"
+                />
                 <div style={{ height: 1, background: "rgba(110,15,45,0.08)", margin: "4px 0" }} />
                 {onLogout && (
                   <DropdownMenuItem onClick={() => { setShowProfile(false); onLogout(); }} className="!h-auto !py-[11px] !px-[18px] !text-[#C0392B] hover:!text-[#C0392B] focus:!text-[#C0392B]">
@@ -351,6 +356,7 @@ export function AcctMobileTopNav({ onMenuOpen, onProfile, onLogout }: {
                 className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
                 <UserRound size={14} color="#7A6B63" /> View Profile
               </Button>
+              <PortalSwitchButtonRows onBeforeSwitch={() => setShowProfile(false)} />
               <div style={{ height: 1, background: "rgba(110,15,45,0.08)", margin: "4px 0" }} />
               <Button onClick={() => { setShowProfile(false); onLogout?.(); }} variant="tertiary" fullWidth
                 className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]">

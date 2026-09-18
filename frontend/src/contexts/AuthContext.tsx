@@ -179,7 +179,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ...prev,
       role: target,
       token: res.token,
-      user: prev.user ? { ...prev.user, roles: res.roles } : prev.user,
+      // accessLevel is per-portal (MoneyValue/DownloadAccess read it), so the
+      // one cached from login would be the wrong portal's after a switch.
+      user: prev.user ? { ...prev.user, roles: res.roles, accessLevel: res.accessLevel } : prev.user,
     }));
   }, []);
 

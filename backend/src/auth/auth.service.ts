@@ -19,6 +19,7 @@ import { RequestOtpDto } from "./dto/request-otp.dto";
 import { VerifyOtpDto } from "./dto/verify-otp.dto";
 import type { AuthenticatedUser } from "./strategies/jwt.strategy";
 import { OtpInspectorService } from "./testing/otp-inspector.service";
+import { accessLevelFor } from "../users/portal-access";
 import { AuditStatus, UserRole, AccessLevel, WhatsAppMessageKind, WhatsAppMessageStatus } from "../generated/prisma/client";
 
 @Injectable()
@@ -229,6 +230,7 @@ export class AuthService {
 
     const user = await this.prisma.user.findFirst({
       where: { mobile: { contains: phone } },
+      include: { portalAccess: true },
     });
 
     let role = user?.role || UserRole.ADMIN;
@@ -236,7 +238,8 @@ export class AuthService {
     let userId = user?.id;
     let name = user ? `${user.firstName} ${user.lastName}` : "";
     let email = user?.email || "";
-    let accessLevel: AccessLevel = user?.accessLevel || AccessLevel.FULL_ACCESS;
+    // Per-portal, not per-person: `role` here is the portal this token opens.
+    let accessLevel: AccessLevel = user ? accessLevelFor(user, role) : AccessLevel.FULL_ACCESS;
     let empId = user?.empId ?? null;
     let dateAdded: Date | null = user?.dateAdded ?? null;
     // Distinct from `userId`: the real Weaver.id for WEAVER-role sessions,
@@ -319,7 +322,9 @@ export class AuthService {
    * so a portal an admin has since removed can no longer be switched into.
    */
   async switchRole(current: AuthenticatedUser, target: UserRole) {
-    const user = current.id ? await this.prisma.user.findUnique({ where: { id: current.id } }) : null;
+    const user = current.id
+      ? await this.prisma.user.findUnique({ where: { id: current.id }, include: { portalAccess: true } })
+      : null;
     // Weaver-only sessions (no User row) have exactly one portal.
     const roles = user ? this.rolesOf(user) : [current.role];
     if (!roles.includes(target)) {
@@ -331,10 +336,18 @@ export class AuthService {
       mobile: current.mobile,
       role: target,
       name: current.name,
-      accessLevel: user?.accessLevel ?? current.accessLevel,
+      // The target portal's level, not the one the old token was issued for.
+      accessLevel: user ? accessLevelFor(user, target) : current.accessLevel,
       weaverId: user ? user.linkedWeaverId : (current.weaverId ?? null),
     };
-    return { token: this.jwtService.sign(payload), role: target, roles };
+    // accessLevel travels back too: the client caches it for MoneyValue /
+    // DownloadAccess, and it is per-portal, so it changes with the switch.
+    return {
+      token: this.jwtService.sign(payload),
+      role: target,
+      roles,
+      accessLevel: payload.accessLevel,
+    };
   }
 
   /**

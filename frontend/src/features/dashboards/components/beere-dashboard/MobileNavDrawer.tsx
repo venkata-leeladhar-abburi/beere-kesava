@@ -1,12 +1,13 @@
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { motion } from 'motion/react';
-import { ChevronLeft, ChevronRight, Menu, LogOut, UserRound, X, Bell } from 'lucide-react';
+import { ChevronRight, Menu, LogOut, UserRound, X, Bell } from 'lucide-react';
 import { imgBKLogo } from '../../../../shared/constants/weaverImages';
 import { T, F, G, EASE, findNavGroup, NAV_GROUPS } from './theme';
 import { Button, IconButton } from '../../../../shared/ui/primitives';
 import { Drawer } from '../../../../shared/ui/overlay';
 import { MOBILE_NAV_H } from '../../../../shared/ui/SectionNavigator';
+import { PortalSwitchButtonRows } from '../../../../shared/ui/portal/PortalSwitcher';
 
 export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
   open: boolean; onClose: () => void; activeTab: string; setTab: (v: string) => void;
@@ -130,7 +131,7 @@ export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
   );
 }
 
-export function MobileTopNav({ onMenuOpen, onBack, onLogout, onProfile, onNotifications }: { onMenuOpen: () => void; onBack?: () => void; onLogout?: () => void; onProfile?: () => void; onNotifications?: () => void }) {
+export function MobileTopNav({ onMenuOpen, onLogout, onProfile, onNotifications }: { onMenuOpen: () => void; onLogout?: () => void; onProfile?: () => void; onNotifications?: () => void }) {
   const [showProfile, setShowProfile] = React.useState(false);
   const [showNotif, setShowNotif] = React.useState(false);
   // Scroll-collapse — same behaviour as the desktop TopNav: the bar slides out
@@ -282,11 +283,10 @@ export function MobileTopNav({ onMenuOpen, onBack, onLogout, onProfile, onNotifi
                 className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
                 <UserRound size={14} color={T.taupe} /> View Profile
               </Button>
+              {/* Only for someone actually assigned a second portal — this
+                  used to be a "Switch Portal" row that just logged you out. */}
+              <PortalSwitchButtonRows onBeforeSwitch={() => setShowProfile(false)} />
               <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-              <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <ChevronLeft size={14} color={T.taupe} /> Switch Portal
-              </Button>
               <Button onClick={() => { setShowProfile(false); onLogout?.(); }} variant="tertiary" fullWidth
                 className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]">
                 <LogOut size={14} color="#C0392B" /> Logout

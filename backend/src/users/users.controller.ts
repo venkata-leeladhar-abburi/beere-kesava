@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestj
 import { RequirePermissions } from "../auth/decorators/require-permissions.decorator";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { ListUsersQueryDto } from "./dto/list-users-query.dto";
-import { UpdateAccessLevelDto } from "./dto/update-access-level.dto";
+import { UpdateAccessLevelsDto } from "./dto/update-access-level.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { UsersService } from "./users.service";
 
@@ -40,10 +40,12 @@ export class UsersController {
     return this.usersService.update(id, dto);
   }
 
+  // Plural: a person can hold several portals and is not necessarily trusted
+  // equally in each, so the Manage Access screen saves the whole map at once.
   @RequirePermissions("users.roles.manage")
-  @Patch(":id/access-level")
-  updateAccessLevel(@Param("id") id: string, @Body() dto: UpdateAccessLevelDto) {
-    return this.usersService.updateAccessLevel(id, dto.accessLevel);
+  @Patch(":id/access-levels")
+  updateAccessLevels(@Param("id") id: string, @Body() dto: UpdateAccessLevelsDto) {
+    return this.usersService.setPortalAccessLevels(id, dto.levels);
   }
 
   @RequirePermissions("users.delete")

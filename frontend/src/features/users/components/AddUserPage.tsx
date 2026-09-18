@@ -18,13 +18,14 @@ import { ViewProfileModal } from "./ViewProfileModal";
 import { EditModal } from "./EditModal";
 import { ViewUserModal } from "./ViewUserModal";
 import { EditUserModal, UserEditFields } from "./EditUserModal";
+import { ManageAccessScreen, ManageAccessChanges } from "./ManageAccessScreen";
 import { ConfirmDialog } from "../../../shared/ui/ConfirmDialog";
 import { UserTable } from "./UserTable";
 import { AddUserForm, WeaverFieldsState } from "./AddUserForm";
 import { ApiError } from "../../../shared/api/client";
 import {
   BackendUser, FRONTEND_TO_BACKEND_ROLE, BACKEND_TO_FRONTEND_ROLE,
-  backendAccessLevelToFrontend, frontendAccessLevelToBackend, usersApi,
+  backendAccessLevelToFrontend, frontendAccessLevelToBackend, portalAccessLevels, usersApi,
 } from "../../../shared/api/users";
 import { BackendWeaver, weaversApi } from "../../../shared/api/weavers";
 
@@ -49,6 +50,7 @@ function weaverToTableRow(w: BackendWeaver): TableRow {
 
 function backendUserToTableRow(u: BackendUser): TableRow {
   const frontendRole = BACKEND_TO_FRONTEND_ROLE[u.role];
+  const primaryLevel = backendAccessLevelToFrontend(u.accessLevel);
   return {
     empId: u.empId,
     firstName: u.firstName,
@@ -60,7 +62,15 @@ function backendUserToTableRow(u: BackendUser): TableRow {
     portal: ROLE_TO_PORTAL[frontendRole] ?? "",
     dateAdded: formatBackendDate(u.dateAdded),
     status: u.status === "ACTIVE" ? "Active" : "Inactive",
-    accessLevel: frontendRole === "Admin" ? backendAccessLevelToFrontend(u.accessLevel) : undefined,
+    // Shown for every admin, and for anyone else only when it is actually
+    // restricting something — a "Full Access" badge on every row is noise.
+    accessLevel: frontendRole === "Admin" || primaryLevel !== "Full Access" ? primaryLevel : undefined,
+    accessLevels: Object.fromEntries(
+      portalAccessLevels(u).map(l => [
+        BACKEND_TO_FRONTEND_ROLE[l.role],
+        backendAccessLevelToFrontend(l.accessLevel),
+      ]),
+    ),
     backendId: u.id,
   };
 }
@@ -142,6 +152,11 @@ export function AddUserPage() {
   const [editingRow,     setEditingRow]     = useState<TableRow | null>(null);
   const [rowSaveError,   setRowSaveError]   = useState<string | null>(null);
   const [rowSaving,      setRowSaving]      = useState(false);
+  // Manage Access takes over the whole page rather than opening a modal —
+  // granting a portal is its own decision, not a detail edit.
+  const [accessRow,      setAccessRow]      = useState<TableRow | null>(null);
+  const [accessSaving,   setAccessSaving]   = useState(false);
+  const [accessError,    setAccessError]    = useState<string | null>(null);
 
   const portal = role ? ROLE_TO_PORTAL[role] ?? "" : "";
   const isFinishing = role === "Finishing Staff";
@@ -281,12 +296,14 @@ export function AddUserPage() {
         });
         setWeaverOnlyRows(prev => prev.map(w => (w.weaverOnlyId === updated.id ? weaverToTableRow(updated) : w)));
       } else if (row.backendId) {
+        // No additionalRoles here on purpose — portals move on the Manage
+        // Access screen, and sending the list from a details edit would let a
+        // stale modal overwrite a grant made since it opened.
         const updated = await usersApi.update(row.backendId, {
           firstName: updates.firstName,
           lastName: updates.lastName,
           mobile: updates.mobile,
           email: updates.email || undefined,
-          additionalRoles: updates.additionalRoles.map(r => FRONTEND_TO_BACKEND_ROLE[r]),
         });
         setBackendUsers(prev => prev.map(u => (u.backendId === updated.id ? backendUserToTableRow(updated) : u)));
       }
@@ -295,6 +312,34 @@ export function AddUserPage() {
       setRowSaveError(err instanceof ApiError ? err.message : "Could not save changes. Please try again.");
     } finally {
       setRowSaving(false);
+    }
+  }
+
+  async function handleSaveAccess(row: TableRow, changes: ManageAccessChanges) {
+    if (!row.backendId) return;
+    setAccessSaving(true);
+    setAccessError(null);
+    try {
+      // Portals first: the levels endpoint refuses a level for a portal the
+      // person isn't assigned yet, so a newly granted one has to land first.
+      let updated = await usersApi.update(row.backendId, {
+        additionalRoles: changes.additionalRoles.map(r => FRONTEND_TO_BACKEND_ROLE[r]),
+      });
+      // Its own endpoint behind its own permission, so it can't ride along on
+      // the PATCH above.
+      const levels = Object.entries(changes.accessLevels).map(([role, level]) => ({
+        role: FRONTEND_TO_BACKEND_ROLE[role],
+        accessLevel: frontendAccessLevelToBackend(level),
+      }));
+      if (levels.length) {
+        updated = await usersApi.updateAccessLevels(row.backendId, levels);
+      }
+      setBackendUsers(prev => prev.map(u => (u.backendId === updated.id ? backendUserToTableRow(updated) : u)));
+      setAccessRow(null);
+    } catch (err) {
+      setAccessError(err instanceof ApiError ? err.message : "Could not save access. Please try again.");
+    } finally {
+      setAccessSaving(false);
     }
   }
 
@@ -361,11 +406,26 @@ export function AddUserPage() {
       role: r, count: rows.length, active: rows.filter(u => u.status === "Active").length,
     };
     if (r === "Admin") {
-      stat.fullAccess = rows.filter(u => u.accessLevel === "Full Access").length;
-      stat.semiAccess = rows.filter(u => u.accessLevel === "Semi Access").length;
+      // "Restricted" is now any of the three limited levels, not just Semi.
+      stat.fullAccess = rows.filter(u => (u.accessLevel ?? "Full Access") === "Full Access").length;
+      stat.semiAccess = rows.length - stat.fullAccess;
     }
     return stat;
   }), [allRows]);
+
+  // Manage Access replaces the page while it's open — a full screen, not a
+  // layer over the directory it was opened from.
+  if (accessRow) {
+    return (
+      <ManageAccessScreen
+        row={accessRow}
+        saving={accessSaving}
+        error={accessError}
+        onBack={() => { if (!accessSaving) { setAccessRow(null); setAccessError(null); } }}
+        onSave={changes => void handleSaveAccess(accessRow, changes)}
+      />
+    );
+  }
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: F.ui }}>
@@ -483,7 +543,7 @@ export function AddUserPage() {
 
                   {s.role === "Admin" ? (
                     <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" }}>
-                      {s.fullAccess} Full · {s.semiAccess} Semi
+                      {s.fullAccess} Full · {s.semiAccess} Restricted
                     </div>
                   ) : (
                     <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" }}>
@@ -567,6 +627,7 @@ export function AddUserPage() {
             setViewingMember={setViewingMember}
             setEditingRow={row => { setRowSaveError(null); setEditingRow(row); }}
             setViewingRow={setViewingRow}
+            onManageAccess={row => { setAccessError(null); setAccessRow(row); }}
             cardStyle={cardStyle}
             inputStyle={inputStyle}
             loading={loading}

@@ -7,6 +7,7 @@ import { staffIdentitySubtitle, useAdminStaffView } from "@/shared/ui/portal/Adm
 import { useAuth } from "../../../../../contexts/AuthContext";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "../../../../../shared/ui/overlay";
+import { PortalSwitchMenuItems } from "../../../../../shared/ui/portal/PortalSwitcher";
 import type { Role } from "../../../../../contexts/AuthContext";
 import { CATEGORY_ACCENT, CATEGORY_ICON, useShopNotifications } from "../notificationsModel";
 import { usePendingShopDispatchCount } from "../IncomingDispatchSection";
@@ -234,6 +235,11 @@ export function DesktopTopNav({
                     <ChevronLeft size={15} color={C.muted} /> My Portal
                   </DropdownMenuItem>
                 )}
+                <PortalSwitchMenuItems
+                  onBeforeSwitch={() => setShowProfile(false)}
+                  itemClassName="!h-auto !py-2.5 !px-[18px] !text-sm !text-[#1A0A0F]"
+                />
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} destructive className="!h-auto !py-2.5 !px-[18px] !text-sm">
                   <LogOut size={15} color="#C0392B" /> Logout
                 </DropdownMenuItem>

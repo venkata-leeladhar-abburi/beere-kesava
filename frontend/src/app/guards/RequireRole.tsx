@@ -13,7 +13,6 @@ import type { ReactNode } from "react";
 import { Navigate } from "react-router";
 import { useAuth, type Role } from "../../contexts/AuthContext";
 import { AccessDeniedState } from "../../shared/ui/state";
-import { PortalSwitcher } from "../../shared/ui/portal/PortalSwitcher";
 
 /** The prop is `allow` rather than `role` because jsx-a11y reads any JSX
  *  attribute named `role` as the ARIA one and rejects "admin"/"weaver"/… as
@@ -40,10 +39,7 @@ export function RequireRole({ allow, children }: { allow: Role; children: ReactN
     );
   }
 
-  return (
-    <>
-      {children}
-      <PortalSwitcher />
-    </>
-  );
+  // Switching portals lives in each portal's own profile menu
+  // (PortalSwitchMenuItems), not in a floating control over the page.
+  return <>{children}</>;
 }

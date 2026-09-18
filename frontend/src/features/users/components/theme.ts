@@ -86,12 +86,21 @@ export const ROLE_COLORS: Record<string, { bg: string; text: string; border: str
 
 export const ROLES = ["Admin", "Worker Staff", "Finishing Staff", "Shop Staff", "Accountant"];
 
+// Every level the backend can store. One label per value — collapsing the
+// three restricted ones into "Semi Access" meant saving a Money Hidden account
+// silently handed the money back.
+export const PORTAL_ACCESS_LEVELS = ["Full Access", "Semi Access", "No Downloads", "Money Hidden"] as const;
+export type AccessLevel = typeof PORTAL_ACCESS_LEVELS[number];
+
+// The two offered while creating an account. The rest are set afterwards, per
+// portal, on the Manage Access screen — that is the decision they belong to.
 export const ACCESS_LEVELS = ["Full Access", "Semi Access"] as const;
-export type AccessLevel = typeof ACCESS_LEVELS[number];
 
 export const ACCESS_LEVEL_META: Record<AccessLevel, { color: string; bg: string; border: string; desc: string }> = {
-  "Full Access": { color: T.green,   bg: T.greenBg,             border: "rgba(30,102,64,0.18)",  desc: "Complete control — users, finance, settings, every portal section." },
-  "Semi Access": { color: "#8B6018", bg: "rgba(200,155,71,0.14)", border: "rgba(200,155,71,0.28)", desc: "Restricted — day-to-day operations only. No user management or finance." },
+  "Full Access":  { color: T.green,   bg: T.greenBg,               border: "rgba(30,102,64,0.18)",  desc: "Complete control — users, finance, settings, every portal section." },
+  "Semi Access":  { color: "#8B6018", bg: "rgba(200,155,71,0.14)", border: "rgba(200,155,71,0.28)", desc: "Restricted — day-to-day operations only. No user management or finance." },
+  "No Downloads": { color: "#2C4A8B", bg: "rgba(44,74,139,0.10)",  border: "rgba(44,74,139,0.22)",  desc: "Can see everything in this portal but cannot export or download reports." },
+  "Money Hidden": { color: T.crimson, bg: T.crimsonBg,             border: "rgba(192,57,43,0.22)",  desc: "Every rupee figure in this portal is hidden — rates, payments, totals." },
 };
 
 export function FieldFocus(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {

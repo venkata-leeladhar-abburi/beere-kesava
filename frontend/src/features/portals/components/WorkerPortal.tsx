@@ -9,6 +9,7 @@ import { C, F } from "./worker/tokens";
 import { Drawer, Popover } from "../../../shared/ui/overlay";
 import { formatRelativeTime, notificationBody, notificationTitle, useNotificationBell } from "@/features/notifications";
 import { AdminViewingBanner, roleLabel, staffIdentitySubtitle, useAdminStaffView } from "@/shared/ui/portal/AdminStaffView";
+import { PortalSwitchButtonRows } from "@/shared/ui/portal/PortalSwitcher";
 import { WorkerHome } from "./worker/WorkerHome";
 import { WorkerWeavers } from "./worker/WorkerWeavers";
 import { WorkerQC } from "./worker/WorkerQC";
@@ -229,6 +230,7 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
                     <ChevronLeft size={14} color={C.muted} /> Return to {roleLabel(adminViewingAs)}
                   </Button>
                 )}
+                <PortalSwitchButtonRows onBeforeSwitch={() => setShowProfileDropdown(false)} />
                 <Button onClick={() => { setShowProfileDropdown(false); logout(); }} variant="tertiary" fullWidth
                   className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]">
                   <LogOut size={14} color="#C0392B" /> Logout

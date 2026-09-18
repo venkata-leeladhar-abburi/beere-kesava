@@ -339,6 +339,10 @@ model User {
   // The primary role is what they land on when only one portal is assigned;
   // with more than one, login shows a portal picker (see /auth/switch-role).
   additionalRoles UserRole[] @default([])
+  // The access level for the PRIMARY `role`, and the fallback for any assigned
+  // portal with no `portalAccess` row of its own. Per-portal levels live in
+  // UserPortalAccess — resolve with accessLevelFor(), never read this directly
+  // for a session, because one person can be trusted differently in each portal.
   accessLevel AccessLevel  @default(FULL_ACCESS)
   status      ActiveStatus @default(ACTIVE)
   dateAdded   DateTime     @default(now())
@@ -351,6 +355,7 @@ model User {
   linkedWeaver   Weaver? @relation(fields: [linkedWeaverId], references: [id])
 
   permissionOverrides      UserPermissionOverride[]
+  portalAccess             UserPortalAccess[]
   sentWhatsAppMessages     WhatsAppMessage[]
   auditLogs                AuditLog[]
   actionLogs               ActionLog[]
@@ -386,6 +391,20 @@ model User {
   recordedInvoicePayments  InvoicePayment[]         @relation("InvoicePaymentRecordedBy")
 
   @@index([role])
+}
+
+/// One person's access level in one portal. Written only for a portal that
+/// differs from `User.accessLevel`, which stays the primary role's level and
+/// the default for the rest — so a single-portal account never needs a row
+/// here. Rows for a portal that is later revoked are deleted with it.
+model UserPortalAccess {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        UserRole
+  accessLevel AccessLevel
+
+  @@unique([userId, role])
 }
 
 model OtpCode {

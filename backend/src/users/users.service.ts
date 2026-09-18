@@ -7,6 +7,7 @@ import { IdGeneratorService, nameSegment } from "../id-generator/id-generator.se
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { ListUsersQueryDto } from "./dto/list-users-query.dto";
+import { PortalAccessLevelDto } from "./dto/update-access-level.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 
 // Human-facing ID prefix per role — gap-filled against however many Users of
@@ -54,6 +55,10 @@ export class UsersService {
    * (only provisioned when it is the primary role) and SUPERADMIN is never
    * handed out as a side-grant, so both are refused; the primary role is
    * dropped as a duplicate.
+   *
+   * A weaver is also refused in the other direction: their portal is scoped to
+   * their own batches and payments (see weaver-scope.ts), and a second portal
+   * would put staff-wide data behind the same login.
    */
   private sanitizeAdditionalRoles(primary: UserRole, roles: UserRole[] | undefined): UserRole[] | undefined {
     if (roles === undefined) return undefined;
@@ -61,7 +66,11 @@ export class UsersService {
     if (invalid.length) {
       throw new BadRequestException(`${invalid.join(", ")} cannot be assigned as an additional portal.`);
     }
-    return [...new Set(roles.filter((r) => r !== primary))];
+    const extras = [...new Set(roles.filter((r) => r !== primary))];
+    if (primary === UserRole.WEAVER && extras.length) {
+      throw new BadRequestException("A weaver cannot be given a second portal.");
+    }
+    return extras;
   }
 
   async create(dto: CreateUserDto) {
@@ -154,6 +163,7 @@ export class UsersService {
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
         orderBy: { dateAdded: "desc" },
+        include: { portalAccess: true },
       }),
       this.prisma.user.count({ where }),
     ]);
@@ -162,7 +172,7 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({ where: { id }, include: { portalAccess: true } });
     if (!user) {
       throw new NotFoundException(`User ${id} not found`);
     }
@@ -182,23 +192,79 @@ export class UsersService {
       await this.assertMobileAvailable(mobile, id);
     }
 
+    // A revoked portal must not leave its access level behind: re-granting it
+    // later would silently restore a restriction nobody chose this time.
+    const keep =
+      additionalRoles === undefined
+        ? undefined
+        : new Set<UserRole>([dto.role ?? existing.role, ...additionalRoles]);
+
     try {
-      return await this.prisma.user.update({
-        where: { id },
-        data: {
-          ...dto,
-          ...(mobile === undefined ? {} : { mobile }),
-          ...(additionalRoles === undefined ? {} : { additionalRoles }),
-        },
-      });
+      const [updated] = await this.prisma.$transaction([
+        this.prisma.user.update({
+          where: { id },
+          data: {
+            ...dto,
+            ...(mobile === undefined ? {} : { mobile }),
+            ...(additionalRoles === undefined ? {} : { additionalRoles }),
+          },
+          include: { portalAccess: true },
+        }),
+        ...(keep
+          ? [
+              this.prisma.userPortalAccess.deleteMany({
+                where: { userId: id, role: { notIn: [...keep] } },
+              }),
+            ]
+          : []),
+      ]);
+      return keep ? this.findOne(id) : updated;
     } catch (error) {
       throw this.mapPrismaError(error);
     }
   }
 
-  async updateAccessLevel(id: string, accessLevel: AccessLevel) {
-    await this.findOne(id);
-    return this.prisma.user.update({ where: { id }, data: { accessLevel } });
+  /**
+   * Sets the access level for one or more of this person's portals.
+   *
+   * The primary role's level stays on `User.accessLevel` — that is what an
+   * account with a single portal has always used, and what the login token
+   * falls back to. Every other portal gets a `UserPortalAccess` row, and a
+   * level equal to the fallback is stored rather than inferred so that later
+   * changing the primary role's level does not silently move the others too.
+   *
+   * A role the person isn't assigned is rejected: an access level on a portal
+   * they cannot open is dead data that would quietly take effect if the portal
+   * were ever granted.
+   */
+  async setPortalAccessLevels(id: string, levels: PortalAccessLevelDto[]) {
+    const user = await this.findOne(id);
+    const assigned = new Set<UserRole>([user.role, ...user.additionalRoles]);
+
+    const unassigned = levels.filter((l) => !assigned.has(l.role));
+    if (unassigned.length) {
+      throw new BadRequestException(
+        `${unassigned.map((l) => l.role).join(", ")} is not a portal assigned to this user.`,
+      );
+    }
+
+    const primary = levels.find((l) => l.role === user.role);
+    const extras = levels.filter((l) => l.role !== user.role);
+
+    await this.prisma.$transaction([
+      ...(primary
+        ? [this.prisma.user.update({ where: { id }, data: { accessLevel: primary.accessLevel } })]
+        : []),
+      ...extras.map((l) =>
+        this.prisma.userPortalAccess.upsert({
+          where: { userId_role: { userId: id, role: l.role } },
+          create: { userId: id, role: l.role, accessLevel: l.accessLevel },
+          update: { accessLevel: l.accessLevel },
+        }),
+      ),
+    ]);
+
+    return this.findOne(id);
   }
 
   async remove(id: string) {

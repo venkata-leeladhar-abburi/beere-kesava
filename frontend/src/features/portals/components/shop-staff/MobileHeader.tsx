@@ -6,6 +6,7 @@ import { useAuth } from "../../../../contexts/AuthContext";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
+import { PortalSwitchMenuItems } from "../../../../shared/ui/portal/PortalSwitcher";
 import { Drawer } from "../../../../shared/ui/overlay/Drawer";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { Role } from "../../../../contexts/AuthContext";
@@ -212,6 +213,7 @@ export function MobileHeader({
                     <ChevronLeft size={14} color={C.muted} /> My Portal
                   </DropdownMenuItem>
                 )}
+                <PortalSwitchMenuItems itemClassName="!h-auto !py-2.5 !px-4 !text-[13px] !text-[#3B2314]" />
                 <DropdownMenuItem onClick={handleLogout} destructive className="!h-auto !py-2.5 !px-4 !text-[13px]">
                   <LogOut size={14} color="#C0392B" /> Logout
                 </DropdownMenuItem>

@@ -3,14 +3,13 @@ import { TableRow } from "./utils";
 import { T, F } from "./theme";
 import { Button, Field, Input, PhoneInput } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
-import { AdditionalPortalsField } from "./AdditionalPortalsField";
+import { RoleBadge } from "./UserBadges";
 
 export interface UserEditFields {
   firstName: string;
   lastName: string;
   mobile: string;
   email: string;
-  additionalRoles: string[];
 }
 
 export function EditUserModal({ row, saving, error, onClose, onSave }: {
@@ -24,9 +23,10 @@ export function EditUserModal({ row, saving, error, onClose, onSave }: {
   const [lastName,  setLastName]  = useState(row.lastName);
   const [mobile,    setMobile]    = useState(row.mobile);
   const [email,     setEmail]     = useState(row.email ?? "");
-  const [additionalRoles, setAdditionalRoles] = useState<string[]>(row.additionalRoles ?? []);
-  // Weavers registered outside Add User have no User row to carry extra portals.
-  const canAssignPortals = Boolean(row.backendId);
+  // Portals are granted on the Manage Access screen, not here — this modal is
+  // for the person's details, and mixing the two put a permissions change one
+  // stray click away from a name correction.
+  const portals = [row.role, ...(row.additionalRoles ?? [])];
 
   const canSave = firstName.trim() && lastName.trim() && mobile.trim();
 
@@ -52,9 +52,13 @@ export function EditUserModal({ row, saving, error, onClose, onSave }: {
           <Field label="Email" hint="Optional">
             <Input value={email} onChange={e => setEmail(e.target.value)} />
           </Field>
-          {canAssignPortals && (
+          {row.backendId && (
             <div className="md:col-span-2">
-              <AdditionalPortalsField primaryRole={row.role} value={additionalRoles} onChange={setAdditionalRoles} />
+              <Field label="Portal Access" hint="Changed from Manage Access on the All Users row.">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {portals.map(p => <RoleBadge key={p} role={p} />)}
+                </div>
+              </Field>
             </div>
           )}
         </div>
@@ -65,7 +69,7 @@ export function EditUserModal({ row, saving, error, onClose, onSave }: {
         </Button>
         <Button
           variant="primary"
-          onClick={() => { if (canSave) onSave({ firstName, lastName, mobile, email, additionalRoles }); }}
+          onClick={() => { if (canSave) onSave({ firstName, lastName, mobile, email }); }}
           disabled={!canSave || saving}
         >
           {saving ? "Saving…" : "Save Changes"}

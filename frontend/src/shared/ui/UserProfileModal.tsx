@@ -1,7 +1,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { BACKEND_TO_FRONTEND_ROLE, BackendRole } from "../api/users";
+import { BACKEND_TO_FRONTEND_ROLE, BackendRole, BackendAccessLevel, backendAccessLevelToFrontend } from "../api/users";
 import { IconButton, Button } from "./primitives";
 import { Modal } from "./overlay";
 
@@ -38,7 +38,11 @@ export function UserProfileModal({ onClose }: { onClose: () => void }) {
     { label: "Email Address", value: user?.email || "—" },
     { label: "Phone Number", value: user?.mobile ? `+91 ${user.mobile}` : "—" },
     ...(joined ? [{ label: "Joined Date", value: joined }] : []),
-    ...(user?.accessLevel && frontendRole === "Admin" ? [{ label: "Access Level", value: user.accessLevel === "FULL_ACCESS" ? "Full Access" : "Semi Access" }] : []),
+    // Shown for any role, not just Admin: the level is per-portal now, so a
+    // restriction can apply to whichever portal this session is in.
+    ...(user?.accessLevel
+      ? [{ label: "Access Level", value: backendAccessLevelToFrontend(user.accessLevel as BackendAccessLevel) }]
+      : []),
   ];
 
   return (

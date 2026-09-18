@@ -16,7 +16,10 @@ export type TableRow = {
   email?: string;
   /** Extra portals (frontend role labels) besides `role`. */
   additionalRoles?: string[];
+  /** The primary role's level — shown as a badge when it is restricted. */
   accessLevel?: AccessLevel;
+  /** Every assigned portal's level, keyed by frontend role label. */
+  accessLevels?: Record<string, AccessLevel>;
   finishingMember?: FinishingStaffMember;
   // Present only for rows sourced from the backend (not Finishing Staff) —
   // needed to target PATCH /users/:id for status toggles etc.

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Edit2, ShieldOff, ShieldCheck, Eye, Trash2, Users, LayoutGrid, LayoutList } from "lucide-react";
+import { Edit2, ShieldOff, ShieldCheck, Eye, Trash2, Users, LayoutGrid, LayoutList, KeyRound } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFilterBar";
 import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
 import { T, F, ROLES } from "./theme";
@@ -30,6 +30,7 @@ interface UserTableProps {
   setViewingMember: (m: FinishingStaffMember | null) => void;
   setEditingRow: (r: TableRow | null) => void;
   setViewingRow: (r: TableRow | null) => void;
+  onManageAccess: (r: TableRow) => void;
   cardStyle: React.CSSProperties;
   inputStyle: React.CSSProperties;
   loading?: boolean;
@@ -46,6 +47,7 @@ export const userTableColumns = ({
   setViewingMember,
   setEditingRow,
   setViewingRow,
+  onManageAccess,
 }: {
   setEditingMember: (m: FinishingStaffMember | null) => void;
   onToggleStatus: (row: TableRow) => void;
@@ -53,6 +55,7 @@ export const userTableColumns = ({
   setViewingMember: (m: FinishingStaffMember | null) => void;
   setEditingRow: (r: TableRow | null) => void;
   setViewingRow: (r: TableRow | null) => void;
+  onManageAccess: (row: TableRow) => void;
 }): ColumnDef<TableRow>[] => [
   {
     id: "employee",
@@ -99,6 +102,14 @@ export const userTableColumns = ({
     cell: (_, row) => (
       <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
         {row.portal}
+        {/* Extra portals are the difference between one dashboard and a
+            picker at login, so they belong on the row, not only in the
+            Manage Access screen. */}
+        {!!row.additionalRoles?.length && (
+          <div style={{ fontSize: 12, color: T.royalBurgundy, fontWeight: 600, marginTop: 3 }}>
+            +{row.additionalRoles.length} more · {row.additionalRoles.join(", ")}
+          </div>
+        )}
       </div>
     ),
   },
@@ -136,6 +147,11 @@ export const userTableColumns = ({
           <>
             <IconButton label="View profile" icon={Eye} size="sm" onClick={() => setViewingRow(row)} />
             <IconButton label="Edit" icon={Edit2} size="sm" onClick={() => setEditingRow(row)} />
+            {/* Only a real User row has portals to grant. A weaver registered
+                through the Weavers module has no User record behind it. */}
+            {row.backendId && (
+              <IconButton label="Manage access" icon={KeyRound} size="sm" onClick={() => onManageAccess(row)} />
+            )}
           </>
         )}
         <IconButton
@@ -154,7 +170,7 @@ export function UserTable({
   allRows, searchQ, setSearchQ, roleFilter, setRoleFilter,
   dateFilter, setDateFilter, page, setPage, pagedRows, filtered,
   totalPages, ROWS_PER_PAGE, onToggleStatus, onDelete,
-  setEditingMember, setViewingMember, setEditingRow, setViewingRow,
+  setEditingMember, setViewingMember, setEditingRow, setViewingRow, onManageAccess,
   loading, loadError, onRetry, isFiltered, onClearFilters,
 }: UserTableProps) {
   const [userView, setUserView] = useState<"card" | "table">("table");
@@ -302,7 +318,14 @@ export function UserTable({
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ color: T.taupe }}>Portal</span>
-                  <span style={{ color: T.taupe }}>{row.portal}</span>
+                  <span style={{ color: T.taupe, textAlign: "right" }}>
+                    {row.portal}
+                    {!!row.additionalRoles?.length && (
+                      <div style={{ fontSize: 12, color: T.royalBurgundy, fontWeight: 600, marginTop: 2 }}>
+                        +{row.additionalRoles.length} more
+                      </div>
+                    )}
+                  </span>
                 </div>
               </div>
 
@@ -316,6 +339,9 @@ export function UserTable({
                   <>
                     <IconButton label="View profile" icon={Eye} size="sm" onClick={() => setViewingRow(row)} />
                     <IconButton label="Edit" icon={Edit2} size="sm" onClick={() => setEditingRow(row)} />
+                    {row.backendId && (
+                      <IconButton label="Manage access" icon={KeyRound} size="sm" onClick={() => onManageAccess(row)} />
+                    )}
                   </>
                 )}
                 <IconButton
@@ -341,7 +367,7 @@ export function UserTable({
         <div className="min-w-[850px]">
           <DataTable
             responsive={false}
-            columns={userTableColumns({ setEditingMember, onToggleStatus, onDelete, setViewingMember, setEditingRow, setViewingRow })}
+            columns={userTableColumns({ setEditingMember, onToggleStatus, onDelete, setViewingMember, setEditingRow, setViewingRow, onManageAccess })}
             data={pagedRows}
             getRowId={(u) => u.empId}
             loading={loading}

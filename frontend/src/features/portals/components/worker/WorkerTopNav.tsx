@@ -13,6 +13,7 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, Popover } from "../../../../shared/ui/overlay";
 import { formatRelativeTime, notificationBody, notificationTitle, useNotificationBell } from "@/features/notifications";
 import { roleLabel, staffIdentitySubtitle, useAdminStaffView } from "@/shared/ui/portal/AdminStaffView";
+import { PortalSwitchMenuItems } from "@/shared/ui/portal/PortalSwitcher";
 import { toInitials } from "@/shared/lib/initials";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "activity" | "profile";
@@ -296,6 +297,10 @@ export function WorkerTopNav({ active, onSelect, bp, pendingQcCount = 0 }: Worke
                 <ChevronLeft size={14} color={C.muted} /> Return to {roleLabel(adminViewingAs)}
               </DropdownMenuItem>
             )}
+            <PortalSwitchMenuItems
+              onBeforeSwitch={() => setShowUser(false)}
+              itemClassName="!h-auto !rounded-none !py-2.5 !px-4 !text-[13px] !text-[#1A0A0F]"
+            />
             <DropdownMenuItem onClick={() => logout()} destructive className="!h-auto !rounded-none !py-2.5 !px-4 !text-[13px]">
               <LogOut size={14} color="#C0392B" /> Logout
             </DropdownMenuItem>

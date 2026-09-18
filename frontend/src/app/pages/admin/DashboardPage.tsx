@@ -8,24 +8,12 @@
  * now separate routes under /admin/*.
  *
  * Note: BeereDashboard.tsx still contains the full dashboard logic including
- * hero, stats, and quick-action cards. The onBack prop is wired to
- * navigate to /select-role.
+ * hero, stats, and quick-action cards. Logging out and — for anyone assigned
+ * more than one portal — switching portals both live in its own profile menu.
  */
 import React from "react";
-import { useNavigate } from "react-router";
 import { BeereDashboard } from "../../../features/dashboards/components/BeereDashboard";
-import { useAuth } from "../../../contexts/AuthContext";
 
 export function AdminDashboardPage() {
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-
-  // No cross-portal "switch" — leaving a portal always ends the session and
-  // requires a fresh mobile+OTP login, even for admin/superadmin.
-  const handleBack = () => {
-    logout();
-    navigate("/login");
-  };
-
-  return <BeereDashboard onBack={handleBack} />;
+  return <BeereDashboard />;
 }

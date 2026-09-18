@@ -1,12 +1,23 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { ArrowLeftRight, Check } from "lucide-react";
+import { ArrowLeftRight, LayoutDashboard, Crown, Hammer, Scissors, Store, Calculator, type LucideIcon } from "lucide-react";
 import { useAuth, type Role } from "@/contexts/AuthContext";
 import { ApiError } from "@/shared/api/client";
 import { ROLE_ROUTES } from "@/app/roleRoutes";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from "@/shared/ui/overlay";
+import { Button } from "@/shared/ui/primitives";
+import { DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/shared/ui/overlay";
 import { roleLabel } from "./AdminStaffView";
+
+/** One icon per portal, shared by the login picker and every profile menu. */
+export const PORTAL_ICONS: Record<Role, LucideIcon> = {
+  superadmin: Crown,
+  admin: LayoutDashboard,
+  worker: Hammer,
+  weaver: Scissors,
+  shop: Store,
+  accountant: Calculator,
+};
 
 /**
  * Hook behind every "switch portal" control: moves the session onto another
@@ -32,48 +43,88 @@ export function useSwitchPortal() {
   return { go, switching };
 }
 
-/**
- * Floating "Switch Portal" control, shown in every portal (mounted by
- * RequireRole) only for someone with more than one assigned portal.
- */
-export function PortalSwitcher() {
+/** The portals this person can move to right now — empty unless they have 2+. */
+function useOtherPortals() {
   const { availableRoles, role } = useAuth();
+  return availableRoles.length < 2 ? [] : availableRoles.filter(r => r !== role);
+}
+
+/**
+ * "Switch Portal" rows for a Radix profile menu — a separator, a heading, and
+ * one row per other assigned portal. Renders nothing for someone with a single
+ * portal, so call sites can mount it unconditionally.
+ */
+export function PortalSwitchMenuItems({ onBeforeSwitch, itemClassName }: {
+  /** Closes the host menu/panel before the route changes under it. */
+  onBeforeSwitch?: () => void;
+  /** The host menu's own row styling — these rows must not look grafted on. */
+  itemClassName?: string;
+}) {
+  const others = useOtherPortals();
   const { go, switching } = useSwitchPortal();
-  if (availableRoles.length < 2) return null;
+  if (others.length === 0) return null;
 
   return (
-    <div style={{ position: "fixed", left: 16, bottom: 16, zIndex: 60 }}>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            aria-label="Switch portal"
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-[13px] font-semibold"
-            style={{
-              background: "#6E0F2D", color: "#FFFFFF", borderRadius: 999, border: "none",
-              boxShadow: "0 8px 24px rgba(110,15,45,0.28)", cursor: "pointer",
-            }}
+    <>
+      <DropdownMenuSeparator />
+      <DropdownMenuLabel>
+        <span className="inline-flex items-center gap-1.5">
+          <ArrowLeftRight size={12} /> Switch Portal
+        </span>
+      </DropdownMenuLabel>
+      {others.map(r => {
+        const Icon = PORTAL_ICONS[r];
+        const busy = switching === r;
+        return (
+          <DropdownMenuItem
+            key={r}
+            disabled={switching !== null}
+            onClick={() => { onBeforeSwitch?.(); void go(r); }}
+            className={itemClassName}
           >
-            <ArrowLeftRight size={15} />
-            {switching ? "Switching…" : "Switch Portal"}
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" side="top" className="!min-w-[220px]">
-          <DropdownMenuLabel>Your portals</DropdownMenuLabel>
-          {availableRoles.map(r => (
-            <DropdownMenuItem
-              key={r}
-              disabled={r === role || switching !== null}
-              onClick={() => { if (r !== role) void go(r); }}
-            >
-              <span className="flex w-full items-center justify-between gap-3">
-                {roleLabel(r)} Portal
-                {r === role && <Check size={14} />}
-              </span>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+            <Icon size={15} /> {roleLabel(r)} Portal
+            {busy && <span style={{ marginLeft: "auto", fontSize: 11, opacity: 0.7 }}>Opening…</span>}
+          </DropdownMenuItem>
+        );
+      })}
+    </>
+  );
+}
+
+/**
+ * The same rows for the hand-rolled dropdowns that aren't built on Radix
+ * (the worker mobile header, the admin mobile drawer).
+ */
+export function PortalSwitchButtonRows({ onBeforeSwitch, className }: {
+  onBeforeSwitch?: () => void;
+  className?: string;
+}) {
+  const others = useOtherPortals();
+  const { go, switching } = useSwitchPortal();
+  if (others.length === 0) return null;
+
+  return (
+    <>
+      <div style={{ height: 1, background: "rgba(110,15,45,0.08)", margin: "4px 0" }} />
+      <div style={{ padding: "6px 16px 2px", fontSize: 11, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", opacity: 0.6, display: "flex", alignItems: "center", gap: 6 }}>
+        <ArrowLeftRight size={11} /> Switch Portal
+      </div>
+      {others.map(r => {
+        const Icon = PORTAL_ICONS[r];
+        return (
+          <Button
+            key={r}
+            variant="tertiary"
+            fullWidth
+            disabled={switching !== null}
+            onClick={() => { onBeforeSwitch?.(); void go(r); }}
+            className={className ?? "!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"}
+          >
+            <Icon size={14} /> {roleLabel(r)} Portal
+            {switching === r && <span style={{ marginLeft: "auto", fontSize: 11, opacity: 0.7 }}>Opening…</span>}
+          </Button>
+        );
+      })}
+    </>
   );
 }

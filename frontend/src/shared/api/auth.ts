@@ -34,7 +34,12 @@ export const authApi = {
     apiClient.post<VerifyOtpResponse>("/auth/verify-otp", { phone, code }),
   /** Re-issues the token for another portal assigned to the same person. */
   switchRole: (role: string) =>
-    apiClient.post<{ token: string; role: string; roles: string[] }>("/auth/switch-role", { role }),
+    // accessLevel comes back because it is per-portal: the same person can be
+    // MONEY_HIDDEN in one and unrestricted in another.
+    apiClient.post<{ token: string; role: string; roles: string[]; accessLevel: string }>(
+      "/auth/switch-role",
+      { role },
+    ),
   /** Closes the session in the login history. Needs the token, so it must be
    *  called before local credentials are cleared. */
   logout: () => apiClient.post<{ ok: boolean }>("/auth/logout", {}),

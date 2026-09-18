@@ -44,7 +44,15 @@ export function ViewUserModal({ row, onClose, onEdit }: {
               { label: "Mobile Number", value: row.mobile || "—", mono: false },
               { label: "Email", value: row.email || "—", mono: false },
               { label: "Employee ID", value: row.empId || "—", mono: true },
-              { label: "Portal", value: row.portal || "—", mono: false },
+              {
+                label: "Portal",
+                // Every portal, with its own level — a single "Portal" line
+                // hid both the extra grants and the per-portal restrictions.
+                value: Object.entries(row.accessLevels ?? {})
+                  .map(([r, lvl]) => (lvl === "Full Access" ? r : `${r} (${lvl})`))
+                  .join(" · ") || row.portal || "—",
+                mono: false,
+              },
               { label: "Date Added", value: row.dateAdded, mono: false },
               { label: "Role", value: row.role, mono: false, role: true },
               { label: "Status", value: row.status, mono: false, badge: true },

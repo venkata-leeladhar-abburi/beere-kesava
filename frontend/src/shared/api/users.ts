@@ -9,6 +9,12 @@ export type BackendAccessLevel =
   | "MONEY_HIDDEN";
 export type BackendStatus = "ACTIVE" | "INACTIVE";
 
+/** One portal's access level — see backend UserPortalAccess. */
+export interface BackendPortalAccess {
+  role: BackendRole;
+  accessLevel: BackendAccessLevel;
+}
+
 export interface BackendUser {
   id: string;
   empId: string;
@@ -18,7 +24,10 @@ export interface BackendUser {
   email: string | null;
   role: BackendRole;
   additionalRoles?: BackendRole[];
+  /** The PRIMARY role's level, and the fallback for a portal with no row. */
   accessLevel: BackendAccessLevel;
+  /** Per-portal overrides. Resolve with portalAccessLevels(), not directly. */
+  portalAccess?: BackendPortalAccess[];
   status: BackendStatus;
   dateAdded: string;
   updatedAt: string;
@@ -52,14 +61,40 @@ export const BACKEND_TO_FRONTEND_ROLE: Record<BackendRole, string> = {
   ACCOUNTANT: "Accountant",
 };
 
-// The frontend UI only exposes two access levels (Full/Semi); the backend has
-// four. RESTRICTED/DOWNLOAD_RESTRICTED/MONEY_HIDDEN all display as "Semi Access".
-export function backendAccessLevelToFrontend(level: BackendAccessLevel): "Full Access" | "Semi Access" {
-  return level === "FULL_ACCESS" ? "Full Access" : "Semi Access";
+// One label per backend value. This used to collapse the three restricted
+// levels into "Semi Access", which meant opening a MONEY_HIDDEN account and
+// saving it silently downgraded them to RESTRICTED — the money came back.
+const ACCESS_LEVEL_LABELS: Record<BackendAccessLevel, FrontendAccessLevel> = {
+  FULL_ACCESS: "Full Access",
+  RESTRICTED: "Semi Access",
+  DOWNLOAD_RESTRICTED: "No Downloads",
+  MONEY_HIDDEN: "Money Hidden",
+};
+
+export type FrontendAccessLevel = "Full Access" | "Semi Access" | "No Downloads" | "Money Hidden";
+
+export function backendAccessLevelToFrontend(level: BackendAccessLevel): FrontendAccessLevel {
+  return ACCESS_LEVEL_LABELS[level] ?? "Full Access";
 }
 
-export function frontendAccessLevelToBackend(level: "Full Access" | "Semi Access"): BackendAccessLevel {
-  return level === "Full Access" ? "FULL_ACCESS" : "RESTRICTED";
+export function frontendAccessLevelToBackend(level: FrontendAccessLevel): BackendAccessLevel {
+  const found = (Object.entries(ACCESS_LEVEL_LABELS) as [BackendAccessLevel, FrontendAccessLevel][])
+    .find(([, label]) => label === level);
+  return found ? found[0] : "FULL_ACCESS";
+}
+
+/**
+ * The access level for each portal this person holds, primary first — mirrors
+ * the backend's accessLevelMap(). An extra portal with no row of its own is
+ * unrestricted; it does NOT inherit the primary role's level.
+ */
+export function portalAccessLevels(user: BackendUser): BackendPortalAccess[] {
+  const roles = [...new Set([user.role, ...(user.additionalRoles ?? [])])];
+  return roles.map(role => {
+    const explicit = user.portalAccess?.find(p => p.role === role);
+    if (explicit) return explicit;
+    return { role, accessLevel: role === user.role ? user.accessLevel : ("FULL_ACCESS" as const) };
+  });
 }
 
 export interface CreateUserPayload {
@@ -109,6 +144,12 @@ export const usersApi = {
 
   updateStatus: (id: string, status: BackendStatus) =>
     apiClient.patch<BackendUser>(`/users/${id}`, { status }),
+
+  // Its own endpoint, behind its own permission (users.roles.manage) — the
+  // general PATCH deliberately can't raise somebody's access level. Plural
+  // because the level is per portal and Manage Access saves the whole map.
+  updateAccessLevels: (id: string, levels: BackendPortalAccess[]) =>
+    apiClient.patch<BackendUser>(`/users/${id}/access-levels`, { levels }),
 
   remove: (id: string) => apiClient.delete<void>(`/users/${id}`),
 };
