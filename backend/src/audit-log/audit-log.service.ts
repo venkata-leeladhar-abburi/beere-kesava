@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
-import { AuditStatus, Prisma, UserRole } from "../generated/prisma/client";
+import { AuditStatus, GeofenceDecision, GeofenceMode, Prisma, UserRole } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { ListActionLogQueryDto } from "./dto/list-action-log-query.dto";
 import { ListAuditLogQueryDto } from "./dto/list-audit-log-query.dto";
@@ -13,7 +13,22 @@ export class AuditLogService {
    * Records one login-lifecycle event. Written by the auth module on
    * verify-otp and logout. No other module should call this.
    */
-  record(params: { userId?: string; status: AuditStatus; device?: string; duration?: number; failReason?: string }) {
+  record(params: {
+    userId?: string;
+    status: AuditStatus;
+    device?: string;
+    duration?: number;
+    failReason?: string;
+    // Where the attempt came from and what the geofence made of it. Supplied
+    // by AuthService from GeofenceService.auditFieldsFor(); absent for the
+    // roles that are not geofenced, which are never asked for a position.
+    latitude?: number | null;
+    longitude?: number | null;
+    accuracyMeters?: number | null;
+    distanceMeters?: number | null;
+    geofenceDecision?: GeofenceDecision | null;
+    geofenceMode?: GeofenceMode | null;
+  }) {
     return this.prisma.auditLog.create({ data: params });
   }
 

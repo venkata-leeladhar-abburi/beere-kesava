@@ -19,6 +19,7 @@ class AppThrottlerGuard extends ThrottlerGuard {
 import { ApprovalsModule } from "./approvals/approvals.module";
 import { AppController } from "./app.controller";
 import { AuditLogModule } from "./audit-log/audit-log.module";
+import { GeofenceModule } from "./geofence/geofence.module";
 import { BatchesModule } from "./batches/batches.module";
 import { BulkOrdersModule } from "./bulk-orders/bulk-orders.module";
 import { StorageModule } from "./common/storage/storage.module";
@@ -124,6 +125,7 @@ import { WhatsAppModule } from "./whatsapp/whatsapp.module";
     LabelsModule,
     ScanModule,
     AuditLogModule,
+    GeofenceModule,
     DesignDispatchesModule,
   ],
   controllers: [AppController],

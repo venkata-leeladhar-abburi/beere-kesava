@@ -15,6 +15,8 @@ import { deviceLabel } from "../audit-log/device-label";
 import { normalizeMobile } from "../common/phone.util";
 import { PrismaService } from "../prisma/prisma.service";
 import { WhatsAppService } from "../whatsapp/whatsapp.service";
+import { GeofenceService, type LocationFix } from "../geofence/geofence.service";
+import { GeofenceBlockedError } from "../common/errors";
 import { RequestOtpDto } from "./dto/request-otp.dto";
 import { VerifyOtpDto } from "./dto/verify-otp.dto";
 import type { AuthenticatedUser } from "./strategies/jwt.strategy";
@@ -29,6 +31,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly whatsapp: WhatsAppService,
     private readonly auditLog: AuditLogService,
+    private readonly geofence: GeofenceService,
     // Only actually provided when isE2eTestModeEnabled() (see auth.module.ts);
     // @Optional() means this resolves to undefined everywhere else, so every
     // call site below is a no-op in production.
@@ -37,6 +40,37 @@ export class AuthService {
 
   private cleanPhone(phone: string): string {
     return normalizeMobile(phone);
+  }
+
+  /** The position half of a sign-in dto, or null when the client sent none. */
+  private fixFrom(dto: LocationFix): LocationFix | null {
+    return dto.latitude == null || dto.longitude == null
+      ? null
+      : { latitude: dto.latitude, longitude: dto.longitude, accuracyMeters: dto.accuracyMeters };
+  }
+
+  /**
+   * Which portal a token issued for this phone number will open, which is the
+   * role the geofence has to be judged against.
+   *
+   * The PRIMARY role only. Someone holding both ADMIN and WORKER lands in the
+   * admin portal and so is not geofenced at sign-in — switching into the
+   * worker portal afterwards is re-checked by switchRole(), which is where
+   * that side door is closed.
+   */
+  private async identityForPhone(phone: string): Promise<{ role: UserRole; userId?: string } | null> {
+    const user = await this.prisma.user.findFirst({
+      where: { mobile: { contains: phone } },
+      select: { id: true, role: true },
+    });
+    if (user) return { role: user.role, userId: user.id };
+    const weaver = await this.prisma.weaver.findFirst({
+      where: { phone: { contains: phone } },
+      select: { id: true },
+    });
+    // A weaver with no User row has no AuditLog-referenceable id, so only the
+    // role travels — exemptions are granted against User rows.
+    return weaver ? { role: UserRole.WEAVER } : null;
   }
 
   private readonly otpTtlMs = 5 * 60 * 1000;
@@ -76,6 +110,17 @@ export class AuthService {
     // billable authentication conversations and is an open relay for abuse.
     if (!user && !weaver) {
       throw new UnauthorizedException("This mobile number is not registered.");
+    }
+
+    // Refused here as well as at verify so a person who cannot sign in never
+    // receives a code: each OTP is a billable WhatsApp authentication
+    // conversation. This check is skippable by calling verify directly, which
+    // is why verifyOtp repeats it rather than trusting this one.
+    const identity = user ? { role: user.role, userId: user.id } : { role: UserRole.WEAVER };
+    const requestFix = this.fixFrom(dto);
+    const requestVerdict = await this.geofence.evaluate({ ...identity, fix: requestFix });
+    if (!requestVerdict.allowed) {
+      throw new GeofenceBlockedError(requestVerdict.message!);
     }
 
     // No resend throttle: an OTP can be requested as often as the caller
@@ -156,6 +201,25 @@ export class AuthService {
   async verifyOtp(dto: VerifyOtpDto, userAgent?: string) {
     const phone = this.cleanPhone(dto.phone);
     const device = deviceLabel(userAgent);
+    const fix = this.fixFrom(dto);
+
+    // The authoritative location check, and deliberately the FIRST thing that
+    // happens — ahead of reading the OTP row, comparing the code or touching
+    // the attempt counter. Someone refused for being off site should not also
+    // lose the code they were sent or burn one of their three guesses on a
+    // rejection that had nothing to do with the code they typed.
+    //
+    // requestOtp ran the same check, and that is not redundant: this endpoint
+    // is reachable on its own, so the earlier call is a courtesy and this one
+    // is the control.
+    const identity = await this.identityForPhone(phone);
+    const geofence = identity
+      ? await this.geofence.evaluate({ role: identity.role, userId: identity.userId, fix })
+      : null;
+    // Recorded on EVERY outcome below, not just refusals. An allowed login
+    // carrying its distance and accuracy is the entire point of OBSERVE mode:
+    // it is the evidence the radius gets tuned from.
+    const geoFields = geofence ? this.geofence.auditFieldsFor(geofence, fix) : {};
 
     // Best-effort: an audit write must never turn a good login into a 500, or
     // mask the real reason a bad one was rejected.
@@ -164,11 +228,19 @@ export class AuthService {
       params: { userId?: string; failReason?: string; duration?: number } = {},
     ) => {
       try {
-        await this.auditLog.record({ status, device, ...params });
+        await this.auditLog.record({ status, device, ...geoFields, ...params });
       } catch {
         /* login history is observability, not a precondition for signing in */
       }
     };
+
+    if (geofence && !geofence.allowed) {
+      await audit(AuditStatus.FAILED, {
+        userId: identity?.userId,
+        failReason: `Location check failed (${geofence.decision})`,
+      });
+      throw new GeofenceBlockedError(geofence.message!);
+    }
 
     // Resolved lazily so a failed attempt can still be attributed to the
     // account someone was trying to get into.
@@ -321,7 +393,7 @@ export class AuthService {
    * Roles are re-read from the database, never trusted from the old token,
    * so a portal an admin has since removed can no longer be switched into.
    */
-  async switchRole(current: AuthenticatedUser, target: UserRole) {
+  async switchRole(current: AuthenticatedUser, target: UserRole, fix?: LocationFix | null) {
     const user = current.id
       ? await this.prisma.user.findUnique({ where: { id: current.id }, include: { portalAccess: true } })
       : null;
@@ -329,6 +401,15 @@ export class AuthService {
     const roles = user ? this.rolesOf(user) : [current.role];
     if (!roles.includes(target)) {
       throw new ForbiddenException("That portal is not assigned to your account.");
+    }
+
+    // Checked against the TARGET portal, which is the whole reason this is
+    // here: an admin is not geofenced, so without this they could sign in
+    // from anywhere and then switch into a geofenced portal — walking through
+    // the restriction by the side door rather than the front one.
+    const verdict = await this.geofence.evaluate({ role: target, userId: user?.id, fix });
+    if (!verdict.allowed) {
+      throw new GeofenceBlockedError(verdict.message!);
     }
 
     const payload = {

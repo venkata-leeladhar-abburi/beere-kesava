@@ -17,6 +17,10 @@ export const ERROR_CODES = [
   "AUTH_INVALID_CREDENTIALS",
   "FORBIDDEN_ROLE",
   "FORBIDDEN_SCOPE",
+  // Signed in credentials are fine; the request came from the wrong place.
+  // Separate from FORBIDDEN_ROLE because the recovery is "go to the premises",
+  // not "ask for permission", and the login screen renders it differently.
+  "GEOFENCE_BLOCKED",
   "NOT_FOUND",
   "VALIDATION_FAILED",
   "CONFLICT",

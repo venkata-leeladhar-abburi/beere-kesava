@@ -40,6 +40,15 @@ const COPY: Record<ErrorCode, ErrorCopy> = {
     description: "This record belongs to a different account.",
     retryable: false,
   },
+  // The description here is a fallback only. GEOFENCE_BLOCKED is the one code
+  // whose server message is worth more than this copy — it names the site and
+  // says how far away the person is — so the login screen shows that message
+  // verbatim instead. This is what any other screen would render.
+  GEOFENCE_BLOCKED: {
+    title: "You're not at the premises",
+    description: "This portal can only be used at the factory. Contact your administrator if you think this is wrong.",
+    retryable: false,
+  },
   NOT_FOUND: {
     title: "We couldn't find that",
     description: "It may have been moved or deleted.",

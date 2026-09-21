@@ -38,7 +38,11 @@ export class AuthController {
   // same person. AuthService re-checks the assignment against the database.
   @Post("switch-role")
   switchRole(@CurrentUser() user: AuthenticatedUser, @Body() dto: SwitchRoleDto) {
-    return this.authService.switchRole(user, dto.role);
+    return this.authService.switchRole(user, dto.role, {
+      latitude: dto.latitude,
+      longitude: dto.longitude,
+      accuracyMeters: dto.accuracyMeters,
+    });
   }
 
   // Not @Public(): a logout has to name the session it is closing, which

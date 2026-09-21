@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole } from "../src/generated/prisma/client";
+import { GeofenceMode, PrismaClient, UserRole } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import "dotenv/config";
 
@@ -150,6 +150,59 @@ async function seedFactoryLooms(): Promise<void> {
   // No hardcoded mock looms — factory looms are managed dynamically via backend API & UI
 }
 
+/**
+ * The premises the staff portals may be used from, and which roles that
+ * applies to.
+ *
+ * Coordinates are the location pin the client sent from inside the factory at
+ * Dharmavaram (Sept 2026). Four further "corner" pins were requested; three
+ * came back identical to each other and the fourth sat 0.22m from the centre,
+ * so the only span they establish is ~6.6m. The premises are certainly larger
+ * than that, which is why the radius is the client's stated 100m rather than
+ * anything derived from the pins — and why every role starts in OBSERVE.
+ *
+ * OBSERVE records each login's distance and accuracy without ever blocking.
+ * Switch a role to ENFORCE from the admin screen only once its logins show
+ * what the real readings at this site look like; setting a radius before that
+ * is guesswork that locks out genuine staff.
+ *
+ * Upserts by label, so re-running the seed never duplicates the site and
+ * never overwrites a radius an admin has since tuned.
+ */
+async function seedGeofence(): Promise<void> {
+  const existing = await prisma.geofenceSite.findFirst({
+    where: { label: "Dharmavaram factory" },
+  });
+  if (!existing) {
+    await prisma.geofenceSite.create({
+      data: {
+        label: "Dharmavaram factory",
+        latitude: 14.422606,
+        longitude: 77.726799,
+        radiusMeters: 100,
+        maxAccuracyMeters: 75,
+        active: true,
+        sourceNote:
+          "WhatsApp location pin sent from inside the premises, Sept 2026. Corner pins were duplicates, so the true extent of the site is not yet known.",
+      },
+    });
+  }
+
+  // ADMIN and SUPERADMIN are absent on purpose: a role with no row here is
+  // not geofenced, which is how they keep access from anywhere — and how a
+  // bad radius stays recoverable.
+  const geofencedRoles = [UserRole.WORKER, UserRole.WEAVER, UserRole.SHOP, UserRole.ACCOUNTANT];
+  for (const role of geofencedRoles) {
+    await prisma.geofenceRolePolicy.upsert({
+      where: { role },
+      create: { role, enforced: true, mode: GeofenceMode.OBSERVE },
+      // Only ever creates. An admin who has moved a role to ENFORCE must not
+      // have it silently reset by the next deploy's seed run.
+      update: {},
+    });
+  }
+}
+
 async function main(): Promise<void> {
   const keyToId = await seedPermissions();
   console.log(`Seeded ${keyToId.size} permissions`);
@@ -168,6 +221,9 @@ async function main(): Promise<void> {
 
   await seedFactoryLooms();
   console.log("Seeded factory looms");
+
+  await seedGeofence();
+  console.log("Seeded geofence site + role policies (all roles start in OBSERVE)");
 }
 
 main()

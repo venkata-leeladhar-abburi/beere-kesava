@@ -12,6 +12,7 @@ describe("AuthService", () => {
   let jwtService: any;
   let whatsapp: any;
   let auditLog: any;
+  let geofence: any;
   let service: AuthService;
 
   beforeEach(() => {
@@ -38,7 +39,21 @@ describe("AuthService", () => {
       sanitiseParam: jest.fn((v: string) => v),
     };
     auditLog = { record: jest.fn().mockResolvedValue({}), recordLogout: jest.fn().mockResolvedValue({}) };
-    service = new AuthService(prisma, jwtService, whatsapp, auditLog);
+    // Allows by default, as it does for a role carrying no policy row: these
+    // cases are about the OTP flow, and the geofence has its own suite. The
+    // handful of tests that care override `evaluate` themselves.
+    geofence = {
+      evaluate: jest.fn().mockResolvedValue({
+        allowed: true,
+        decision: "NOT_ENFORCED",
+        mode: null,
+        distanceMeters: null,
+        nearestSiteLabel: null,
+        message: null,
+      }),
+      auditFieldsFor: jest.fn().mockReturnValue({}),
+    };
+    service = new AuthService(prisma, jwtService, whatsapp, auditLog, geofence);
   });
 
   describe("requestOtp", () => {
@@ -248,6 +263,9 @@ describe("AuthService", () => {
         attempts: 0,
       });
       prisma.user.findFirst
+        // verifyOtp resolves the caller's role first, to judge the location
+        // check against the portal the token will actually open.
+        .mockResolvedValueOnce({ id: "u1", role: UserRole.ADMIN })
         .mockResolvedValueOnce({ id: "seed-sa" }) // ensureDefaultUsers: superadmin lookup
         .mockResolvedValueOnce({ id: "seed-ad" }) // ensureDefaultUsers: admin lookup
         .mockResolvedValueOnce({

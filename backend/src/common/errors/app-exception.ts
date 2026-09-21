@@ -33,6 +33,19 @@ export class NotFoundError extends AppException {
   }
 }
 
+/**
+ * The caller is who they say they are, but is not at a permitted location.
+ *
+ * 403 rather than 401: re-entering an OTP will not help, and the frontend
+ * must not treat this as a session problem and bounce them to a fresh login
+ * loop. The message carries the distance, so it is shown verbatim.
+ */
+export class GeofenceBlockedError extends AppException {
+  constructor(message: string) {
+    super(HttpStatus.FORBIDDEN, "GEOFENCE_BLOCKED", message);
+  }
+}
+
 /** Authenticated, but this role may not perform the action at all. */
 export class ForbiddenRoleError extends AppException {
   constructor(message = "You do not have permission to perform this action") {

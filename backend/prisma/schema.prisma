@@ -250,6 +250,34 @@ enum AuditStatus {
   FAILED
 }
 
+// Per-role, so one portal can be switched to real enforcement while the rest
+// keep recording. OBSERVE never blocks a login — it records the decision that
+// ENFORCE *would* have made, which is how a radius gets set from real readings
+// instead of guessed at.
+enum GeofenceMode {
+  OBSERVE
+  ENFORCE
+}
+
+enum GeofenceDecision {
+  // Inside an active site's radius, with an accurate enough fix.
+  ALLOWED
+  // Outside every active site.
+  OUTSIDE
+  // The fix came back too imprecise to place the person either way — a metal
+  // roof or a basement usually. Distinct from OUTSIDE: it means "cannot tell",
+  // not "is elsewhere", and the two need to be told apart in the log.
+  INACCURATE
+  // No coordinates at all: permission denied, GPS off, or a browser timeout.
+  UNAVAILABLE
+  // A named, time-limited exemption covered this person.
+  EXEMPT
+  // The role carries no geofence (Admin/Superadmin, or a policy switched off).
+  NOT_ENFORCED
+  // No active site rows exist. Deliberately allowed — see GeofenceService.
+  NO_SITE_CONFIGURED
+}
+
 enum NotificationTargetType {
   USER
   ROLE
@@ -328,25 +356,25 @@ model UserPermissionOverride {
 // ─────────────────────────────────────────────────────────────────────────
 
 model User {
-  id          String       @id @default(uuid())
-  empId       String       @unique // EMP-NNN
-  firstName   String
-  lastName    String
-  mobile      String       @unique
-  email       String?
-  role        UserRole
+  id              String       @id @default(uuid())
+  empId           String       @unique // EMP-NNN
+  firstName       String
+  lastName        String
+  mobile          String       @unique
+  email           String?
+  role            UserRole
   // Extra portals this person may switch into besides their primary `role`.
   // The primary role is what they land on when only one portal is assigned;
   // with more than one, login shows a portal picker (see /auth/switch-role).
-  additionalRoles UserRole[] @default([])
+  additionalRoles UserRole[]   @default([])
   // The access level for the PRIMARY `role`, and the fallback for any assigned
   // portal with no `portalAccess` row of its own. Per-portal levels live in
   // UserPortalAccess — resolve with accessLevelFor(), never read this directly
   // for a session, because one person can be trusted differently in each portal.
-  accessLevel AccessLevel  @default(FULL_ACCESS)
-  status      ActiveStatus @default(ACTIVE)
-  dateAdded   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  accessLevel     AccessLevel  @default(FULL_ACCESS)
+  status          ActiveStatus @default(ACTIVE)
+  dateAdded       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   // Set when this User's role is WEAVER — links to the actual Weaver record
   // auto-created alongside it, so the roster shows up in the Weavers module
@@ -354,41 +382,43 @@ model User {
   linkedWeaverId String? @unique
   linkedWeaver   Weaver? @relation(fields: [linkedWeaverId], references: [id])
 
-  permissionOverrides      UserPermissionOverride[]
-  portalAccess             UserPortalAccess[]
-  sentWhatsAppMessages     WhatsAppMessage[]
-  auditLogs                AuditLog[]
-  actionLogs               ActionLog[]
-  notifications            Notification[]
-  issuedMaterialIssues     MaterialIssueRecord[]    @relation("IssuedBy")
-  receivedMaterialReturns  MaterialReturnRecord[]   @relation("ReceivedBy")
-  addedPurchases           Purchase[]               @relation("PurchaseAddedBy")
-  inspectedQcRecords       QcRecord[]               @relation("InspectedBy")
-  assignedFinishings       FinishingAssignment[]    @relation("AssignedBy")
-  dispatchedRecords        DispatchRecord[]         @relation("DispatchedBy")
-  shopReceipts             ShopReceipt[]            @relation("ShopReceivedBy")
-  raisedQuotations         Quotation[]              @relation("RaisedBy")
-  requestedPurchases       PurchaseRequest[]        @relation("RequestedBy")
-  decidedPurchases         PurchaseRequest[]        @relation("DecidedBy")
-  decidedWarpRequests      WarpRequest[]            @relation("DecidedWarpRequests")
-  requestedRateChanges     RateChangeRequest[]      @relation("RequestedRateChanges")
-  decidedRateChanges       RateChangeRequest[]      @relation("DecidedRateChanges")
-  reportDownloads          ReportDownloadHistory[]
-  createdPurchaseOrders    PurchaseOrder[]
-  receivedGrnReceipts      GrnReceipt[]
-  requestedSupplierReturns SupplierReturnRequest[]  @relation("RequestedSupplierReturns")
-  decidedSupplierReturns   SupplierReturnRequest[]  @relation("DecidedSupplierReturns")
-  receivedBatchSareeRows   BatchSareeRow[]          @relation("SareeReceivedBy")
-  talliedBatchSareeRows    BatchSareeRow[]          @relation("SareeTalliedBy")
-  createdBatches           Batch[]                  @relation("BatchCreatedBy")
-  talliedBatches           Batch[]                  @relation("BatchTalliedBy")
-  createdBulkOrders        BulkOrder[]              @relation("BulkOrderCreatedBy")
-  soldSales                SaleRecord[]             @relation("SaleSoldBy")
-  firmLinkedSales          SaleRecord[]             @relation("SaleFirmLinkedBy")
-  recordedSupplierPayments SupplierPayment[]        @relation("SupplierPaymentRecordedBy")
-  recordedWeaverPayments   WeaverPayment[]          @relation("WeaverPaymentRecordedBy")
-  recordedVendorPayments   VendorPayment[]          @relation("VendorPaymentRecordedBy")
-  recordedInvoicePayments  InvoicePayment[]         @relation("InvoicePaymentRecordedBy")
+  permissionOverrides       UserPermissionOverride[]
+  portalAccess              UserPortalAccess[]
+  sentWhatsAppMessages      WhatsAppMessage[]
+  auditLogs                 AuditLog[]
+  geofenceExemptions        GeofenceExemption[]      @relation("GeofenceExemptionUser")
+  grantedGeofenceExemptions GeofenceExemption[]      @relation("GeofenceExemptionGrantedBy")
+  actionLogs                ActionLog[]
+  notifications             Notification[]
+  issuedMaterialIssues      MaterialIssueRecord[]    @relation("IssuedBy")
+  receivedMaterialReturns   MaterialReturnRecord[]   @relation("ReceivedBy")
+  addedPurchases            Purchase[]               @relation("PurchaseAddedBy")
+  inspectedQcRecords        QcRecord[]               @relation("InspectedBy")
+  assignedFinishings        FinishingAssignment[]    @relation("AssignedBy")
+  dispatchedRecords         DispatchRecord[]         @relation("DispatchedBy")
+  shopReceipts              ShopReceipt[]            @relation("ShopReceivedBy")
+  raisedQuotations          Quotation[]              @relation("RaisedBy")
+  requestedPurchases        PurchaseRequest[]        @relation("RequestedBy")
+  decidedPurchases          PurchaseRequest[]        @relation("DecidedBy")
+  decidedWarpRequests       WarpRequest[]            @relation("DecidedWarpRequests")
+  requestedRateChanges      RateChangeRequest[]      @relation("RequestedRateChanges")
+  decidedRateChanges        RateChangeRequest[]      @relation("DecidedRateChanges")
+  reportDownloads           ReportDownloadHistory[]
+  createdPurchaseOrders     PurchaseOrder[]
+  receivedGrnReceipts       GrnReceipt[]
+  requestedSupplierReturns  SupplierReturnRequest[]  @relation("RequestedSupplierReturns")
+  decidedSupplierReturns    SupplierReturnRequest[]  @relation("DecidedSupplierReturns")
+  receivedBatchSareeRows    BatchSareeRow[]          @relation("SareeReceivedBy")
+  talliedBatchSareeRows     BatchSareeRow[]          @relation("SareeTalliedBy")
+  createdBatches            Batch[]                  @relation("BatchCreatedBy")
+  talliedBatches            Batch[]                  @relation("BatchTalliedBy")
+  createdBulkOrders         BulkOrder[]              @relation("BulkOrderCreatedBy")
+  soldSales                 SaleRecord[]             @relation("SaleSoldBy")
+  firmLinkedSales           SaleRecord[]             @relation("SaleFirmLinkedBy")
+  recordedSupplierPayments  SupplierPayment[]        @relation("SupplierPaymentRecordedBy")
+  recordedWeaverPayments    WeaverPayment[]          @relation("WeaverPaymentRecordedBy")
+  recordedVendorPayments    VendorPayment[]          @relation("VendorPaymentRecordedBy")
+  recordedInvoicePayments   InvoicePayment[]         @relation("InvoicePaymentRecordedBy")
 
   @@index([role])
 }
@@ -1724,8 +1754,80 @@ model AuditLog {
   failReason String?
   createdAt  DateTime    @default(now())
 
+  // Where the login was attempted from, and what the geofence made of it.
+  // All nullable: rows written before this existed have none, and an
+  // unenforced role (Admin/Superadmin) is never asked for a position, so
+  // nothing is recorded for them.
+  latitude         Float?
+  longitude        Float?
+  // The fix's own error estimate in metres, as the browser reported it. Kept
+  // because a distance means nothing without it: 40m from the centre reads
+  // very differently at +/-10m than at +/-300m.
+  accuracyMeters   Float?
+  // Metres from the nearest active site at the time. Recorded even when the
+  // decision allowed the login, so the radius can be tuned against real data.
+  distanceMeters   Float?
+  geofenceDecision GeofenceDecision?
+  // The mode in force when the decision was made, so an OBSERVE-mode row is
+  // never mistaken later for one that actually blocked someone.
+  geofenceMode     GeofenceMode?
+
   @@index([userId])
   @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Geofencing — staff portals are usable only from the firm's premises
+// ─────────────────────────────────────────────────────────────────────────
+
+/// One permitted place. Coordinates come from a location pin taken on site;
+/// radius is metres from that point. Kept as rows rather than constants so the
+/// pin can be moved and the radius retuned without a deploy.
+model GeofenceSite {
+  id                String   @id @default(uuid())
+  label             String
+  latitude          Float
+  longitude         Float
+  /// Metres from (latitude, longitude) that count as on site.
+  radiusMeters      Int      @default(100)
+  /// Fixes reporting a worse error than this are treated as INACCURATE rather
+  /// than believed. Without it a +/-500m reading from indoors would "prove"
+  /// someone is on site when it proves nothing at all.
+  maxAccuracyMeters Int      @default(75)
+  active            Boolean  @default(true)
+  /// Free text for where the pin came from — which corner, who sent it, when.
+  sourceNote        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([active])
+}
+
+/// One row per role that the geofence knows about. A role with no row here is
+/// not geofenced at all, which is how ADMIN and SUPERADMIN stay unrestricted:
+/// by having no row, not by a special case in the code.
+model GeofenceRolePolicy {
+  role      UserRole     @id
+  enforced  Boolean      @default(true)
+  mode      GeofenceMode @default(OBSERVE)
+  updatedAt DateTime     @updatedAt
+}
+
+/// Lets a named person work off site for a bounded period. Always expires —
+/// there is no permanent exemption, because that is what the role policy is
+/// for and an exemption that never lapses is how a temporary decision becomes
+/// a permanent hole.
+model GeofenceExemption {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation("GeofenceExemptionUser", fields: [userId], references: [id], onDelete: Cascade)
+  reason      String
+  expiresAt   DateTime
+  grantedById String?
+  grantedBy   User?    @relation("GeofenceExemptionGrantedBy", fields: [grantedById], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([userId, expiresAt])
 }
 
 model ActionLog {
