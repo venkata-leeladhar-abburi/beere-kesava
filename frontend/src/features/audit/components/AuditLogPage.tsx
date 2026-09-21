@@ -43,7 +43,7 @@ export function AuditLogPage() {
 
   const { data: staffData } = useQuery({
     queryKey: ["audit-log", "staff-directory"],
-    queryFn: () => usersApi.list({ pageSize: 200 }),
+    queryFn: () => usersApi.list(),
     enabled: useAuthGate("admin", "superadmin"),
   });
 

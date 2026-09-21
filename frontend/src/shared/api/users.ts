@@ -125,16 +125,38 @@ export interface UpdateUserPayload {
   additionalRoles?: BackendRole[];
 }
 
+// ListUsersQueryDto caps pageSize at 100 — asking for more is a 400, not a
+// bigger page, and clamping alone would silently drop everyone past the first
+// hundred. Call sites use the result as the whole directory (filter dropdowns,
+// duplicate-mobile checks), so walk every backend page and merge them.
+const USERS_MAX_PAGE_SIZE = 100;
+
 export const usersApi = {
-  list: (params: number | { pageSize?: number; role?: BackendRole; search?: string } = 100) => {
+  list: async (
+    params: number | { pageSize?: number; role?: BackendRole; search?: string } = USERS_MAX_PAGE_SIZE,
+  ): Promise<PaginatedResponse<BackendUser>> => {
     // Historically this took a bare pageSize; kept working so existing call
     // sites don't have to change, with an options object for the staff
     // directories that need a role/search filter.
     const opts = typeof params === "number" ? { pageSize: params } : params;
-    const query = new URLSearchParams({ pageSize: String(opts.pageSize ?? 100) });
-    if (opts.role) query.set("role", opts.role);
-    if (opts.search) query.set("search", opts.search);
-    return apiClient.get<PaginatedResponse<BackendUser>>(`/users?${query.toString()}`);
+    const pageSize = Math.min(Math.max(opts.pageSize ?? USERS_MAX_PAGE_SIZE, 1), USERS_MAX_PAGE_SIZE);
+    const fetchPage = (page: number) => {
+      const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+      if (opts.role) query.set("role", opts.role);
+      if (opts.search) query.set("search", opts.search);
+      return apiClient.get<PaginatedResponse<BackendUser>>(`/users?${query.toString()}`);
+    };
+
+    const first = await fetchPage(1);
+    const items = [...first.items];
+    let page = 1;
+    while (items.length < first.total) {
+      page += 1;
+      const next = await fetchPage(page);
+      if (next.items.length === 0) break;
+      items.push(...next.items);
+    }
+    return { items, total: first.total, page: 1, pageSize: items.length };
   },
 
   create: (payload: CreateUserPayload) => apiClient.post<BackendUser>("/users", payload),
