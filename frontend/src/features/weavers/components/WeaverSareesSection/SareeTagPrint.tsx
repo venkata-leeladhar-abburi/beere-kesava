@@ -87,17 +87,17 @@ const ellipsis = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "no
 /** Barcode + the code printed underneath, the two things a tag exists for.
  *  The generator's own baked-in text is suppressed (withText: false) — at this
  *  size printing the code twice just costs the bars their height. */
-function TileCode({ code }: { code: string }) {
+function TileCode({ code, barsEm = 9.4, maxCodeEm = 2.5 }: { code: string; barsEm?: number; maxCodeEm?: number }) {
   const stock = useTileStock();
   // Shrink to fit rather than ellipsise — a half-printed id is unreadable and
   // the barcode's own caption is switched off.
-  const size = monoFitEm(code.length, innerWidthEm(stock), 2.5, 1.5);
+  const size = monoFitEm(code.length, innerWidthEm(stock), maxCodeEm, 1.5);
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <img
         src={labelsApi.barcodeUrl(code, { withText: false })}
         alt={`Barcode for ${code}`}
-        style={{ width: "100%", height: "9.4em", objectFit: "contain", display: "block" }}
+        style={{ width: "100%", height: `${barsEm}em`, objectFit: "contain", display: "block" }}
       />
       <span
         style={{
@@ -111,72 +111,135 @@ function TileCode({ code }: { code: string }) {
   );
 }
 
-function TagCard({ r }: { r: SareeTagData }) {
-  if (r.isExternal) return <ExternalTagCard r={r} />;
-
-  const typeLabel = r.sareeTypeCode ? `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}` : "";
-  const weaverLine = [r.weaverName || null, r.loomNumber != null ? `Loom ${r.loomNumber}` : null].filter(Boolean).join(" · ");
-  const date = ddmmyy(r.date);
-  // One detail line only — a 25mm sticker has room for the code and a single
-  // line of context, not the five rows the old A4 tile carried.
-  const left = [r.designCode || null, typeLabel || null].filter(Boolean).join(" · ") || weaverLine || "—";
-  const right = r.retailPrice != null
-    ? formatMoney(rupees(r.retailPrice))
-    : (r.weight != null ? `${r.weight}g` : (r.color || date || ""));
-
+/** The tag body both variants share: the barcode and its code at the top,
+ *  then up to three lines of context on the left against one large figure on
+ *  the right — the selling price on an external piece, the received date on a
+ *  weaver piece.
+ *
+ *  Neither variant prints the shop name any more — on a 50x25mm sticker that
+ *  line cost more room than it earned, and these are read at the counter
+ *  where the shop is not in doubt. The type gets the space instead, sized so
+ *  the sticker is readable at arm's length rather than merely legible. */
+function TagLayout({
+  code, lines, feature,
+}: {
+  code: string;
+  /** Rendered top to bottom in the left column; `mono` for codes and ciphers,
+   *  `emphasis` to print one line larger than its neighbours. */
+  lines: { text: string; mono?: boolean; emphasis?: boolean }[];
+  /** The one big thing on the right, with an optional caption over it. */
+  feature: { text: string; label?: string; em?: number };
+}) {
   return (
     <TileFrame>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: "1em", alignItems: "baseline" }}>
-        <span style={{ fontFamily: "var(--font-display, sans-serif)", fontWeight: 700, fontSize: "1.9em", ...ellipsis }}>
-          Beere Kesava &amp; Brothers Silks
-        </span>
-        <span style={{ fontFamily: "var(--font-code, ui-monospace, monospace)", fontSize: "1.7em", flexShrink: 0 }}>
-          {r.batchId || ""}
-        </span>
+      {/* Deliberately short bars — the detail lines and the big figure below
+          need the height, and the scanner reads these fine. */}
+      <div style={{ marginTop: "0.4em" }}>
+        <TileCode code={code} barsEm={6.6} maxCodeEm={2.6} />
       </div>
 
-      <TileCode code={r.sareeId} />
-
-      <div style={{ display: "flex", justifyContent: "space-between", gap: "1em", fontFamily: "var(--font-ui, sans-serif)", fontSize: "1.8em" }}>
-        <span style={{ minWidth: 0, ...ellipsis }}>{left}</span>
-        <span style={{ flexShrink: 0, fontWeight: 700 }}>{right}</span>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: "0.8em" }}>
+        <div
+          style={{
+            minWidth: 0, display: "flex", flexDirection: "column", gap: "0.1em",
+            fontFamily: "var(--font-ui, sans-serif)", fontSize: "2.3em",
+          }}
+        >
+          {lines.map((line, i) => (
+            <span
+              // eslint-disable-next-line react/no-array-index-key -- fixed-order detail lines, never reordered
+              key={i}
+              style={{
+                ...ellipsis,
+                ...(line.mono ? { fontFamily: "var(--font-code, ui-monospace, monospace)", fontWeight: 700, letterSpacing: "0.04em" } : null),
+                ...(line.emphasis ? { fontSize: "1.45em" } : null),
+              }}
+            >
+              {line.text}
+            </span>
+          ))}
+        </div>
+        <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+          {feature.label && (
+            <span
+              style={{
+                fontFamily: "var(--font-ui, sans-serif)", fontSize: "1.7em",
+                fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase",
+              }}
+            >
+              {feature.label}
+            </span>
+          )}
+          {/* Inter with tabular figures rather than a display serif: on a
+              203dpi thermal head a grotesque's even stroke weight survives
+              the print better, and equal-width digits stop the figure from
+              shifting between one tag and the next. */}
+          <span
+            style={{
+              fontFamily: "var(--font-ui, sans-serif)", fontWeight: 700,
+              fontSize: `${feature.em ?? 6.4}em`, lineHeight: 1,
+              fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em",
+            }}
+          >
+            {feature.text}
+          </span>
+        </div>
       </div>
     </TileFrame>
   );
 }
 
-/** External-purchase piece tag — its own barcode plus invoice / serial /
- *  ciphered cost / selling price. Cost is cipher-encoded (see costCipher.ts);
- *  selling price is plain rupees. */
+/** Own-factory / weaver piece tag — batch, saree type and weight on the left
+ *  against the date the piece came in from the weaver or loom.
+ *
+ *  No price on this variant: these stickers go on at receipt, before the
+ *  piece is priced for the counter. */
+function TagCard({ r }: { r: SareeTagData }) {
+  if (r.isExternal) return <ExternalTagCard r={r} />;
+
+  const typeLabel = [r.sareeTypeCode || null, r.sareeTypeName || null].filter(Boolean).join(" · ");
+  const weaverLine = [r.weaverName || null, r.loomNumber != null ? `Loom ${r.loomNumber}` : null].filter(Boolean).join(" · ");
+
+  return (
+    <TagLayout
+      code={r.sareeId}
+      lines={[
+        { text: r.batchId || "—", mono: true },
+        // Falls back to the weaver and loom when a piece carries no saree
+        // type, so the line is never blank on a printed sticker.
+        { text: typeLabel || weaverLine || "—" },
+        { text: r.weight != null ? `${r.weight}g` : (r.color || "—") },
+      ]}
+      // DDMMYY, e.g. 20 Sep 2026 -> 200926 — the form the designers already
+      // use on their own paperwork.
+      // No caption over it: six digits in that corner are unambiguous on a
+      // tag that carries no other number, and the room goes to the date.
+      feature={{ text: ddmmyy(r.date) || "—", em: 6 }}
+    />
+  );
+}
+
+/** External-purchase piece tag — invoice · serial and the ciphered cost on the
+ *  left, against the plain selling price. */
 function ExternalTagCard({ r }: { r: SareeTagData }) {
   const typeLabel = r.sareeTypeCode
     ? `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}`
     : (r.sareeTypeName || "");
-  const left = [r.invoiceNumber || null, r.serial || null].filter(Boolean).join(" · ") || typeLabel || "—";
+  const invoiceLine = [r.invoiceNumber || null, r.serial || null].filter(Boolean).join(" · ") || typeLabel || "—";
 
   return (
-    <TileFrame>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: "1em", alignItems: "baseline" }}>
-        <span style={{ fontFamily: "var(--font-display, sans-serif)", fontWeight: 700, fontSize: "1.9em", ...ellipsis }}>
-          Beere Kesava &amp; Brothers Silks
-        </span>
-        {/* Cost price is never printed as a plain number — encoded via the
-            LORD GANESH letter cipher (see costCipher.ts) so a customer can't
-            read it while staff who know the phrase can decode it back. */}
-        <span style={{ fontFamily: "var(--font-code, ui-monospace, monospace)", fontSize: "1.7em", letterSpacing: "0.04em", flexShrink: 0 }}>
-          {r.costPrice != null ? encodeCostCipher(r.costPrice) : ""}
-        </span>
-      </div>
-
-      <TileCode code={r.sareeId} />
-
-      <div style={{ display: "flex", justifyContent: "space-between", gap: "1em", fontFamily: "var(--font-ui, sans-serif)", fontSize: "1.8em" }}>
-        <span style={{ minWidth: 0, ...ellipsis }}>{left}</span>
-        <span style={{ flexShrink: 0, fontWeight: 700 }}>
-          {r.sellingPrice != null ? formatMoney(rupees(r.sellingPrice)) : ""}
-        </span>
-      </div>
-    </TileFrame>
+    <TagLayout
+      code={r.sareeId}
+      lines={[
+        { text: invoiceLine },
+        // Cost price is never printed as a plain number — encoded via the LORD
+        // GANESH letter cipher (see costCipher.ts) so a customer can't read it
+        // while staff who know the phrase can decode it back. Printed larger
+        // than the invoice line: it is what staff actually read off the tag.
+        { text: r.costPrice != null ? encodeCostCipher(r.costPrice) : "—", mono: true, emphasis: true },
+      ]}
+      feature={{ label: "Net Price", text: r.sellingPrice != null ? formatMoney(rupees(r.sellingPrice)) : "" }}
+    />
   );
 }
 

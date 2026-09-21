@@ -29,6 +29,7 @@ import {
   type LedgerEntry,
 } from "./shared/ui/document";
 import { toPaise } from "./lib/gst";
+import { SareeTagPreview } from "./features/weavers";
 
 const items: InvoiceLineItem[] = [
   { id: "SAR-DVM-10241", description: "Kanchipuram Pure Silk · Peacock Zari Border", batchLabel: "BATCH-2026-04", ratePaise: toPaise(18500) },
@@ -174,6 +175,56 @@ const statement = (
   />
 );
 
+// `?doc=tag` — the physical saree sticker at 3x, external-purchase variant.
+// Same component the printer gets, so the paperwork block and the price size
+// can be judged against a real 50x25mm tile instead of guessed at.
+const sareeTag = (
+  <div style={{ display: "flex", justifyContent: "center", padding: 32 }}>
+    <SareeTagPreview
+      tag={{
+        sareeId: "JJSI-0912-001-01",
+        isExternal: true,
+        invoiceNumber: "0912",
+        serial: "01",
+        supplierShortName: "JJSI",
+        costPrice: 12450,
+        sellingPrice: 18500,
+      }}
+    />
+  </div>
+);
+
+// `?doc=tag-weaver` — the own-factory / weaver variant of the same sticker,
+// kept beside the external one so a change to either can be checked against
+// the other rather than in isolation.
+const weaverTag = (
+  <div style={{ display: "flex", justifyContent: "center", padding: 32 }}>
+    <SareeTagPreview
+      tag={{
+        sareeId: "RAVI-L2-001",
+        batchId: "B-2026-04",
+        designCode: "DSN-4412",
+        sareeTypeCode: "KJV",
+        sareeTypeName: "Kanjivaram",
+        weaverName: "Ravi Kumar",
+        loomNumber: 2,
+        weight: 842,
+        date: "2026-09-02",
+        retailPrice: 21500,
+      }}
+    />
+  </div>
+);
+
+// `?doc=tags` — both sticker variants side by side, for comparing the shared
+// layout across them in one glance.
+const bothTags = (
+  <div style={{ display: "flex", justifyContent: "center", alignItems: "flex-start", gap: 48, flexWrap: "wrap", padding: 32 }}>
+    {weaverTag}
+    {sareeTag}
+  </div>
+);
+
 const DOC = new URLSearchParams(location.search).get("doc");
 const activeDoc =
   DOC === "po" ? purchaseOrder :
@@ -181,6 +232,9 @@ const activeDoc =
   DOC === "dc" ? challan :
   DOC === "receipt" ? receipt :
   DOC === "soa" ? statement :
+  DOC === "tag" ? sareeTag :
+  DOC === "tag-weaver" ? weaverTag :
+  DOC === "tags" ? bothTags :
   invoice;
 
 // useDocument() → useDownloadsAllowed() → useAuth(), which throws outside a
