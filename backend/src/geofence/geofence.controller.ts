@@ -1,16 +1,18 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from "@nestjs/common";
 import { AdminOnly } from "../auth/decorators/require-roles.decorator";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
 import { NotFoundError } from "../common/errors";
-import { GeofenceMode, UserRole } from "../generated/prisma/client";
+import { AuditStatus, GeofenceMode, UserRole } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import {
   CreateGeofenceExemptionDto,
   CreateGeofenceSiteDto,
+  ListReadingsQueryDto,
   UpdateGeofenceSiteDto,
   UpsertGeofencePolicyDto,
 } from "./dto/geofence-admin.dto";
+import { summariseReadings } from "./readings";
 
 /**
  * Administration of the location restriction. Every route is Admin/Superadmin
@@ -113,6 +115,84 @@ export class GeofenceController {
         grantedById: actor.id ?? null,
       },
     });
+  }
+
+  /**
+   * What the geofence has actually been seeing.
+   *
+   * The point of OBSERVE mode: these rows are the evidence a radius gets set
+   * from. Only sign-ins that were judged are returned — a row with no
+   * decision belongs to an unrestricted role, which is never asked for a
+   * position and has nothing to report.
+   */
+  @Get("readings")
+  async readings(@Query() query: ListReadingsQueryDto) {
+    const days = query.days ?? 30;
+    const limit = query.limit ?? 100;
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const rows = await this.prisma.auditLog.findMany({
+      where: {
+        createdAt: { gte: since },
+        geofenceDecision: { not: null },
+        ...(query.role ? { user: { role: query.role } } : {}),
+      },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      select: {
+        id: true,
+        createdAt: true,
+        status: true,
+        device: true,
+        failReason: true,
+        latitude: true,
+        longitude: true,
+        accuracyMeters: true,
+        distanceMeters: true,
+        geofenceDecision: true,
+        geofenceMode: true,
+        user: { select: { id: true, firstName: true, lastName: true, empId: true, role: true } },
+      },
+    });
+
+    // The radius these readings are being judged against. Falls back to the
+    // schema default when no site exists, so the summary still renders rather
+    // than dividing by an absent configuration.
+    const site = await this.prisma.geofenceSite.findFirst({ where: { active: true } });
+    const radiusMeters = site?.radiusMeters ?? 100;
+
+    const { summary, buckets } = summariseReadings(
+      rows.map((row) => ({
+        distanceMeters: row.distanceMeters,
+        accuracyMeters: row.accuracyMeters,
+        decision: row.geofenceDecision,
+      })),
+      radiusMeters,
+    );
+
+    return {
+      days,
+      radiusMeters,
+      siteLabel: site?.label ?? null,
+      summary,
+      buckets,
+      rows: rows.map((row) => ({
+        id: row.id,
+        at: row.createdAt,
+        signedIn: row.status === AuditStatus.LOGIN,
+        staffName: row.user ? `${row.user.firstName} ${row.user.lastName}` : null,
+        empId: row.user?.empId ?? null,
+        role: row.user?.role ?? null,
+        device: row.device,
+        failReason: row.failReason,
+        latitude: row.latitude,
+        longitude: row.longitude,
+        accuracyMeters: row.accuracyMeters,
+        distanceMeters: row.distanceMeters,
+        decision: row.geofenceDecision,
+        mode: row.geofenceMode,
+      })),
+    };
   }
 
   @Delete("exemptions/:id")

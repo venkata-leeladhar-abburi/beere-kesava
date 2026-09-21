@@ -15,6 +15,8 @@ export const AuditLogPage = lazy(() => import("../../../audit/components/AuditLo
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 export const LabelSettingsPage = lazy(() => import("../../../settings/components/LabelSettingsPage").then(m => ({ default: m.LabelSettingsPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
+export const GeofenceSettingsPage = lazy(() => import("../../../settings/components/GeofenceSettingsPage").then(m => ({ default: m.GeofenceSettingsPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 export const ExternalPurchasesPage = lazy(() => import("../../../inventory/components/ExternalPurchasesPage").then(m => ({ default: m.ExternalPurchasesPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 export const SupplierReturnsPage = lazy(() => import("../../../inventory/components/SupplierReturnsPage").then(m => ({ default: m.SupplierReturnsPage })));

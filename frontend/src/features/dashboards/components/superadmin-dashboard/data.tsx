@@ -84,6 +84,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { key: "Approvals", label: "Approvals", sa: true },
       { key: "AuditLog", label: "Audit Log", sa: true },
       { key: "LabelSettings", label: "Label Settings", sa: true },
+      { key: "GeofenceSettings", label: "Sign-in Location", sa: true },
     ]
   },
 ];

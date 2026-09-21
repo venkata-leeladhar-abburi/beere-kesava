@@ -5,3 +5,4 @@
 // warning while existing cross-feature imports are migrated over.
 
 export * from "./components/LabelSettingsPage";
+export * from "./components/GeofenceSettingsPage";

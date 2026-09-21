@@ -118,3 +118,24 @@ export class CreateGeofenceExemptionDto {
   @IsDateString()
   expiresAt!: string;
 }
+
+export class ListReadingsQueryDto {
+  /** How far back to look. Defaults to 30 days in the controller. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(365)
+  days?: number;
+
+  @IsOptional()
+  @IsEnum(UserRole)
+  role?: UserRole;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(500)
+  limit?: number;
+}

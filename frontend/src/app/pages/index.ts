@@ -27,6 +27,7 @@ export { RatesPricingPage }       from "../../features/pricing/components/RatesP
 export { ApprovalsPage }          from "../../features/purchasing/components/ApprovalsPage";
 export { AuditLogPage }           from "../../features/audit/components/AuditLogPage";
 export { LabelSettingsPage }      from "../../features/settings/components/LabelSettingsPage";
+export { GeofenceSettingsPage }   from "../../features/settings/components/GeofenceSettingsPage";
 
 // Worker pages
 export { WorkerGRN as WorkerGRNPage }             from "../../features/portals/components/worker/WorkerGRN";

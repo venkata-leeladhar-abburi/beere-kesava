@@ -1,3 +1,4 @@
+import { Logger } from "@nestjs/common";
 import { GeofenceDecision, GeofenceMode, UserRole } from "../generated/prisma/client";
 import { GeofenceService } from "./geofence.service";
 
@@ -174,5 +175,30 @@ describe("GeofenceService.auditFieldsFor", () => {
       accuracyMeters: null,
       distanceMeters: null,
     });
+  });
+});
+
+describe("GeofenceService when its own tables are missing", () => {
+  it("allows the sign-in instead of locking the firm out", async () => {
+    // The deploy-ordering hazard: this code can reach production before
+    // `prisma db push` creates the geofence tables, because the Render build
+    // runs no migration step. A throw here would 500 every single login.
+    const prisma = {
+      geofenceRolePolicy: {
+        findUnique: jest.fn().mockRejectedValue(
+          new Error('The table `public.GeofenceRolePolicy` does not exist in the current database.'),
+        ),
+      },
+      geofenceSite: { findMany: jest.fn() },
+      geofenceExemption: { findFirst: jest.fn() },
+    };
+    const service = new GeofenceService(prisma as never);
+    jest.spyOn(Logger.prototype, "error").mockImplementation(() => undefined);
+
+    const result = await service.evaluate({ role: UserRole.WORKER, fix: OFF_SITE });
+
+    expect(result.allowed).toBe(true);
+    expect(result.decision).toBe(GeofenceDecision.NOT_ENFORCED);
+    expect(prisma.geofenceSite.findMany).not.toHaveBeenCalled();
   });
 });

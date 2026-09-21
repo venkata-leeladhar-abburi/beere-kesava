@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { GeofenceDecision, GeofenceMode, UserRole } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { haversineMeters, isUsableFix } from "./geo.util";
@@ -34,6 +34,8 @@ const NOT_ENFORCED: GeofenceEvaluation = {
 
 @Injectable()
 export class GeofenceService {
+  private readonly logger = new Logger(GeofenceService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   /**
@@ -56,7 +58,23 @@ export class GeofenceService {
     // unrestricted by having no row, rather than by a hardcoded exception —
     // so "who is exempt" is answerable from the database, and adding a new
     // unrestricted role is a data change, not a code change.
-    const policy = await this.prisma.geofenceRolePolicy.findUnique({ where: { role } });
+    //
+    // Wrapped because this runs on the sign-in path and the deploy that ships
+    // it can reach production before `prisma db push` creates these tables —
+    // the Render build command runs no migration step, so the ordering is
+    // manual. An unreadable policy table must mean "this feature is not
+    // configured yet", not "nobody in the firm can log in".
+    let policy: { enforced: boolean; mode: GeofenceMode } | null;
+    try {
+      policy = await this.prisma.geofenceRolePolicy.findUnique({ where: { role } });
+    } catch (error) {
+      this.logger.error(
+        `Geofence policy lookup failed for ${role}; allowing the sign-in. ` +
+          `If this persists, the geofence tables are probably missing — run 'npm run db:push'.`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      return NOT_ENFORCED;
+    }
     if (!policy || !policy.enforced) return NOT_ENFORCED;
 
     const { mode } = policy;

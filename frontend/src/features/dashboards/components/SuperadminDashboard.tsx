@@ -19,7 +19,7 @@ import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 import { SHOP_SCOPE, WORKER_SCOPE } from "@/features/users";
 import {
   RatesPricingPage, DesignLibraryPage, BatchCreationPage, ApprovalsPage, AuditLogPage,
-  LabelSettingsPage, ExternalPurchasesPage, SupplierReturnsPage, AddUserPage, IssueMaterialPage, ReturnMaterialPage, MaterialsPage,
+  LabelSettingsPage, GeofenceSettingsPage, ExternalPurchasesPage, SupplierReturnsPage, AddUserPage, IssueMaterialPage, ReturnMaterialPage, MaterialsPage,
   WeaversPage, ProductionPage, PaymentsPage, ReportsPage, CustomersPage, VendorsPage,
   SuppliersPage, FactoryLoomPage, FirmsPage, InventoryPage, QcHistoryPage, NotificationsPage,
   WorkerGRN, AllWeaversPage, AllStockPage, AllOrdersPage, ProductionHistoryPage,
@@ -156,6 +156,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       case "ShopStaff": return <StaffDirectoryPage scope={SHOP_SCOPE} />;
       case "AccountantStaff": return <AccountantDirectoryPage />;
       case "LabelSettings": return <LabelSettingsPage />;
+      case "GeofenceSettings": return <GeofenceSettingsPage />;
       case "ExternalPurchases": return <ExternalPurchasesPage />;
       case "SupplierReturns": return <SupplierReturnsPage />;
       case "IssueMaterial": return <IssueMaterialPage />;

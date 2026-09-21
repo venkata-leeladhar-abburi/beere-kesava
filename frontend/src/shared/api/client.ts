@@ -248,6 +248,10 @@ export const apiClient = {
     request<T>(path, { method: "POST", body: JSON.stringify(payload) }),
   patch: <T>(path: string, payload: unknown) =>
     request<T>(path, { method: "PATCH", body: JSON.stringify(payload) }),
+  // For endpoints that replace a record wholesale rather than merge fields
+  // into it — an upsert keyed by something in the path, typically.
+  put: <T>(path: string, payload: unknown) =>
+    request<T>(path, { method: "PUT", body: JSON.stringify(payload) }),
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
   postForm: <T>(path: string, formData: FormData) => requestForm<T>(path, formData),
 };
