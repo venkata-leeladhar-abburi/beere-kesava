@@ -47,6 +47,21 @@ const ROI_UPSCALE = 2;
 const DECODE_INTERVAL_MS = 150;
 
 /**
+ * How long to keep trying before admitting the tag may be unreadable.
+ *
+ * Tags printed before the label fix (see SareeTagPrint.tsx) squeezed their
+ * Code128 into ~31mm of a 50mm sticker, which a 203dpi thermal head prints at
+ * roughly 1.3 dots per module — the bar ratios are destroyed on the paper
+ * itself, and no amount of camera resolution, upscaling or binarizing gets
+ * them back. Those stickers will never decode, and until this timeout existed
+ * the scanner simply sat there looking like it was still working while a
+ * staff member held a saree up to it at the counter. Eight seconds is long
+ * enough that a readable tag has decoded many times over, short enough not to
+ * strand anyone.
+ */
+const UNREADABLE_AFTER_MS = 8_000;
+
+/**
  * A saree tag carries two codes: a Code128 barcode (decodes to the bare
  * saree id) and a QR code (decodes to a full "<FRONTEND_URL>/scan?id=<id>"
  * link, so a generic phone camera can open it directly — see
@@ -98,11 +113,13 @@ export function CameraScannerModal({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [unreadable, setUnreadable] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
     setError(null);
+    setUnreadable(false);
     if (!canvasRef.current) canvasRef.current = document.createElement("canvas");
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -115,6 +132,7 @@ export function CameraScannerModal({
     };
 
     const startDecodeLoop = (video: HTMLVideoElement) => {
+      const startedAt = Date.now();
       intervalRef.current = setInterval(() => {
         if (cancelled || !ctx || video.videoWidth === 0) return;
         const sx = video.videoWidth * ROI_INSET.x;
@@ -134,6 +152,11 @@ export function CameraScannerModal({
           // cropped box — the normal steady state. Any other decode error
           // (a partial/blurred read, etc.) is likewise just "try again next
           // frame", so nothing here distinguishes them.
+          //
+          // The camera is deliberately left running: an old unreadable tag
+          // and a tag that simply is not in frame yet look identical from
+          // here, so this only ever adds a hint, never gives up for the user.
+          if (Date.now() - startedAt > UNREADABLE_AFTER_MS) setUnreadable(true);
         }
       }, DECODE_INTERVAL_MS);
     };
@@ -224,10 +247,31 @@ export function CameraScannerModal({
           )}
         </div>
 
-        <div style={{ padding: "12px 18px 16px" }}>
+        <div style={{ padding: "12px 18px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
           <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "rgba(255,253,249,0.6)" }}>
             {hint}
           </span>
+          {/* Nothing has decoded for a while. The camera keeps running — this
+              only points at the way out, because the most likely cause is a
+              tag printed before the label fix, which will never decode however
+              long it is held up. The id is printed in plain text under the
+              bars on every tag, so typing it always works. */}
+          {unreadable && !error && (
+            <span
+              role="status"
+              style={{
+                display: "flex", alignItems: "flex-start", gap: 8,
+                fontFamily: "'Inter', sans-serif", fontSize: 12, lineHeight: 1.45,
+                color: "#FFDFA0",
+              }}
+            >
+              <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+              <span>
+                Still can&apos;t read this tag. Older labels can&apos;t be scanned — close the
+                camera and type the ID printed under the barcode instead.
+              </span>
+            </span>
+          )}
         </div>
       </div>
     </div>
