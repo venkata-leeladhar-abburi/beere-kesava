@@ -1,9 +1,8 @@
 import * as React from "react";
 import {
-  useDocument, LabelSheet, useLabelStock, useTileStock, monoFitEm, innerWidthEm,
+  useDocument, LabelSheet, useLabelStock, TileCode,
   DEFAULT_LABEL_STOCK, type LabelStock,
 } from "../../../../shared/ui/document";
-import { labelsApi } from "../../../../shared/api/labels";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { encodeCostCipher } from "@/lib/domain/costCipher";
 
@@ -83,101 +82,6 @@ function TileFrame({ children }: { children: React.ReactNode }) {
 }
 
 const ellipsis = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } as const;
-
-/**
- * Narrow modules a Code128 symbol needs for `code`, as an upper bound: 11 per
- * character, plus the start and check characters (11 each) and the stop
- * pattern (13). Subset C pairs long digit runs into one character, so a code
- * with many digits comes out narrower than this — erring that way is the safe
- * direction, since the number only decides whether the tag falls back to a QR.
- */
-function code128Modules(code: string): number {
-  return 11 * (code.length + 2) + 13;
-}
-
-/**
- * The narrowest bar worth printing, in mm.
- *
- * A 203dpi thermal head lays down 0.125mm dots, so 0.21mm is about 1.7 dots
- * per module. Measured against a simulated print of the real generator
- * output: at 1.8 dots a 14-character id decodes, at 1.5 it does not.
- */
-const MIN_MODULE_MM = 0.21;
-
-/** A tile's usable inner width in mm — the stock width less TileFrame's
- *  1.2em padding on each side (1em is a 25th of the label height). */
-function innerWidthMm(stock: LabelStock): number {
-  return innerWidthEm(stock) * (stock.heightMm / 25);
-}
-
-/** Barcode + the code printed underneath, the two things a tag exists for.
- *  The generator's own baked-in text is suppressed (withText: false) — at this
- *  size printing the code twice just costs the bars their height. */
-function TileCode({ code, barsEm = 9.4, maxCodeEm = 2.5 }: { code: string; barsEm?: number; maxCodeEm?: number }) {
-  const stock = useTileStock();
-  // Shrink to fit rather than ellipsise — a half-printed id is unreadable and
-  // the barcode's own caption is switched off.
-  const size = monoFitEm(code.length, innerWidthEm(stock), maxCodeEm, 1.5);
-
-  // A long id — an external-purchase code carrying a long free-text invoice
-  // number, e.g. RAVI-INV-2026-118-07 — simply does not fit a scannable
-  // Code128 on a 50mm sticker: 275 modules across 47mm is 1.4 printer dots
-  // each, and it prints as an unreadable smear however the bars are laid
-  // out. A QR of the same id is square, so it spends its resolution in two
-  // dimensions instead of one and still decodes at this size. The scanner
-  // reads both (CameraScannerModal hints Code128 AND QR), so the tag simply
-  // prints whichever one can survive the printer.
-  const useQr = innerWidthMm(stock) / code128Modules(code) < MIN_MODULE_MM;
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-      {/* `fill`, deliberately, not `contain`.
-          A 14-character Code128 is ~189 narrow modules wide but only ~4.7x as
-          wide as it is tall, while the slot it sits in is ~6.8x as wide as it
-          is tall. `contain` therefore fitted the image by HEIGHT and left the
-          bars occupying barely 30mm of a 50mm sticker — a 0.165mm module, or
-          1.3 dots on a 203dpi thermal head, which prints as a smear no camera
-          can decode. `fill` spends the whole sticker width on the bars
-          instead (~0.24mm a module) and squashes only the bar HEIGHT, which a
-          1D symbology does not encode anything in. The quiet zone is baked
-          into the PNG (labels.service.ts) so it stretches along with them.
-          `pixelated` keeps the bar edges hard through that stretch rather
-          than letting the browser interpolate them into grey ramps. */}
-      {useQr ? (
-        // `bare: true` — the id alone. The default QR encodes a whole
-        // /scan?id= link, which at ~70 characters needs a version-5 symbol
-        // whose modules land on 1.6 printer dots and decodes only by luck at
-        // this size; the id alone fits a version-1/2 symbol that reads every
-        // time. Square, so it takes its height from the bar slot.
-        <img
-          src={labelsApi.qrCodeUrl(code, { bare: true })}
-          alt={`QR code for ${code}`}
-          style={{
-            width: `${barsEm}em`, height: `${barsEm}em`,
-            display: "block", imageRendering: "pixelated",
-          }}
-        />
-      ) : (
-        <img
-          src={labelsApi.barcodeUrl(code, { withText: false })}
-          alt={`Barcode for ${code}`}
-          style={{
-            width: "100%", height: `${barsEm}em`,
-            objectFit: "fill", display: "block", imageRendering: "pixelated",
-          }}
-        />
-      )}
-      <span
-        style={{
-          fontFamily: "var(--font-code, ui-monospace, monospace)", fontWeight: 700,
-          fontSize: `${size}em`, letterSpacing: "0.02em", maxWidth: "100%", ...ellipsis,
-        }}
-      >
-        {code}
-      </span>
-    </div>
-  );
-}
 
 /** The tag body both variants share: the barcode and its code at the top,
  *  then up to three lines of context on the left against one large figure on

@@ -90,18 +90,12 @@ export class LabelsService {
    * landing straight on that saree's MobileScanView instead of just
    * decoding inert text the way the Code128 barcode does.
    *
-   * `bare` drops the link and encodes the saree id alone. That is for the
-   * printed tag, where the code has to survive a ~7mm square on a 203dpi
-   * thermal head: the link form is 60-70 characters, which needs a version-5
-   * symbol whose modules land on ~1.6 printer dots and decodes only by luck,
-   * while the id alone fits a version-1/2 symbol that reads reliably at the
-   * same size. The in-app scanner accepts either (CameraScannerModal
-   * unwraps the link form); only a generic camera app loses the tap-through.
+   * Printed labels do NOT come through here — they draw <ScannableCode>,
+   * which renders SVG (sharp at any printer DPI, where this raster would be
+   * resampled) and encodes the bare id at error-correction level L, which the
+   * app's own reader detects far more reliably than this one's level M.
    */
-  async generateQrCodePng(code: string, bare = false): Promise<Buffer> {
-    if (bare) {
-      return QRCode.toBuffer(code, { type: "png", margin: 2, scale: 8 });
-    }
+  async generateQrCodePng(code: string): Promise<Buffer> {
     const frontendUrl = this.configService.get<string>("FRONTEND_URL") ?? "http://localhost:5175";
     const scanUrl = `${frontendUrl.replace(/\/$/, "")}/scan?id=${encodeURIComponent(code)}`;
     return QRCode.toBuffer(scanUrl, { type: "png", margin: 1, scale: 6 });

@@ -82,19 +82,32 @@ export function useTileStock(): LabelStock {
   return React.useContext(LabelStockContext);
 }
 
+/** Advance width of one character in the mono stacks in use (IBM Plex Mono /
+ *  ui-monospace), in em. Measured, not guessed: 0.6203 in the browser. */
+const MONO_ADVANCE_EM = 0.62;
+
 /**
  * The largest font size (in `em`, i.e. label units) at which `len` monospace
  * characters still fit `availableEm` — so a long id shrinks to fit instead of
  * being ellipsised. A truncated code is worse than a small one: the whole
- * point of the line is that a human can read back what the barcode holds.
+ * point of the line is that a human can read back what the code holds, and on
+ * a label whose barcode has fallen back to a QR it is the only way to enter
+ * the id by hand when a scan fails.
  *
- * 0.62em per character is the advance width of the mono stacks in use
- * (JetBrains Mono / ui-monospace), rounded up so the estimate never
- * under-reserves.
+ * `letterSpacingEm` is added to every character's advance. A caller that
+ * tracks its code text out has to say so or the fit is computed against the
+ * wrong width — a 35-character GRN code sized without it overflowed its
+ * column by exactly the 0.02em it was being tracked by, and ellipsised.
  */
-export function monoFitEm(len: number, availableEm: number, max: number, min: number): number {
+export function monoFitEm(
+  len: number,
+  availableEm: number,
+  max: number,
+  min: number,
+  letterSpacingEm = 0,
+): number {
   if (len <= 0) return max;
-  return Math.max(min, Math.min(max, availableEm / (0.62 * len)));
+  return Math.max(min, Math.min(max, availableEm / ((MONO_ADVANCE_EM + letterSpacingEm) * len)));
 }
 
 /** A tile's usable inner width in `em`, i.e. the stock width less the 1.2em

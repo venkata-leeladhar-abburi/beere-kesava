@@ -1,6 +1,5 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
-import { labelsApi } from "../../../../shared/api/labels";
 
 export const F = {
   display: "'Plus Jakarta Sans', sans-serif",
@@ -26,16 +25,6 @@ export const T = {
   borderGold: "rgba(200,155,71,0.22)",
   cream: "#F0E8D0",
 };
-
-export function BarcodePreview({ code }: { code: string }) {
-  return (
-    <img
-      src={labelsApi.barcodeUrl(code)}
-      alt={`Barcode for ${code}`}
-      style={{ width: "100%", height: 36, objectFit: "contain" }}
-    />
-  );
-}
 
 export function Toggle({
   value,

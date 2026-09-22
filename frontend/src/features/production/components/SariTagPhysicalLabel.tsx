@@ -1,4 +1,6 @@
 import { labelsApi } from "../../../shared/api/labels";
+import { useLabelStock, needsQrFallback } from "../../../shared/ui/document";
+import { ScannableCode } from "../../../shared/ui/domain";
 import { EntityCode } from "../../../shared/ui/domain";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { encodeCostCipher } from "@/lib/domain/costCipher";
@@ -15,12 +17,29 @@ const F = {
   mono:    "'JetBrains Mono', monospace",
 };
 
+/**
+ * The on-screen preview of the tag's scannable code.
+ *
+ * Mirrors what <TileCode> will actually print, QR fallback included: a saree
+ * id long enough to defeat a Code128 on a 50mm sticker (a weaver id like
+ * VENKATESWARLU-L2-B7-014, or an external code carrying a long invoice
+ * number) comes off the printer as a QR, and showing bars here would preview
+ * a tag that does not exist.
+ */
 function BarcodeStrip({ code }: { code: string }) {
+  const stock = useLabelStock();
+  if (needsQrFallback(code, stock)) {
+    return (
+      <div style={{ alignSelf: "center" }}>
+        <ScannableCode value={code} size={60} />
+      </div>
+    );
+  }
   return (
     <img
-      src={labelsApi.barcodeUrl(code)}
+      src={labelsApi.barcodeUrl(code, { withText: false })}
       alt={`Barcode for ${code}`}
-      style={{ width: "100%", height: 44, objectFit: "contain" }}
+      style={{ width: "100%", height: 44, objectFit: "fill" }}
     />
   );
 }

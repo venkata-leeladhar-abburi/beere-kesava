@@ -33,13 +33,11 @@ export const labelsApi = {
   barcodeUrl: (code: string, opts?: { withText?: boolean }) =>
     `${API_BASE_URL}/labels/barcode?code=${encodeURIComponent(code)}` +
     (opts?.withText === false ? "&text=0" : ""),
-  /** QR PNG. By default it encodes a "<FRONTEND_URL>/scan?id=<code>" link, so
-   *  a generic phone camera offers to open it. `bare: true` encodes the code
-   *  alone — used on printed tags, where the link form's extra 50 characters
-   *  push the symbol past what a 7mm square survives on a thermal printer. */
-  qrCodeUrl: (code: string, opts?: { bare?: boolean }) =>
-    `${API_BASE_URL}/labels/qrcode?code=${encodeURIComponent(code)}` +
-    (opts?.bare ? "&bare=1" : ""),
+  /** QR PNG encoding a "<FRONTEND_URL>/scan?id=<code>" link, so a generic
+   *  phone camera offers to open it. Printed labels do NOT use this — they
+   *  draw <ScannableCode>, which is SVG and encodes the bare id (see
+   *  TileCode.tsx). */
+  qrCodeUrl: (code: string) => `${API_BASE_URL}/labels/qrcode?code=${encodeURIComponent(code)}`,
 
   getSettings: () => apiClient.get<LabelSettings>("/labels/settings"),
   updateSettings: (payload: UpdateLabelSettingsPayload) =>

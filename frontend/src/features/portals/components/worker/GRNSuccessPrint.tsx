@@ -3,8 +3,9 @@ import { C, F } from "./tokens";
 import { GrnReceiptItem } from "../../../../shared/api/rawMaterials";
 import { Button } from "../../../../shared/ui/primitives";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
-import { useDocument, useLabelStock } from "../../../../shared/ui/document";
+import { useDocument, useLabelStock, needsQrFallback } from "../../../../shared/ui/document";
 import { labelsApi } from "../../../../shared/api/labels";
+import { ScannableCode } from "../../../../shared/ui/domain";
 import { GrnLabelSheet, type GrnLabel } from "./GrnLabelSheet";
 
 /** DDMMYY, e.g. 2026-09-02 -> "020926" — same format the saree tags use. */
@@ -97,14 +98,22 @@ export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
               </div>
 
               {/* The same code that prints, so what's on screen is what the
-                  scanner will read off the tag. Barcode only, same style as
-                  the saree tags — no QR alongside it. */}
+                  scanner will read off the tag — including WHICH code. A GRN
+                  item code carries the vendor's whole business name and so
+                  usually can't be printed as a legible Code128 on a 50mm
+                  sticker; the printed label falls back to a QR for those, and
+                  drawing bars here would have quietly misrepresented the tag
+                  the operator is about to stick on a drum. */}
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                <img
-                  src={labelsApi.barcodeUrl(b.code)}
-                  alt={`Barcode for ${b.code}`}
-                  style={{ width: "100%", maxWidth: 160, height: 36, objectFit: "contain" }}
-                />
+                {needsQrFallback(b.code, labelStock) ? (
+                  <ScannableCode value={b.code} size={52} />
+                ) : (
+                  <img
+                    src={labelsApi.barcodeUrl(b.code, { withText: false })}
+                    alt={`Barcode for ${b.code}`}
+                    style={{ width: "100%", maxWidth: 160, height: 36, objectFit: "fill" }}
+                  />
+                )}
                 <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 11, color: C.text, textAlign: "center", wordBreak: "break-all" }}>{b.code}</span>
               </div>
 

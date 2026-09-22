@@ -11,9 +11,14 @@
  * ("GRN-SreeVignesh-004-002-1"), never the parent receipt id — that is the
  * value the Issue Material scanner matches against, and the whole point of the
  * tag is to identify this one material, not the delivery it arrived in.
+ *
+ * That code embeds the vendor's whole business name, so it routinely runs to
+ * 25-35 characters — far past what a Code128 can hold legibly on a 50mm
+ * sticker. <TileCode> is what decides: it prints bars when they will survive
+ * the printer and a QR when they will not, which for most GRN labels means a
+ * QR. The scanner reads either.
  */
-import { labelsApi } from "@/shared/api/labels";
-import { LabelSheet, useTileStock, monoFitEm, innerWidthEm, type LabelStock } from "@/shared/ui/document";
+import { LabelSheet, TileCode, type LabelStock } from "@/shared/ui/document";
 
 export interface GrnLabel {
   /** The scannable line code — also the human-readable id printed below it. */
@@ -31,15 +36,11 @@ const ui = "var(--font-ui, system-ui, sans-serif)";
 const ellipsis = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } as const;
 
 // Same compact layout as the saree tags (SareeTagPrint.tsx): a small header
-// row, one full-width barcode with its code printed below it, then a single
-// detail line — barcode only, no QR. Sizes are in `em` against --label-unit
-// (set by <LabelSheet>), so the tile fills the configured sticker exactly
-// instead of the old fixed 82x46mm box, which overflowed the 50x25mm roll.
+// row, one full-width scannable code with its id printed below it, then a
+// single detail line. Sizes are in `em` against --label-unit (set by
+// <LabelSheet>), so the tile fills the configured sticker exactly instead of
+// the old fixed 82x46mm box, which overflowed the 50x25mm roll.
 function LabelTile({ label }: { label: GrnLabel }) {
-  const stock = useTileStock();
-  // Shrink to fit rather than ellipsise — a half-printed item code can't be
-  // typed back in when a scan fails.
-  const codeSize = monoFitEm(label.code.length, innerWidthEm(stock), 2.3, 1.5);
   return (
     <div
       style={{
@@ -58,29 +59,7 @@ function LabelTile({ label }: { label: GrnLabel }) {
         <span style={{ fontFamily: mono, fontSize: "1.7em", flexShrink: 0 }}>{label.grnBatchId}</span>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <img
-          // The generator's baked-in caption is suppressed — the code is
-          // printed below at a readable size, and on a 25mm-tall sticker
-          // printing it twice only costs the bars their height.
-          //
-          // `fill` rather than `contain`, for the same reason as the saree
-          // tag (SareeTagPrint.tsx): `contain` fits this symbol by height and
-          // wastes a third of the sticker's width, thinning every module to
-          // roughly one dot of a 203dpi thermal head. Stretching to full
-          // width widens the modules; only the bar height is distorted, which
-          // a 1D barcode carries no data in. Quiet zones are inside the PNG.
-          src={labelsApi.barcodeUrl(label.code, { withText: false })}
-          alt={`Barcode for ${label.code}`}
-          style={{
-            width: "100%", height: "9.4em",
-            objectFit: "fill", display: "block", imageRendering: "pixelated",
-          }}
-        />
-        <span style={{ fontFamily: mono, fontWeight: 700, fontSize: `${codeSize}em`, maxWidth: "100%", ...ellipsis }}>
-          {label.code}
-        </span>
-      </div>
+      <TileCode code={label.code} barsEm={9.4} maxCodeEm={2.3} />
 
       <div style={{ display: "flex", justifyContent: "space-between", gap: "1em", fontFamily: ui, fontSize: "1.8em" }}>
         <span style={{ minWidth: 0, ...ellipsis }}>

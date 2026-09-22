@@ -30,6 +30,7 @@ import {
 } from "./shared/ui/document";
 import { toPaise } from "./lib/gst";
 import { SareeTagPreview } from "./features/weavers";
+import { GrnLabelSheet } from "./features/portals";
 
 const items: InvoiceLineItem[] = [
   { id: "SAR-DVM-10241", description: "Kanchipuram Pure Silk · Peacock Zari Border", batchLabel: "BATCH-2026-04", ratePaise: toPaise(18500) },
@@ -225,6 +226,23 @@ const bothTags = (
   </div>
 );
 
+// `?doc=grn` — the GRN material-batch sticker, the other thing that comes off
+// the roll printer. Two of them: a short item code that still prints as bars,
+// and the ordinary case, where the vendor's whole business name is inside the
+// code and it has to fall back to a QR to be scannable at all.
+const grnLabels = (
+  <div style={{ display: "flex", justifyContent: "center", alignItems: "flex-start", gap: 48, flexWrap: "wrap", padding: 32 }}>
+    {[
+      { code: "GRN-Ravi-2-1", grnBatchId: "GRN-Ravi-002", materialType: "Silk Yarn", quantity: "12 kg", vendor: "Ravi Silks" },
+      { code: "GRN-SreeLakshmiSilkHouse-001-003-12", grnBatchId: "GRN-SLSH-001", materialType: "Zari", quantity: "4 reels", vendor: "Sree Lakshmi" },
+    ].map(label => (
+      <div key={label.code} style={{ ["--label-zoom" as string]: 3, zoom: 3, width: "fit-content" }}>
+        <GrnLabelSheet labels={[label]} />
+      </div>
+    ))}
+  </div>
+);
+
 const DOC = new URLSearchParams(location.search).get("doc");
 const activeDoc =
   DOC === "po" ? purchaseOrder :
@@ -235,6 +253,7 @@ const activeDoc =
   DOC === "tag" ? sareeTag :
   DOC === "tag-weaver" ? weaverTag :
   DOC === "tags" ? bothTags :
+  DOC === "grn" ? grnLabels :
   invoice;
 
 // useDocument() → useDownloadsAllowed() → useAuth(), which throws outside a
