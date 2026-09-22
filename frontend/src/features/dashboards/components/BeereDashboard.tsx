@@ -213,7 +213,7 @@ export function BeereDashboard() {
   const dashboardContent = isMobile ? (
     <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui, display: "flex", flexDirection: "column" }}>
       <MobileMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} activeTab={mobileTab} setTab={navigateMobile} />
-      <MobileTopNav onMenuOpen={() => setMenuOpen(true)} onLogout={handleLogout} onProfile={() => setShowProfileModal(true)} onNotifications={() => navigateMobile("Notifications")} />
+      <MobileTopNav onMenuOpen={() => setMenuOpen(true)} onLogout={handleLogout} onProfile={() => setShowProfileModal(true)} onNotifications={() => navigateMobile("Notifications")} set={navigateMobile} onViewAs={viewAsStaff} />
       {getSectionsForPage(mobileTab).length > 0 && (
         <SectionNavigator sections={getSectionsForPage(mobileTab)} stickyTop={MOBILE_NAV_H} padding="0 18px" />
       )}

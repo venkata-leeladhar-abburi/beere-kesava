@@ -1,7 +1,7 @@
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { motion } from 'motion/react';
-import { ChevronRight, Menu, LogOut, UserRound, X, Bell } from 'lucide-react';
+import { ChevronRight, Menu, LogOut, UserRound, X, Bell, Users, Store, Eye, IndianRupee } from 'lucide-react';
 import { imgBKLogo } from '../../../../shared/constants/weaverImages';
 import { T, F, G, EASE, findNavGroup, NAV_GROUPS } from './theme';
 import { Button, IconButton } from '../../../../shared/ui/primitives';
@@ -131,7 +131,15 @@ export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
   );
 }
 
-export function MobileTopNav({ onMenuOpen, onLogout, onProfile, onNotifications }: { onMenuOpen: () => void; onLogout?: () => void; onProfile?: () => void; onNotifications?: () => void }) {
+export function MobileTopNav({ onMenuOpen, onLogout, onProfile, onNotifications, set, onViewAs }: {
+  onMenuOpen: () => void;
+  onLogout?: () => void;
+  onProfile?: () => void;
+  onNotifications?: () => void;
+  /** Navigate to a page key — the same `set` the desktop TopNav takes. */
+  set?: (v: string) => void;
+  onViewAs?: (role: "worker" | "shop") => void;
+}) {
   const [showProfile, setShowProfile] = React.useState(false);
   const [showNotif, setShowNotif] = React.useState(false);
   // Scroll-collapse — same behaviour as the desktop TopNav: the bar slides out
@@ -273,7 +281,7 @@ export function MobileTopNav({ onMenuOpen, onLogout, onProfile, onNotifications 
             </Button>
           </div>
         {showProfile && (
-          <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: "var(--z-tooltip)", background: "#FFFDF9", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 210, overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: "var(--z-tooltip)", background: "#FFFDF9", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 226, maxHeight: "calc(100dvh - 84px)", overflowY: "auto", overflowX: "hidden" }}>
             <div style={{ padding: "14px 16px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Admin User</div>
               <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>Admin · Beere Kesava Silks</div>
@@ -282,6 +290,33 @@ export function MobileTopNav({ onMenuOpen, onLogout, onProfile, onNotifications 
               <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="tertiary" fullWidth
                 className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
                 <UserRound size={14} color={T.taupe} /> View Profile
+              </Button>
+              <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
+              {/* Staff oversight — the same rows the desktop TopNav has
+                  carried all along. They were desktop-only, so an admin on a
+                  phone could not reach the staff directories at all. */}
+              <Button onClick={() => { setShowProfile(false); set?.("WorkerStaff"); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
+                <Users size={14} color={T.taupe} /> Worker Staff
+              </Button>
+              <Button onClick={() => { setShowProfile(false); set?.("ShopStaff"); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
+                <Store size={14} color={T.taupe} /> Shop Staff
+              </Button>
+              <Button onClick={() => { setShowProfile(false); set?.("AccountantStaff"); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
+                <IndianRupee size={14} color={T.taupe} /> Accountant Staff
+              </Button>
+              <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
+              {/* Opens the staff portal as yourself — not impersonation.
+                  Anything recorded in there is attributed to this admin. */}
+              <Button onClick={() => { setShowProfile(false); onViewAs?.("worker"); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
+                <Eye size={14} color={T.taupe} /> View as Worker Staff
+              </Button>
+              <Button onClick={() => { setShowProfile(false); onViewAs?.("shop"); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
+                <Eye size={14} color={T.taupe} /> View as Shop Staff
               </Button>
               {/* Only for someone actually assigned a second portal — this
                   used to be a "Switch Portal" row that just logged you out. */}
