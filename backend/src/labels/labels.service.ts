@@ -53,16 +53,31 @@ export class LabelsService {
 
   /**
    * Code128 linear barcode PNG — used for printable material-batch / saree
-   * labels. scale 4 (was 3) widens each bar module — a phone camera scanning
-   * a small printed tag a few inches away needs thicker bars to resolve
-   * reliably; 3 was thin enough to make real-world scans miss constantly.
+   * labels.
+   *
+   * `paddingwidth: 10` is the part that makes a printed tag actually scan.
+   * Code128 requires a blank quiet zone of at least 10 narrow modules on
+   * each side of the symbol, and bwip-js adds NONE by default: the PNG began
+   * and ended on a bar. On the label tile that image is stretched to the full
+   * sticker width, so the first and last bars ran straight into the tile's
+   * border and the decoder had nothing to lock onto. Baking the quiet zone
+   * into the image means it scales with the bars however the tile sizes them.
+   *
+   * `scale: 6` (was 4) is 6 device pixels per narrow module, so the browser
+   * is downsampling a generous source rather than interpolating a thin one
+   * into the printer's dot grid — blurred, grey-edged bars are exactly what a
+   * 203dpi thermal head turns into an unreadable smudge.
+   *
+   * `height: 8` (mm) rather than 14: the tile gives the bars roughly 7mm, and
+   * a source that is already about that tall keeps the stretch honest.
    */
   async generateBarcodePng(code: string, includeText = true): Promise<Buffer> {
     return bwipjs.toBuffer({
       bcid: "code128",
       text: code,
-      scale: 4,
-      height: 14,
+      scale: 6,
+      height: 8,
+      paddingwidth: 10,
       includetext: includeText,
       textxalign: "center",
     });
@@ -74,8 +89,19 @@ export class LabelsService {
    * phone's own camera) recognises it as a link and offers to open it,
    * landing straight on that saree's MobileScanView instead of just
    * decoding inert text the way the Code128 barcode does.
+   *
+   * `bare` drops the link and encodes the saree id alone. That is for the
+   * printed tag, where the code has to survive a ~7mm square on a 203dpi
+   * thermal head: the link form is 60-70 characters, which needs a version-5
+   * symbol whose modules land on ~1.6 printer dots and decodes only by luck,
+   * while the id alone fits a version-1/2 symbol that reads reliably at the
+   * same size. The in-app scanner accepts either (CameraScannerModal
+   * unwraps the link form); only a generic camera app loses the tap-through.
    */
-  async generateQrCodePng(code: string): Promise<Buffer> {
+  async generateQrCodePng(code: string, bare = false): Promise<Buffer> {
+    if (bare) {
+      return QRCode.toBuffer(code, { type: "png", margin: 2, scale: 8 });
+    }
     const frontendUrl = this.configService.get<string>("FRONTEND_URL") ?? "http://localhost:5175";
     const scanUrl = `${frontendUrl.replace(/\/$/, "")}/scan?id=${encodeURIComponent(code)}`;
     return QRCode.toBuffer(scanUrl, { type: "png", margin: 1, scale: 6 });

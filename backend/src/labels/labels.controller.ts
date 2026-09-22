@@ -48,11 +48,18 @@ export class LabelsController {
 
   @Public()
   @Get("qrcode")
-  async getQrCode(@Query("code") code: string | undefined, @Res() res: Response) {
+  async getQrCode(
+    @Query("code") code: string | undefined,
+    @Query("bare") bare: string | undefined,
+    @Res() res: Response,
+  ) {
     if (!code) {
       throw new BadRequestException("Query parameter 'code' is required");
     }
-    const png = await this.labelsService.generateQrCodePng(code);
+    // `bare=1` encodes the saree id on its own instead of the /scan?id= link
+    // — what a printed tag needs when it falls back to a QR (see
+    // labels.service.ts).
+    const png = await this.labelsService.generateQrCodePng(code, bare === "1" || bare === "true");
     res.setHeader("Content-Type", "image/png");
     res.send(png);
   }

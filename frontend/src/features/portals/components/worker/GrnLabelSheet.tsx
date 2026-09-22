@@ -63,9 +63,19 @@ function LabelTile({ label }: { label: GrnLabel }) {
           // The generator's baked-in caption is suppressed — the code is
           // printed below at a readable size, and on a 25mm-tall sticker
           // printing it twice only costs the bars their height.
+          //
+          // `fill` rather than `contain`, for the same reason as the saree
+          // tag (SareeTagPrint.tsx): `contain` fits this symbol by height and
+          // wastes a third of the sticker's width, thinning every module to
+          // roughly one dot of a 203dpi thermal head. Stretching to full
+          // width widens the modules; only the bar height is distorted, which
+          // a 1D barcode carries no data in. Quiet zones are inside the PNG.
           src={labelsApi.barcodeUrl(label.code, { withText: false })}
           alt={`Barcode for ${label.code}`}
-          style={{ width: "100%", height: "9.4em", objectFit: "contain", display: "block" }}
+          style={{
+            width: "100%", height: "9.4em",
+            objectFit: "fill", display: "block", imageRendering: "pixelated",
+          }}
         />
         <span style={{ fontFamily: mono, fontWeight: 700, fontSize: `${codeSize}em`, maxWidth: "100%", ...ellipsis }}>
           {label.code}
