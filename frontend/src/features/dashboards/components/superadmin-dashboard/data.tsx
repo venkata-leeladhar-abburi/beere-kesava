@@ -89,6 +89,70 @@ export const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
+/**
+ * Page key → URL path, and the single source of truth for both directions of
+ * superadmin navigation.
+ *
+ * This used to be two hand-maintained lists inside SuperadminDashboard — a
+ * key→path map and a path→key if-chain — which had to be edited in lockstep
+ * with NAV_GROUPS above. Adding "Sign-in Location" to the nav without adding
+ * it here silently sent every click to /superadmin/materials, because the
+ * lookup falls back rather than failing. Deriving the reverse direction from
+ * this one map removes two of the three places that could drift, and
+ * data.test.ts fails if a nav entry is ever added without a route.
+ */
+export const PAGE_ROUTES: Record<string, string> = {
+  Overview: "/superadmin/overview",
+  Materials: "/superadmin/materials",
+  Weavers: "/superadmin/weavers",
+  AllWeavers: "/superadmin/all-weavers",
+  AllStock: "/superadmin/all-stock",
+  Production: "/superadmin/production",
+  AllOrders: "/superadmin/all-orders",
+  QcHistory: "/superadmin/qc-history",
+  Payments: "/superadmin/payments",
+  Reports: "/superadmin/reports",
+  Inventory: "/superadmin/inventory",
+  Customers: "/superadmin/customers",
+  Vendors: "/superadmin/vendors",
+  Suppliers: "/superadmin/suppliers",
+  FactoryLooms: "/superadmin/factory-looms",
+  Firms: "/superadmin/firms",
+  Notifications: "/superadmin/notifications",
+  ReceiveStock: "/superadmin/receive-stock",
+  AddUser: "/superadmin/add-user",
+  WorkerStaff: "/superadmin/worker-staff",
+  ShopStaff: "/superadmin/shop-staff",
+  AccountantStaff: "/superadmin/accountant-staff",
+  ExternalPurchases: "/superadmin/external-purchases",
+  SupplierReturns: "/superadmin/supplier-returns",
+  Batches: "/superadmin/batches",
+  Designs: "/superadmin/designs",
+  Finishing: "/superadmin/finishing",
+  Rates: "/superadmin/rates",
+  IssueMaterial: "/superadmin/issue-material",
+  ReturnMaterial: "/superadmin/return-material",
+  ProductionHistory: "/superadmin/production-history",
+  Approvals: "/superadmin/approvals",
+  AuditLog: "/superadmin/audit-log",
+  LabelSettings: "/superadmin/label-settings",
+  GeofenceSettings: "/superadmin/sign-in-location",
+};
+
+/** Unknown keys land on Materials, which is the behaviour this replaced. */
+export function pathForPage(pageKey: string): string {
+  return PAGE_ROUTES[pageKey] ?? "/superadmin/materials";
+}
+
+const TAB_TO_PAGE: Record<string, string> = Object.fromEntries(
+  Object.entries(PAGE_ROUTES).map(([key, path]) => [path.split("/").pop()!, key]),
+);
+
+/** Unknown slugs land on Overview, which is the behaviour this replaced. */
+export function pageForTab(tab: string | undefined): string {
+  return (tab && TAB_TO_PAGE[tab]) || "Overview";
+}
+
 export function findNavGroup(pageKey: string): NavGroup {
   const direct = NAV_GROUPS.find(g => g.pages.some(p => p.key === pageKey));
   return direct ?? NAV_GROUPS[0];

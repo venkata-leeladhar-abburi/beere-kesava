@@ -13,6 +13,7 @@ import { TabLoadingFallback } from "./superadmin-dashboard/atoms";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
 import { SectionCard } from "./beere-dashboard/primitives";
 import { SATopNav } from "./superadmin-dashboard/SATopNav";
+import { pageForTab, pathForPage } from "./superadmin-dashboard/data";
 import { SAMobileMenuDrawer, SAMobileTopNav } from "./superadmin-dashboard/SAMobileNav";
 import { SAOverviewPage } from "./superadmin-dashboard/SAOverviewPage";
 import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
@@ -37,42 +38,9 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   const routerNavigate = useNavigate();
   const { enterStaffView, logout } = useAuth();
 
-  // Map path to active tab
-  let nav = "Overview";
-  if (tab === "materials") nav = "Materials";
-  else if (tab === "weavers") nav = "Weavers";
-  else if (tab === "all-weavers") nav = "AllWeavers";
-  else if (tab === "all-stock") nav = "AllStock";
-  else if (tab === "production-history") nav = "ProductionHistory";
-  else if (tab === "production") nav = "Production";
-  else if (tab === "all-orders") nav = "AllOrders";
-  else if (tab === "qc-history") nav = "QcHistory";
-  else if (tab === "payments") nav = "Payments";
-  else if (tab === "reports") nav = "Reports";
-  else if (tab === "inventory") nav = "Inventory";
-  else if (tab === "customers") nav = "Customers";
-  else if (tab === "vendors") nav = "Vendors";
-  else if (tab === "suppliers") nav = "Suppliers";
-  else if (tab === "factory-looms") nav = "FactoryLooms";
-  else if (tab === "firms") nav = "Firms";
-  else if (tab === "notifications") nav = "Notifications";
-  else if (tab === "receive-stock") nav = "ReceiveStock";
-  else if (tab === "add-user") nav = "AddUser";
-  else if (tab === "worker-staff") nav = "WorkerStaff";
-  else if (tab === "shop-staff") nav = "ShopStaff";
-  else if (tab === "accountant-staff") nav = "AccountantStaff";
-  else if (tab === "external-purchases") nav = "ExternalPurchases";
-  else if (tab === "supplier-returns") nav = "SupplierReturns";
-  else if (tab === "batches") nav = "Batches";
-  else if (tab === "designs") nav = "Designs";
-  else if (tab === "finishing") nav = "Finishing";
-  else if (tab === "rates") nav = "Rates";
-  else if (tab === "issue-material") nav = "IssueMaterial";
-  else if (tab === "return-material") nav = "ReturnMaterial";
-  else if (tab === "approvals") nav = "Approvals";
-  else if (tab === "audit-log") nav = "AuditLog";
-  else if (tab === "label-settings") nav = "LabelSettings";
-  else if (tab === "overview") nav = "Overview";
+  // Map path to active tab. Both directions come from PAGE_ROUTES in
+  // ./superadmin-dashboard/data — see the comment there.
+  const nav = pageForTab(tab);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -87,43 +55,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   };
 
   const navigate = (tab: string, ctx?: unknown) => {
-    const routeMap: Record<string, string> = {
-      Overview: "/superadmin/overview",
-      Materials: "/superadmin/materials",
-      Weavers: "/superadmin/weavers",
-      AllWeavers: "/superadmin/all-weavers",
-      AllStock: "/superadmin/all-stock",
-      Production: "/superadmin/production",
-      AllOrders: "/superadmin/all-orders",
-      QcHistory: "/superadmin/qc-history",
-      Payments: "/superadmin/payments",
-      Reports: "/superadmin/reports",
-      Inventory: "/superadmin/inventory",
-      Customers: "/superadmin/customers",
-      Vendors: "/superadmin/vendors",
-      Suppliers: "/superadmin/suppliers",
-      FactoryLooms: "/superadmin/factory-looms",
-      Firms: "/superadmin/firms",
-      Notifications: "/superadmin/notifications",
-      ReceiveStock: "/superadmin/receive-stock",
-      AddUser: "/superadmin/add-user",
-      WorkerStaff: "/superadmin/worker-staff",
-      ShopStaff: "/superadmin/shop-staff",
-      AccountantStaff: "/superadmin/accountant-staff",
-      ExternalPurchases: "/superadmin/external-purchases",
-      SupplierReturns: "/superadmin/supplier-returns",
-      Batches: "/superadmin/batches",
-      Designs: "/superadmin/designs",
-      Finishing: "/superadmin/finishing",
-      Rates: "/superadmin/rates",
-      IssueMaterial: "/superadmin/issue-material",
-      ReturnMaterial: "/superadmin/return-material",
-      ProductionHistory: "/superadmin/production-history",
-      Approvals: "/superadmin/approvals",
-      AuditLog: "/superadmin/audit-log",
-      LabelSettings: "/superadmin/label-settings",
-    };
-    const path = routeMap[tab] || "/superadmin/materials";
+    const path = pathForPage(tab);
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     routerNavigate(path, { state: ctx });
   };

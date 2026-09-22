@@ -141,7 +141,7 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
                   // Opens right below the topbar, on top of the sub-nav row —
                   // not below it — per the admin dashboard's identical fix.
                   sideOffset={8}
-                  className="!w-max !min-w-[250px] !max-w-[calc(100vw-32px)] !p-2.5 !rounded-2xl"
+                  className="!w-max !min-w-[250px] !max-w-[calc(100vw-32px)] !max-h-[min(72vh,560px)] !p-2.5 !rounded-2xl"
                   // Same escalation as the admin dashboard's TopNav.tsx —
                   // see its comment for why.
                   style={{ background: "#FFFFFF", border: "1px solid rgba(110,15,45,0.10)", boxShadow: "0 16px 40px rgba(0,0,0,0.28)", zIndex: "var(--z-tooltip)" }}

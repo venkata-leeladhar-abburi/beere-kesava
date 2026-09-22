@@ -43,8 +43,15 @@ export function DropdownMenuContent({
         sideOffset={sideOffset}
         align={align}
         className={cn(
+          // The overflow rules here are axis-specific on purpose. A blanket
+          // `overflow-hidden` used to follow them on the next line, and
+          // because cn() is tailwind-merge that silently cancelled the
+          // `overflow-y-auto` above it: any menu taller than max-h was clipped
+          // mid-item with no scrollbar and no way to reach the rest, which
+          // read as "the last entry is missing" rather than "scroll down".
+          // Rounded corners still clip fine without it.
           "min-w-[200px] max-h-[320px] overflow-y-auto overflow-x-hidden",
-          "rounded-[10px] p-0 overflow-hidden",
+          "rounded-[10px] p-0",
           "bg-white border border-[rgba(110,15,45,0.14)] shadow-[0_10px_30px_rgba(74,6,27,0.12)]",
           "data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:slide-in-from-top-1",
           "data-[state=closed]:animate-out data-[state=closed]:fade-out",
