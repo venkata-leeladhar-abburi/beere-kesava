@@ -184,7 +184,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       {isMobile ? (
         <>
           <SAMobileMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} activeTab={nav} setTab={navigate} />
-          <SAMobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} onProfile={() => setShowProfileModal(true)} onNotifications={() => navigate("Notifications")} />
+          <SAMobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} onLogout={logout} onProfile={() => setShowProfileModal(true)} onNotifications={() => navigate("Notifications")} set={navigate} onViewAs={viewAsStaff} />
           {getSectionsForPage(nav).length > 0 && <SectionNavigator sections={getSectionsForPage(nav)} stickyTop={MOBILE_NAV_H} padding="0 18px" />}
           <Suspense fallback={<TabLoadingFallback />}>{renderPage(navigate)}</Suspense>
         </>

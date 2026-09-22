@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { motion } from "motion/react";
-import { ChevronRight, Menu, UserRound, ChevronLeft, LogOut, X, Bell } from "lucide-react";
+import { ChevronRight, Menu, UserRound, ChevronLeft, LogOut, X, Bell, Users, Store, Eye, IndianRupee } from "lucide-react";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import { T, F, G, EASE } from "./theme";
 import { NAV_GROUPS, findNavGroup } from "./data";
@@ -119,7 +119,16 @@ export function SAMobileMenuDrawer({ open, onClose, activeTab, setTab }: {
   );
 }
 
-export function SAMobileTopNav({ onMenuOpen, onBack, onProfile, onNotifications }: { onMenuOpen: () => void; onBack?: () => void; onProfile?: () => void; onNotifications?: () => void }) {
+export function SAMobileTopNav({ onMenuOpen, onBack, onProfile, onNotifications, set, onViewAs, onLogout }: {
+  onMenuOpen: () => void;
+  onBack?: () => void;
+  onProfile?: () => void;
+  onNotifications?: () => void;
+  /** Navigate to a page key — same signature SATopNav's `set` takes. */
+  set?: (v: string) => void;
+  onViewAs?: (role: "worker" | "shop") => void;
+  onLogout?: () => void;
+}) {
   const [showProfile, setShowProfile] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
   const [scrollDirection, setScrollDirection] = useState<"up" | "down">("up");
@@ -240,7 +249,7 @@ export function SAMobileTopNav({ onMenuOpen, onBack, onProfile, onNotifications 
             </Button>
           </div>
         {showProfile && (
-          <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: "var(--z-tooltip)", background: "#FFFDF9", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 210, overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: "var(--z-tooltip)", background: "#FFFDF9", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 226, maxHeight: "calc(100dvh - 84px)", overflowY: "auto", overflowX: "hidden" }}>
             <div style={{ padding: "14px 16px", background: "rgba(196,146,58,0.06)", borderBottom: `1px solid ${T.borderDef}` }}>
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Superadmin</div>
               <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>Full Access · All Portals</div>
@@ -251,11 +260,42 @@ export function SAMobileTopNav({ onMenuOpen, onBack, onProfile, onNotifications 
                 <UserRound size={14} color={T.taupe} /> View Profile
               </Button>
               <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
+              {/* Staff oversight — who works in each portal, and what each of
+                  them has recorded there. Mirrors SATopNav's profile menu;
+                  these rows existed only on desktop before, so the same
+                  account could reach them from a laptop and not from a phone. */}
+              <Button onClick={() => { setShowProfile(false); set?.("WorkerStaff"); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
+                <Users size={14} color={T.taupe} /> Worker Staff
+              </Button>
+              <Button onClick={() => { setShowProfile(false); set?.("ShopStaff"); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
+                <Store size={14} color={T.taupe} /> Shop Staff
+              </Button>
+              <Button onClick={() => { setShowProfile(false); set?.("AccountantStaff"); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
+                <IndianRupee size={14} color={T.taupe} /> Accountant Staff
+              </Button>
+              <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
+              {/* Opens the staff portal as yourself — not impersonation.
+                  Anything recorded in there is attributed to this admin. */}
+              <Button onClick={() => { setShowProfile(false); onViewAs?.("worker"); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
+                <Eye size={14} color={T.taupe} /> View as Worker Staff
+              </Button>
+              <Button onClick={() => { setShowProfile(false); onViewAs?.("shop"); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
+                <Eye size={14} color={T.taupe} /> View as Shop Staff
+              </Button>
+              <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
               <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="tertiary" fullWidth
                 className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
                 <ChevronLeft size={14} color={T.taupe} /> Switch Portal
               </Button>
-              <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="tertiary" fullWidth
+              {/* Was calling onBack — so "Logout" merely returned to the portal
+                  picker and left the session open. Falls back to onBack only
+                  when no logout handler is supplied, as SATopNav does. */}
+              <Button onClick={() => { setShowProfile(false); if (onLogout) onLogout(); else onBack?.(); }} variant="tertiary" fullWidth
                 className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]">
                 <LogOut size={14} color="#C0392B" /> Logout
               </Button>
