@@ -6,6 +6,10 @@ import { UnifiedSaree, SareeOrigin, isOutstanding, isSold, ageBucket } from "@/f
 import { Empty, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { DrilldownTabs } from "./SareeDetailTable";
+import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
+
+const ALL = "__all__";
+
 // ── In-house outstanding (weavers or factory looms) ──────────────────────────
 export function InHouseOutstanding({
   origin, sarees, search, ageFilter,
@@ -14,13 +18,34 @@ export function InHouseOutstanding({
   sarees: UnifiedSaree[]; search: string; ageFilter: AgeKey;
 }) {
   const [open, setOpen] = useState<string | null>(null);
+  const [ownerFilter, setOwnerFilter] = useState(ALL);
+  const [batchFilter, setBatchFilter] = useState(ALL);
+
+  const keyOf = (s: UnifiedSaree) => origin === "weaver" ? (s.weaverId || "?") : (s.factoryLoomId || "?");
+  const nameOf = (s: UnifiedSaree) => origin === "weaver" ? (s.weaverName || "—") : (s.factoryLoomNumber || "—");
+
+  const originSarees = useMemo(() => sarees.filter(s => s.origin === origin), [sarees, origin]);
+  const ownerOptions = useMemo(() => {
+    const m = new Map<string, string>();
+    originSarees.forEach(s => m.set(keyOf(s), nameOf(s)));
+    return [...m.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [originSarees]);
+  const batchOptions = useMemo(() => {
+    const set = new Set<string>();
+    originSarees.forEach(s => { if (s.batchId && (ownerFilter === ALL || keyOf(s) === ownerFilter)) set.add(s.batchId); });
+    return [...set].sort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [originSarees, ownerFilter]);
 
   const groups = useMemo(() => {
     const map = new Map<string, { key: string; name: string; sub: string; all: UnifiedSaree[]; soldRows: UnifiedSaree[]; rows: UnifiedSaree[] }>();
     const q = search.trim().toLowerCase();
-    sarees.filter(s => s.origin === origin).forEach(s => {
-      const key = origin === "weaver" ? (s.weaverId || "?") : (s.factoryLoomId || "?");
-      const name = origin === "weaver" ? (s.weaverName || "—") : (s.factoryLoomNumber || "—");
+    originSarees.forEach(s => {
+      const key = keyOf(s);
+      const name = nameOf(s);
+      if (ownerFilter !== ALL && key !== ownerFilter) return;
+      if (batchFilter !== ALL && s.batchId !== batchFilter) return;
       const sub  = origin === "weaver" ? `${s.weaverId} · Loom ${s.weaverLoom}` : `${s.operatorName} · ${s.loomLocation}`;
       // Search narrows every list; the ageing filter applies only to outstanding stock.
       if (q && !s.sareeId.toLowerCase().includes(q) && !name.toLowerCase().includes(q)
@@ -34,7 +59,8 @@ export function InHouseOutstanding({
       g.rows.push(s);
     });
     return [...map.values()].filter(g => g.all.length > 0).sort((a, b) => b.rows.length - a.rows.length);
-  }, [sarees, origin, search, ageFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [originSarees, origin, search, ageFilter, ownerFilter, batchFilter]);
 
   const totalOut = groups.reduce((a, g) => a + g.rows.length, 0);
   const totalVal = groups.reduce((a, g) => a + g.rows.reduce((x, s) => x + s.finalAmount, 0), 0);
@@ -56,6 +82,28 @@ export function InHouseOutstanding({
         )} />
       }
     >
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
+        <Select
+          value={ownerFilter}
+          onValueChange={v => { setOwnerFilter(v); setBatchFilter(ALL); }}
+          size="sm" containerClassName="w-full sm:w-auto" className="w-full sm:w-[220px] font-semibold"
+        >
+          <SelectItem value={ALL}>All {label.toLowerCase()}s</SelectItem>
+          {ownerOptions.map(([k, n]) => <SelectItem key={k} value={k}>{n}</SelectItem>)}
+        </Select>
+        <Select
+          value={batchFilter}
+          onValueChange={setBatchFilter}
+          size="sm" containerClassName="w-full sm:w-auto" className="w-full sm:w-[240px] font-semibold"
+        >
+          <SelectItem value={ALL}>All batches{ownerFilter !== ALL ? ` (${batchOptions.length})` : ""}</SelectItem>
+          {batchOptions.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+        </Select>
+        {(ownerFilter !== ALL || batchFilter !== ALL) && (
+          <Button variant="tertiary" size="sm" onClick={() => { setOwnerFilter(ALL); setBatchFilter(ALL); }}>Clear</Button>
+        )}
+      </div>
+
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>
         {[
           { l: "Produced", v: String(totalProduced), c: T.luxuryBrown },

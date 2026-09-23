@@ -240,6 +240,8 @@ export function purchaseOutstanding(sarees: UnifiedSaree[], purchases: PurchaseS
     const returnedSarees = rows.filter(s => s.status === "returned");
     return {
       ...p,
+      // Count the sarees actually on this purchase, not the purchase line count.
+      sareeCount: rows.length || p.sareeCount,
       sarees: rows,
       unsoldSarees,
       returnedSarees,

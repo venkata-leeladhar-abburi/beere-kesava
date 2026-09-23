@@ -14,10 +14,34 @@ import type { AgeKey } from "./primitives";
 
 import { DrilldownTabs, sareeOriginName, sareeOriginSub } from "./SareeDetailTable";
 import { EntityCode } from "@/shared/ui/domain";
+import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
+
+const ALL = "__all__";
+
+// One key per maker, so a weaver and a loom with the same id never collide.
+const makerKey = (s: UnifiedSaree) =>
+  s.origin === "weaver" ? `w:${s.weaverId || "?"}` : s.origin === "factoryLoom" ? `f:${s.factoryLoomId || "?"}` : "";
 
 // ── Outstanding by batch (in-house batches across weavers + factory looms) ───
 export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: UnifiedSaree[]; search: string; ageFilter: AgeKey }) {
   const [open, setOpen] = useState<string | null>(null);
+  const [makerFilter, setMakerFilter] = useState(ALL);
+  const [batchFilter, setBatchFilter] = useState(ALL);
+
+  const batchSarees = useMemo(() => sarees.filter(s => s.batchId), [sarees]);
+  const makerOptions = useMemo(() => {
+    const m = new Map<string, string>();
+    batchSarees.forEach(s => {
+      const k = makerKey(s);
+      if (k) m.set(k, `${sareeOriginName(s)}${s.origin === "factoryLoom" ? " (loom)" : ""}`);
+    });
+    return [...m.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+  }, [batchSarees]);
+  const batchOptions = useMemo(() => {
+    const set = new Set<string>();
+    batchSarees.forEach(s => { if (makerFilter === ALL || makerKey(s) === makerFilter) set.add(s.batchId as string); });
+    return [...set].sort();
+  }, [batchSarees, makerFilter]);
 
   const groups = useMemo(() => {
     const map = new Map<string, {
@@ -25,8 +49,13 @@ export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: Unifie
       weavers: Set<string>; looms: Set<string>;
     }>();
     const q = search.trim().toLowerCase();
-    sarees.filter(s => s.batchId).forEach(s => {
+    // A batch is kept whole once any of its sarees match the maker, so its totals stay true.
+    const makerBatches = makerFilter === ALL ? null
+      : new Set(batchSarees.filter(s => makerKey(s) === makerFilter).map(s => s.batchId as string));
+    batchSarees.forEach(s => {
       const key = s.batchId as string;
+      if (makerBatches && !makerBatches.has(key)) return;
+      if (batchFilter !== ALL && key !== batchFilter) return;
       if (q && !key.toLowerCase().includes(q) && !s.sareeId.toLowerCase().includes(q)
             && !sareeOriginName(s).toLowerCase().includes(q) && !s.sareeTypeName.toLowerCase().includes(q)) return;
       let g = map.get(key);
@@ -40,7 +69,7 @@ export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: Unifie
       g.rows.push(s);
     });
     return [...map.values()].filter(g => g.all.length > 0).sort((a, b) => b.rows.length - a.rows.length);
-  }, [sarees, search, ageFilter]);
+  }, [batchSarees, search, ageFilter, makerFilter, batchFilter]);
 
   const totalProduced = groups.reduce((a, g) => a + g.all.length, 0);
   const totalSold = groups.reduce((a, g) => a + g.soldRows.length, 0);
@@ -58,6 +87,28 @@ export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: Unifie
            ...groups.flatMap(g => g.rows.map(s => [g.key, s.sareeId, sareeOriginName(s), sareeOriginSub(s), s.sareeTypeName, s.weight, s.qcDate, s.ageDays, s.costPrice, s.finalAmount]))])} />
       }
     >
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
+        <Select
+          value={makerFilter}
+          onValueChange={v => { setMakerFilter(v); setBatchFilter(ALL); }}
+          size="sm" containerClassName="w-full sm:w-auto" className="w-full sm:w-[240px] font-semibold"
+        >
+          <SelectItem value={ALL}>All weavers &amp; looms</SelectItem>
+          {makerOptions.map(([k, n]) => <SelectItem key={k} value={k}>{n}</SelectItem>)}
+        </Select>
+        <Select
+          value={batchFilter}
+          onValueChange={setBatchFilter}
+          size="sm" containerClassName="w-full sm:w-auto" className="w-full sm:w-[240px] font-semibold"
+        >
+          <SelectItem value={ALL}>All batches{makerFilter !== ALL ? ` (${batchOptions.length})` : ""}</SelectItem>
+          {batchOptions.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+        </Select>
+        {(makerFilter !== ALL || batchFilter !== ALL) && (
+          <Button variant="tertiary" size="sm" onClick={() => { setMakerFilter(ALL); setBatchFilter(ALL); }}>Clear</Button>
+        )}
+      </div>
+
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>
         {[
           { l: "Produced", v: String(totalProduced), c: T.luxuryBrown },

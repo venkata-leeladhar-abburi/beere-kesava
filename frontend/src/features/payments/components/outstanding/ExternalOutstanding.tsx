@@ -6,9 +6,14 @@ import { UnifiedSaree, isSold, ageBucket, purchaseOutstanding, useSales } from "
 import { Empty, ExportBtn, Pill, SectionCard, exportCsv, inr, tdMono } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { DrilldownTabs, SareeDetailTable } from "./SareeDetailTable";
-import { Button } from "../../../../shared/ui/primitives";
+import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { EntityCode } from "@/shared/ui/domain";
+
+// Sarees actually received on a purchase; the purchase record's own count is per line, not per piece.
+const boughtCount = (p: { sarees: UnifiedSaree[]; sareeCount: number }) => p.sarees.length || p.sareeCount;
+
+const ALL = "__all__";
 
 interface SupplierRollup { supplier: string; purchases: number; bought: number; unsold: number; returned: number; due: number; unsoldValue: number; }
 
@@ -17,7 +22,19 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
   const [open, setOpen] = useState<string | null>(null);
   const [supplierViewMode, setSupplierViewMode] = useState<"card" | "table">("table");
   const { purchases } = useSales();
-  const all = useMemo(() => purchaseOutstanding(sarees, purchases), [sarees, purchases]);
+  const everything = useMemo(() => purchaseOutstanding(sarees, purchases), [sarees, purchases]);
+  const [supplierFilter, setSupplierFilter] = useState(ALL);
+  const [purchaseFilter, setPurchaseFilter] = useState(ALL);
+
+  const supplierOptions = useMemo(() => [...new Set(everything.map(p => p.supplier))].sort(), [everything]);
+  const purchaseOptions = useMemo(
+    () => everything.filter(p => supplierFilter === ALL || p.supplier === supplierFilter),
+    [everything, supplierFilter],
+  );
+  const all = useMemo(
+    () => purchaseOptions.filter(p => purchaseFilter === ALL || p.id === purchaseFilter),
+    [purchaseOptions, purchaseFilter],
+  );
 
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -35,13 +52,13 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
     all.forEach(p => {
       let r = m.get(p.supplier);
       if (!r) { r = { supplier: p.supplier, purchases: 0, bought: 0, unsold: 0, returned: 0, due: 0, unsoldValue: 0 }; m.set(p.supplier, r); }
-      r.purchases++; r.bought += p.sareeCount; r.unsold += p.unsoldCount;
+      r.purchases++; r.bought += boughtCount(p); r.unsold += p.unsoldCount;
       r.returned += p.returnedCount; r.due += p.dueAmount; r.unsoldValue += p.unsoldValue;
     });
     return [...m.values()].sort((a, b) => b.unsold - a.unsold);
   }, [all]);
 
-  const totBought = all.reduce((a, p) => a + p.sareeCount, 0);
+  const totBought = all.reduce((a, p) => a + boughtCount(p), 0);
   const totSold = all.reduce((a, p) => a + p.soldCount, 0);
   const totUnsold = all.reduce((a, p) => a + p.unsoldCount, 0);
   const totReturned = all.reduce((a, p) => a + p.returnedCount, 0);
@@ -57,9 +74,33 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
         actions={
           <ExportBtn onClick={() => exportCsv("outstanding-external-purchases.csv",
             [["Purchase ID", "Supplier", "Location", "Invoice No", "GST No", "Purchase Date", "Bill Amount", "Paid", "Bill Due", "Bill Status", "Sarees Bought", "Sold", "Unsold", "Returned", "Unsold Cost", "Unsold Sale Value", "Refund Value"],
-             ...all.map(p => [p.id, p.supplier, p.location, p.invoiceNumber, p.gstNumber, p.date, p.billAmount, p.paidAmount, p.dueAmount, p.status, p.sareeCount, p.soldCount, p.unsoldCount, p.returnedCount, p.unsoldCost, p.unsoldValue, p.refundValue])])} />
+             ...all.map(p => [p.id, p.supplier, p.location, p.invoiceNumber, p.gstNumber, p.date, p.billAmount, p.paidAmount, p.dueAmount, p.status, boughtCount(p), p.soldCount, p.unsoldCount, p.returnedCount, p.unsoldCost, p.unsoldValue, p.refundValue])])} />
         }
       >
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
+          <Select
+            value={supplierFilter}
+            onValueChange={v => { setSupplierFilter(v); setPurchaseFilter(ALL); }}
+            size="sm" containerClassName="w-full sm:w-auto" className="w-full sm:w-[220px] font-semibold"
+          >
+            <SelectItem value={ALL}>All suppliers</SelectItem>
+            {supplierOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+          </Select>
+          <Select
+            value={purchaseFilter}
+            onValueChange={setPurchaseFilter}
+            size="sm" containerClassName="w-full sm:w-auto" className="w-full sm:w-[300px] font-semibold"
+          >
+            <SelectItem value={ALL}>All purchases{supplierFilter !== ALL ? ` (${purchaseOptions.length})` : ""}</SelectItem>
+            {purchaseOptions.map(p => (
+              <SelectItem key={p.id} value={p.id}>{p.id} · {p.date}{supplierFilter === ALL ? ` · ${p.supplier}` : ""}</SelectItem>
+            ))}
+          </Select>
+          {(supplierFilter !== ALL || purchaseFilter !== ALL) && (
+            <Button variant="tertiary" size="sm" onClick={() => { setSupplierFilter(ALL); setPurchaseFilter(ALL); }}>Clear</Button>
+          )}
+        </div>
+
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>
           {[
             { l: "Purchased", v: String(totBought), c: T.luxuryBrown },
@@ -120,7 +161,7 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full">
                     <div style={{ background: "#F6F4EF", borderRadius: 12, padding: "10px 12px", textAlign: "center" }}>
                       <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>PURCHASED</div>
-                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{p.sareeCount}</div>
+                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{boughtCount(p)}</div>
                     </div>
                     <div style={{ background: "#F6F4EF", borderRadius: 12, padding: "10px 12px", textAlign: "center" }}>
                       <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>SOLD</div>

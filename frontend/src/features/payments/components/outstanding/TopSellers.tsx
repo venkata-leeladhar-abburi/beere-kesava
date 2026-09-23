@@ -2,15 +2,79 @@ import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { ChevronDown, ChevronUp, Factory, Truck, Users, LayoutGrid, List, type LucideIcon } from "lucide-react";
 import { T, F } from "../../theme";
-import { UnifiedSaree, SellerRank, rankSellers } from "@/features/customers";
+import { UnifiedSaree, SareeOrigin, SellerRank, rankSellers } from "@/features/customers";
 import { Card, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
-import { Button } from "../../../../shared/ui/primitives";
+import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 // ── Who is selling more ──────────────────────────────────────────────────────
 const RANK_PAGE = 5;
+const ALL = "__all__";
 
-function RankTable({ title, sub, ranks, unitLabel, icon }: { title: string; sub: string; ranks: SellerRank[]; unitLabel: string; icon: LucideIcon }) {
+// Same seller key rankSellers uses, so a dropdown choice maps to exactly one row.
+const sellerKey = (s: UnifiedSaree, origin: SareeOrigin) =>
+  origin === "weaver" ? (s.weaverId || "?") : origin === "factoryLoom" ? (s.factoryLoomId || "?") : (s.supplier || "?");
+// In-house output is grouped by batch; external stock by the purchase it came in on.
+const lotOf = (s: UnifiedSaree, origin: SareeOrigin) => (origin === "external" ? s.purchaseId : s.batchId) || "";
+
+// Filter state lives with the page, so a table and its highlight card always agree.
+function useRankFilter(sarees: UnifiedSaree[], origin: SareeOrigin) {
+  const [sellerFilter, setSellerFilter] = useState(ALL);
+  const [lotFilter, setLotFilter] = useState(ALL);
+  const lotLabel = origin === "external" ? "purchase" : "batch";
+
+  const allRanks = useMemo(() => rankSellers(sarees, origin), [sarees, origin]);
+  const lotOptions = useMemo(() => {
+    const set = new Set<string>();
+    sarees.forEach(s => {
+      if (s.origin !== origin) return;
+      if (sellerFilter !== ALL && sellerKey(s, origin) !== sellerFilter) return;
+      const l = lotOf(s, origin);
+      if (l) set.add(l);
+    });
+    return [...set].sort();
+  }, [sarees, origin, sellerFilter]);
+  const ranks = useMemo(() => {
+    const scoped = lotFilter === ALL ? sarees : sarees.filter(s => lotOf(s, origin) === lotFilter);
+    const r = lotFilter === ALL ? allRanks : rankSellers(scoped, origin);
+    return sellerFilter === ALL ? r : r.filter(x => x.key === sellerFilter);
+  }, [sarees, origin, allRanks, sellerFilter, lotFilter]);
+
+  return { sellerFilter, setSellerFilter, lotFilter, setLotFilter, lotLabel, allRanks, lotOptions, ranks };
+}
+type RankFilter = ReturnType<typeof useRankFilter>;
+
+function RankFilterControls({ filter, unitLabel, compact, onChange }: { filter: RankFilter; unitLabel: string; compact?: boolean; onChange?: () => void }) {
+  const { sellerFilter, setSellerFilter, lotFilter, setLotFilter, lotLabel, allRanks, lotOptions } = filter;
+  const w = compact ? "w-full" : "w-full sm:w-auto";
+  return (
+    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+      <Select
+        value={sellerFilter}
+        onValueChange={v => { setSellerFilter(v); setLotFilter(ALL); onChange?.(); }}
+        size="sm" containerClassName={compact ? "flex-1 min-w-[120px]" : w} className={compact ? "w-full font-semibold" : "w-full sm:w-[220px] font-semibold"}
+      >
+        <SelectItem value={ALL}>All {unitLabel.toLowerCase()}s</SelectItem>
+        {allRanks.map(x => <SelectItem key={x.key} value={x.key}>{x.name}</SelectItem>)}
+      </Select>
+      <Select
+        value={lotFilter}
+        onValueChange={v => { setLotFilter(v); onChange?.(); }}
+        size="sm" containerClassName={compact ? "flex-1 min-w-[120px]" : w} className={compact ? "w-full font-semibold" : "w-full sm:w-[260px] font-semibold"}
+      >
+        <SelectItem value={ALL}>All {lotLabel === "batch" ? "batches" : "purchases"}{sellerFilter !== ALL ? ` (${lotOptions.length})` : ""}</SelectItem>
+        {lotOptions.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+      </Select>
+      {(sellerFilter !== ALL || lotFilter !== ALL) && (
+        <Button variant="tertiary" size="sm" onClick={() => { setSellerFilter(ALL); setLotFilter(ALL); onChange?.(); }}>Clear</Button>
+      )}
+    </div>
+  );
+}
+
+function RankTable({ title, sub, filter, unitLabel, icon }: { title: string; sub: string; filter: RankFilter; unitLabel: string; icon: LucideIcon }) {
+  const { ranks } = filter;
+
   const max = Math.max(1, ...ranks.map(r => r.sold));
   const [shown, setShown] = useState(RANK_PAGE);
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
@@ -68,6 +132,10 @@ function RankTable({ title, sub, ranks, unitLabel, icon }: { title: string; sub:
            ...ranks.map(r => [r.name, r.sub, r.produced, r.sold, r.retail, r.wholesale, r.returned, r.outstanding, r.sellThroughPct, r.revenue])])} />
       }
     >
+      <div style={{ marginBottom: 14 }}>
+        <RankFilterControls filter={filter} unitLabel={unitLabel} onChange={() => setShown(RANK_PAGE)} />
+      </div>
+
       {/* Mobile View Toggle (placed just below the header section) */}
       <div className="flex md:hidden justify-end mb-3">
         <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
@@ -195,14 +263,15 @@ function RankTable({ title, sub, ranks, unitLabel, icon }: { title: string; sub:
 }
 
 export function TopSellers({ sarees }: { sarees: UnifiedSaree[] }) {
-  const weavers = useMemo(() => rankSellers(sarees, "weaver"), [sarees]);
-  const looms   = useMemo(() => rankSellers(sarees, "factoryLoom"), [sarees]);
-  const suppliers = useMemo(() => rankSellers(sarees, "external"), [sarees]);
+  const weaverF   = useRankFilter(sarees, "weaver");
+  const loomF     = useRankFilter(sarees, "factoryLoom");
+  const supplierF = useRankFilter(sarees, "external");
+  const weavers = weaverF.ranks, looms = loomF.ranks, suppliers = supplierF.ranks;
 
   const best = [
-    { l: "Top Weaver",         r: weavers[0],   icon: <Users size={16} color={T.antiqueGold} /> },
-    { l: "Top Factory Loom",   r: looms[0],     icon: <Factory size={16} color={T.antiqueGold} /> },
-    { l: "Top Supplier",       r: suppliers[0], icon: <Truck size={16} color={T.antiqueGold} /> },
+    { l: "Top Weaver",         r: weavers[0],   f: weaverF,   unit: "Weaver",       icon: <Users size={16} color={T.antiqueGold} /> },
+    { l: "Top Factory Loom",   r: looms[0],     f: loomF,     unit: "Factory Loom", icon: <Factory size={16} color={T.antiqueGold} /> },
+    { l: "Top Supplier",       r: suppliers[0], f: supplierF, unit: "Supplier",     icon: <Truck size={16} color={T.antiqueGold} /> },
   ];
 
   return (
@@ -213,6 +282,9 @@ export function TopSellers({ sarees }: { sarees: UnifiedSaree[] }) {
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
               {b.icon}
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700 }}>{b.l}</span>
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <RankFilterControls filter={b.f} unitLabel={b.unit} compact />
             </div>
             <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{b.r?.name || "—"}</div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 10 }}>{b.r?.sub || ""}</div>
@@ -230,9 +302,9 @@ export function TopSellers({ sarees }: { sarees: UnifiedSaree[] }) {
         ))}
       </div>
 
-      <RankTable title="Weavers — Selling Performance"       sub="Which weaver's sarees are actually moving out of stock." ranks={weavers}   unitLabel="Weaver" icon={Users} />
-      <RankTable title="Factory Looms — Selling Performance"  sub="Which in-house loom's output sells fastest."             ranks={looms}     unitLabel="Factory Loom" icon={Factory} />
-      <RankTable title="Suppliers — Selling Performance"      sub="Which external supplier's sarees sell best. Net revenue is after deducting customer refunds." ranks={suppliers} unitLabel="Supplier" icon={Truck} />
+      <RankTable title="Weavers — Selling Performance"       sub="Which weaver's sarees are actually moving out of stock." filter={weaverF} unitLabel="Weaver" icon={Users} />
+      <RankTable title="Factory Looms — Selling Performance"  sub="Which in-house loom's output sells fastest."             filter={loomF} unitLabel="Factory Loom" icon={Factory} />
+      <RankTable title="Suppliers — Selling Performance"      sub="Which external supplier's sarees sell best. Net revenue is after deducting customer refunds." filter={supplierF} unitLabel="Supplier" icon={Truck} />
     </div>
   );
 }
