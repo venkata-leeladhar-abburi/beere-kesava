@@ -88,7 +88,7 @@ export function SupplierFormFields({
           <Field label="IFSC Code" required error={errors.ifscCode}>
             <Input id="ifsc-code" value={form.ifscCode || ""} onChange={e => set("ifscCode", e.target.value)} placeholder="IFSC Code" />
           </Field>
-          <Field label="GST Number" required error={errors.gstCode}>
+          <Field label="GST Number (optional)" error={errors.gstCode}>
             <Input id="gst-number" value={form.gstCode} onChange={e => set("gstCode", e.target.value.toUpperCase())} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)"
               className="font-mono text-[13px]" />
           </Field>

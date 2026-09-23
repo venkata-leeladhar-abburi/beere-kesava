@@ -69,7 +69,7 @@ export function HomeSection({
   const recentSales = salesList.slice(0, 5).map(s => ({
     id: s.sareeId,
     customer: s.customerId ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`) : "Retail Counter",
-    design: sareeTypeText({ sareeTypeCode: s.saree?.sareeTypeCode ?? null, sareeTypeLabel: s.saree?.sareeType?.type ?? null }),
+    sareeType: sareeTypeText({ sareeTypeCode: s.saree?.sareeTypeCode ?? null, sareeTypeLabel: s.saree?.sareeType?.type ?? s.externalSareeType ?? null }),
     pay: s.paymentMethod ? (PAYMENT_LABEL[s.paymentMethod] ?? s.paymentMethod) : "—",
     amt: formatMoney(rupees(Number(s.amount))),
     time: dateLabel(s.saleDate),
@@ -143,7 +143,7 @@ export function HomeSection({
               <div role="table" aria-label="Recent Sales — Today" className={isTablet ? "min-w-[640px]" : undefined}>
                 <div role="rowgroup">
                   <div role="row" style={{ display: "grid", gridTemplateColumns: `50px 1.2fr 1fr 1.2fr 100px${canSeePrices ? " 120px" : ""}`, padding: "16px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FDFBF7" }}>
-                    {["S.No", "Saree ID", "Customer", "Design", "Payment", ...(canSeePrices ? ["Amount"] : [])].map(h => (
+                    {["S.No", "Saree ID", "Customer", "Saree Type", "Payment", ...(canSeePrices ? ["Amount"] : [])].map(h => (
                       <div key={h} role="columnheader" style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4, textTransform: "uppercase" }}>{h}</div>
                     ))}
                   </div>
@@ -168,7 +168,7 @@ export function HomeSection({
                           </div>
                         </div>
                         <div role="cell" style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>{s.customer}</div>
-                        <div role="cell" style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{s.design}</div>
+                        <div role="cell" style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{s.sareeType}</div>
                         <div role="cell" style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.pay}</div>
                         {canSeePrices && <div role="cell" style={{ fontFamily: F.d, fontWeight: 700, fontSize: 16, color: C.burg }}>{s.amt}</div>}
                       </div>

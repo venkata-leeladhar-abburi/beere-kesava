@@ -24,6 +24,8 @@ interface RawSaleRecord {
   customer?: { id: string; name: string } | null;
   /** Shop Staff / Accountant who rang up this sale. */
   soldBy?: BackendActorSummary | null;
+  /** Free-text type from the purchase line, for external pieces with no sareeTypeCode. */
+  externalSareeType?: string | null;
 }
 
 interface RawReturnRecord {
@@ -57,6 +59,8 @@ export interface BackendSaleRecord {
   customer?: { id: string; name: string } | null;
   /** Shop Staff / Accountant who rang up this sale. */
   soldBy?: BackendActorSummary | null;
+  /** Free-text type from the purchase line, for external pieces with no sareeTypeCode. */
+  externalSareeType?: string | null;
 }
 
 export interface BackendSaleReturn {

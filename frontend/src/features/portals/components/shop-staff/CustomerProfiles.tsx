@@ -42,8 +42,8 @@ function CustomerProfiles({ onOpenCustomer }: { onOpenCustomer: (customerId: str
   const [dataView, setDataView] = useState<DataView>("table");
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["shop-customers-list"],
-    queryFn: () => customersApi.list(200),
+    queryKey: ["shop-customers-list", "RETAIL"],
+    queryFn: () => customersApi.list(200, "RETAIL"),
   });
 
   const customers = useMemo<CustomerRow[]>(() => (data?.items ?? []).map(c => ({
@@ -58,7 +58,7 @@ function CustomerProfiles({ onOpenCustomer }: { onOpenCustomer: (customerId: str
     last: c.lastPurchaseDate
       ? new Date(c.lastPurchaseDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
       : "—",
-    regular: c.type === "WHOLESALE",
+    regular: (c.totalPurchases ?? 0) >= 2,
     initials: toInitials(c.name),
   })), [data]);
 
@@ -87,7 +87,7 @@ function CustomerProfiles({ onOpenCustomer }: { onOpenCustomer: (customerId: str
 
   const stats: PortalStat[] = [
     { label: "Total customers", value: customers.length, sub: "Registered in system", icon: Users, highlight: true },
-    { label: "Regular customers", value: regularCount, sub: "Wholesale & repeat buyers", icon: Star },
+    { label: "Regular customers", value: regularCount, sub: "Repeat buyers (2+ purchases)", icon: Star },
     { label: "Active today", value: activeToday, sub: "Bought today", icon: ShoppingBag },
     ...(canSeePrices
       ? [{ label: "Lifetime value", value: formatMoney(rupees(lifetime)), sub: "All customers combined", icon: Users } as PortalStat]
@@ -151,7 +151,7 @@ function CustomerProfiles({ onOpenCustomer }: { onOpenCustomer: (customerId: str
         eyebrow="Shop Staff Portal · Beere Kesava & Brothers Silks"
         title="Customer Profiles"
         titleAccent="& History"
-        description="All retail & wholesale customers — browse their purchase history, spending patterns, and contact details. Regular customers are starred for easy identification."
+        description="All retail customers — browse their purchase history, spending patterns, and contact details. Regular customers are starred for easy identification."
       />
       <PortalStatsStrip stats={stats} />
 

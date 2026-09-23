@@ -317,7 +317,7 @@ export class SalesService {
 
   async findAllSales(
     query: ListSaleQueryDto,
-  ): Promise<PaginatedResult<Prisma.SaleRecordGetPayload<{ include: typeof saleInclude }>>> {
+  ): Promise<PaginatedResult<Prisma.SaleRecordGetPayload<{ include: typeof saleInclude }> & { externalSareeType: string | null }>> {
     const where: Prisma.SaleRecordWhereInput = {
       channel: query.channel,
       ...(query.customerId ? { customerId: query.customerId } : {}),
@@ -334,7 +334,38 @@ export class SalesService {
       this.prisma.saleRecord.count({ where }),
     ]);
 
-    return { items, total, page: query.page, pageSize: query.pageSize };
+    return { items: await this.withExternalSareeType(items), total, page: query.page, pageSize: query.pageSize };
+  }
+
+  /**
+   * An external-purchase piece has no `sareeTypeCode` on its Saree row — its
+   * type is free text on the PurchaseSareeLine it came from (piece id
+   * convention `{lineCode}-{pieceNo}`, see ScanService.lookupExternalPiece).
+   * Attaches that text as `externalSareeType` so lists can still show a type.
+   */
+  private async withExternalSareeType<T extends { sareeId: string; saree: { sareeTypeCode: string | null } | null }>(
+    items: T[],
+  ): Promise<(T & { externalSareeType: string | null })[]> {
+    const lineCodeOf = (sareeId: string) => sareeId.match(/^(.+)-(\d{2,})$/)?.[1] ?? null;
+    const lineCodes = [
+      ...new Set(
+        items
+          .filter((i) => !i.saree?.sareeTypeCode)
+          .map((i) => lineCodeOf(i.sareeId))
+          .filter((c): c is string => c !== null),
+      ),
+    ];
+    const lines = lineCodes.length
+      ? await this.prisma.purchaseSareeLine.findMany({
+          where: { code: { in: lineCodes } },
+          select: { code: true, sareeType: true },
+        })
+      : [];
+    const typeByLine = new Map(lines.map((l) => [l.code, l.sareeType?.trim() || null]));
+    return items.map((i) => {
+      const lineCode = i.saree?.sareeTypeCode ? null : lineCodeOf(i.sareeId);
+      return { ...i, externalSareeType: lineCode ? (typeByLine.get(lineCode) ?? null) : null };
+    });
   }
 
   async findOneSale(saleRef: string) {

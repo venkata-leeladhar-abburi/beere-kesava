@@ -40,7 +40,6 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
     if (!form.bankName.trim()) errs.bankName = "Required";
     if (!form.accountNo.trim()) errs.accountNo = "Required";
     if (!form.ifscCode.trim()) errs.ifscCode = "Required";
-    if (!form.gstCode.trim()) errs.gstCode = "Required";
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     const initials = form.name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
     setSaving(true);
@@ -159,7 +158,7 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
               <Field label="IFSC Code" required error={errors.ifscCode} id="ifsc-code">
                 <Input value={form.ifscCode} onChange={e => set("ifscCode", e.target.value)} placeholder="IFSC Code" />
               </Field>
-              <Field label="GST Number" required error={errors.gstCode} id="gst-number">
+              <Field label="GST Number (optional)" error={errors.gstCode} id="gst-number">
                 <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN" />
               </Field>
             </div>

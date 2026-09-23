@@ -27,7 +27,6 @@ export function AddSupplierModal({ onSave, onCancel }: {
     if (!form.bankName.trim())    errs.bankName = "Required";
     if (!form.accountNo.trim())   errs.accountNo = "Required";
     if (!form.ifscCode?.trim())   errs.ifscCode = "Required";
-    if (!form.gstCode.trim())     errs.gstCode = "Required";
     if (Object.keys(errs).length) { setErrors(errs); return; }
     const finalWhatsapp = form.whatsapp?.trim() ? form.whatsapp : form.phone;
     onSave({ ...form, whatsapp: finalWhatsapp }, cardPreview);

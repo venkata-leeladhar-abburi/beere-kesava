@@ -30,8 +30,8 @@ export function CustomersSection({
   const [dateFilter, setDateFilter] = React.useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["shop-staff-customers"],
-    queryFn: () => customersApi.list(200),
+    queryKey: ["shop-staff-customers", "RETAIL"],
+    queryFn: () => customersApi.list(200, "RETAIL"),
   });
 
   // Purchase count / lifetime spend / last visit are computed server-side off
@@ -47,7 +47,7 @@ export function CustomersSection({
     last: c.lastPurchaseDate
       ? new Date(c.lastPurchaseDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
       : "—",
-    regular: c.type === "WHOLESALE",
+    regular: (c.totalPurchases ?? 0) >= 2,
     initials: toInitials(c.name),
   })), [data]);
 
@@ -77,7 +77,7 @@ export function CustomersSection({
 
   const stats: PortalStat[] = [
     { label: "Total customers", value: customers.length, sub: "Registered in system", icon: Users, highlight: true },
-    { label: "Regular customers", value: regularCustomers, sub: "Wholesale & repeat buyers", icon: Star },
+    { label: "Regular customers", value: regularCustomers, sub: "Repeat buyers (2+ purchases)", icon: Star },
     { label: "Active today", value: activeTodayCount, sub: "Bought today", icon: ShoppingBag },
     ...(canSeePrices
       ? [{ label: "Lifetime value", value: formatMoney(rupees(lifetime)), sub: "All customers combined", icon: Users } as PortalStat]
@@ -90,7 +90,7 @@ export function CustomersSection({
         eyebrow="Shop Staff Portal · Beere Kesava & Brothers Silks"
         title="Customer Profiles"
         titleAccent="& History"
-        description="All retail & wholesale customers — browse their purchase history, spending patterns, and contact details. Regular customers are starred for easy identification."
+        description="All retail customers — browse their purchase history, spending patterns, and contact details. Regular customers are starred for easy identification."
       />
       <PortalStatsStrip stats={stats} />
       <div style={{ padding: isTablet ? "24px 28px 40px" : "40px 48px 56px" }}>

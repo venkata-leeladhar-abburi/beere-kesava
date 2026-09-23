@@ -18,8 +18,8 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
   }, [vendor]);
 
   const handleSave = () => {
-    if (!form.bankName?.trim() || !form.accountNo?.trim() || !form.ifscCode?.trim() || !form.gstCode?.trim()) {
-      setError("Bank name, account number, IFSC code and GST number are required.");
+    if (!form.bankName?.trim() || !form.accountNo?.trim() || !form.ifscCode?.trim()) {
+      setError("Bank name, account number and IFSC code are required.");
       return;
     }
     setError(null);
@@ -118,7 +118,7 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
             <Field label="IFSC Code" required id="ifsc-code">
               <Input value={form.ifscCode || ""} onChange={e => set("ifscCode", e.target.value)} placeholder="IFSC Code" />
             </Field>
-            <Field label="GST Number" required id="gst-number">
+            <Field label="GST Number (optional)" id="gst-number">
               <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN" />
             </Field>
           </div>

@@ -93,7 +93,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
   const recentSales = salesList.slice(0, 5).map(s => ({
     id: s.sareeId,
     customer: s.customerId ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`) : "Retail Counter",
-    design: sareeTypeText({ sareeTypeCode: s.saree?.sareeTypeCode ?? null, sareeTypeLabel: s.saree?.sareeType?.type ?? null }),
+    sareeType: sareeTypeText({ sareeTypeCode: s.saree?.sareeTypeCode ?? null, sareeTypeLabel: s.saree?.sareeType?.type ?? s.externalSareeType ?? null }),
     amt: formatMoney(rupees(Number(s.amount))),
     time: dateLabel(s.saleDate),
     color: "#6E0F2D",
@@ -177,7 +177,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
                     {s.ext && <Chip label="📦 External" color={C.gold} bg="rgba(200,155,71,0.12)" />}
                   </div>
                   <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginTop: 3 }}>{s.customer}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 1 }}>{s.design}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 1 }}>{s.sareeType}</div>
                 </div>
                 <div style={{ textAlign: "right" as const, flexShrink: 0, marginLeft: 8 }}>
                   {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}

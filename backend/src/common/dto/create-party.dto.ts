@@ -40,9 +40,9 @@ export class CreatePartyDto {
   @IsString()
   address?: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  gstCode!: string;
+  gstCode?: string;
 
   @IsOptional()
   @IsString()

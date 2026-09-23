@@ -26,8 +26,8 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
   const [error, setError] = React.useState<string | null>(null);
 
   const handleSave = () => {
-    if (!bankName.trim() || !accountNumber.trim() || !ifscCode.trim() || !gstNumber.trim()) {
-      setError("Bank name, account number, IFSC code and GST number are required.");
+    if (!bankName.trim() || !accountNumber.trim() || !ifscCode.trim()) {
+      setError("Bank name, account number and IFSC code are required.");
       return;
     }
     setError(null);
@@ -101,7 +101,7 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
             <Field label="IFSC Code *">
               <Input type="text" value={ifscCode} onChange={e => setIfscCode(e.target.value)} placeholder="e.g. HDFC0001842" />
             </Field>
-            <Field label="GST Number *">
+            <Field label="GST Number (optional)">
               <Input type="text" value={gstNumber} onChange={e => setGstNumber(e.target.value)} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" />
             </Field>
           </div>

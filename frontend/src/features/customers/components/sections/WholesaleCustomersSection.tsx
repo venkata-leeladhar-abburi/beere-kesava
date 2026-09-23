@@ -219,7 +219,7 @@ export function WholesaleCustomersSection({
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
                     <Field label="IFSC Code"><Input aria-label="Bank IFSC code" type="text" placeholder="e.g. HDFC0001842" value={form.ifscCode} onChange={e => updateField("ifscCode", e.target.value)} /></Field>
-                    <Field label="GST Number"><Input aria-label="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" type="text" placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" value={form.gstNumber} onChange={e => updateField("gstNumber", e.target.value)} /></Field>
+                    <Field label="GST Number (optional)"><Input aria-label="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" type="text" placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" value={form.gstNumber} onChange={e => updateField("gstNumber", e.target.value)} /></Field>
                   </div>
                   <VisitingCardUploadField cardUrl={cardUrl} onChange={setCardUrl} />
                   <Field label="Notes"><Input aria-label="Any special instructions..." type="text" placeholder="Any special instructions..." value={form.notes} onChange={e => updateField("notes", e.target.value)} /></Field>

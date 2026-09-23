@@ -29,7 +29,6 @@ export function EditTab({
     if (!form.bankName.trim())  errs.bankName = "Required";
     if (!form.accountNo.trim()) errs.accountNo = "Required";
     if (!form.ifscCode?.trim()) errs.ifscCode = "Required";
-    if (!form.gstCode.trim())   errs.gstCode = "Required";
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
     const values = { ...form, whatsapp: form.whatsapp?.trim() ? form.whatsapp : form.phone };
