@@ -29,22 +29,59 @@ const SCAN_HINTS = new Map<DecodeHintType, unknown>([
   [DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.CODE_128, BarcodeFormat.QR_CODE]],
 ]);
 
-// Matches the visual guide box below (`inset: "18% 12%"`) — decoding is
-// cropped to this same region of the frame, not the whole video image.
-// Handing ZXing the *entire* 1920×1080 frame when the tag only fills a
-// small box in the middle wastes almost all of that resolution on
-// background the reader has to search past; a barcode that reads as "big
-// and clear" to a human eye can still be too few effective pixels wide once
-// diluted across the full frame. Cropping to the box the user was told to
-// fill, then upscaling that crop, puts the resolution where the code
-// actually is.
+// Matches the visual guide box below (`inset: "18% 12%"`). The box is drawn
+// over the *visible* part of the video, and the video is shown with
+// object-fit: cover inside a 4:3 frame — so a 16:9 desktop feed has its sides
+// cut off and a portrait phone feed (1080×1920) has most of its top and bottom
+// cut off. The crop has to be computed against that visible region, not the
+// raw frame, or the decoder looks somewhere other than where the user was told
+// to hold the tag (on a portrait phone, mostly at the floor above and below it).
 const ROI_INSET = { x: 0.12, y: 0.18 };
-// The crop is scanned at 2x its native pixel size — more samples per bar
-// for the decoder without needing an even higher camera resolution.
-const ROI_UPSCALE = 2;
-// One decode attempt roughly every 150ms — decoding a frame isn't free, and
-// the camera feed doesn't change fast enough to need every animation frame.
-const DECODE_INTERVAL_MS = 150;
+const VIEW_ASPECT = 4 / 3;
+// The canvas handed to ZXing is scaled so its long side is about this many
+// pixels. Upscaling a 1920-wide crop 2x produced a ~3000px canvas that took a
+// phone longer to decode than the interval between attempts, so the page
+// froze and effectively never finished a frame; small crops are still
+// upscaled to this size so thin bars get enough samples.
+const DECODE_LONG_SIDE = 1280;
+// Pause between decode attempts. A setTimeout chain rather than setInterval,
+// so a slow decode can never stack attempts on top of each other.
+const DECODE_INTERVAL_MS = 120;
+
+const NATIVE_FORMATS = ["code_128", "qr_code"];
+type NativeDetector = { detect: (src: CanvasImageSource) => Promise<Array<{ rawValue: string }>> };
+type NativeDetectorCtor = {
+  new (opts: { formats: string[] }): NativeDetector;
+  getSupportedFormats?: () => Promise<string[]>;
+};
+
+/**
+ * The browser's own BarcodeDetector (Chrome on Android and macOS) is far more
+ * tolerant of blur, glare, tilt and small codes than ZXing's JS port, so it is
+ * used whenever it exists and supports our formats; ZXing is the fallback.
+ */
+async function createNativeDetector(): Promise<NativeDetector | null> {
+  const Ctor = (globalThis as { BarcodeDetector?: NativeDetectorCtor }).BarcodeDetector;
+  if (!Ctor) return null;
+  try {
+    const supported = (await Ctor.getSupportedFormats?.()) ?? NATIVE_FORMATS;
+    const formats = NATIVE_FORMATS.filter(f => supported.includes(f));
+    if (formats.length === 0) return null;
+    return new Ctor({ formats });
+  } catch {
+    return null;
+  }
+}
+
+/** The part of the raw video frame actually visible in the 4:3 cover box. */
+function visibleRegion(vw: number, vh: number) {
+  if (vw / vh > VIEW_ASPECT) {
+    const w = vh * VIEW_ASPECT;
+    return { x: (vw - w) / 2, y: 0, w, h: vh };
+  }
+  const h = vw / VIEW_ASPECT;
+  return { x: 0, y: (vh - h) / 2, w: vw, h };
+}
 
 /**
  * How long to keep trying before admitting the tag may be unreadable.
@@ -111,7 +148,11 @@ export function CameraScannerModal({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Held in a ref so a caller passing an inline arrow doesn't restart the
+  // camera on every one of its re-renders (the effect used to depend on it).
+  const onDetectedRef = useRef(onDetected);
+  onDetectedRef.current = onDetected;
   const [error, setError] = useState<string | null>(null);
   const [unreadable, setUnreadable] = useState(false);
 
@@ -126,39 +167,65 @@ export function CameraScannerModal({
     const reader = new BrowserMultiFormatReader(SCAN_HINTS);
 
     const stopStream = () => {
-      if (intervalRef.current != null) { clearInterval(intervalRef.current); intervalRef.current = null; }
+      if (timerRef.current != null) { clearTimeout(timerRef.current); timerRef.current = null; }
       streamRef.current?.getTracks().forEach(t => t.stop());
       streamRef.current = null;
     };
 
-    const startDecodeLoop = (video: HTMLVideoElement) => {
+    // Draws a region of the frame into the canvas at decode size.
+    const draw = (video: HTMLVideoElement, r: { x: number; y: number; w: number; h: number }) => {
+      if (!ctx) return false;
+      const scale = DECODE_LONG_SIDE / Math.max(r.w, r.h);
+      canvas.width = Math.round(r.w * scale);
+      canvas.height = Math.round(r.h * scale);
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(video, r.x, r.y, r.w, r.h, 0, 0, canvas.width, canvas.height);
+      return true;
+    };
+
+    const startDecodeLoop = async (video: HTMLVideoElement) => {
       const startedAt = Date.now();
-      intervalRef.current = setInterval(() => {
-        if (cancelled || !ctx || video.videoWidth === 0) return;
-        const sx = video.videoWidth * ROI_INSET.x;
-        const sy = video.videoHeight * ROI_INSET.y;
-        const sw = video.videoWidth * (1 - ROI_INSET.x * 2);
-        const sh = video.videoHeight * (1 - ROI_INSET.y * 2);
-        canvas.width = sw * ROI_UPSCALE;
-        canvas.height = sh * ROI_UPSCALE;
-        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
-        try {
-          const result = reader.decodeFromCanvas(canvas);
-          if (cancelled) return;
-          stopStream();
-          onDetected(extractScannedId(result.getText()));
-        } catch {
-          // NotFoundException fires on every frame with no barcode in the
-          // cropped box — the normal steady state. Any other decode error
-          // (a partial/blurred read, etc.) is likewise just "try again next
-          // frame", so nothing here distinguishes them.
-          //
-          // The camera is deliberately left running: an old unreadable tag
-          // and a tag that simply is not in frame yet look identical from
-          // here, so this only ever adds a hint, never gives up for the user.
-          if (Date.now() - startedAt > UNREADABLE_AFTER_MS) setUnreadable(true);
+      const native = await createNativeDetector();
+      let attempt = 0;
+
+      const tick = async () => {
+        if (cancelled) return;
+        let text: string | null = null;
+        if (video.videoWidth > 0 && video.readyState >= 2) {
+          const vis = visibleRegion(video.videoWidth, video.videoHeight);
+          const roi = {
+            x: vis.x + vis.w * ROI_INSET.x,
+            y: vis.y + vis.h * ROI_INSET.y,
+            w: vis.w * (1 - ROI_INSET.x * 2),
+            h: vis.h * (1 - ROI_INSET.y * 2),
+          };
+          // Mostly the guide box, but every third attempt the whole visible
+          // view — a tag held a little outside the box should still read.
+          const region = attempt++ % 3 === 2 ? vis : roi;
+          try {
+            if (native) {
+              const found = await native.detect(draw(video, region) ? canvas : video);
+              if (found.length > 0) text = found[0].rawValue;
+            } else if (draw(video, region)) {
+              text = reader.decodeFromCanvas(canvas).getText();
+            }
+          } catch {
+            // NotFoundException on every frame without a code is the normal
+            // steady state; any other decode error is also just "next frame".
+          }
         }
-      }, DECODE_INTERVAL_MS);
+        if (cancelled) return;
+        if (text) {
+          stopStream();
+          onDetectedRef.current(extractScannedId(text));
+          return;
+        }
+        // The camera keeps running: a tag that isn't in frame yet and one
+        // that won't decode look identical from here, so this only adds a hint.
+        if (Date.now() - startedAt > UNREADABLE_AFTER_MS) setUnreadable(true);
+        timerRef.current = setTimeout(() => { void tick(); }, DECODE_INTERVAL_MS);
+      };
+      void tick();
     };
 
     const openCamera = (constraints: MediaStreamConstraints) =>
@@ -169,7 +236,7 @@ export function CameraScannerModal({
         if (!video) return;
         video.srcObject = stream;
         void video.play().catch(() => {});
-        video.onloadedmetadata = () => { if (!cancelled) startDecodeLoop(video); };
+        video.onloadedmetadata = () => { if (!cancelled) void startDecodeLoop(video); };
       });
 
     openCamera(SCAN_CONSTRAINTS).catch((e: unknown) => {
@@ -197,7 +264,7 @@ export function CameraScannerModal({
       cancelled = true;
       stopStream();
     };
-  }, [open, onDetected]);
+  }, [open]);
 
   if (!open) return null;
 
@@ -267,8 +334,9 @@ export function CameraScannerModal({
             >
               <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
               <span>
-                Still can&apos;t read this tag. Older labels can&apos;t be scanned — close the
-                camera and type the ID printed under the barcode instead.
+                Still can&apos;t read this tag. Hold it flat, in good light, about a hand&apos;s
+                width from the camera so the bars fill the box. If it still won&apos;t read,
+                close the camera and type the ID printed under the barcode.
               </span>
             </span>
           )}
