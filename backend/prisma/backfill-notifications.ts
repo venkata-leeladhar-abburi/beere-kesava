@@ -23,6 +23,7 @@
  */
 import { PrismaPg } from "@prisma/adapter-pg";
 import { NotificationTargetType, PrismaClient, UserRole } from "../src/generated/prisma/client";
+import { planSaleNotifications } from "./sale-notification-plan";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
@@ -476,15 +477,11 @@ async function build() {
     );
   }
 
-  const sales = await prisma.saleRecord.findMany({ include: { customer: true } });
-  for (const s of sales) {
-    forRole(UserRole.ADMIN, "SHOP_SALE_RECORDED", s.date, {
-      saleRef: s.saleRef,
-      sareeId: s.sareeId,
-      channel: s.channel,
-      customerName: s.customer.name,
-      amount: n(s.amount),
-    });
+  // One notification per retail bill and per wholesale dispatch invoice,
+  // skipping any the live app already announced — the same plan
+  // backfill-sale-notifications.ts writes, so the two never disagree.
+  for (const sale of await planSaleNotifications(prisma)) {
+    forRole(UserRole.ADMIN, sale.type, sale.createdAt, sale.payload);
   }
 
   const saleReturns = await prisma.returnRecord.findMany();

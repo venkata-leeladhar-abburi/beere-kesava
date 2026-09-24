@@ -388,7 +388,9 @@ export function useInventoryPageState() {
       ? opts.picked.map(s => s.sareeId || s.id)
       : quotationDispatch ? quotationDispatchSarees.map(r => r.sareeId) : dispatchableSelected.map(r => r.id);
     const customer = wholesaleCustomers.find(c => c.id === customerId);
-    const subtotal = sareeIds.reduce((sum, id) => sum + (parseFloat(inv.prices[id]) || 0), 0);
+    // Rounded to paise: summing typed prices in floating point can leave a
+    // tail like .30000000000000004, which the server rightly rejects.
+    const subtotal = Math.round(sareeIds.reduce((sum, id) => sum + (parseFloat(inv.prices[id]) || 0), 0) * 100) / 100;
     const gstAmount = inv.applyGst ? subtotal * (parseFloat(inv.gstPct) || 0) / 100 : 0;
     let created: { id: string; invoiceNumber?: string };
     try {

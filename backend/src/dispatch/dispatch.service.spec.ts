@@ -269,4 +269,39 @@ describe("DispatchService.create — challan numbering", () => {
       service.create({ type: DispatchType.WHOLESALE, sareeIds: ["S-1"], customerId: "c1", raiseInvoice: true }),
     ).resolves.toEqual(expect.objectContaining({ id: "d1" }));
   });
+
+  describe("wholesale invoice total", () => {
+    const wholesale = (extra: Record<string, unknown>) =>
+      service.create({ type: DispatchType.WHOLESALE, sareeIds: ["S-1", "S-2"], customerId: "c1", raiseInvoice: true, ...extra });
+
+    beforeEach(() => {
+      idGenerator.nextScoped.mockResolvedValue("INV-Sree-001");
+      prisma.inventoryRecord.findMany.mockResolvedValue([
+        { sareeId: "S-1", status: "FINISHING_COMPLETE" },
+        { sareeId: "S-2", status: "FINISHING_COMPLETE" },
+      ]);
+    });
+
+    it("books the exact sum of differing prices, not the rounded average multiplied back out", async () => {
+      // ₹1,000 + ₹1,501: the whole-rupee average is ₹1,251, and 2 × 1,251 = ₹2,502.
+      await wholesale({ pricePerSaree: 1251, totalAmount: 2501, gstPct: 5 });
+
+      expect(prisma.dispatchRecord.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ totalAmount: 2501, grandTotal: 2626.05 }),
+      });
+    });
+
+    it("still multiplies out when no subtotal is sent", async () => {
+      await wholesale({ pricePerSaree: 1500 });
+
+      expect(prisma.dispatchRecord.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ totalAmount: 3000 }),
+      });
+    });
+
+    it("rejects a subtotal that does not match the per-saree price", async () => {
+      await expect(wholesale({ pricePerSaree: 1500, totalAmount: 9000 })).rejects.toThrow(BadRequestException);
+      expect(prisma.dispatchRecord.create).not.toHaveBeenCalled();
+    });
+  });
 });

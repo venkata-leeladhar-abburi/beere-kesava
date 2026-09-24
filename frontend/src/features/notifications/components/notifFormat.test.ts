@@ -191,4 +191,13 @@ describe("sale notifications", () => {
     expect(n.sarees?.map(x => x.price)).toEqual(["₹1,500 − ₹150 (10%) = ₹1,350", "₹1,500"]);
     expect(n.sarees?.[0].source).toBe("Factory loom · Factory Loom FL-03");
   });
+
+  it("says when a past bill's rate is the listed price rather than a recorded discount", () => {
+    const base = { billRef: "RETAIL-Ruchitha-004-001", sareeCount: 2, retailTotal: 56000, discount: 10000, total: 46000, lines: [] };
+    const note = (payload: Record<string, unknown>) =>
+      toUnifiedNotif(notif("RETAIL_BILL_RECORDED", payload)).details?.find(d => d.label === "Note");
+
+    expect(note({ ...base, rateFromListedPrice: true })?.value).toContain("listed price");
+    expect(note(base)).toBeUndefined();
+  });
 });

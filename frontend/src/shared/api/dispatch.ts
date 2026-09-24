@@ -79,7 +79,11 @@ export interface CreateDispatchPayload {
   // number itself is allocated server-side and returned on the created record —
   // it is never sent from here.
   raiseInvoice?: boolean;
+  /** Whole-rupee average of the per-saree prices — describes the subtotal. */
   pricePerSaree?: number;
+  /** Exact sum of the per-saree prices. Sent so the invoice total isn't the
+   *  rounded average multiplied back out. */
+  totalAmount?: number;
   gstPct?: number;
   firmId?: string;
   paymentDueDate?: string;

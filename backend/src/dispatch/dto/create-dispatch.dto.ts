@@ -5,6 +5,7 @@ import {
   IsBoolean,
   IsEnum,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
@@ -100,6 +101,16 @@ export class CreateDispatchDto {
   @IsInt()
   @Min(0)
   pricePerSaree?: number;
+
+  // The exact sum of the per-saree prices typed on the invoice. pricePerSaree
+  // is a whole-rupee average of those, so multiplying it back out is off by
+  // up to half a rupee per saree whenever the prices differ; when this is
+  // sent it is the subtotal, and pricePerSaree only describes it.
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  totalAmount?: number;
 
   @IsOptional()
   @Type(() => Number)

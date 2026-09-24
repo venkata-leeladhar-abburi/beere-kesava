@@ -59,6 +59,13 @@ const paymentText = (p: Payload): string | null => {
 const rows = (list: Array<[string, string | null, boolean?]>): NotifDetail[] =>
   list.filter(([, v]) => v !== null && v !== "").map(([label, value, strong]) => ({ label, value: value!, strong }));
 
+/** Past sales recorded before the counter discount was saved: their rate is
+ *  the saree's listed price, so the discount is inferred, not recorded. */
+const listedPriceNote = (p: Payload): string | null =>
+  p.rateFromListedPrice
+    ? "Rate is the saree's listed price — this sale was recorded before the counter discount was saved."
+    : null;
+
 /** Retail and wholesale counter sales share one shape — one saree each. */
 const saleConfig = (category: "retail" | "wholesale"): TypeConfig => ({
   category,
@@ -87,6 +94,7 @@ const saleConfig = (category: "retail" | "wholesale"): TypeConfig => ({
       ["Saved", discount > 0 ? money(discount) : null],
       ["Payment", paymentText(p)],
       ["Sold by", str(p.soldByName)],
+      ["Note", listedPriceNote(p)],
     ]);
   },
 });
@@ -501,6 +509,7 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
         ["Saved", discount > 0 ? money(discount) : null],
         ["Payment", paymentText(p)],
         ["Sold by", str(p.soldByName)],
+        ["Note", listedPriceNote(p)],
       ]);
     },
     sarees: p =>

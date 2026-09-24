@@ -386,6 +386,9 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         // from the server rather than being sent up.
         raiseInvoice: type === "WHOLESALE",
         pricePerSaree: args.record.pricePerSaree,
+        // Only a wholesale dispatch has typed prices to total; a shop
+        // dispatch bills nobody.
+        totalAmount: type === "WHOLESALE" ? args.record.totalAmount : undefined,
         gstPct: args.record.gstPct,
         firmId: args.record.firmId,
         paymentDueDate: args.record.paymentDueDate,

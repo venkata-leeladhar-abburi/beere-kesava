@@ -184,7 +184,19 @@ export class DispatchService {
     }
 
     const pricePerSaree = dto.pricePerSaree ?? 0;
-    const totalAmount = pricePerSaree * dto.sareeIds.length;
+    // The client's exact subtotal wins over the rounded average multiplied
+    // back out — but only if the two agree to within that rounding, so a
+    // stray total can never be booked against a different per-saree price.
+    const averagedTotal = pricePerSaree * dto.sareeIds.length;
+    if (dto.totalAmount !== undefined && dto.pricePerSaree !== undefined) {
+      const tolerance = 0.5 * dto.sareeIds.length + 0.01;
+      if (Math.abs(dto.totalAmount - averagedTotal) > tolerance) {
+        throw new BadRequestException(
+          `totalAmount ${dto.totalAmount} does not match ${dto.sareeIds.length} saree(s) at ${pricePerSaree} each`,
+        );
+      }
+    }
+    const totalAmount = dto.totalAmount ?? averagedTotal;
     const gstPct = dto.gstPct ?? 0;
     const grandTotal = totalAmount + (totalAmount * gstPct) / 100;
 
