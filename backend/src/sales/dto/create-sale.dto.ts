@@ -30,4 +30,17 @@ export class CreateSaleDto {
   @IsOptional()
   @IsString()
   paymentRef?: string;
+
+  // What the counter discounted from, and how ("10%") — carried into the
+  // admin notification so it shows rate, discount and final amount. Not
+  // stored on the sale itself.
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  originalPrice?: number;
+
+  @IsOptional()
+  @IsString()
+  discountNote?: string;
 }

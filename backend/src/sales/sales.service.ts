@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import {
@@ -10,6 +10,7 @@ import {
 } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment, nameSegment } from "../id-generator/id-generator.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { loadSareeDetails } from "./saree-details";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateReturnDto } from "./dto/create-return.dto";
 import { CreateSaleDto } from "./dto/create-sale.dto";
@@ -59,6 +60,8 @@ export interface ReturnStockItem {
 
 @Injectable()
 export class SalesService {
+  private readonly logger = new Logger(SalesService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
@@ -228,13 +231,7 @@ export class SalesService {
       newValue: String(dto.amount),
     });
 
-    await this.notifications.notifyRole(UserRole.ADMIN, "SHOP_SALE_RECORDED", {
-      saleRef,
-      sareeId: dto.sareeId,
-      channel: dto.channel,
-      customerName: customer.name,
-      amount: Number(dto.amount),
-    });
+    await this.notifySaleRecorded(saleRef, dto, customer);
 
     const sale = await this.findOneSale(saleRef);
 
@@ -312,7 +309,65 @@ export class SalesService {
       newValue: String(dto.amount),
     });
 
+    await this.notifySaleRecorded(saleRef, dto, customer);
+
     return this.findOneSale(saleRef);
+  }
+
+  /**
+   * Admin/superadmin feed entry for one sold saree, filed under Retail Sales
+   * or Wholesale Sales by channel. Carries what the admin copy of the bill
+   * prints — saree type, source (weaver / factory loom / supplier), rate,
+   * discount, final amount, payment and who rang it up — so the feed can be
+   * read without opening the bill.
+   */
+  private async notifySaleRecorded(
+    saleRef: string,
+    dto: CreateSaleDto,
+    customer: { name: string; phone: string | null },
+  ) {
+    // Best-effort: the sale is already committed, so a failure building the
+    // feed entry must not report a recorded sale as failed to the counter.
+    try {
+      await this.sendSaleNotification(saleRef, dto, customer);
+    } catch (err) {
+      this.logger.warn(`Sale ${saleRef} saved but its notification failed: ${String(err)}`);
+    }
+  }
+
+  private async sendSaleNotification(
+    saleRef: string,
+    dto: CreateSaleDto,
+    customer: { name: string; phone: string | null },
+  ) {
+    const [details, soldBy] = await Promise.all([
+      loadSareeDetails(this.prisma, [dto.sareeId]).then((m) => m.get(dto.sareeId)),
+      dto.actorId
+        ? this.prisma.user.findUnique({ where: { id: dto.actorId }, select: { firstName: true, lastName: true } })
+        : null,
+    ]);
+    const amount = Number(dto.amount);
+    const rate = dto.originalPrice ?? details?.retailPrice ?? amount;
+    await this.notifications.notifyRole(
+      UserRole.ADMIN,
+      dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE_SALE_RECORDED" : "RETAIL_SALE_RECORDED",
+      {
+        saleRef,
+        sareeId: dto.sareeId,
+        channel: dto.channel,
+        customerName: customer.name,
+        customerPhone: customer.phone,
+        sareeType: details?.sareeType ?? null,
+        source: details?.source ?? null,
+        rate,
+        discount: Math.max(0, rate - amount),
+        discountNote: dto.discountNote ?? null,
+        amount,
+        paymentMethod: dto.paymentMethod ?? null,
+        paymentRef: dto.paymentRef ?? null,
+        soldByName: soldBy ? `${soldBy.firstName} ${soldBy.lastName}`.trim() : null,
+      },
+    );
   }
 
   async findAllSales(

@@ -17,7 +17,7 @@ import { NewSaleBillModal } from './NewSaleBillModal';
 import { NewSaleSuccessView } from './NewSaleSuccessView';
 import { CustomerSelectStep, Customer } from './CustomerSelectStep';
 import { ScanSareeStep } from './ScanSareeStep';
-import { cartTotal, cartOriginalTotal, type SaleLine } from './sale-cart';
+import { cartTotal, cartOriginalTotal, applyDiscount, discountLabel, type SaleLine, type DiscountMode } from './sale-cart';
 import { ApiError } from "../../../../shared/api/client";
 import { scanApi } from "../../../../shared/api/scan";
 import { salesApi } from "../../../../shared/api/sales";
@@ -161,7 +161,18 @@ export function NewSaleFlow() {
           ? `${result.weaver.name}${result.weaver.loomNumber != null ? ` · Loom ${result.weaver.loomNumber}` : ""}`
           : result.factoryLoom ? `Factory Loom ${result.factoryLoom.code ?? result.factoryLoom.loomNumber}` : "—",
         originalPrice: price,
+        discountMode: "amount",
+        discountValue: 0,
         soldPrice: price,
+        source: result.origin === "external"
+          ? result.supplier
+            ? { kind: "external", name: result.supplier.name, detail: result.invoiceNumber ? `Invoice ${result.invoiceNumber}` : undefined }
+            : undefined
+          : result.weaver
+            ? { kind: "weaver", name: result.weaver.name, detail: result.weaver.loomNumber != null ? `Loom ${result.weaver.loomNumber}` : undefined }
+            : result.factoryLoom
+              ? { kind: "factory", name: `Factory Loom ${result.factoryLoom.code ?? result.factoryLoom.loomNumber}` }
+              : undefined,
       };
     } catch (err) {
       return err instanceof ApiError ? err.message : `Could not find saree ${id}.`;
@@ -192,8 +203,8 @@ export function NewSaleFlow() {
 
   const removeLine = (id: string) => setCart(prev => prev.filter(l => l.id !== id));
 
-  const setLinePrice = (id: string, price: number) =>
-    setCart(prev => prev.map(l => (l.id === id ? { ...l, soldPrice: price } : l)));
+  const setLineDiscount = (id: string, mode: DiscountMode, value: number) =>
+    setCart(prev => prev.map(l => (l.id === id ? applyDiscount(l, mode, value) : l)));
 
   const handleSelectCustomer = (cust: Customer) => {
     setSelectedCustomer(cust);
@@ -364,7 +375,7 @@ export function NewSaleFlow() {
           handleScan={handleScan}
           handleAddSarees={handleAddSarees}
           removeLine={removeLine}
-          setLinePrice={setLinePrice}
+          setLineDiscount={setLineDiscount}
           scanError={scanError}
           availableSarees={filteredSarees}
           sareesLoading={inventoryLoading}
@@ -616,6 +627,8 @@ export function NewSaleFlow() {
                       customerId,
                       paymentMethod: payment ?? undefined,
                       paymentRef: payRef.trim() || undefined,
+                      originalPrice: line.originalPrice,
+                      discountNote: discountLabel(line),
                     });
                     recorded.push(line.id);
                     refs.push(sale.saleRef);

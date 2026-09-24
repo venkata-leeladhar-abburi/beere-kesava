@@ -8,9 +8,10 @@ import {
   Post,
   Query,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
+import { FileFieldsInterceptor, FileInterceptor } from "@nestjs/platform-express";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
@@ -64,12 +65,24 @@ export class WhatsAppController {
   @Post("send-sale-bill")
   @HttpCode(HttpStatus.OK)
   @RequireRoles(UserRole.SHOP, UserRole.ACCOUNTANT, UserRole.ADMIN, UserRole.SUPERADMIN)
-  @UseInterceptors(FileInterceptor("file", documentUploadOptions()))
+  // `adminFile` (optional) is the admin copy of the bill, which also names
+  // each saree's source — the admin team gets it instead of the customer's.
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: "file", maxCount: 1 },
+        { name: "adminFile", maxCount: 1 },
+      ],
+      documentUploadOptions(),
+    ),
+  )
   sendSaleBill(
-    @UploadedFile() file: Express.Multer.File | undefined,
+    @UploadedFiles() files: { file?: Express.Multer.File[]; adminFile?: Express.Multer.File[] } | undefined,
     @Body("saleRefs") saleRefs: string | undefined,
     @CurrentUser() user: AuthenticatedUser,
   ) {
+    const file = files?.file?.[0];
+    const adminFile = files?.adminFile?.[0];
     if (!file) throw new BadRequestException("A PDF file is required");
     if (!saleRefs) throw new BadRequestException("saleRefs is required");
 
@@ -83,6 +96,6 @@ export class WhatsAppController {
       throw new BadRequestException("saleRefs must be a JSON array of sale references");
     }
 
-    return this.whatsappSales.sendSaleBill(parsed as string[], file, user.id);
+    return this.whatsappSales.sendSaleBill(parsed as string[], file, user.id, adminFile);
   }
 }

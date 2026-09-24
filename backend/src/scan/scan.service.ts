@@ -1,24 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { sellingPerPiece } from "../sales/saree-details";
 import { PrismaService } from "../prisma/prisma.service";
-
-/**
- * What ONE physical piece of an external-purchase line sells for.
- *
- * `PurchaseSareeLine.finalAmount` is the whole line's total — buying price
- * plus markup, times `quantity` — so a line of ten ₹23,000 sarees stores
- * ₹2,30,000. Returning that as a piece's selling price put ten sarees'
- * worth on the counter for one saree (and disagreed with the ₹23,000 its own
- * printed tag showed).
- *
- * Derived from price + sellPercent rather than `finalAmount / quantity`, to
- * match the frontend exactly: `computeFinalAmount(price, sellPercent, 1)` in
- * supplier-types.ts is what every purchase screen, the inventory row and the
- * printed tag already use, and `sellPercent` is the stored source of truth a
- * hand-typed selling price is converted into.
- */
-function sellingPerPiece(price: number, sellPercent: number): number {
-  return Math.round((price + (price * sellPercent) / 100) * 100) / 100;
-}
 
 @Injectable()
 export class ScanService {

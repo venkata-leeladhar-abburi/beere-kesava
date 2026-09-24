@@ -99,6 +99,10 @@ export interface CreateSalePayload {
   paymentMethod?: string;
   /** UPI transaction id or last-4 card digits, when the method has one. */
   paymentRef?: string;
+  /** Retail rate before the counter discount, and "10%" when it was a
+   *  percentage — shown in the admin notification, not stored on the sale. */
+  originalPrice?: number;
+  discountNote?: string;
 }
 
 export interface CreateReturnPayload {

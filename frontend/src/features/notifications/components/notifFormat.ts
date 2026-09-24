@@ -1,6 +1,6 @@
 import { formatMoney, rupees } from "@/lib/domain/money";
 import type { BackendNotification } from "@/shared/api/notifications";
-import type { Priority, UnifiedNotif } from "./notifTypes";
+import type { NotifDetail, NotifSaree, Priority, UnifiedNotif } from "./notifTypes";
 
 /** Payload values arrive as free-form JSON — read them defensively. */
 type Payload = Record<string, unknown>;
@@ -23,11 +23,73 @@ const withReason = (body: string, reason: unknown): string => {
 };
 
 interface TypeConfig {
-  category: UnifiedNotif["category"];
+  /** A function when the same type files differently by payload — an old
+   *  SHOP_SALE_RECORDED is retail or wholesale depending on its channel. */
+  category: UnifiedNotif["category"] | ((payload: Payload) => UnifiedNotif["category"]);
   priority: Priority;
   title: (payload: Payload) => string;
   body: (payload: Payload) => string;
+  details?: (payload: Payload) => NotifDetail[];
+  sarees?: (payload: Payload) => NotifSaree[];
 }
+
+const SOURCE_KIND: Record<string, string> = {
+  weaver: "Weaver",
+  factory: "Factory loom",
+  external: "External purchase",
+};
+
+/** { kind, name, detail } → "Weaver · Ramoji Rao · Loom 1". */
+function sourceText(v: unknown): string | null {
+  if (!v || typeof v !== "object") return null;
+  const src = v as Payload;
+  const name = str(src.name);
+  if (!name) return null;
+  return [SOURCE_KIND[String(src.kind)] ?? null, name, str(src.detail)].filter(Boolean).join(" · ");
+}
+
+const paymentText = (p: Payload): string | null => {
+  const method = str(p.paymentMethod);
+  if (!method) return null;
+  const label = method.toUpperCase() === "UPI" ? "UPI" : method.charAt(0).toUpperCase() + method.slice(1).toLowerCase();
+  return p.paymentRef ? `${label} · ${String(p.paymentRef)}` : label;
+};
+
+/** Drops rows whose value is missing, so old payloads still render cleanly. */
+const rows = (list: Array<[string, string | null, boolean?]>): NotifDetail[] =>
+  list.filter(([, v]) => v !== null && v !== "").map(([label, value, strong]) => ({ label, value: value!, strong }));
+
+/** Retail and wholesale counter sales share one shape — one saree each. */
+const saleConfig = (category: "retail" | "wholesale"): TypeConfig => ({
+  category,
+  priority: "success",
+  title: p => `${category === "retail" ? "Retail" : "Wholesale"} Sale${suffix(p.saleRef)}`,
+  body: p => {
+    const discount = num(p.discount);
+    const off = discount > 0
+      ? ` after ${money(discount)} off${p.discountNote ? ` (${String(p.discountNote)})` : ""}`
+      : "";
+    const type = str(p.sareeType);
+    return `${str(p.sareeId) ?? "A saree"}${type ? ` (${type})` : ""} sold to ${str(p.customerName) ?? "customer"} for ${money(p.amount)}${off}.`;
+  },
+  details: p => {
+    const discount = num(p.discount);
+    return rows([
+      ["Sale ref", str(p.saleRef)],
+      ["Customer", str(p.customerName)],
+      ["Phone", str(p.customerPhone)],
+      ["Saree", str(p.sareeId)],
+      ["Saree type", str(p.sareeType)],
+      ["Source", sourceText(p.source)],
+      ["Rate", p.rate != null ? money(p.rate) : null],
+      ["Discount", discount > 0 ? `− ${money(discount)}${p.discountNote ? ` (${String(p.discountNote)})` : ""}` : null],
+      ["Final amount", money(p.amount), true],
+      ["Saved", discount > 0 ? money(discount) : null],
+      ["Payment", paymentText(p)],
+      ["Sold by", str(p.soldByName)],
+    ]);
+  },
+});
 
 /**
  * Backend Notification rows only carry a `type` string + free-form JSON
@@ -417,8 +479,39 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
     body: p =>
       `${pieces(p.sareeCount)} dispatched ${num(p.daysSinceDispatch)} day(s) ago and still not confirmed by the shop.`,
   },
+  RETAIL_SALE_RECORDED: saleConfig("retail"),
+  WHOLESALE_SALE_RECORDED: saleConfig("wholesale"),
+  WHOLESALE_DISPATCH_RECORDED: {
+    category: "wholesale",
+    priority: "success",
+    title: p => `Wholesale Sale${suffix(p.invoiceNumber)}`,
+    body: p =>
+      `${pieces(p.sareeCount)} dispatched to ${str(p.customerName) ?? "a wholesale customer"} · ${money(p.grandTotal)}${num(p.gstPct) > 0 ? ` incl. ${num(p.gstPct)}% GST` : ""}.`,
+    details: p =>
+      rows([
+        ["Customer", str(p.customerName)],
+        ["Phone", str(p.customerPhone)],
+        ["Invoice", str(p.invoiceNumber)],
+        ["Sarees", String(num(p.sareeCount))],
+        ["Rate per saree", num(p.pricePerSaree) > 0 ? money(p.pricePerSaree) : null],
+        ["Subtotal", money(p.totalAmount)],
+        ["GST", num(p.gstPct) > 0 ? `${num(p.gstPct)}% · ${money(num(p.grandTotal) - num(p.totalAmount))}` : null],
+        ["Grand total", money(p.grandTotal), true],
+        ["Bulk order", str(p.bulkOrderRef)],
+        ["Transport", [str(p.transportCompany), p.lrNumber ? `LR ${String(p.lrNumber)}` : null].filter(Boolean).join(" · ") || null],
+      ]),
+    sarees: p =>
+      Array.isArray(p.sarees)
+        ? (p.sarees as Payload[]).map(x => ({
+            sareeId: String(x.sareeId ?? "—"),
+            sareeType: str(x.sareeType),
+            source: sourceText(x.source),
+          }))
+        : [],
+  },
+  // Older rows, written before sales split into Retail and Wholesale.
   SHOP_SALE_RECORDED: {
-    category: "dispatch",
+    category: p => (String(p.channel).toUpperCase() === "WHOLESALE" ? "wholesale" : "retail"),
     priority: "info",
     title: p => `Sale Recorded${suffix(p.saleRef)}`,
     body: p =>
@@ -468,6 +561,8 @@ export function humanizeType(type: string): string {
 export function inferCategory(type: string): UnifiedNotif["category"] {
   const t = type.toUpperCase();
   if (t.includes("PAYMENT") || t.includes("INVOICE") || t.includes("BILL")) return "payment";
+  if (t.includes("WHOLESALE")) return "wholesale";
+  if (t.includes("SALE") && !t.includes("RETURN")) return "retail";
   if (t.includes("DISPATCH") || t.includes("SHOP") || t.includes("ORDER") || t.includes("SALE")) return "dispatch";
   if (t.includes("WEAVER") || t.includes("LOOM")) return "weaver";
   if (t.includes("WARP") || t.includes("MATERIAL") || t.includes("STOCK") || t.includes("GRN")) return "material";
@@ -531,13 +626,23 @@ export function formatRelativeTime(iso: string): string {
 
 export function toUnifiedNotif(n: BackendNotification): UnifiedNotif {
   const cfg = TYPE_CONFIG[n.type];
+  const payload = n.payload ?? {};
+  const category = typeof cfg?.category === "function"
+    ? safely(cfg.category, payload, () => inferCategory(n.type)) as UnifiedNotif["category"]
+    : cfg?.category ?? inferCategory(n.type);
+  const optional = <T,>(render: ((p: Payload) => T) | undefined): T | undefined => {
+    if (!render) return undefined;
+    try { return render(payload); } catch { return undefined; }
+  };
   return {
     id: n.id,
     priority: cfg?.priority ?? inferPriority(n.type),
-    category: cfg?.category ?? inferCategory(n.type),
+    category,
     title: notificationTitle(n),
     body: notificationBody(n),
     time: formatRelativeTime(n.createdAt),
     read: n.readAt !== null,
+    details: optional(cfg?.details),
+    sarees: optional(cfg?.sarees),
   };
 }

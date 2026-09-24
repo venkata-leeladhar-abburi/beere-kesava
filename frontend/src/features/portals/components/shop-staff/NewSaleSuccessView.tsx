@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Check, Printer, MessageSquare, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { C, F, Card, Btn, HeroHeader } from "./theme";
-import type { SaleLine } from "./sale-cart";
+import { toBillLine, type SaleLine } from "./sale-cart";
 import { isApiError } from "../../../../shared/api/client";
 import { whatsappApi } from "../../../../shared/api/whatsapp";
 import {
@@ -63,33 +63,30 @@ export function NewSaleSuccessView({
     setSending(true);
     const toastId = toast.loading(`Preparing bill ${billRef}…`);
     try {
-      // The same document the Print button shows, rasterised to a PDF the
-      // backend attaches to both the customer's copy and the admin alert.
-      const pdf = await exportDocumentPdfBlob(
+      // The same document the Print button shows, rasterised to a PDF for
+      // the customer — plus an admin copy that also names each saree's
+      // source (weaver, factory loom or supplier), which the customer's
+      // copy must never carry.
+      const billFor = (copy: "customer" | "admin") => (
         <RetailBillDocument
+          copy={copy}
           billRef={billRef}
           billDate={soldAt.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
           firm={DEFAULT_LETTERHEAD_FIRM}
           customerName={custName}
           customerPhone={phone.trim()}
           customerAddress={custAddress}
-          lines={lines.map(l => ({
-            sareeId: l.id,
-            name: l.name,
-            type: l.type,
-            design: l.design,
-            soldPrice: l.soldPrice,
-            originalPrice: l.originalPrice,
-          }))}
+          lines={lines.map(toBillLine)}
           total={total}
           paymentMethod={payment ?? undefined}
           paymentRef={payRef}
           saleRefs={saleRefs}
-        />,
-        { fileName: billRef, title: `Retail Bill ${billRef}` },
+        />
       );
+      const pdf = await exportDocumentPdfBlob(billFor("customer"), { fileName: billRef, title: `Retail Bill ${billRef}` });
+      const adminPdf = await exportDocumentPdfBlob(billFor("admin"), { fileName: `${billRef}-admin`, title: `Retail Bill ${billRef} (Admin)` });
 
-      const result = await whatsappApi.sendSaleBill(saleRefs, pdf, billRef);
+      const result = await whatsappApi.sendSaleBill(saleRefs, pdf, billRef, adminPdf);
       setSent(true);
 
       // The customer copy is skipped server-side when no number is on the

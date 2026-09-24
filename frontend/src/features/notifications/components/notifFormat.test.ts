@@ -75,7 +75,10 @@ const ROUTING: Array<[string, string]> = [
   ["SHOP_DISPATCH_RECEIVED", "dispatch"],
   ["SHOP_RECEIPT_DISCREPANCY_ALERT", "dispatch"],
   ["SHOP_DISPATCH_UNCONFIRMED", "dispatch"],
-  ["SHOP_SALE_RECORDED", "dispatch"],
+  ["SHOP_SALE_RECORDED", "retail"],
+  ["RETAIL_SALE_RECORDED", "retail"],
+  ["WHOLESALE_SALE_RECORDED", "wholesale"],
+  ["WHOLESALE_DISPATCH_RECORDED", "wholesale"],
   ["SHOP_SALE_RETURNED", "dispatch"],
   ["SHOP_RETURN_TO_INVENTORY", "dispatch"],
   ["SHOP_STOCK_LOW", "dispatch"],
@@ -118,5 +121,52 @@ describe("notification content", () => {
     );
     expect(unified.priority).toBe("critical");
     expect(unified.body).toContain("2 missing");
+  });
+});
+
+describe("sale notifications", () => {
+  it("files an older wholesale-channel SHOP_SALE_RECORDED under Wholesale Sales", () => {
+    expect(toUnifiedNotif(notif("SHOP_SALE_RECORDED", { channel: "WHOLESALE" })).category).toBe("wholesale");
+  });
+
+  it("carries what the admin bill prints for a retail sale", () => {
+    const n = toUnifiedNotif(notif("RETAIL_SALE_RECORDED", {
+      saleRef: "RETAIL-Chetan-001-001",
+      sareeId: "RAMOJI RAO-L1-B001-008",
+      customerName: "Chetan",
+      sareeType: "KJ-001 · KANJIVARAM",
+      source: { kind: "weaver", name: "Ramoji Rao", detail: "Loom 1" },
+      rate: 1500,
+      discount: 150,
+      discountNote: "10%",
+      amount: 1350,
+      paymentMethod: "cash",
+    }));
+    const byLabel = Object.fromEntries((n.details ?? []).map(d => [d.label, d.value]));
+    expect(byLabel["Saree type"]).toBe("KJ-001 · KANJIVARAM");
+    expect(byLabel["Source"]).toBe("Weaver · Ramoji Rao · Loom 1");
+    expect(byLabel["Discount"]).toContain("(10%)");
+    expect(byLabel["Payment"]).toBe("Cash");
+    expect(n.body).toContain("sold to Chetan");
+    // Nothing unknown is shown as an empty row.
+    expect(byLabel["Phone"]).toBeUndefined();
+  });
+
+  it("lists every saree of a wholesale dispatch with its type and source", () => {
+    const n = toUnifiedNotif(notif("WHOLESALE_DISPATCH_RECORDED", {
+      customerName: "Sree Kesava",
+      sareeCount: 2,
+      totalAmount: 4000,
+      grandTotal: 4200,
+      gstPct: 5,
+      sarees: [
+        { sareeId: "A-01", sareeType: "UP-002 · UPPADA", source: { kind: "external", name: "Sree Lakshmi Silk House", detail: "Invoice INV-9" } },
+        { sareeId: "B-02", sareeType: null, source: null },
+      ],
+    }));
+    expect(n.sarees).toEqual([
+      { sareeId: "A-01", sareeType: "UP-002 · UPPADA", source: "External purchase · Sree Lakshmi Silk House · Invoice INV-9" },
+      { sareeId: "B-02", sareeType: null, source: null },
+    ]);
   });
 });

@@ -30,9 +30,19 @@ export interface RetailBillLineItem {
   design?: string;
   /** Rupees. */
   soldPrice: number;
-  /** Rupees — shown struck through when it differs from soldPrice. */
+  /** Rupees — the retail rate before any counter discount. */
   originalPrice?: number;
+  /** "10%" when the discount was given as a percentage. */
+  discountNote?: string;
+  /** Where the saree came from. Printed only on the admin copy. */
+  source?: { kind: "weaver" | "factory" | "external"; name: string; detail?: string };
 }
+
+const SOURCE_KIND: Record<NonNullable<RetailBillLineItem["source"]>["kind"], string> = {
+  weaver: "Weaver",
+  factory: "Factory loom",
+  external: "External purchase",
+};
 
 export interface RetailBillDocumentProps {
   billRef: string;
@@ -50,6 +60,9 @@ export interface RetailBillDocumentProps {
   /** Every SaleRecord reference on this bill — listed when the basket has more than one. */
   saleRefs?: string[];
   pageInfo?: { page: number; of: number };
+  /** "admin" adds each saree's source (weaver / factory loom / supplier) —
+   *  the copy that goes to the admin team, never to the customer. */
+  copy?: "customer" | "admin";
 }
 
 /** "upi" → "UPI", "cash" → "Cash". */
@@ -62,6 +75,7 @@ function paymentLabel(method?: string): string {
 export function RetailBillDocument({
   billRef, billDate, firm = DEFAULT_LETTERHEAD_FIRM, customerName, customerPhone,
   customerAddress, lines, total, paymentMethod, paymentRef, soldBy, saleRefs, pageInfo,
+  copy = "customer",
 }: RetailBillDocumentProps) {
   const retailTotal = lines.reduce((sum, l) => sum + (l.originalPrice ?? l.soldPrice), 0);
   const discount = retailTotal - total;
@@ -70,6 +84,7 @@ export function RetailBillDocument({
     { label: "Bill No", value: billRef, code: true },
     { label: "Date", value: billDate },
     { label: "Payment", value: paymentLabel(paymentMethod) },
+    { label: "Sarees", value: String(lines.length) },
     ...(paymentRef ? [{ label: "Reference", value: paymentRef, code: true }] : []),
   ];
 
@@ -85,10 +100,15 @@ export function RetailBillDocument({
     { label: "Total Paid", amount: formatPaise(toPaise(total)), grand: true },
   ];
 
+  const admin = copy === "admin";
+  const money = (n: number) => formatPaise(toPaise(n));
+  const typeOf = (row: RetailBillLineItem) =>
+    row.type && row.type !== "—" ? row.type : row.name && row.name !== "—" ? row.name : "—";
+
   return (
     <DocumentPage
       pageInfo={pageInfo}
-      band={<Letterhead firm={firm} title="Retail Bill" documentNumber={billRef} />}
+      band={<Letterhead firm={firm} title={admin ? "Retail Bill · Admin Copy" : "Retail Bill"} documentNumber={billRef} />}
     >
       <PartyBlock
         parties={[
@@ -104,56 +124,84 @@ export function RetailBillDocument({
 
       <LineItemTable
         columns={[
-          { header: "#", align: "center", width: "9mm", cell: (_row, i) => i + 1 },
+          { header: "#", align: "center", width: "8mm", cell: (_row, i) => i + 1 },
           {
             header: "Saree",
-            width: "58mm",
             cell: (row: RetailBillLineItem) => (
-              <div>
-                <div style={{ fontFamily: "var(--font-code)", fontWeight: 700, color: "var(--doc-burgundy)" }}>
-                  {row.sareeId}
-                </div>
-                {(row.type || row.name) && (
-                  <div style={{ color: "var(--doc-muted)", marginTop: "0.3mm" }}>
-                    {row.type && row.type !== "—" ? row.type : row.name}
-                  </div>
-                )}
-              </div>
-            ),
-          },
-          {
-            header: "Design",
-            width: "38mm",
-            cell: (row: RetailBillLineItem) => (
-              <span style={{ color: "var(--doc-ink)" }}>
-                {row.design && row.design !== "—" ? row.design : row.name || "—"}
+              <span style={{ fontFamily: "var(--font-code)", fontWeight: 700, color: "var(--doc-burgundy)", overflowWrap: "anywhere" }}>
+                {row.sareeId}
               </span>
             ),
           },
           {
+            header: "Saree Type",
+            width: admin ? "28mm" : "38mm",
+            cell: (row: RetailBillLineItem) => <span style={{ color: "var(--doc-ink)" }}>{typeOf(row)}</span>,
+          },
+          ...(admin
+            ? [{
+                header: "Source",
+                width: "34mm",
+                cell: (row: RetailBillLineItem) =>
+                  row.source ? (
+                    <div>
+                      <div style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>
+                        {SOURCE_KIND[row.source.kind]}
+                      </div>
+                      <div style={{ color: "var(--doc-ink)", fontWeight: 600 }}>{row.source.name}</div>
+                      {row.source.detail && <div style={{ color: "var(--doc-muted)" }}>{row.source.detail}</div>}
+                    </div>
+                  ) : <span style={{ color: "var(--doc-muted)" }}>—</span>,
+              }]
+            : []),
+          {
             header: "Rate",
             align: "end",
-            width: "28mm",
-            cell: (row: RetailBillLineItem) =>
-              row.originalPrice !== undefined && row.originalPrice !== row.soldPrice ? (
-                <span style={{ color: "var(--doc-muted)", textDecoration: "line-through" }}>
-                  {formatPaise(toPaise(row.originalPrice))}
-                </span>
-              ) : (
-                <span style={{ color: "var(--doc-muted)" }}>{formatPaise(toPaise(row.soldPrice))}</span>
-              ),
+            width: "24mm",
+            cell: (row: RetailBillLineItem) => (
+              <span style={{ color: "var(--doc-muted)" }}>{money(row.originalPrice ?? row.soldPrice)}</span>
+            ),
           },
           {
-            header: "Amount",
+            header: "Discount",
             align: "end",
-            width: "30mm",
-            cell: (row: RetailBillLineItem) => <strong>{formatPaise(toPaise(row.soldPrice))}</strong>,
+            width: "24mm",
+            cell: (row: RetailBillLineItem) => {
+              const off = (row.originalPrice ?? row.soldPrice) - row.soldPrice;
+              if (off <= 0) return <span style={{ color: "var(--doc-muted)" }}>—</span>;
+              return (
+                <div>
+                  <div style={{ color: "var(--doc-gold-text)" }}>− {money(off)}</div>
+                  {row.discountNote && <div style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)" }}>({row.discountNote})</div>}
+                </div>
+              );
+            },
+          },
+          {
+            header: "Final Amount",
+            align: "end",
+            width: "27mm",
+            cell: (row: RetailBillLineItem) => <strong>{money(row.soldPrice)}</strong>,
           },
         ]}
         rows={lines}
       />
 
       <TotalsBlock rows={totalsRows} />
+
+      {discount > 0 && (
+        <div
+          className="bk-doc__card"
+          style={{ marginTop: "4mm", display: "flex", justifyContent: "space-between", alignItems: "center", borderColor: "var(--doc-gold-text)" }}
+        >
+          <span style={{ fontWeight: 700, color: "var(--doc-gold-text)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            You saved
+          </span>
+          <span style={{ fontWeight: 700, fontSize: "var(--doc-heading)", color: "var(--doc-gold-text)" }}>
+            {money(discount)}
+          </span>
+        </div>
+      )}
 
       <div style={{ marginTop: "4mm" }}>
         <div className="bk-doc__words" style={{ padding: "2.5mm 3.5mm" }}>

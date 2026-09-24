@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { DispatchType, Prisma, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment, financialYearCode } from "../id-generator/id-generator.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { loadSareeDetails } from "../sales/saree-details";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateDispatchDto } from "./dto/create-dispatch.dto";
 import { ListDispatchQueryDto } from "./dto/list-dispatch-query.dto";
@@ -20,6 +21,8 @@ const include = {
 
 @Injectable()
 export class DispatchService {
+  private readonly logger = new Logger(DispatchService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
@@ -35,7 +38,7 @@ export class DispatchService {
       ? (await this.prisma.user.findUnique({ where: { id: dto.actorId }, select: { id: true } }))?.id
       : undefined;
 
-    let customer: { code: string | null; name: string } | null = null;
+    let customer: { code: string | null; name: string; phone: string | null } | null = null;
     if (dto.type === DispatchType.WHOLESALE && dto.customerId) {
       customer = await this.prisma.customer.findUnique({
         where: { id: dto.customerId },
@@ -265,6 +268,36 @@ export class DispatchService {
         lrNumber: dto.lrNumber ?? null,
         sareeCount: dto.sareeIds.length,
       });
+    }
+
+    // A wholesale dispatch to a customer IS the wholesale sale, so it goes to
+    // the admin feed under Wholesale Sales with each saree's type and source.
+    // Best-effort: the dispatch is already committed, so a failure building
+    // the feed entry must not turn a successful dispatch into an error.
+    if (dto.type === DispatchType.WHOLESALE) {
+      try {
+        const details = await loadSareeDetails(this.prisma, dto.sareeIds);
+        await this.notifications.notifyRole(UserRole.ADMIN, "WHOLESALE_DISPATCH_RECORDED", {
+          dispatchId: created.id,
+          customerName: customer?.name ?? null,
+          customerPhone: customer?.phone ?? null,
+          invoiceNumber: invoiceNumber ?? null,
+          sareeCount: dto.sareeIds.length,
+          pricePerSaree,
+          totalAmount,
+          gstPct,
+          grandTotal,
+          lrNumber: dto.lrNumber ?? null,
+          transportCompany: dto.transportCompany ?? null,
+          bulkOrderRef: dto.bulkOrderRef ?? null,
+          sarees: dto.sareeIds.map((id) => {
+            const d = details.get(id);
+            return { sareeId: id, sareeType: d?.sareeType ?? null, source: d?.source ?? null };
+          }),
+        });
+      } catch (err) {
+        this.logger.warn(`Wholesale dispatch ${created.id} saved but its notification failed: ${String(err)}`);
+      }
     }
 
     return this.findOne(created.id);

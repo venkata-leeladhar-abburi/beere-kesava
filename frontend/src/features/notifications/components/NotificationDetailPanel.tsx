@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { X, ArrowRight, Check } from "lucide-react";
 import { Button, IconButton } from "../../../shared/ui/primitives";
+import { EntityCode } from "../../../shared/ui/domain";
 import { UnifiedNotif, PRIORITY, CATEGORIES } from "./notifTypes";
 
 const T = {
@@ -65,6 +66,48 @@ export function NotificationDetailPanel({ selected, setSelected, markRead }: Not
               {selected.body}
             </p>
           </div>
+
+          {selected.details && selected.details.length > 0 && (
+            <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden", marginBottom: 20 }}>
+              {selected.details.map((d, i) => (
+                <div
+                  key={d.label}
+                  style={{
+                    display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12,
+                    padding: "9px 14px",
+                    borderTop: i === 0 ? "none" : `1px solid ${T.borderDef}`,
+                    background: d.strong ? T.silkCream : T.warmIvory,
+                  }}
+                >
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, flexShrink: 0 }}>{d.label}</span>
+                  <span style={{
+                    fontFamily: F.ui, fontSize: d.strong ? 15 : 13, fontWeight: d.strong ? 700 : 500,
+                    color: T.luxuryBrown, textAlign: "right", overflowWrap: "anywhere", fontVariantNumeric: "tabular-nums",
+                  }}>
+                    {d.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {selected.sarees && selected.sarees.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: T.taupe, marginBottom: 8 }}>
+                Sarees ({selected.sarees.length})
+              </div>
+              <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, maxHeight: 320, overflowY: "auto" }}>
+                {selected.sarees.map((sr, i) => (
+                  <div key={sr.sareeId} style={{ padding: "9px 14px", borderTop: i === 0 ? "none" : `1px solid ${T.borderDef}` }}>
+                    <EntityCode type="saree" value={sr.sareeId} size="sm" />
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
+                      {[sr.sareeType, sr.source].filter(Boolean).join(" · ") || "—"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, marginBottom: 22 }}>
             {[

@@ -4,11 +4,11 @@ import { List, Plus, Trash2 } from "lucide-react";
 import { C, F, Card } from "./theme";
 import { sareeTypeName, sareeTypeText } from "./stock-format";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Button, CurrencyInput } from "../../../../shared/ui/primitives";
+import { Button, CurrencyInput, NumberInput } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { StepHeader, StepBody, FlowActions, ScanPanel, ACCENT_SALE } from "./flow-kit";
 import type { ShopStockItem } from "../../../../shared/api/inventory";
-import { cartTotal, type SaleLine } from "./sale-cart";
+import { cartTotal, cartOriginalTotal, type SaleLine, type DiscountMode } from "./sale-cart";
 
 interface ScanSareeStepProps {
   /** Sarees already in the basket. */
@@ -21,9 +21,10 @@ interface ScanSareeStepProps {
   /** Adds every id ticked in the stock table, in one pass. */
   handleAddSarees: (ids: string[]) => Promise<void> | void;
   removeLine: (id: string) => void;
-  /** Sets what one basket line is actually selling for. Priced here, at the
-   *  moment the saree is picked, rather than a step later. */
-  setLinePrice: (id: string, price: number) => void;
+  /** Sets the discount on one basket line (₹ off or % off); the selling
+   *  price is recomputed from the retail price. Priced here, at the moment
+   *  the saree is picked, rather than a step later. */
+  setLineDiscount: (id: string, mode: DiscountMode, value: number) => void;
   scanError?: string | null;
   availableSarees: ShopStockItem[];
   sareesLoading?: boolean;
@@ -35,6 +36,11 @@ interface ScanSareeStepProps {
   onNext: () => void;
 }
 
+const labelStyle = {
+  fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted,
+  letterSpacing: 0.5, textTransform: "uppercase" as const, marginBottom: 4,
+};
+
 export function ScanSareeStep({
   cart,
   manualId,
@@ -43,7 +49,7 @@ export function ScanSareeStep({
   handleScan,
   handleAddSarees,
   removeLine,
-  setLinePrice,
+  setLineDiscount,
   scanError,
   availableSarees,
   sareesLoading,
@@ -152,7 +158,7 @@ export function ScanSareeStep({
                   {cart.length} saree{cart.length !== 1 ? "s" : ""} in this sale
                 </span>
                 <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>
-                  Edit any price to give a discount
+                  Choose ₹ or % and enter a discount — the final price updates
                 </span>
               </div>
 
@@ -181,20 +187,74 @@ export function ScanSareeStep({
                       )}
                     </div>
 
-                    <div style={{ width: isMobile ? "100%" : 190, flexShrink: 0, marginTop: isMobile ? 10 : 0 }}>
-                      <label htmlFor={`price-${l.id}`} style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: 0.5, textTransform: "uppercase" as const, display: "block", marginBottom: 4 }}>
-                        Selling price
-                      </label>
-                      <CurrencyInput
-                        id={`price-${l.id}`}
-                        value={l.soldPrice}
-                        onValueChange={v => setLinePrice(l.id, v === "" ? 0 : v)}
-                        size="lg"
-                        className="w-full font-bold"
-                      />
-                      <div style={{ fontFamily: F.u, fontSize: 11.5, color: changed ? C.gold : C.muted, marginTop: 4 }}>
-                        Retail: {formatMoney(rupees(l.originalPrice))}
-                        {changed ? ` · ${l.soldPrice < l.originalPrice ? "discounted" : "marked up"}` : ""}
+                    <div style={{ display: "flex", alignItems: "flex-end", gap: 12, flexWrap: "wrap" as const, marginTop: isMobile ? 10 : 0, flexShrink: 0 }}>
+                      <div style={{ minWidth: 96 }}>
+                        <div style={labelStyle}>Retail price</div>
+                        <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 15, color: C.text, fontVariantNumeric: "tabular-nums", height: 40, display: "flex", alignItems: "center" }}>
+                          {formatMoney(rupees(l.originalPrice))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={labelStyle}>Discount</div>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <div role="radiogroup" aria-label={`Discount type for ${l.id}`} style={{ display: "flex", border: `1px solid ${C.bdr}`, borderRadius: 8, overflow: "hidden", height: 40 }}>
+                            {(["amount", "percent"] as const).map(m => {
+                              const on = l.discountMode === m;
+                              return (
+                                <button
+                                  key={m} type="button" role="radio" aria-checked={on}
+                                  aria-label={m === "amount" ? "Discount in rupees" : "Discount in percent"}
+                                  onClick={() => { if (!on) setLineDiscount(l.id, m, 0); }}
+                                  style={{
+                                    width: 38, border: "none", cursor: "pointer",
+                                    fontFamily: F.u, fontWeight: 700, fontSize: 14,
+                                    background: on ? C.burg : "transparent",
+                                    color: on ? "#fff" : C.muted,
+                                  }}
+                                >
+                                  {/* eslint-disable-next-line no-restricted-syntax -- a unit toggle label, not a money value */}
+                                  {m === "amount" ? "₹" : "%"}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <div style={{ width: 110 }}>
+                            {l.discountMode === "amount" ? (
+                              <CurrencyInput
+                                key={`${l.id}-amount`}
+                                aria-label={`Discount amount for ${l.id}`}
+                                value={l.discountValue || ""}
+                                onValueChange={v => setLineDiscount(l.id, "amount", v === "" ? 0 : v)}
+                                placeholder="0"
+                                className="w-full"
+                              />
+                            ) : (
+                              <NumberInput
+                                key={`${l.id}-percent`}
+                                aria-label={`Discount percent for ${l.id}`}
+                                value={l.discountValue || ""}
+                                onValueChange={v => setLineDiscount(l.id, "percent", v === "" ? 0 : v)}
+                                min={0} max={100} step={0.01}
+                                placeholder="0"
+                                addonRight="%"
+                                className="w-full"
+                              />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ minWidth: 110, textAlign: isMobile ? "left" as const : "right" as const }}>
+                        <div style={labelStyle}>Final price</div>
+                        <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 17, color: C.burg, fontVariantNumeric: "tabular-nums", height: 40, display: "flex", alignItems: "center", justifyContent: isMobile ? "flex-start" : "flex-end" }}>
+                          {formatMoney(rupees(l.soldPrice))}
+                        </div>
+                        {changed && (
+                          <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.gold, marginTop: -2 }}>
+                            You save {formatMoney(rupees(l.originalPrice - l.soldPrice))}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -210,8 +270,18 @@ export function ScanSareeStep({
                 );
               })}
 
+              {cartOriginalTotal(cart) !== cartTotal(cart) && (
+                <div style={{ padding: "10px 16px 0", borderTop: `1px solid ${C.bdr}`, display: "flex", flexDirection: "column" as const, gap: 4, fontFamily: F.u, fontSize: 13, color: C.muted, fontVariantNumeric: "tabular-nums" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span>Retail total</span><span>{formatMoney(rupees(cartOriginalTotal(cart)))}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", color: C.gold }}>
+                    <span>Discount</span><span>− {formatMoney(rupees(cartOriginalTotal(cart) - cartTotal(cart)))}</span>
+                  </div>
+                </div>
+              )}
               <div style={{ padding: "14px 16px", borderTop: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)", display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
-                <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Basket total</span>
+                <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Final amount</span>
                 <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 26, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
                   {formatMoney(rupees(cartTotal(cart)))}
                 </span>

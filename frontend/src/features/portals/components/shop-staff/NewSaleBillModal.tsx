@@ -6,7 +6,7 @@ import {
   RetailBillDocument,
   DEFAULT_LETTERHEAD_FIRM,
 } from "../../../../shared/ui/document";
-import type { SaleLine } from "./sale-cart";
+import { toBillLine, type SaleLine } from "./sale-cart";
 
 interface NewSaleBillModalProps {
   lines: SaleLine[];
@@ -60,14 +60,7 @@ export function NewSaleBillModal({
           customerName={custName}
           customerPhone={phone.trim() || undefined}
           customerAddress={custAddress}
-          lines={lines.map(l => ({
-            sareeId: l.id,
-            name: l.name,
-            type: l.type,
-            design: l.design,
-            soldPrice: l.soldPrice,
-            originalPrice: l.originalPrice,
-          }))}
+          lines={lines.map(toBillLine)}
           total={total}
           paymentMethod={payment ?? undefined}
           paymentRef={payRef}

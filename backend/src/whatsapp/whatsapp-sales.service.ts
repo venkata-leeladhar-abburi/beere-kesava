@@ -39,7 +39,12 @@ export class WhatsAppSalesService {
     return [...new Set(raw.split(",").map((n) => n.trim()).filter(Boolean))];
   }
 
-  async sendSaleBill(saleRefs: string[], file: Express.Multer.File, sentById?: string) {
+  async sendSaleBill(
+    saleRefs: string[],
+    file: Express.Multer.File,
+    sentById?: string,
+    adminFile?: Express.Multer.File,
+  ) {
     if (saleRefs.length === 0) {
       throw new BadRequestException("At least one saleRef is required");
     }
@@ -83,6 +88,15 @@ export class WhatsAppSalesService {
     const key = await this.storage.upload(file, "documents");
     const mediaUrl = await this.storage.resolveUrl(key.replace(/^\/uploads\//, ""));
     const media = { url: mediaUrl, filename: `${billRef}.pdf` };
+    // The admin copy names each saree's source (weaver / loom / supplier),
+    // which the customer's copy doesn't carry. Falls back to the customer's
+    // copy for an older client that sends only one file.
+    let adminMedia = media;
+    if (adminFile) {
+      const adminKey = await this.storage.upload(adminFile, "documents");
+      const adminUrl = await this.storage.resolveUrl(adminKey.replace(/^\/uploads\//, ""));
+      adminMedia = { url: adminUrl, filename: `${billRef}-admin.pdf` };
+    }
 
     const customerMessage = await this.sendCustomerCopy({
       customer,
@@ -102,7 +116,7 @@ export class WhatsAppSalesService {
       total,
       payment,
       staffName,
-      media,
+      media: adminMedia,
       sentById,
     });
 

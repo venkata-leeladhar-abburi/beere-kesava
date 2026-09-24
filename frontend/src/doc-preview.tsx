@@ -21,6 +21,8 @@ import {
   DeliveryChallanDocument,
   ReceiptDocument,
   StatementOfAccountDocument,
+  RetailBillDocument,
+  type RetailBillLineItem,
   DEFAULT_LETTERHEAD_FIRM,
   type InvoiceLineItem,
   type PODocumentItem,
@@ -243,6 +245,40 @@ const grnLabels = (
   </div>
 );
 
+// `?doc=bill` / `?doc=bill-admin` — a counter bill with a long basket, so
+// the page break and the admin copy's Source column can both be checked.
+const billLines: RetailBillLineItem[] = Array.from({ length: 14 }, (_, i) => {
+  const rate = [1500, 16000, 8250, 22750][i % 4];
+  const kind = (["weaver", "factory", "external"] as const)[i % 3];
+  const pct = i % 3 === 0 ? 10 : 0;
+  const flat = i % 3 === 1 ? 500 : 0;
+  return {
+    sareeId: kind === "external" ? `EXT-SLSH-00${i}-01` : `RAMOJI RAO-L1-B001-0${10 + i}`,
+    type: ["KJ-001 · KANJIVARAM", "DH-004 · DHARMAVARAM PATTU", "UP-002 · UPPADA"][i % 3],
+    originalPrice: rate,
+    soldPrice: Math.round(rate - (rate * pct) / 100 - flat),
+    discountNote: pct ? `${pct}%` : undefined,
+    source:
+      kind === "weaver" ? { kind, name: "Ramoji Rao", detail: "Loom 1" }
+      : kind === "factory" ? { kind, name: "Factory Loom FL-03" }
+      : { kind, name: "Sree Lakshmi Silk House", detail: "Invoice INV-2291" },
+  };
+});
+const billFor = (copy: "customer" | "admin") => (
+  <RetailBillDocument
+    copy={copy}
+    billRef="RETAIL-Chetan-001-001"
+    billDate="01 Sept 2026"
+    customerName="Chetan"
+    customerAddress="Dharmavaram"
+    customerPhone="7793960939"
+    lines={billLines}
+    total={billLines.reduce((s, l) => s + l.soldPrice, 0)}
+    paymentMethod="cash"
+    saleRefs={billLines.map((_, i) => `RETAIL-Chetan-001-${String(i + 1).padStart(3, "0")}`)}
+  />
+);
+
 const DOC = new URLSearchParams(location.search).get("doc");
 const activeDoc =
   DOC === "po" ? purchaseOrder :
@@ -254,6 +290,8 @@ const activeDoc =
   DOC === "tag-weaver" ? weaverTag :
   DOC === "tags" ? bothTags :
   DOC === "grn" ? grnLabels :
+  DOC === "bill" ? billFor("customer") :
+  DOC === "bill-admin" ? billFor("admin") :
   invoice;
 
 // useDocument() → useDownloadsAllowed() → useAuth(), which throws outside a

@@ -26,10 +26,13 @@ export const whatsappApi = {
   // together and the backend produces a single message from them, not one
   // per piece. Amounts, customer and staff are all re-read server-side from
   // those records; only the PDF comes from here.
-  sendSaleBill: (saleRefs: string[], pdf: Blob, billRef: string) => {
+  /** `adminPdf` is the admin copy (with each saree's source); the admin
+   *  team gets it instead of the customer's copy when it is supplied. */
+  sendSaleBill: (saleRefs: string[], pdf: Blob, billRef: string, adminPdf?: Blob) => {
     const form = new FormData();
     form.append("saleRefs", JSON.stringify(saleRefs));
     form.append("file", pdf, `${billRef}.pdf`);
+    if (adminPdf) form.append("adminFile", adminPdf, `${billRef}-admin.pdf`);
     return apiClient.postForm<SendSaleBillResult>("/whatsapp/send-sale-bill", form);
   },
 };

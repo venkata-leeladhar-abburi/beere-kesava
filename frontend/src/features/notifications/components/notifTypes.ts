@@ -2,7 +2,7 @@ import React from "react";
 import {
   Bell, AlertTriangle, CheckCircle2, Info,
   Package, Users, ShoppingCart, TrendingUp, FileText,
-  AlertCircle
+  AlertCircle, ShoppingBag, Truck
 } from "lucide-react";
 
 export type Priority = "critical" | "warning" | "info" | "success";
@@ -10,12 +10,30 @@ export type Priority = "critical" | "warning" | "info" | "success";
 export interface UnifiedNotif {
   id: string;
   priority: Priority;
-  category: "weaver" | "production" | "material" | "payment" | "dispatch";
+  category: "weaver" | "production" | "material" | "payment" | "dispatch" | "retail" | "wholesale";
   title: string;
   body: string;
   time: string;
   read: boolean;
   action?: string;
+  /** Labelled facts for the detail panel — a sale's customer, rate, discount… */
+  details?: NotifDetail[];
+  /** Per-saree rows for a notification that covers several sarees. */
+  sarees?: NotifSaree[];
+}
+
+export interface NotifDetail {
+  label: string;
+  value: string;
+  /** Emphasised — the amount that was actually paid. */
+  strong?: boolean;
+}
+
+export interface NotifSaree {
+  sareeId: string;
+  sareeType: string | null;
+  /** "Weaver · Ramoji Rao · Loom 1" */
+  source: string | null;
 }
 
 export const T = {
@@ -53,5 +71,7 @@ export const CATEGORIES = [
   { key: "production", label: "Production & Batches",  color: T.green,         Icon: TrendingUp },
   { key: "material",   label: "Raw Materials & Stock", color: "#7B3F00",       Icon: Package },
   { key: "payment",    label: "Payments & Invoices",   color: "#1D4ED8",       Icon: FileText },
+  { key: "retail",     label: "Retail Sales",          color: "#8A1C3F",       Icon: ShoppingBag },
+  { key: "wholesale",  label: "Wholesale Sales",       color: "#5B3A8C",       Icon: Truck },
   { key: "dispatch",   label: "Shop & Dispatch",       color: T.antiqueGold,   Icon: ShoppingCart },
 ];

@@ -1,4 +1,4 @@
-import { notificationsStub } from "../common/testing/notifications.stub";
+import { notificationMocks, notificationsStub, type NotificationMocks, type NotificationsStub } from "../common/testing/notifications.stub";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { DispatchService } from "./dispatch.service";
 import { CreateDispatchDto } from "./dto/create-dispatch.dto";
@@ -175,6 +175,7 @@ describe("DispatchService.create — challan numbering", () => {
   let prisma: any;
   let idGenerator: any;
   let service: DispatchService;
+  let notifications: NotificationMocks;
 
   beforeEach(() => {
     prisma = {
@@ -185,6 +186,8 @@ describe("DispatchService.create — challan numbering", () => {
         updateMany: jest.fn(),
       },
       batchSareeRow: { findMany: jest.fn().mockResolvedValue([]) },
+      saree: { findMany: jest.fn().mockResolvedValue([]) },
+      purchaseSareeLine: { findMany: jest.fn().mockResolvedValue([]) },
       dispatchRecord: {
         create: jest.fn().mockResolvedValue({ id: "d1" }),
         findUnique: jest.fn().mockResolvedValue({ id: "d1", sarees: [] }),
@@ -192,7 +195,8 @@ describe("DispatchService.create — challan numbering", () => {
       dispatchSaree: { createMany: jest.fn() },
     };
     idGenerator = { nextScoped: jest.fn().mockResolvedValue("DC-2627-001") };
-    service = new DispatchService(prisma, { recordAction: jest.fn() } as any, idGenerator, notificationsStub());
+    notifications = notificationMocks();
+    service = new DispatchService(prisma, { recordAction: jest.fn() } as any, idGenerator, notifications as unknown as NotificationsStub);
   });
 
   it("allocates a DC number scoped to the financial year for a shop dispatch", async () => {
@@ -218,5 +222,51 @@ describe("DispatchService.create — challan numbering", () => {
       data: expect.objectContaining({ invoiceNumber: "INV-Sree-001", challanNumber: undefined }),
     });
   });
-});
 
+  it("files a wholesale dispatch in the admin feed with each saree's type and source", async () => {
+    idGenerator.nextScoped.mockResolvedValue("INV-Sree-001");
+    prisma.inventoryRecord.findMany.mockResolvedValue([{ sareeId: "RAMOJI-L1-B001-008", status: "FINISHING_COMPLETE" }]);
+    prisma.batchSareeRow.findMany.mockImplementation(({ include }: { include?: unknown }) =>
+      Promise.resolve(
+        include
+          ? [{
+              sareeId: "RAMOJI-L1-B001-008",
+              weaver: { name: "Ramoji Rao" },
+              factoryLoom: null,
+              sareeType: { code: "KJ-001", type: "KANJIVARAM", retailPrice: 1500 },
+              sareeTypeCode: "KJ-001",
+              receivedSellingPrice: null,
+            }]
+          : [],
+      ),
+    );
+
+    await service.create({
+      type: DispatchType.WHOLESALE,
+      sareeIds: ["RAMOJI-L1-B001-008"],
+      customerId: "c1",
+      raiseInvoice: true,
+      pricePerSaree: 2000,
+    });
+
+    expect(notifications.notifyRole).toHaveBeenCalledWith("ADMIN", "WHOLESALE_DISPATCH_RECORDED", expect.objectContaining({
+      customerName: "Sree Kesava",
+      invoiceNumber: "INV-Sree-001",
+      totalAmount: 2000,
+      sarees: [{
+        sareeId: "RAMOJI-L1-B001-008",
+        sareeType: "KJ-001 · KANJIVARAM",
+        source: { kind: "weaver", name: "Ramoji Rao", detail: "Loom 1" },
+      }],
+    }));
+  });
+
+  it("still returns the dispatch when its notification fails", async () => {
+    idGenerator.nextScoped.mockResolvedValue("INV-Sree-001");
+    notifications.notifyRole.mockRejectedValueOnce(new Error("feed down"));
+
+    await expect(
+      service.create({ type: DispatchType.WHOLESALE, sareeIds: ["S-1"], customerId: "c1", raiseInvoice: true }),
+    ).resolves.toEqual(expect.objectContaining({ id: "d1" }));
+  });
+});
