@@ -43,4 +43,11 @@ export class CreateSaleDto {
   @IsOptional()
   @IsString()
   discountNote?: string;
+
+  // Shared by every saree on one counter bill, so the admin feed gets one
+  // notification for the bill instead of one per saree. Omitted by any
+  // caller that sells a single piece.
+  @IsOptional()
+  @IsUUID()
+  billId?: string;
 }

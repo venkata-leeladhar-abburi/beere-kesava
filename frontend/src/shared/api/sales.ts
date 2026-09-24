@@ -103,6 +103,8 @@ export interface CreateSalePayload {
    *  percentage — shown in the admin notification, not stored on the sale. */
   originalPrice?: number;
   discountNote?: string;
+  /** Shared by every saree on one counter bill — one admin notification per bill. */
+  billId?: string;
 }
 
 export interface CreateReturnPayload {

@@ -35,6 +35,46 @@ export class NotificationsService {
     return notification;
   }
 
+  /**
+   * One role notification per `groupKey`, built up across several calls.
+   *
+   * The first call creates it; each later call with the same key hands the
+   * current payload to `merge` and saves the result on the same row, marks
+   * it unread again and re-broadcasts it, so a live feed replaces the entry
+   * rather than adding a second one. Used for a counter bill, which is
+   * recorded one saree per request but is one event to the people reading
+   * the feed. Callers send the parts of a group one after another, so two
+   * calls for the same key never race.
+   */
+  async notifyRoleGrouped(
+    role: UserRole,
+    type: string,
+    groupKey: string,
+    merge: (existing: Record<string, unknown> | null) => Record<string, unknown>,
+  ) {
+    const existing = await this.prisma.notification.findFirst({
+      where: {
+        targetType: NotificationTargetType.ROLE,
+        role,
+        type,
+        payload: { path: ["groupKey"], equals: groupKey },
+      },
+    });
+    if (!existing) {
+      return this.notifyRole(role, type, { ...merge(null), groupKey });
+    }
+
+    const updated = await this.prisma.notification.update({
+      where: { id: existing.id },
+      data: {
+        payload: { ...merge(existing.payload as Record<string, unknown> | null), groupKey },
+        readAt: null,
+      },
+    });
+    this.gateway.emitToRole(role, updated);
+    return updated;
+  }
+
   /** Broadcast to every holder of a role. Thin wrapper over create() so call sites read as one line. */
   async notifyRole(role: UserRole, type: string, payload?: Record<string, unknown>) {
     return this.create({ targetType: NotificationTargetType.ROLE, role, type, payload });

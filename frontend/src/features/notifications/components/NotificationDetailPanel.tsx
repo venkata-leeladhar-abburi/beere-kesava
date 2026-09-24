@@ -103,6 +103,11 @@ export function NotificationDetailPanel({ selected, setSelected, markRead }: Not
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
                       {[sr.sareeType, sr.source].filter(Boolean).join(" · ") || "—"}
                     </div>
+                    {sr.price && (
+                      <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, marginTop: 2, fontVariantNumeric: "tabular-nums" }}>
+                        {sr.price}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

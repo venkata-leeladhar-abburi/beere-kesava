@@ -34,6 +34,8 @@ export interface NotifSaree {
   sareeType: string | null;
   /** "Weaver · Ramoji Rao · Loom 1" */
   source: string | null;
+  /** "₹1,500 − ₹150 (10%) = ₹1,350" — set when the saree was sold, not dispatched. */
+  price?: string;
 }
 
 export const T = {

@@ -112,7 +112,11 @@ export function NotificationsPage() {
     const s = connectNotificationsSocket();
     setSocket(s);
     s.on("notification", (raw: BackendNotification) => {
-      setNotifications(prev => prev.some(n => n.id === raw.id) ? prev : [toUnifiedNotif(raw), ...prev]);
+      // An id we already hold is a grouped notification (a counter bill)
+      // that just gained a saree — replace it and bring it back to the top.
+      const next = toUnifiedNotif(raw);
+      setNotifications(prev => [next, ...prev.filter(n => n.id !== raw.id)]);
+      setSelected(prev => (prev && prev.id === raw.id ? next : prev));
     });
     return () => { s.disconnect(); setSocket(null); };
   }, [backendRole]);

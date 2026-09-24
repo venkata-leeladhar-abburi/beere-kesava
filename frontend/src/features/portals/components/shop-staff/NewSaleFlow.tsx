@@ -254,7 +254,13 @@ export function NewSaleFlow() {
     setCustName(""); setPhone(""); setCustAddress(""); setCustSearch("");
   };
 
+  // One id per bill, sent with every saree on it so the admin feed gets a
+  // single notification for the bill. Kept across a retry after a partial
+  // failure, so the sarees that go through second time join the same one.
+  const billId = useRef<string | null>(null);
+
   const resetSale = () => {
+    billId.current = null;
     setStep(1); setCart([]); setManualId(""); setPayment(null); setPayRef("");
     setPhone(""); setCustName(""); setCustAddress("");
     setCustSearch(""); setSelectedCustomer(null); setIsEditingCustomer(false);
@@ -618,6 +624,7 @@ export function NewSaleFlow() {
                 // failure has to name exactly which pieces did go through.
                 const recorded: string[] = [];
                 const refs: string[] = [];
+                billId.current ??= crypto.randomUUID();
                 try {
                   for (const line of cart) {
                     const sale = await salesApi.create({
@@ -629,6 +636,7 @@ export function NewSaleFlow() {
                       paymentRef: payRef.trim() || undefined,
                       originalPrice: line.originalPrice,
                       discountNote: discountLabel(line),
+                      billId: billId.current,
                     });
                     recorded.push(line.id);
                     refs.push(sale.saleRef);

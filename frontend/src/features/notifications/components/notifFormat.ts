@@ -479,6 +479,46 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
     body: p =>
       `${pieces(p.sareeCount)} dispatched ${num(p.daysSinceDispatch)} day(s) ago and still not confirmed by the shop.`,
   },
+  RETAIL_BILL_RECORDED: {
+    category: "retail",
+    priority: "success",
+    title: p => `Retail Sale${suffix(p.billRef)}`,
+    body: p => {
+      const discount = num(p.discount);
+      const count = num(p.sareeCount);
+      return `${count} saree${count === 1 ? "" : "s"} sold to ${str(p.customerName) ?? "customer"} for ${money(p.total)}${discount > 0 ? ` after ${money(discount)} off` : ""}.`;
+    },
+    details: p => {
+      const discount = num(p.discount);
+      return rows([
+        ["Bill no", str(p.billRef)],
+        ["Customer", str(p.customerName)],
+        ["Phone", str(p.customerPhone)],
+        ["Sarees", String(num(p.sareeCount))],
+        ["Retail total", money(p.retailTotal)],
+        ["Discount", discount > 0 ? `− ${money(discount)}` : null],
+        ["Final amount", money(p.total), true],
+        ["Saved", discount > 0 ? money(discount) : null],
+        ["Payment", paymentText(p)],
+        ["Sold by", str(p.soldByName)],
+      ]);
+    },
+    sarees: p =>
+      Array.isArray(p.lines)
+        ? (p.lines as Payload[]).map(l => {
+            const discount = num(l.discount);
+            const note = l.discountNote ? ` (${String(l.discountNote)})` : "";
+            return {
+              sareeId: String(l.sareeId ?? "—"),
+              sareeType: str(l.sareeType),
+              source: sourceText(l.source),
+              price: discount > 0
+                ? `${money(l.rate)} − ${money(discount)}${note} = ${money(l.amount)}`
+                : money(l.amount),
+            };
+          })
+        : [],
+  },
   RETAIL_SALE_RECORDED: saleConfig("retail"),
   WHOLESALE_SALE_RECORDED: saleConfig("wholesale"),
   WHOLESALE_DISPATCH_RECORDED: {

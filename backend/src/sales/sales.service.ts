@@ -10,7 +10,7 @@ import {
 } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment, nameSegment } from "../id-generator/id-generator.service";
 import { NotificationsService } from "../notifications/notifications.service";
-import { loadSareeDetails } from "./saree-details";
+import { loadSareeDetails, type SareeSource } from "./saree-details";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateReturnDto } from "./dto/create-return.dto";
 import { CreateSaleDto } from "./dto/create-sale.dto";
@@ -22,6 +22,18 @@ import {
   RegisterReturnedSareeItemDto,
   RegisterReturnedSareesDto,
 } from "./dto/register-returned-sarees.dto";
+
+/** One saree on a counter bill, as the admin feed shows it. */
+interface BillLine {
+  saleRef: string;
+  sareeId: string;
+  sareeType: string | null;
+  source: SareeSource | null;
+  rate: number;
+  discount: number;
+  discountNote: string | null;
+  amount: number;
+}
 
 const saleInclude = {
   saree: { include: { sareeType: true } },
@@ -348,25 +360,51 @@ export class SalesService {
     ]);
     const amount = Number(dto.amount);
     const rate = dto.originalPrice ?? details?.retailPrice ?? amount;
+    const line: BillLine = {
+      saleRef,
+      sareeId: dto.sareeId,
+      sareeType: details?.sareeType ?? null,
+      source: details?.source ?? null,
+      rate,
+      discount: Math.max(0, rate - amount),
+      discountNote: dto.discountNote ?? null,
+      amount,
+    };
+    const header = {
+      channel: dto.channel,
+      customerName: customer.name,
+      customerPhone: customer.phone,
+      paymentMethod: dto.paymentMethod ?? null,
+      paymentRef: dto.paymentRef ?? null,
+      soldByName: soldBy ? `${soldBy.firstName} ${soldBy.lastName}`.trim() : null,
+    };
+
+    // A counter bill is one event however many sarees are on it: every line
+    // after the first joins the notification the first one created.
+    if (dto.billId && dto.channel === SalesChannel.RETAIL) {
+      await this.notifications.notifyRoleGrouped(UserRole.ADMIN, "RETAIL_BILL_RECORDED", dto.billId, (prev) => {
+        const earlier = Array.isArray(prev?.lines) ? (prev.lines as BillLine[]) : [];
+        const lines = [...earlier.filter((l) => l.saleRef !== saleRef), line];
+        const retailTotal = lines.reduce((sum, l) => sum + l.rate, 0);
+        const total = lines.reduce((sum, l) => sum + l.amount, 0);
+        return {
+          ...header,
+          // The bill is numbered after its first sale, as the printed bill is.
+          billRef: lines[0].saleRef,
+          sareeCount: lines.length,
+          retailTotal,
+          discount: Math.max(0, retailTotal - total),
+          total,
+          lines,
+        };
+      });
+      return;
+    }
+
     await this.notifications.notifyRole(
       UserRole.ADMIN,
       dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE_SALE_RECORDED" : "RETAIL_SALE_RECORDED",
-      {
-        saleRef,
-        sareeId: dto.sareeId,
-        channel: dto.channel,
-        customerName: customer.name,
-        customerPhone: customer.phone,
-        sareeType: details?.sareeType ?? null,
-        source: details?.source ?? null,
-        rate,
-        discount: Math.max(0, rate - amount),
-        discountNote: dto.discountNote ?? null,
-        amount,
-        paymentMethod: dto.paymentMethod ?? null,
-        paymentRef: dto.paymentRef ?? null,
-        soldByName: soldBy ? `${soldBy.firstName} ${soldBy.lastName}`.trim() : null,
-      },
+      { ...header, ...line },
     );
   }
 

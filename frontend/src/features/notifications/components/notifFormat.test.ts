@@ -76,6 +76,7 @@ const ROUTING: Array<[string, string]> = [
   ["SHOP_RECEIPT_DISCREPANCY_ALERT", "dispatch"],
   ["SHOP_DISPATCH_UNCONFIRMED", "dispatch"],
   ["SHOP_SALE_RECORDED", "retail"],
+  ["RETAIL_BILL_RECORDED", "retail"],
   ["RETAIL_SALE_RECORDED", "retail"],
   ["WHOLESALE_SALE_RECORDED", "wholesale"],
   ["WHOLESALE_DISPATCH_RECORDED", "wholesale"],
@@ -168,5 +169,26 @@ describe("sale notifications", () => {
       { sareeId: "A-01", sareeType: "UP-002 · UPPADA", source: "External purchase · Sree Lakshmi Silk House · Invoice INV-9" },
       { sareeId: "B-02", sareeType: null, source: null },
     ]);
+  });
+
+  it("shows a whole counter bill as one notification with every saree priced", () => {
+    const n = toUnifiedNotif(notif("RETAIL_BILL_RECORDED", {
+      billRef: "RETAIL-Chetan-001-001",
+      customerName: "Chetan",
+      sareeCount: 2,
+      retailTotal: 3000,
+      discount: 150,
+      total: 2850,
+      lines: [
+        { sareeId: "A-01", sareeType: "KJ-001 · KANJIVARAM", source: { kind: "factory", name: "Factory Loom FL-03" }, rate: 1500, discount: 150, discountNote: "10%", amount: 1350 },
+        { sareeId: "B-02", sareeType: null, source: null, rate: 1500, discount: 0, amount: 1500 },
+      ],
+    }));
+    expect(n.title).toBe("Retail Sale — RETAIL-Chetan-001-001");
+    expect(n.body).toBe("2 sarees sold to Chetan for ₹2,850 after ₹150 off.");
+    const byLabel = Object.fromEntries((n.details ?? []).map(d => [d.label, d.value]));
+    expect(byLabel["Final amount"]).toBe("₹2,850");
+    expect(n.sarees?.map(x => x.price)).toEqual(["₹1,500 − ₹150 (10%) = ₹1,350", "₹1,500"]);
+    expect(n.sarees?.[0].source).toBe("Factory loom · Factory Loom FL-03");
   });
 });

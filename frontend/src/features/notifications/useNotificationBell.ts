@@ -30,7 +30,9 @@ export function useNotificationBell({ enabled = true, pageSize = 8 } = {}) {
     if (!enabled) return;
     const socket = connectNotificationsSocket();
     socket.on("notification", (raw: BackendNotification) => {
-      setNotifications(prev => (prev.some(n => n.id === raw.id) ? prev : [raw, ...prev].slice(0, pageSize)));
+      // An id we already hold is a grouped notification (a counter bill)
+      // that just gained a saree — replace it and bring it back to the top.
+      setNotifications(prev => [raw, ...prev.filter(n => n.id !== raw.id)].slice(0, pageSize));
     });
     return () => { socket.disconnect(); };
   }, [enabled, pageSize]);
