@@ -256,6 +256,14 @@ export function totalPieces(sarees: SareeTag[]): number {
   return sarees.reduce((sum, s) => sum + remainingQuantity(s), 0);
 }
 
+/** Pieces of a purchase still with us — counted from its lines, the same way
+ * the barcode print and money totals do. The stored `sareeCount` is only a
+ * fallback for a purchase with no line detail; it used to drift (edits, photo
+ * uploads and approved returns each left it at a different figure). */
+export function purchasePieces(p: Pick<Purchase, "sarees" | "sareeCount">): number {
+  return p.sarees.length > 0 ? totalPieces(p.sarees) : p.sareeCount;
+}
+
 /** What the line cost us: buying price per piece × pieces still with us. */
 export function lineBuying(s: Pick<SareeTag, "price" | "quantity" | "returnedQuantity">): number {
   return (Number(s.price) || 0) * remainingQuantity(s);

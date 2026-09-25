@@ -150,7 +150,11 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
       billAmount: Number(p.billAmount) || 0,
       paidAmount: p.status === "PAID" ? Number(p.billAmount) || 0 : 0,
       status: PURCHASE_STATUS[p.status],
-      sareeCount: p.sareeCount,
+      // Pieces still with us, counted from the lines (same rule as the
+      // External Purchases table) — the stored aggregate is only a fallback.
+      sareeCount: p.sareeLines?.length
+        ? p.sareeLines.reduce((sum, l) => sum + Math.max(0, l.quantity - Math.min(l.returnedQuantity ?? 0, l.quantity)), 0)
+        : p.sareeCount,
     }));
   }, [rawPurchases]);
 

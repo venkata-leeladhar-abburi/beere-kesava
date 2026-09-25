@@ -3,17 +3,12 @@ import { History, LayoutGrid, List } from "lucide-react";
 import { T, F } from "../theme";
 import { FadeUp, SectionCard } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
-import { Purchase, purchaseTotals, totalPieces, parseINR } from "../../contexts/SupplierContext";
+import { Purchase, purchaseTotals, purchasePieces, parseINR } from "../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
-/** Pieces actually recorded on the purchase's lines, falling back to the
- * stored aggregate when a purchase has no line detail. */
-function piecesOf(p: Purchase): number {
-  return p.sarees.length > 0 ? totalPieces(p.sarees) : p.sareeCount;
-}
 
 /** What the supplier billed: the lines' buying total when they exist, else
  * the stored bill amount. */
@@ -45,8 +40,8 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
     // that one never disagree. The stored aggregates (sareeCount/billAmount)
     // are only a fallback for rows whose lines aren't loaded.
     {
-      id: "sarees", header: "Sarees", accessor: p => piecesOf(p),
-      cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{piecesOf(p)} pcs</span>,
+      id: "sarees", header: "Sarees", accessor: p => purchasePieces(p),
+      cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{purchasePieces(p)} pcs</span>,
     },
     {
       id: "buying", header: "Buying Price", accessor: p => purchaseTotals(p.sarees).buying, priority: 3,

@@ -5,7 +5,7 @@ import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 export * from "./supplier-types";
 export * from "./usePurchasePhotos";
-import { Supplier, Purchase, SareeTag, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, invoicedSelling, parseINR } from "./supplier-types";
+import { Supplier, Purchase, SareeTag, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchasePieces, invoicedSelling, parseINR } from "./supplier-types";
 import { BackendSupplier, suppliersApi } from "../../../shared/api/suppliers";
 import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
 import { supplierPaymentsApi } from "../../../shared/api/payments";
@@ -518,7 +518,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
       totalPurchased,
       totalPaid,
       outstanding: Math.max(0, totalPurchased - totalPaid),
-      sareeCount: mine.reduce((sum, p) => sum + p.sareeCount, 0),
+      sareeCount: mine.reduce((sum, p) => sum + purchasePieces(p), 0),
       lastPurchaseDate: mine[0]?.date ?? "—",
     };
   }, [purchases, payments, suppliers]);

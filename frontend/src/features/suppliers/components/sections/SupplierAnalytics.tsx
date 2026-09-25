@@ -8,7 +8,7 @@ import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter 
 import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { T, F } from "../theme";
 import { MONTH_ABBR, TYPE_FILLS, MODE_FILLS } from "../data";
-import { useSuppliers, parseINR } from "../../contexts/SupplierContext";
+import { useSuppliers, parseINR, purchasePieces } from "../../contexts/SupplierContext";
 import { FadeUp, SectionCard } from "../common/primitives";
 import { PurchaseTrendCard } from "./analytics/PurchaseTrendCard";
 import { TypeMixCard } from "./analytics/TypeMixCard";
@@ -35,7 +35,7 @@ export function SupplierAnalytics() {
 
   const billed = buys.reduce((a, p) => a + parseINR(p.billAmount), 0);
   const settled = pays.reduce((a, p) => a + p.amount, 0);
-  const pieces = buys.reduce((a, p) => a + (p.sarees.length ? p.sarees.reduce((s, x) => s + (Number(x.quantity) || 1), 0) : p.sareeCount), 0);
+  const pieces = buys.reduce((a, p) => a + purchasePieces(p), 0);
   const settlementRate = billed ? Math.min(100, Math.round((settled / billed) * 100)) : 0;
 
   // Cost vs expected retail across every saree line — the real margin picture.
@@ -57,7 +57,7 @@ export function SupplierAnalytics() {
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       const e = m.get(key) || { spend: 0, pieces: 0, orders: 0 };
       e.spend += parseINR(p.billAmount);
-      e.pieces += p.sarees.length ? p.sarees.reduce((s, x) => s + (Number(x.quantity) || 1), 0) : p.sareeCount;
+      e.pieces += purchasePieces(p);
       e.orders += 1;
       m.set(key, e);
     });
@@ -101,7 +101,7 @@ export function SupplierAnalytics() {
       if (!id) return;
       const e = touch(id);
       e.billed += parseINR(p.billAmount);
-      e.pieces += p.sarees.length ? p.sarees.reduce((s, x) => s + (Number(x.quantity) || 1), 0) : p.sareeCount;
+      e.pieces += purchasePieces(p);
       e.orders += 1;
     });
     pays.forEach(p => { if (m.has(p.supplierId)) touch(p.supplierId).paid += p.amount; });

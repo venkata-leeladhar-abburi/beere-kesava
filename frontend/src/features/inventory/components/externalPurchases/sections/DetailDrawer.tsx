@@ -1,6 +1,6 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Tag } from "lucide-react";
-import { Purchase, totalPieces } from "@/features/suppliers";
+import { Purchase, purchasePieces } from "@/features/suppliers";
 import { T, F } from "../theme";
 import { StatusPill } from "../common/primitives";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
@@ -71,7 +71,7 @@ export function DetailDrawer({
                 { label: "Supplier Name", value: detailRow.supplier },
                 { label: "Location", value: detailRow.location },
                 { label: "Purchase Date", value: detailRow.date },
-                { label: "Number of Sarees", value: String(detailRow.sareeCount) },
+                { label: "Number of Sarees", value: String(purchasePieces(detailRow)) },
                 { label: "GST Number", value: detailRow.gstNumber || "—", mono: true },
                 { label: "Invoice Number", value: detailRow.invoiceNumber || "—", mono: true },
                 { label: "Bill Amount", value: detailRow.billAmount, gold: true },
@@ -131,7 +131,7 @@ export function DetailDrawer({
 
               <div>
                 <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.luxuryBrown, marginBottom: 8 }}>
-                  Saree Barcodes ({totalPieces(detailRow.sarees)})
+                  Saree Barcodes ({purchasePieces(detailRow)})
                 </div>
                 <Button
                   onClick={() => onViewSarees(detailRow)}

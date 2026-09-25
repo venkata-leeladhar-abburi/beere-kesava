@@ -179,6 +179,12 @@ export class SupplierReturnsService {
           where: { id: request.sareeLineId },
           data: { returnedQuantity: nextReturned },
         });
+        // Purchase.sareeCount is pieces still with us — without this it kept
+        // counting the returned pieces while the barcode print dropped them.
+        await tx.purchase.update({
+          where: { id: line.purchaseId },
+          data: { sareeCount: { decrement: request.quantity } },
+        });
       }
 
       return tx.supplierReturnRequest.update({

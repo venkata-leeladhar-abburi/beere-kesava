@@ -5,7 +5,7 @@ import { useState } from "react";
 import { T, F } from "../theme";
 import { PayStatusPill } from "../common/primitives";
 import { SareeInventoryTable, type SareeRow } from "./SareeInventoryTable";
-import { Purchase, purchaseTotals, useSuppliers, withPieceImage } from "../../contexts/SupplierContext";
+import { Purchase, purchaseTotals, purchasePieces, useSuppliers, withPieceImage } from "../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { FileText } from "lucide-react";
 import { Button } from "../../../../shared/ui/primitives";
@@ -49,7 +49,7 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
       ),
     },
     {
-      id: "sarees", header: "Sarees", accessor: p => p.sareeCount,
+      id: "sarees", header: "Sarees", accessor: p => purchasePieces(p),
       cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{v as number}</span>,
     },
     {
@@ -76,7 +76,7 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
       id: "expand", header: "", align: "end", accessor: () => null,
       cell: (_v, p) => (
         <Button variant="tertiary" size="sm" onClick={() => toggle(p.id)}>
-          {expandedIds.has(p.id) ? "Hide sarees" : `View ${p.sareeCount} sarees`}
+          {expandedIds.has(p.id) ? "Hide sarees" : `View ${purchasePieces(p)} sarees`}
         </Button>
       ),
     },

@@ -1,6 +1,6 @@
 import React from "react";
 import { Eye, Edit2, Trash2, Tag } from "lucide-react";
-import { Purchase, purchaseTotals, parseINR } from "@/features/suppliers";
+import { Purchase, purchaseTotals, purchasePieces, parseINR } from "@/features/suppliers";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { T, F } from "../theme";
 import { StatusPill } from "../common/primitives";
@@ -77,12 +77,12 @@ export function PurchasesTable({
       cell: (_v, row) => <span style={mono(T.taupe)}>{row.date}</span>,
     },
     {
-      id: "sarees", header: "Sarees", accessor: row => row.sareeCount,
+      id: "sarees", header: "Sarees", accessor: row => purchasePieces(row),
       cell: (_v, row) => (
         // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- shields nested Button from row click; the Button itself is the real interactive control
         <div onClick={e => e.stopPropagation()}>
           <Button onClick={() => onViewSarees(row)} variant="secondary" size="sm" iconLeft={Tag} title="View / Print saree barcodes" className="rounded-full">
-            {row.sareeCount}
+            {purchasePieces(row)}
           </Button>
         </div>
       ),

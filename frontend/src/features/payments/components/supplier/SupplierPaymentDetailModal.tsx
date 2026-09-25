@@ -1,7 +1,7 @@
 import { X, Receipt, ShoppingBag, Image as ImageIcon, User, FileText } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
-import { Supplier, Purchase, SupplierPayment, parseINR } from "@/features/suppliers";
+import { Supplier, Purchase, SupplierPayment, parseINR, purchasePieces } from "@/features/suppliers";
 import { F, T } from "../../theme";
 import { IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
@@ -67,7 +67,7 @@ export function SupplierPaymentDetailModal({
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                         <EntityCode type="order" value={p.id} size="sm" copyable />
-                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date} · {p.sareeCount} saree{p.sareeCount !== 1 ? "s" : ""}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date} · {purchasePieces(p)} saree{purchasePieces(p) !== 1 ? "s" : ""}</span>
                       </div>
                       <div style={{ textAlign: "right" }}>
                         <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Invoice Amount</div>

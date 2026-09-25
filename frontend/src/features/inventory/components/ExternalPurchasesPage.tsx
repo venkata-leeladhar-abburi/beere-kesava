@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {
   useSuppliers, SareeTag, Purchase,
-  totalPieces, parseINR, serialFromLineCode,
+  totalPieces, purchasePieces, parseINR, serialFromLineCode,
 } from "@/features/suppliers";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 
@@ -268,7 +268,7 @@ export function ExternalPurchasesPage() {
       }
     : null;
 
-  const totalSarees = purchases.reduce((s, p) => s + p.sareeCount, 0);
+  const totalSarees = purchases.reduce((s, p) => s + purchasePieces(p), 0);
 
   return (
     <div

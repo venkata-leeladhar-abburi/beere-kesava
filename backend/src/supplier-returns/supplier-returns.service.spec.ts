@@ -24,7 +24,7 @@ describe("SupplierReturnsService", () => {
   beforeEach(() => {
     prisma = {
       user: { findUnique: jest.fn().mockResolvedValue({ id: "user-1" }) },
-      purchase: { findUnique: jest.fn().mockResolvedValue(purchase) },
+      purchase: { findUnique: jest.fn().mockResolvedValue(purchase), update: jest.fn() },
       purchaseSareeLine: { findUnique: jest.fn().mockResolvedValue(line), update: jest.fn() },
       supplierReturnRequest: {
         aggregate: jest.fn().mockResolvedValue({ _sum: { quantity: 0 } }),
@@ -117,10 +117,20 @@ describe("SupplierReturnsService", () => {
       });
     });
 
+    it("takes the approved pieces off the purchase's stored saree count", async () => {
+      await service.decide("RR-RaviSilks-001-001", decideDto());
+
+      expect(prisma.purchase.update).toHaveBeenCalledWith({
+        where: { id: line.purchaseId },
+        data: { sareeCount: { decrement: 3 } },
+      });
+    });
+
     it("leaves the saree line untouched on rejection", async () => {
       await service.decide("RR-RaviSilks-001-001", decideDto({ decision: "REJECTED" }));
 
       expect(prisma.purchaseSareeLine.update).not.toHaveBeenCalled();
+      expect(prisma.purchase.update).not.toHaveBeenCalled();
     });
 
     it("refuses to decide a request that isn't PENDING", async () => {

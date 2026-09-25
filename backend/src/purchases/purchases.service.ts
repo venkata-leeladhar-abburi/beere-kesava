@@ -27,6 +27,16 @@ const summaryInclude = {
   sareeLines: { select: summarySareeLineSelect },
 } satisfies Prisma.PurchaseInclude;
 
+/** Pieces still with us across a purchase's lines — bought minus returned to
+ * the supplier. This is the one meaning of Purchase.sareeCount; the frontend's
+ * table, drawer and barcode print all count the same way. */
+export function piecesWithUs(lines: { quantity?: number; returnedQuantity?: number }[]): number {
+  return lines.reduce((sum, l) => {
+    const qty = l.quantity ?? 1;
+    return sum + Math.max(0, qty - Math.min(l.returnedQuantity ?? 0, qty));
+  }, 0);
+}
+
 function lineData(l: CreatePurchaseSareeLineDto, idx: number) {
   const price = l.price;
   const sellPercent = l.sellPercent ?? 0;
@@ -66,7 +76,7 @@ export class PurchasesService {
       throw new BadRequestException("Provide either supplierId or supplierName");
     }
 
-    const sareeCount = dto.sareeCount ?? dto.sarees.reduce((sum, l) => sum + (l.quantity ?? 1), 0);
+    const sareeCount = dto.sarees.length > 0 ? piecesWithUs(dto.sarees) : (dto.sareeCount ?? 0);
     // Scoped per supplier (registered or not) — an unregistered ("Other,
     // enter manually") supplier still gets its own independent sequence,
     // keyed off its free-text name rather than a real Tier-1 code.
@@ -149,9 +159,7 @@ export class PurchasesService {
       }
     }
 
-    const sareeCount = dto.sarees
-      ? dto.sarees.reduce((sum, l) => sum + (l.quantity ?? 1), 0)
-      : dto.sareeCount;
+    const sareeCount = dto.sarees ? piecesWithUs(dto.sarees) : dto.sareeCount;
 
     return this.prisma.$transaction(async (tx) => {
       if (dto.sarees) {
