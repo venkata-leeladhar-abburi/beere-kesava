@@ -216,6 +216,12 @@ function ExternalTagCard({ r }: { r: SareeTagData }) {
   );
 }
 
+/** The exact sheet "Print All Barcodes" sends to the printer — exported for
+ * doc-preview's `?doc=tags-sheet&print`, so page count can be checked. */
+export function SareeTagSheet({ rows, stock }: { rows: SareeTagData[]; stock?: LabelStock }) {
+  return <TagSheet rows={rows} stock={stock ?? DEFAULT_LABEL_STOCK} />;
+}
+
 function TagSheet({ rows, stock }: { rows: SareeTagData[]; stock: LabelStock }) {
   return (
     <LabelSheet stock={stock}>

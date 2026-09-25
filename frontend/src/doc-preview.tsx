@@ -31,7 +31,7 @@ import {
   type LedgerEntry,
 } from "./shared/ui/document";
 import { toPaise } from "./lib/gst";
-import { SareeTagPreview } from "./features/weavers";
+import { SareeTagPreview, SareeTagSheet } from "./features/weavers";
 import { GrnLabelSheet } from "./features/portals";
 
 const items: InvoiceLineItem[] = [
@@ -304,6 +304,15 @@ const bulkTags = (
   </div>
 );
 
+// `?doc=tags-sheet&print` — the same 213 tags through the real print sheet
+// (one sticker per page), so a --print-to-pdf page count can be compared
+// against the number of sarees.
+const bulkSheet = (
+  <SareeTagSheet
+    rows={bulkIds.map(id => ({ sareeId: id, isExternal: true, invoiceNumber: "626", serial: id.split("-")[2], supplierShortName: "SRIS", costPrice: 560, sellingPrice: 900 }))}
+  />
+);
+
 /**
  * Decodes every tag's bars the way a thermal print would present them: the
  * SVG rasterised at 203dpi across the ~47mm the bars span on a 50mm sticker,
@@ -365,6 +374,7 @@ const activeDoc =
   DOC === "tags" ? bothTags :
   DOC === "grn" ? grnLabels :
   DOC === "tags-bulk" ? bulkTags :
+  DOC === "tags-sheet" ? bulkSheet :
   DOC === "bill" ? billFor("customer") :
   DOC === "bill-admin" ? billFor("admin") :
   invoice;
