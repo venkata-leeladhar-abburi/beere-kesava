@@ -279,6 +279,80 @@ const billFor = (copy: "customer" | "admin") => (
   />
 );
 
+// `?doc=tags-bulk` — every tag of the 213-saree external purchase
+// EXT-SRISAKTHILAKSHMICOLLECTION-005-001, whose "Print All Barcodes" sheet
+// used to come out with bars on only some tags. `&verify` then decodes each
+// one at thermal-printer resolution and puts the result on
+// window.__tagVerify, so the whole sheet can be checked, not eyeballed.
+const bulkLines: [string, number][] = [
+  ["SRIS-626-001", 14], ["SRIS-626-002", 38], ["SRIS-626-003", 17], ["SRIS-626-004", 20],
+  ["SRIS-626-005", 23], ["SRIS-626-006", 6], ["SRIS-626-007", 56], ["SRIS-626-008", 18],
+  ["SRIS-626-009", 6], ["SRIS-626-010", 11], ["SRIS-626-011", 4],
+];
+const bulkIds = bulkLines.flatMap(([line, qty]) =>
+  Array.from({ length: qty }, (_, i) => `${line}-${String(i + 1).padStart(2, "0")}`));
+const bulkTags = (
+  <div style={{ display: "flex", flexWrap: "wrap", gap: 12, padding: 24 }}>
+    {bulkIds.map(id => (
+      <div key={id} data-tag-id={id}>
+        <SareeTagPreview
+          zoom={1.5}
+          tag={{ sareeId: id, isExternal: true, invoiceNumber: "626", serial: id.split("-")[2], supplierShortName: "SRIS", costPrice: 560, sellingPrice: 900 }}
+        />
+      </div>
+    ))}
+  </div>
+);
+
+/**
+ * Decodes every tag's bars the way a thermal print would present them: the
+ * SVG rasterised at 203dpi across the ~47mm the bars span on a 50mm sticker,
+ * hard-thresholded to black/white dots, then read with the same ZXing the
+ * app's scanner uses.
+ */
+async function verifyBulkTags() {
+  const { MultiFormatReader, BinaryBitmap, HybridBinarizer, RGBLuminanceSource, DecodeHintType, BarcodeFormat } =
+    await import("@zxing/library");
+  const reader = new MultiFormatReader();
+  reader.setHints(new Map<number, unknown>([
+    [DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.CODE_128]],
+    [DecodeHintType.TRY_HARDER, true],
+  ]));
+  const DOTS_WIDE = Math.round((47 / 25.4) * 203);
+  const DOTS_HIGH = Math.round((7.4 / 25.4) * 203);
+  const results: { id: string; bars: boolean; decoded: string | null }[] = [];
+
+  for (const el of Array.from(document.querySelectorAll<HTMLElement>("[data-tag-id]"))) {
+    const id = el.dataset.tagId!;
+    const svg = el.querySelector<SVGSVGElement>('svg[aria-label^="Barcode for"]');
+    if (!svg) { results.push({ id, bars: false, decoded: null }); continue; }
+
+    const src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(svg));
+    const img = new Image();
+    await new Promise<void>((resolve, reject) => { img.onload = () => resolve(); img.onerror = reject; img.src = src; });
+    // A white margin around the sticker's bars, as the tag's border gives it.
+    const canvas = document.createElement("canvas");
+    canvas.width = DOTS_WIDE + 40; canvas.height = DOTS_HIGH + 40;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 20, 20, DOTS_WIDE, DOTS_HIGH);
+    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const lum = new Uint8ClampedArray(canvas.width * canvas.height);
+    for (let i = 0; i < lum.length; i++) lum[i] = data[i * 4] < 128 ? 0 : 255;
+    let decoded: string | null = null;
+    try {
+      decoded = reader.decode(new BinaryBitmap(new HybridBinarizer(new RGBLuminanceSource(lum, canvas.width, canvas.height)))).getText();
+    } catch { /* not decoded */ }
+    results.push({ id, bars: true, decoded });
+  }
+  (window as unknown as { __tagVerify: unknown }).__tagVerify = {
+    total: results.length,
+    withBars: results.filter(r => r.bars).length,
+    decodedCorrectly: results.filter(r => r.decoded === r.id).length,
+    failures: results.filter(r => r.decoded !== r.id),
+  };
+}
+
 const DOC = new URLSearchParams(location.search).get("doc");
 const activeDoc =
   DOC === "po" ? purchaseOrder :
@@ -290,6 +364,7 @@ const activeDoc =
   DOC === "tag-weaver" ? weaverTag :
   DOC === "tags" ? bothTags :
   DOC === "grn" ? grnLabels :
+  DOC === "tags-bulk" ? bulkTags :
   DOC === "bill" ? billFor("customer") :
   DOC === "bill-admin" ? billFor("admin") :
   invoice;
@@ -339,4 +414,8 @@ if (PRINT_MODE) {
   const container = document.getElementById("root")! as HTMLElement & { _root?: ReturnType<typeof createRoot> };
   container._root ??= createRoot(container);
   container._root.render(<App />);
+}
+
+if (DOC === "tags-bulk" && new URLSearchParams(location.search).has("verify")) {
+  setTimeout(() => { void verifyBulkTags(); }, 500);
 }

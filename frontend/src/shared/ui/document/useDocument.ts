@@ -79,6 +79,18 @@ async function renderAndPrint(node: React.ReactNode) {
   );
   await nextPaint();
 
+  // A tag without a scannable code is worse than no tag: it gets stuck on a
+  // saree and only fails at the counter. Refuse the whole sheet and say how
+  // many, rather than printing it and letting staff find out later.
+  const unscannable = container.querySelectorAll("[data-code-unavailable]").length;
+  if (unscannable > 0) {
+    printRoot?.render(null);
+    toast.error(`Not printed — ${unscannable} tag${unscannable === 1 ? "" : "s"} could not be given a scannable code.`, {
+      description: "Check those saree IDs for unusual characters, then print again.",
+    });
+    return;
+  }
+
   // Scopes print.css's isolation rules to this print only, so the older
   // `.print-area` mechanism in globals.css (still used by five legacy
   // modals) keeps working when we're not printing a document.

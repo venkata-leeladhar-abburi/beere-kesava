@@ -1,5 +1,5 @@
-import { labelsApi } from "../../api/labels";
 import { ScannableCode } from "../domain/ScannableCode";
+import { Code128Bars } from "../domain/Code128Bars";
 import { useTileStock, monoFitEm, innerWidthEm, type LabelStock } from "./LabelSheet";
 
 /**
@@ -114,13 +114,18 @@ export function TileCode({
         // the PNG (labels.service.ts) so it stretches along with them.
         // `pixelated` keeps the bar edges hard through that stretch rather
         // than letting the browser interpolate them into grey ramps.
-        <img
-          src={labelsApi.barcodeUrl(code, { withText: false })}
-          alt={`Barcode for ${code}`}
-          style={{
-            width: "100%", height: `${barsEm}em`,
-            objectFit: "fill", display: "block", imageRendering: "pixelated",
-          }}
+        // Drawn in the browser, not fetched: a 200-tag sheet used to fire
+        // 200 requests, and the ones the API rate-limited — or that simply
+        // had not arrived when the print dialog opened — printed blank.
+        // A code Code128 can't encode falls back to the QR above.
+        <Code128Bars
+          value={code}
+          style={{ width: "100%", height: `${barsEm}em` }}
+          fallback={
+            <div style={{ width: `${barsEm}em`, height: `${barsEm}em`, flexShrink: 0 }}>
+              <ScannableCode value={code} className="bk-label-qr" />
+            </div>
+          }
         />
       )}
       <span

@@ -1,6 +1,5 @@
-import { labelsApi } from "../../../shared/api/labels";
 import { useLabelStock, needsQrFallback } from "../../../shared/ui/document";
-import { ScannableCode } from "../../../shared/ui/domain";
+import { Code128Bars, ScannableCode } from "../../../shared/ui/domain";
 import { EntityCode } from "../../../shared/ui/domain";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { encodeCostCipher } from "@/lib/domain/costCipher";
@@ -36,10 +35,10 @@ function BarcodeStrip({ code }: { code: string }) {
     );
   }
   return (
-    <img
-      src={labelsApi.barcodeUrl(code, { withText: false })}
-      alt={`Barcode for ${code}`}
-      style={{ width: "100%", height: 44, objectFit: "fill" }}
+    <Code128Bars
+      value={code}
+      style={{ width: "100%", height: 44 }}
+      fallback={<div style={{ alignSelf: "center" }}><ScannableCode value={code} size={60} /></div>}
     />
   );
 }

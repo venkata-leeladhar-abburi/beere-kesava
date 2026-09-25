@@ -4,8 +4,7 @@ import { GrnReceiptItem } from "../../../../shared/api/rawMaterials";
 import { Button } from "../../../../shared/ui/primitives";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
 import { useDocument, useLabelStock, needsQrFallback } from "../../../../shared/ui/document";
-import { labelsApi } from "../../../../shared/api/labels";
-import { ScannableCode } from "../../../../shared/ui/domain";
+import { Code128Bars, ScannableCode } from "../../../../shared/ui/domain";
 import { GrnLabelSheet, type GrnLabel } from "./GrnLabelSheet";
 
 /** DDMMYY, e.g. 2026-09-02 -> "020926" — same format the saree tags use. */
@@ -108,10 +107,10 @@ export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
                 {needsQrFallback(b.code, labelStock) ? (
                   <ScannableCode value={b.code} size={52} />
                 ) : (
-                  <img
-                    src={labelsApi.barcodeUrl(b.code, { withText: false })}
-                    alt={`Barcode for ${b.code}`}
-                    style={{ width: "100%", maxWidth: 160, height: 36, objectFit: "fill" }}
+                  <Code128Bars
+                    value={b.code}
+                    style={{ width: "100%", maxWidth: 160, height: 36 }}
+                    fallback={<ScannableCode value={b.code} size={52} />}
                   />
                 )}
                 <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 11, color: C.text, textAlign: "center", wordBreak: "break-all" }}>{b.code}</span>

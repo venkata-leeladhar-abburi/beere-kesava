@@ -2,6 +2,7 @@
 export { EntityCode, type EntityCodeProps } from "./EntityCode";
 export { GrnLineCode, type GrnLineCodeProps } from "./GrnLineCode";
 export { ScannableCode, type ScannableCodeProps } from "./ScannableCode";
+export { Code128Bars, encodeCode128, type Code128BarsProps, type Code128Drawing } from "./Code128Bars";
 export { Money, type MoneyProps } from "./Money";
 export { Quantity, type QuantityProps } from "./Quantity";
 export { Percent, type PercentProps } from "./Percent";

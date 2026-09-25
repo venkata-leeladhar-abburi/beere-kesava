@@ -84,6 +84,8 @@ export function ScannableCode({ value, size = 96, className }: ScannableCodeProp
         className={className}
         role="img"
         aria-label={`Barcode unavailable for ${value}`}
+        // useDocument refuses to print a sheet carrying one of these.
+        data-code-unavailable=""
         style={{
           width: size, height: size, display: "flex", alignItems: "center",
           justifyContent: "center", textAlign: "center", padding: 4,
