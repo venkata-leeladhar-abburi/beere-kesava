@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
+import { sellingPerPiece } from "../sales/saree-details";
 
 export type StockSource = "factory" | "outsourced" | "external";
 export type StockStatus = "available" | "sold" | "wholesale";
@@ -210,8 +211,13 @@ export class InventoryService {
         // DispatchSaree row, so findAll() excludes it) nor sellable here. A
         // piece receipted MISSING or DAMAGED stays out for the same reason —
         // it is not on the shelf to sell.
+        //
+        // Scoped to one dispatch (the Delivery Challan), the receipt gate is
+        // dropped: the challan is printed when the lorry leaves, before the
+        // shop has receipted anything, and it must list every piece that was
+        // SENT. Gating it made every line read "Saree · ₹0.00".
         where: {
-          receiptStatus: "RECEIVED",
+          ...(dispatchId ? {} : { receiptStatus: "RECEIVED" as const }),
           dispatch: { type: "SHOP", ...(dispatchId ? { id: dispatchId } : {}) },
         },
         include: { dispatch: true },
@@ -299,6 +305,28 @@ export class InventoryService {
       : [];
     const sareeById = new Map(unwovenSarees.map((s) => [s.id, s]));
 
+    // An external-purchase piece's Saree row is created at dispatch with no
+    // sareeTypeCode — its type, colour, weight and selling price live on the
+    // PurchaseSareeLine it came from (piece id "{lineCode}-{pieceNo}", see
+    // ScanService.lookupExternalPiece). Without this those pieces showed no
+    // type and a ₹0 price on the challan and in shop stock.
+    const lineCodeOf = (sareeId: string) => sareeId.match(/^(.+)-(\d{2,})$/)?.[1] ?? null;
+    const externalLineCodes = [
+      ...new Set(
+        unwovenSarees
+          .filter((s) => !s.sareeType)
+          .map((s) => lineCodeOf(s.id))
+          .filter((c): c is string => c !== null),
+      ),
+    ];
+    const purchaseLines = externalLineCodes.length
+      ? await this.prisma.purchaseSareeLine.findMany({
+          where: { code: { in: externalLineCodes } },
+          select: { code: true, sareeType: true, color: true, weight: true, price: true, sellPercent: true },
+        })
+      : [];
+    const purchaseLineByCode = new Map(purchaseLines.map((l) => [l.code, l]));
+
     const dispatchedStock = dispatchedIds
       .filter((id) => rowBySaree.has(id) || sareeById.has(id))
       .map((sareeId): ShopStockItem => {
@@ -309,6 +337,9 @@ export class InventoryService {
           const sale = soldBySaree.get(sareeId);
           const ret = latestReturn.get(sareeId) ?? null;
           const backOnShelf = ret?.restocked === true && (!sale || ret.createdAt > sale.date);
+          const lineCode = unwoven.sareeType ? null : lineCodeOf(sareeId);
+          const line = lineCode ? purchaseLineByCode.get(lineCode) ?? null : null;
+          const lineWeightG = line?.weight ? Number(line.weight.replace(/g$/i, "")) || null : null;
 
           return {
             sareeId,
@@ -322,13 +353,17 @@ export class InventoryService {
             sareeTypeCode: unwoven.sareeTypeCode,
             sareeTypeLabel: unwoven.sareeType
               ? `${unwoven.sareeTypeCode} · ${unwoven.sareeType.type}`
-              : unwoven.sareeTypeCode,
+              : unwoven.sareeTypeCode ?? (line?.sareeType?.trim() || null),
             qcDate: (unwoven.qcDate ?? unwoven.createdAt).toISOString(),
             saleRef: sale?.saleRef ?? null,
             customer: sale?.customer?.name ?? null,
             soldPrice: sale?.amount != null ? Number(sale.amount) : null,
             soldDate: sale?.date.toISOString() ?? null,
-            retailPrice: unwoven.sareeType ? Number(unwoven.sareeType.retailPrice) : null,
+            retailPrice: unwoven.sareeType
+              ? Number(unwoven.sareeType.retailPrice)
+              : line
+                ? sellingPerPiece(Number(line.price), Number(line.sellPercent))
+                : null,
             dispatch: {
               dispatchId: dispatch.id,
               dispatchDate: dispatch.dispatchDate.toISOString(),
@@ -346,8 +381,8 @@ export class InventoryService {
             returnDate: backOnShelf ? ret.createdAt.toISOString() : null,
             returnedFrom: backOnShelf ? sale?.customer?.name ?? null : null,
             photoUrl: backOnShelf ? ret.photoUrl : null,
-            color: unwoven.color,
-            weightG: unwoven.weightG != null ? Number(unwoven.weightG) : null,
+            color: unwoven.color ?? line?.color ?? null,
+            weightG: unwoven.weightG != null ? Number(unwoven.weightG) : lineWeightG,
           };
         }
         const row = rowBySaree.get(sareeId)!;

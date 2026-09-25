@@ -42,7 +42,7 @@ export function DispatchChallanModal({ dispatch, onClose }: { dispatch: Dispatch
   // Scoped server-side to this dispatch. It used to fetch the shop's entire
   // stock and filter it down here, so a printed challan got slower with every
   // saree the shop had ever received.
-  const { data: shopStock } = useQuery({
+  const { data: shopStock, isLoading, isError } = useQuery({
     queryKey: ["shop-stock", dispatch.id],
     queryFn: () => inventoryApi.shopStock(dispatch.id),
   });
@@ -54,8 +54,13 @@ export function DispatchChallanModal({ dispatch, onClose }: { dispatch: Dispatch
 
   const items: ChallanLineItem[] = dispatch.sareeIds.map(sareeId => {
     const d = detailBySaree.get(sareeId);
-    const descriptionParts = [d?.sareeTypeLabel ?? d?.sareeTypeCode, d?.designCode, d?.weaverName ?? (d?.loomNumber ? `Loom ${d.loomNumber}` : null)]
-      .filter(Boolean);
+    const descriptionParts = [
+      d?.sareeTypeLabel ?? d?.sareeTypeCode,
+      d?.designCode ? `Design ${d.designCode}` : null,
+      d?.color,
+      d?.weightG ? `${d.weightG} g` : null,
+      d?.weaverName ?? (d?.loomNumber ? `Loom ${d.loomNumber}` : null),
+    ].filter(Boolean);
     return {
       id: sareeId,
       description: descriptionParts.length > 0 ? descriptionParts.join(" · ") : "Saree",
@@ -77,6 +82,13 @@ export function DispatchChallanModal({ dispatch, onClose }: { dispatch: Dispatch
             <IconButton icon={X} label="Close" variant="ghost" size="sm" />
           </Dialog.Close>
         </div>
+        {/* Rendering before the details arrive printed every line as a bare
+            "Saree · ₹0.00" — and Download PDF would capture exactly that. */}
+        {isLoading || isError ? (
+          <div style={{ flex: 1, display: "grid", placeItems: "center", color: "var(--text-secondary)" }}>
+            {isError ? "Couldn't load the saree details for this challan." : "Loading challan…"}
+          </div>
+        ) : (
         <DocumentViewer fileName={reference} documentTitle={`Delivery Challan ${reference}`}>
           <DeliveryChallanDocument
             challanNumber={reference}
@@ -89,6 +101,7 @@ export function DispatchChallanModal({ dispatch, onClose }: { dispatch: Dispatch
             lrNumber={dispatch.lrNumber || undefined}
           />
         </DocumentViewer>
+        )}
       </div>
     </Modal>
   );
