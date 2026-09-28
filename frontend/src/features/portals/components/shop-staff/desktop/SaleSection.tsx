@@ -14,8 +14,12 @@ export function SaleSection({ bp, isTablet }: { bp: "tablet" | "desktop"; isTabl
         bgUrl={SILK_BG}
       />
       <div style={{ padding: isTablet ? "24px 28px 40px" : "40px 48px 56px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : "1fr 360px", gap: isTablet ? 24 : 36, alignItems: "start" }}>
-          <div style={{ background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}`, boxShadow: "0 4px 28px rgba(44,24,16,0.10)" }}>
+        {/* minmax(0, 1fr), not 1fr: a bare 1fr track grows to its widest
+            content, so the wide All Sarees table on the Sarees step stretched
+            this column and pushed the How It Works panel off the right edge.
+            The table scrolls sideways inside its own box instead. */}
+        <div style={{ display: "grid", gridTemplateColumns: isTablet ? "minmax(0, 1fr)" : "minmax(0, 1fr) 360px", gap: isTablet ? 24 : 36, alignItems: "start" }}>
+          <div style={{ minWidth: 0, background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}`, boxShadow: "0 4px 28px rgba(44,24,16,0.10)" }}>
             <NewSaleFlow />
           </div>
           <div style={{ display: "flex", flexDirection: "column" as const, gap: 20, position: "sticky" as const, top: 84 }}>

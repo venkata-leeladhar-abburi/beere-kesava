@@ -274,7 +274,7 @@ export function ScanSareeStep({
 
             {/* Money is never shown to shop staff — weaver pay, making charge
                 and QC deductions stay admin-only, same as the data behind it. */}
-            <div style={{ padding: 14 }}>
+            <div style={{ padding: 14, overflowX: "auto" }}>
               <MoneyAccessProvider allowed={false}>
                 <WeaverSareesSection
                   ownerType="all"
