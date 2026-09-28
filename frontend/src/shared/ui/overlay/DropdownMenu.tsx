@@ -26,9 +26,23 @@ import { cn } from "../utils";
  * disappeared / went behind the page" when opened from a scrolled page.
  * Non-modal menus keep outside-click-to-close, Escape, roving focus and
  * type-ahead, and never touch the body. Pass `modal` explicitly to override.
+ *
+ * The one exception is a menu opened while a dialog already holds the page
+ * scroll lock (body[data-scroll-locked]). The menu content is portalled to
+ * <body>, outside the dialog, and react-remove-scroll only lets the *topmost*
+ * lock's own subtree scroll — so the dialog swallowed every wheel/touch
+ * scroll on the menu and a long list (the firms picker in Pay Supplier) could
+ * not be scrolled past its first screen. Opening modal in that case makes the
+ * menu the topmost lock, so its list scrolls; the body is already locked by
+ * the dialog, so the jump described above cannot happen.
  */
-export function DropdownMenu({ modal = false, ...props }: React.ComponentProps<typeof RadixDropdown.Root>) {
-  return <RadixDropdown.Root modal={modal} {...props} />;
+export function DropdownMenu({ modal, onOpenChange, ...props }: React.ComponentProps<typeof RadixDropdown.Root>) {
+  const [insideScrollLock, setInsideScrollLock] = React.useState(false);
+  const handleOpenChange = React.useCallback((next: boolean) => {
+    if (next) setInsideScrollLock(document.body.hasAttribute("data-scroll-locked"));
+    onOpenChange?.(next);
+  }, [onOpenChange]);
+  return <RadixDropdown.Root modal={modal ?? insideScrollLock} onOpenChange={handleOpenChange} {...props} />;
 }
 export const DropdownMenuTrigger = RadixDropdown.Trigger;
 export const DropdownMenuGroup = RadixDropdown.Group;
