@@ -2,8 +2,7 @@ import { Receipt } from "lucide-react";
 import type { DiscountType, PurchaseBill } from "@/features/suppliers";
 import { formatMoneyExact, rupees } from "@/lib/domain/money";
 import { T, F } from "../../theme";
-import { labelStyle } from "../../common/primitives";
-import { Field, NumberInput } from "../../../../../../shared/ui/primitives";
+import { Field, Input, NumberInput } from "../../../../../../shared/ui/primitives";
 import { FormState } from "../../types";
 
 const toNumberValue = (v: string): number | "" => (v === "" ? "" : Number(v));
@@ -51,13 +50,12 @@ export function BillSummary({
 
       <div style={{ padding: "14px" }}>
         <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
-          <div>
-            <span style={labelStyle}>Discount (optional)</span>
-            <div style={{ display: "flex", gap: 8 }}>
+          <Field label="Discount (optional)" className="min-w-0">
+            <div style={{ display: "flex", gap: 8, minWidth: 0 }}>
               <div
                 role="group"
                 aria-label="Discount type"
-                style={{ display: "flex", flexShrink: 0, border: `1px solid ${T.borderDef}`, borderRadius: 8, overflow: "hidden", height: 40 }}
+                style={{ display: "flex", flexShrink: 0, border: `1px solid ${T.borderDef}`, borderRadius: 10, overflow: "hidden", height: 40 }}
               >
                 {([
                   ["percent", "%"],
@@ -95,11 +93,13 @@ export function BillSummary({
                 value={toNumberValue(form.discountValue)}
                 onValueChange={(v) => set("discountValue", v === "" ? "" : String(v))}
                 placeholder={discountType === "percent" ? "e.g. 5" : "e.g. 1,500"}
-                containerClassName="flex-1"
+                // eslint-disable-next-line no-restricted-syntax -- input adornment / unit annotation, not a rendered money value
+                addonRight={discountType === "percent" ? "%" : "₹"}
+                containerClassName="flex-1 min-w-0"
               />
             </div>
-          </div>
-          <Field label="GST (%)">
+          </Field>
+          <Field label="GST (%)" className="min-w-0">
             <NumberInput
               step={0.01}
               min={0}
@@ -107,6 +107,16 @@ export function BillSummary({
               value={toNumberValue(form.gstPercent)}
               onValueChange={(v) => set("gstPercent", v === "" ? "" : String(v))}
               placeholder="e.g. 5"
+              addonRight="%"
+              containerClassName="w-full min-w-0"
+            />
+          </Field>
+          <Field label="GST Number (optional)" className="min-w-0 md:col-span-2">
+            <Input
+              className="font-mono"
+              value={form.gstNumber}
+              onChange={(e) => set("gstNumber", e.target.value.toUpperCase())}
+              placeholder="e.g. 37ABCRS1234F1Z5"
             />
           </Field>
         </div>

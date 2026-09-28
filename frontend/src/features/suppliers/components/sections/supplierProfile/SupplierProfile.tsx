@@ -425,6 +425,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
           supplier={supplier}
           outstanding={stats.outstanding}
           openPurchases={myPurchases.filter(p => p.status !== "Paid")}
+          paidFor={purchaseId => myPayments.reduce((sum, p) => sum + (p.purchaseId === purchaseId ? p.amount : 0), 0)}
           saving={savingPayment}
           onClose={() => setPayModalOpen(false)}
           onSave={payload => {
@@ -436,6 +437,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
               mode: payload.mode,
               reference: payload.reference,
               purchaseId: payload.purchaseId,
+              firmId: payload.firmId,
             });
             toast.success(`Payment of ${formatMoney(rupees(payload.amount))} recorded for ${supplier.name}`);
             setSavingPayment(false);

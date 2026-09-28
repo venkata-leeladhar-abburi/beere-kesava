@@ -77,6 +77,8 @@ export interface SupplierPayment {
   reference: string;
   /** Purchase this payment settles, when it maps to a single bill. */
   purchaseId?: string;
+  /** Firm.id of our firm the payment was made from. */
+  firmId?: string;
   notes?: string;
   /** Accountant / Admin who recorded this payment; undefined if unattributed. */
   recordedBy?: { firstName: string; lastName: string; role: string } | null;

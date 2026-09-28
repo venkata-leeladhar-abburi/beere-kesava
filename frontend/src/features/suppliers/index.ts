@@ -8,3 +8,4 @@ export * from "./components/SuppliersPage";
 export * from "./components/sections/SareeInventoryTable";
 export * from "./contexts/SupplierContext";
 export * from "./contexts/supplier-types";
+export * from "./components/sections/PurchaseBillBreakdown";

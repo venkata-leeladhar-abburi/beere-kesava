@@ -78,6 +78,10 @@ export function SupplierFormFields({
         <Field label="Connected Firm (optional)" hint="Which of our firms buys from this supplier. Can be connected or changed later.">
           <Select
             id="connected-firm"
+            // Full width and left-aligned: firm names are long, and the
+            // default right alignment pushed the list off the left edge.
+            className="w-full"
+            align="start"
             value={form.firmId || NO_FIRM}
             onValueChange={v => set("firmId", v === NO_FIRM ? "" : v)}
           >

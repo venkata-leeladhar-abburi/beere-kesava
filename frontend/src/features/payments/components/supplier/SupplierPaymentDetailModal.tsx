@@ -1,7 +1,8 @@
-import { X, Receipt, ShoppingBag, Image as ImageIcon, User, FileText } from "lucide-react";
+import { X, Receipt, ShoppingBag, Image as ImageIcon, User, FileText, Link2 } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
-import { Supplier, Purchase, SupplierPayment, parseINR, purchasePieces } from "@/features/suppliers";
+import { Supplier, Purchase, SupplierPayment, PurchaseBillBreakdown, parseINR, purchasePieces } from "@/features/suppliers";
+import { useFirms } from "@/features/firms";
 import { F, T } from "../../theme";
 import { IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
@@ -20,13 +21,21 @@ export function SupplierPaymentDetailModal({
   supplier,
   purchases,
   payments,
+  firmName,
+  paidFor,
   onClose,
 }: {
   supplier: Supplier;
   purchases: Purchase[];
   payments: SupplierPayment[];
+  /** Name of the firm this supplier is connected to, or null when not connected. */
+  firmName: string | null;
+  /** Paid so far against one purchase (sum of its linked payments). */
+  paidFor: (purchaseId: string) => number;
   onClose: () => void;
 }) {
+  const { firms } = useFirms();
+  const firmLabel = (id?: string) => (id ? firms.find(f => f.id === id)?.firmName ?? id : null);
   const sortedPurchases = [...purchases].sort((a, b) => (a.date < b.date ? 1 : -1));
   const sortedPayments = [...payments].sort((a, b) => (a.date < b.date ? 1 : -1));
 
@@ -41,6 +50,9 @@ export function SupplierPaymentDetailModal({
             <Dialog.Description asChild>
               <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(231,201,131,0.85)", marginTop: 2, display: "flex", alignItems: "center", gap: 6 }}>
                 <EntityCode type="supplier" value={supplier.code || supplier.id} size="sm" className="bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.9)]" />
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  <Link2 size={12} /> {firmName ?? "Not connected to a firm"}
+                </span>
               </div>
             </Dialog.Description>
           </div>
@@ -74,6 +86,9 @@ export function SupplierPaymentDetailModal({
                         <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(parseINR(p.billAmount))} /></div>
                       </div>
                     </div>
+
+                    {/* Bill summary — sarees total, discount, GST, final, paid, balance */}
+                    <PurchaseBillBreakdown purchase={p} paid={paidFor(p.id)} />
 
                     {/* Invoice image/file */}
                     {p.invoiceFileUrl ? (
@@ -131,7 +146,11 @@ export function SupplierPaymentDetailModal({
                   <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, borderLeft: `4px solid ${T.antiqueGold}`, padding: "10px 14px" }}>
                     <div>
                       <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.royalBurgundy }}><Money value={rupees(p.amount)} /></div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{p.mode} · {p.date}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
+                        {p.mode} · {p.date}
+                        {firmLabel(p.firmId) ? ` · from ${firmLabel(p.firmId)}` : ""}
+                        {p.purchaseId ? ` · for ${p.purchaseId}` : ""}
+                      </div>
                     </div>
                     <div>
                       <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>UTR / Reference</div>

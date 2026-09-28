@@ -109,14 +109,6 @@ export function SupplierSection({
             {pieceCount} saree{pieceCount !== 1 ? "s" : ""} in {sareeDetailsCount} line{sareeDetailsCount !== 1 ? "s" : ""} below
           </div>
         </div>
-        <Field label="GST Number (optional)">
-          <Input
-            className="font-mono"
-            value={form.gstNumber}
-            onChange={(e) => set("gstNumber", e.target.value.toUpperCase())}
-            placeholder="e.g. 37ABCRS1234F1Z5"
-          />
-        </Field>
         <Field label="Invoice Number">
           <Input
             className="font-mono"

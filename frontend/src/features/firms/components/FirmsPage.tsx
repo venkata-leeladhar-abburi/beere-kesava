@@ -17,8 +17,8 @@ import { firmsApi } from "../../../shared/api/firms";
 import { T, F, EASE } from "./theme";
 import { SectionCard } from "./primitives";
 import { LuxuryStatsCard } from "../../../shared/ui/LuxuryStatsCard";
-import { fmtAmt, fmtFull, initials, cardColor } from "./utils";
-import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
+import { fmtAmt, fmtFull, initials } from "./utils";
+import { Button, SearchInput } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 import { useConfirm } from "../../../shared/ui/overlay";
 import { LoadingState, ErrorState, EmptyState } from "../../../shared/ui/state";
@@ -275,17 +275,49 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
   );
 }
 
+// Wreath emblem encircling the firm initials — same ornament as the weaver card.
+function FirmWreath({ text, color }: { text: string; color: string }) {
+  return (
+    <div className="relative w-20 h-20 flex items-center justify-center mb-1">
+      <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" fill="none" stroke={color} strokeWidth="1.4">
+        <circle cx="50" cy="50" r="41" strokeDasharray="3 2" opacity="0.75" />
+        <circle cx="50" cy="50" r="35" strokeWidth="1.6" />
+        <path d="M 50 4 C 53 12, 47 12, 50 14" strokeWidth="1.5" />
+        <path d="M 50 96 C 53 88, 47 88, 50 86" strokeWidth="1.5" />
+        <path d="M 4 50 C 12 53, 12 47, 14 50" strokeWidth="1.5" />
+        <path d="M 96 50 C 88 53, 88 47, 86 50" strokeWidth="1.5" />
+        <path d="M 23 23 C 18 31 22 36 28 35" strokeWidth="1.3" />
+        <path d="M 77 23 C 82 31 78 36 72 35" strokeWidth="1.3" />
+        <path d="M 23 77 C 18 69 22 64 28 65" strokeWidth="1.3" />
+        <path d="M 77 77 C 82 69 78 64 72 65" strokeWidth="1.3" />
+      </svg>
+      <span className="text-[20px] font-bold tracking-widest z-10 font-serif" style={{ color }}>{text}</span>
+    </div>
+  );
+}
+
+function FirmLotus({ color }: { color: string }) {
+  return (
+    <div className="relative w-20 h-20 flex items-center justify-center mb-1">
+      <svg viewBox="0 0 100 100" className="w-16 h-16" fill="none" stroke={color} strokeWidth="1.4">
+        <path d="M 50 20 C 40 38, 32 48, 50 72 C 68 48, 60 38, 50 20 Z" strokeWidth="1.6" />
+        <path d="M 50 35 C 36 45, 22 58, 44 72 Z" strokeWidth="1.3" />
+        <path d="M 50 35 C 64 45, 78 58, 56 72 Z" strokeWidth="1.3" />
+        <path d="M 50 48 C 30 52, 18 65, 40 73 Z" strokeWidth="1.1" />
+        <path d="M 50 48 C 70 52, 82 65, 60 73 Z" strokeWidth="1.1" />
+        <circle cx="50" cy="50" r="2.5" fill={color} />
+      </svg>
+    </div>
+  );
+}
+
 // ─── Firm card ────────────────────────────────────────────────────────────────
-// Restyled after the Weaver card (features/weavers/.../WeaverCardAndListViews.tsx):
-// gradient photo-banner header with floating id badge + status pill, a
-// content area with meta rows + a bordered "stat tile" panel, and a
-// three-button footer — same visual language, adapted for a firm (no photo,
-// so the banner is always the gradient-initials fallback; "status" reads
-// net balance instead of a weaving state).
-const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; onEdit: () => void; onView: () => void; onDelete: () => void }>(({ firm, onEdit, onView, onDelete }, ref) => {
+// Same visual language as the weaver card (WeaverCardMockupStyle): ornamental
+// header cycling burgundy / purple / ivory-lotus / ivory-wreath, ❖ dividers,
+// a cream stat panel and a row of pill buttons.
+const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; index?: number; onEdit: () => void; onView: () => void; onDelete: () => void }>(({ firm, index = 0, onEdit, onView, onDelete }, ref) => {
   const { getFirmFinancials } = useFirms();
   const { totals } = useFirmActivity(firm.id);
-  const color = cardColor(firm.id);
 
   const fin = getFirmFinancials(firm.id);
   const inc = fin.income.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "income").reduce((s, m) => s + m.amount, 0) + totals.realizedIncome;
@@ -293,91 +325,111 @@ const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; onEdit: () => vo
   const net = inc - exp;
   const isPositive = net >= 0;
 
+  const isDark = index % 4 === 0 || index % 4 === 1;
+  const isPurple = index % 4 === 1;
+  const isLotus = index % 4 === 2;
+  const headerBg = isDark
+    ? isPurple
+      ? "bg-gradient-to-br from-[#270E32] via-[#481859] to-[#1E0927]"
+      : "bg-gradient-to-br from-[#3D0616] via-[#5D1027] to-[#25030D]"
+    : "bg-gradient-to-b from-[#FBF8F1] via-[#F6F0E4] to-[#EFE7D7]";
+  const headerText = isDark ? "#FFFDF9" : "#4A061B";
+  const emblem = isDark ? "#C89B47" : "#8D5802";
+  const statusColor = isDark ? "#E7C983" : "#8D5802";
+  const badgeClass = isDark
+    ? "bg-black/35 border border-white/20 text-[#E7C983]"
+    : "bg-[#FEF6EC] border border-[#E7C983]/60 text-[#8D5802]";
+  const pill = "flex-1 py-2.5 px-1 rounded-[8px] bg-[#FFFDFB] border border-[#F0E5D8] text-[#6E0F2D] font-bold text-[12px] flex items-center justify-center gap-1.5 hover:bg-[#FEF4F5] hover:border-[#FEE8EB] transition-all cursor-pointer shadow-2xs";
+
   return (
     <motion.div ref={ref} layout initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}
-      whileHover={{ y: -6, boxShadow: "0 30px 70px rgba(74,6,27,0.12)" }}
       transition={{ type: "spring", stiffness: 240, damping: 22 }}
-      style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
+      className="relative flex flex-col justify-between rounded-[12px] bg-[#FFFDFB] border border-[#F0E5D8] overflow-hidden text-left shadow-[0_4px_20px_rgba(74,6,27,0.05)] h-full">
 
-      {/* Header banner — gradient-initials fallback (firms have no photo) */}
-      <div style={{ height: 128, position: "relative", overflow: "hidden", background: `linear-gradient(135deg, ${color} 0%, ${T.luxuryBrown} 100%)`, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontFamily: F.display, fontSize: 40, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{initials(firm.firmName)}</span>
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
-
-        <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)", maxWidth: "calc(100% - 24px)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+      {/* Ornamental header */}
+      <div className={`h-[235px] relative overflow-hidden flex-shrink-0 flex flex-col items-center justify-center p-4 text-center ${headerBg}`}>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(231,201,131,0.14)_0,transparent_70%)] pointer-events-none" />
+        <div className={`absolute top-3.5 left-3.5 text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-lg shadow-2xs z-20 ${badgeClass}`}>
           {firm.id}
         </div>
-
-        <div style={{ position: "absolute", bottom: 12, left: 12, display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 8px" }}>
-          {isPositive ? <TrendingUp size={13} color="#2ECC71" style={{ flexShrink: 0 }} /> : <TrendingDown size={13} color="#F47B72" style={{ flexShrink: 0 }} />}
-          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase" as const, letterSpacing: "0.5px", textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
-            {net === 0 ? "No Activity Yet" : isPositive ? "Net Positive" : "Net Outstanding"}
-          </span>
+        {isLotus ? <FirmLotus color={emblem} /> : <FirmWreath text={initials(firm.firmName)} color={emblem} />}
+        <div className={`text-[21px] font-bold tracking-wider mb-1 z-10 truncate max-w-[90%] uppercase ${isDark ? "drop-shadow-sm" : ""}`}
+          style={{ fontFamily: "'Fraunces', serif", color: headerText }}>
+          {firm.firmName}
+        </div>
+        <div className="z-10 inline-flex items-center gap-1.5 text-[11px] font-bold tracking-widest uppercase" style={{ color: statusColor }}>
+          {isPositive ? <TrendingUp size={12} className="text-[#2ECC71]" /> : <TrendingDown size={12} className="text-[#F47B72]" />}
+          <span>{net === 0 ? "No Activity Yet" : isPositive ? "Net Positive" : "Net Outstanding"}</span>
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{ padding: 20, display: "flex", flexDirection: "column", flex: 1 }}>
-        <div style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, fontWeight: 800, lineHeight: 1.25, marginBottom: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-          {firm.firmName}
-        </div>
+      {/* Header / body divider ❖ */}
+      <div className="relative flex items-center justify-center w-full bg-[#FFFDFB]">
+        <div className="w-full h-[1px] bg-[#F0E5D8]" />
+        <div className="absolute bg-[#FFFDFB] px-2 text-[#C89B47] text-[11px] font-bold leading-none select-none">❖</div>
+      </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
-          {firm.gstNumber && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-              <Hash size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
-              <span style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.4px" }}>{firm.gstNumber}</span>
-            </div>
-          )}
-          {firm.address && (
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-              <MapPin size={14} color={T.royalBurgundy} style={{ flexShrink: 0, marginTop: 1 }} />
-              <span style={{ lineHeight: 1.4 }}>{firm.address}</span>
-            </div>
-          )}
-          {(firm.contactPersonName || firm.contactPersonPhone) && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-              <Phone size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
-              <span>{firm.contactPersonName}{firm.contactPersonName && firm.contactPersonPhone ? " · " : ""}{firm.contactPersonPhone}</span>
-            </div>
-          )}
-          {(firm.bankName || firm.accountNumber) && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-              <CreditCard size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
-              <span>{firm.bankName}{firm.bankName && firm.accountNumber ? " · " : ""}{firm.accountNumber ? `···${firm.accountNumber.slice(-4)}` : ""}</span>
-            </div>
-          )}
-        </div>
+      {/* Body */}
+      <div className="p-5 flex flex-col flex-1 justify-between gap-3.5 bg-[#FFFDFB]">
+        <div>
+          <div style={{ fontFamily: "'Fraunces', serif" }} className="text-[19px] font-bold text-[#4A061B] leading-tight mb-2 truncate">
+            {firm.firmName}
+          </div>
 
-        <div style={{ height: 1, background: "rgba(110,15,45,0.06)", margin: "4px 0 12px 0" }} />
+          <div className="flex flex-col gap-1.5 mb-3.5 text-[13px] text-[#69635E]">
+            {firm.gstNumber && (
+              <div className="flex items-center gap-2">
+                <Hash size={14} className="text-[#C89B47] flex-shrink-0" />
+                <span className="font-mono">{firm.gstNumber}</span>
+              </div>
+            )}
+            {firm.address && (
+              <div className="flex items-start gap-2">
+                <MapPin size={14} className="text-[#C89B47] flex-shrink-0 mt-[2px]" />
+                <span className="leading-snug">{firm.address}</span>
+              </div>
+            )}
+            {(firm.contactPersonName || firm.contactPersonPhone) && (
+              <div className="flex items-center gap-2">
+                <Phone size={14} className="text-[#C89B47] flex-shrink-0" />
+                <span>{firm.contactPersonName}{firm.contactPersonName && firm.contactPersonPhone ? " · " : ""}<span className="font-mono">{firm.contactPersonPhone}</span></span>
+              </div>
+            )}
+            {(firm.bankName || firm.accountNumber) && (
+              <div className="flex items-center gap-2">
+                <CreditCard size={14} className="text-[#C89B47] flex-shrink-0" />
+                <span>{firm.bankName}{firm.bankName && firm.accountNumber ? " · " : ""}{firm.accountNumber ? `···${firm.accountNumber.slice(-4)}` : ""}</span>
+              </div>
+            )}
+          </div>
 
-        {/* Financials stat tile */}
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+          {/* Financials panel */}
+          <div className="bg-[#FEF6EC] border border-[#F6D9BA] rounded-[8px] p-3 grid grid-cols-3 gap-2">
             {[
               { label: "Income", val: inc, color: T.green },
               { label: "Expenses", val: exp, color: T.crimson },
               { label: "Net", val: net, color: isPositive ? T.green : T.crimson },
             ].map(s => (
-              <div key={s.label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" as const }}>{s.label}</span>
-                <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: s.color }}>{fmtAmt(s.val)}</span>
+              <div key={s.label} className="flex flex-col">
+                <span className="text-[10.5px] font-bold text-[#8D5802] tracking-wider uppercase">{s.label}</span>
+                <span style={{ fontFamily: "'Fraunces', serif", color: s.color }} className="text-[14px] font-bold">{fmtAmt(s.val)}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Action buttons */}
-        <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8 }}>
-          <Button onClick={onView} variant="secondary" size="sm" className="flex-1 rounded-xl bg-[rgba(110,15,45,0.04)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.15)]">
-            <Eye size={14} /> Details
-          </Button>
-          <Button onClick={onEdit} variant="secondary" size="sm" className="flex-1 rounded-xl bg-transparent text-[#6E0F2D] border border-[#6E0F2D]">
-            <Edit3 size={13} /> Edit
-          </Button>
-          <IconButton icon={Trash2} label={`Delete ${firm.firmName}`} onClick={onDelete} variant="secondary" size="sm"
-            className="rounded-xl border-[1.5px] border-[rgba(192,57,43,0.20)] bg-[rgba(192,57,43,0.05)] text-[var(--text-danger)] hover:bg-[rgba(192,57,43,0.12)]" />
+        {/* Pill actions */}
+        <div className="flex items-center gap-2 pt-1">
+          <button type="button" onClick={onView} className={pill}><Eye size={13} /><span>Details</span></button>
+          <button type="button" onClick={onEdit} className={pill}><Edit3 size={13} /><span>Edit</span></button>
+          <button type="button" onClick={onDelete} aria-label={`Delete ${firm.firmName}`} className={`${pill} !text-[var(--text-danger)]`}><Trash2 size={13} /><span>Delete</span></button>
         </div>
+      </div>
+
+      {/* Bottom flourish ❖ */}
+      <div className="relative flex items-center justify-center w-full pb-3 bg-[#FFFDFB]">
+        <div className="w-[80%] h-[1px] bg-[#F0E5D8]/80" />
+        <div className="absolute bg-[#FFFDFB] px-2 text-[#C89B47] text-[10px] leading-none select-none">❖</div>
       </div>
     </motion.div>
   );
@@ -578,8 +630,8 @@ export function FirmsPage() {
         ) : (
           <motion.div layout style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 20 }}>
             <AnimatePresence mode="popLayout">
-              {filtered.map(firm => (
-                <FirmCard key={firm.id} firm={firm}
+              {filtered.map((firm, i) => (
+                <FirmCard key={firm.id} firm={firm} index={i}
                   onEdit={() => setModal({ type: "edit", firm })}
                   onView={() => openFirmView(firm.id)}
                   onDelete={() => void handleDeleteFirm(firm)} />

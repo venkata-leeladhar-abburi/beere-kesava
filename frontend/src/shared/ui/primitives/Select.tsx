@@ -160,7 +160,9 @@ export function Select({
           <DropdownMenuContent
             align={align}
             sideOffset={6}
-            className="min-w-[180px] max-h-[300px] rounded-[10px] p-0 overflow-hidden bg-white border border-[rgba(110,15,45,0.14)] shadow-[0_10px_30px_rgba(74,6,27,0.12)]"
+            // Scroll, don't clip: a blanket overflow-hidden here cut off every
+            // option past max-h with no way to reach it (see overlay/DropdownMenu).
+            className="min-w-[180px] max-h-[300px] rounded-[10px] p-0 overflow-y-auto overflow-x-hidden bg-white border border-[rgba(110,15,45,0.14)] shadow-[0_10px_30px_rgba(74,6,27,0.12)]"
           >
             {children}
           </DropdownMenuContent>

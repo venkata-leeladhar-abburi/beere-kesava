@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 
 import { useSuppliers } from "@/features/suppliers";
+import { useFirms } from "@/features/firms";
 import { ViewSelector } from "@/shared/ui/ViewSelector";
 import { Supplier, Purchase } from "@/features/suppliers";
 import { F, T, EASE } from "../../theme";
@@ -56,6 +57,16 @@ export function SupplierPaymentsSection() {
   const [payForId, setPayForId] = useState<string | null>(null);
   const [detailForId, setDetailForId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const { firms } = useFirms();
+  const firmNameOf = (s: Supplier) =>
+    s.firmId ? firms.find(f => f.id === s.firmId)?.firmName ?? s.firmId : null;
+  // Paid so far against each purchase — the sum of its linked payments.
+  const paidByPurchase = useMemo(() => {
+    const m = new Map<string, number>();
+    payments.forEach(p => { if (p.purchaseId) m.set(p.purchaseId, (m.get(p.purchaseId) ?? 0) + p.amount); });
+    return m;
+  }, [payments]);
+  const paidFor = (purchaseId: string) => paidByPurchase.get(purchaseId) ?? 0;
 
   const rows: SupplierRow[] = useMemo(() => {
     return suppliers.map((s): SupplierRow => {
@@ -103,7 +114,7 @@ export function SupplierPaymentsSection() {
     ? payments.filter(p => p.supplierId === detailFor.supplier.id)
     : [];
 
-  const handleSave = (payload: { amount: number; date: string; mode: "Cash" | "Bank Transfer" | "UPI" | "Cheque"; reference: string; purchaseId?: string }) => {
+  const handleSave = (payload: { amount: number; date: string; mode: "Cash" | "Bank Transfer" | "UPI" | "Cheque"; reference: string; purchaseId?: string; firmId?: string }) => {
     if (!payFor) return;
     setSaving(true);
     addPayment({
@@ -113,6 +124,7 @@ export function SupplierPaymentsSection() {
       mode: payload.mode,
       reference: payload.reference,
       purchaseId: payload.purchaseId,
+      firmId: payload.firmId,
     });
     toast.success(`Payment of ${formatMoney(rupees(payload.amount))} recorded for ${payFor.supplier.name}`);
     setSaving(false);
@@ -130,6 +142,13 @@ export function SupplierPaymentsSection() {
           <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{r.supplier.name}</span>
         </div>
       ),
+    },
+    {
+      id: "firm", header: "Connected Firm", accessor: r => firmNameOf(r.supplier) ?? "",
+      cell: (_v, r) => {
+        const name = firmNameOf(r.supplier);
+        return <span style={{ fontFamily: F.ui, fontSize: 13, color: name ? T.luxuryBrown : T.taupe, fontWeight: name ? 600 : 400 }}>{name ?? "Not connected"}</span>;
+      },
     },
     {
       id: "totalPurchased", header: "Total Purchased", accessor: r => r.totalPurchased, type: "number",
@@ -483,6 +502,9 @@ export function SupplierPaymentsSection() {
                           <span>·</span>
                           <span>{r.supplier.specialty || "General Supplier"}</span>
                         </div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>
+                          Firm: <strong style={{ color: firmNameOf(r.supplier) ? T.luxuryBrown : T.taupe }}>{firmNameOf(r.supplier) ?? "Not connected"}</strong>
+                        </div>
                       </div>
 
                       {/* Inner Summary Box */}
@@ -644,6 +666,7 @@ export function SupplierPaymentsSection() {
             supplier={payFor.supplier}
             outstanding={payFor.outstanding}
             openPurchases={openPurchasesForPayFor}
+            paidFor={paidFor}
             saving={saving}
             onClose={() => setPayForId(null)}
             onSave={handleSave}
@@ -657,6 +680,8 @@ export function SupplierPaymentsSection() {
             supplier={detailFor.supplier}
             purchases={purchasesForDetail}
             payments={paymentsForDetail}
+            firmName={firmNameOf(detailFor.supplier)}
+            paidFor={paidFor}
             onClose={() => setDetailForId(null)}
           />
         )}

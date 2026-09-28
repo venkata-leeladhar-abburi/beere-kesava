@@ -290,6 +290,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         mode: (p.method as SupplierPayment["mode"]) ?? "Bank Transfer",
         reference: p.utr ?? "",
         purchaseId: p.purchaseId ?? undefined,
+        firmId: p.firmId ?? undefined,
         recordedBy: p.recordedBy ?? null,
       }));
     },
@@ -417,7 +418,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     mutationFn: (p: Omit<SupplierPayment, "id">) =>
       supplierPaymentsApi.create({
         supplierId: p.supplierId, amount: p.amount, date: p.date, utr: p.reference, method: p.mode,
-        purchaseId: p.purchaseId,
+        purchaseId: p.purchaseId, firmId: p.firmId,
       }),
     onSuccess: (created) => {
       setPayments(prev => [{
@@ -425,6 +426,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         amount: Number(created.amount), mode: (created.method as SupplierPayment["mode"]) ?? "Bank Transfer",
         reference: created.utr ?? "",
         purchaseId: created.purchaseId ?? undefined,
+        firmId: created.firmId ?? undefined,
       }, ...prev]);
       // A payment linked to a purchase may have flipped that purchase's
       // Pending/Partial/Paid status server-side (PurchasesService.
