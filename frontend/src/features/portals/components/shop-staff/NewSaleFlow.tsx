@@ -16,7 +16,10 @@ import { NewSaleBillModal } from './NewSaleBillModal';
 import { NewSaleSuccessView } from './NewSaleSuccessView';
 import { CustomerSelectStep, Customer } from './CustomerSelectStep';
 import { ScanSareeStep } from './ScanSareeStep';
-import { cartTotal, cartOriginalTotal, applyDiscount, discountLabel, type SaleLine, type DiscountMode } from './sale-cart';
+import {
+  cartTotal, cartOriginalTotal, applyDiscount, discountLabel, billDiscountAmount, billDiscountLabel,
+  allocateBillDiscount, NO_BILL_DISCOUNT, type SaleLine, type DiscountMode, type BillDiscount,
+} from './sale-cart';
 import { ApiError } from "../../../../shared/api/client";
 import { scanApi } from "../../../../shared/api/scan";
 import { salesApi } from "../../../../shared/api/sales";
@@ -43,6 +46,8 @@ export function NewSaleFlow() {
   // A counter sale is a basket, not a single piece — the customer can walk up
   // with several sarees and they all go on one bill.
   const [cart, setCart] = useState<SaleLine[]>([]);
+  // A discount on the whole bill, on top of any per-saree discounts.
+  const [billDiscount, setBillDiscount] = useState<BillDiscount>(NO_BILL_DISCOUNT);
   const [scanError, setScanError] = useState<string | null>(null);
   const [showSareeList, setShowSareeList] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,8 +57,12 @@ export function NewSaleFlow() {
   // the WhatsApp send re-reads its figures from.
   const [saleRefs, setSaleRefs] = useState<string[]>([]);
 
-  const total = cartTotal(cart);
+  // retail total → less per-saree discounts = subtotal → less bill discount = total
   const originalTotal = cartOriginalTotal(cart);
+  const subtotal = cartTotal(cart);
+  const billOff = billDiscountAmount(subtotal, billDiscount);
+  const total = subtotal - billOff;
+  const lineDiscount = originalTotal - subtotal;
   const priceDiscount = originalTotal - total;
   const fmtPrice = (n: number) => formatMoney(rupees(n));
 
@@ -137,7 +146,8 @@ export function NewSaleFlow() {
         name: result.design?.name ?? result.sareeType?.type ?? "—",
         // Same "CODE · Name" order the Inventory table uses, so a saree reads
         // identically whether it is being checked in stock or sold.
-        type: result.sareeType ? `${result.sareeType.code} · ${result.sareeType.type}` : "—",
+        // External pieces carry a type name but no ST- code — never print "null".
+        type: [result.sareeType?.code, result.sareeType?.type].filter(Boolean).join(" · ") || "—",
         typeCode,
         weight: result.weight != null ? `${result.weight}g` : "—",
         weaver: result.weaver
@@ -244,7 +254,7 @@ export function NewSaleFlow() {
 
   const resetSale = () => {
     billId.current = null;
-    setStep(1); setCart([]); setManualId(""); setPayment(null); setPayRef("");
+    setStep(1); setCart([]); setBillDiscount(NO_BILL_DISCOUNT); setManualId(""); setPayment(null); setPayRef("");
     setPhone(""); setCustName(""); setCustAddress("");
     setCustSearch(""); setSelectedCustomer(null); setIsEditingCustomer(false);
     setIsNewCustomer(false); setShowCustomerList(false);
@@ -264,6 +274,7 @@ export function NewSaleFlow() {
         payment={payment}
         payRef={payRef}
         total={total}
+        billDiscount={billOff ? { amount: billOff, note: billDiscountLabel(billDiscount) } : undefined}
         billRef={saleRefs[0]}
         saleRefs={saleRefs}
         isMobile={isMobile}
@@ -283,6 +294,7 @@ export function NewSaleFlow() {
         payment={payment}
         payRef={payRef}
         total={total}
+        billDiscount={billOff ? { amount: billOff, note: billDiscountLabel(billDiscount) } : undefined}
         saleRefs={saleRefs}
         fmtPrice={fmtPrice}
         onShowBill={() => setShowBill(true)}
@@ -365,6 +377,8 @@ export function NewSaleFlow() {
           handleAddSarees={handleAddSarees}
           removeLine={removeLine}
           setLineDiscount={setLineDiscount}
+          billDiscount={billDiscount}
+          setBillDiscount={setBillDiscount}
           scanError={scanError}
           showSareeList={showSareeList}
           setShowSareeList={setShowSareeList}
@@ -425,16 +439,10 @@ export function NewSaleFlow() {
               ))}
 
               <div style={{ padding: "14px 16px", borderTop: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)" }}>
-                {priceDiscount !== 0 && (
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-                    <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
-                      {priceDiscount > 0 ? "Discount" : "Mark-up"}
-                    </span>
-                    <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted, fontVariantNumeric: "tabular-nums" }}>
-                      {fmtPrice(Math.abs(priceDiscount))}
-                    </span>
-                  </div>
-                )}
+                <BillBreakdown
+                  originalTotal={originalTotal} lineDiscount={lineDiscount} subtotal={subtotal}
+                  billOff={billOff} billNote={billDiscountLabel(billDiscount)} fmtPrice={fmtPrice}
+                />
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                   <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total payable</span>
                   <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 28, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtPrice(total)}</span>
@@ -540,12 +548,10 @@ export function NewSaleFlow() {
                     </div>
                   ))}
                   <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, marginTop: 6 }}>
-                    {priceDiscount !== 0 && (
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-                        <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Retail total</span>
-                        <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted, textDecoration: "line-through", fontVariantNumeric: "tabular-nums" }}>{fmtPrice(originalTotal)}</span>
-                      </div>
-                    )}
+                    <BillBreakdown
+                      originalTotal={originalTotal} lineDiscount={lineDiscount} subtotal={subtotal}
+                      billOff={billOff} billNote={billDiscountLabel(billDiscount)} fmtPrice={fmtPrice}
+                    />
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                       <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total payable</span>
                       <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 30, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtPrice(total)}</span>
@@ -555,7 +561,7 @@ export function NewSaleFlow() {
                         Paying by {payment ? payment.toUpperCase() : "—"}
                       </span>
                       {priceDiscount > 0 && (
-                        <Chip label={`Discount applied · ${fmtPrice(priceDiscount)}`} color="#845E04" bg="rgba(200,155,71,0.15)" />
+                        <Chip label={`Total discount · ${fmtPrice(priceDiscount)}`} color="#845E04" bg="rgba(200,155,71,0.15)" />
                       )}
                     </div>
                   </div>
@@ -604,17 +610,24 @@ export function NewSaleFlow() {
                 const recorded: string[] = [];
                 const refs: string[] = [];
                 billId.current ??= crypto.randomUUID();
+                // The bill discount is shared out across the sarees so each
+                // saree's recorded amount is what was really paid for it, and
+                // the recorded amounts add up to the bill total.
+                const billShares = allocateBillDiscount(cart, billOff);
+                const billNote = billOff
+                  ? `bill discount ${billDiscountLabel(billDiscount) ?? fmtPrice(billOff)}`
+                  : undefined;
                 try {
-                  for (const line of cart) {
+                  for (const [i, line] of cart.entries()) {
                     const sale = await salesApi.create({
                       sareeId: line.id,
                       channel: "RETAIL",
-                      amount: line.soldPrice,
+                      amount: line.soldPrice - billShares[i],
                       customerId,
                       paymentMethod: payment ?? undefined,
                       paymentRef: payRef.trim() || undefined,
                       originalPrice: line.originalPrice,
-                      discountNote: discountLabel(line),
+                      discountNote: [discountLabel(line), billShares[i] ? billNote : undefined].filter(Boolean).join(" + ") || undefined,
                       billId: billId.current,
                     });
                     recorded.push(line.id);
@@ -623,6 +636,13 @@ export function NewSaleFlow() {
                 } catch (err) {
                   if (recorded.length > 0) {
                     refreshStock();
+                    // A flat ₹ bill discount was partly used up by the sarees
+                    // that went through; only the rest applies to the retry.
+                    // A % discount re-applies to what is left unchanged.
+                    if (billDiscount.mode === "amount" && billOff) {
+                      const used = billShares.slice(0, recorded.length).reduce((a, b) => a + b, 0);
+                      setBillDiscount({ mode: "amount", value: Math.max(0, billOff - used) });
+                    }
                     setCart(prev => prev.filter(l => !recorded.includes(l.id)));
                     throw new Error(
                       `Recorded ${recorded.length} of ${cart.length} sarees (${recorded.join(", ")}). ` +
@@ -683,6 +703,34 @@ export function NewSaleFlow() {
         </div>
       )}
 
+    </div>
+  );
+}
+
+/** Retail total → per-saree discounts → subtotal → bill discount, as the
+ *  payment and confirm steps show it above the amount payable. Rows that are
+ *  zero are left out; nothing renders when no discount was given at all. */
+function BillBreakdown({ originalTotal, lineDiscount, subtotal, billOff, billNote, fmtPrice }: {
+  originalTotal: number;
+  lineDiscount: number;
+  subtotal: number;
+  billOff: number;
+  billNote?: string;
+  fmtPrice: (n: number) => string;
+}) {
+  if (!lineDiscount && !billOff) return null;
+  const row = (label: string, value: string, color: string = C.muted) => (
+    <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+      <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{label}</span>
+      <span style={{ fontFamily: F.u, fontSize: 14, color, fontVariantNumeric: "tabular-nums" }}>{value}</span>
+    </div>
+  );
+  return (
+    <div style={{ marginBottom: 4 }}>
+      {row("Retail total", fmtPrice(originalTotal))}
+      {lineDiscount !== 0 && row(lineDiscount > 0 ? "Saree discounts" : "Saree mark-ups", `${lineDiscount > 0 ? "−" : "+"} ${fmtPrice(Math.abs(lineDiscount))}`, C.gold)}
+      {billOff > 0 && lineDiscount !== 0 && row("Subtotal", fmtPrice(subtotal))}
+      {billOff > 0 && row(`Bill discount${billNote ? ` (${billNote})` : ""}`, `− ${fmtPrice(billOff)}`, C.gold)}
     </div>
   );
 }

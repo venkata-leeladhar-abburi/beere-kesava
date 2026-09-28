@@ -54,6 +54,10 @@ export interface RetailBillDocumentProps {
   lines: RetailBillLineItem[];
   /** Rupees. */
   total: number;
+  /** A discount on the whole bill, taken off after the per-saree discounts
+   *  (rupees, plus "5%" when it was given as a percentage). `total` is already
+   *  net of it; the lines are not — they show each saree's own price. */
+  billDiscount?: { amount: number; note?: string };
   paymentMethod?: string;
   paymentRef?: string;
   soldBy?: string;
@@ -74,10 +78,14 @@ function paymentLabel(method?: string): string {
 
 export function RetailBillDocument({
   billRef, billDate, firm = DEFAULT_LETTERHEAD_FIRM, customerName, customerPhone,
-  customerAddress, lines, total, paymentMethod, paymentRef, soldBy, saleRefs, pageInfo,
+  customerAddress, lines, total, billDiscount, paymentMethod, paymentRef, soldBy, saleRefs, pageInfo,
   copy = "customer",
 }: RetailBillDocumentProps) {
   const retailTotal = lines.reduce((sum, l) => sum + (l.originalPrice ?? l.soldPrice), 0);
+  const subtotal = lines.reduce((sum, l) => sum + l.soldPrice, 0);
+  const billOff = billDiscount?.amount ?? 0;
+  const sareeDiscount = retailTotal - subtotal;
+  // Everything the customer saved: per-saree discounts plus the bill discount.
   const discount = retailTotal - total;
 
   const meta: MetaField[] = [
@@ -91,11 +99,13 @@ export function RetailBillDocument({
   const totalsRows: TotalsRow[] = [
     // The struck-through retail price sits on each line already; this row is
     // what makes the saving legible as one number.
-    ...(discount > 0
-      ? [
-          { label: "Retail Total", amount: formatPaise(toPaise(retailTotal)) },
-          { label: "Discount", amount: `− ${formatPaise(toPaise(discount))}` },
-        ]
+    ...(discount > 0 ? [{ label: "Retail Total", amount: formatPaise(toPaise(retailTotal)) }] : []),
+    ...(sareeDiscount > 0
+      ? [{ label: billOff > 0 ? "Saree Discounts" : "Discount", amount: `− ${formatPaise(toPaise(sareeDiscount))}` }]
+      : []),
+    ...(billOff > 0 && sareeDiscount > 0 ? [{ label: "Subtotal", amount: formatPaise(toPaise(subtotal)) }] : []),
+    ...(billOff > 0
+      ? [{ label: `Bill Discount${billDiscount?.note ? ` (${billDiscount.note})` : ""}`, amount: `− ${formatPaise(toPaise(billOff))}` }]
       : []),
     { label: "Total Paid", amount: formatPaise(toPaise(total)), grand: true },
   ];

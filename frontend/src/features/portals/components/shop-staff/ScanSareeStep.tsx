@@ -7,7 +7,9 @@ import { Button, CurrencyInput, NumberInput } from "../../../../shared/ui/primit
 import { MoneyAccessProvider } from "../../../../shared/ui/MoneyAccess";
 import { WeaverSareesSection, salePickRule } from "@/features/weavers";
 import { StepHeader, StepBody, FlowActions, ScanPanel, ACCENT_SALE } from "./flow-kit";
-import { cartTotal, cartOriginalTotal, type SaleLine, type DiscountMode } from "./sale-cart";
+import {
+  cartTotal, cartOriginalTotal, billDiscountAmount, type SaleLine, type DiscountMode, type BillDiscount,
+} from "./sale-cart";
 
 interface ScanSareeStepProps {
   /** Sarees already in the basket. */
@@ -24,6 +26,9 @@ interface ScanSareeStepProps {
    *  price is recomputed from the retail price. Priced here, at the moment
    *  the saree is picked, rather than a step later. */
   setLineDiscount: (id: string, mode: DiscountMode, value: number) => void;
+  /** Discount on the whole bill, taken off after the per-saree discounts. */
+  billDiscount: BillDiscount;
+  setBillDiscount: (d: BillDiscount) => void;
   scanError?: string | null;
   showSareeList: boolean;
   setShowSareeList: (v: boolean) => void;
@@ -45,6 +50,8 @@ export function ScanSareeStep({
   handleAddSarees,
   removeLine,
   setLineDiscount,
+  billDiscount,
+  setBillDiscount,
   scanError,
   showSareeList,
   setShowSareeList,
@@ -155,52 +162,12 @@ export function ScanSareeStep({
 
                       <div>
                         <div style={labelStyle}>Discount</div>
-                        <div style={{ display: "flex", gap: 6 }}>
-                          <div role="radiogroup" aria-label={`Discount type for ${l.id}`} style={{ display: "flex", border: `1px solid ${C.bdr}`, borderRadius: 8, overflow: "hidden", height: 40 }}>
-                            {(["amount", "percent"] as const).map(m => {
-                              const on = l.discountMode === m;
-                              return (
-                                <button
-                                  key={m} type="button" role="radio" aria-checked={on}
-                                  aria-label={m === "amount" ? "Discount in rupees" : "Discount in percent"}
-                                  onClick={() => { if (!on) setLineDiscount(l.id, m, 0); }}
-                                  style={{
-                                    width: 38, border: "none", cursor: "pointer",
-                                    fontFamily: F.u, fontWeight: 700, fontSize: 14,
-                                    background: on ? C.burg : "transparent",
-                                    color: on ? "#fff" : C.muted,
-                                  }}
-                                >
-                                  {/* eslint-disable-next-line no-restricted-syntax -- a unit toggle label, not a money value */}
-                                  {m === "amount" ? "₹" : "%"}
-                                </button>
-                              );
-                            })}
-                          </div>
-                          <div style={{ width: 110 }}>
-                            {l.discountMode === "amount" ? (
-                              <CurrencyInput
-                                key={`${l.id}-amount`}
-                                aria-label={`Discount amount for ${l.id}`}
-                                value={l.discountValue || ""}
-                                onValueChange={v => setLineDiscount(l.id, "amount", v === "" ? 0 : v)}
-                                placeholder="0"
-                                className="w-full"
-                              />
-                            ) : (
-                              <NumberInput
-                                key={`${l.id}-percent`}
-                                aria-label={`Discount percent for ${l.id}`}
-                                value={l.discountValue || ""}
-                                onValueChange={v => setLineDiscount(l.id, "percent", v === "" ? 0 : v)}
-                                min={0} max={100} step={0.01}
-                                placeholder="0"
-                                addonRight="%"
-                                className="w-full"
-                              />
-                            )}
-                          </div>
-                        </div>
+                        <DiscountControl
+                          label={l.id}
+                          mode={l.discountMode}
+                          value={l.discountValue}
+                          onChange={(mode, value) => setLineDiscount(l.id, mode, value)}
+                        />
                       </div>
 
                       <div style={{ minWidth: 110, textAlign: isMobile ? "left" as const : "right" as const }}>
@@ -228,22 +195,50 @@ export function ScanSareeStep({
                 );
               })}
 
-              {cartOriginalTotal(cart) !== cartTotal(cart) && (
-                <div style={{ padding: "10px 16px 0", borderTop: `1px solid ${C.bdr}`, display: "flex", flexDirection: "column" as const, gap: 4, fontFamily: F.u, fontSize: 13, color: C.muted, fontVariantNumeric: "tabular-nums" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span>Retail total</span><span>{formatMoney(rupees(cartOriginalTotal(cart)))}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", color: C.gold }}>
-                    <span>Discount</span><span>− {formatMoney(rupees(cartOriginalTotal(cart) - cartTotal(cart)))}</span>
-                  </div>
+              {/* ── Whole-bill discount ──
+                  On top of the per-saree discounts above: ₹ or % off the
+                  basket's total, e.g. a round-off or a festival offer. */}
+              <div style={{ padding: "12px 16px", borderTop: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" as const }}>
+                <div>
+                  <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Discount on total bill</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Applied after the saree discounts above</div>
                 </div>
-              )}
-              <div style={{ padding: "14px 16px", borderTop: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)", display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
-                <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Final amount</span>
-                <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 26, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
-                  {formatMoney(rupees(cartTotal(cart)))}
-                </span>
+                <DiscountControl
+                  label="the total bill"
+                  mode={billDiscount.mode}
+                  value={billDiscount.value}
+                  onChange={(mode, value) => setBillDiscount({ mode, value })}
+                />
               </div>
+
+              {(() => {
+                const retail = cartOriginalTotal(cart);
+                const subtotal = cartTotal(cart);
+                const billOff = billDiscountAmount(subtotal, billDiscount);
+                const row = (label: string, value: string, color: string = C.muted) => (
+                  <div key={label} style={{ display: "flex", justifyContent: "space-between", color }}>
+                    <span>{label}</span><span>{value}</span>
+                  </div>
+                );
+                return (
+                  <>
+                    {(retail !== subtotal || billOff > 0) && (
+                      <div style={{ padding: "10px 16px 0", borderTop: `1px solid ${C.bdr}`, display: "flex", flexDirection: "column" as const, gap: 4, fontFamily: F.u, fontSize: 13, color: C.muted, fontVariantNumeric: "tabular-nums" }}>
+                        {row("Retail total", formatMoney(rupees(retail)))}
+                        {retail !== subtotal && row(retail > subtotal ? "Saree discounts" : "Saree mark-ups", `${retail > subtotal ? "−" : "+"} ${formatMoney(rupees(Math.abs(retail - subtotal)))}`, C.gold)}
+                        {billOff > 0 && retail !== subtotal && row("Subtotal", formatMoney(rupees(subtotal)))}
+                        {billOff > 0 && row(`Bill discount${billDiscount.mode === "percent" ? ` (${billDiscount.value}%)` : ""}`, `− ${formatMoney(rupees(billOff))}`, C.gold)}
+                      </div>
+                    )}
+                    <div style={{ padding: "14px 16px", borderTop: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)", display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, marginTop: retail !== subtotal || billOff > 0 ? 10 : 0 }}>
+                      <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Final amount</span>
+                      <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 26, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
+                        {formatMoney(rupees(subtotal - billOff))}
+                      </span>
+                    </div>
+                  </>
+                );
+              })()}
             </Card>
           </motion.div>
         )}
@@ -318,5 +313,65 @@ export function ScanSareeStep({
         hint={cart.length === 0 ? "Add at least one saree before continuing" : undefined}
       />
     </>
+  );
+}
+
+/** ₹ / % toggle plus the value box — the same control for a saree's own
+ *  discount and for the discount on the whole bill. Switching unit clears the
+ *  value, since 10 rupees and 10 percent are different discounts. */
+function DiscountControl({ label, mode, value, onChange }: {
+  /** What the discount applies to, for screen readers ("JJSI-552-003-01"). */
+  label: string;
+  mode: DiscountMode;
+  value: number;
+  onChange: (mode: DiscountMode, value: number) => void;
+}) {
+  return (
+    <div style={{ display: "flex", gap: 6 }}>
+      <div role="radiogroup" aria-label={`Discount type for ${label}`} style={{ display: "flex", border: `1px solid ${C.bdr}`, borderRadius: 8, overflow: "hidden", height: 40 }}>
+        {(["amount", "percent"] as const).map(m => {
+          const on = mode === m;
+          return (
+            <button
+              key={m} type="button" role="radio" aria-checked={on}
+              aria-label={m === "amount" ? "Discount in rupees" : "Discount in percent"}
+              onClick={() => { if (!on) onChange(m, 0); }}
+              style={{
+                width: 38, border: "none", cursor: "pointer",
+                fontFamily: F.u, fontWeight: 700, fontSize: 14,
+                background: on ? C.burg : "transparent",
+                color: on ? "#fff" : C.muted,
+              }}
+            >
+              {/* eslint-disable-next-line no-restricted-syntax -- a unit toggle label, not a money value */}
+              {m === "amount" ? "₹" : "%"}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ width: 110 }}>
+        {mode === "amount" ? (
+          <CurrencyInput
+            key={`${label}-amount`}
+            aria-label={`Discount amount for ${label}`}
+            value={value || ""}
+            onValueChange={v => onChange("amount", v === "" ? 0 : v)}
+            placeholder="0"
+            className="w-full"
+          />
+        ) : (
+          <NumberInput
+            key={`${label}-percent`}
+            aria-label={`Discount percent for ${label}`}
+            value={value || ""}
+            onValueChange={v => onChange("percent", v === "" ? 0 : v)}
+            min={0} max={100} step={0.01}
+            placeholder="0"
+            addonRight="%"
+            className="w-full"
+          />
+        )}
+      </div>
+    </div>
   );
 }

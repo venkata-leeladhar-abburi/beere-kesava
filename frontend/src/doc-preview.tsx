@@ -264,6 +264,9 @@ const billLines: RetailBillLineItem[] = Array.from({ length: 14 }, (_, i) => {
       : { kind, name: "Sree Lakshmi Silk House", detail: "Invoice INV-2291" },
   };
 });
+// A 5% discount on the whole bill, on top of the per-saree discounts above.
+const billSubtotal = billLines.reduce((s, l) => s + l.soldPrice, 0);
+const billOff = Math.round(billSubtotal * 0.05);
 const billFor = (copy: "customer" | "admin") => (
   <RetailBillDocument
     copy={copy}
@@ -273,7 +276,8 @@ const billFor = (copy: "customer" | "admin") => (
     customerAddress="Dharmavaram"
     customerPhone="7793960939"
     lines={billLines}
-    total={billLines.reduce((s, l) => s + l.soldPrice, 0)}
+    total={billSubtotal - billOff}
+    billDiscount={{ amount: billOff, note: "5%" }}
     paymentMethod="cash"
     saleRefs={billLines.map((_, i) => `RETAIL-Chetan-001-${String(i + 1).padStart(3, "0")}`)}
   />

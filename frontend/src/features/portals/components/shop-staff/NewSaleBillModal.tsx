@@ -16,6 +16,8 @@ interface NewSaleBillModalProps {
   payment: "cash" | "upi" | "card" | "other" | null;
   payRef?: string;
   total: number;
+  /** Discount on the whole bill (after per-saree discounts), when one was given. */
+  billDiscount?: { amount: number; note?: string };
   /** The bill's own reference — empty while previewing a sale not yet recorded. */
   billRef?: string;
   /** Every SaleRecord reference on this bill — listed when the basket has more than one. */
@@ -38,6 +40,7 @@ export function NewSaleBillModal({
   payment,
   payRef,
   total,
+  billDiscount,
   billRef,
   saleRefs,
   isMobile,
@@ -62,6 +65,7 @@ export function NewSaleBillModal({
           customerAddress={custAddress}
           lines={lines.map(toBillLine)}
           total={total}
+          billDiscount={billDiscount}
           paymentMethod={payment ?? undefined}
           paymentRef={payRef}
           saleRefs={saleRefs}

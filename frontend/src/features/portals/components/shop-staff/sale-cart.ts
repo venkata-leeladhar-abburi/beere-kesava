@@ -77,3 +77,56 @@ export const toBillLine = (l: SaleLine) => ({
   discountNote: discountLabel(l),
   source: l.source,
 });
+
+/**
+ * A discount on the whole bill, on top of any per-saree discounts — given at
+ * the counter as ₹ off or % off the basket's final amount.
+ */
+export interface BillDiscount {
+  mode: DiscountMode;
+  value: number;
+}
+
+export const NO_BILL_DISCOUNT: BillDiscount = { mode: "amount", value: 0 };
+
+/** Rupees the bill discount takes off `subtotal` (the basket after per-saree
+ *  discounts) — clamped to the subtotal and rounded to whole rupees, the same
+ *  way a line discount is. */
+export function billDiscountAmount(subtotal: number, d: BillDiscount): number {
+  return subtotal - discountedPrice(subtotal, d.mode, d.value);
+}
+
+/** "5%" when the bill discount was given as a percentage. */
+export const billDiscountLabel = (d: BillDiscount): string | undefined =>
+  d.value && d.mode === "percent" ? `${d.value}%` : undefined;
+
+/** What the customer pays: the basket after per-saree discounts, less the bill discount. */
+export const billTotal = (lines: SaleLine[], d: BillDiscount): number => {
+  const subtotal = cartTotal(lines);
+  return subtotal - billDiscountAmount(subtotal, d);
+};
+
+/**
+ * Spreads a bill discount across the lines in proportion to each line's
+ * price, in whole rupees, so the shares add up to exactly `amount`. The
+ * backend records one SaleRecord per saree, so this is what makes each saree's
+ * recorded amount — the figure refunds, firm income and customer spend all
+ * read — sum to what the customer actually paid. Rounding leftovers go to the
+ * lines with the largest remainders; no line is pushed below zero.
+ */
+export function allocateBillDiscount(lines: Pick<SaleLine, "soldPrice">[], amount: number): number[] {
+  const subtotal = lines.reduce((sum, l) => sum + l.soldPrice, 0);
+  if (amount <= 0 || subtotal <= 0) return lines.map(() => 0);
+  const off = Math.min(amount, subtotal);
+  const exact = lines.map(l => (l.soldPrice * off) / subtotal);
+  const shares = exact.map(Math.floor);
+  let left = off - shares.reduce((a, b) => a + b, 0);
+  const byRemainder = exact
+    .map((x, i) => ({ i, r: x - Math.floor(x) }))
+    .sort((a, b) => b.r - a.r);
+  for (const { i } of byRemainder) {
+    if (left <= 0) break;
+    if (shares[i] < lines[i].soldPrice) { shares[i] += 1; left -= 1; }
+  }
+  return shares;
+}

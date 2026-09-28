@@ -21,6 +21,8 @@ interface NewSaleSuccessViewProps {
   payment: "cash" | "upi" | "card" | "other" | null;
   payRef?: string;
   total: number;
+  /** Discount on the whole bill (after per-saree discounts), when one was given. */
+  billDiscount?: { amount: number; note?: string };
   /** One SaleRecord ref per saree, in the order the backend recorded them. */
   saleRefs: string[];
   fmtPrice: (n: number) => string;
@@ -46,6 +48,7 @@ export function NewSaleSuccessView({
   payment,
   payRef,
   total,
+  billDiscount,
   saleRefs,
   fmtPrice,
   onShowBill,
@@ -78,6 +81,7 @@ export function NewSaleSuccessView({
           customerAddress={custAddress}
           lines={lines.map(toBillLine)}
           total={total}
+          billDiscount={billDiscount}
           paymentMethod={payment ?? undefined}
           paymentRef={payRef}
           saleRefs={saleRefs}
@@ -144,6 +148,12 @@ export function NewSaleSuccessView({
                 <span style={{ fontFamily: mono ? F.m : F.u, fontSize: 13, color: C.text }}>{v as string}</span>
               </div>
             ))}
+            {billDiscount && (
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+                <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Bill discount{billDiscount.note ? ` (${billDiscount.note})` : ""}</span>
+                <span style={{ fontFamily: F.u, fontSize: 13, color: C.gold }}>− {fmtPrice(billDiscount.amount)}</span>
+              </div>
+            )}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: `1px solid ${C.bdr}`, paddingTop: 10, marginTop: 4 }}>
               <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Total ({lines.length} saree{lines.length !== 1 ? "s" : ""})</span>
               <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>{fmtPrice(total)}</span>
