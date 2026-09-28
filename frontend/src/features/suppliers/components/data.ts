@@ -11,8 +11,3 @@ export const TYPE_FILLS = [T.royalBurgundy, T.antiqueGold, T.green, "#5A3E6B", "
 export const MODE_FILLS: Record<string, string> = {
   "Bank Transfer": T.royalBurgundy, "UPI": T.antiqueGold, "Cash": T.green, "Cheque": "#5A3E6B",
 };
-export const BILL_STATUS_META: Record<string, { color: string; bg: string }> = {
-  Paid: { color: T.greenMid, bg: T.greenBg },
-  Partial: { color: "#E67E22", bg: "rgba(230,126,34,0.12)" },
-  Pending: { color: T.crimson, bg: T.crimsonBg },
-};

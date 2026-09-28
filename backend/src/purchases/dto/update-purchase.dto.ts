@@ -10,10 +10,11 @@ import {
   IsPositive,
   IsString,
   IsUUID,
+  Max,
   Min,
   ValidateNested,
 } from "class-validator";
-import { PurchasePaymentStatus } from "../../generated/prisma/client";
+import { PurchaseDiscountType } from "../../generated/prisma/client";
 import { CreatePurchaseSareeLineDto } from "./create-purchase-saree-line.dto";
 
 export class UpdatePurchaseDto {
@@ -46,14 +47,24 @@ export class UpdatePurchaseDto {
   @IsString()
   invoiceNumber?: string;
 
+  // The bill itself (subtotal, discount, GST, billAmount) is calculated
+  // server-side from the saree lines and these three inputs — see
+  // PurchasesService.computeBill. Payment status is never sent: it follows
+  // the supplier payments linked to the purchase (recomputeStatus).
+  @IsOptional()
+  @IsEnum(PurchaseDiscountType)
+  discountType?: PurchaseDiscountType | null;
+
   @IsOptional()
   @IsNumber()
   @Min(0)
-  billAmount?: number;
+  discountValue?: number;
 
   @IsOptional()
-  @IsEnum(PurchasePaymentStatus)
-  status?: PurchasePaymentStatus;
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  gstPercent?: number;
 
   @IsOptional()
   @IsString()

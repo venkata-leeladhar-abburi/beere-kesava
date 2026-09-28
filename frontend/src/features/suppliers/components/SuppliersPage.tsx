@@ -3,7 +3,7 @@ import { useListDetailScroll } from "@/shared/ui/ScrollToTop";
 import { useLocation } from "react-router";
 import { AnimatePresence } from "motion/react";
 import {
-  useSuppliers, Supplier, SareeTag,
+  useSuppliers, Supplier, SareeTag, totalPieces,
 } from "../contexts/SupplierContext";
 import { MaterialsFooter } from "@/features/materials";
 import { PurchaseFormModal, FormState as PurchaseFormState, EMPTY_FORM as EMPTY_PURCHASE_FORM } from "@/features/inventory";
@@ -95,12 +95,15 @@ export function SuppliersPage() {
       supplier: form.supplier,
       location: form.location,
       date: form.date || "—",
-      sareeCount: sarees.length,
+      sareeCount: totalPieces(sarees),
       gstNumber: form.gstNumber,
       invoiceNumber: form.invoiceNumber,
-      // eslint-disable-next-line no-restricted-syntax -- fallback string format
-      billAmount: form.billAmount || "₹0",
-      status: form.status || "Pending",
+      // Calculated from the sarees + discount + GST (server recalculates on save).
+      billAmount: "",
+      discountType: form.discountType,
+      discountValue: Number(form.discountValue) || 0,
+      gstPercent: Number(form.gstPercent) || 0,
+      status: "Pending",
       notes: form.notes,
       invoiceFileName: form.invoiceFileName || undefined,
       invoiceFileUrl: form.invoiceFileUrl || undefined,
@@ -168,7 +171,8 @@ export function SuppliersPage() {
                     name: v.name, shortName: v.shortName || undefined, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
                     city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
                     specialty: v.specialty, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo, ifscCode: v.ifscCode,
-                    notes: v.notes, visitingCard: cardUrl || undefined, status: "active", rating: 3,
+                    notes: v.notes, visitingCard: cardUrl || undefined, status: "active", rating: v.rating || 3,
+                    firmId: v.firmId || undefined,
                   });
                   setShowAdd(false);
                   setToast(`Supplier ${v.name} added`);

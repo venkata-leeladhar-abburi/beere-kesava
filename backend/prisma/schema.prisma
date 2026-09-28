@@ -200,6 +200,11 @@ enum PurchasePaymentStatus {
   PARTIAL
 }
 
+enum PurchaseDiscountType {
+  PERCENT
+  AMOUNT
+}
+
 enum PurchaseOrderStatus {
   PENDING
   APPROVED
@@ -1252,12 +1257,18 @@ model Supplier {
   visitingCardUrl String?
   status          PartyStatus @default(ACTIVE)
   rating          Int?
+  // Optional link to one of our own firms. Suppliers that predate this
+  // column stay unlinked (null) and can be connected later from Edit Profile.
+  firmId          String?
+  firm            Firm?       @relation(fields: [firmId], references: [id])
   createdAt       DateTime    @default(now())
 
   purchases        Purchase[]
   purchaseRequests PurchaseRequest[]
   payments         SupplierPayment[]
   returnRequests   SupplierReturnRequest[]
+
+  @@index([firmId])
 }
 
 model SupplierPayment {
@@ -1340,7 +1351,26 @@ model Purchase {
   sareeCount      Int
   gstNumber       String?
   invoiceNumber   String?
+  // What we owe the supplier: subtotal - discount + GST. Computed server-side
+  // (PurchasesService.computeBill) from the saree lines and the pricing
+  // fields below — never typed by hand any more.
   billAmount      Decimal               @db.Decimal(12, 2)
+  // Sum of buying price x quantity across every line, before discount and
+  // GST. Null on purchases recorded before the bill was calculated (their
+  // billAmount was typed in by hand and is kept as-is until next edited).
+  subtotal        Decimal?              @db.Decimal(12, 2)
+  // How the discount was entered — a percentage of the subtotal or a flat
+  // rupee amount. Null means no discount.
+  discountType    PurchaseDiscountType?
+  // The figure as typed (5 for 5%, or 1700 for ₹1,700).
+  discountValue   Decimal               @default(0) @db.Decimal(12, 2)
+  // The resulting rupee amount taken off the subtotal.
+  discountAmount  Decimal               @default(0) @db.Decimal(12, 2)
+  // GST tax rate applied on (subtotal - discount), and the rupee amount it adds.
+  gstPercent      Decimal               @default(0) @db.Decimal(5, 2)
+  gstAmount       Decimal               @default(0) @db.Decimal(12, 2)
+  // Derived from linked SupplierPayments (PurchasesService.recomputeStatus) —
+  // not set from the purchase form.
   status          PurchasePaymentStatus @default(PENDING)
   notes           String?
   invoiceFileName String?
@@ -1564,6 +1594,7 @@ model Firm {
   isRetailSalesFirm  Boolean  @default(false)
   createdAt          DateTime @default(now())
 
+  suppliers        Supplier[]
   financialEntries FirmFinancialEntry[]
   retailSales      SaleRecord[]         @relation("FirmRetailSales")
   weaverPayments   WeaverPayment[]

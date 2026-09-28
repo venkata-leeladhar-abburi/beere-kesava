@@ -22,6 +22,8 @@ export interface BackendSupplier {
   visitingCardUrl: string | null;
   status: "ACTIVE" | "INACTIVE" | "OVERDUE";
   rating: number | null;
+  /** Firm.id this supplier is connected to; null when not connected. */
+  firmId: string | null;
   createdAt: string;
 }
 
@@ -45,6 +47,8 @@ export interface CreateSupplierPayload {
   /** Server-relative path from POST /uploads/photo — never a base64 data URL. */
   visitingCardUrl?: string;
   rating?: number;
+  /** Firm.id to connect; null (on update) disconnects. */
+  firmId?: string | null;
 }
 
 interface PaginatedResponse<T> {

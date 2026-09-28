@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {
   useSuppliers, SareeTag, Purchase,
-  totalPieces, purchasePieces, parseINR, serialFromLineCode,
+  totalPieces, purchasePieces, serialFromLineCode,
 } from "@/features/suppliers";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 
@@ -16,7 +16,6 @@ import { DetailDrawer } from "./externalPurchases/sections/DetailDrawer";
 import { PurchaseFormModal } from "./externalPurchases/modals/purchaseForm/PurchaseFormModal";
 import { SareeListModal } from "./externalPurchases/modals/SareeListModal";
 import { useConfirm } from "../../../shared/ui/overlay";
-import { formatMoney, paise } from "@/lib/domain/money";
 
 // Re-exported so existing imports of `PurchaseFormModal` / `FormState` / `EMPTY_FORM`
 // from this file (e.g. SuppliersPage) keep working unchanged.
@@ -45,7 +44,6 @@ export function ExternalPurchasesPage() {
   const confirm = useConfirm();
   const [detailRow, setDetailRow] = useState<Purchase | null>(null);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All Status");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
@@ -123,10 +121,8 @@ export function ExternalPurchasesPage() {
     return ["All Serial No.s", ...Array.from(s).sort()];
   }, [purchases, fPurchaseOrder]);
 
-  // How much has actually been paid against each purchase. The stored status
-  // is recomputed server-side when a payment is linked to a purchase, but
-  // deriving it here as well keeps the pill, the filter and the amounts in
-  // agreement even for rows recorded before that recompute existed.
+  // How much has actually been paid against each purchase — drives the
+  // table's Paid and Balance columns.
   const paidByPurchase = useMemo(() => {
     const map = new Map<string, number>();
     payments.forEach(pay => {
@@ -137,15 +133,8 @@ export function ExternalPurchasesPage() {
   }, [payments]);
 
   const paidFor = useCallback((p: Purchase) => paidByPurchase.get(p.id) ?? 0, [paidByPurchase]);
-  const statusOf = useCallback((p: Purchase): Purchase["status"] => {
-    const bill = parseINR(p.billAmount);
-    const paid = paidFor(p);
-    if (bill > 0 && paid >= bill) return "Paid";
-    if (paid > 0) return "Partial";
-    return p.status === "Paid" && paid === 0 ? "Paid" : p.status;
-  }, [paidFor]);
 
-  const matchesExceptStatus = (p: Purchase) => {
+  const matchesFilters = (p: Purchase) => {
     const matchSearch =
       search === "" ||
       p.supplier.toLowerCase().includes(search.toLowerCase()) ||
@@ -165,30 +154,15 @@ export function ExternalPurchasesPage() {
     return matchSearch && matchDate && matchSupplier && matchPO && matchType && matchColor && matchSerial;
   };
 
-  // Counts shown on the status pills — everything the other filters allow,
-  // grouped by payment status, so a pill that would show nothing says so
-  // before it is clicked.
-  const statusCounts = useMemo(() => {
-    const counts = { "All Status": 0, Paid: 0, Pending: 0, Partial: 0 } as Record<string, number>;
-    purchases.filter(matchesExceptStatus).forEach(p => {
-      counts["All Status"] += 1;
-      counts[statusOf(p)] += 1;
-    });
-    return counts;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [purchases, statusOf, search, dateFilter, fSupplier, fPurchaseOrder, fType, fColor, fSerial]);
 
-  const filtered = purchases.filter(
-    p => matchesExceptStatus(p) && (statusFilter === "All Status" || statusOf(p) === statusFilter),
-  );
+  const filtered = purchases.filter(matchesFilters);
 
-  const filtersActive = search !== "" || statusFilter !== "All Status" || dateFilter.mode !== "all"
+  const filtersActive = search !== "" || dateFilter.mode !== "all"
     || fSupplier !== "All Suppliers" || fPurchaseOrder !== "All Purchase Orders"
     || fSerial !== "All Serial No.s" || fType !== "All Saree Types" || fColor !== "All Colours";
 
   const clearFilters = () => {
     setSearch("");
-    setStatusFilter("All Status");
     setDateFilter(DEFAULT_DATE_FILTER);
     setFSupplier("All Suppliers");
     setFPurchaseOrder("All Purchase Orders");
@@ -206,8 +180,12 @@ export function ExternalPurchasesPage() {
       sareeCount: totalPieces(sarees),
       gstNumber: form.gstNumber,
       invoiceNumber: form.invoiceNumber,
-      billAmount: form.billAmount || formatMoney(paise(0)),
-      status: form.status,
+      // Calculated from the sarees + discount + GST (server recalculates on save).
+      billAmount: "",
+      discountType: form.discountType,
+      discountValue: Number(form.discountValue) || 0,
+      gstPercent: Number(form.gstPercent) || 0,
+      status: "Pending",
       notes: form.notes,
       addedBy: "Admin",
       invoiceFileName: form.invoiceFileName || undefined,
@@ -226,8 +204,9 @@ export function ExternalPurchasesPage() {
       sareeCount: totalPieces(sarees),
       gstNumber: form.gstNumber,
       invoiceNumber: form.invoiceNumber,
-      billAmount: form.billAmount,
-      status: form.status,
+      discountType: form.discountType,
+      discountValue: Number(form.discountValue) || 0,
+      gstPercent: Number(form.gstPercent) || 0,
       notes: form.notes,
       invoiceFileName: form.invoiceFileName || undefined,
       invoiceFileUrl: form.invoiceFileUrl || undefined,
@@ -260,8 +239,9 @@ export function ExternalPurchasesPage() {
         date: editingPurchase.date,
         gstNumber: editingPurchase.gstNumber,
         invoiceNumber: editingPurchase.invoiceNumber,
-        billAmount: editingPurchase.billAmount,
-        status: editingPurchase.status,
+        discountType: editingPurchase.discountType ?? "percent",
+        discountValue: editingPurchase.discountValue ? String(editingPurchase.discountValue) : "",
+        gstPercent: editingPurchase.gstPercent ? String(editingPurchase.gstPercent) : "",
         notes: editingPurchase.notes,
         invoiceFileName: editingPurchase.invoiceFileName || "",
         invoiceFileUrl: editingPurchase.invoiceFileUrl || "",
@@ -285,7 +265,6 @@ export function ExternalPurchasesPage() {
 
       <FilterBar
         search={search} setSearch={setSearch}
-        statusFilter={statusFilter} setStatusFilter={setStatusFilter} statusCounts={statusCounts}
         dateFilter={dateFilter} setDateFilter={setDateFilter}
         viewMode={viewMode} setViewMode={setViewMode}
         fSupplier={fSupplier} setFSupplier={setFSupplier}
@@ -301,7 +280,6 @@ export function ExternalPurchasesPage() {
         <PurchasesTable
           filtered={filtered}
           paidFor={paidFor}
-          statusOf={statusOf}
           totalCount={purchases.length}
           viewMode={viewMode}
           hoveredRow={hoveredRow}
@@ -340,6 +318,7 @@ export function ExternalPurchasesPage() {
           mode="edit"
           initial={editingFormInitial}
           initialSarees={editingPurchase.sarees}
+          previousBillAmount={editingPurchase.billAmount}
           onClose={() => setFormModal(null)}
           onSubmit={(data, sarees) => handleEditSubmit(formModal.editId!, data, sarees)}
         />

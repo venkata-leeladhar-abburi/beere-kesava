@@ -1,14 +1,17 @@
 import { useState } from "react";
-import { Building2, Phone, FileText, Clock, Package, MapPin, Landmark, MessageSquare, StickyNote } from "lucide-react";
+import { Building2, Phone, FileText, Clock, Package, MapPin, Landmark, MessageSquare, StickyNote, Link2 } from "lucide-react";
 import { T, F } from "../../theme";
 import { Supplier } from "../../../contexts/SupplierContext";
 import { resolveAssetUrl } from "../../../../../shared/api/uploads";
 import { ImageZoomModal, type ZoomImage } from "../../../../../shared/ui/ImageZoomModal";
+import { useFirms } from "@/features/firms";
 
 export function ContactTab({ supplier }: { supplier: Supplier }) {
   const hasBankDetails = supplier.bankName || supplier.accountNo || supplier.ifscCode;
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
   const cardSrc = resolveAssetUrl(supplier.visitingCard);
+  const { firms } = useFirms();
+  const firmName = supplier.firmId ? firms.find(f => f.id === supplier.firmId)?.firmName ?? supplier.firmId : null;
 
   return (
     <div style={{ display: "flex", gap: 32, flexWrap: "wrap", alignItems: "flex-start" }}>
@@ -45,6 +48,12 @@ export function ContactTab({ supplier }: { supplier: Supplier }) {
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}><Package size={14} /> Supplies</div>
               <div style={{ fontFamily: F.ui, fontSize: 15, color: T.luxuryBrown, marginTop: 4 }}>{supplier.specialty || "—"}</div>
+            </div>
+            <div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}><Link2 size={14} /> Connected Firm</div>
+              <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: firmName ? 600 : 400, color: firmName ? T.luxuryBrown : T.taupe, marginTop: 4 }}>
+                {firmName ?? "Not connected — set it in Edit Profile"}
+              </div>
             </div>
           </div>
         </div>

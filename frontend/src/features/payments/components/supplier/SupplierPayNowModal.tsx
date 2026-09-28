@@ -70,7 +70,7 @@ export function SupplierPayNowModal({
             <Select value={purchaseId || "__none__"} onValueChange={v => setPurchaseId(v === "__none__" ? "" : v)}>
               <SelectItem value="__none__">General payment (no specific purchase)</SelectItem>
               {openPurchases.map(p => (
-                <SelectItem key={p.id} value={p.id}>{p.id} — {p.billAmount} ({p.status})</SelectItem>
+                <SelectItem key={p.id} value={p.id}>{p.id} — {p.billAmount}</SelectItem>
               ))}
             </Select>
           </Field>

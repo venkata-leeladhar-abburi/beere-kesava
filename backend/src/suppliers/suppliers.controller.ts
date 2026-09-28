@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
-import { CreatePartyDto } from "../common/dto/create-party.dto";
 import { ListPartyQueryDto } from "../common/dto/list-party-query.dto";
-import { UpdatePartyDto } from "../common/dto/update-party.dto";
 import { UserRole } from "../generated/prisma/client";
+import { CreateSupplierDto } from "./dto/create-supplier.dto";
+import { UpdateSupplierDto } from "./dto/update-supplier.dto";
 import { SuppliersService } from "./suppliers.service";
 
 // Supplier master data (purchasing) — financial, ACCOUNTANT, ADMIN, SUPERADMIN access.
@@ -13,7 +13,7 @@ export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 
   @Post()
-  create(@Body() dto: CreatePartyDto) {
+  create(@Body() dto: CreateSupplierDto) {
     return this.suppliersService.create(dto);
   }
 
@@ -28,7 +28,7 @@ export class SuppliersController {
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() dto: UpdatePartyDto) {
+  update(@Param("id") id: string, @Body() dto: UpdateSupplierDto) {
     return this.suppliersService.update(id, dto);
   }
 

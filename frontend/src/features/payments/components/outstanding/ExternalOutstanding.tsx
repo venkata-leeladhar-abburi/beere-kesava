@@ -73,8 +73,8 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
         subtitle="Every purchase from every supplier, showing the sarees still unsold from that bill, the bill amount still due, and any sarees returned by customers after a retail sale."
         actions={
           <ExportBtn onClick={() => exportCsv("outstanding-external-purchases.csv",
-            [["Purchase ID", "Supplier", "Location", "Invoice No", "GST No", "Purchase Date", "Bill Amount", "Paid", "Bill Due", "Bill Status", "Sarees Bought", "Sold", "Unsold", "Returned", "Unsold Cost", "Unsold Sale Value", "Refund Value"],
-             ...all.map(p => [p.id, p.supplier, p.location, p.invoiceNumber, p.gstNumber, p.date, p.billAmount, p.paidAmount, p.dueAmount, p.status, boughtCount(p), p.soldCount, p.unsoldCount, p.returnedCount, p.unsoldCost, p.unsoldValue, p.refundValue])])} />
+            [["Purchase ID", "Supplier", "Location", "Invoice No", "GST No", "Purchase Date", "Bill Amount", "Paid", "Bill Due", "Sarees Bought", "Sold", "Unsold", "Returned", "Unsold Cost", "Unsold Sale Value", "Refund Value"],
+             ...all.map(p => [p.id, p.supplier, p.location, p.invoiceNumber, p.gstNumber, p.date, p.billAmount, p.paidAmount, p.dueAmount, boughtCount(p), p.soldCount, p.unsoldCount, p.returnedCount, p.unsoldCost, p.unsoldValue, p.refundValue])])} />
         }
       >
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
@@ -121,11 +121,6 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {rows.map(p => {
               const isOpen = open === p.id;
-              const statusCfg = p.status === "Paid"
-                ? { color: T.green, bg: "rgba(30,102,64,0.09)" }
-                : p.status === "Partial"
-                ? { color: T.crimson, bg: "rgba(192,57,43,0.08)" }
-                : { color: T.orange, bg: "rgba(230,126,34,0.12)" };
               return (
               <div key={p.id} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 18, background: "#FFFFFF", overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,0.03)" }}>
                 <button
@@ -141,7 +136,6 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                         <span style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>{p.supplier}</span>
-                        <Pill label={p.status} color={statusCfg.color} bg={statusCfg.bg} />
                         {p.returnedCount > 0 && <Pill label={`${p.returnedCount} returned`} color={T.crimson} bg="rgba(192,57,43,0.10)" />}
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 4 }}>

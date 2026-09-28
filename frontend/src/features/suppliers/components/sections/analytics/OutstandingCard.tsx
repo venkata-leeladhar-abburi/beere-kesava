@@ -3,7 +3,6 @@
 import React from "react";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { T, F } from "../../theme";
-import { BILL_STATUS_META } from "../../data";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { PerSupplierEntry } from "./TopSuppliersCard";
 
@@ -50,10 +49,8 @@ function CardHeader({ icon: Icon, title, subtitle }: {
   );
 }
 
-export interface BillStatusEntry { status: string; count: number; value: number }
-
 export function OutstandingCard({
-  card, dueList, totalDue, perSupplierCount, billStatus,
+  card, dueList, totalDue, perSupplierCount,
 }: {
   card: React.CSSProperties;
   cardTitle?: React.CSSProperties;
@@ -61,7 +58,6 @@ export function OutstandingCard({
   dueList: PerSupplierEntry[];
   totalDue: number;
   perSupplierCount: number;
-  billStatus: BillStatusEntry[];
 }) {
   return (
     <div style={card}>
@@ -92,18 +88,6 @@ export function OutstandingCard({
           ))}
         </div>
       )}
-      {/* Bill status split */}
-      <div style={{ borderTop: `1px solid rgba(200,155,71,0.18)`, marginTop: 14, paddingTop: 12, display: "flex", gap: 8 }}>
-        {billStatus.map(b => {
-          const meta = BILL_STATUS_META[b.status] ?? { color: T.taupe, bg: "rgba(255,255,255,0.70)" };
-          return (
-            <div key={b.status} style={{ flex: 1, background: meta.bg, borderRadius: 10, padding: "8px 10px", textAlign: "center", border: `1px solid rgba(200,155,71,0.18)` }}>
-              <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: meta.color, lineHeight: 1 }}>{b.count}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 3 }}>{b.status}</div>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }

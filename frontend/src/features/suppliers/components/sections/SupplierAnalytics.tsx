@@ -13,7 +13,7 @@ import { FadeUp, SectionCard } from "../common/primitives";
 import { PurchaseTrendCard } from "./analytics/PurchaseTrendCard";
 import { TypeMixCard } from "./analytics/TypeMixCard";
 import { TopSuppliersCard } from "./analytics/TopSuppliersCard";
-import { OutstandingCard, BillStatusEntry } from "./analytics/OutstandingCard";
+import { OutstandingCard } from "./analytics/OutstandingCard";
 import { RatingCard, PaymentModeCard, SettlementHealthCard } from "./analytics/RatingAndModeCards";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
@@ -127,14 +127,6 @@ export function SupplierAnalytics() {
   const dueList = perSupplier.filter(s => s.outstanding > 0);
   const totalDue = dueList.reduce((a, s) => a + s.outstanding, 0);
 
-  const billStatus: BillStatusEntry[] = useMemo(() => ["Paid", "Partial", "Pending"]
-    .map(st => ({
-      status: st,
-      count: buys.filter(p => p.status === st).length,
-      value: buys.filter(p => p.status === st).reduce((a, p) => a + parseINR(p.billAmount), 0),
-    }))
-    .filter(d => d.count > 0), [buys]);
-
   const byMode = useMemo(() => {
     const m = new Map<string, number>();
     pays.forEach(p => m.set(p.mode || "Bank Transfer", (m.get(p.mode || "Bank Transfer") || 0) + p.amount));
@@ -246,7 +238,7 @@ export function SupplierAnalytics() {
               <TopSuppliersCard card={card} cardTitle={cardTitle} cardSub={cardSub} tip={tip}
                 topSuppliers={topSuppliers} top5Share={top5Share} billed={billed} />
               <OutstandingCard card={card} cardTitle={cardTitle} cardSub={cardSub}
-                dueList={dueList} totalDue={totalDue} perSupplierCount={perSupplier.length} billStatus={billStatus} />
+                dueList={dueList} totalDue={totalDue} perSupplierCount={perSupplier.length} />
             </div>
           </FadeUp>
 

@@ -13,10 +13,9 @@ export interface FilterOptions {
   color: string[];
 }
 
-/** Search box, status pills, and the supplier/PO/serial/type/colour dropdown filters. */
+/** Search box and the supplier/PO/serial/type/colour dropdown filters. */
 export function FilterBar({
   search, setSearch,
-  statusFilter, setStatusFilter, statusCounts,
   dateFilter, setDateFilter,
   viewMode, setViewMode,
   fSupplier, setFSupplier,
@@ -31,9 +30,6 @@ export function FilterBar({
   children,
 }: {
   search: string; setSearch: (v: string) => void;
-  statusFilter: string; setStatusFilter: (v: string) => void;
-  /** How many purchases each status covers under the other active filters. */
-  statusCounts?: Record<string, number>;
   dateFilter: DateFilterState; setDateFilter: (v: DateFilterState) => void;
   viewMode?: "card" | "table"; setViewMode?: (v: "card" | "table") => void;
   fSupplier: string; setFSupplier: (v: string) => void;
@@ -49,7 +45,7 @@ export function FilterBar({
 }) {
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
-    <SectionCard icon={ShoppingBag} title="External Purchases" subtitle="Every raw-material purchase recorded, with supplier, invoice, and payment status.">
+    <SectionCard icon={ShoppingBag} title="External Purchases" subtitle="Every external saree purchase recorded, with supplier, invoice, and bill amount.">
       {/* Mobile Flipkart-style Filter Bar */}
       <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
         <MobileFilterBar
@@ -76,19 +72,6 @@ export function FilterBar({
                 else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
                 else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
               },
-            },
-            {
-              id: "status",
-              label: "Payment Status",
-              value: statusFilter,
-              defaultValue: "All Status",
-              options: [
-                { value: "All Status", label: "All Status" },
-                { value: "Paid", label: "Paid" },
-                { value: "Partial", label: "Partial" },
-                { value: "Pending", label: "Unpaid" },
-              ],
-              onChange: setStatusFilter,
             },
             {
               id: "supplier",
@@ -148,7 +131,7 @@ export function FilterBar({
           flexDirection: "column",
           gap: 14,
         }}>
-          {/* Top Row: Search Input + Status Filter Pills */}
+          {/* Top Row: Search Input */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 w-full">
             <div className="flex-1 min-w-0">
               <SearchInput aria-label="Search by supplier, ID, location, GST, invoice"
@@ -159,32 +142,6 @@ export function FilterBar({
               />
             </div>
 
-            <div className="flex items-center gap-2 shrink-0 overflow-x-auto scrollbar-none">
-              {[
-                { key: "All Status", label: "All Status" },
-                { key: "Paid", label: "Paid" },
-                { key: "Partial", label: "Partial" },
-                // Labelled "Unpaid" to match the pill the table shows for this
-                // status — the stored value is still "Pending".
-                { key: "Pending", label: "Unpaid" },
-              ].map(f => (
-                <Button
-                  key={f.key}
-                  onClick={() => setStatusFilter(f.key)}
-                  size="sm"
-                  className={
-                    statusFilter === f.key
-                      ? "rounded-[10px] bg-[var(--surface-brand)] text-[#FFFDF9] border-none shadow-none"
-                      : "rounded-[10px] bg-transparent text-[var(--text-tertiary)] border border-[rgba(110,15,45,0.18)] shadow-none"
-                  }
-                >
-                  {f.label}
-                  {statusCounts && (
-                    <span className="ml-1.5 opacity-70">{statusCounts[f.key] ?? 0}</span>
-                  )}
-                </Button>
-              ))}
-            </div>
           </div>
 
           {/* Bottom Row: Dropdown Filters below search bar line */}

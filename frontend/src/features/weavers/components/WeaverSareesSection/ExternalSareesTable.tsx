@@ -8,7 +8,6 @@ import { inr, fmtDate, externalSerialOf } from "./utils";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
 import { Button, Checkbox } from "../../../../shared/ui/primitives";
-import { StatusPill } from "../../../../shared/ui/domain";
 import { useSuppliers } from "@/features/suppliers";
 import { usePrintSareeTags, type SareeTagData } from "./SareeTagPrint";
 import { isSareePickable, pickBlockedReason } from "./utils";
@@ -155,15 +154,6 @@ export function ExternalSareesTable({
     {
       id: "purchaseDate", header: "Purchase Date", accessor: r => r.stock?.purchaseDate, priority: 3,
       cell: (_v, r) => <>{fmtDate(r.stock?.purchaseDate)}</>,
-    },
-    {
-      id: "paymentStatus", header: "Payment", accessor: r => r.external?.paymentStatus ?? "Pending", type: "status", priority: 2,
-      cell: (_v, r) => (
-        <StatusPill
-          taxonomy="payment"
-          status={r.external?.paymentStatus === "Paid" ? "paid" : r.external?.paymentStatus === "Partial" ? "partial" : "unpaid"}
-        />
-      ),
     },
     ...(canSeeMoney ? [
       {

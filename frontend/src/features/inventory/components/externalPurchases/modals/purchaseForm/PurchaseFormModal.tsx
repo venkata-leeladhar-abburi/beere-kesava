@@ -2,8 +2,8 @@ import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Save } from "lucide-react";
 import {
-  useSuppliers, SareeTag,
-  buildSareeCode, computeFinalAmount, purchaseTotals,
+  useSuppliers, SareeTag, parseINR,
+  buildSareeCode, computeFinalAmount, computePurchaseBill, purchaseTotals,
 } from "@/features/suppliers";
 import { T, F } from "../../theme";
 import { Button, IconButton } from "../../../../../../shared/ui/primitives";
@@ -11,6 +11,7 @@ import { FormState } from "../../types";
 import { nextRowUid, toSareeRow } from "../../utils";
 import { SupplierSection } from "./SupplierSection";
 import { SareeDetailsEditor } from "./SareeDetailsEditor";
+import { BillSummary } from "./BillSummary";
 import { Modal } from "../../../../../../shared/ui/overlay";
 import { useReceiptUpload } from "@/shared/hooks/useReceiptUpload";
 
@@ -23,12 +24,15 @@ export function PurchaseFormModal({
   mode,
   initial,
   initialSarees,
+  previousBillAmount,
   onClose,
   onSubmit,
 }: {
   mode: "add" | "edit" | "request" | "request";
   initial: FormState;
   initialSarees: SareeTag[];
+  /** Edit only: the bill stored on the purchase before this edit. */
+  previousBillAmount?: string;
   onClose: () => void;
   onSubmit: (data: FormState, sarees: SareeTag[]) => void;
 }) {
@@ -77,12 +81,22 @@ export function PurchaseFormModal({
 
   const totals = purchaseTotals(sareeDetails);
   const pieceCount = totals.pieces;
+  const bill = computePurchaseBill(
+    sareeDetails,
+    form.discountType,
+    Number(form.discountValue) || 0,
+    Number(form.gstPercent) || 0,
+  );
+  // An older purchase's hand-typed bill that the calculation will replace.
+  const previousBill =
+    previousBillAmount && parseINR(previousBillAmount) !== bill.billAmount ? previousBillAmount : undefined;
 
   const valid =
     form.supplier.trim() !== "" &&
     form.location.trim() !== "" &&
     form.date.trim() !== "" &&
-    sareeDetails.length > 0;
+    sareeDetails.length > 0 &&
+    bill.error === null;
 
   const buildFinalSarees = (): SareeTag[] =>
     sareeDetails.map((s, idx) => {
@@ -156,6 +170,16 @@ export function PurchaseFormModal({
           updateSareeRow={updateSareeRow}
           removeSareeRow={removeSareeRow}
         />
+
+        {sareeDetails.length > 0 && (
+          <BillSummary
+            form={form}
+            set={set}
+            bill={bill}
+            sareeCount={sareeDetails.reduce((n, s) => n + (Number(s.quantity) || 1), 0)}
+            previousBill={previousBill}
+          />
+        )}
       </div>
 
       <div

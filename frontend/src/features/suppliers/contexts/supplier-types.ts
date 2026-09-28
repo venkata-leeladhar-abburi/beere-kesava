@@ -31,6 +31,9 @@ export interface SareeTag {
   returnedQuantity?: number;
 }
 
+/** How a purchase discount was entered: a % of the subtotal or a flat ₹ amount. */
+export type DiscountType = "percent" | "amount";
+
 export interface Purchase {
   id: string;
   /** Links back to a Supplier.id when the purchase was raised against a registered supplier. */
@@ -41,8 +44,22 @@ export interface Purchase {
   sareeCount: number;
   gstNumber: string;
   invoiceNumber: string;
+  /** What we owe the supplier — subtotal − discount + GST (see computePurchaseBill). */
   billAmount: string;
-  status: string;       // Paid | Pending | Partial
+  /** Sarees' buying total before discount/GST. Undefined on older purchases
+   *  whose bill was typed in by hand. */
+  subtotal?: number;
+  discountType?: DiscountType;
+  /** The discount as entered — 5 for 5%, or 1700 for ₹1,700. */
+  discountValue?: number;
+  /** Rupees taken off the subtotal. */
+  discountAmount?: number;
+  gstPercent?: number;
+  /** Rupees of GST added on (subtotal − discount). */
+  gstAmount?: number;
+  /** Paid | Pending | Partial — follows the payments linked to the purchase,
+   *  never chosen on the purchase form. */
+  status: string;
   notes: string;
   addedBy?: string;
   invoiceFileName?: string;
@@ -125,6 +142,8 @@ export interface Supplier {
   visitingCard?: string;
   status: "active" | "inactive" | "overdue";
   rating: number;
+  /** Firm.id this supplier is connected to — undefined when not connected. */
+  firmId?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -348,6 +367,52 @@ export function invoicedSelling(sarees: Pick<SareeTag, "price" | "sellPercent" |
     (sum, s) => sum + computeFinalAmount(Number(s.price) || 0, Number(s.sellPercent) || 0, Number(s.quantity) || 1),
     0,
   );
+}
+
+/** What the supplier invoiced us for the sarees — buying price × every piece
+ * bought, ignoring later returns (the bill doesn't shrink when stock goes
+ * back). The subtotal a purchase's discount and GST apply to. */
+export function invoicedBuying(sarees: Pick<SareeTag, "price" | "quantity">[]): number {
+  return toPaiseRupees(
+    sarees.reduce((sum, s) => sum + (Number(s.price) || 0) * (Number(s.quantity) > 0 ? Number(s.quantity) : 1), 0),
+  );
+}
+
+export interface PurchaseBill {
+  subtotal: number;
+  discountAmount: number;
+  /** subtotal − discountAmount — what GST is charged on. */
+  taxable: number;
+  gstAmount: number;
+  /** subtotal − discountAmount + gstAmount. */
+  billAmount: number;
+  /** Why the entered discount/GST can't be saved, or null when it's fine. */
+  error: string | null;
+}
+
+/**
+ * The purchase bill, from its saree lines plus the discount and GST entered
+ * on the form. Mirrors the backend's PurchasesService.computeBill, which
+ * recalculates the same figures on save — the discount only lowers what we
+ * pay the supplier; each saree's own cost and selling price are untouched.
+ */
+export function computePurchaseBill(
+  sarees: Pick<SareeTag, "price" | "quantity">[],
+  discountType: DiscountType,
+  discountValue: number,
+  gstPercent: number,
+): PurchaseBill {
+  const subtotal = invoicedBuying(sarees);
+  const value = Math.max(0, Number(discountValue) || 0);
+  const gst = Math.max(0, Number(gstPercent) || 0);
+  let error: string | null = null;
+  if (discountType === "percent" && value > 100) error = "Discount can't be more than 100%";
+  else if (discountType === "amount" && value > subtotal) error = "Discount can't be more than the sarees' total";
+  else if (gst > 100) error = "GST can't be more than 100%";
+  const discountAmount = toPaiseRupees(discountType === "percent" ? (subtotal * Math.min(value, 100)) / 100 : Math.min(value, subtotal));
+  const taxable = toPaiseRupees(subtotal - discountAmount);
+  const gstAmount = toPaiseRupees((taxable * Math.min(gst, 100)) / 100);
+  return { subtotal, discountAmount, taxable, gstAmount, billAmount: toPaiseRupees(taxable + gstAmount), error };
 }
 
 /** Roll a set of saree lines up into buying / selling / profit totals, with

@@ -63,16 +63,6 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
       id: "date", header: "Date", accessor: p => p.date, priority: 3,
       cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</span>,
     },
-    {
-      id: "status", header: "Status", accessor: p => p.status, type: "status",
-      cell: (_v, p) => (
-        <span style={{
-          fontFamily: F.ui, fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 20,
-          background: p.status === "Paid" ? "rgba(30,102,64,0.09)" : "rgba(230,126,34,0.12)",
-          color: p.status === "Paid" ? T.greenMid : "rgba(230,126,34,1)",
-        }}>{p.status}</span>
-      ),
-    },
   ];
 
   return (
@@ -81,7 +71,7 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
       <SectionCard
         icon={History}
         title="External Purchase History"
-        subtitle="Every raw-material purchase recorded from every supplier, with bill status and invoice reference."
+        subtitle="Every external purchase recorded from every supplier, with bill amount and invoice reference."
       >
         {/* Mobile Flipkart-style Filter Bar */}
         <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">

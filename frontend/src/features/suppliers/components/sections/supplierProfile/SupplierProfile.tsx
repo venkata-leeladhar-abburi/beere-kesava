@@ -126,15 +126,6 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   }, [myPurchases]);
 
   // Billed amount grouped by payment status.
-  const paymentStatusBreakdown = useMemo(() => {
-    const colors: Record<string, string> = { Paid: T.green, Pending: T.antiqueGold, Partial: T.crimson };
-    const buckets = new Map<string, number>();
-    myPurchases.forEach(p => {
-      buckets.set(p.status, (buckets.get(p.status) || 0) + parseINR(p.billAmount));
-    });
-    return Array.from(buckets, ([name, value]) => ({ name, value, fill: colors[name] || T.taupe }))
-      .filter(b => b.value > 0);
-  }, [myPurchases]);
 
   // Edit-profile form state, reset whenever a different supplier is opened.
   const [form, setForm] = useState<SupplierFormValues>({
@@ -142,7 +133,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
     whatsapp: supplier.whatsapp || "", city: supplier.city, state: supplier.state,
     address: supplier.address, terms: supplier.terms, bankName: supplier.bankName || "",
     accountNo: supplier.accountNo || "", ifscCode: supplier.ifscCode || "", gstCode: supplier.gstCode,
-    rating: supplier.rating || 3, notes: supplier.notes || "",
+    rating: supplier.rating || 3, notes: supplier.notes || "", firmId: supplier.firmId || "",
   });
   const [cardPreview, setCardPreview] = useState<string | null>(supplier.visitingCard || null);
   const [savedFlash, setSavedFlash] = useState(false);
@@ -153,7 +144,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
       whatsapp: supplier.whatsapp || "", city: supplier.city, state: supplier.state,
       address: supplier.address, terms: supplier.terms, bankName: supplier.bankName || "",
       accountNo: supplier.accountNo || "", ifscCode: supplier.ifscCode || "", gstCode: supplier.gstCode,
-      rating: supplier.rating || 3, notes: supplier.notes || "",
+      rating: supplier.rating || 3, notes: supplier.notes || "", firmId: supplier.firmId || "",
     });
     setCardPreview(supplier.visitingCard || null);
   }, [supplier]);
@@ -365,7 +356,6 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
                 setPurchaseFilter={setPurchaseFilter}
                 purchaseOptions={purchaseOptions}
                 spendByMonth={spendByMonth}
-                paymentStatusBreakdown={paymentStatusBreakdown}
                 myRequests={myRequests}
               />
             </SectionCard>

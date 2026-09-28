@@ -1,6 +1,7 @@
 import { apiClient } from "./client";
 
 export type PurchasePaymentStatus = "PAID" | "PENDING" | "PARTIAL";
+export type PurchaseDiscountType = "PERCENT" | "AMOUNT";
 
 export interface BackendPurchaseSupplier {
   id: string;
@@ -38,7 +39,16 @@ export interface BackendPurchase {
   sareeCount: number;
   gstNumber: string | null;
   invoiceNumber: string | null;
+  /** subtotal - discountAmount + gstAmount, calculated server-side. */
   billAmount: string;
+  /** Null on purchases recorded before the bill was calculated (hand-typed bill). */
+  subtotal: string | null;
+  discountType: PurchaseDiscountType | null;
+  discountValue: string;
+  discountAmount: string;
+  gstPercent: string;
+  gstAmount: string;
+  /** Follows the supplier payments linked to the purchase — never set by the form. */
   status: PurchasePaymentStatus;
   notes: string | null;
   invoiceFileName: string | null;
@@ -79,8 +89,10 @@ export interface CreatePurchasePayload {
   sareeCount?: number;
   gstNumber?: string;
   invoiceNumber?: string;
-  billAmount: number;
-  status?: PurchasePaymentStatus;
+  // The bill is calculated server-side from the lines and these inputs.
+  discountType?: PurchaseDiscountType | null;
+  discountValue?: number;
+  gstPercent?: number;
   notes?: string;
   invoiceFileName?: string;
   invoiceFileUrl?: string;
@@ -88,8 +100,7 @@ export interface CreatePurchasePayload {
   sarees: CreatePurchaseSareeLinePayload[];
 }
 
-export type UpdatePurchasePayload = Partial<Omit<CreatePurchasePayload, "sarees" | "billAmount">> & {
-  billAmount?: number;
+export type UpdatePurchasePayload = Partial<Omit<CreatePurchasePayload, "sarees">> & {
   sarees?: CreatePurchaseSareeLinePayload[];
 };
 

@@ -108,7 +108,6 @@ export function InventoryDetailModal({
                   {infoCell('GST No.', <span style={{ fontFamily: "var(--font-mono)" }}>{ext?.gstNumber || '—'}</span>)}
                   {infoCell('Serial No.', <span style={{ fontFamily: "var(--font-mono)" }}>{ext?.serialCode || '—'}{ext?.pieceNo && ext?.lineQuantity && ext.lineQuantity > 1 ? ` · piece ${ext.pieceNo}/${ext.lineQuantity}` : ''}</span>)}
                   {infoCell('Weight', ext?.weight || '—')}
-                  {infoCell('Payment', <span style={{ color: ext?.paymentStatus === 'Paid' ? T.green : ext?.paymentStatus === 'Partial' ? '#C07A18' : T.crimson }}>{ext?.paymentStatus || '—'}</span>)}
                   {infoCell('Cost Price', <span style={{ fontFamily: "var(--font-mono)" }}>{ext?.costPrice != null ? inr(ext.costPrice) : '—'}</span>)}
                   {infoCell('Markup', ext?.sellPercent != null ? formatSellPercent(ext.sellPercent) : '—')}
                   {infoCell('Selling Price', <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy, fontWeight: 700 }}>{ext?.finalAmount != null ? inr(ext.finalAmount) : '—'}</span>)}

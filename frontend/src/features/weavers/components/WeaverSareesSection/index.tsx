@@ -118,7 +118,6 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   const [fSupplier, setFSupplier] = useState("all");
   const [fPurchaseOrder, setFPurchaseOrder] = useState("all");
   const [fSerial, setFSerial] = useState("all");
-  const [fPayment, setFPayment] = useState("all");
 
   const isExternalTab = tab === "external";
 
@@ -266,7 +265,6 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       if (fSupplier !== "all" && r.stock?.supplier !== fSupplier) return false;
       if (fPurchaseOrder !== "all" && r.stock?.purchaseId !== fPurchaseOrder) return false;
       if (fPurchaseOrder !== "all" && fSerial !== "all" && externalSerialOf(r.sareeId) !== fSerial) return false;
-      if (fPayment !== "all" && (r.external?.paymentStatus ?? null) !== fPayment) return false;
       return true;
     }
 
@@ -295,7 +293,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       });
     return c;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, selectable, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment]);
+  }, [rows, selectable, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
 
   // Rows that should float to the top of `visible` — populated only for a
   // selection that lands *off* the currently-displayed page (a barcode scan
@@ -319,7 +317,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       return a.sareeId.localeCompare(b.sareeId);
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rows, selectable, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment, floatTick]);
+    [rows, selectable, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, floatTick]);
 
   // Pagination applies only to what's rendered — `visible` itself stays the full
   // filtered set so select-all and the parent's onVisibleChange (scan / bulk
@@ -350,7 +348,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedIds]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { pag.setPage(1); }, [tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment]);
+  useEffect(() => { pag.setPage(1); }, [tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
 
   // Keep the parent in sync with the currently visible rows (for Scan / bulk actions), without looping.
   const onVisibleChangeRef = useRef(onVisibleChange);
@@ -388,7 +386,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   const filtersActive = search.trim() !== "" || dateFilter.mode !== "all"
     || fType !== "all" || fColor !== "all"
     || (isExternalTab
-      ? (fSupplier !== "all" || fPurchaseOrder !== "all" || fSerial !== "all" || fPayment !== "all")
+      ? (fSupplier !== "all" || fPurchaseOrder !== "all" || fSerial !== "all")
       : (fBatch !== "all" || fLoom !== "all" || fOrder !== "all" || fQc !== "all" || fFinishing !== "all"
         || fOwnerWeaver !== "all" || fOwnerLoom !== "all"));
 
@@ -397,7 +395,6 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     setFBatch("all"); setFLoom("all"); setFOrder("all");
     setFType("all"); setFColor("all"); setFQc("all"); setFFinishing("all");
     setFOwnerWeaver("all"); setFOwnerLoom("all"); setFSupplier("all"); setFPurchaseOrder("all"); setFSerial("all");
-    setFPayment("all");
     setDateFilter(DEFAULT_DATE_FILTER);
   };
 
@@ -479,13 +476,6 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
         value: fColor,
         options: opts.color.map(c => ({ value: c, label: c === "all" ? "All Colours" : c })),
         onChange: setFColor,
-      },
-      {
-        id: "payment",
-        label: "Payment",
-        value: fPayment,
-        options: ["all", "Paid", "Partial", "Pending"].map(p => ({ value: p, label: p === "all" ? "All Payments" : p })),
-        onChange: setFPayment,
       },
     ] : [
       {
@@ -591,7 +581,6 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
             )}
             <Select label="Saree Type" value={fType} options={opts.type} onChange={setFType} />
             <Select label="Colour" value={fColor} options={opts.color} onChange={setFColor} />
-            <Select label="Payment" value={fPayment} options={["all", "Paid", "Partial", "Pending"]} onChange={setFPayment} />
           </>
         ) : (
           <>

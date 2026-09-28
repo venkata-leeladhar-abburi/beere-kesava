@@ -4,8 +4,6 @@ import React, { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { Star, CheckCircle2, type LucideIcon } from "lucide-react";
 import { T, F, EASE } from "../theme";
-import { StatusPill as DomainStatusPill } from "../../../../shared/ui/domain";
-import type { StatusValueOf } from "../../../../lib/domain/status";
 
 export function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -79,19 +77,6 @@ export function StatusPill({ status }: { status: string }) {
   };
   const s = map[status] ?? map.active;
   return <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: s.bg, color: s.color, padding: "3px 10px", borderRadius: 20 }}>{s.label}</span>;
-}
-
-// "Paid" | "Pending" | "Partial" (Purchase.status, free-form) — normalized
-// onto the shared payment taxonomy (lib/domain/status.ts) rather than a
-// hand-rolled colour map, per design-system/06-DOMAIN.md Part D.
-const PAY_STATUS_KEY: Record<string, StatusValueOf<"payment">> = {
-  Paid: "paid",
-  Pending: "unpaid",
-  Partial: "partial",
-};
-
-export function PayStatusPill({ status }: { status: string }) {
-  return <DomainStatusPill taxonomy="payment" status={PAY_STATUS_KEY[status] ?? "unpaid"} />;
 }
 
 export function StarRating({ rating }: { rating: number }) {

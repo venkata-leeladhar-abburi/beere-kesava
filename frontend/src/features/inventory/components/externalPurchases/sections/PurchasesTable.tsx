@@ -3,7 +3,6 @@ import { Eye, Edit2, Trash2, Tag } from "lucide-react";
 import { Purchase, purchaseTotals, purchasePieces, parseINR } from "@/features/suppliers";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { T, F } from "../theme";
-import { StatusPill } from "../common/primitives";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { Pagination, usePagination } from "../../../../../shared/ui/DataPagination";
@@ -19,7 +18,6 @@ import { Pagination, usePagination } from "../../../../../shared/ui/DataPaginati
 export function PurchasesTable({
   filtered,
   paidFor,
-  statusOf,
   totalCount,
   viewMode = "card",
   hoveredRow,
@@ -35,8 +33,6 @@ export function PurchasesTable({
   filtered: Purchase[];
   /** Total already paid against a purchase, summed from its supplier payments. */
   paidFor?: (row: Purchase) => number;
-  /** Payment status derived from those payments — falls back to the stored one. */
-  statusOf?: (row: Purchase) => Purchase["status"];
   totalCount: number;
   viewMode?: "card" | "table";
   hoveredRow?: string | null;
@@ -121,10 +117,6 @@ export function PurchasesTable({
         const balance = balanceOf(row);
         return <span style={mono(balance > 0 ? T.crimson : T.green, { fontWeight: 700 })}>{formatMoney(rupees(balance))}</span>;
       },
-    },
-    {
-      id: "status", header: "Payment Status", accessor: row => (statusOf ? statusOf(row) : row.status), type: "status",
-      cell: (_v, row) => <StatusPill status={statusOf ? statusOf(row) : row.status} />,
     },
     {
       id: "addedBy", header: "Added By", accessor: row => row.addedBy, priority: 3,

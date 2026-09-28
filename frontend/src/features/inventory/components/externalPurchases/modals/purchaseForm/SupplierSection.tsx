@@ -109,14 +109,7 @@ export function SupplierSection({
             {pieceCount} saree{pieceCount !== 1 ? "s" : ""} in {sareeDetailsCount} line{sareeDetailsCount !== 1 ? "s" : ""} below
           </div>
         </div>
-        <Field label="Payment Status">
-          <Select value={form.status} onValueChange={(v) => set("status", v)}>
-            <SelectItem value="Paid">Paid</SelectItem>
-            <SelectItem value="Pending">Pending</SelectItem>
-            <SelectItem value="Partial">Partial</SelectItem>
-          </Select>
-        </Field>
-        <Field label="GST Number">
+        <Field label="GST Number (optional)">
           <Input
             className="font-mono"
             value={form.gstNumber}
@@ -130,14 +123,6 @@ export function SupplierSection({
             value={form.invoiceNumber}
             onChange={(e) => set("invoiceNumber", e.target.value)}
             placeholder="e.g. INV-2026-118"
-          />
-        </Field>
-        <Field label="Bill Amount">
-          <Input
-            value={form.billAmount}
-            onChange={(e) => set("billAmount", e.target.value)}
-            // eslint-disable-next-line no-restricted-syntax -- input adornment / field label unit annotation, not a rendered money value
-            placeholder="e.g. ₹34,000"
           />
         </Field>
         <div>

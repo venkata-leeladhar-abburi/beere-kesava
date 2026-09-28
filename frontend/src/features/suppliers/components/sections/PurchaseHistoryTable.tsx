@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import { T, F } from "../theme";
-import { PayStatusPill } from "../common/primitives";
 import { SareeInventoryTable, type SareeRow } from "./SareeInventoryTable";
 import { Purchase, purchaseTotals, purchasePieces, useSuppliers, withPieceImage } from "../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
@@ -67,10 +66,6 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
     {
       id: "billAmount", header: "Bill Amount", accessor: p => p.billAmount,
       cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: "#8B6018" }}>{v as string}</span>,
-    },
-    {
-      id: "payment", header: "Payment", accessor: p => p.status,
-      cell: (_v, p) => <PayStatusPill status={p.status} />,
     },
     {
       id: "expand", header: "", align: "end", accessor: () => null,

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
-import { Prisma, PurchasePaymentStatus } from "../generated/prisma/client";
+import { Prisma, PurchaseDiscountType, PurchasePaymentStatus } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreatePurchaseDto } from "./dto/create-purchase.dto";
@@ -35,6 +35,70 @@ export function piecesWithUs(lines: { quantity?: number; returnedQuantity?: numb
     const qty = l.quantity ?? 1;
     return sum + Math.max(0, qty - Math.min(l.returnedQuantity ?? 0, qty));
   }, 0);
+}
+
+/** Rounds a rupee figure to whole paise. */
+function toPaise(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+export interface PurchaseBill {
+  subtotal: number;
+  discountType: PurchaseDiscountType | null;
+  discountValue: number;
+  discountAmount: number;
+  gstPercent: number;
+  gstAmount: number;
+  billAmount: number;
+}
+
+/**
+ * What a purchase costs us, from its saree lines:
+ *   subtotal  = buying price x quantity, across every line
+ *   discount  = % of subtotal, or a flat rupee amount (never more than subtotal)
+ *   GST       = gstPercent of (subtotal - discount)
+ *   bill      = subtotal - discount + GST
+ * The subtotal uses the full quantity bought, not what's left after returns —
+ * the supplier's invoice doesn't shrink when a piece goes back. Selling
+ * price / markup is deliberately not involved: the discount only changes
+ * what we pay, never a saree's own cost or selling price.
+ * Mirrored on the frontend by computePurchaseBill (supplier-types.ts).
+ */
+export function computeBill(
+  lines: { price: number | Prisma.Decimal; quantity?: number | null }[],
+  discountType: PurchaseDiscountType | null | undefined,
+  discountValue: number | null | undefined,
+  gstPercent: number | null | undefined,
+): PurchaseBill {
+  const subtotal = toPaise(
+    lines.reduce((sum, l) => sum + Number(l.price) * (l.quantity && l.quantity > 0 ? l.quantity : 1), 0),
+  );
+  const value = Math.max(0, Number(discountValue) || 0);
+  const type = value > 0 && discountType ? discountType : null;
+  if (type === PurchaseDiscountType.PERCENT && value > 100) {
+    throw new BadRequestException("Discount percentage can't be more than 100%");
+  }
+  if (type === PurchaseDiscountType.AMOUNT && value > subtotal) {
+    throw new BadRequestException("Discount amount can't be more than the sarees' total");
+  }
+  const discountAmount =
+    type === PurchaseDiscountType.PERCENT
+      ? toPaise((subtotal * value) / 100)
+      : type === PurchaseDiscountType.AMOUNT
+        ? toPaise(value)
+        : 0;
+  const taxable = toPaise(subtotal - discountAmount);
+  const gst = Math.max(0, Number(gstPercent) || 0);
+  const gstAmount = toPaise((taxable * gst) / 100);
+  return {
+    subtotal,
+    discountType: type,
+    discountValue: type ? value : 0,
+    discountAmount,
+    gstPercent: gst,
+    gstAmount,
+    billAmount: toPaise(taxable + gstAmount),
+  };
 }
 
 function lineData(l: CreatePurchaseSareeLineDto, idx: number) {
@@ -83,6 +147,7 @@ export class PurchasesService {
     const supplierSegment = supplier
       ? supplier.code ?? businessSegment(supplier.name, "Supplier")
       : businessSegment(dto.supplierName!, "Supplier");
+    const bill = computeBill(dto.sarees, dto.discountType, dto.discountValue, dto.gstPercent);
     const id = await this.idGenerator.nextScoped(EXT_PURCHASE_ID_PREFIX, supplierSegment);
 
     return this.prisma.purchase.create({
@@ -95,8 +160,10 @@ export class PurchasesService {
         sareeCount,
         gstNumber: dto.gstNumber,
         invoiceNumber: dto.invoiceNumber,
-        billAmount: dto.billAmount,
-        status: dto.status,
+        ...bill,
+        // A new purchase has nothing paid against it yet; payments recorded
+        // later move it to PARTIAL / PAID (recomputeStatus).
+        status: PurchasePaymentStatus.PENDING,
         notes: dto.notes,
         invoiceFileName: dto.invoiceFileName,
         invoiceFileUrl: dto.invoiceFileUrl,
@@ -150,7 +217,7 @@ export class PurchasesService {
   }
 
   async update(id: string, dto: UpdatePurchaseDto) {
-    await this.findOne(id);
+    const existing = await this.findOne(id);
 
     if (dto.supplierId) {
       const supplier = await this.prisma.supplier.findUnique({ where: { id: dto.supplierId } });
@@ -161,7 +228,24 @@ export class PurchasesService {
 
     const sareeCount = dto.sarees ? piecesWithUs(dto.sarees) : dto.sareeCount;
 
-    return this.prisma.$transaction(async (tx) => {
+    // The bill is recalculated when the form sends its pricing (discount /
+    // GST), or when the lines change on a purchase whose bill is already
+    // calculated. A pre-existing purchase with a hand-typed bill (subtotal
+    // null) keeps that bill through line-only edits — a photo upload or a
+    // return must not silently rewrite what we owe.
+    const pricingSent =
+      dto.discountType !== undefined || dto.discountValue !== undefined || dto.gstPercent !== undefined;
+    const recalcBill = pricingSent || (!!dto.sarees && existing.subtotal !== null);
+    const bill = recalcBill
+      ? computeBill(
+          dto.sarees ?? existing.sareeLines,
+          dto.discountType !== undefined ? dto.discountType : existing.discountType,
+          dto.discountValue ?? Number(existing.discountValue),
+          dto.gstPercent ?? Number(existing.gstPercent),
+        )
+      : undefined;
+
+    const updated = await this.prisma.$transaction(async (tx) => {
       if (dto.sarees) {
         // Full-replace: the edit form always resubmits its complete saree
         // table, so the simplest correct semantics is to clear and recreate
@@ -178,8 +262,7 @@ export class PurchasesService {
           sareeCount,
           gstNumber: dto.gstNumber,
           invoiceNumber: dto.invoiceNumber,
-          billAmount: dto.billAmount,
-          status: dto.status,
+          ...(bill ?? {}),
           notes: dto.notes,
           invoiceFileName: dto.invoiceFileName,
           invoiceFileUrl: dto.invoiceFileUrl,
@@ -188,6 +271,20 @@ export class PurchasesService {
         include,
       });
     });
+
+    // A changed bill moves the line between paid and owed: payments already
+    // linked to this purchase stay exactly as recorded, only the
+    // PENDING / PARTIAL / PAID status is re-derived against the new total.
+    // Older purchases whose status was set by hand have no linked payments
+    // to derive from — their status is left as it was.
+    const linkedPayments = bill && Number(existing.billAmount) !== bill.billAmount
+      ? await this.prisma.supplierPayment.count({ where: { purchaseId: id } })
+      : 0;
+    if (linkedPayments > 0) {
+      await this.recomputeStatus(id);
+      return this.findOne(id);
+    }
+    return updated;
   }
 
   async remove(id: string) {

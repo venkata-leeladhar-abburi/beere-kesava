@@ -5,7 +5,7 @@
 import React from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-  ResponsiveContainer, PieChart, Pie, Cell,
+  ResponsiveContainer,
 } from "recharts";
 import { Package, FileText, Wallet, IndianRupee } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../../../shared/ui/DateFilterBar";
@@ -24,7 +24,7 @@ export function OverviewTab({
   rangePurchases, rangeBilled, rangePaid, filteredSarees,
   sareeSearch, setSareeSearch, typeFilter, setTypeFilter, sareeTypes,
   colorFilter, setColorFilter, sareeColors, purchaseFilter, setPurchaseFilter, purchaseOptions,
-  spendByMonth, paymentStatusBreakdown, myRequests,
+  spendByMonth, myRequests,
 }: {
   card: React.CSSProperties;
   supplierName: string;
@@ -46,7 +46,6 @@ export function OverviewTab({
   setPurchaseFilter: (v: string) => void;
   purchaseOptions: Purchase[];
   spendByMonth: { key: string; month: string; spend: number }[];
-  paymentStatusBreakdown: { name: string; value: number; fill: string }[];
   myRequests: PurchaseRequest[];
 }) {
   const { updatePurchaseSarees } = useSuppliers();
@@ -77,7 +76,7 @@ export function OverviewTab({
       </div>
 
       {/* Analytics */}
-      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 24 }}>
+      <div className="grid grid-cols-1" style={{ gap: 24 }}>
         <div style={{ ...card, padding: "24px 28px" }}>
           <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown, marginBottom: 20 }}>Purchase Spend by Month</div>
           {spendByMonth.length === 0 ? (
@@ -94,37 +93,6 @@ export function OverviewTab({
                 </BarChart>
               </ResponsiveContainer>
             </ChartFigure>
-          )}
-        </div>
-        <div style={{ ...card, padding: "24px 28px" }}>
-          <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown, marginBottom: 4 }}>Purchases by Payment Status</div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 16 }}>Billed amount split by what's paid, partial, or still pending.</div>
-          {paymentStatusBreakdown.length === 0 ? (
-            <div style={{ padding: "40px 0", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No purchases recorded yet.</div>
-          ) : (
-            <>
-              <ChartFigure title="Purchases by Payment Status" summary={paymentStatusBreakdown.map(s => `${s.name} ${formatMoney(rupees(s.value))}`).join(", ") + "."}>
-                <ResponsiveContainer width="100%" height={160}>
-                  <PieChart>
-                    <Pie data={paymentStatusBreakdown} dataKey="value" cx="50%" cy="50%" outerRadius={60} innerRadius={32}>
-                      {paymentStatusBreakdown.map((e) => <Cell key={e.name} fill={e.fill} />)}
-                    </Pie>
-                    <RechartsTooltip formatter={(v: ValueType) => [formatMoney(rupees(Number(v)))]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </ChartFigure>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
-                {paymentStatusBreakdown.map(s => (
-                  <div key={s.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ width: 10, height: 10, borderRadius: 3, background: s.fill }} />
-                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.name}</span>
-                    </div>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{formatMoney(rupees(s.value))}</span>
-                  </div>
-                ))}
-              </div>
-            </>
           )}
         </div>
       </div>

@@ -1,8 +1,8 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Tag } from "lucide-react";
 import { Purchase, purchasePieces } from "@/features/suppliers";
+import { formatMoneyExact, rupees } from "@/lib/domain/money";
 import { T, F } from "../theme";
-import { StatusPill } from "../common/primitives";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
 import { Drawer } from "../../../../../shared/ui/overlay";
 
@@ -74,8 +74,23 @@ export function DetailDrawer({
                 { label: "Number of Sarees", value: String(purchasePieces(detailRow)) },
                 { label: "GST Number", value: detailRow.gstNumber || "—", mono: true },
                 { label: "Invoice Number", value: detailRow.invoiceNumber || "—", mono: true },
+                // Bill breakdown — only purchases whose bill was calculated
+                // from their sarees have one; older ones show the bill alone.
+                ...(detailRow.subtotal !== undefined
+                  ? [
+                      { label: "Sarees Total", value: formatMoneyExact(rupees(detailRow.subtotal)) },
+                      ...(detailRow.discountAmount
+                        ? [{
+                            label: detailRow.discountType === "percent" ? `Discount (${detailRow.discountValue}%)` : "Discount",
+                            value: `− ${formatMoneyExact(rupees(detailRow.discountAmount))}`,
+                          }]
+                        : []),
+                      ...(detailRow.gstPercent
+                        ? [{ label: `GST (${detailRow.gstPercent}%)`, value: `+ ${formatMoneyExact(rupees(detailRow.gstAmount ?? 0))}` }]
+                        : []),
+                    ]
+                  : []),
                 { label: "Bill Amount", value: detailRow.billAmount, gold: true },
-                { label: "Payment Status", value: detailRow.status, pill: true },
                 { label: "Invoice File", value: detailRow.invoiceFileName || "Not uploaded" },
               ].map((field) => (
                 <div key={field.label}>
@@ -90,9 +105,6 @@ export function DetailDrawer({
                   >
                     {field.label}
                   </div>
-                  {field.pill ? (
-                    <StatusPill status={field.value} />
-                  ) : (
                     <div
                       style={{
                         fontFamily: F.ui,
@@ -104,7 +116,6 @@ export function DetailDrawer({
                     >
                       {field.value}
                     </div>
-                  )}
                 </div>
               ))}
 

@@ -1,13 +1,13 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
-import { CreatePartyDto } from "../common/dto/create-party.dto";
 import { ListPartyQueryDto } from "../common/dto/list-party-query.dto";
-import { UpdatePartyDto } from "../common/dto/update-party.dto";
 import { PaginatedResult } from "../common/pagination";
 import { PartyStatus, Prisma, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { CreateSupplierDto } from "./dto/create-supplier.dto";
+import { UpdateSupplierDto } from "./dto/update-supplier.dto";
 
 @Injectable()
 export class SuppliersService {
@@ -18,11 +18,12 @@ export class SuppliersService {
     private readonly notifications: NotificationsService,
   ) {}
 
-  async create(dto: CreatePartyDto) {
+  async create(dto: CreateSupplierDto) {
+    await this.assertFirmExists(dto.firmId);
     // "<BusinessName>-NNN", e.g. "ShivaTraders-001" — the sequence is a single
     // counter shared across all suppliers, not per name.
     const code = await this.idGenerator.nextNamed("SUPPLIER", businessSegment(dto.name));
-    const supplier = await this.prisma.supplier.create({ data: { ...dto, code } });
+    const supplier = await this.prisma.supplier.create({ data: { ...dto, firmId: dto.firmId || null, code } });
 
     // A new trading party is who the company's money and material now flow
     // through, so it is announced rather than left to be noticed in a list.
@@ -68,6 +69,16 @@ export class SuppliersService {
     return { items, total, page: query.page, pageSize: query.pageSize };
   }
 
+  /** A firm link must point at a real firm — checked up front so a stale id
+   *  reads as a clear 404 rather than a foreign-key failure. */
+  private async assertFirmExists(firmId: string | null | undefined) {
+    if (!firmId) return;
+    const firm = await this.prisma.firm.findUnique({ where: { id: firmId }, select: { id: true } });
+    if (!firm) {
+      throw new NotFoundException(`Firm ${firmId} not found`);
+    }
+  }
+
   async findOne(id: string) {
     const supplier = await this.prisma.supplier.findUnique({ where: { id } });
     if (!supplier) {
@@ -76,9 +87,14 @@ export class SuppliersService {
     return supplier;
   }
 
-  async update(id: string, dto: UpdatePartyDto) {
+  async update(id: string, dto: UpdateSupplierDto) {
     const existing = await this.findOne(id);
-    const updated = await this.prisma.supplier.update({ where: { id }, data: dto });
+    await this.assertFirmExists(dto.firmId);
+    const updated = await this.prisma.supplier.update({
+      where: { id },
+      // "" from a cleared picker means "not connected", same as null.
+      data: { ...dto, ...(dto.firmId !== undefined ? { firmId: dto.firmId || null } : {}) },
+    });
 
     // Only a real status transition is announced. update() is the generic
     // edit endpoint, so a phone-number correction that re-sends the same

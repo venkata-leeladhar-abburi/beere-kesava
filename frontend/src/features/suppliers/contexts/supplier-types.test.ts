@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   parseINR,
+  computePurchaseBill,
   supplierPrefix,
   buildSareeCode,
   buildSareePieceCode,
@@ -247,5 +248,49 @@ describe("initialsOf", () => {
 
   it("falls back to SU for empty input", () => {
     expect(initialsOf("")).toBe("SU");
+  });
+});
+
+describe("computePurchaseBill", () => {
+  // 2 × ₹15,000 + 1 × ₹4,000 = ₹34,000 subtotal
+  const lines = [
+    { price: 15000, quantity: 2 },
+    { price: 4000, quantity: 1 },
+  ];
+
+  it("with no discount or GST, the bill is the sarees' buying total", () => {
+    const bill = computePurchaseBill(lines, "percent", 0, 0);
+    expect(bill).toMatchObject({ subtotal: 34000, discountAmount: 0, gstAmount: 0, billAmount: 34000, error: null });
+  });
+
+  it("takes a percentage discount off the subtotal, then adds GST on what's left", () => {
+    const bill = computePurchaseBill(lines, "percent", 5, 5);
+    expect(bill.discountAmount).toBe(1700);
+    expect(bill.taxable).toBe(32300);
+    expect(bill.gstAmount).toBe(1615);
+    expect(bill.billAmount).toBe(33915);
+  });
+
+  it("takes a flat rupee discount", () => {
+    const bill = computePurchaseBill(lines, "amount", 1500, 0);
+    expect(bill.discountAmount).toBe(1500);
+    expect(bill.billAmount).toBe(32500);
+  });
+
+  it("keeps paise exact on GST", () => {
+    const bill = computePurchaseBill([{ price: 999, quantity: 1 }], "percent", 0, 12);
+    expect(bill.gstAmount).toBe(119.88);
+    expect(bill.billAmount).toBe(1118.88);
+  });
+
+  it("counts every piece bought, even ones later returned — the invoice doesn't shrink", () => {
+    const bill = computePurchaseBill([{ price: 1000, quantity: 3, returnedQuantity: 2 } as never], "percent", 0, 0);
+    expect(bill.subtotal).toBe(3000);
+  });
+
+  it("flags a discount larger than the bill", () => {
+    expect(computePurchaseBill(lines, "percent", 120, 0).error).toMatch(/100%/);
+    expect(computePurchaseBill(lines, "amount", 40000, 0).error).toMatch(/more than/);
+    expect(computePurchaseBill(lines, "percent", 0, 101).error).toMatch(/GST/);
   });
 });

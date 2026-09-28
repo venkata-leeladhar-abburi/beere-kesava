@@ -5,7 +5,7 @@ import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 export * from "./supplier-types";
 export * from "./usePurchasePhotos";
-import { Supplier, Purchase, SareeTag, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchasePieces, invoicedSelling, parseINR } from "./supplier-types";
+import { Supplier, Purchase, SareeTag, SupplierPayment, PurchaseRequest, DiscountType, initialsOf, totalPieces, purchasePieces, parseINR } from "./supplier-types";
 import { BackendSupplier, suppliersApi } from "../../../shared/api/suppliers";
 import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
 import { supplierPaymentsApi } from "../../../shared/api/payments";
@@ -14,7 +14,7 @@ import {
   BackendPurchase, BackendPurchaseSareeLine, CreatePurchasePayload,
   CreatePurchaseSareeLinePayload, UpdatePurchasePayload, purchasesApi,
 } from "../../../shared/api/purchases";
-import { rupees, formatMoney } from "@/lib/domain/money";
+import { rupees, formatMoneyExact } from "@/lib/domain/money";
 
 // suppliers + payments + requests are wired to the real backend; purchases
 // keep their rich per-saree line-item detail (price/photo/weight per piece)
@@ -48,6 +48,7 @@ function toSupplier(s: BackendSupplier): Supplier {
     visitingCard: resolveAssetUrl(s.visitingCardUrl) ?? undefined,
     status: s.status === "ACTIVE" ? "active" : s.status === "INACTIVE" ? "inactive" : "overdue",
     rating: s.rating ?? 0,
+    firmId: s.firmId ?? undefined,
   };
 }
 function toSareeTag(l: BackendPurchaseSareeLine): SareeTag {
@@ -79,7 +80,15 @@ function toPurchase(p: BackendPurchase): Purchase {
     sareeCount: p.sareeCount,
     gstNumber: p.gstNumber ?? "",
     invoiceNumber: p.invoiceNumber ?? "",
-    billAmount: formatMoney(rupees(Number(p.billAmount))),
+    // Exact to the paise — a GST-inclusive bill often has them, and the
+    // paid-vs-owed comparisons parse this string back.
+    billAmount: formatMoneyExact(rupees(Number(p.billAmount))),
+    subtotal: p.subtotal != null ? Number(p.subtotal) : undefined,
+    discountType: p.discountType === "PERCENT" ? "percent" : p.discountType === "AMOUNT" ? "amount" : undefined,
+    discountValue: Number(p.discountValue ?? 0),
+    discountAmount: Number(p.discountAmount ?? 0),
+    gstPercent: Number(p.gstPercent ?? 0),
+    gstAmount: Number(p.gstAmount ?? 0),
     status: p.status === "PAID" ? "Paid" : p.status === "PARTIAL" ? "Partial" : "Pending",
     notes: p.notes ?? "",
     invoiceFileName: p.invoiceFileName ?? undefined,
@@ -93,8 +102,10 @@ function cleanDate(d: string | undefined): string | undefined {
   return d && d !== "—" ? d : undefined;
 }
 
-function toStatusPayload(status: string): "PAID" | "PENDING" | "PARTIAL" {
-  return status === "Paid" ? "PAID" : status === "Partial" ? "PARTIAL" : "PENDING";
+/** A discount only exists when a positive value was entered. */
+function toDiscountTypePayload(type: DiscountType | undefined, value: number | undefined): "PERCENT" | "AMOUNT" | null {
+  if (!type || !(Number(value) > 0)) return null;
+  return type === "percent" ? "PERCENT" : "AMOUNT";
 }
 
 function toSareeLinePayload(s: SareeTag): CreatePurchaseSareeLinePayload {
@@ -126,8 +137,9 @@ function toCreatePurchasePayload(p: Omit<Purchase, "id">, addedById: string): Cr
     sareeCount: p.sareeCount,
     gstNumber: p.gstNumber || undefined,
     invoiceNumber: p.invoiceNumber || undefined,
-    billAmount: parseINR(p.billAmount),
-    status: toStatusPayload(p.status),
+    discountType: toDiscountTypePayload(p.discountType, p.discountValue),
+    discountValue: Number(p.discountValue) || 0,
+    gstPercent: Number(p.gstPercent) || 0,
     notes: p.notes || undefined,
     invoiceFileName: p.invoiceFileName,
     invoiceFileUrl: p.invoiceFileUrl,
@@ -145,8 +157,15 @@ function toUpdatePurchasePayload(patch: Partial<Purchase>): UpdatePurchasePayloa
     sareeCount: patch.sareeCount,
     gstNumber: patch.gstNumber,
     invoiceNumber: patch.invoiceNumber,
-    billAmount: patch.billAmount !== undefined ? parseINR(patch.billAmount) : undefined,
-    status: patch.status ? toStatusPayload(patch.status) : undefined,
+    // Pricing is only sent by the purchase form; a saree-only edit (photo,
+    // return) leaves it out so the server keeps the stored discount/GST.
+    ...(patch.discountType !== undefined || patch.discountValue !== undefined || patch.gstPercent !== undefined
+      ? {
+          discountType: toDiscountTypePayload(patch.discountType, patch.discountValue),
+          discountValue: Number(patch.discountValue) || 0,
+          gstPercent: Number(patch.gstPercent) || 0,
+        }
+      : {}),
     notes: patch.notes,
     invoiceFileName: patch.invoiceFileName,
     invoiceFileUrl: patch.invoiceFileUrl,
@@ -304,6 +323,9 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         name: s.name, shortName: s.shortName, contactName: s.contactName, phone: s.phone, whatsapp: s.whatsapp,
         city: s.city, state: s.state, address: s.address, gstCode: s.gstCode,
         specialty: s.specialty, terms: s.terms, bankName: s.bankName, accountNo: s.accountNo, ifscCode: s.ifscCode,
+        notes: s.notes || undefined, rating: s.rating || undefined,
+        visitingCardUrl: toStoredAssetPath(s.visitingCard) ?? undefined,
+        firmId: s.firmId || undefined,
       }),
     onSuccess: (created) => {
       setSuppliers(prev => [toSupplier(created), ...prev]);
@@ -324,6 +346,9 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         notes: args.patch.notes, rating: args.patch.rating,
         visitingCardUrl: toStoredAssetPath(args.patch.visitingCard) ?? undefined,
         status: args.patch.status ? args.patch.status.toUpperCase() : undefined,
+        // "" from the form's "Not connected" choice disconnects (null);
+        // undefined (not part of this patch) leaves the link as it is.
+        firmId: args.patch.firmId === undefined ? undefined : args.patch.firmId || null,
       }),
     onSuccess: (updated) => {
       setSuppliers(prev => prev.map(s => s.id === updated.id ? toSupplier(updated) : s));
@@ -457,7 +482,8 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
           sareeCount: totalPieces(local.sarees),
           gstNumber: local.gstNumber ?? "",
           invoiceNumber: local.invoiceNumber ?? "",
-          billAmount: local.billAmount || formatMoney(rupees(invoicedSelling(local.sarees))),
+          // Recalculated server-side from the lines (no discount / GST on a request).
+          billAmount: "",
           status: "Pending",
           notes: local.notes ?? "",
           invoiceFileName: local.invoiceFileName,
