@@ -21,4 +21,12 @@ export class InventoryController {
   findShopStock(@Query("dispatchId") dispatchId?: string) {
     return this.inventoryService.findShopStock(dispatchId);
   }
+
+  /** Batch + latest-QC facts for every woven saree, with no money fields —
+   *  the shop's New Sale stock table in place of GET /batches and GET /qc. */
+  @Get("production-catalog")
+  @RequireRoles(UserRole.SHOP, UserRole.ADMIN, UserRole.SUPERADMIN)
+  findProductionCatalog() {
+    return this.inventoryService.findProductionCatalog();
+  }
 }

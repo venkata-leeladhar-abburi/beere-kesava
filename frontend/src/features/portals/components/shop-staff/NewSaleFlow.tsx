@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { customersApi } from '../../../../shared/api/customers';
-import { inventoryApi } from '../../../../shared/api/inventory';
 import { 
   IndianRupee, Plus, Wallet, CreditCard, Check,
 } from 'lucide-react';
@@ -90,29 +89,16 @@ export function NewSaleFlow() {
     )
     : prevCustomers;
 
-  // What is actually on the shop floor — the sarees an admin dispatched to this
-  // shop and that have not been sold yet. Lets staff pick by browsing/searching
-  // instead of only scanning or typing an ID. Previously this read the factory
-  // stock list, which offered the counter sarees that had never been sent here
-  // (and hid the ones that had, since a dispatch removes a saree from that list).
-  const { data: inventoryRes, isLoading: inventoryLoading } = useQuery({
-    queryKey: ["shop-stock"],
-    queryFn: () => inventoryApi.shopStock(),
-  });
-
-  const availableSarees = useMemo(
-    () => (inventoryRes ?? []).filter(item => item.status === "available"),
-    [inventoryRes],
-  );
-
-  const filteredSarees = manualId.trim().length >= 2
-    ? availableSarees.filter(s =>
-      s.sareeId.toLowerCase().includes(manualId.trim().toLowerCase()) ||
-      (s.sareeTypeCode ?? "").toLowerCase().includes(manualId.trim().toLowerCase()) ||
-      (s.sareeTypeLabel ?? "").toLowerCase().includes(manualId.trim().toLowerCase()) ||
-      (s.weaverName ?? "").toLowerCase().includes(manualId.trim().toLowerCase())
-    )
-    : availableSarees;
+  // The stock picker is the admin All Sarees table (see ScanSareeStep), fed
+  // by the SalesContext / FinishingContext queries plus the money-free
+  // production catalog. After a sale every one of those that can report a
+  // saree as sold is refetched, so the picker and the Inventory tab agree
+  // with the bill that was just raised.
+  const refreshStock = () => {
+    for (const queryKey of [
+      ["shop-stock"], ["inventory", "production-catalog"], ["backend-inventory-list"], ["backend-sales-list"],
+    ]) void queryClient.invalidateQueries({ queryKey });
+  };
 
   /**
    * Resolves one saree id to a basket line. Returns an error string instead of
@@ -133,9 +119,6 @@ export function NewSaleFlow() {
       // staff proceed to sell it again. Not gated on finishing — a saree
       // counts as in-stock the moment QC passes.
       if (result.saleEligibility !== "PASSED") {
-        if (result.saleEligibility === "NOT_IN_SHOP") {
-          return `Saree ${id} hasn't been dispatched to the shop yet — ask an admin to send it over before selling it.`;
-        }
         const reason = result.saleEligibility === "WHOLESALE_DISPATCHED" ? "already dispatched to a wholesale customer"
           : result.saleEligibility === "SOLD" ? "already sold"
           : result.saleEligibility === "DAMAGED_REVIEW_NEEDED" ? "flagged for damage review"
@@ -383,12 +366,8 @@ export function NewSaleFlow() {
           removeLine={removeLine}
           setLineDiscount={setLineDiscount}
           scanError={scanError}
-          availableSarees={filteredSarees}
-          sareesLoading={inventoryLoading}
           showSareeList={showSareeList}
           setShowSareeList={setShowSareeList}
-          isFiltered={manualId.trim().length >= 2}
-          onClearFilters={() => setManualId("")}
           onBack={() => setStep(1)}
           onNext={() => setStep(3)}
         />
@@ -643,6 +622,7 @@ export function NewSaleFlow() {
                   }
                 } catch (err) {
                   if (recorded.length > 0) {
+                    refreshStock();
                     setCart(prev => prev.filter(l => !recorded.includes(l.id)));
                     throw new Error(
                       `Recorded ${recorded.length} of ${cart.length} sarees (${recorded.join(", ")}). ` +
@@ -651,10 +631,10 @@ export function NewSaleFlow() {
                   }
                   throw err;
                 }
-                // Sold sarees drop out of shop stock — refresh it so the
+                // Sold sarees drop out of stock — refresh it so the
                 // Inventory tab and the next sale's picker agree with the bill
                 // that was just raised.
-                void queryClient.invalidateQueries({ queryKey: ["shop-stock"] });
+                refreshStock();
                 setSaleRefs(refs);
                 setStep("success");
               } catch (err) {

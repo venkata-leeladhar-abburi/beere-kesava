@@ -23,13 +23,13 @@ export interface ScanLookupResult {
   qc: { result: string; payable: number; date: string } | null;
   finishing: { status: string; staffName: string | null; condition: string | null } | null;
   inventoryStatus: string | null;
-  /** Whether this saree can be sold at the shop counter right now.
-   *  "NOT_IN_SHOP" — QC-passed but still in the factory, never dispatched to the shop.
+  /** Whether this saree can be sold at the shop counter right now. A saree
+   *  still in the factory is sellable — the counter sells straight from
+   *  factory stock, no SHOP dispatch needed.
    *  "WHOLESALE_DISPATCHED" — sent to a wholesale customer, gone from the business. */
   saleEligibility:
     | "PASSED"
     | "QC_NOT_PASSED"
-    | "NOT_IN_SHOP"
     | "WHOLESALE_DISPATCHED"
     | "SOLD"
     | "DAMAGED_REVIEW_NEEDED";

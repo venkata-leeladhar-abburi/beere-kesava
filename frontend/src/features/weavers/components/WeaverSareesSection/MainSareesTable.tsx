@@ -4,7 +4,7 @@ import { Pagination, UsePaginationReturn } from "../../../../shared/ui/DataPagin
 import { ageBucket } from "@/features/customers";
 import { T, F } from "./theme";
 import { WeaverSareeRow, TabKey, tabDate } from "./types";
-import { inr, fmtDate, isSareePickable, pickBlockedReason, AGE_COLOR, QC_CFG, FIN_CFG, DISPATCH_CFG } from "./utils";
+import { inr, fmtDate, AGE_COLOR, QC_CFG, FIN_CFG, DISPATCH_CFG, DISPATCH_PICK_RULE, type PickRule } from "./utils";
 import { Checkbox, IconButton } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
@@ -56,6 +56,8 @@ interface MainSareesTableProps {
    *  finishing or dispatch status (a dispatched saree can still be re-tagged
    *  even though it can no longer be picked for a new quotation/dispatch). */
   onPrintTag?: (r: WeaverSareeRow) => void;
+  /** Which rows can be ticked — defaults to the dispatch rule. */
+  pickRule?: PickRule;
 }
 
 function MainSareeCard({
@@ -71,6 +73,7 @@ function MainSareeCard({
   showMoney,
   onPrintTag,
   onViewPhoto,
+  pickRule,
 }: {
   r: WeaverSareeRow;
   selectable: boolean;
@@ -84,8 +87,9 @@ function MainSareeCard({
   showMoney: boolean;
   onPrintTag?: (r: WeaverSareeRow) => void;
   onViewPhoto: (image: ZoomImage) => void;
+  pickRule: PickRule;
 }) {
-  const isPickable = isSareePickable(r);
+  const isPickable = pickRule.canPick(r);
   const qc = QC_CFG[r.qcStatus];
   const fin = FIN_CFG[r.finishingStatus];
 
@@ -102,7 +106,7 @@ function MainSareeCard({
                   checked={!!selectedIds?.has(r.sareeId)}
                   onCheckedChange={() => isPickable && onToggleRow?.(r.sareeId)}
                   disabled={!isPickable}
-                  title={pickBlockedReason(r)}
+                  title={pickRule.blockedReason(r)}
                 />
               )}
               <PhotoThumb url={r.receivedPhotoUrl} sareeId={r.sareeId} onView={onViewPhoto} />
@@ -232,6 +236,7 @@ function MainSareeCard({
 export function MainSareesTable({
   pageRows, visible, selectable, selectedIds, onToggleAll, onToggleRow,
   isAll, isLoom, tab, dateHeader, showQcMoney, showMoney, pag, responsive = false, onPrintTag,
+  pickRule = DISPATCH_PICK_RULE,
 }: MainSareesTableProps) {
   const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({ fontFamily: "var(--font-mono)", fontSize: 12, color, ...extra });
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
@@ -240,7 +245,7 @@ export function MainSareesTable({
     ...(selectable ? [{
       id: "select",
       header: (() => {
-        const dispatchableVisible = visible.filter(isSareePickable).map(r => r.sareeId);
+        const dispatchableVisible = visible.filter(pickRule.canPick).map(r => r.sareeId);
         return (
           <Checkbox
             checked={dispatchableVisible.length > 0 && dispatchableVisible.every(id => selectedIds?.has(id))}
@@ -250,13 +255,13 @@ export function MainSareesTable({
       })(),
       accessor: () => null,
       cell: (_v: unknown, r: WeaverSareeRow) => {
-        const dispatchable = isSareePickable(r);
+        const dispatchable = pickRule.canPick(r);
         return (
           <Checkbox
             checked={!!selectedIds?.has(r.sareeId)}
             onCheckedChange={() => dispatchable && onToggleRow?.(r.sareeId)}
             disabled={!dispatchable}
-            title={pickBlockedReason(r)}
+            title={pickRule.blockedReason(r)}
           />
         );
       },
@@ -417,6 +422,7 @@ export function MainSareesTable({
                   showMoney={showMoney}
                   onPrintTag={onPrintTag}
                   onViewPhoto={setZoomImage}
+                  pickRule={pickRule}
                 />
               ))}
             </div>

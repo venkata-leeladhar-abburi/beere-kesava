@@ -6,7 +6,7 @@ import { usePagination } from "../../../../shared/ui/DataPagination";
 import { useCanSeeMoney } from "../../../../shared/ui/MoneyAccess";
 import { T, F } from "./theme";
 import { WeaverSareeRow, TabKey, tabDate } from "./types";
-import { inr, externalSerialOf, QC_CFG, FIN_CFG } from "./utils";
+import { inr, externalSerialOf, QC_CFG, FIN_CFG, DISPATCH_PICK_RULE, type PickRule } from "./utils";
 import { ExternalSareesTable } from "./ExternalSareesTable";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { MainSareesTable } from "./MainSareesTable";
@@ -43,7 +43,7 @@ function loadPersistedTab(persistKey: string | undefined): TabKey {
 }
 
 // ── Main section ─────────────────────────────────────────────────────────────
-export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver", selectable = false, selectedIds, onToggleRow, onToggleAll, onVisibleChange, onAllRowsChange, persistKey }: {
+export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver", selectable = false, selectedIds, onToggleRow, onToggleAll, onVisibleChange, onAllRowsChange, persistKey, pickRule = DISPATCH_PICK_RULE }: {
   /** Weaver id (WV-00X) or factory loom id (FL-00X), depending on ownerType. Unused when ownerType is "all". */
   weaverId?: string;
   weaverName?: string;
@@ -68,6 +68,10 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
    *  transient hosts (a picker modal, a drawer) where starting fresh every
    *  time is the right behavior. */
   persistKey?: string;
+  /** Which rows the checkboxes allow, and which rows selectable mode hides.
+   *  Defaults to the dispatch/quotation rule; the shop's New Sale picker
+   *  passes salePickRule(). */
+  pickRule?: PickRule;
 }) {
   const isLoom = ownerType === "loom";
   const isAll = ownerType === "all";
@@ -283,7 +287,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   // a dispatch record has nothing to offer there, so it's dropped from every
   // tab except "Dispatched" itself (kept as an audit view, not a pick list).
   // Read-only usages (production audit, weaver drawer) are unaffected.
-  const rowsForTab = (t: TabKey) => (selectable && t !== "dispatched") ? rows.filter(r => !r.dispatched) : rows;
+  const rowsForTab = (t: TabKey) => (selectable && t !== "dispatched") ? rows.filter(r => !pickRule.hides(r)) : rows;
 
   const counts = useMemo(() => {
     const c = {} as Record<TabKey, number>;
@@ -293,7 +297,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       });
     return c;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, selectable, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
+  }, [rows, selectable, pickRule, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
 
   // Rows that should float to the top of `visible` — populated only for a
   // selection that lands *off* the currently-displayed page (a barcode scan
@@ -317,7 +321,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       return a.sareeId.localeCompare(b.sareeId);
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rows, selectable, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, floatTick]);
+    [rows, selectable, pickRule, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, floatTick]);
 
   // Pagination applies only to what's rendered — `visible` itself stays the full
   // filtered set so select-all and the parent's onVisibleChange (scan / bulk
@@ -642,6 +646,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           onToggleRow={onToggleRow}
           onToggleAll={onToggleAll}
           visible={visible}
+          pickRule={pickRule}
         />
       ) : (
         <MainSareesTable
@@ -660,6 +665,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           pag={pag}
           responsive={false}
           onPrintTag={r => printTags([r])}
+          pickRule={pickRule}
         />
       )}
 

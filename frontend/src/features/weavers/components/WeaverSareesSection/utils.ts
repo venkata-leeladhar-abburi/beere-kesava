@@ -40,6 +40,47 @@ export function pickBlockedReason(r: WeaverSareeRow): string | undefined {
   return undefined;
 }
 
+/** Which rows a selectable table lets you tick, why a row is refused, and
+ *  which rows it leaves out altogether. The dispatch/quotation pickers use
+ *  DISPATCH_PICK_RULE; the shop's New Sale picker uses salePickRule(). */
+export interface PickRule {
+  canPick: (r: WeaverSareeRow) => boolean;
+  blockedReason: (r: WeaverSareeRow) => string | undefined;
+  /** Dropped from every tab but "Dispatched" while the table is selectable. */
+  hides: (r: WeaverSareeRow) => boolean;
+}
+
+export const DISPATCH_PICK_RULE: PickRule = {
+  canPick: isSareePickable,
+  blockedReason: pickBlockedReason,
+  hides: r => r.dispatched,
+};
+
+/** Counter-sale rule. Mirrors SalesService.createSale: sold, gone to a
+ *  wholesale customer or back damaged from finishing can't be sold, and a
+ *  woven saree needs a clean QC pass. A SHOP dispatch is no bar — the shop
+ *  sells straight from factory stock as well as from what was sent over.
+ *  `inSale` is what is already on the bill, so a piece can't go on it twice. */
+export function salePickRule(inSale: ReadonlySet<string>): PickRule {
+  const blockedReason = (r: WeaverSareeRow): string | undefined => {
+    if (inSale.has(r.sareeId)) return "Already on this sale";
+    if (r.sold) return "Already sold — it is no longer in stock";
+    if (r.wholesaleDispatched) return "Sent to a wholesale customer";
+    if (r.finishingStatus === "rejected") return "Came back damaged from finishing — needs review before it can be sold";
+    if (r.stock?.origin === "external") {
+      return r.external?.returned ? "Returned to the supplier" : undefined;
+    }
+    if (r.qcStatus === "pending") return "Hasn't been through QC yet";
+    if (r.qcStatus !== "passed") return `${QC_CFG[r.qcStatus].label} — only QC-passed sarees can be sold`;
+    return undefined;
+  };
+  return {
+    canPick: r => blockedReason(r) === undefined,
+    blockedReason,
+    hides: r => r.wholesaleDispatched,
+  };
+}
+
 export const AGE_COLOR: Record<string, string> = {
   "0-30": T.green, "31-60": T.antiqueGold, "61-90": T.orange, "90+": T.crimson,
 };

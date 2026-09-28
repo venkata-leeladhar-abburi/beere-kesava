@@ -58,13 +58,13 @@ export class ScanService {
     const atShop = latestDispatch?.type === "SHOP";
     const goneToWholesale = latestDispatch?.type === "WHOLESALE";
 
-    // NOT gated on finishing: a saree counts as saleable as soon as QC passes
-    // and it has reached the shop, whether or not it separately went through
-    // the finishing department.
+    // NOT gated on finishing, and NOT gated on a SHOP dispatch either: the
+    // counter sells straight from factory stock, so a saree is saleable as
+    // soon as QC passes, wherever it is physically standing. `atShop` is still
+    // reported so the UI can say where the piece is.
     let saleEligible:
       | "PASSED"
       | "QC_NOT_PASSED"
-      | "NOT_IN_SHOP"
       | "WHOLESALE_DISPATCHED"
       | "SOLD"
       | "DAMAGED_REVIEW_NEEDED";
@@ -76,8 +76,6 @@ export class ScanService {
       saleEligible = "DAMAGED_REVIEW_NEEDED";
     } else if (!row.qcPassed) {
       saleEligible = "QC_NOT_PASSED";
-    } else if (!atShop) {
-      saleEligible = "NOT_IN_SHOP";
     } else {
       saleEligible = "PASSED";
     }

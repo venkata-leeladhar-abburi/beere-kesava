@@ -51,10 +51,10 @@ describe("ScanService.lookup — sale eligibility", () => {
     expect(result.atShop).toBe(true);
   });
 
-  it("marks a QC-passed saree still in the factory as not in the shop", async () => {
+  it("marks a QC-passed saree still in the factory as sellable, but not at the shop", async () => {
     const result = await service.lookup("RAMARAO-L1-001");
 
-    expect(result.saleEligibility).toBe("NOT_IN_SHOP");
+    expect(result.saleEligibility).toBe("PASSED");
     expect(result.atShop).toBe(false);
   });
 

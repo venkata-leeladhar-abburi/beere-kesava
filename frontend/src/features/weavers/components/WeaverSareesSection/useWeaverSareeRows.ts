@@ -1,4 +1,8 @@
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuthGate } from "../../../../contexts/AuthContext";
+import { inventoryApi } from "@/shared/api/inventory";
+import { resolveAssetUrl } from "@/shared/api/uploads";
 import { useBatches } from "@/features/production";
 import { useQc } from "@/features/qc";
 import { useFinishing } from "@/features/finishing";
@@ -19,6 +23,18 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
 
   const qcRecords = isAll ? allQcRecords : isLoom ? getQcForLoom(weaverId!) : getQcForWeaver(weaverId!);
 
+  // Shop staff cannot read GET /batches or GET /qc (both carry weaver pay), so
+  // in the all-sarees view their batch + QC facts come from the money-free
+  // production catalog instead. Steps 1 and 2 below read one source or the
+  // other; everything after them is shared.
+  const isShop = useAuthGate("shop");
+  const useCatalog = isShop && isAll;
+  const { data: catalog = [] } = useQuery({
+    queryKey: ["inventory", "production-catalog"],
+    queryFn: () => inventoryApi.productionCatalog(),
+    enabled: useCatalog,
+  });
+
   return useMemo<WeaverSareeRow[]>(() => {
     const byId = new Map<string, WeaverSareeRow>();
 
@@ -28,12 +44,45 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
       isAssigned: false, assignedDate: null, qcStatus: "pending",
       receivedDate: null, qcDate: null, defects: [], makingCharge: null, deduction: null,
       payable: null, finishingStatus: "none", finishingAssignedDate: null,
-      finishingCompletedDate: null, stock: null, dispatched: false, sold: false,
+      finishingCompletedDate: null, stock: null, dispatched: false, wholesaleDispatched: false, sold: false,
       ownerKind: null, ownerId: null, ownerLabel: null,
     });
 
+    // 1+2 (shop). The money-free catalog carries both the batch row and its
+    // latest QC verdict, so it fills in exactly what steps 1 and 2 do below.
+    if (useCatalog) {
+      catalog.forEach(c => {
+        const row = blank(c.sareeId);
+        const rowIsLoom = c.recipientType === "factoryLoom";
+        row.batchId = c.batchId;
+        row.loomNumber = rowIsLoom ? null : c.weaverLoom;
+        row.sareeTypeCode = c.sareeTypeCode;
+        row.sareeTypeName = c.sareeTypeName;
+        row.bulkOrderLabel = c.bulkOrderRef;
+        row.designCode = c.designCode;
+        row.color = c.color;
+        row.weight = c.weightG;
+        row.receivedPhotoUrl = resolveAssetUrl(c.photoUrl);
+        row.isAssigned = true;
+        row.assignedDate = c.batchCreatedAt;
+        if (rowIsLoom) {
+          row.ownerKind = "loom"; row.ownerId = c.factoryLoomId; row.ownerLabel = c.factoryLoomLabel;
+        } else {
+          row.ownerKind = "weaver"; row.ownerId = c.weaverId; row.ownerLabel = c.weaverName;
+        }
+        if (c.qc) {
+          row.qcStatus = c.qc.result === "PASSED" ? "passed" : c.qc.result === "SEMI" ? "semi" : "defective";
+          row.receivedDate = c.qc.receivedDate;
+          row.qcDate = c.qc.qcDate;
+          row.defects = c.qc.defects;
+        } else if (c.qcPassed === true) row.qcStatus = "passed";
+        else if (c.qcPassed === false) row.qcStatus = "defective";
+        byId.set(c.sareeId, row);
+      });
+    }
+
     // 1. Sarees assigned to this weaver/loom (or everyone, in "all" mode) through production batches
-    batches.forEach(b => {
+    if (!useCatalog) batches.forEach(b => {
       b.rows.forEach(r => {
         const rowIsLoom = r.recipientType === "factoryLoom";
         const belongs = isAll ? true : isLoom ? r.factoryLoomId === weaverId : r.weaverId === weaverId;
@@ -65,7 +114,7 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
     });
 
     // 2. QC outcomes — authoritative over the batch flag
-    qcRecords.forEach(q => {
+    if (!useCatalog) qcRecords.forEach(q => {
       const row = byId.get(q.sareeId) ?? blank(q.sareeId);
       row.batchId = row.batchId ?? q.batchId;
       row.loomNumber = row.loomNumber ?? q.loomNumber;
@@ -134,13 +183,18 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
     // 5. Already-dispatched — including via a raised quotation — so callers
     // (e.g. the Inventory dispatch table) can exclude these from selection.
     const dispatchedSareeIds = new Set(dispatches.flatMap(d => d.sareeIds));
+    const wholesaleSareeIds = new Set(dispatches.filter(d => d.type === "wholesale").flatMap(d => d.sareeIds));
+    // The catalog's server-side verdict covers every sale; soldSareeIds only
+    // the latest 100.
+    const catalogSold = new Set(useCatalog ? catalog.filter(c => c.sold).map(c => c.sareeId) : []);
     byId.forEach(row => {
       row.dispatched = dispatchedSareeIds.has(row.sareeId);
+      row.wholesaleDispatched = wholesaleSareeIds.has(row.sareeId);
       // A sold saree is off the shelf whether or not it was ever dispatched —
       // and `stock` cannot report it, since the stock list excludes sold pieces.
-      row.sold = soldSareeIds.has(row.sareeId);
+      row.sold = soldSareeIds.has(row.sareeId) || catalogSold.has(row.sareeId);
     });
 
     return [...byId.values()];
-  }, [batches, qcRecords, allStock, returns, assignments, readySarees, dispatches, soldSareeIds, weaverId, isLoom, isAll]);
+  }, [batches, qcRecords, catalog, useCatalog, allStock, returns, assignments, readySarees, dispatches, soldSareeIds, weaverId, isLoom, isAll]);
 }

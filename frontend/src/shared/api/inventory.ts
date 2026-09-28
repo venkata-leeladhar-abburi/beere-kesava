@@ -58,6 +58,37 @@ export interface ShopStockItem extends BackendStockItem {
   weightG: number | null;
 }
 
+/** GET /inventory/production-catalog — mirrors InventoryService's
+ *  ProductionCatalogItem: the batch-row + latest-QC facts of every woven saree,
+ *  with no money fields. The shop's stand-in for GET /batches and GET /qc. */
+export interface ProductionCatalogItem {
+  sareeId: string;
+  batchId: string;
+  batchCreatedAt: string;
+  recipientType: "weaver" | "factoryLoom" | null;
+  weaverId: string | null;
+  weaverName: string | null;
+  weaverLoom: number | null;
+  factoryLoomId: string | null;
+  factoryLoomLabel: string | null;
+  designCode: string | null;
+  sareeTypeCode: string | null;
+  sareeTypeName: string | null;
+  bulkOrderRef: string | null;
+  color: string | null;
+  weightG: number | null;
+  photoUrl: string | null;
+  qcPassed: boolean | null;
+  /** Sold and not since restocked — server-computed, covers every sale. */
+  sold: boolean;
+  qc: {
+    result: "PASSED" | "SEMI" | "DEFECTIVE";
+    qcDate: string;
+    receivedDate: string | null;
+    defects: string[];
+  } | null;
+}
+
 export const inventoryApi = {
   /** GET /inventory — all QC-passed woven sarees still in the factory. */
   list: () => apiClient.get<BackendStockItem[]>("/inventory"),
@@ -69,4 +100,7 @@ export const inventoryApi = {
     apiClient.get<ShopStockItem[]>(
       `/inventory/shop${dispatchId ? `?dispatchId=${encodeURIComponent(dispatchId)}` : ""}`,
     ),
+
+  /** GET /inventory/production-catalog — see ProductionCatalogItem. */
+  productionCatalog: () => apiClient.get<ProductionCatalogItem[]>("/inventory/production-catalog"),
 };

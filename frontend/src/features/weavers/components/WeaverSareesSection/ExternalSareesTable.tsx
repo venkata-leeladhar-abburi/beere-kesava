@@ -10,7 +10,7 @@ import { Modal } from "../../../../shared/ui/overlay";
 import { Button, Checkbox } from "../../../../shared/ui/primitives";
 import { useSuppliers } from "@/features/suppliers";
 import { usePrintSareeTags, type SareeTagData } from "./SareeTagPrint";
-import { isSareePickable, pickBlockedReason } from "./utils";
+import { DISPATCH_PICK_RULE, type PickRule } from "./utils";
 
 interface ExternalSareesTableProps {
   pageRows: WeaverSareeRow[];
@@ -26,11 +26,13 @@ interface ExternalSareesTableProps {
    *  "select all" ticks every pickable one, mirroring MainSareesTable. */
   visible?: WeaverSareeRow[];
   onToggleAll?: (visibleIds: string[]) => void;
+  /** Which rows can be ticked — defaults to the dispatch rule. */
+  pickRule?: PickRule;
 }
 
 export function ExternalSareesTable({
   pageRows, canSeeMoney, pag, responsive = false,
-  selectable, selectedIds, onToggleRow, visible, onToggleAll,
+  selectable, selectedIds, onToggleRow, visible, onToggleAll, pickRule = DISPATCH_PICK_RULE,
 }: ExternalSareesTableProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const { suppliers } = useSuppliers();
@@ -63,7 +65,7 @@ export function ExternalSareesTable({
     ...(selectable ? [{
       id: "select",
       header: (() => {
-        const dispatchableVisible = (visible ?? pageRows).filter(isSareePickable).map(r => r.sareeId);
+        const dispatchableVisible = (visible ?? pageRows).filter(pickRule.canPick).map(r => r.sareeId);
         return (
           <Checkbox
             checked={dispatchableVisible.length > 0 && dispatchableVisible.every(id => selectedIds?.has(id))}
@@ -73,13 +75,13 @@ export function ExternalSareesTable({
       })(),
       accessor: () => null,
       cell: (_v: unknown, r: WeaverSareeRow) => {
-        const dispatchable = isSareePickable(r);
+        const dispatchable = pickRule.canPick(r);
         return (
           <Checkbox
             checked={!!selectedIds?.has(r.sareeId)}
             onCheckedChange={() => dispatchable && onToggleRow?.(r.sareeId)}
             disabled={!dispatchable}
-            title={pickBlockedReason(r)}
+            title={pickRule.blockedReason(r)}
           />
         );
       },

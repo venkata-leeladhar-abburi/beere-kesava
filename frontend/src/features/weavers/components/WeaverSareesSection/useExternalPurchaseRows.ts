@@ -38,6 +38,10 @@ export function useExternalPurchaseRows(enabled: boolean): {
   const { dispatches } = useFinishing();
   const { soldSareeIds } = useSales();
   const dispatchedSareeIds = useMemo(() => new Set(dispatches.flatMap(d => d.sareeIds)), [dispatches]);
+  const wholesaleSareeIds = useMemo(
+    () => new Set(dispatches.filter(d => d.type === "wholesale").flatMap(d => d.sareeIds)),
+    [dispatches],
+  );
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["purchases", "external-inventory"],
@@ -51,11 +55,11 @@ export function useExternalPurchaseRows(enabled: boolean): {
   return useMemo(() => ({
     isLoading,
     isError,
-    rows: (data?.items ?? []).flatMap(p => purchaseRows(p, dispatchedSareeIds, soldSareeIds)),
-  }), [data, isLoading, isError, dispatchedSareeIds, soldSareeIds]);
+    rows: (data?.items ?? []).flatMap(p => purchaseRows(p, dispatchedSareeIds, wholesaleSareeIds, soldSareeIds)),
+  }), [data, isLoading, isError, dispatchedSareeIds, wholesaleSareeIds, soldSareeIds]);
 }
 
-function purchaseRows(p: BackendPurchase, dispatchedSareeIds: Set<string>, soldSareeIds: Set<string>): WeaverSareeRow[] {
+function purchaseRows(p: BackendPurchase, dispatchedSareeIds: Set<string>, wholesaleSareeIds: Set<string>, soldSareeIds: Set<string>): WeaverSareeRow[] {
   const supplier = p.supplier?.name ?? p.supplierName ?? "—";
   const location = p.location
     ?? (p.supplier ? `${p.supplier.city ?? ""}, ${p.supplier.state ?? ""}`.replace(/^, |, $/, "") : "");
@@ -73,13 +77,13 @@ function purchaseRows(p: BackendPurchase, dispatchedSareeIds: Set<string>, soldS
       // `returnedQuantity` pieces are treated as the returned ones, exactly as
       // expandSareePieces does for the purchase screens.
       const returned = pieceNo <= returnedQty;
-      return pieceRow({ p, line, pieceNo, qty, price, sellPercent, returned, supplier, location, paymentStatus, dispatchedSareeIds, soldSareeIds });
+      return pieceRow({ p, line, pieceNo, qty, price, sellPercent, returned, supplier, location, paymentStatus, dispatchedSareeIds, wholesaleSareeIds, soldSareeIds });
     });
   });
 }
 
 function pieceRow({
-  p, line, pieceNo, qty, price, sellPercent, returned, supplier, location, paymentStatus, dispatchedSareeIds, soldSareeIds,
+  p, line, pieceNo, qty, price, sellPercent, returned, supplier, location, paymentStatus, dispatchedSareeIds, wholesaleSareeIds, soldSareeIds,
 }: {
   p: BackendPurchase;
   line: BackendPurchaseSareeLine;
@@ -92,6 +96,7 @@ function pieceRow({
   location: string;
   paymentStatus: "Paid" | "Pending" | "Partial";
   dispatchedSareeIds: Set<string>;
+  wholesaleSareeIds: Set<string>;
   soldSareeIds: Set<string>;
 }): WeaverSareeRow {
   const sareeId = pieceCodeFromLineCode(line.code, pieceNo);
@@ -154,6 +159,7 @@ function pieceRow({
     // this piece — a saree dispatched from Inventory kept showing (and
     // stayed pickable) here as if it never left.
     dispatched: dispatchedSareeIds.has(sareeId),
+    wholesaleDispatched: wholesaleSareeIds.has(sareeId),
     sold: soldSareeIds.has(sareeId),
     stock,
     ownerKind: null,

@@ -137,20 +137,13 @@ export class SalesService {
       this.prisma.saleRecord.findFirst({ where: { sareeId: dto.sareeId }, orderBy: { date: "desc" } }),
       this.prisma.inventoryRecord.findUnique({ where: { sareeId: dto.sareeId } }),
     ]);
-    // A SHOP dispatch is what puts the saree on the shop floor, so it is a
-    // precondition of a counter sale rather than a bar to one; only a
-    // WHOLESALE dispatch takes the goods out of the business. Blocking on any
-    // dispatch at all made every saree unsellable the moment it reached the
-    // shop it was sent to.
+    // Only a WHOLESALE dispatch takes the goods out of the business. A SHOP
+    // dispatch is neither required nor a bar: the counter sells straight from
+    // factory stock as well as from whatever was sent over to the shop.
     const latestDispatch = dispatches[0]?.dispatch ?? null;
     if (latestDispatch?.type === "WHOLESALE") {
       throw new BadRequestException(
         `Saree ${dto.sareeId} has already been dispatched to a wholesale customer`,
-      );
-    }
-    if (dto.channel === SalesChannel.RETAIL && latestDispatch?.type !== "SHOP") {
-      throw new BadRequestException(
-        `Saree ${dto.sareeId} has not been dispatched to the shop yet — it cannot be sold at the counter`,
       );
     }
     if (alreadySold) {

@@ -2,12 +2,11 @@ import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { List, Plus, Trash2 } from "lucide-react";
 import { C, F, Card } from "./theme";
-import { sareeTypeName, sareeTypeText } from "./stock-format";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Button, CurrencyInput, NumberInput } from "../../../../shared/ui/primitives";
-import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { MoneyAccessProvider } from "../../../../shared/ui/MoneyAccess";
+import { WeaverSareesSection, salePickRule } from "@/features/weavers";
 import { StepHeader, StepBody, FlowActions, ScanPanel, ACCENT_SALE } from "./flow-kit";
-import type { ShopStockItem } from "../../../../shared/api/inventory";
 import { cartTotal, cartOriginalTotal, type SaleLine, type DiscountMode } from "./sale-cart";
 
 interface ScanSareeStepProps {
@@ -26,12 +25,8 @@ interface ScanSareeStepProps {
    *  the saree is picked, rather than a step later. */
   setLineDiscount: (id: string, mode: DiscountMode, value: number) => void;
   scanError?: string | null;
-  availableSarees: ShopStockItem[];
-  sareesLoading?: boolean;
   showSareeList: boolean;
   setShowSareeList: (v: boolean) => void;
-  isFiltered?: boolean;
-  onClearFilters?: () => void;
   onBack: () => void;
   onNext: () => void;
 }
@@ -51,69 +46,32 @@ export function ScanSareeStep({
   removeLine,
   setLineDiscount,
   scanError,
-  availableSarees,
-  sareesLoading,
   showSareeList,
   setShowSareeList,
-  isFiltered,
-  onClearFilters,
   onBack,
   onNext,
 }: ScanSareeStepProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
 
-  // A saree already in the basket must not be offered again — selling the
-  // same piece twice on one bill is not a thing the loom can honour.
+  // The stock list is the admin Inventory page's All Sarees table, rendered
+  // with the counter-sale rule: a saree can be ticked when it is QC-passed (or
+  // an external purchase), unsold, not gone to a wholesale customer and not
+  // already on this bill — factory stock included, no SHOP dispatch needed.
   const inCart = useMemo(() => new Set(cart.map(l => l.id)), [cart]);
-  const selectable = useMemo(
-    () => availableSarees.filter(s => !inCart.has(s.sareeId)),
-    [availableSarees, inCart],
-  );
+  const pickRule = useMemo(() => salePickRule(inCart), [inCart]);
 
-  // Same shape as the Shop Inventory table — saree type (code + name), the
-  // retail price the admin set on that type, and no design column, so staff
-  // read one set of columns whether they are checking stock or selling it.
-  const columns: ColumnDef<ShopStockItem>[] = useMemo(() => [
-    {
-      id: "sareeId", header: "Saree ID", type: "code", priority: 1, sortable: true,
-      accessor: r => r.sareeId,
-    },
-    {
-      id: "sareeType", header: "Saree Type", priority: 1, sortable: true,
-      accessor: r => sareeTypeText(r),
-      cell: (_v, r) => {
-        const name = sareeTypeName(r);
-        return (
-          <span>
-            {r.sareeTypeCode ? <span style={{ fontFamily: F.m, color: C.burg }}>{r.sareeTypeCode}</span> : null}
-            {r.sareeTypeCode && name ? <span style={{ color: C.muted }}> · </span> : null}
-            {name ?? (r.sareeTypeCode ? null : "—")}
-          </span>
-        );
-      },
-    },
-    {
-      id: "retailPrice", header: "Retail Price", type: "currency", priority: 1, sortable: true,
-      accessor: r => r.retailPrice,
-      cell: (_v, r) => r.retailPrice != null
-        ? <span style={{ fontFamily: F.m, fontWeight: 700, color: C.gold, fontVariantNumeric: "tabular-nums" }}>{formatMoney(rupees(r.retailPrice))}</span>
-        : <span style={{ color: C.muted }}>—</span>,
-    },
-    {
-      id: "weaver", header: "Weaver / Loom", priority: 2, sortable: true,
-      accessor: r => r.weaverName ?? (r.loomNumber ? `Loom ${r.loomNumber}` : "—"),
-    },
-    {
-      id: "received", header: "Received", type: "date", priority: 3, sortable: true,
-      accessor: r => r.dispatch.dispatchDate,
-    },
-    {
-      id: "source", header: "Source", type: "badge", priority: 3, sortable: true,
-      accessor: r => r.source,
-      cell: v => <span style={{ textTransform: "capitalize" as const }}>{String(v)}</span>,
-    },
-  ], []);
+  const toggleRow = (id: string) => setSelected(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const toggleAll = (ids: string[]) => setSelected(prev => {
+    const allSelected = ids.length > 0 && ids.every(id => prev.has(id));
+    const next = new Set(prev);
+    ids.forEach(id => (allSelected ? next.delete(id) : next.add(id)));
+    return next;
+  });
 
   const addSelected = async () => {
     if (selected.size === 0 || adding) return;
@@ -139,7 +97,7 @@ export function ScanSareeStep({
           title="Scan Saree Barcode"
           hint="Scan a tag to add it to this sale. Keep scanning to add more."
           value={manualId}
-          onValueChange={v => { setManualId(v); setShowSareeList(true); }}
+          onValueChange={setManualId}
           onSubmit={overrideId => handleScan(overrideId)}
           error={scanError}
         />
@@ -301,7 +259,7 @@ export function ScanSareeStep({
             variant="secondary" fullWidth iconLeft={List} onClick={() => setShowSareeList(true)}
             className="h-[50px] rounded-xl border-[1.5px] border-dashed border-[rgba(110,15,45,0.30)] bg-transparent text-[#6E0F2D]"
           >
-            Browse All Sarees ({selectable.length} in stock)
+            Browse All Sarees
           </Button>
         ) : (
           <div
@@ -312,34 +270,26 @@ export function ScanSareeStep({
           >
             <div style={{ padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${C.bdr}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
               <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
-                {sareesLoading
-                  ? "Loading…"
-                  : isFiltered
-                    ? `${selectable.length} result${selectable.length !== 1 ? "s" : ""} for "${manualId.trim()}"`
-                    : `${selectable.length} Available in Stock`}
+                All Sarees
               </span>
               <Button variant="link" onClick={() => setShowSareeList(false)} className="p-0 text-xs text-[#69635E] underline">
                 Hide
               </Button>
             </div>
 
-            <div style={{ maxHeight: 420, overflowY: "auto" as const }}>
-              <DataTable
-                columns={columns}
-                data={selectable}
-                getRowId={r => r.sareeId}
-                caption="Sarees dispatched to this shop and still unsold"
-                density="compact"
-                responsive
-                pagination
-                loading={sareesLoading}
-                selectedIds={selected}
-                onSelectionChange={setSelected}
-                isFiltered={isFiltered}
-                onClearFilters={onClearFilters}
-                emptyTitle="No sarees in shop stock"
-                emptyDescription="Everything dispatched to this shop has been sold. Ask an admin to dispatch more stock over."
-              />
+            {/* Money is never shown to shop staff — weaver pay, making charge
+                and QC deductions stay admin-only, same as the data behind it. */}
+            <div style={{ padding: 14 }}>
+              <MoneyAccessProvider allowed={false}>
+                <WeaverSareesSection
+                  ownerType="all"
+                  selectable
+                  selectedIds={selected}
+                  onToggleRow={toggleRow}
+                  onToggleAll={toggleAll}
+                  pickRule={pickRule}
+                />
+              </MoneyAccessProvider>
             </div>
 
             <div style={{ padding: "12px 14px", borderTop: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" as const }}>

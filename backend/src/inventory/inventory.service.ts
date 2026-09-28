@@ -66,6 +66,45 @@ export interface ShopStockItem extends StockItem {
   weightG: number | null;
 }
 
+/**
+ * One woven saree as the shop's copy of the All Sarees table needs it: the
+ * batch-row and latest-QC facts the admin table reads from GET /batches and
+ * GET /qc, with every money field (making charge, deduction, weaver payable,
+ * rates) left out. Shop staff sell sarees; they have no business seeing what
+ * the weaver was paid for one, so it never leaves the server for this role.
+ */
+export interface ProductionCatalogItem {
+  sareeId: string;
+  batchId: string;
+  batchCreatedAt: string;
+  recipientType: "weaver" | "factoryLoom" | null;
+  weaverId: string | null;
+  weaverName: string | null;
+  /** The weaver's own loom digit, recovered from the sareeId (-L{n}-B). */
+  weaverLoom: number | null;
+  factoryLoomId: string | null;
+  factoryLoomLabel: string | null;
+  designCode: string | null;
+  sareeTypeCode: string | null;
+  sareeTypeName: string | null;
+  bulkOrderRef: string | null;
+  color: string | null;
+  weightG: number | null;
+  /** Receipt photo, else the latest QC photo — server-relative path. */
+  photoUrl: string | null;
+  qcPassed: boolean | null;
+  /** Sold, and not since returned and restocked — the same rule
+   *  SalesService.createSale applies. Computed here because the client's own
+   *  sales list only covers the latest 100 sales. */
+  sold: boolean;
+  qc: {
+    result: "PASSED" | "SEMI" | "DEFECTIVE";
+    qcDate: string;
+    receivedDate: string | null;
+    defects: string[];
+  } | null;
+}
+
 /** The stand-in consignment used for pieces that entered as a return rather
  *  than on a lorry — returns have no LR, but the shop still groups by
  *  consignment, so they get one of their own. */
@@ -499,5 +538,111 @@ export class InventoryService {
       });
 
     return [...dispatchedStock, ...returnedStock];
+  }
+
+  /**
+   * Every assigned woven saree, with its batch and latest-QC facts and no
+   * money — see ProductionCatalogItem. Backs the shop's New Sale stock table,
+   * which is the admin All Sarees table rendered for a role that cannot read
+   * GET /batches or GET /qc (both carry weaver pay).
+   */
+  async findProductionCatalog(): Promise<ProductionCatalogItem[]> {
+    const rows = await this.prisma.batchSareeRow.findMany({
+      where: { sareeId: { not: null } },
+      select: {
+        sareeId: true,
+        batchId: true,
+        recipientType: true,
+        weaverId: true,
+        factoryLoomId: true,
+        designCode: true,
+        sareeTypeCode: true,
+        bulkOrderRef: true,
+        qcPassed: true,
+        receivedColor: true,
+        receivedWeight: true,
+        receivedPhotoUrl: true,
+        batch: { select: { createdAt: true } },
+        weaver: { select: { firstName: true, lastName: true } },
+        factoryLoom: { select: { code: true, loomNumber: true } },
+        sareeType: { select: { type: true } },
+        // select, never include — see findAll(): legacy photoUrl values can be
+        // multi-MB inline base64. The photo is fetched separately below.
+        qcRecords: {
+          orderBy: { qcDate: "desc" },
+          take: 1,
+          select: { id: true, result: true, qcDate: true, receivedDate: true, defects: true },
+        },
+      },
+    });
+
+    // Latest-QC photos, only where the photo is a stored file path. Filtering
+    // in the query keeps the legacy base64 blobs in the database.
+    const latestQcIds = rows.map((r) => r.qcRecords[0]?.id).filter((id): id is string => !!id);
+    const qcPhotos = latestQcIds.length
+      ? await this.prisma.qcRecord.findMany({
+          where: { id: { in: latestQcIds }, photoUrl: { not: null }, NOT: { photoUrl: { startsWith: "data:" } } },
+          select: { id: true, photoUrl: true },
+        })
+      : [];
+    const photoByQcId = new Map(qcPhotos.map((p) => [p.id, p.photoUrl]));
+
+    // Newest sale and newest return per saree decide whether it is sold now.
+    const [sales, returns] = await Promise.all([
+      this.prisma.saleRecord.findMany({
+        orderBy: { date: "desc" },
+        distinct: ["sareeId"],
+        select: { sareeId: true, date: true },
+      }),
+      this.prisma.returnRecord.findMany({
+        orderBy: { createdAt: "desc" },
+        distinct: ["sareeId"],
+        select: { sareeId: true, createdAt: true, restocked: true },
+      }),
+    ]);
+    const returnBySaree = new Map(returns.map((r) => [r.sareeId, r]));
+    const soldIds = new Set(
+      sales
+        .filter((s) => {
+          const ret = returnBySaree.get(s.sareeId);
+          return !(ret?.restocked === true && ret.createdAt > s.date);
+        })
+        .map((s) => s.sareeId),
+    );
+
+    return rows.map((row): ProductionCatalogItem => {
+      const qc = row.qcRecords[0];
+      const loomMatch = row.weaver ? row.sareeId!.match(/-L(\d+)-B/) : null;
+      const receiptPhoto = row.receivedPhotoUrl?.startsWith("data:") ? null : row.receivedPhotoUrl;
+      return {
+        sareeId: row.sareeId!,
+        batchId: row.batchId,
+        batchCreatedAt: row.batch.createdAt.toISOString(),
+        recipientType:
+          row.recipientType === "WEAVER" ? "weaver" : row.recipientType === "FACTORY_LOOM" ? "factoryLoom" : null,
+        weaverId: row.weaverId,
+        weaverName: row.weaver ? `${row.weaver.firstName} ${row.weaver.lastName}`.trim() : null,
+        weaverLoom: loomMatch ? Number(loomMatch[1]) : null,
+        factoryLoomId: row.factoryLoomId,
+        factoryLoomLabel: row.factoryLoom ? row.factoryLoom.code ?? row.factoryLoom.loomNumber : null,
+        designCode: row.designCode,
+        sareeTypeCode: row.sareeTypeCode,
+        sareeTypeName: row.sareeType?.type ?? row.sareeTypeCode,
+        bulkOrderRef: row.bulkOrderRef,
+        color: row.receivedColor,
+        weightG: row.receivedWeight != null ? Number(row.receivedWeight) : null,
+        photoUrl: receiptPhoto ?? (qc ? photoByQcId.get(qc.id) ?? null : null),
+        qcPassed: row.qcPassed,
+        sold: soldIds.has(row.sareeId!),
+        qc: qc
+          ? {
+              result: qc.result,
+              qcDate: qc.qcDate.toISOString(),
+              receivedDate: qc.receivedDate?.toISOString() ?? null,
+              defects: qc.defects,
+            }
+          : null,
+      };
+    });
   }
 }
