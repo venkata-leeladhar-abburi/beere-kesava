@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { List, Plus, Trash2 } from "lucide-react";
+import { Layers, PackageCheck, Plus, Trash2 } from "lucide-react";
 import { C, F, Card } from "./theme";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Button, CurrencyInput, NumberInput } from "../../../../shared/ui/primitives";
 import { MoneyAccessProvider } from "../../../../shared/ui/MoneyAccess";
 import { WeaverSareesSection, salePickRule } from "@/features/weavers";
 import { StepHeader, StepBody, FlowActions, ScanPanel, ACCENT_SALE } from "./flow-kit";
+import { ReceivedSareesPicker, useReceivedShopStock } from "./ReceivedSareesPicker";
 import {
   cartTotal, cartOriginalTotal, billDiscountAmount, type SaleLine, type DiscountMode, type BillDiscount,
 } from "./sale-cart";
@@ -36,6 +37,10 @@ interface ScanSareeStepProps {
   onNext: () => void;
 }
 
+/** Which list the stock picker shows: pieces this shop has received from a
+ *  dispatch (its own shelf), or the whole-company All Sarees table. */
+type StockSource = "received" | "all";
+
 const labelStyle = {
   fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted,
   letterSpacing: 0.5, textTransform: "uppercase" as const, marginBottom: 4,
@@ -60,6 +65,7 @@ export function ScanSareeStep({
 }: ScanSareeStepProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
+  const [source, setSource] = useState<StockSource>("received");
 
   // The stock list is the admin Inventory page's All Sarees table, rendered
   // with the counter-sale rule: a saree can be ticked when it is QC-passed (or
@@ -67,6 +73,15 @@ export function ScanSareeStep({
   // already on this bill — factory stock included, no SHOP dispatch needed.
   const inCart = useMemo(() => new Set(cart.map(l => l.id)), [cart]);
   const pickRule = useMemo(() => salePickRule(inCart), [inCart]);
+  const { available: receivedAvailable, isLoading: receivedLoading } = useReceivedShopStock(inCart);
+
+  // A tick only means something in the list it was made in — switching lists
+  // clears it, so nothing is added from rows the operator can no longer see.
+  const openList = (next: StockSource) => {
+    if (next !== source) setSelected(new Set());
+    setSource(next);
+    setShowSareeList(true);
+  };
 
   const toggleRow = (id: string) => setSelected(prev => {
     const next = new Set(prev);
@@ -250,12 +265,20 @@ export function ScanSareeStep({
         </div>
 
         {!showSareeList ? (
-          <Button
-            variant="secondary" fullWidth iconLeft={List} onClick={() => setShowSareeList(true)}
-            className="h-[50px] rounded-xl border-[1.5px] border-dashed border-[rgba(110,15,45,0.30)] bg-transparent text-[#6E0F2D]"
-          >
-            Browse All Sarees
-          </Button>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+            <Button
+              variant="secondary" fullWidth iconLeft={PackageCheck} onClick={() => openList("received")}
+              className="h-[50px] rounded-xl border-[1.5px] border-dashed border-[rgba(110,15,45,0.30)] bg-transparent text-[#6E0F2D]"
+            >
+              {receivedLoading ? "Received at This Shop" : `Received at This Shop (${receivedAvailable.length})`}
+            </Button>
+            <Button
+              variant="secondary" fullWidth iconLeft={Layers} onClick={() => openList("all")}
+              className="h-[50px] rounded-xl border-[1.5px] border-dashed border-[rgba(110,15,45,0.30)] bg-transparent text-[#6E0F2D]"
+            >
+              Browse All Sarees
+            </Button>
+          </div>
         ) : (
           <div
             style={{
@@ -263,10 +286,42 @@ export function ScanSareeStep({
               boxShadow: "0 8px 24px rgba(44,24,16,0.12)", overflow: "hidden",
             }}
           >
-            <div style={{ padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${C.bdr}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-              <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
-                All Sarees
-              </span>
+            <div style={{ padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${C.bdr}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" as const }}>
+              <div
+                role="tablist"
+                aria-label="Which sarees to list"
+                style={{ display: "inline-flex", gap: 4, padding: 3, borderRadius: 999, background: "rgba(110,15,45,0.06)", border: `1px solid ${C.bdr}`, maxWidth: "100%", overflowX: "auto" as const }}
+              >
+                {([
+                  { key: "received", label: "Received at this shop", count: receivedLoading ? undefined : receivedAvailable.length },
+                  { key: "all", label: "All sarees", count: undefined },
+                ] as const).map(o => {
+                  const on = source === o.key;
+                  return (
+                    <button
+                      key={o.key}
+                      type="button"
+                      role="tab"
+                      aria-selected={on}
+                      onClick={() => openList(o.key)}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" as const,
+                        padding: "6px 12px", borderRadius: 999, border: "none", cursor: "pointer",
+                        background: on ? C.burg : "transparent", color: on ? "#FFFDF9" : C.muted,
+                        fontFamily: F.u, fontSize: 12.5, fontWeight: 700,
+                      }}
+                    >
+                      {o.label}
+                      {o.count != null && (
+                        <span style={{
+                          fontFamily: F.m, fontSize: 11, fontWeight: 700, padding: "1px 6px", borderRadius: 999,
+                          background: on ? "rgba(255,255,255,0.22)" : "rgba(110,15,45,0.08)", color: on ? "#FFFDF9" : C.burg,
+                        }}>{o.count}</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
               <Button variant="link" onClick={() => setShowSareeList(false)} className="p-0 text-xs text-[#69635E] underline">
                 Hide
               </Button>
@@ -275,16 +330,20 @@ export function ScanSareeStep({
             {/* Money is never shown to shop staff — weaver pay, making charge
                 and QC deductions stay admin-only, same as the data behind it. */}
             <div style={{ padding: 14, overflowX: "auto" }}>
-              <MoneyAccessProvider allowed={false}>
-                <WeaverSareesSection
-                  ownerType="all"
-                  selectable
-                  selectedIds={selected}
-                  onToggleRow={toggleRow}
-                  onToggleAll={toggleAll}
-                  pickRule={pickRule}
-                />
-              </MoneyAccessProvider>
+              {source === "received" ? (
+                <ReceivedSareesPicker inCart={inCart} selectedIds={selected} onSelectionChange={setSelected} />
+              ) : (
+                <MoneyAccessProvider allowed={false}>
+                  <WeaverSareesSection
+                    ownerType="all"
+                    selectable
+                    selectedIds={selected}
+                    onToggleRow={toggleRow}
+                    onToggleAll={toggleAll}
+                    pickRule={pickRule}
+                  />
+                </MoneyAccessProvider>
+              )}
             </div>
 
             <div style={{ padding: "12px 14px", borderTop: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" as const }}>
