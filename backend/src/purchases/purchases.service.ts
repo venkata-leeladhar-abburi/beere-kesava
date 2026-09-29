@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
-import { Prisma, PurchaseDiscountType, PurchasePaymentStatus } from "../generated/prisma/client";
+import { Prisma, PurchaseDiscountType, PurchasePaymentStatus, SupplierReturnStatus } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreatePurchaseDto } from "./dto/create-purchase.dto";
@@ -20,7 +20,7 @@ const include = { supplier: true, sareeLines: true } satisfies Prisma.PurchaseIn
 const summarySareeLineSelect = {
   id: true, purchaseId: true, code: true, weight: true, sareeDate: true,
   sareeType: true, color: true, price: true, sellPercent: true, quantity: true,
-  finalAmount: true, notes: true, returnedQuantity: true,
+  finalAmount: true, notes: true, returnedQuantity: true, returnedPieceNos: true,
 } satisfies Prisma.PurchaseSareeLineSelect;
 const summaryInclude = {
   supplier: true,
@@ -119,7 +119,48 @@ function lineData(l: CreatePurchaseSareeLineDto, idx: number) {
     imageUrl: l.imageUrl,
     pieceImageUrls: l.pieceImageUrls ?? [],
     returnedQuantity: Math.min(l.returnedQuantity ?? 0, quantity),
+    returnedPieceNos: (l.returnedPieceNos ?? []).filter((n) => n >= 1 && n <= quantity),
   };
+}
+
+type StoredLine = { id: string; code: string; returnedQuantity: number; returnedPieceNos: number[] };
+
+export interface LinePlan {
+  kept: { existing: StoredLine; line: CreatePurchaseSareeLineDto; idx: number }[];
+  created: { line: CreatePurchaseSareeLineDto; idx: number }[];
+  removedIds: string[];
+  /** The submitted lines with each kept line's stored returned count/pieces. */
+  effective: CreatePurchaseSareeLineDto[];
+}
+
+/**
+ * Matches the lines an edit submits against the stored ones: by `id` when
+ * the client sent it, otherwise by line code (each code appears once per
+ * purchase). Unmatched submitted lines are new; unmatched stored lines were
+ * removed.
+ */
+export function planLineChanges(stored: StoredLine[], submitted: CreatePurchaseSareeLineDto[]): LinePlan {
+  const unmatched = new Map(stored.map((l) => [l.id, l]));
+  const kept: LinePlan["kept"] = [];
+  const created: LinePlan["created"] = [];
+  const effective: CreatePurchaseSareeLineDto[] = [];
+
+  submitted.forEach((line, idx) => {
+    let match = line.id ? unmatched.get(line.id) : undefined;
+    if (!match && line.code) {
+      match = [...unmatched.values()].find((l) => l.code === line.code);
+    }
+    if (match) {
+      unmatched.delete(match.id);
+      kept.push({ existing: match, line, idx });
+      effective.push({ ...line, returnedQuantity: match.returnedQuantity, returnedPieceNos: match.returnedPieceNos });
+    } else {
+      created.push({ line, idx });
+      effective.push(line);
+    }
+  });
+
+  return { kept, created, removedIds: [...unmatched.keys()], effective };
 }
 
 @Injectable()
@@ -216,6 +257,49 @@ export class PurchasesService {
     return purchase;
   }
 
+  /**
+   * Writes a planLineChanges result: removed lines are deleted (refused if
+   * any return was ever raised against them), kept lines are updated in
+   * place. New lines are created by the caller alongside the purchase update.
+   */
+  private async applyLineChanges(tx: Prisma.TransactionClient, purchaseId: string, plan: LinePlan) {
+    if (plan.removedIds.length > 0) {
+      const withReturns = await tx.supplierReturnRequest.findMany({
+        where: { sareeLineId: { in: plan.removedIds } },
+        select: { sareeLine: { select: { code: true } } },
+        distinct: ["sareeLineId"],
+      });
+      if (withReturns.length > 0) {
+        throw new BadRequestException(
+          `Can't remove ${withReturns.map((r) => r.sareeLine.code).join(", ")} — sarees on it have been returned to the supplier or are on a debit note.`,
+        );
+      }
+      await tx.purchaseSareeLine.deleteMany({ where: { id: { in: plan.removedIds }, purchaseId } });
+    }
+
+    if (plan.kept.length > 0) {
+      const pending = await tx.supplierReturnRequest.findMany({
+        where: { sareeLineId: { in: plan.kept.map((k) => k.existing.id) }, status: SupplierReturnStatus.PENDING },
+        select: { sareeLineId: true, quantity: true },
+      });
+      for (const { existing, line, idx } of plan.kept) {
+        const data = lineData(line, idx);
+        const onHold =
+          existing.returnedQuantity +
+          pending.filter((r) => r.sareeLineId === existing.id).reduce((sum, r) => sum + r.quantity, 0);
+        if (data.quantity < onHold) {
+          throw new BadRequestException(
+            `${existing.code} can't go below ${onHold} piece(s) — that many are returned or awaiting a return decision.`,
+          );
+        }
+        await tx.purchaseSareeLine.update({
+          where: { id: existing.id },
+          data: { ...data, returnedQuantity: existing.returnedQuantity, returnedPieceNos: existing.returnedPieceNos },
+        });
+      }
+    }
+  }
+
   async update(id: string, dto: UpdatePurchaseDto) {
     const existing = await this.findOne(id);
 
@@ -226,7 +310,16 @@ export class PurchasesService {
       }
     }
 
-    const sareeCount = dto.sarees ? piecesWithUs(dto.sarees) : dto.sareeCount;
+    // Lines are matched to the stored ones and updated in place (see
+    // planLineChanges) rather than deleted and recreated — return requests
+    // and debit notes point at a line's id, so recreating it both broke those
+    // links and was refused outright by the database once a return existed.
+    // Returned counts stay whatever the server holds: they only ever move
+    // through Supplier Returns, never through this form.
+    const linePlan = dto.sarees ? planLineChanges(existing.sareeLines, dto.sarees) : undefined;
+    const effectiveLines = linePlan?.effective;
+
+    const sareeCount = effectiveLines ? piecesWithUs(effectiveLines) : dto.sareeCount;
 
     // The bill is recalculated when the form sends its pricing (discount /
     // GST), or when the lines change on a purchase whose bill is already
@@ -238,7 +331,7 @@ export class PurchasesService {
     const recalcBill = pricingSent || (!!dto.sarees && existing.subtotal !== null);
     const bill = recalcBill
       ? computeBill(
-          dto.sarees ?? existing.sareeLines,
+          effectiveLines ?? existing.sareeLines,
           dto.discountType !== undefined ? dto.discountType : existing.discountType,
           dto.discountValue ?? Number(existing.discountValue),
           dto.gstPercent ?? Number(existing.gstPercent),
@@ -246,11 +339,8 @@ export class PurchasesService {
       : undefined;
 
     const updated = await this.prisma.$transaction(async (tx) => {
-      if (dto.sarees) {
-        // Full-replace: the edit form always resubmits its complete saree
-        // table, so the simplest correct semantics is to clear and recreate
-        // rather than diff line-by-line.
-        await tx.purchaseSareeLine.deleteMany({ where: { purchaseId: id } });
+      if (linePlan) {
+        await this.applyLineChanges(tx, id, linePlan);
       }
       return tx.purchase.update({
         where: { id },
@@ -266,7 +356,9 @@ export class PurchasesService {
           notes: dto.notes,
           invoiceFileName: dto.invoiceFileName,
           invoiceFileUrl: dto.invoiceFileUrl,
-          ...(dto.sarees ? { sareeLines: { create: dto.sarees.map((l, idx) => lineData(l, idx)) } } : {}),
+          ...(linePlan && linePlan.created.length > 0
+            ? { sareeLines: { create: linePlan.created.map(({ line, idx }) => lineData(line, idx)) } }
+            : {}),
         },
         include,
       });

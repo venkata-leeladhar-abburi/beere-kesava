@@ -8,6 +8,6 @@ export function nextRowUid() {
 }
 
 export function toSareeRow(s: SareeTag): SareeRow {
-  const { id: _id, ...rest } = s;
-  return { ...rest, _uid: nextRowUid() };
+  const { id, ...rest } = s;
+  return { ...rest, code: id || undefined, _uid: nextRowUid() };
 }

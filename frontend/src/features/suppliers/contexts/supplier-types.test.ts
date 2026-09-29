@@ -4,6 +4,7 @@ import {
   computePurchaseBill,
   supplierPrefix,
   buildSareeCode,
+  assignLineCodes,
   buildSareePieceCode,
   pieceCodeFromLineCode,
   serialFromLineCode,
@@ -51,6 +52,46 @@ describe("supplierPrefix / buildSareeCode", () => {
 
   it("falls back to NOINV when no invoice number is given", () => {
     expect(buildSareeCode("Ravi Silks", 1, "")).toBe("RAVI-NOINV-001");
+  });
+
+  it("uses the supplier's full short name when one is set", () => {
+    expect(supplierPrefix("Saboo Seide", "SabooSeide")).toBe("SABOOSEIDE");
+    expect(supplierPrefix("Saboo Seide", " Saboo Seide ")).toBe("SABOOSEIDE");
+    expect(supplierPrefix("J.M. Silks", "J.M-2")).toBe("JM2");
+    expect(buildSareeCode("Saboo Seide", 1, "3850", "SabooSeide")).toBe("SABOOSEIDE-3850-001");
+    expect(buildSareePieceCode("Saboo Seide", 2, 1, "3850", "SabooSeide")).toBe("SABOOSEIDE-3850-002-01");
+  });
+
+  it("falls back to the first 4 letters when the short name is blank", () => {
+    expect(supplierPrefix("Saboo Seide", "")).toBe("SABO");
+    expect(supplierPrefix("Saboo Seide", null)).toBe("SABO");
+    expect(supplierPrefix("Saboo Seide", " - ")).toBe("SABO");
+  });
+
+  it("keeps the serial readable from the end of a short-name code", () => {
+    expect(serialFromLineCode("SABOOSEIDE2-INV-12-004")).toBe("004");
+    expect(serialFromPieceCode("SABOOSEIDE2-INV-12-004-07")).toBe("004");
+  });
+});
+
+describe("assignLineCodes", () => {
+  it("numbers new lines by position", () => {
+    expect(assignLineCodes([{}, {}, {}], "Saboo Seide", "3850", "SabooSeide")).toEqual([
+      "SABOOSEIDE-3850-001", "SABOOSEIDE-3850-002", "SABOOSEIDE-3850-003",
+    ]);
+  });
+
+  it("keeps a saved line's stored code, even one from the old 4-letter prefix", () => {
+    expect(
+      assignLineCodes([{ code: "SABO-3850-001" }, { code: "SABO-3850-002" }, {}], "Saboo Seide", "3850", "SabooSeide"),
+    ).toEqual(["SABO-3850-001", "SABO-3850-002", "SABOOSEIDE-3850-003"]);
+  });
+
+  it("never reuses a code a kept line already holds", () => {
+    // Line 2 of 3 was removed, then a line added: a naive idx+1 would give 003 twice.
+    expect(
+      assignLineCodes([{ code: "RAVI-34-001" }, { code: "RAVI-34-003" }, {}, {}], "Ravi Silks", "34", "RAVI"),
+    ).toEqual(["RAVI-34-001", "RAVI-34-003", "RAVI-34-004", "RAVI-34-005"]);
   });
 });
 

@@ -9,6 +9,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { CreateDispatchDto } from "./dto/create-dispatch.dto";
 import { ListDispatchQueryDto } from "./dto/list-dispatch-query.dto";
 import { UpdateDispatchDto } from "./dto/update-dispatch.dto";
+import { returnedPieceSet } from "../purchases/returned-pieces";
 
 const include = {
   sarees: true,
@@ -115,7 +116,7 @@ export class DispatchService {
           const lines = await this.prisma.purchaseSareeLine.findMany({
             where: { code: { in: parsed.map((p) => p.lineCode) } },
             select: {
-              code: true, quantity: true, returnedQuantity: true, purchaseId: true,
+              code: true, quantity: true, returnedQuantity: true, returnedPieceNos: true, purchaseId: true,
               color: true, price: true, weight: true, sareeDate: true,
               purchase: { select: { date: true } },
             },
@@ -133,7 +134,7 @@ export class DispatchService {
           for (const p of parsed) {
             const line = lineByCode.get(p.lineCode);
             if (!line || p.pieceNo < 1 || p.pieceNo > line.quantity) continue;
-            if (p.pieceNo <= line.returnedQuantity) {
+            if (returnedPieceSet(line.quantity, line.returnedQuantity, line.returnedPieceNos).has(p.pieceNo)) {
               throw new BadRequestException(
                 `Saree ${p.sareeId} was returned to the supplier and cannot be dispatched`,
               );

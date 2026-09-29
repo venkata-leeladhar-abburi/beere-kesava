@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { sellingPerPiece } from "../sales/saree-details";
 import { PrismaService } from "../prisma/prisma.service";
+import { returnedPieceSet } from "../purchases/returned-pieces";
 
 @Injectable()
 export class ScanService {
@@ -150,10 +151,10 @@ export class ScanService {
     }
 
     const serialMatch = lineCode!.match(/-(\d{3,4})$/);
-    // A piece already sent back to the supplier is the first
-    // `returnedQuantity` positions of the line (frontend's expandSareePieces
-    // convention) — not available stock, whichever way this ends up used.
-    const returned = pieceNo <= line.returnedQuantity;
+    // A piece already sent back to the supplier is not available stock,
+    // whichever way this ends up used — see returnedPieceSet for which
+    // positions count as returned.
+    const returned = returnedPieceSet(line.quantity, line.returnedQuantity, line.returnedPieceNos).has(pieceNo);
 
     return {
       sareeId,

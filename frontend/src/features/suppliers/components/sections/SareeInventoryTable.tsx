@@ -7,7 +7,7 @@
 import React, { useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { motion } from "motion/react";
-import { ChevronRight, ChevronDown, Image as ImageIcon, Printer, Camera, Upload, Loader2, X as XIcon, ExternalLink } from "lucide-react";
+import { ChevronRight, ChevronDown, Image as ImageIcon, Printer, Camera, Upload, Loader2, X as XIcon, ExternalLink, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { resolveAssetUrl, uploadsApi } from "@/shared/api/uploads";
 import { T, F } from "../theme";
@@ -25,7 +25,9 @@ export type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string; s
  * return-request state (e.g. the External Purchases saree list) — Order
  * History omits this and gets the plain piece list it always has. */
 export interface PieceExtra {
-  badge?: { label: string; color: string; bg: string };
+  /** `onClick` turns the badge into a button, e.g. to open the debit note
+   * behind a "Return Pending" piece; `title` is its hover text. */
+  badge?: { label: string; color: string; bg: string; title?: string; onClick?: () => void };
   selectable?: boolean;
 }
 
@@ -323,7 +325,7 @@ export function SareeInventoryTable({
           const withUs = pieces.filter(p => !p.returned).length;
           return (
             <div style={{ padding: "10px 16px 16px 56px", background: "rgba(247,242,234,0.6)" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>
                   {withUs} saree{withUs !== 1 ? "s" : ""} under serial {s.id.split("-").pop()}
                   {pieces.length - withUs > 0 && (
@@ -342,7 +344,7 @@ export function SareeInventoryTable({
                   const pieceTarget: UploadTarget = { kind: "piece", row: s, pieceNo: p.pieceNo };
                   const pieceKey = targetKey(pieceTarget);
                   return (
-                    <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px" }}>
+                    <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 16, width: "fit-content", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         {(pieceSrc || onUploadPieceImage) && (
                           <div style={{ position: "relative", width: 36, height: 36, flexShrink: 0 }}>
@@ -386,11 +388,21 @@ export function SareeInventoryTable({
                         )}
                         <span style={mono(T.royalBurgundy, { fontWeight: 700 })}>{p.id}</span>
                         <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>pc {p.pieceNo}/{p.lineQuantity}</span>
-                        {extra?.badge && (
-                          <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: extra.badge.color, background: extra.badge.bg, borderRadius: 6, padding: "2px 7px", whiteSpace: "nowrap" as const }}>
+                        {extra?.badge && (extra.badge.onClick ? (
+                          <button
+                            type="button"
+                            onClick={extra.badge.onClick}
+                            title={extra.badge.title}
+                            style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: extra.badge.color, background: extra.badge.bg, border: `1px solid ${extra.badge.color}`, borderRadius: 6, padding: "1px 7px", whiteSpace: "nowrap" as const, cursor: "pointer" }}
+                          >
+                            <FileText size={10} />
+                            {extra.badge.label}
+                          </button>
+                        ) : (
+                          <span title={extra.badge.title} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: extra.badge.color, background: extra.badge.bg, borderRadius: 6, padding: "2px 7px", whiteSpace: "nowrap" as const }}>
                             {extra.badge.label}
                           </span>
-                        )}
+                        ))}
                       </div>
                       <Button variant="secondary" size="sm" iconLeft={Printer} onClick={() => setPrintSaree({ row: s, pieceId: p.id })}>
                         Print

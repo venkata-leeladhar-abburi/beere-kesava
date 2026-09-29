@@ -9,15 +9,14 @@ import { SareeRowCard } from "./SareeRowCard";
 /** "Saree Details" section of the Add/Edit Purchase form — per-saree line entry. */
 export function SareeDetailsEditor({
   sareeDetails,
-  supplier,
-  invoiceNumber,
+  lineCodes,
   addSareeRow,
   updateSareeRow,
   removeSareeRow,
 }: {
   sareeDetails: SareeRow[];
-  supplier: string;
-  invoiceNumber: string;
+  /** One saree code per row, same order — see assignLineCodes. */
+  lineCodes: string[];
   addSareeRow: () => void;
   updateSareeRow: (uid: string, patch: Partial<SareeRow>) => void;
   removeSareeRow: (uid: string) => void;
@@ -76,8 +75,7 @@ export function SareeDetailsEditor({
             key={s._uid}
             s={s}
             idx={idx}
-            supplier={supplier}
-            invoiceNumber={invoiceNumber}
+            code={lineCodes[idx]}
             updateSareeRow={updateSareeRow}
             removeSareeRow={removeSareeRow}
           />

@@ -26,8 +26,7 @@ function Harness({ initial }: { initial: Partial<SareeRow> }) {
       <SareeRowCard
         s={row}
         idx={0}
-        supplier="JJ SILKS"
-        invoiceNumber="NOINV-001"
+        code="JJSILKS-NOINV-001"
         updateSareeRow={(_uid, patch) => setRow((r) => ({ ...r, ...patch }))}
         removeSareeRow={vi.fn()}
       />

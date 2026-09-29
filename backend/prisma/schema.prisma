@@ -228,7 +228,13 @@ enum PurchaseRequestStatus {
 enum SupplierReturnStatus {
   PENDING
   APPROVED
+  // Some — not all — of the pieces asked for were approved. Only reached by
+  // deciding a debit note piece by piece (SupplierDebitNote).
+  PARTIALLY_APPROVED
   REJECTED
+  // Withdrawn before a decision (by whoever raised it, or an admin). Nothing
+  // left stock; the pieces it had reserved are free again.
+  CANCELLED
 }
 
 enum FinancialEntryKind {
@@ -413,6 +419,8 @@ model User {
   receivedGrnReceipts       GrnReceipt[]
   requestedSupplierReturns  SupplierReturnRequest[]  @relation("RequestedSupplierReturns")
   decidedSupplierReturns    SupplierReturnRequest[]  @relation("DecidedSupplierReturns")
+  requestedSupplierDebitNotes SupplierDebitNote[]    @relation("RequestedSupplierDebitNotes")
+  decidedSupplierDebitNotes   SupplierDebitNote[]    @relation("DecidedSupplierDebitNotes")
   receivedBatchSareeRows    BatchSareeRow[]          @relation("SareeReceivedBy")
   talliedBatchSareeRows     BatchSareeRow[]          @relation("SareeTalliedBy")
   createdBatches            Batch[]                  @relation("BatchCreatedBy")
@@ -1267,6 +1275,7 @@ model Supplier {
   purchaseRequests PurchaseRequest[]
   payments         SupplierPayment[]
   returnRequests   SupplierReturnRequest[]
+  debitNotes       SupplierDebitNote[]
 
   @@index([firmId])
 }
@@ -1385,6 +1394,7 @@ model Purchase {
   sarees                 Saree[]
   sareeLines             PurchaseSareeLine[]
   supplierReturnRequests SupplierReturnRequest[]
+  supplierDebitNotes     SupplierDebitNote[]
   payments               SupplierPayment[]
 
   @@index([supplierId])
@@ -1431,6 +1441,11 @@ model PurchaseSareeLine {
   // is tracked as a count rather than a per-piece flag; the frontend treats
   // the first `returnedQuantity` expanded pieces of the line as returned.
   returnedQuantity Int       @default(0)
+  // Which pieces (1-based positions) those returned ones are, when known —
+  // filled by approving a debit note, where specific pieces are picked. Can
+  // be shorter than returnedQuantity on lines returned before this existed;
+  // see returnedPieceSet() for how the gap is filled.
+  returnedPieceNos Int[]     @default([])
 
   supplierReturnRequests SupplierReturnRequest[]
 
@@ -1461,6 +1476,49 @@ model SupplierReturnRequest {
   decidedAt     DateTime?
   decisionNote  String?
   createdAt     DateTime             @default(now())
+  // The debit note this request was raised under. Null on requests created
+  // one line at a time before debit notes existed.
+  debitNoteId      String?
+  debitNote        SupplierDebitNote? @relation(fields: [debitNoteId], references: [id])
+  // Which physical pieces (1-based position within the line) were picked for
+  // return, and which of those were approved. Stock itself is still moved by
+  // count (PurchaseSareeLine.returnedQuantity); these are the record of what
+  // the debit note listed. Empty on legacy requests.
+  pieceNos         Int[]              @default([])
+  approvedPieceNos Int[]              @default([])
+  // Pieces actually approved — equals `quantity` on a full approval, 0 on a
+  // rejection, anything between on a partial one. Null while PENDING.
+  approvedQuantity Int?
+
+  @@index([status])
+  @@index([purchaseId])
+  @@index([supplierId])
+  @@index([debitNoteId])
+}
+
+// A debit note raised to a supplier when purchased sarees are sent back: one
+// document covering every piece picked in a single return, across however
+// many lines of the purchase they came from. Each line is a
+// SupplierReturnRequest, so stock reservation and approval keep working per
+// line; the note is the document and the unit an admin decides — piece by
+// piece, so some pieces can be accepted and the rest refused.
+model SupplierDebitNote {
+  id            String               @id // DN-<SupplierCode>-NNN
+  purchaseId    String
+  purchase      Purchase             @relation(fields: [purchaseId], references: [id])
+  supplierId    String
+  supplier      Supplier             @relation(fields: [supplierId], references: [id])
+  reason        String?
+  status        SupplierReturnStatus @default(PENDING)
+  requestedById String
+  requestedBy   User                 @relation("RequestedSupplierDebitNotes", fields: [requestedById], references: [id])
+  decidedById   String?
+  decidedBy     User?                @relation("DecidedSupplierDebitNotes", fields: [decidedById], references: [id])
+  decidedAt     DateTime?
+  decisionNote  String?
+  createdAt     DateTime             @default(now())
+
+  requests SupplierReturnRequest[]
 
   @@index([status])
   @@index([purchaseId])

@@ -1,7 +1,13 @@
-import { IsArray, IsDateString, IsInt, IsNumber, IsOptional, IsString, Min } from "class-validator";
+import { IsArray, IsDateString, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
 
 /** One saree line inside a purchase — mirrors the frontend's SareeTag. */
 export class CreatePurchaseSareeLineDto {
+  // The stored line's id, sent back on edits so the line is updated in place
+  // rather than recreated (see planLineChanges). Ignored on create.
+  @IsOptional()
+  @IsUUID()
+  id?: string;
+
   // Human-facing line code (e.g. RAVI-INV118-003), computed client-side via
   // buildSareeCode and passed through as-is; falls back to a generated
   // placeholder server-side if omitted.
@@ -68,4 +74,12 @@ export class CreatePurchaseSareeLineDto {
   @IsInt()
   @Min(0)
   returnedQuantity?: number;
+
+  // Which of those pieces were returned, when known (see
+  // PurchaseSareeLine.returnedPieceNos). Round-tripped for the same reason.
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  returnedPieceNos?: number[];
 }

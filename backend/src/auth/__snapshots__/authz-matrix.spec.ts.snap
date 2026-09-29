@@ -1884,6 +1884,47 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "roles": [
       "ACCOUNTANT",
     ],
+    "route": "POST /supplier-debit-notes",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /supplier-debit-notes",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /supplier-debit-notes/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "POST /supplier-debit-notes/:id/decide",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /supplier-debit-notes/:id/cancel",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
     "route": "POST /supplier-returns",
   },
   {

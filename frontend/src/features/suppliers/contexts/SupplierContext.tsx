@@ -67,6 +67,7 @@ function toSareeTag(l: BackendPurchaseSareeLine): SareeTag {
     imageUrl: resolveAssetUrl(l.imageUrl) ?? undefined,
     pieceImageUrls: l.pieceImageUrls?.map(u => resolveAssetUrl(u) ?? ""),
     returnedQuantity: l.returnedQuantity ?? 0,
+    returnedPieceNos: l.returnedPieceNos ?? [],
   };
 }
 
@@ -110,6 +111,7 @@ function toDiscountTypePayload(type: DiscountType | undefined, value: number | u
 
 function toSareeLinePayload(s: SareeTag): CreatePurchaseSareeLinePayload {
   return {
+    id: s.lineId,
     code: s.id,
     weight: s.weight || undefined,
     date: cleanDate(s.date),
@@ -125,6 +127,7 @@ function toSareeLinePayload(s: SareeTag): CreatePurchaseSareeLinePayload {
     // never survived a reload — the column exists on the backend DTO.
     pieceImageUrls: s.pieceImageUrls?.map(u => toStoredAssetPath(u) ?? ""),
     returnedQuantity: s.returnedQuantity ?? 0,
+    returnedPieceNos: s.returnedPieceNos ?? [],
   };
 }
 

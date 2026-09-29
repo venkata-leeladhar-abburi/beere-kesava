@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { purchasesApi, type BackendPurchase, type BackendPurchaseSareeLine } from "@/shared/api/purchases";
 import { resolveAssetUrl } from "@/shared/api/uploads";
-import { pieceCodeFromLineCode, computeFinalAmount } from "@/features/suppliers";
+import { pieceCodeFromLineCode, computeFinalAmount, returnedPieceSet } from "@/features/suppliers";
 import { useAuthGate } from "@/contexts/AuthContext";
 import { useFinishing } from "@/features/finishing";
 import { useSales, type UnifiedSaree } from "@/features/customers";
@@ -69,14 +69,12 @@ function purchaseRows(p: BackendPurchase, dispatchedSareeIds: Set<string>, whole
     const qty = Number(line.quantity) || 1;
     const price = Number(line.price) || 0;
     const sellPercent = Number(line.sellPercent) || 0;
-    const returnedQty = Math.min(Number(line.returnedQuantity) || 0, qty);
+    const returnedSet = returnedPieceSet(qty, Number(line.returnedQuantity) || 0, line.returnedPieceNos);
 
     return Array.from({ length: qty }, (_, i) => {
       const pieceNo = i + 1;
-      // A line only records HOW MANY pieces came back, not which — the first
-      // `returnedQuantity` pieces are treated as the returned ones, exactly as
-      // expandSareePieces does for the purchase screens.
-      const returned = pieceNo <= returnedQty;
+      // Same rule as expandSareePieces on the purchase screens.
+      const returned = returnedSet.has(pieceNo);
       return pieceRow({ p, line, pieceNo, qty, price, sellPercent, returned, supplier, location, paymentStatus, dispatchedSareeIds, wholesaleSareeIds, soldSareeIds });
     });
   });

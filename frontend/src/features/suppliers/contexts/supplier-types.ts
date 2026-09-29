@@ -29,6 +29,8 @@ export interface SareeTag {
   pieceImageUrls?: string[];
   /** How many of this line's `quantity` pieces have been returned to the supplier. */
   returnedQuantity?: number;
+  /** Which of them (1-based positions), when known — see returnedPieceSet. */
+  returnedPieceNos?: number[];
 }
 
 /** How a purchase discount was entered: a % of the subtotal or a flat ₹ amount. */
@@ -159,8 +161,16 @@ export function parseINR(s: string | undefined | null): number {
   return isNaN(n) ? 0 : n;
 }
 
-/** First 4 letters of the supplier name, used as the saree code prefix. */
-export function supplierPrefix(supplier: string): string {
+/**
+ * Saree code prefix for a supplier: its full short name (the one set on the
+ * supplier's profile, e.g. "SabooSeide" → SABOOSEIDE), uppercased with
+ * spaces and punctuation dropped so it stays one barcode-safe segment. A
+ * supplier with no short name — including one typed in manually on the
+ * purchase — falls back to the first 4 letters of its name.
+ */
+export function supplierPrefix(supplier: string, shortName?: string | null): string {
+  const short = (shortName || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+  if (short) return short;
   const letters = (supplier || "").replace(/[^A-Za-z]/g, "").toUpperCase();
   return (letters.slice(0, 4) || "SUPP").padEnd(4, "X");
 }
@@ -168,11 +178,42 @@ export function supplierPrefix(supplier: string): string {
 /**
  * Line code for one purchase serial: supplier prefix, then invoice number,
  * then the 3-digit serial for that line within the purchase — e.g. a
- * purchase from Ravi Silks against invoice 34, third line, is RAVI-34-003.
+ * purchase from Ravi Silks (short name RAVI) against invoice 34, third line,
+ * is RAVI-34-003.
  */
-export function buildSareeCode(supplier: string, serial: number, invoiceNumber: string): string {
+export function buildSareeCode(supplier: string, serial: number, invoiceNumber: string, shortName?: string | null): string {
   const inv = (invoiceNumber || "").trim() || "NOINV";
-  return `${supplierPrefix(supplier)}-${inv}-${String(serial).padStart(3, "0")}`;
+  return `${supplierPrefix(supplier, shortName)}-${inv}-${String(serial).padStart(3, "0")}`;
+}
+
+/**
+ * Codes for every line in the Add/Edit Purchase form, in order.
+ *
+ * A line already saved keeps its stored code: its barcodes may be printed
+ * and stuck on sarees, and the server matches an edited line back to the
+ * stored one by that code. Only new lines get a fresh code, numbered by
+ * position but skipping any code a kept line already holds — so removing
+ * line 2 of 3 and adding a line never hands out a second "-003".
+ */
+export function assignLineCodes(
+  rows: { code?: string }[],
+  supplier: string,
+  invoiceNumber: string,
+  shortName?: string | null,
+): string[] {
+  const taken = new Set(rows.flatMap(r => (r.code ? [r.code] : [])));
+  let serial = 0;
+  return rows.map((r, idx) => {
+    if (r.code) return r.code;
+    serial = Math.max(serial, idx);
+    let code: string;
+    do {
+      serial += 1;
+      code = buildSareeCode(supplier, serial, invoiceNumber, shortName);
+    } while (taken.has(code));
+    taken.add(code);
+    return code;
+  });
 }
 
 /**
@@ -184,8 +225,10 @@ export function buildSareeCode(supplier: string, serial: number, invoiceNumber: 
  *   line   RAVI-34-003
  *   piece  RAVI-34-003-01, RAVI-34-003-02, …
  */
-export function buildSareePieceCode(supplier: string, serial: number, pieceNo: number, invoiceNumber: string): string {
-  return pieceCodeFromLineCode(buildSareeCode(supplier, serial, invoiceNumber), pieceNo);
+export function buildSareePieceCode(
+  supplier: string, serial: number, pieceNo: number, invoiceNumber: string, shortName?: string | null,
+): string {
+  return pieceCodeFromLineCode(buildSareeCode(supplier, serial, invoiceNumber, shortName), pieceNo);
 }
 
 /** Same append, but starting from an already-built line code. */
@@ -313,6 +356,30 @@ export interface SareePiece extends SareeTag {
 }
 
 /**
+ * Which pieces of a line have gone back to the supplier.
+ *
+ * `returnedPieceNos` names them when a debit note picked specific pieces.
+ * Lines returned before that only carry a count, and the convention for
+ * those is "the first N pieces" — so any count not covered by named pieces
+ * is filled from the lowest positions not already named. The backend's
+ * returnedPieceSet (purchases/returned-pieces.ts) applies the same rule.
+ */
+export function returnedPieceSet(
+  quantity: number,
+  returnedQuantity: number,
+  returnedPieceNos: readonly number[] = [],
+): Set<number> {
+  const count = Math.min(Math.max(Number(returnedQuantity) || 0, 0), quantity);
+  const set = new Set<number>();
+  for (const n of returnedPieceNos) {
+    if (set.size >= count) break;
+    if (n >= 1 && n <= quantity) set.add(n);
+  }
+  for (let n = 1; set.size < count && n <= quantity; n++) set.add(n);
+  return set;
+}
+
+/**
  * Expand purchase lines into individual sarees — one row per physical piece,
  * each with its own code. Money is stated per piece.
  */
@@ -321,7 +388,7 @@ export function expandSareePieces<T extends SareeTag>(sarees: T[]): (T & SareePi
     const qty = Number(s.quantity) || 1;
     const price = Number(s.price) || 0;
     const sellPercent = Number(s.sellPercent) || 0;
-    const returnedQty = Math.min(Number(s.returnedQuantity) || 0, qty);
+    const returnedSet = returnedPieceSet(qty, Number(s.returnedQuantity) || 0, s.returnedPieceNos);
     return Array.from({ length: qty }, (_, i) => ({
       ...s,
       id: pieceCodeFromLineCode(s.id, i + 1),
@@ -335,12 +402,11 @@ export function expandSareePieces<T extends SareeTag>(sarees: T[]): (T & SareePi
       // photo is not this physical piece's photo. Each piece is uploaded on
       // its own, and an un-photographed piece shows the empty placeholder.
       imageUrl: s.pieceImageUrls?.[i] || undefined,
-      // The line only tracks *how many* pieces came back, not which — treat
-      // the first `returnedQuantity` pieces of the line as the returned ones.
-      returned: i + 1 <= returnedQty,
+      returned: returnedSet.has(i + 1),
       // Restated per piece so money helpers net this piece out on its own
       // rather than reading the whole line's returned count against qty 1.
-      returnedQuantity: i + 1 <= returnedQty ? 1 : 0,
+      returnedQuantity: returnedSet.has(i + 1) ? 1 : 0,
+      returnedPieceNos: undefined,
     }));
   });
 }

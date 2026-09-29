@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { X, Printer, Undo2 } from "lucide-react";
+import { X, Printer, Undo2, FileText } from "lucide-react";
+import { toast } from "sonner";
 import {
   Purchase,
   lineProfit, purchaseTotals, expandSareePieces, withPieceImage, serialFromPieceCode, formatSellPercent,
+  pieceCodeFromLineCode,
   SareeInventoryTable, type PieceExtra,
   useSuppliers,
 } from "@/features/suppliers";
@@ -12,13 +14,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useFinishing } from "@/features/finishing";
 import { useSales } from "@/features/customers";
 import { STOPGAP_ACTING_USER_ID } from "@/shared/api/purchase-requests";
-import { supplierReturnsApi } from "@/shared/api/supplier-returns";
+import { supplierReturnsApi, supplierDebitNotesApi } from "@/shared/api/supplier-returns";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { T, F } from "../theme";
 import { Button, IconButton, Textarea } from "../../../../../shared/ui/primitives";
 import { Modal } from "../../../../../shared/ui/overlay";
 import { useDocument } from "../../../../../shared/ui/document";
 import { usePrintSareeTags, type SareeTagData } from "@/features/weavers";
+import { DebitNoteModal, DEBIT_NOTE_STATUS_STYLE } from "../../modals/DebitNoteModal";
 
 /** Full saree/barcode breakdown for one purchase — grouped by serial number
  * (one row per purchase line), matching the Suppliers → Order History view,
@@ -50,24 +53,72 @@ export function SareeListModal({
     queryKey: ["supplier-returns", "pending", purchase.id],
     queryFn: () => supplierReturnsApi.list({ status: "PENDING" }),
   });
+  // Debit notes raised against this purchase, newest first — listed under
+  // the saree table so the document is one click away from here too.
+  const {
+    data: notesRes,
+    isError: notesError,
+    isFetching: notesFetching,
+    refetch: refetchNotes,
+  } = useQuery({
+    queryKey: ["supplier-debit-notes", "purchase", purchase.id],
+    queryFn: () => supplierDebitNotesApi.list({ purchaseId: purchase.id }),
+  });
+  const debitNotes = useMemo(() => notesRes?.items ?? [], [notesRes]);
+  const [openNoteId, setOpenNoteId] = useState<string | null>(null);
+
+  // Which debit note each physical piece sits on, so its "Return Pending" /
+  // "Returned" badge can open that note. A pending note names the pieces it
+  // asks for; a decided one only the pieces actually accepted. A pending note
+  // wins over an older decided one for the same piece. Rejected and cancelled
+  // notes moved nothing, so their pieces aren't linked.
+  const noteIdByPieceId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const note of debitNotes) {
+      const pending = note.status === "PENDING";
+      if (!pending && note.status !== "APPROVED" && note.status !== "PARTIALLY_APPROVED") continue;
+      for (const r of note.requests) {
+        for (const n of pending ? r.pieceNos : r.approvedPieceNos) {
+          const pieceId = pieceCodeFromLineCode(r.sareeLine.code, n);
+          if (pending || !map.has(pieceId)) map.set(pieceId, note.id);
+        }
+      }
+    }
+    return map;
+  }, [debitNotes]);
+
+  // Pending pieces per line. A debit note names its pieces; an older
+  // one-line request only carries a count, which is filled from the lowest
+  // positions still with us (the same convention returned pieces use).
   const pendingByLineId = useMemo(() => {
-    const map = new Map<string, number>();
+    const map = new Map<string, { named: Set<number>; count: number }>();
     (pendingRes?.items ?? [])
       .filter(r => r.purchaseId === purchase.id)
-      .forEach(r => map.set(r.sareeLineId, (map.get(r.sareeLineId) ?? 0) + r.quantity));
+      .forEach(r => {
+        const entry = map.get(r.sareeLineId) ?? { named: new Set<number>(), count: 0 };
+        (r.pieceNos ?? []).forEach(n => entry.named.add(n));
+        entry.count += r.quantity;
+        map.set(r.sareeLineId, entry);
+      });
     return map;
   }, [pendingRes, purchase.id]);
 
-  // One row per physical saree — a line bought in bulk is tagged piece by
-  // piece. Pending pieces are treated the same way expandSareePieces already
-  // treats returned ones: the first N (by position) of a line are pending,
-  // since the backend tracks a per-line count rather than a per-piece flag.
+  // One row per physical saree — a line bought in bulk is tagged piece by piece.
   const pieces = useMemo(() => {
-    return expandSareePieces(purchase.sarees).map(s => {
-      const pendingQty = s.lineId ? pendingByLineId.get(s.lineId) ?? 0 : 0;
-      const returnedQty = Number(s.returnedQuantity) || 0;
-      return { ...s, pending: !s.returned && s.pieceNo <= returnedQty + pendingQty };
-    });
+    const expanded = expandSareePieces(purchase.sarees);
+    const pendingIds = new Set<string>();
+    for (const s of purchase.sarees) {
+      const entry = s.lineId ? pendingByLineId.get(s.lineId) : undefined;
+      if (!entry) continue;
+      const linePieces = expanded.filter(p => p.lineCode === s.id && !p.returned);
+      const pending = new Set([...entry.named].filter(n => linePieces.some(p => p.pieceNo === n)));
+      for (const p of linePieces) {
+        if (pending.size >= entry.count) break;
+        pending.add(p.pieceNo);
+      }
+      linePieces.filter(p => pending.has(p.pieceNo)).forEach(p => pendingIds.add(p.id));
+    }
+    return expanded.map(s => ({ ...s, pending: pendingIds.has(s.id) }));
   }, [purchase.sarees, pendingByLineId]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [reason, setReason] = useState("");
@@ -76,31 +127,38 @@ export function SareeListModal({
   // Only pieces with nothing already in motion can be selected.
   const selectedReturnablePieces = pieces.filter(s => selectedIds.has(s.id) && !s.returned && !s.pending);
 
-  // Raises one SupplierReturnRequest per affected line (PENDING — nothing
-  // leaves the purchase until an admin approves it in Supplier Returns).
-  // Previously this bumped PurchaseSareeLine.returnedQuantity immediately via
-  // a full purchase rewrite, with no approval step and no separate record.
+  // Raises ONE debit note covering every selected piece — the backend opens a
+  // PENDING SupplierReturnRequest per affected line under it. Nothing leaves
+  // the purchase until an admin approves the note (piece by piece) in
+  // Supplier Returns. The note's document opens straight away.
   const handleReturnSelected = async () => {
     if (selectedReturnablePieces.length === 0) return;
-    const countByLineId = new Map<string, number>();
+    const piecesByLineId = new Map<string, number[]>();
     selectedReturnablePieces.forEach(s => {
       if (!s.lineId) return;
-      countByLineId.set(s.lineId, (countByLineId.get(s.lineId) ?? 0) + 1);
+      piecesByLineId.set(s.lineId, [...(piecesByLineId.get(s.lineId) ?? []), s.pieceNo]);
     });
+    if (piecesByLineId.size === 0) {
+      setSubmitError("These sarees aren't saved against a purchase line yet — reopen the purchase and try again.");
+      return;
+    }
     setSubmitting(true);
     setSubmitError("");
     try {
-      await Promise.all(
-        [...countByLineId].map(([sareeLineId, quantity]) =>
-          supplierReturnsApi.create(
-            { purchaseId: purchase.id, sareeLineId, quantity, reason: reason.trim() || undefined },
-            requestedById,
-          ),
-        ),
+      const note = await supplierDebitNotesApi.create(
+        {
+          purchaseId: purchase.id,
+          lines: [...piecesByLineId].map(([sareeLineId, pieceNos]) => ({ sareeLineId, pieceNos })),
+          reason: reason.trim() || undefined,
+        },
+        requestedById,
       );
       setSelectedIds(new Set());
       setReason("");
       void qc.invalidateQueries({ queryKey: ["supplier-returns"] });
+      void qc.invalidateQueries({ queryKey: ["supplier-debit-notes"] });
+      toast.success(`Debit note ${note.id} raised`, { description: "Sent to an admin for approval." });
+      setOpenNoteId(note.id);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Could not request this return. Please try again.");
     } finally {
@@ -116,8 +174,17 @@ export function SareeListModal({
     if (!s) return undefined;
     if (soldSareeIds.has(pieceId)) return { badge: { label: "Sold", color: T.taupe, bg: "rgba(105,99,94,0.10)" }, selectable: false };
     if (dispatchedSareeIds.has(pieceId)) return { badge: { label: "Dispatched", color: T.royalBurgundy, bg: "rgba(110,15,45,0.08)" }, selectable: false };
-    if (s.returned) return { badge: { label: "Returned", color: T.crimson, bg: "rgba(192,57,43,0.08)" }, selectable: false };
-    if (s.pending) return { badge: { label: "Return Pending", color: T.antiqueGold, bg: "rgba(200,155,71,0.10)" }, selectable: false };
+    // A returned / pending piece's badge opens the debit note it's on. One
+    // returned before debit notes existed has none — its hover text says
+    // where to find it instead.
+    const noteId = noteIdByPieceId.get(pieceId);
+    const noteLink = noteId
+      ? { title: `Open debit note ${noteId}`, onClick: () => setOpenNoteId(noteId) }
+      : notesRes
+        ? { title: "Raised before debit notes — no document. Find it in Supplier Returns." }
+        : {};
+    if (s.returned) return { badge: { label: "Returned", color: T.crimson, bg: "rgba(192,57,43,0.08)", ...noteLink }, selectable: false };
+    if (s.pending) return { badge: { label: "Return Pending", color: T.antiqueGold, bg: "rgba(200,155,71,0.10)", ...noteLink }, selectable: false };
     return { badge: { label: "With Us", color: T.green, bg: "rgba(30,102,64,0.08)" }, selectable: true };
   };
 
@@ -324,6 +391,44 @@ export function SareeListModal({
             </div>
           )}
 
+          {/* A failed lookup used to hide the debit-note row silently, which
+            * looks exactly like "no notes raised". Say so instead. */}
+          {notesError && (
+            <div style={{ padding: "10px 24px 0", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, fontFamily: F.ui, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.20)", borderRadius: 8, padding: "8px 12px" }}>
+                <span>Couldn't load the debit notes for this purchase.</span>
+                <Button variant="secondary" size="sm" onClick={() => void refetchNotes()} disabled={notesFetching}>
+                  {notesFetching ? "Retrying…" : "Retry"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {debitNotes.length > 0 && (
+            <div style={{ padding: "10px 24px 0", flexShrink: 0, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>Debit notes:</span>
+              {debitNotes.map(n => {
+                const st = DEBIT_NOTE_STATUS_STYLE[n.status];
+                return (
+                  <button
+                    key={n.id}
+                    type="button"
+                    onClick={() => setOpenNoteId(n.id)}
+                    title={`Open debit note ${n.id}`}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer",
+                      background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 999, padding: "4px 10px",
+                    }}
+                  >
+                    <FileText size={13} color={T.royalBurgundy} />
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{n.id}</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: st.color, background: st.bg, borderRadius: 6, padding: "1px 6px" }}>{st.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           <div
             style={{
               padding: "14px 24px",
@@ -343,8 +448,8 @@ export function SareeListModal({
                 className="rounded-full"
               >
                 {submitting
-                  ? "Requesting…"
-                  : `Request Return of ${selectedReturnablePieces.length} Selected Saree${selectedReturnablePieces.length !== 1 ? "s" : ""}`}
+                  ? "Raising debit note…"
+                  : `Raise Debit Note · Return ${selectedReturnablePieces.length} Saree${selectedReturnablePieces.length !== 1 ? "s" : ""}`}
               </Button>
             )}
             <Button
@@ -373,6 +478,7 @@ export function SareeListModal({
             </Button>
           </div>
       </div>
+      {openNoteId && <DebitNoteModal noteId={openNoteId} onClose={() => setOpenNoteId(null)} />}
     </Modal>
   );
 }

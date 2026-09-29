@@ -76,17 +76,38 @@ export class SupplierReturnsService {
       purchase.supplier.code ?? businessSegment(purchase.supplier.name, "Supplier");
     const id = await this.idGenerator.nextScoped("RR", supplierSegment);
 
-    const request = await this.prisma.supplierReturnRequest.create({
-      data: {
-        id,
-        purchaseId: dto.purchaseId,
-        supplierId: purchase.supplierId,
-        sareeLineId: dto.sareeLineId,
-        quantity: dto.quantity,
-        reason: dto.reason,
-        requestedById: dto.requestedById,
-      },
-      include,
+    const supplierId = purchase.supplierId;
+    const request = await this.prisma.$transaction(async (tx) => {
+      // Re-checked under a row lock on the line: two requests raised at the
+      // same moment both pass the check above, and without the lock both
+      // could reserve the last pieces.
+      await tx.$queryRaw`SELECT id FROM "PurchaseSareeLine" WHERE id = ${dto.sareeLineId} FOR UPDATE`;
+      const [lockedLine, lockedPending] = await Promise.all([
+        tx.purchaseSareeLine.findUnique({ where: { id: dto.sareeLineId } }),
+        tx.supplierReturnRequest.aggregate({
+          where: { sareeLineId: dto.sareeLineId, status: SupplierReturnStatus.PENDING },
+          _sum: { quantity: true },
+        }),
+      ]);
+      const stillAvailable = lockedLine
+        ? lockedLine.quantity - lockedLine.returnedQuantity - (lockedPending._sum.quantity ?? 0)
+        : 0;
+      if (dto.quantity > stillAvailable) {
+        throw new BadRequestException(`Only ${stillAvailable} piece(s) of this line are available to return.`);
+      }
+
+      return tx.supplierReturnRequest.create({
+        data: {
+          id,
+          purchaseId: dto.purchaseId,
+          supplierId,
+          sareeLineId: dto.sareeLineId,
+          quantity: dto.quantity,
+          reason: dto.reason,
+          requestedById: dto.requestedById,
+        },
+        include,
+      });
     });
 
     await this.auditLog.recordAction({
@@ -158,27 +179,49 @@ export class SupplierReturnsService {
       );
     }
 
+    // A request raised under a debit note is settled with the note, piece by
+    // piece — deciding it alone would leave the note's status stale.
+    if (request.debitNoteId) {
+      throw new BadRequestException(
+        `Return request ${id} is part of debit note ${request.debitNoteId} — decide it from the debit note.`,
+      );
+    }
+
     const decider = await this.prisma.user.findUnique({ where: { id: dto.decidedById } });
     if (!decider) {
       throw new NotFoundException(`User ${dto.decidedById} not found`);
     }
 
     const updated = await this.prisma.$transaction(async (tx) => {
+      // Claim the request only if it is still PENDING — two admins deciding
+      // at once both pass the check above, and without this the second one
+      // would move the stock a second time.
+      const claimed = await tx.supplierReturnRequest.updateMany({
+        where: { id, status: SupplierReturnStatus.PENDING },
+        data: {
+          status: dto.decision,
+          decidedById: dto.decidedById,
+          decidedAt: new Date(),
+          decisionNote: dto.decisionNote,
+          approvedQuantity: dto.decision === SupplierReturnStatus.APPROVED ? request.quantity : 0,
+        },
+      });
+      if (claimed.count === 0) {
+        throw new BadRequestException(`Supplier return request ${id} has already been decided.`);
+      }
+
       if (dto.decision === SupplierReturnStatus.APPROVED) {
-        const line = await tx.purchaseSareeLine.findUnique({ where: { id: request.sareeLineId } });
-        if (!line) {
-          throw new NotFoundException(`Saree line ${request.sareeLineId} not found`);
-        }
-        const nextReturned = line.returnedQuantity + request.quantity;
-        if (nextReturned > line.quantity) {
+        // Atomic increment, so concurrent approvals on one line can't
+        // overwrite each other's count.
+        const line = await tx.purchaseSareeLine.update({
+          where: { id: request.sareeLineId },
+          data: { returnedQuantity: { increment: request.quantity } },
+        });
+        if (line.returnedQuantity > line.quantity) {
           throw new BadRequestException(
-            `Approving this would return ${nextReturned} of ${line.quantity} pieces on the line — more than exist.`,
+            `Approving this would return ${line.returnedQuantity} of ${line.quantity} pieces on the line — more than exist.`,
           );
         }
-        await tx.purchaseSareeLine.update({
-          where: { id: request.sareeLineId },
-          data: { returnedQuantity: nextReturned },
-        });
         // Purchase.sareeCount is pieces still with us — without this it kept
         // counting the returned pieces while the barcode print dropped them.
         await tx.purchase.update({
@@ -187,16 +230,7 @@ export class SupplierReturnsService {
         });
       }
 
-      return tx.supplierReturnRequest.update({
-        where: { id },
-        data: {
-          status: dto.decision,
-          decidedById: dto.decidedById,
-          decidedAt: new Date(),
-          decisionNote: dto.decisionNote,
-        },
-        include,
-      });
+      return tx.supplierReturnRequest.findUniqueOrThrow({ where: { id }, include });
     });
 
     await this.auditLog.recordAction({

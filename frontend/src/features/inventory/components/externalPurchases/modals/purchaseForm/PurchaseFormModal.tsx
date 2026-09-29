@@ -3,7 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X, Save } from "lucide-react";
 import {
   useSuppliers, SareeTag, parseINR,
-  buildSareeCode, computeFinalAmount, computePurchaseBill, purchaseTotals,
+  assignLineCodes, computeFinalAmount, computePurchaseBill, purchaseTotals,
 } from "@/features/suppliers";
 import { T, F } from "../../theme";
 import { Button, IconButton } from "../../../../../../shared/ui/primitives";
@@ -79,6 +79,10 @@ export function PurchaseFormModal({
     });
   };
 
+  // Recomputed every render so a new line's code follows the supplier and
+  // invoice number live as they're typed; saved lines keep their stored code.
+  const lineCodes = assignLineCodes(sareeDetails, form.supplier, form.invoiceNumber, selectedSupplier?.shortName);
+
   const totals = purchaseTotals(sareeDetails);
   const pieceCount = totals.pieces;
   const bill = computePurchaseBill(
@@ -104,7 +108,9 @@ export function PurchaseFormModal({
       const sellPercent = Number(s.sellPercent) || 0;
       const quantity = Number(s.quantity) || 1;
       return {
-        id: buildSareeCode(form.supplier, idx + 1, form.invoiceNumber),
+        id: lineCodes[idx],
+        // Sent back so the server updates the saved line in place.
+        lineId: s.lineId,
         weight: s.weight,
         date: s.date,
         sareeType: s.sareeType,
@@ -115,6 +121,9 @@ export function PurchaseFormModal({
         finalAmount: computeFinalAmount(price, sellPercent, quantity),
         notes: s.notes,
         imageUrl: s.imageUrl,
+        // Carried through untouched — the form doesn't edit piece photos, and
+        // leaving them out would clear them on save.
+        pieceImageUrls: s.pieceImageUrls,
       };
     });
 
@@ -164,8 +173,7 @@ export function PurchaseFormModal({
 
         <SareeDetailsEditor
           sareeDetails={sareeDetails}
-          supplier={form.supplier}
-          invoiceNumber={form.invoiceNumber}
+          lineCodes={lineCodes}
           addSareeRow={addSareeRow}
           updateSareeRow={updateSareeRow}
           removeSareeRow={removeSareeRow}

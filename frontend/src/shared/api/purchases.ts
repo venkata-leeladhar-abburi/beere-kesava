@@ -27,6 +27,8 @@ export interface BackendPurchaseSareeLine {
   imageUrl: string | null;
   pieceImageUrls: string[];
   returnedQuantity: number;
+  /** Which pieces were returned, when known — see returnedPieceSet. */
+  returnedPieceNos?: number[];
 }
 
 export interface BackendPurchase {
@@ -66,6 +68,8 @@ interface PaginatedResponse<T> {
 }
 
 export interface CreatePurchaseSareeLinePayload {
+  /** The stored line's id — sent on edits so the line is updated in place, not recreated. */
+  id?: string;
   code?: string;
   weight?: string;
   date?: string;
@@ -79,6 +83,7 @@ export interface CreatePurchaseSareeLinePayload {
   imageUrl?: string;
   pieceImageUrls?: string[];
   returnedQuantity?: number;
+  returnedPieceNos?: number[];
 }
 
 export interface CreatePurchasePayload {

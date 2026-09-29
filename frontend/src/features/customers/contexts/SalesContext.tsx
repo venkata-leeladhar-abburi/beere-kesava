@@ -10,7 +10,7 @@ import { SEED_PURCHASE_SUMMARIES } from "./sales-seed";
 import { inventoryApi } from "../../../shared/api/inventory";
 import { salesApi } from "../../../shared/api/sales";
 import { purchasesApi, type BackendPurchase } from "../../../shared/api/purchases";
-import { pieceCodeFromLineCode, computeFinalAmount } from "@/features/suppliers";
+import { pieceCodeFromLineCode, computeFinalAmount, returnedPieceSet } from "@/features/suppliers";
 import { useAuthGate } from "../../../contexts/AuthContext";
 
 const PURCHASE_STATUS: Record<BackendPurchase["status"], PurchaseSummary["status"]> = {
@@ -79,17 +79,15 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
         const qty = Number(line.quantity) || 1;
         const price = Number(line.price) || 0;
         const sellPercent = Number(line.sellPercent) || 0;
-        const returnedQty = Math.min(Number(line.returnedQuantity) || 0, qty);
+        const returnedSet = returnedPieceSet(qty, Number(line.returnedQuantity) || 0, line.returnedPieceNos);
 
         return Array.from({ length: qty }, (_, i): UnifiedSaree => {
           const pieceNo = i + 1;
           const sareeId = pieceCodeFromLineCode(line.code, pieceNo);
           const sale = salesMap.get(sareeId);
           const ret = returnsMap.get(sareeId);
-          // A line only records HOW MANY pieces came back, not which — the
-          // first `returnedQuantity` pieces are treated as the returned
-          // ones, matching useExternalPurchaseRows.ts and the purchase screens.
-          const returnedToSupplier = pieceNo <= returnedQty;
+          // Same rule as useExternalPurchaseRows.ts and the purchase screens.
+          const returnedToSupplier = returnedSet.has(pieceNo);
           const status: SareeSaleStatus = ret ? "returned"
             : sale ? (sale.channel === "WHOLESALE" ? "wholesale" : "retail")
             : "unsold";

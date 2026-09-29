@@ -333,8 +333,15 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
   SUPPLIER_RETURN_DECIDED: {
     category: "material",
     priority: "info",
-    title: p => `Return ${p.decision === "APPROVED" ? "Approved" : "Rejected"}${suffix(p.supplierName)}`,
-    body: p => withReason(`${pieces(p.quantity)}.`, p.decisionNote),
+    title: p =>
+      `Return ${p.decision === "APPROVED" ? "Approved" : p.decision === "PARTIALLY_APPROVED" ? "Partly Approved" : "Rejected"}${suffix(p.supplierName)}`,
+    body: p =>
+      withReason(
+        p.decision === "PARTIALLY_APPROVED" && p.approvedQuantity != null
+          ? `${num(p.approvedQuantity)} of ${pieces(p.quantity)} approved.`
+          : `${pieces(p.quantity)}.`,
+        p.decisionNote,
+      ),
   },
 
   VENDOR_ADDED: {

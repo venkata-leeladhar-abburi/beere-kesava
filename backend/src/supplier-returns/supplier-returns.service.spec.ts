@@ -25,13 +25,23 @@ describe("SupplierReturnsService", () => {
     prisma = {
       user: { findUnique: jest.fn().mockResolvedValue({ id: "user-1" }) },
       purchase: { findUnique: jest.fn().mockResolvedValue(purchase), update: jest.fn() },
-      purchaseSareeLine: { findUnique: jest.fn().mockResolvedValue(line), update: jest.fn() },
+      purchaseSareeLine: {
+        findUnique: jest.fn().mockResolvedValue(line),
+        // The row after an atomic `increment`, as Postgres would return it.
+        update: jest.fn().mockImplementation(({ data }) => ({
+          ...line,
+          returnedQuantity: line.returnedQuantity + (data.returnedQuantity?.increment ?? 0),
+        })),
+      },
       supplierReturnRequest: {
         aggregate: jest.fn().mockResolvedValue({ _sum: { quantity: 0 } }),
         create: jest.fn().mockImplementation(({ data }) => ({ ...data, supplier: purchase.supplier, purchase, sareeLine: line })),
         findUnique: jest.fn(),
+        findUniqueOrThrow: jest.fn(),
         update: jest.fn(),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
+      $queryRaw: jest.fn().mockResolvedValue([]),
       $transaction: jest.fn().mockImplementation((fn: any) => fn(prisma)),
     };
     idGenerator = { nextScoped: jest.fn().mockResolvedValue("RR-RaviSilks-001-001") };
@@ -81,6 +91,12 @@ describe("SupplierReturnsService", () => {
       expect(prisma.supplierReturnRequest.create).not.toHaveBeenCalled();
     });
 
+    it("re-checks availability under a row lock on the line", async () => {
+      await service.create(createDto());
+
+      expect(prisma.$queryRaw).toHaveBeenCalled();
+    });
+
     it("allows exactly the remaining available quantity", async () => {
       prisma.supplierReturnRequest.aggregate.mockResolvedValue({ _sum: { quantity: 5 } });
 
@@ -113,8 +129,29 @@ describe("SupplierReturnsService", () => {
 
       expect(prisma.purchaseSareeLine.update).toHaveBeenCalledWith({
         where: { id: "line-1" },
-        data: { returnedQuantity: 5 }, // 2 + 3
+        data: { returnedQuantity: { increment: 3 } },
       });
+    });
+
+    it("only claims the request while it is still PENDING", async () => {
+      await service.decide("RR-RaviSilks-001-001", decideDto());
+
+      expect(prisma.supplierReturnRequest.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: "RR-RaviSilks-001-001", status: "PENDING" } }),
+      );
+    });
+
+    it("moves no stock when a concurrent decision got there first", async () => {
+      prisma.supplierReturnRequest.updateMany.mockResolvedValue({ count: 0 });
+
+      await expect(service.decide("RR-RaviSilks-001-001", decideDto())).rejects.toThrow(/already been decided/);
+      expect(prisma.purchaseSareeLine.update).not.toHaveBeenCalled();
+    });
+
+    it("refuses a request that belongs to a debit note", async () => {
+      prisma.supplierReturnRequest.findUnique.mockResolvedValue({ ...pendingRequest, debitNoteId: "DN-RaviSilks-001-001" });
+
+      await expect(service.decide("RR-RaviSilks-001-001", decideDto())).rejects.toThrow(/decide it from the debit note/);
     });
 
     it("takes the approved pieces off the purchase's stored saree count", async () => {
@@ -140,10 +177,11 @@ describe("SupplierReturnsService", () => {
     });
 
     it("refuses an approval that would return more pieces than the line has", async () => {
-      prisma.purchaseSareeLine.findUnique.mockResolvedValue({ ...line, returnedQuantity: 9 }); // 9 + 3 > 10
+      // 9 already returned + 3 > 10 — the increment overshoots and the transaction rolls back.
+      prisma.purchaseSareeLine.update.mockResolvedValue({ ...line, returnedQuantity: 12 });
 
       await expect(service.decide("RR-RaviSilks-001-001", decideDto())).rejects.toThrow(BadRequestException);
-      expect(prisma.purchaseSareeLine.update).not.toHaveBeenCalled();
+      expect(prisma.purchase.update).not.toHaveBeenCalled();
     });
   });
 });

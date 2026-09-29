@@ -20,6 +20,7 @@ export interface FormState {
 }
 
 // Internal per-row state for the saree details editor — carries a stable key
-// (_uid) separate from the auto-generated saree code, which is recomputed
-// live from the supplier/invoice number as the admin types.
-export type SareeRow = Omit<SareeTag, "id"> & { _uid: string };
+// (_uid) separate from the saree code. `code` is set only for a line already
+// saved (its stored code, kept as-is); a new line's code is computed live
+// from the supplier/invoice number as the admin types (assignLineCodes).
+export type SareeRow = Omit<SareeTag, "id"> & { _uid: string; code?: string };

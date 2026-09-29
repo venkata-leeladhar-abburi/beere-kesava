@@ -1,8 +1,8 @@
-import { Download, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { T, F } from "../theme";
 import { Button } from "../../../../../shared/ui/primitives";
 
-/** Hero banner + Export/Add action buttons for the External Purchases page. */
+/** Hero banner + Add action button for the External Purchases page. */
 export function PageHeader({ onAdd }: { onAdd: () => void }) {
   return (
     <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
@@ -20,9 +20,6 @@ export function PageHeader({ onAdd }: { onAdd: () => void }) {
           </p>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, zIndex: 10, alignSelf: "flex-start", marginTop: 8 }}>
-          <Button variant="secondary" size="sm" iconLeft={Download} className="bg-transparent text-white border border-white/25 hover:bg-white/10 shadow-none">
-            Export
-          </Button>
           <Button onClick={onAdd} size="sm" iconLeft={Plus} className="bg-[var(--bk-gold-500)] text-[#3B2314] font-semibold hover:bg-[var(--bk-gold-500)]/90 border-none shadow-none">
             Add External Purchase
           </Button>

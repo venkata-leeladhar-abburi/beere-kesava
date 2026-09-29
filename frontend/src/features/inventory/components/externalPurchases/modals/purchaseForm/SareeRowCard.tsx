@@ -1,7 +1,7 @@
 import * as React from "react";
 import { X, UploadCloud } from "lucide-react";
 import {
-  buildSareeCode, sellingPerPiece, sellPercentFromSelling,
+  sellingPerPiece, sellPercentFromSelling,
   lineBuying, lineSelling, lineProfit, pieceCodeFromLineCode,
 } from "@/features/suppliers";
 import { formatMoneyExact, rupees } from "@/lib/domain/money";
@@ -16,15 +16,14 @@ import { useImageUpload } from "@/shared/hooks/useImageUpload";
 export function SareeRowCard({
   s,
   idx,
-  supplier,
-  invoiceNumber,
+  code,
   updateSareeRow,
   removeSareeRow,
 }: {
   s: SareeRow;
   idx: number;
-  supplier: string;
-  invoiceNumber: string;
+  /** This line's saree code — see assignLineCodes. */
+  code: string;
   updateSareeRow: (uid: string, patch: Partial<SareeRow>) => void;
   removeSareeRow: (uid: string) => void;
 }) {
@@ -41,7 +40,6 @@ export function SareeRowCard({
   const buying = lineBuying(s);
   const selling = lineSelling(s);
   const profit = lineProfit(s);
-  const code = buildSareeCode(supplier, idx + 1, invoiceNumber);
 
   return (
     <div
@@ -61,7 +59,7 @@ export function SareeRowCard({
             #{idx + 1}
           </span>
           <span
-            title="Auto-generated: supplier prefix + serial number + invoice number"
+            title="Auto-generated: supplier short name + invoice number + serial number"
             style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 12, color: T.royalBurgundy, background: "rgba(200,155,71,0.13)", border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 9px" }}
           >
             {code}

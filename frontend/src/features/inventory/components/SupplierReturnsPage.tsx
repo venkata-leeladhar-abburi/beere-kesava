@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { motion } from "motion/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Image as ImageIcon, RotateCcw, X, LayoutGrid, List, Clock } from "lucide-react";
+import { CheckCircle2, FileText, Image as ImageIcon, RotateCcw, X, LayoutGrid, List, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { STOPGAP_ACTING_USER_ID } from "@/shared/api/purchase-requests";
 import { BackendSupplierReturnStatus, supplierReturnsApi } from "@/shared/api/supplier-returns";
@@ -16,6 +16,7 @@ import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
 import { LuxuryStatsCard } from "@/shared/ui/LuxuryStatsCard";
 import { T, F } from "./externalPurchases/theme";
 import { SectionCard } from "./externalPurchases/common/primitives";
+import { DebitNoteModal, DEBIT_NOTE_STATUS_STYLE, useCanDecideReturns } from "./modals/DebitNoteModal";
 
 type StatusFilter = "ALL" | BackendSupplierReturnStatus;
 
@@ -27,16 +28,19 @@ const formatDate = (iso: string | null | undefined) => {
   return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 };
 
-const STATUS_STYLE: Record<BackendSupplierReturnStatus, { bg: string; color: string; label: string }> = {
-  PENDING: { bg: "rgba(200,155,71,0.12)", color: "#8B6018", label: "Pending" },
-  APPROVED: { bg: "rgba(30,102,64,0.10)", color: "#1E6640", label: "Approved" },
-  REJECTED: { bg: "rgba(192,57,43,0.10)", color: "#C0392B", label: "Rejected" },
-};
+const STATUS_STYLE = DEBIT_NOTE_STATUS_STYLE;
+
+/** "3" while pending; "2 of 3" once decided, when not every piece was approved. */
+const approvedLabel = (r: { status: BackendSupplierReturnStatus; quantity: number; approvedQuantity: number | null }) =>
+  r.status === "PARTIALLY_APPROVED" && r.approvedQuantity !== null ? `${r.approvedQuantity} of ${r.quantity} approved` : null;
 
 export function SupplierReturnsPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const decidedById = user?.id ?? STOPGAP_ACTING_USER_ID;
+  // Approving and rejecting is admin-only on the server (@AdminOnly); anyone
+  // else sees the document but no decision buttons.
+  const canDecide = useCanDecideReturns();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("PENDING");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -44,6 +48,8 @@ export function SupplierReturnsPage() {
   const [decidingId, setDecidingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
+  // The debit note whose document is open; `review` shows the approval panel.
+  const [openNote, setOpenNote] = useState<{ id: string; review: boolean } | null>(null);
 
   // pageSize is capped at 100 server-side (ListSupplierReturnRequestsQueryDto);
   // requesting more than that 400s. isError is surfaced below rather than
@@ -67,6 +73,7 @@ export function SupplierReturnsPage() {
       const q = search.toLowerCase();
       result = result.filter(r =>
         r.id.toLowerCase().includes(q) ||
+        (r.debitNoteId ?? "").toLowerCase().includes(q) ||
         r.purchaseId.toLowerCase().includes(q) ||
         r.supplier.name.toLowerCase().includes(q) ||
         r.sareeLine.code.toLowerCase().includes(q) ||
@@ -99,7 +106,7 @@ export function SupplierReturnsPage() {
   const statItems = [
     { label: "TOTAL RETURNS", value: String(allItems.length), sub: "All time return requests", icon: <RotateCcw size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
     { label: "PENDING APPROVAL", value: String(pendingCount), sub: "Awaiting admin decision", icon: <Clock size={20} color="rgba(245,232,208,0.90)" />, highlight: true },
-    { label: "APPROVED RETURNS", value: String(allItems.filter(r => r.status === "APPROVED").length), sub: "Stock deducted from purchase", icon: <CheckCircle2 size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
+    { label: "APPROVED RETURNS", value: String(allItems.filter(r => r.status === "APPROVED" || r.status === "PARTIALLY_APPROVED").length), sub: "Incl. partly approved", icon: <CheckCircle2 size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
     { label: "REJECTED RETURNS", value: String(allItems.filter(r => r.status === "REJECTED").length), sub: "Returned requests rejected", icon: <X size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
   ];
 
@@ -107,6 +114,22 @@ export function SupplierReturnsPage() {
     {
       id: "id", header: "Return ID", accessor: r => r.id, priority: 1,
       cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>{r.id}</span>,
+    },
+    {
+      id: "debitNote", header: "Debit Note", accessor: r => r.debitNoteId ?? "",
+      cell: (_v, r) => r.debitNoteId ? (
+        <button
+          type="button"
+          onClick={() => setOpenNote({ id: r.debitNoteId!, review: false })}
+          title={`Open debit note ${r.debitNoteId}`}
+          className="p-0 border-0 bg-transparent cursor-pointer"
+          style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, whiteSpace: "nowrap" as const, textDecoration: "underline", textUnderlineOffset: 3 }}
+        >
+          <FileText size={13} /> {r.debitNoteId}
+        </button>
+      ) : (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</span>
+      ),
     },
     {
       id: "photo", header: "Photo", accessor: r => r.sareeLine.imageUrl,
@@ -153,6 +176,11 @@ export function SupplierReturnsPage() {
           <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" as const }}>
             of {r.sareeLine.quantity} on line
           </div>
+          {approvedLabel(r) && (
+            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: STATUS_STYLE.PARTIALLY_APPROVED.color, whiteSpace: "nowrap" as const }}>
+              {approvedLabel(r)}
+            </div>
+          )}
         </div>
       ),
     },
@@ -198,7 +226,17 @@ export function SupplierReturnsPage() {
     },
     {
       id: "actions", header: "Actions", accessor: () => null, type: "actions",
-      cell: (_v, r) => r.status !== "PENDING" ? (
+      cell: (_v, r) => r.debitNoteId ? (
+        <Button
+          variant={canDecide && r.status === "PENDING" ? "primary" : "secondary"}
+          size="sm"
+          iconLeft={canDecide && r.status === "PENDING" ? CheckCircle2 : FileText}
+          onClick={() => setOpenNote({ id: r.debitNoteId!, review: canDecide && r.status === "PENDING" })}
+          className="whitespace-nowrap rounded-[10px]"
+        >
+          {canDecide && r.status === "PENDING" ? "Review" : "View Doc"}
+        </Button>
+      ) : r.status !== "PENDING" || !canDecide ? (
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>—</span>
       ) : (
         <div style={{ display: "flex", gap: 6 }}>
@@ -295,7 +333,9 @@ export function SupplierReturnsPage() {
                 options: [
                   { value: "PENDING", label: `Pending${pendingCount ? ` (${pendingCount})` : ""}` },
                   { value: "APPROVED", label: "Approved" },
+                  { value: "PARTIALLY_APPROVED", label: "Partly Approved" },
                   { value: "REJECTED", label: "Rejected" },
+                  { value: "CANCELLED", label: "Cancelled" },
                   { value: "ALL", label: "All" },
                 ],
                 onChange: (s: string) => setStatusFilter(s as StatusFilter),
@@ -336,7 +376,9 @@ export function SupplierReturnsPage() {
                 {([
                   { key: "PENDING", label: `Pending${pendingCount ? ` (${pendingCount})` : ""}` },
                   { key: "APPROVED", label: "Approved" },
+                  { key: "PARTIALLY_APPROVED", label: "Partly Approved" },
                   { key: "REJECTED", label: "Rejected" },
+                  { key: "CANCELLED", label: "Cancelled" },
                   { key: "ALL", label: "All" },
                 ] as { key: StatusFilter; label: string }[]).map(f => (
                   <Button
@@ -454,6 +496,9 @@ export function SupplierReturnsPage() {
                       <div>
                         <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Pieces</div>
                         <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{r.quantity} <span style={{ fontFamily: F.ui, fontWeight: 400, color: T.taupe }}>of {r.sareeLine.quantity}</span></div>
+                        {approvedLabel(r) && (
+                          <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: STATUS_STYLE.PARTIALLY_APPROVED.color }}>{approvedLabel(r)}</div>
+                        )}
                       </div>
                     </div>
 
@@ -476,7 +521,20 @@ export function SupplierReturnsPage() {
                       )}
                     </div>
 
-                    {r.status === "PENDING" && (
+                    {r.debitNoteId && (
+                      <Button
+                        variant={canDecide && r.status === "PENDING" ? "primary" : "secondary"}
+                        size="sm"
+                        fullWidth
+                        iconLeft={canDecide && r.status === "PENDING" ? CheckCircle2 : FileText}
+                        onClick={() => setOpenNote({ id: r.debitNoteId!, review: canDecide && r.status === "PENDING" })}
+                        className="rounded-[10px]"
+                      >
+                        {canDecide && r.status === "PENDING" ? `Review Debit Note ${r.debitNoteId}` : `View Debit Note ${r.debitNoteId}`}
+                      </Button>
+                    )}
+
+                    {canDecide && r.status === "PENDING" && !r.debitNoteId && (
                       <div className="flex gap-2 pt-1">
                         <Button
                           variant="primary"
@@ -528,6 +586,10 @@ export function SupplierReturnsPage() {
           )}
         </div>
       </SectionCard>
+
+      {openNote && (
+        <DebitNoteModal noteId={openNote.id} canDecide={openNote.review} onClose={() => setOpenNote(null)} />
+      )}
 
       <Modal open={!!preview} onOpenChange={o => { if (!o) setPreview(null); }} size="xl">
         <Dialog.Title className="sr-only">Saree photo preview</Dialog.Title>
