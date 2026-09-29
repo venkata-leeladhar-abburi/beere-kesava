@@ -14,7 +14,7 @@ import {
 } from './flow-kit';
 import { NewSaleBillModal } from './NewSaleBillModal';
 import { NewSaleSuccessView } from './NewSaleSuccessView';
-import { CustomerSelectStep, Customer } from './CustomerSelectStep';
+import { CustomerSelectStep, Customer, isPhoneEntryComplete } from './CustomerSelectStep';
 import { ScanSareeStep } from './ScanSareeStep';
 import {
   cartTotal, cartOriginalTotal, applyDiscount, discountLabel, billDiscountAmount, billDiscountLabel,
@@ -82,7 +82,7 @@ export function NewSaleFlow() {
       return {
         id: c.id,
         name: c.name,
-        phone: c.phone ?? "—",
+        phone: c.phone ?? "",
         purchases: c.totalPurchases,
         total: formatMoney(rupees(c.totalSpend)),
         lastPurchase: new Date(c.lastPurchaseDate ?? c.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
@@ -228,7 +228,7 @@ export function NewSaleFlow() {
     handleSelectCustomer({
       id: preselectCustomer.id,
       name: preselectCustomer.name,
-      phone: preselectCustomer.phone ?? "—",
+      phone: preselectCustomer.phone ?? "",
       purchases: preselectCustomer.totalPurchases ?? 0,
       total: formatMoney(rupees(Number(preselectCustomer.totalSpend ?? 0))),
       lastPurchase: new Date(preselectCustomer.lastPurchaseDate ?? preselectCustomer.createdAt)
@@ -262,7 +262,7 @@ export function NewSaleFlow() {
     setSaleRefs([]);
   };
 
-  const canProceedStep1 = selectedCustomer !== null || (isNewCustomer && custName.trim() !== "");
+  const canProceedStep1 = isPhoneEntryComplete(phone) && (selectedCustomer !== null || (isNewCustomer && custName.trim() !== ""));
 
   if (showBill) {
     return (

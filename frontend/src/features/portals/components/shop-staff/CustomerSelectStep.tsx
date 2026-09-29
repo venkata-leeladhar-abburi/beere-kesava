@@ -3,12 +3,24 @@ import { motion } from "motion/react";
 import { Search, PhoneCall, UserPlus, Pencil, Check, MapPin, ArrowLeft } from "lucide-react";
 import { C, F } from "./theme";
 import { StepHeader, StepBody, FlowActions, ACCENT_SALE } from "./flow-kit";
-import { Button, Input, Textarea } from "../../../../shared/ui/primitives";
+import { Button, Input, PhoneInput, PHONE_DIGITS, Textarea } from "../../../../shared/ui/primitives";
 import { toInitials } from "@/shared/lib/initials";
+
+/**
+ * Phone is optional on a counter sale — a walk-in who won't leave a number
+ * still gets a bill, recorded and sent to the admin feed. One that is typed
+ * must be a full 10-digit mobile, or the WhatsApp send on the success screen
+ * fails later.
+ */
+export function isPhoneEntryComplete(phone: string): boolean {
+  const p = phone.trim();
+  return p === "" || p.length === PHONE_DIGITS;
+}
 
 export interface Customer {
   id: string;
   name: string;
+  /** "" when the customer has no phone on file. */
   phone: string;
   purchases: number;
   total: string;
@@ -68,6 +80,7 @@ export function CustomerSelectStep({
   onNext,
 }: CustomerSelectStepProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const phoneIncomplete = !isPhoneEntryComplete(phone);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -130,7 +143,7 @@ export function CustomerSelectStep({
                     </div>
                     <div style={{ flex: 1, textAlign: "left" as const }}>
                       <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{c.name}</div>
-                      <div style={{ fontFamily: F.m, fontSize: 13, color: C.muted, marginTop: 2 }}>+91 {c.phone}</div>
+                      <div style={{ fontFamily: F.m, fontSize: 13, color: C.muted, marginTop: 2 }}>{c.phone ? `+91 ${c.phone}` : "No phone"}</div>
                     </div>
                     <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
                       <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 500, color: C.text }}>{c.purchases} purchases</div>
@@ -169,7 +182,7 @@ export function CustomerSelectStep({
                 </div>
                 <div>
                   <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>{selectedCustomer.name}</div>
-                  <div style={{ fontFamily: F.m, fontSize: 13, color: C.muted, marginTop: 2 }}>+91 {selectedCustomer.phone}</div>
+                  <div style={{ fontFamily: F.m, fontSize: 13, color: C.muted, marginTop: 2 }}>{selectedCustomer.phone ? `+91 ${selectedCustomer.phone}` : "No phone"}</div>
                 </div>
               </div>
               <Button variant="secondary" size="sm" iconLeft={Pencil} onClick={() => setIsEditingCustomer(true)}>
@@ -215,17 +228,26 @@ export function CustomerSelectStep({
               </div>
             )}
             <div style={{ display: isMobile ? "block" : "grid", gridTemplateColumns: isMobile ? undefined : "1fr 1fr", gap: isMobile ? 0 : 16 }}>
-              {[
-                { id: "cust-name", label: "Full Name", val: custName, setter: setCustName, placeholder: "e.g. Smt. Annapurna Devi", type: "text", mono: false },
-                { id: "cust-phone", label: "Phone Number", val: phone, setter: setPhone, placeholder: "10-digit mobile number", type: "tel", mono: true },
-              ].map((f) => (
-                <div key={f.label} style={{ marginBottom: 14 }}>
-                  <label htmlFor={f.id} style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.text, display: "block", marginBottom: 8 }}>{f.label}</label>
-                  <Input id={f.id} value={f.val} onChange={e => f.setter(e.target.value)} placeholder={f.placeholder} type={f.type}
-                    size="lg" className={f.mono ? "w-full font-mono" : "w-full"}
-                  />
-                </div>
-              ))}
+              <div style={{ marginBottom: 14 }}>
+                <label htmlFor="cust-name" style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.text, display: "block", marginBottom: 8 }}>Full Name</label>
+                <Input id="cust-name" value={custName} onChange={e => setCustName(e.target.value)} placeholder="e.g. Smt. Annapurna Devi"
+                  size="lg" className="w-full"
+                />
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <label htmlFor="cust-phone" style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.text, display: "block", marginBottom: 8 }}>
+                  Phone Number <span style={{ color: C.muted, fontWeight: 400 }}>(Optional)</span>
+                </label>
+                <PhoneInput id="cust-phone" value={phone} onValueChange={setPhone} placeholder="10-digit mobile number"
+                  size="lg" className="w-full font-mono" invalid={phoneIncomplete}
+                  aria-describedby={phoneIncomplete ? "cust-phone-error" : undefined}
+                />
+                {phoneIncomplete && (
+                  <div id="cust-phone-error" style={{ fontFamily: F.u, fontSize: 12, color: C.crim, marginTop: 6 }}>
+                    Enter all 10 digits, or leave it empty
+                  </div>
+                )}
+              </div>
             </div>
             <div style={{ marginBottom: 14 }}>
               <label htmlFor="customer-address" style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.text, display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
@@ -271,7 +293,7 @@ export function CustomerSelectStep({
         primaryLabel="Next — Scan Saree"
         onPrimary={onNext}
         primaryDisabled={!canProceedStep1}
-        hint="Pick a customer, or add a new one with a name"
+        hint={phoneIncomplete ? "Finish the phone number, or clear it" : "Pick a customer, or add a new one — only a name is needed"}
       />
     </>
   );

@@ -13,3 +13,14 @@ export function normalizeMobile(phone: string): string {
   const digits = phone.replace(/\D/g, "");
   return digits.length >= 10 ? digits.slice(-10) : digits;
 }
+
+/**
+ * DTO transform for an optional contact phone: blank becomes "not given"
+ * (undefined, so the column stays null rather than holding ""), anything
+ * else is stored in the canonical last-10-digits form. Non-strings pass
+ * through untouched so @IsString still rejects them.
+ */
+export function normalizeOptionalMobile({ value }: { value: unknown }): unknown {
+  if (typeof value !== "string") return value;
+  return value.trim() === "" ? undefined : normalizeMobile(value);
+}

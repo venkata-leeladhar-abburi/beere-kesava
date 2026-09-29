@@ -1,4 +1,6 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Length, ValidateIf } from "class-validator";
+import { Transform } from "class-transformer";
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Length, Matches, ValidateIf } from "class-validator";
+import { normalizeOptionalMobile } from "../../common/phone.util";
 import { CustomerType } from "../../generated/prisma/client";
 
 export class CreateCustomerDto {
@@ -24,8 +26,13 @@ export class CreateCustomerDto {
   @IsString()
   city?: string;
 
+  // Optional — a counter walk-in may not leave a number, and the sale is
+  // still billed and recorded. One that is given must be a full Indian
+  // mobile, since the retail bill is sent to it on WhatsApp.
   @IsOptional()
+  @Transform(normalizeOptionalMobile)
   @IsString()
+  @Matches(/^\d{10}$/, { message: "phone must be a 10-digit mobile number" })
   phone?: string;
 
   @IsOptional()
