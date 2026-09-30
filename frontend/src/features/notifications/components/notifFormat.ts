@@ -56,6 +56,10 @@ const paymentText = (p: Payload): string | null => {
 };
 
 /** Drops rows whose value is missing, so old payloads still render cleanly. */
+/** "5% · ₹142.50" — null (row hidden) when no GST was charged. */
+const gstText = (rate: unknown, amount: unknown): string | null =>
+  num(amount) > 0 ? `${num(rate)}% · ${money(amount)}` : null;
+
 const rows = (list: Array<[string, string | null, boolean?]>): NotifDetail[] =>
   list.filter(([, v]) => v !== null && v !== "").map(([label, value, strong]) => ({ label, value: value!, strong }));
 
@@ -90,6 +94,8 @@ const saleConfig = (category: "retail" | "wholesale"): TypeConfig => ({
       ["Source", sourceText(p.source)],
       ["Rate", p.rate != null ? money(p.rate) : null],
       ["Discount", discount > 0 ? `− ${money(discount)}${p.discountNote ? ` (${String(p.discountNote)})` : ""}` : null],
+      ["GST", gstText(p.gstRate, p.gstAmount)],
+      ["Customer GSTIN", str(p.customerGstin)],
       ["Final amount", money(p.amount), true],
       ["Saved", discount > 0 ? money(discount) : null],
       ["Payment", paymentText(p)],
@@ -501,7 +507,8 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
     body: p => {
       const discount = num(p.discount);
       const count = num(p.sareeCount);
-      return `${count} saree${count === 1 ? "" : "s"} sold to ${str(p.customerName) ?? "customer"} for ${money(p.total)}${discount > 0 ? ` after ${money(discount)} off` : ""}.`;
+      const gst = num(p.gst) > 0 ? ` incl. ${num(p.gstRate)}% GST` : "";
+      return `${count} saree${count === 1 ? "" : "s"} sold to ${str(p.customerName) ?? "customer"} for ${money(p.total)}${gst}${discount > 0 ? ` after ${money(discount)} off` : ""}.`;
     },
     details: p => {
       const discount = num(p.discount);
@@ -512,6 +519,9 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
         ["Sarees", String(num(p.sareeCount))],
         ["Retail total", money(p.retailTotal)],
         ["Discount", discount > 0 ? `− ${money(discount)}` : null],
+        ["Taxable value", num(p.gst) > 0 ? money(p.taxable) : null],
+        ["GST", gstText(p.gstRate, p.gst)],
+        ["Customer GSTIN", str(p.customerGstin)],
         ["Final amount", money(p.total), true],
         ["Saved", discount > 0 ? money(discount) : null],
         ["Payment", paymentText(p)],
@@ -524,13 +534,15 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
         ? (p.lines as Payload[]).map(l => {
             const discount = num(l.discount);
             const note = l.discountNote ? ` (${String(l.discountNote)})` : "";
+            // Line prices are shown before GST — the bill's GST is its own row.
+            const net = num(l.amount) - num(l.gstAmount);
             return {
               sareeId: String(l.sareeId ?? "—"),
               sareeType: str(l.sareeType),
               source: sourceText(l.source),
               price: discount > 0
-                ? `${money(l.rate)} − ${money(discount)}${note} = ${money(l.amount)}`
-                : money(l.amount),
+                ? `${money(l.rate)} − ${money(discount)}${note} = ${money(net)}`
+                : money(net),
             };
           })
         : [],

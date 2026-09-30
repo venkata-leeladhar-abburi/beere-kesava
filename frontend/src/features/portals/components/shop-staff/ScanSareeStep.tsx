@@ -3,13 +3,15 @@ import { motion } from "motion/react";
 import { Layers, PackageCheck, Plus, Trash2 } from "lucide-react";
 import { C, F, Card } from "./theme";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Button, CurrencyInput, NumberInput } from "../../../../shared/ui/primitives";
+import { Button, CurrencyInput, Input, NumberInput, Switch } from "../../../../shared/ui/primitives";
 import { MoneyAccessProvider } from "../../../../shared/ui/MoneyAccess";
 import { WeaverSareesSection, salePickRule } from "@/features/weavers";
 import { StepHeader, StepBody, FlowActions, ScanPanel, ACCENT_SALE } from "./flow-kit";
 import { ReceivedSareesPicker, useReceivedShopStock } from "./ReceivedSareesPicker";
 import {
-  cartTotal, cartOriginalTotal, billDiscountAmount, type SaleLine, type DiscountMode, type BillDiscount,
+  cartTotal, cartOriginalTotal, billDiscountAmount, gstBreakdown, gstIssue, normalizeGstin,
+  GST_RATE_PRESETS, GST_MAX_RATE,
+  type SaleLine, type DiscountMode, type BillDiscount, type BillGst,
 } from "./sale-cart";
 
 interface ScanSareeStepProps {
@@ -30,6 +32,9 @@ interface ScanSareeStepProps {
   /** Discount on the whole bill, taken off after the per-saree discounts. */
   billDiscount: BillDiscount;
   setBillDiscount: (d: BillDiscount) => void;
+  /** Optional GST on the whole bill, added on top after every discount. */
+  gst: BillGst;
+  setGst: (g: BillGst) => void;
   scanError?: string | null;
   showSareeList: boolean;
   setShowSareeList: (v: boolean) => void;
@@ -57,6 +62,8 @@ export function ScanSareeStep({
   setLineDiscount,
   billDiscount,
   setBillDiscount,
+  gst,
+  setGst,
   scanError,
   showSareeList,
   setShowSareeList,
@@ -226,10 +233,19 @@ export function ScanSareeStep({
                 />
               </div>
 
+              {/* ── GST ──
+                  Off by default — most counter sales carry none. When the
+                  customer wants a GST bill, the rate is charged on the amount
+                  left after every discount and added on top. */}
+              <GstControl gst={gst} setGst={setGst} isMobile={isMobile} />
+
               {(() => {
                 const retail = cartOriginalTotal(cart);
                 const subtotal = cartTotal(cart);
                 const billOff = billDiscountAmount(subtotal, billDiscount);
+                const taxable = subtotal - billOff;
+                const tax = gstBreakdown(taxable, gst);
+                const showRows = retail !== subtotal || billOff > 0 || tax !== null;
                 const row = (label: string, value: string, color: string = C.muted) => (
                   <div key={label} style={{ display: "flex", justifyContent: "space-between", color }}>
                     <span>{label}</span><span>{value}</span>
@@ -237,18 +253,23 @@ export function ScanSareeStep({
                 );
                 return (
                   <>
-                    {(retail !== subtotal || billOff > 0) && (
+                    {showRows && (
                       <div style={{ padding: "10px 16px 0", borderTop: `1px solid ${C.bdr}`, display: "flex", flexDirection: "column" as const, gap: 4, fontFamily: F.u, fontSize: 13, color: C.muted, fontVariantNumeric: "tabular-nums" }}>
                         {row("Retail total", formatMoney(rupees(retail)))}
                         {retail !== subtotal && row(retail > subtotal ? "Saree discounts" : "Saree mark-ups", `${retail > subtotal ? "−" : "+"} ${formatMoney(rupees(Math.abs(retail - subtotal)))}`, C.gold)}
                         {billOff > 0 && retail !== subtotal && row("Subtotal", formatMoney(rupees(subtotal)))}
                         {billOff > 0 && row(`Bill discount${billDiscount.mode === "percent" ? ` (${billDiscount.value}%)` : ""}`, `− ${formatMoney(rupees(billOff))}`, C.gold)}
+                        {tax && row("Taxable value", formatMoney(rupees(tax.taxable)))}
+                        {tax && row(`CGST @ ${tax.rate / 2}%`, `+ ${formatMoney(rupees(tax.cgst))}`, C.text)}
+                        {tax && row(`SGST @ ${tax.rate / 2}%`, `+ ${formatMoney(rupees(tax.sgst))}`, C.text)}
                       </div>
                     )}
-                    <div style={{ padding: "14px 16px", borderTop: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)", display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, marginTop: retail !== subtotal || billOff > 0 ? 10 : 0 }}>
-                      <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Final amount</span>
+                    <div style={{ padding: "14px 16px", borderTop: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)", display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, marginTop: showRows ? 10 : 0 }}>
+                      <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>
+                        Final amount{tax ? <span style={{ fontWeight: 400, fontSize: 13, color: C.muted }}> (incl. {tax.rate}% GST)</span> : null}
+                      </span>
                       <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 26, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
-                        {formatMoney(rupees(subtotal - billOff))}
+                        {formatMoney(rupees(tax ? tax.total : taxable))}
                       </span>
                     </div>
                   </>
@@ -368,8 +389,8 @@ export function ScanSareeStep({
         onBack={onBack}
         primaryLabel={cart.length > 1 ? `Next — Payment (${cart.length} sarees)` : "Next — Payment"}
         onPrimary={onNext}
-        primaryDisabled={cart.length === 0}
-        hint={cart.length === 0 ? "Add at least one saree before continuing" : undefined}
+        primaryDisabled={cart.length === 0 || gstIssue(gst) !== null}
+        hint={cart.length === 0 ? "Add at least one saree before continuing" : gstIssue(gst) ?? undefined}
       />
     </>
   );
@@ -431,6 +452,97 @@ function DiscountControl({ label, mode, value, onChange }: {
           />
         )}
       </div>
+    </div>
+  );
+}
+
+/** Switch to charge GST on the bill, then its rate (one-tap slabs or typed)
+ *  and the buyer's GSTIN. Turning it off keeps what was typed, so flicking
+ *  it back on doesn't make the operator re-enter the rate. */
+function GstControl({ gst, setGst, isMobile }: {
+  gst: BillGst;
+  setGst: (g: BillGst) => void;
+  isMobile?: boolean;
+}) {
+  const issue = gstIssue(gst);
+  const gstinTyped = gst.gstin.trim() !== "";
+  const gstinBad = gstinTyped && issue?.startsWith("GST number") === true;
+  const rateBad = gst.enabled && issue !== null && !gstinBad;
+  return (
+    <div style={{ padding: "12px 16px", borderTop: `1px solid ${C.bdr}` }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <label htmlFor="bill-gst-toggle" style={{ cursor: "pointer" }}>
+          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Apply GST</div>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>
+            Added on top of the amount after discounts · CGST + SGST
+          </div>
+        </label>
+        <Switch
+          id="bill-gst-toggle"
+          checked={gst.enabled}
+          onCheckedChange={on => setGst({ ...gst, enabled: on, rate: on && !gst.rate ? GST_RATE_PRESETS[0] : gst.rate })}
+          aria-label="Apply GST on this bill"
+        />
+      </div>
+
+      {gst.enabled && (
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "auto minmax(0, 1fr)", gap: 14, marginTop: 12, alignItems: "start" }}>
+          <div>
+            <div style={labelStyle}>GST %</div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const, alignItems: "center" }}>
+              <div role="radiogroup" aria-label="GST slab" style={{ display: "flex", border: `1px solid ${C.bdr}`, borderRadius: 8, overflow: "hidden", height: 40 }}>
+                {GST_RATE_PRESETS.map(r => {
+                  const on = gst.rate === r;
+                  return (
+                    <button
+                      key={r} type="button" role="radio" aria-checked={on}
+                      onClick={() => setGst({ ...gst, rate: r })}
+                      style={{
+                        minWidth: 46, border: "none", cursor: "pointer", padding: "0 8px",
+                        fontFamily: F.u, fontWeight: 700, fontSize: 13,
+                        background: on ? C.burg : "transparent", color: on ? "#fff" : C.muted,
+                      }}
+                    >
+                      {r}%
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ width: 110 }}>
+                <NumberInput
+                  aria-label="GST percentage"
+                  value={gst.rate || ""}
+                  onValueChange={v => setGst({ ...gst, rate: v === "" ? 0 : v })}
+                  min={0} max={GST_MAX_RATE} step={0.01}
+                  placeholder="0"
+                  addonRight="%"
+                  invalid={rateBad}
+                  className="w-full"
+                />
+              </div>
+            </div>
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={labelStyle}>
+              GST number <span style={{ textTransform: "none", fontWeight: 500, letterSpacing: 0 }}>(customer's GSTIN, optional)</span>
+            </div>
+            <Input
+              aria-label="Customer GST number"
+              value={gst.gstin}
+              onChange={e => setGst({ ...gst, gstin: normalizeGstin(e.target.value).slice(0, 15) })}
+              placeholder="e.g. 37ABCDE1234F1Z5"
+              maxLength={15}
+              autoComplete="off"
+              spellCheck={false}
+              invalid={gstinBad}
+              className="w-full font-mono"
+            />
+          </div>
+          {issue && (
+            <div role="alert" style={{ gridColumn: "1 / -1", fontFamily: F.u, fontSize: 12.5, color: "#AB3832" }}>{issue}</div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

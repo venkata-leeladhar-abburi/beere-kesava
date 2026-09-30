@@ -83,11 +83,12 @@ export function matchesDateFilter(dateStr: string | undefined | null, filter: Da
   if (isNaN(d.getTime())) return true;
   if (filter.mode === "day") {
     if (!filter.day) return true;
-    const sel = new Date(filter.day);
+    // Local midnight — a bare "yyyy-MM-dd" parses as UTC (see dateFilterToRange).
+    const sel = /^\d{4}-\d{2}-\d{2}$/.test(filter.day) ? new Date(`${filter.day}T00:00:00`) : new Date(filter.day);
     return d.getFullYear() === sel.getFullYear() && d.getMonth() === sel.getMonth() && d.getDate() === sel.getDate();
   }
   if (filter.mode === "range") {
-    if (filter.from && d < new Date(filter.from)) return false;
+    if (filter.from && d < new Date(/^\d{4}-\d{2}-\d{2}$/.test(filter.from) ? `${filter.from}T00:00:00` : filter.from)) return false;
     if (filter.to && d > new Date(`${filter.to}T23:59:59`)) return false;
     return true;
   }

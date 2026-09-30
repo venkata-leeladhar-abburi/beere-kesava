@@ -5,9 +5,11 @@
  * handed to a customer over the counter is recognisably the same stationery
  * as the invoices and POs the firm sends out.
  *
- * Unlike InvoiceDocument this is not a tax document — no GSTIN, no HSN, no
- * CGST/SGST split. A shop bill records what was bought and what was paid; the
- * taxable-supply paperwork is the wholesale flow's job.
+ * GST is optional here. By default a shop bill records what was bought and
+ * what was paid; when the counter chose to charge GST (`gst`), the bill adds
+ * the taxable value, the CGST/SGST split, the shop's GSTIN in the letterhead
+ * and the buyer's GSTIN when they gave one. Lines always show the pre-GST
+ * price — GST is charged once, on the whole bill.
  *
  * One bill covers the whole basket. The backend records one SaleRecord per
  * saree, so `saleRefs` carries every reference on the bill and `billRef` (the
@@ -38,6 +40,17 @@ export interface RetailBillLineItem {
   source?: { kind: "weaver" | "factory" | "external"; name: string; detail?: string };
 }
 
+export interface RetailBillGst {
+  /** Percent, e.g. 5 — printed as CGST 2.5% + SGST 2.5%. */
+  rate: number;
+  /** Rupees of GST on the bill (CGST + SGST). */
+  amount: number;
+  /** The buyer's GSTIN, when they gave one. */
+  customerGstin?: string;
+  /** The shop's GSTIN as recorded on the sale. */
+  sellerGstin?: string;
+}
+
 const SOURCE_KIND: Record<NonNullable<RetailBillLineItem["source"]>["kind"], string> = {
   weaver: "Weaver",
   factory: "Factory loom",
@@ -58,6 +71,9 @@ export interface RetailBillDocumentProps {
    *  (rupees, plus "5%" when it was given as a percentage). `total` is already
    *  net of it; the lines are not — they show each saree's own price. */
   billDiscount?: { amount: number; note?: string };
+  /** GST charged on the whole bill, when the counter applied it. `total`
+   *  already INCLUDES `amount`; the lines never do. */
+  gst?: RetailBillGst;
   paymentMethod?: string;
   paymentRef?: string;
   soldBy?: string;
@@ -78,15 +94,27 @@ function paymentLabel(method?: string): string {
 
 export function RetailBillDocument({
   billRef, billDate, firm = DEFAULT_LETTERHEAD_FIRM, customerName, customerPhone,
-  customerAddress, lines, total, billDiscount, paymentMethod, paymentRef, soldBy, saleRefs, pageInfo,
+  customerAddress, lines, total, billDiscount, gst, paymentMethod, paymentRef, soldBy, saleRefs, pageInfo,
   copy = "customer",
 }: RetailBillDocumentProps) {
   const retailTotal = lines.reduce((sum, l) => sum + (l.originalPrice ?? l.soldPrice), 0);
   const subtotal = lines.reduce((sum, l) => sum + l.soldPrice, 0);
   const billOff = billDiscount?.amount ?? 0;
   const sareeDiscount = retailTotal - subtotal;
+  // All arithmetic below is on paise: GST brings paise onto the bill.
+  const totalPaise = toPaise(total);
+  const gstPaise = gst ? toPaise(gst.amount) : 0;
+  // What GST was charged on: the bill after every discount.
+  const taxablePaise = totalPaise - gstPaise;
+  // CGST and SGST are each half the rate; any odd paisa goes to CGST so the
+  // two always add back up to the GST that was actually charged.
+  const cgstPaise = Math.ceil(gstPaise / 2);
+  const sgstPaise = gstPaise - cgstPaise;
+  const halfRate = gst ? `${+(gst.rate / 2).toFixed(3)}%` : "";
   // Everything the customer saved: per-saree discounts plus the bill discount.
-  const discount = retailTotal - total;
+  // GST is a tax on top, not a mark-up, so it never eats into the saving.
+  const discount = retailTotal - taxablePaise / 100;
+  const letterheadFirm = gst?.sellerGstin ? { ...firm, gstin: gst.sellerGstin } : firm;
 
   const meta: MetaField[] = [
     { label: "Bill No", value: billRef, code: true },
@@ -94,6 +122,7 @@ export function RetailBillDocument({
     { label: "Payment", value: paymentLabel(paymentMethod) },
     { label: "Sarees", value: String(lines.length) },
     ...(paymentRef ? [{ label: "Reference", value: paymentRef, code: true }] : []),
+    ...(gst ? [{ label: "GST", value: `${+gst.rate.toFixed(2)}%` }] : []),
   ];
 
   const totalsRows: TotalsRow[] = [
@@ -107,7 +136,14 @@ export function RetailBillDocument({
     ...(billOff > 0
       ? [{ label: `Bill Discount${billDiscount?.note ? ` (${billDiscount.note})` : ""}`, amount: `− ${formatPaise(toPaise(billOff))}` }]
       : []),
-    { label: "Total Paid", amount: formatPaise(toPaise(total)), grand: true },
+    ...(gst
+      ? [
+          { label: "Taxable Value", amount: formatPaise(taxablePaise) },
+          { label: `CGST @ ${halfRate}`, amount: `+ ${formatPaise(cgstPaise)}` },
+          { label: `SGST @ ${halfRate}`, amount: `+ ${formatPaise(sgstPaise)}` },
+        ]
+      : []),
+    { label: "Total Paid", amount: formatPaise(totalPaise), grand: true },
   ];
 
   const admin = copy === "admin";
@@ -118,7 +154,7 @@ export function RetailBillDocument({
   return (
     <DocumentPage
       pageInfo={pageInfo}
-      band={<Letterhead firm={firm} title={admin ? "Retail Bill · Admin Copy" : "Retail Bill"} documentNumber={billRef} />}
+      band={<Letterhead firm={letterheadFirm} title={admin ? "Retail Bill · Admin Copy" : "Retail Bill"} documentNumber={billRef} />}
     >
       <PartyBlock
         parties={[
@@ -127,6 +163,7 @@ export function RetailBillDocument({
             name: customerName || "Walk-in Customer",
             address: customerAddress,
             phone: customerPhone,
+            gstin: gst?.customerGstin,
           },
         ]}
         meta={meta}
@@ -216,7 +253,7 @@ export function RetailBillDocument({
       <div style={{ marginTop: "4mm" }}>
         <div className="bk-doc__words" style={{ padding: "2.5mm 3.5mm" }}>
           <div style={{ fontSize: "var(--doc-amount-words)", fontWeight: 600, color: "var(--doc-ink)" }}>
-            {amountInWords(toPaise(total))}
+            {amountInWords(totalPaise)}
           </div>
         </div>
       </div>

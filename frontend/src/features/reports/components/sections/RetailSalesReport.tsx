@@ -9,6 +9,7 @@ import { semantic } from "../../../../design-system/tokens";
 import { FadeUp, SilkSumCard, SectionCard, ReportDLBar } from "../common/primitives";
 import { ChartCard, ChartBand, TrackBar, BAND } from "@/features/production";
 import { salesApi } from "../../../../shared/api/sales";
+import { saleGstAmount, saleGstRate } from "../../../../lib/domain/saleGst";
 import { customersApi } from "../../../../shared/api/customers";
 import { batchesApi } from "../../../../shared/api/batches";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -23,6 +24,10 @@ interface RetailSaleRow {
   phone: string;
   sarId: string;
   price: number;
+  /** GST inside `price` (0 when none was charged, or on a return row). */
+  gst: number;
+  gstRate: number | null;
+  customerGstin: string;
 }
 
 function RetailWeeklyTooltip({ active, payload, label }: TooltipProps<ValueType, NameType>) {
@@ -100,6 +105,9 @@ export function RetailSalesReport() {
           phone: customer?.phone ?? "—",
           sarId: s.sareeId,
           price: ret ? -Number(ret.refundAmount) : Number(s.amount),
+          gst: ret ? 0 : saleGstAmount(s),
+          gstRate: ret ? null : saleGstRate(s),
+          customerGstin: ret ? "" : (s.customerGstin ?? ""),
         };
       });
   }, [retailSales, returnBySareeId, customerById]);
@@ -170,8 +178,8 @@ export function RetailSalesReport() {
 
   useRegisterExport(useMemo(() => ({
     name: "Retail Sales Report",
-    headers: ["Sale ID", "Sale Date", "Customer", "Phone", "Saree ID", "Retail Price"],
-    rows: retailRows.map(r => [r.id, r.date, r.customer, r.phone, r.sarId, r.price]),
+    headers: ["Sale ID", "Sale Date", "Customer", "Phone", "Saree ID", "GST %", "GST", "Customer GSTIN", "Retail Price"],
+    rows: retailRows.map(r => [r.id, r.date, r.customer, r.phone, r.sarId, r.gstRate ?? "", r.gst, r.customerGstin, r.price]),
   }), [retailRows]));
 
   const retailColumns: ColumnDef<RetailSaleRow>[] = [
@@ -194,6 +202,17 @@ export function RetailSalesReport() {
     {
       id: "sarId", header: "Saree ID", accessor: r => r.sarId,
       cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{r.sarId}</span>,
+    },
+    {
+      id: "gst", header: "GST", accessor: r => r.gst, align: "end",
+      cell: (_v, r) => r.gstRate === null
+        ? <span style={{ color: T.taupe }}>—</span>
+        : (
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
+            <Money value={rupees(r.gst)} /> <span style={{ color: T.taupe }}>@ {r.gstRate}%</span>
+            {r.customerGstin && <div style={{ color: T.taupe, fontSize: 11 }}>{r.customerGstin}</div>}
+          </span>
+        ),
     },
     {
       id: "price", header: "Retail Price", accessor: r => r.price, align: "end",

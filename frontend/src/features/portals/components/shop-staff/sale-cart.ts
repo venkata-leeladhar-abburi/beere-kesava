@@ -130,3 +130,111 @@ export function allocateBillDiscount(lines: Pick<SaleLine, "soldPrice">[], amoun
   }
   return shares;
 }
+
+// ── GST ─────────────────────────────────────────────────────────────────────
+
+/**
+ * GST on a counter bill — off unless the shop chooses to charge it. The rate
+ * applies to the whole bill, on the amount left after every discount, and is
+ * added on top: a ₹1,000 bill at 5% is ₹1,050. Retail is always intra-state,
+ * so the tax prints as CGST + SGST, half the rate each.
+ */
+export interface BillGst {
+  enabled: boolean;
+  /** Percent, e.g. 5 for 5%. */
+  rate: number;
+  /** Buyer's GSTIN — optional, for a registered customer who asks for it. */
+  gstin: string;
+}
+
+export const NO_GST: BillGst = { enabled: false, rate: 0, gstin: "" };
+
+/** The slabs a saree counter actually uses, offered as one-tap presets. */
+export const GST_RATE_PRESETS = [5, 12, 18] as const;
+
+/** Highest slab accepted — the server enforces the same ceiling. */
+export const GST_MAX_RATE = 28;
+
+/** 2-digit state code, 10-char PAN, entity number, "Z", check character. */
+const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+
+/** Upper-cased and stripped of spaces — how a GSTIN is typed vs. stored. */
+export const normalizeGstin = (v: string) => v.replace(/\s+/g, "").toUpperCase();
+
+export const isValidGstin = (v: string) => GSTIN_PATTERN.test(normalizeGstin(v));
+
+/** Why the GST entry can't be used yet, or null when it is ready (or off). */
+export function gstIssue(g: BillGst): string | null {
+  if (!g.enabled) return null;
+  if (!Number.isFinite(g.rate) || g.rate <= 0) return "Enter the GST percentage";
+  if (g.rate > GST_MAX_RATE) return `GST can't be more than ${GST_MAX_RATE}%`;
+  // Tolerance, not equality: 2.55 * 100 is 254.99999999999997 in floating point.
+  if (Math.abs(Math.round(g.rate * 100) - g.rate * 100) > 1e-6) return "GST percentage can have at most 2 decimals";
+  if (g.gstin.trim() && !isValidGstin(g.gstin)) return "GST number must be a valid 15-character GSTIN";
+  return null;
+}
+
+/** A bill's GST worked out, in whole rupees. */
+export interface GstBreakdown {
+  rate: number;
+  /** What the GST is charged on — the bill after every discount. */
+  taxable: number;
+  cgst: number;
+  sgst: number;
+  /** cgst + sgst. */
+  gst: number;
+  /** taxable + gst — what the customer pays. */
+  total: number;
+}
+
+/**
+ * The GST on `taxable` rupees, or null when GST is off or not yet valid.
+ * CGST and SGST are each half the rate, each rounded to the nearest whole
+ * rupee (as CGST Act s.170 allows) — the counter works in whole rupees, like
+ * the discounts above, so the bill, the history and every report show exact
+ * figures with no stray paise. The epsilon keeps a true half-rupee (₹2.50)
+ * from rounding down on floating-point noise.
+ */
+export function gstBreakdown(taxable: number, g: BillGst): GstBreakdown | null {
+  if (!g.enabled || gstIssue({ ...g, gstin: "" })) return null;
+  const half = Math.round((taxable * g.rate) / 200 + 1e-9);
+  return {
+    rate: g.rate,
+    taxable,
+    cgst: half,
+    sgst: half,
+    gst: half * 2,
+    total: taxable + half * 2,
+  };
+}
+
+/**
+ * Splits a whole number of rupees across weights in proportion, so the
+ * shares add up to exactly `total`. Leftovers from rounding go to the largest
+ * remainders. Used to spread a bill's GST over its sarees, since each saree
+ * is its own SaleRecord.
+ */
+export function allocateByWeight(weights: number[], total: number): number[] {
+  const sum = weights.reduce((a, b) => a + b, 0);
+  if (total <= 0 || sum <= 0) return weights.map(() => 0);
+  const exact = weights.map(w => (w * total) / sum);
+  const shares = exact.map(Math.floor);
+  let left = total - shares.reduce((a, b) => a + b, 0);
+  const byRemainder = exact
+    .map((x, i) => ({ i, r: x - Math.floor(x) }))
+    .sort((a, b) => b.r - a.r);
+  for (const { i } of byRemainder) {
+    if (left <= 0) break;
+    shares[i] += 1;
+    left -= 1;
+  }
+  return shares;
+}
+
+/** The GST figures RetailBillDocument prints. */
+export const toBillGst = (b: GstBreakdown, customerGstin?: string, sellerGstin?: string) => ({
+  rate: b.rate,
+  amount: b.gst,
+  customerGstin: customerGstin?.trim() ? normalizeGstin(customerGstin) : undefined,
+  sellerGstin: sellerGstin || undefined,
+});

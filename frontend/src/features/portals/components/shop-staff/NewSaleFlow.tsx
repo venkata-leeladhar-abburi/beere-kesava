@@ -18,7 +18,9 @@ import { CustomerSelectStep, Customer, isPhoneEntryComplete } from './CustomerSe
 import { ScanSareeStep } from './ScanSareeStep';
 import {
   cartTotal, cartOriginalTotal, applyDiscount, discountLabel, billDiscountAmount, billDiscountLabel,
-  allocateBillDiscount, NO_BILL_DISCOUNT, type SaleLine, type DiscountMode, type BillDiscount,
+  allocateBillDiscount, allocateByWeight, gstBreakdown, gstIssue, normalizeGstin, toBillGst,
+  NO_BILL_DISCOUNT, NO_GST,
+  type SaleLine, type DiscountMode, type BillDiscount, type BillGst, type GstBreakdown,
 } from './sale-cart';
 import { ApiError } from "../../../../shared/api/client";
 import { scanApi } from "../../../../shared/api/scan";
@@ -48,6 +50,11 @@ export function NewSaleFlow() {
   const [cart, setCart] = useState<SaleLine[]>([]);
   // A discount on the whole bill, on top of any per-saree discounts.
   const [billDiscount, setBillDiscount] = useState<BillDiscount>(NO_BILL_DISCOUNT);
+  // Optional GST on the whole bill, added on top after every discount.
+  const [gst, setGst] = useState<BillGst>(NO_GST);
+  // The shop's GSTIN as the server recorded it on the sale (copied from the
+  // retail firm) — printed on the bill's letterhead when GST was charged.
+  const [sellerGstin, setSellerGstin] = useState<string | undefined>(undefined);
   const [scanError, setScanError] = useState<string | null>(null);
   const [showSareeList, setShowSareeList] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,13 +64,18 @@ export function NewSaleFlow() {
   // the WhatsApp send re-reads its figures from.
   const [saleRefs, setSaleRefs] = useState<string[]>([]);
 
-  // retail total → less per-saree discounts = subtotal → less bill discount = total
+  // retail total → less per-saree discounts = subtotal → less bill discount
+  // = taxable → plus GST (when charged) = total
   const originalTotal = cartOriginalTotal(cart);
   const subtotal = cartTotal(cart);
   const billOff = billDiscountAmount(subtotal, billDiscount);
-  const total = subtotal - billOff;
+  const taxable = subtotal - billOff;
+  const tax = gstBreakdown(taxable, gst);
+  const total = tax ? tax.total : taxable;
   const lineDiscount = originalTotal - subtotal;
-  const priceDiscount = originalTotal - total;
+  // GST is a tax on top, not a mark-up — the saving is measured before it.
+  const priceDiscount = originalTotal - taxable;
+  const billGst = tax ? toBillGst(tax, gst.gstin, sellerGstin) : undefined;
   const fmtPrice = (n: number) => formatMoney(rupees(n));
 
   const queryClient = useQueryClient();
@@ -254,7 +266,8 @@ export function NewSaleFlow() {
 
   const resetSale = () => {
     billId.current = null;
-    setStep(1); setCart([]); setBillDiscount(NO_BILL_DISCOUNT); setManualId(""); setPayment(null); setPayRef("");
+    setStep(1); setCart([]); setBillDiscount(NO_BILL_DISCOUNT); setGst(NO_GST); setSellerGstin(undefined);
+    setManualId(""); setPayment(null); setPayRef("");
     setPhone(""); setCustName(""); setCustAddress("");
     setCustSearch(""); setSelectedCustomer(null); setIsEditingCustomer(false);
     setIsNewCustomer(false); setShowCustomerList(false);
@@ -275,6 +288,7 @@ export function NewSaleFlow() {
         payRef={payRef}
         total={total}
         billDiscount={billOff ? { amount: billOff, note: billDiscountLabel(billDiscount) } : undefined}
+        gst={billGst}
         billRef={saleRefs[0]}
         saleRefs={saleRefs}
         isMobile={isMobile}
@@ -295,6 +309,7 @@ export function NewSaleFlow() {
         payRef={payRef}
         total={total}
         billDiscount={billOff ? { amount: billOff, note: billDiscountLabel(billDiscount) } : undefined}
+        gst={billGst}
         saleRefs={saleRefs}
         fmtPrice={fmtPrice}
         onShowBill={() => setShowBill(true)}
@@ -379,6 +394,8 @@ export function NewSaleFlow() {
           setLineDiscount={setLineDiscount}
           billDiscount={billDiscount}
           setBillDiscount={setBillDiscount}
+          gst={gst}
+          setGst={setGst}
           scanError={scanError}
           showSareeList={showSareeList}
           setShowSareeList={setShowSareeList}
@@ -441,7 +458,7 @@ export function NewSaleFlow() {
               <div style={{ padding: "14px 16px", borderTop: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)" }}>
                 <BillBreakdown
                   originalTotal={originalTotal} lineDiscount={lineDiscount} subtotal={subtotal}
-                  billOff={billOff} billNote={billDiscountLabel(billDiscount)} fmtPrice={fmtPrice}
+                  billOff={billOff} billNote={billDiscountLabel(billDiscount)} tax={tax} fmtPrice={fmtPrice}
                 />
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                   <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total payable</span>
@@ -523,6 +540,8 @@ export function NewSaleFlow() {
                 { label: "Sarees", value: `${cart.length} piece${cart.length !== 1 ? "s" : ""}` },
                 { label: "Payment method", value: payment ? payment.toUpperCase() : "—", mono: true },
                 ...(payRef ? [{ label: payment === "upi" ? "UPI reference" : "Card ending", value: payRef, mono: true }] : []),
+                { label: "GST", value: tax ? `${tax.rate}% · ${fmtPrice(tax.gst)}` : "Not applied", mono: !!tax },
+                ...(tax && gst.gstin.trim() ? [{ label: "Customer GSTIN", value: normalizeGstin(gst.gstin), mono: true }] : []),
                 { label: "Amount payable", value: fmtPrice(total), mono: true },
               ] as SummaryRow[])}
               footer={
@@ -550,7 +569,7 @@ export function NewSaleFlow() {
                   <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, marginTop: 6 }}>
                     <BillBreakdown
                       originalTotal={originalTotal} lineDiscount={lineDiscount} subtotal={subtotal}
-                      billOff={billOff} billNote={billDiscountLabel(billDiscount)} fmtPrice={fmtPrice}
+                      billOff={billOff} billNote={billDiscountLabel(billDiscount)} tax={tax} fmtPrice={fmtPrice}
                     />
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                       <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total payable</span>
@@ -588,6 +607,10 @@ export function NewSaleFlow() {
             primaryBusy={isSubmitting}
             onPrimary={async () => {
               if (isSubmitting) return;
+              // The stepper can jump here past the saree step, so the GST
+              // entry is checked again rather than trusted.
+              const gstProblem = gstIssue(gst);
+              if (gstProblem) { setSubmitError(gstProblem); return; }
               setIsSubmitting(true);
               setSubmitError(null);
               try {
@@ -617,21 +640,32 @@ export function NewSaleFlow() {
                 const billNote = billOff
                   ? `bill discount ${billDiscountLabel(billDiscount) ?? fmtPrice(billOff)}`
                   : undefined;
+                // GST is worked out once on the whole bill, then shared
+                // across the sarees by their taxable value, so the recorded
+                // GST adds up to exactly what the bill prints.
+                const lineTaxable = cart.map((l, i) => l.soldPrice - billShares[i]);
+                const gstShares = tax ? allocateByWeight(lineTaxable, tax.gst) : [];
+                const customerGstin = tax && gst.gstin.trim() ? normalizeGstin(gst.gstin) : undefined;
+                let recordedSellerGstin: string | undefined;
                 try {
                   for (const [i, line] of cart.entries()) {
+                    const lineGst = tax ? gstShares[i] : 0;
                     const sale = await salesApi.create({
                       sareeId: line.id,
                       channel: "RETAIL",
-                      amount: line.soldPrice - billShares[i],
+                      // What was paid for this saree — GST included.
+                      amount: lineTaxable[i] + lineGst,
                       customerId,
                       paymentMethod: payment ?? undefined,
                       paymentRef: payRef.trim() || undefined,
                       originalPrice: line.originalPrice,
                       discountNote: [discountLabel(line), billShares[i] ? billNote : undefined].filter(Boolean).join(" + ") || undefined,
                       billId: billId.current,
+                      ...(tax ? { gstRate: tax.rate, gstAmount: lineGst, customerGstin } : {}),
                     });
                     recorded.push(line.id);
                     refs.push(sale.saleRef);
+                    recordedSellerGstin ??= sale.sellerGstin ?? undefined;
                   }
                 } catch (err) {
                   if (recorded.length > 0) {
@@ -655,6 +689,7 @@ export function NewSaleFlow() {
                 // Inventory tab and the next sale's picker agree with the bill
                 // that was just raised.
                 refreshStock();
+                setSellerGstin(recordedSellerGstin);
                 setSaleRefs(refs);
                 setStep("success");
               } catch (err) {
@@ -678,15 +713,17 @@ export function NewSaleFlow() {
 /** Retail total → per-saree discounts → subtotal → bill discount, as the
  *  payment and confirm steps show it above the amount payable. Rows that are
  *  zero are left out; nothing renders when no discount was given at all. */
-function BillBreakdown({ originalTotal, lineDiscount, subtotal, billOff, billNote, fmtPrice }: {
+function BillBreakdown({ originalTotal, lineDiscount, subtotal, billOff, billNote, tax, fmtPrice }: {
   originalTotal: number;
   lineDiscount: number;
   subtotal: number;
   billOff: number;
   billNote?: string;
+  /** GST on the bill, when charged — shown as taxable value, CGST and SGST. */
+  tax?: GstBreakdown | null;
   fmtPrice: (n: number) => string;
 }) {
-  if (!lineDiscount && !billOff) return null;
+  if (!lineDiscount && !billOff && !tax) return null;
   const row = (label: string, value: string, color: string = C.muted) => (
     <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
       <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{label}</span>
@@ -699,6 +736,9 @@ function BillBreakdown({ originalTotal, lineDiscount, subtotal, billOff, billNot
       {lineDiscount !== 0 && row(lineDiscount > 0 ? "Saree discounts" : "Saree mark-ups", `${lineDiscount > 0 ? "−" : "+"} ${fmtPrice(Math.abs(lineDiscount))}`, C.gold)}
       {billOff > 0 && lineDiscount !== 0 && row("Subtotal", fmtPrice(subtotal))}
       {billOff > 0 && row(`Bill discount${billNote ? ` (${billNote})` : ""}`, `− ${fmtPrice(billOff)}`, C.gold)}
+      {tax && row("Taxable value", fmtPrice(tax.taxable))}
+      {tax && row(`CGST @ ${tax.rate / 2}%`, `+ ${fmtPrice(tax.cgst)}`, C.text)}
+      {tax && row(`SGST @ ${tax.rate / 2}%`, `+ ${fmtPrice(tax.sgst)}`, C.text)}
     </div>
   );
 }

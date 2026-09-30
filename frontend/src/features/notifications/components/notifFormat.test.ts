@@ -192,6 +192,28 @@ describe("sale notifications", () => {
     expect(n.sarees?.[0].source).toBe("Factory loom · Factory Loom FL-03");
   });
 
+  it("shows a GST bill's tax as its own rows and prices lines before GST", () => {
+    const n = toUnifiedNotif(notif("RETAIL_BILL_RECORDED", {
+      billRef: "RETAIL-Chetan-001-001",
+      customerName: "Chetan",
+      sareeCount: 1,
+      retailTotal: 1500,
+      discount: 150,
+      taxable: 1350,
+      gst: 68,
+      gstRate: 5,
+      customerGstin: "36AAACR5055K1Z5",
+      total: 1418,
+      lines: [{ sareeId: "A-01", rate: 1500, discount: 150, discountNote: "10%", amount: 1418, gstAmount: 68 }],
+    }));
+    expect(n.body).toBe("1 saree sold to Chetan for ₹1,418 incl. 5% GST after ₹150 off.");
+    const byLabel = Object.fromEntries((n.details ?? []).map(d => [d.label, d.value]));
+    expect(byLabel["Taxable value"]).toBe("₹1,350");
+    expect(byLabel["GST"]).toBe("5% · ₹68");
+    expect(byLabel["Customer GSTIN"]).toBe("36AAACR5055K1Z5");
+    expect(n.sarees?.map(x => x.price)).toEqual(["₹1,500 − ₹150 (10%) = ₹1,350"]);
+  });
+
   it("says when a past bill's rate is the listed price rather than a recorded discount", () => {
     const base = { billRef: "RETAIL-Ruchitha-004-001", sareeCount: 2, retailTotal: 56000, discount: 10000, total: 46000, lines: [] };
     const note = (payload: Record<string, unknown>) =>

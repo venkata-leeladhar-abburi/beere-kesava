@@ -1208,11 +1208,29 @@ model SaleRecord {
   // than by a person picking the sale. Keeps "the system did this" separate
   // from "someone decided this" in the audit trail.
   firmLinkedAuto Boolean      @default(false)
+  // Shared by every saree rung up on one counter bill (NewSaleFlow sends one
+  // per checkout). Null on older rows and single-piece sales — history falls
+  // back to grouping those by customer, payment and time.
+  billId         String?
+  // GST on a counter bill, when the shop chose to charge it. Null = no GST.
+  // The rate is the whole bill's (e.g. 5.00 → CGST 2.5% + SGST 2.5%).
+  gstRate        Decimal?     @db.Decimal(5, 2)
+  // This saree's share of the bill's GST. `amount` INCLUDES it — `amount` is
+  // always what the customer paid for the piece — so the taxable value is
+  // `amount - gstAmount`.
+  gstAmount      Decimal?     @db.Decimal(12, 2)
+  // Buyer's GSTIN, when a GST-registered customer asked for it on the bill.
+  customerGstin  String?
+  // The seller's GSTIN as it stood at sale time — copied from the retail firm
+  // the sale was booked to, so a later edit to the firm never rewrites an
+  // issued bill.
+  sellerGstin    String?
 
   @@index([sareeId])
   @@index([firmId])
   @@index([date])
   @@index([customerId])
+  @@index([billId])
 }
 
 model ReturnRecord {

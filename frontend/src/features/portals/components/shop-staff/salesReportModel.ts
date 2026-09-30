@@ -18,6 +18,7 @@ import {
   DEFAULT_DATE_FILTER, matchesDateFilter,
   type DateFilterState,
 } from "../../../../shared/ui/DateFilterBar";
+import { saleGstAmount, saleGstRate } from "../../../../lib/domain/saleGst";
 
 export function dateLabel(iso: string) {
   const d = new Date(iso);
@@ -65,7 +66,11 @@ export interface SalesReportRow {
   design: string;
   channel: "RETAIL" | "WHOLESALE";
   pay: string;
+  /** What was paid — GST included when the bill charged it. */
   amount: number;
+  /** This saree's share of the bill's GST (0 when none). */
+  gst: number;
+  gstRate: number | null;
   soldBy: string | null;
 }
 
@@ -133,6 +138,8 @@ export function useSalesReportModel() {
       channel: s.channel,
       pay: paymentLabel(s.paymentMethod),
       amount: Number(s.amount) || 0,
+      gst: saleGstAmount(s),
+      gstRate: saleGstRate(s),
       soldBy: s.soldBy ? `${s.soldBy.firstName ?? ""} ${s.soldBy.lastName ?? ""}`.trim() || null : null,
     })), [allSales, customerMap, filter]);
 

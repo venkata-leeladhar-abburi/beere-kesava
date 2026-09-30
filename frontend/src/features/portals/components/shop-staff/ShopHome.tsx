@@ -24,7 +24,7 @@ function dateLabel(iso: string) {
   return d.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
 }
 
-function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void }) {
+function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return" | "sales") => void }) {
   const { user } = useAuth();
   const canSeePrices = useCanSeePrices();
   const [alerted, setAlerted] = useState(false);
@@ -155,7 +155,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
 
       {/* Recent Sales */}
       <div style={{ margin: "24px 20px 0" }}>
-        <SectionTitle title="Recent Sales — Today" link="View All →" onLink={() => onNavigate("reports")} />
+        <SectionTitle title="Recent Sales — Today" link="View All →" onLink={() => onNavigate("sales")} />
         <Card style={{ margin: 0, padding: 0, overflow: "hidden", border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 16 }}>
           {salesLoading ? (
             <div style={{ padding: 16 }}>

@@ -15,6 +15,7 @@ import { customersApi, type BackendCustomer } from "@/shared/api/customers";
 import { salesApi, type BackendSaleRecord } from "@/shared/api/sales";
 import { DocumentViewer, RetailBillDocument, DEFAULT_LETTERHEAD_FIRM } from "@/shared/ui/document";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { billGstFromSales, saleGstAmount, saleGstRate, saleTaxable } from "@/lib/domain/saleGst";
 import { toInitials } from "@/shared/lib/initials";
 import { useResponsive } from "@/hooks/useResponsive";
 
@@ -335,8 +336,9 @@ function BillViewModal({ sale, customer, onClose }: {
             customerName={customer.name}
             customerPhone={customer.phone ?? undefined}
             customerAddress={customer.address ?? undefined}
-            lines={[{ sareeId: sale.sareeId, type, design, soldPrice: Number(sale.amount) }]}
+            lines={[{ sareeId: sale.sareeId, type, design, soldPrice: saleTaxable(sale) }]}
             total={Number(sale.amount)}
+            gst={billGstFromSales([sale])}
             paymentMethod={sale.paymentMethod ?? undefined}
             paymentRef={sale.paymentRef ?? undefined}
             soldBy={actorName(sale.soldBy) ?? undefined}
@@ -417,8 +419,15 @@ function SaleRow({ sale, canSeePrices, isMobile, onViewBill }: {
           </Button>
         )}
         {canSeePrices && (
-          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>
-            {money(Number(sale.amount))}
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>
+              {money(Number(sale.amount))}
+            </div>
+            {saleGstRate(sale) !== null && (
+              <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted }}>
+                incl. {money(saleGstAmount(sale))} GST @ {saleGstRate(sale)}%
+              </div>
+            )}
           </div>
         )}
       </div>

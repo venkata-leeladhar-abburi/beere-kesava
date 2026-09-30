@@ -23,6 +23,9 @@ import {
   RegisterReturnedSareesDto,
 } from "./dto/register-returned-sarees.dto";
 
+/** Rupees a saree's GST share may sit off its exact rate — see gstFields. */
+const GST_SHARE_TOLERANCE = 2;
+
 /** One saree on a counter bill, as the admin feed shows it. */
 interface BillLine {
   saleRef: string;
@@ -32,7 +35,10 @@ interface BillLine {
   rate: number;
   discount: number;
   discountNote: string | null;
+  /** What was paid for the piece — GST included when the bill charged it. */
   amount: number;
+  /** This piece's share of the bill's GST (0 when none was charged). */
+  gstAmount: number;
 }
 
 const saleInclude = {
@@ -92,17 +98,61 @@ export class SalesService {
    * firm is active the sale is simply left unconnected, exactly as before.
    */
   private async retailFirmLink(channel: SalesChannel) {
-    if (channel !== SalesChannel.RETAIL) return {};
-    const firm = await this.prisma.firm.findFirst({
-      where: { isRetailSalesFirm: true },
-      select: { id: true },
-    });
+    const firm = await this.retailFirm(channel);
     if (!firm) return {};
     return {
       firmId: firm.id,
       firmLinkedAt: new Date(),
       firmLinkedAuto: true,
       firmLinkNote: "Booked automatically — active retail firm at time of sale",
+    };
+  }
+
+  private retailFirm(channel: SalesChannel) {
+    if (channel !== SalesChannel.RETAIL) return Promise.resolve(null);
+    return this.prisma.firm.findFirst({
+      where: { isRetailSalesFirm: true },
+      select: { id: true, gstNumber: true },
+    });
+  }
+
+  /**
+   * The GST columns a new sale carries. GST is optional and bill-wide: the
+   * counter sends the bill's rate plus this saree's share of the bill's GST,
+   * already included in `amount`. The share is checked against the rate so a
+   * client bug can never book a bill whose tax doesn't add up. The ₹2
+   * allowance covers the counter rounding CGST and SGST each to the nearest
+   * rupee, plus the whole-rupee split of the bill's GST across its sarees.
+   */
+  private async gstFields(dto: CreateSaleDto) {
+    const hasRate = dto.gstRate != null;
+    const hasAmount = dto.gstAmount != null;
+    if (!hasRate && !hasAmount) {
+      if (dto.customerGstin) {
+        throw new BadRequestException("A customer GSTIN can only be recorded on a sale that charges GST");
+      }
+      return {};
+    }
+    if (!hasRate || !hasAmount) {
+      throw new BadRequestException("gstRate and gstAmount must be sent together");
+    }
+    const amount = Number(dto.amount);
+    const gst = Number(dto.gstAmount);
+    if (gst > amount) {
+      throw new BadRequestException(`GST ₹${gst} is more than the sale amount ₹${amount}`);
+    }
+    const expected = ((amount - gst) * Number(dto.gstRate)) / 100;
+    if (Math.abs(expected - gst) > GST_SHARE_TOLERANCE) {
+      throw new BadRequestException(
+        `GST ₹${gst} does not match ${dto.gstRate}% of the taxable value ₹${(amount - gst).toFixed(2)}`,
+      );
+    }
+    const firm = await this.retailFirm(dto.channel);
+    return {
+      gstRate: dto.gstRate,
+      gstAmount: gst,
+      customerGstin: dto.customerGstin ?? null,
+      sellerGstin: firm?.gstNumber?.trim() || null,
     };
   }
 
@@ -180,6 +230,8 @@ export class SalesService {
       dto.channel === SalesChannel.WHOLESALE
         ? customer.code ?? businessSegment(customer.name, "Customer")
         : customer.code ?? nameSegment(customer.name, "Customer");
+    // Validated before a sale ref is spent on a bill that would be rejected.
+    const gst = await this.gstFields(dto);
     const saleRef = await this.idGenerator.nextScoped(salePrefix, saleSegment);
     const sareeStatus = dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL";
     const firmLink = await this.retailFirmLink(dto.channel);
@@ -211,6 +263,8 @@ export class SalesService {
           paymentMethod: dto.paymentMethod,
           paymentRef: dto.paymentRef,
           soldById: dto.actorId,
+          billId: dto.billId,
+          ...gst,
           ...firmLink,
         },
       }),
@@ -278,6 +332,8 @@ export class SalesService {
       dto.channel === SalesChannel.WHOLESALE
         ? customer.code ?? businessSegment(customer.name, "Customer")
         : customer.code ?? nameSegment(customer.name, "Customer");
+    // Validated before a sale ref is spent on a bill that would be rejected.
+    const gst = await this.gstFields(dto);
     const saleRef = await this.idGenerator.nextScoped(salePrefix, saleSegment);
     const sareeStatus = dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL";
     const firmLink = await this.retailFirmLink(dto.channel);
@@ -294,6 +350,8 @@ export class SalesService {
           paymentMethod: dto.paymentMethod,
           paymentRef: dto.paymentRef,
           soldById: dto.actorId,
+          billId: dto.billId,
+          ...gst,
           ...firmLink,
         },
       }),
@@ -352,16 +410,21 @@ export class SalesService {
         : null,
     ]);
     const amount = Number(dto.amount);
-    const rate = dto.originalPrice ?? details?.retailPrice ?? amount;
+    const gstAmount = Number(dto.gstAmount ?? 0);
+    // The discount is what came off the retail rate, so it is measured
+    // against the price before GST was added on top.
+    const taxable = amount - gstAmount;
+    const rate = dto.originalPrice ?? details?.retailPrice ?? taxable;
     const line: BillLine = {
       saleRef,
       sareeId: dto.sareeId,
       sareeType: details?.sareeType ?? null,
       source: details?.source ?? null,
       rate,
-      discount: Math.max(0, rate - amount),
+      discount: Math.max(0, rate - taxable),
       discountNote: dto.discountNote ?? null,
       amount,
+      gstAmount,
     };
     const header = {
       channel: dto.channel,
@@ -370,6 +433,8 @@ export class SalesService {
       paymentMethod: dto.paymentMethod ?? null,
       paymentRef: dto.paymentRef ?? null,
       soldByName: soldBy ? `${soldBy.firstName} ${soldBy.lastName}`.trim() : null,
+      gstRate: dto.gstRate ?? null,
+      customerGstin: dto.customerGstin ?? null,
     };
 
     // A counter bill is one event however many sarees are on it: every line
@@ -379,14 +444,23 @@ export class SalesService {
         const earlier = Array.isArray(prev?.lines) ? (prev.lines as BillLine[]) : [];
         const lines = [...earlier.filter((l) => l.saleRef !== saleRef), line];
         const retailTotal = lines.reduce((sum, l) => sum + l.rate, 0);
-        const total = lines.reduce((sum, l) => sum + l.amount, 0);
+        // Summed in paise: with GST the amounts carry paise, and float
+        // addition would leave the feed showing ₹1,350.0000000001.
+        const paise = (v: unknown) => Math.round(Number(v ?? 0) * 100);
+        const totalPaise = lines.reduce((sum, l) => sum + paise(l.amount), 0);
+        const gstPaise = lines.reduce((sum, l) => sum + paise(l.gstAmount), 0);
+        const total = totalPaise / 100;
+        const gst = gstPaise / 100;
+        const taxable = (totalPaise - gstPaise) / 100;
         return {
           ...header,
           // The bill is numbered after its first sale, as the printed bill is.
           billRef: lines[0].saleRef,
           sareeCount: lines.length,
           retailTotal,
-          discount: Math.max(0, retailTotal - total),
+          discount: Math.max(0, retailTotal - taxable),
+          taxable,
+          gst,
           total,
           lines,
         };

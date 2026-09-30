@@ -107,10 +107,11 @@ export function SupplierAnalytics() {
     pays.forEach(p => { if (m.has(p.supplierId)) touch(p.supplierId).paid += p.amount; });
     return [...m.entries()].map(([id, v]) => {
       const s = suppliers.find(x => x.id === id);
+      const name = s?.name || id;
       return {
         id,
-        name: s?.name ?? id,
-        short: (s?.name ?? id).length > 17 ? (s!.name).slice(0, 16) + "…" : (s?.name ?? id),
+        name,
+        short: name.length > 17 ? name.slice(0, 16) + "…" : name,
         initials: s?.initials ?? "??",
         specialty: s?.specialty ?? "—",
         terms: s?.terms ?? "—",

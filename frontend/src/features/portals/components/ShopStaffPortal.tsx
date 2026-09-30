@@ -31,6 +31,7 @@ import { ReportsSection } from "./shop-staff/desktop/ReportsSection";
 import { ReturnSection } from "./shop-staff/desktop/ReturnSection";
 import { LowStockDialog } from "./shop-staff/desktop/LowStockDialog";
 import { NotificationsSection } from "./shop-staff/desktop/NotificationsSection";
+import { AllSalesPage } from "./shop-staff/AllSalesPage";
 
 export { UserProfileModal };
 
@@ -58,7 +59,8 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   };
 
   let active: TabId = "home";
-  if (pathname.includes("/sale")) active = "sale";
+  // Segment match: "/shop/sales" (All Sales) must not light up the New Sale tab.
+  if (/\/sale(\/|$)/.test(pathname)) active = "sale";
   else if (pathname.includes("/inventory")) active = "inventory";
   else if (pathname.includes("/customers")) active = "customers";
   else if (pathname.includes("/reports")) active = canSeeReports ? "reports" : "home";
@@ -69,6 +71,11 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
 
   const showReturn = pathname.includes("/return");
   const showNotifications = pathname.includes("/notifications");
+  // /shop/sales — every sale on record, reached from Home's "View All". Open to
+  // every shop login; money inside is gated by canSeePrices like everywhere else.
+  const showAllSales = /^\/shop\/sales(\/|$)/.test(pathname);
+  const openAllSales = () => routerNavigate("/shop/sales");
+  const closeAllSales = () => routerNavigate("/shop/home");
 
   const setActive = (tab: TabId) => {
     const routeMap: Record<TabId, string> = {
@@ -124,9 +131,10 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
 
   const renderPage = () => {
     if (showNotifications) return <NotificationsSection isTablet={false} compact />;
+    if (showAllSales) return <AllSalesPage onBack={closeAllSales} />;
     if (showReturn) return <ProcessReturn onBack={() => setShowReturn(false)} />;
     switch (active) {
-      case "home": return <ShopHome onNavigate={(t) => { if (t === "return") setShowReturn(true); else setActive(t as TabId); }} />;
+      case "home": return <ShopHome onNavigate={(t) => { if (t === "return") setShowReturn(true); else if (t === "sales") openAllSales(); else setActive(t); }} />;
       case "sale": return <NewSaleFlow />;
       // Shop stock only — the sarees an admin actually dispatched here. This
       // used to render the admin's whole Finished Goods table, which showed the
@@ -158,37 +166,41 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
 
         {/* ── Page Content ── */}
         <AnimatePresence mode="wait">
-          <motion.div key={showNotifications ? "notifications" : showReturn ? "return" : customerDetailId ? `customer-${customerDetailId}` : active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
+          <motion.div key={showNotifications ? "notifications" : showAllSales ? "all-sales" : showReturn ? "return" : customerDetailId ? `customer-${customerDetailId}` : active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
 
             {showNotifications && (
               <NotificationsSection bp={bp} isTablet={isTablet} />
             )}
 
-            {!showNotifications && !showReturn && active === "home" && (
-              <HomeSection bp={bp} isTablet={isTablet} canSeePrices={canSeePrices} setActive={setActive} setShowReturn={setShowReturn}
+            {!showNotifications && showAllSales && (
+              <AllSalesPage onBack={closeAllSales} />
+            )}
+
+            {!showNotifications && !showAllSales && !showReturn && active === "home" && (
+              <HomeSection bp={bp} isTablet={isTablet} canSeePrices={canSeePrices} setActive={setActive} setShowReturn={setShowReturn} onViewAllSales={openAllSales}
                 invLowStockSent={invLowStockSent} setShowInvLowStockDialog={setShowInvLowStockDialog} />
             )}
 
-            {!showNotifications && !showReturn && active === "sale" && (
+            {!showNotifications && !showAllSales && !showReturn && active === "sale" && (
               <SaleSection bp={bp} isTablet={isTablet} />
             )}
 
             {/* Shop stock only — see the mobile-layout "inventory" case above. */}
-            {!showNotifications && !showReturn && active === "inventory" && (
+            {!showNotifications && !showAllSales && !showReturn && active === "inventory" && (
               <ShopInventory />
             )}
 
-            {!showNotifications && !showReturn && active === "customers" && (
+            {!showNotifications && !showAllSales && !showReturn && active === "customers" && (
               customerDetailId
                 ? <CustomerProfilePage customerId={customerDetailId} onBack={closeCustomer} onRecordSale={recordSaleFor} />
                 : <CustomersSection bp={bp} isTablet={isTablet} canSeePrices={canSeePrices} onOpenCustomer={openCustomer} />
             )}
 
-            {!showNotifications && !showReturn && active === "reports" && canSeeReports && (
+            {!showNotifications && !showAllSales && !showReturn && active === "reports" && canSeeReports && (
               <ReportsSection bp={bp} isTablet={isTablet} canSeePrices={canSeePrices} />
             )}
 
-            {!showNotifications && showReturn && (
+            {!showNotifications && !showAllSales && showReturn && (
               <ReturnSection bp={bp} isTablet={isTablet} canSeePrices={canSeePrices} setShowReturn={setShowReturn} />
             )}
 
@@ -224,8 +236,8 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
     <ShopPriceContext.Provider value={canSeePrices}>
     <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto", minHeight: "100dvh", background: "#FAFAFA", display: "flex", flexDirection: "column" as const, position: "relative" as const }}>
       <MobileHeader
-        title={showNotifications ? "Notifications" : showReturn ? "Process Return" : customerDetailId ? "Customer Record" : PAGE_TITLES[active]}
-        onBack={showNotifications ? () => routerNavigate("/shop/home") : showReturn ? () => setShowReturn(false) : customerDetailId ? closeCustomer : onBack}
+        title={showNotifications ? "Notifications" : showAllSales ? "All Sales" : showReturn ? "Process Return" : customerDetailId ? "Customer Record" : PAGE_TITLES[active]}
+        onBack={showNotifications ? () => routerNavigate("/shop/home") : showAllSales ? closeAllSales : showReturn ? () => setShowReturn(false) : customerDetailId ? closeCustomer : onBack}
         activeTab={active}
         setActive={(tab) => { setShowReturn(false); setActive(tab); }}
         setShowReturn={setShowReturn}
@@ -237,9 +249,9 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
 
       {/* Content — extra bottom padding on Home/Inventory so the floating "New Sale"
           button never covers the last row of a list */}
-      <div id="main-content" style={{ flex: 1, overflowY: "auto" as const, paddingBottom: (showReturn || active === "home" || active === "inventory") ? "calc(140px + env(safe-area-inset-bottom, 0px))" : "calc(110px + env(safe-area-inset-bottom, 0px))" }}>
+      <div id="main-content" style={{ flex: 1, overflowY: "auto" as const, paddingBottom: (!showAllSales && (showReturn || active === "home" || active === "inventory")) ? "calc(140px + env(safe-area-inset-bottom, 0px))" : "calc(110px + env(safe-area-inset-bottom, 0px))" }}>
         <AnimatePresence mode="wait">
-          <motion.div key={showNotifications ? "notifications" : showReturn ? "return" : customerDetailId ? `customer-${customerDetailId}` : active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
+          <motion.div key={showNotifications ? "notifications" : showAllSales ? "all-sales" : showReturn ? "return" : customerDetailId ? `customer-${customerDetailId}` : active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
             {renderPage()}
           </motion.div>
         </AnimatePresence>
@@ -248,7 +260,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
       {/* Floating quick-action — New Sale (Home + Inventory only) */}
       <div style={{ position: "fixed" as const, bottom: "calc(76px + env(safe-area-inset-bottom, 0px))", left: 0, width: "100%", zIndex: 110, pointerEvents: "none" as const }}>
         <AnimatePresence>
-          {!showNotifications && !showReturn && (active === "home" || active === "inventory") && (
+          {!showNotifications && !showAllSales && !showReturn && (active === "home" || active === "inventory") && (
             <motion.div
               key={active}
               initial={{ scale: 0, opacity: 0 }}
@@ -274,7 +286,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
       </div>
 
       {/* Bottom Tab Bar — full-width */}
-      <MobileTabBar active={showNotifications ? "" : active} showReturn={showReturn} setActive={setActive} setShowReturn={setShowReturn} />
+      <MobileTabBar active={showNotifications || showAllSales ? "" : active} showReturn={showReturn} setActive={setActive} setShowReturn={setShowReturn} />
 
       <AnimatePresence>
         {showProfileModal && (

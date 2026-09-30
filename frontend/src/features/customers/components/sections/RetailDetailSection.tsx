@@ -15,6 +15,7 @@ import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
 import { SectionCard } from "@/shared/ui/SectionCard";
 import { Modal } from "@/shared/ui/overlay";
 import { DocumentViewer, RetailBillDocument, DEFAULT_LETTERHEAD_FIRM } from "@/shared/ui/document";
+import { billGstFromSales, saleGstAmount, saleGstRate, saleTaxable } from "@/lib/domain/saleGst";
 
 interface RetailPurchaseRow {
   saleRef: string;
@@ -67,6 +68,17 @@ export function RetailDetailSection({
     {
       id: "price", header: "Price Paid", accessor: r => r.price,
       cell: (_v, r) => <span style={{ color: T.antiqueGold, fontWeight: 600 }}><Money value={rupees(r.price)} /></span>,
+    },
+    {
+      id: "gst", header: "GST", accessor: r => saleGstAmount(r.sale), priority: 3,
+      cell: (_v, r) => saleGstRate(r.sale) === null
+        ? <span style={{ color: T.taupe }}>—</span>
+        : (
+          <span style={{ color: T.luxuryBrown, fontSize: 12 }}>
+            <Money value={rupees(saleGstAmount(r.sale))} /> @ {saleGstRate(r.sale)}%
+            {r.sale.customerGstin ? <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: T.taupe }}>{r.sale.customerGstin}</div> : null}
+          </span>
+        ),
     },
     {
       id: "return", header: "Return", accessor: r => r.returned, priority: 3,
@@ -348,9 +360,10 @@ export function RetailDetailSection({
                   sareeId: billSale.sareeId,
                   type: billSale.saree?.sareeType?.type ?? billSale.saree?.sareeTypeCode ?? undefined,
                   design: billSale.saree?.designCode ?? undefined,
-                  soldPrice: Number(billSale.amount),
+                  soldPrice: saleTaxable(billSale),
                 }]}
                 total={Number(billSale.amount)}
+                gst={billGstFromSales([billSale])}
                 paymentMethod={billSale.paymentMethod ?? undefined}
                 paymentRef={billSale.paymentRef ?? undefined}
                 soldBy={[billSale.soldBy?.firstName, billSale.soldBy?.lastName].filter(Boolean).join(" ").trim() || undefined}

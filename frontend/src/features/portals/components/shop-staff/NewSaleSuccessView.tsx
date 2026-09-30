@@ -10,6 +10,7 @@ import {
   DEFAULT_LETTERHEAD_FIRM,
   RetailBillDocument,
   exportDocumentPdfBlob,
+  type RetailBillGst,
 } from "../../../../shared/ui/document";
 
 interface NewSaleSuccessViewProps {
@@ -23,6 +24,8 @@ interface NewSaleSuccessViewProps {
   total: number;
   /** Discount on the whole bill (after per-saree discounts), when one was given. */
   billDiscount?: { amount: number; note?: string };
+  /** GST on the whole bill, when charged — `total` already includes it. */
+  gst?: RetailBillGst;
   /** One SaleRecord ref per saree, in the order the backend recorded them. */
   saleRefs: string[];
   fmtPrice: (n: number) => string;
@@ -49,6 +52,7 @@ export function NewSaleSuccessView({
   payRef,
   total,
   billDiscount,
+  gst,
   saleRefs,
   fmtPrice,
   onShowBill,
@@ -82,6 +86,7 @@ export function NewSaleSuccessView({
           lines={lines.map(toBillLine)}
           total={total}
           billDiscount={billDiscount}
+          gst={gst}
           paymentMethod={payment ?? undefined}
           paymentRef={payRef}
           saleRefs={saleRefs}
@@ -153,6 +158,24 @@ export function NewSaleSuccessView({
                 <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Bill discount{billDiscount.note ? ` (${billDiscount.note})` : ""}</span>
                 <span style={{ fontFamily: F.u, fontSize: 13, color: C.gold }}>− {fmtPrice(billDiscount.amount)}</span>
               </div>
+            )}
+            {gst && (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+                  <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Taxable value</span>
+                  <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{fmtPrice(total - gst.amount)}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+                  <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>GST @ {gst.rate}% (CGST + SGST)</span>
+                  <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>+ {fmtPrice(gst.amount)}</span>
+                </div>
+                {gst.customerGstin && (
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+                    <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Customer GSTIN</span>
+                    <span style={{ fontFamily: F.m, fontSize: 13, color: C.text }}>{gst.customerGstin}</span>
+                  </div>
+                )}
+              </>
             )}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: `1px solid ${C.bdr}`, paddingTop: 10, marginTop: 4 }}>
               <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Total ({lines.length} saree{lines.length !== 1 ? "s" : ""})</span>

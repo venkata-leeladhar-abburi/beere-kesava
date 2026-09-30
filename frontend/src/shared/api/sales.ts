@@ -14,6 +14,16 @@ interface RawSaleRecord {
   amount: string; // Prisma Decimal serialised as string
   paymentMethod: string | null;
   paymentRef: string | null;
+  /** Shared by every saree on one counter bill; null on older rows. */
+  billId?: string | null;
+  /** GST rate (%) on the bill this sale belongs to; null when none was charged. */
+  gstRate?: string | null;
+  /** This saree's share of the bill's GST — INCLUDED in `amount`. */
+  gstAmount?: string | null;
+  /** Buyer's GSTIN, when they gave one. */
+  customerGstin?: string | null;
+  /** Shop's GSTIN as recorded at sale time. */
+  sellerGstin?: string | null;
   // Included by SalesService's saleInclude, but only the fields this app
   // actually reads are declared here.
   saree?: {
@@ -21,7 +31,15 @@ interface RawSaleRecord {
     sareeTypeCode: string | null;
     sareeType: { type: string } | null;
   } | null;
-  customer?: { id: string; name: string } | null;
+  customer?: {
+    id: string;
+    name: string;
+    /** Returned by the backend's `customer: true` include; read for bills. */
+    code?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    city?: string | null;
+  } | null;
   /** Shop Staff / Accountant who rang up this sale. */
   soldBy?: BackendActorSummary | null;
   /** Free-text type from the purchase line, for external pieces with no sareeTypeCode. */
@@ -51,12 +69,30 @@ export interface BackendSaleRecord {
   saleDate: string;
   paymentMethod: string | null;
   paymentRef: string | null;
+  /** Shared by every saree on one counter bill; null on older rows. */
+  billId?: string | null;
+  /** GST rate (%) on the bill this sale belongs to; null when none was charged. */
+  gstRate?: string | null;
+  /** This saree's share of the bill's GST — INCLUDED in `amount`. */
+  gstAmount?: string | null;
+  /** Buyer's GSTIN, when they gave one. */
+  customerGstin?: string | null;
+  /** Shop's GSTIN as recorded at sale time. */
+  sellerGstin?: string | null;
   saree?: {
     designCode: string | null;
     sareeTypeCode: string | null;
     sareeType: { type: string } | null;
   } | null;
-  customer?: { id: string; name: string } | null;
+  customer?: {
+    id: string;
+    name: string;
+    /** Returned by the backend's `customer: true` include; read for bills. */
+    code?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    city?: string | null;
+  } | null;
   /** Shop Staff / Accountant who rang up this sale. */
   soldBy?: BackendActorSummary | null;
   /** Free-text type from the purchase line, for external pieces with no sareeTypeCode. */
@@ -105,6 +141,12 @@ export interface CreateSalePayload {
   discountNote?: string;
   /** Shared by every saree on one counter bill — one admin notification per bill. */
   billId?: string;
+  /** GST rate (%) on the whole bill, when charged. Sent with `gstAmount`. */
+  gstRate?: number;
+  /** This saree's share of the bill's GST, in rupees — already inside `amount`. */
+  gstAmount?: number;
+  /** Buyer's GSTIN (15 characters), when they gave one. */
+  customerGstin?: string;
 }
 
 export interface CreateReturnPayload {
@@ -261,8 +303,50 @@ export const salesApi = {
     apiClient.post<RawReturnRecord>(`/sales/returns/${encodeURIComponent(returnRef)}/restock`, {}),
 
   /** GET /sales/returns/all */
-  listReturns: async (pageSize = 100): Promise<PaginatedResponse<BackendSaleReturn>> => {
-    const res = await apiClient.get<PaginatedResponse<RawReturnRecord>>(`/sales/returns/all?pageSize=${pageSize}`);
+  listReturns: async (pageSize = 100, page = 1): Promise<PaginatedResponse<BackendSaleReturn>> => {
+    const params = new URLSearchParams({ pageSize: String(pageSize) });
+    if (page > 1) params.set("page", String(page));
+    const res = await apiClient.get<PaginatedResponse<RawReturnRecord>>(`/sales/returns/all?${params.toString()}`);
     return { ...res, items: res.items.map(normalizeReturn) };
   },
+
+  /**
+   * Every sale on record, walking the paginated endpoint (the server caps a
+   * page at 500). Pages after the first are fetched in parallel. `maxPages`
+   * is a safety stop, not an expected limit.
+   */
+  listAll: async (maxPages = 40): Promise<BackendSaleRecord[]> => {
+    const first = await salesApi.list(ALL_PAGE_SIZE, { page: 1 });
+    const pages = Math.min(Math.ceil(first.total / ALL_PAGE_SIZE), maxPages);
+    if (pages <= 1) return first.items;
+    const rest = await Promise.all(
+      Array.from({ length: pages - 1 }, (_, i) => salesApi.list(ALL_PAGE_SIZE, { page: i + 2 })),
+    );
+    return dedupeBy([first, ...rest].flatMap(r => r.items), s => s.saleRef);
+  },
+
+  /** Every return on record — same page walk as `listAll`. */
+  listAllReturns: async (maxPages = 40): Promise<BackendSaleReturn[]> => {
+    const first = await salesApi.listReturns(ALL_PAGE_SIZE, 1);
+    const pages = Math.min(Math.ceil(first.total / ALL_PAGE_SIZE), maxPages);
+    if (pages <= 1) return first.items;
+    const rest = await Promise.all(
+      Array.from({ length: pages - 1 }, (_, i) => salesApi.listReturns(ALL_PAGE_SIZE, i + 2)),
+    );
+    return dedupeBy([first, ...rest].flatMap(r => r.items), r => r.returnRef);
+  },
 };
+
+const ALL_PAGE_SIZE = 500;
+
+/** A row recorded between two page fetches shifts every later page by one,
+ *  so the same record can arrive twice — keep the first copy. */
+function dedupeBy<T>(items: T[], key: (item: T) => string): T[] {
+  const seen = new Set<string>();
+  return items.filter(item => {
+    const k = key(item);
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}

@@ -25,10 +25,12 @@ function dateLabel(iso: string) {
 const PAYMENT_LABEL: Record<string, string> = { cash: "Cash", upi: "UPI", card: "Card", other: "Other" };
 
 export function HomeSection({
-  isTablet, canSeePrices, setActive, invLowStockSent, setShowInvLowStockDialog,
+  isTablet, canSeePrices, setActive, onViewAllSales, invLowStockSent, setShowInvLowStockDialog,
 }: {
   bp: "tablet" | "desktop"; isTablet: boolean; canSeePrices: boolean;
   setActive: (tab: TabId) => void; setShowReturn: (v: boolean) => void;
+  /** Opens /shop/sales — every sale on record, with filters and bills. */
+  onViewAllSales: () => void;
   invLowStockSent: boolean; setShowInvLowStockDialog: (v: boolean) => void;
 }) {
   const { user } = useAuth();
@@ -138,7 +140,7 @@ export function HomeSection({
             </div>
 
             {/* Recent Sales */}
-            <DSH label="Recent Sales — Today" link="View All →" onLink={() => setActive("reports")} />
+            <DSH label="Recent Sales — Today" link="View All →" onLink={onViewAllSales} />
             <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid rgba(110,15,45,0.18)`, boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)", overflow: isTablet ? "auto" : "hidden", marginBottom: 32 }}>
               <div role="table" aria-label="Recent Sales — Today" className={isTablet ? "min-w-[640px]" : undefined}>
                 <div role="rowgroup">

@@ -9,6 +9,7 @@
  * column), 2 becomes a label/value pair, 3 is hidden on small screens.
  */
 import { C, Chip } from "./theme";
+import { rupees, formatMoney } from "../../../../lib/domain/money";
 import type { ColumnDef } from "../../../../shared/ui/data";
 import type { SalesReportRow, ReturnReportRow } from "./salesReportModel";
 
@@ -37,7 +38,15 @@ export function salesReportColumns(canSeePrices: boolean): ColumnDef<SalesReport
     { id: "pay", header: "Payment", accessor: r => r.pay, type: "text", width: 140, sortable: true, priority: 2 },
     { id: "soldBy", header: "Sold by", accessor: r => r.soldBy, type: "text", width: 160, sortable: true, priority: 3 },
     ...(canSeePrices
-      ? [{ id: "amount", header: "Amount", accessor: (r: SalesReportRow) => r.amount, type: "currency" as const, width: 150, sortable: true, priority: 2 as const }]
+      ? [
+        {
+          id: "gst", header: "GST", accessor: (r: SalesReportRow) => r.gst, type: "currency" as const, width: 140, sortable: true, priority: 3 as const,
+          cell: (_v: unknown, r: SalesReportRow) => r.gstRate === null
+            ? <span style={{ color: "var(--text-tertiary)" }}>—</span>
+            : <span>{formatMoney(rupees(r.gst))} <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>@ {r.gstRate}%</span></span>,
+        },
+        { id: "amount", header: "Amount", accessor: (r: SalesReportRow) => r.amount, type: "currency" as const, width: 150, sortable: true, priority: 2 as const },
+      ]
       : []),
   ];
 }

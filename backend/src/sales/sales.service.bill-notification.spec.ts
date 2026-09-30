@@ -68,6 +68,24 @@ describe("SalesService — one notification per counter bill", () => {
     });
   });
 
+  it("measures the discount before GST and totals the bill's GST", async () => {
+    await notify("RETAIL-Chetan-001-001", sale("RAMOJI-L1-B001-008", 1417.5, { billId: "b1", originalPrice: 1500, discountNote: "10%", gstRate: 5, gstAmount: 67.5 }));
+    await notify("RETAIL-Chetan-001-002", sale("RAMOJI-L1-B001-009", 1575, { billId: "b1", originalPrice: 1500, gstRate: 5, gstAmount: 75 }));
+
+    expect(stored).toMatchObject({
+      gstRate: 5,
+      retailTotal: 3000,
+      discount: 150,
+      taxable: 2850,
+      gst: 142.5,
+      total: 2992.5,
+      lines: [
+        { sareeId: "RAMOJI-L1-B001-008", discount: 150, amount: 1417.5, gstAmount: 67.5 },
+        { sareeId: "RAMOJI-L1-B001-009", discount: 0, amount: 1575, gstAmount: 75 },
+      ],
+    });
+  });
+
   it("never lists the same sale twice if it is reported again", async () => {
     const dto = sale("RAMOJI-L1-B001-008", 1500, { billId: "b1" });
     await notify("RETAIL-Chetan-001-001", dto);

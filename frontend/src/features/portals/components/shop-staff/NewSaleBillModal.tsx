@@ -5,6 +5,7 @@ import {
   DocumentViewer,
   RetailBillDocument,
   DEFAULT_LETTERHEAD_FIRM,
+  type RetailBillGst,
 } from "../../../../shared/ui/document";
 import { toBillLine, type SaleLine } from "./sale-cart";
 
@@ -18,6 +19,8 @@ interface NewSaleBillModalProps {
   total: number;
   /** Discount on the whole bill (after per-saree discounts), when one was given. */
   billDiscount?: { amount: number; note?: string };
+  /** GST on the whole bill, when charged — `total` already includes it. */
+  gst?: RetailBillGst;
   /** The bill's own reference — empty while previewing a sale not yet recorded. */
   billRef?: string;
   /** Every SaleRecord reference on this bill — listed when the basket has more than one. */
@@ -41,6 +44,7 @@ export function NewSaleBillModal({
   payRef,
   total,
   billDiscount,
+  gst,
   billRef,
   saleRefs,
   isMobile,
@@ -66,6 +70,7 @@ export function NewSaleBillModal({
           lines={lines.map(toBillLine)}
           total={total}
           billDiscount={billDiscount}
+          gst={gst}
           paymentMethod={payment ?? undefined}
           paymentRef={payRef}
           saleRefs={saleRefs}

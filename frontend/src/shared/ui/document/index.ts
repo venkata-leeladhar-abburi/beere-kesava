@@ -16,7 +16,7 @@ export { PurchaseOrderDocument, type PODocumentItem, type PurchaseOrderDocumentP
 export { QuotationDocument, toQuotationItems, type QuotationLineItem, type QuotationDocumentProps } from "./QuotationDocument";
 export { DeliveryChallanDocument, type ChallanLineItem, type DeliveryChallanDocumentProps } from "./DeliveryChallanDocument";
 export { ReceiptDocument, type ReceiptDocumentProps } from "./ReceiptDocument";
-export { RetailBillDocument, type RetailBillLineItem, type RetailBillDocumentProps } from "./RetailBillDocument";
+export { RetailBillDocument, type RetailBillLineItem, type RetailBillDocumentProps, type RetailBillGst } from "./RetailBillDocument";
 export { StatementOfAccountDocument, type LedgerEntry, type AgeingBucket, type StatementOfAccountDocumentProps } from "./StatementOfAccountDocument";
 export { LabelSheet, useLabelStock, useTileStock, monoFitEm, innerWidthEm, parseLabelSize, LABEL_SIZE_OPTIONS, DEFAULT_LABEL_SIZE, DEFAULT_LABEL_STOCK, type LabelStock, type LabelSheetProps } from "./LabelSheet";
 export { TileCode, needsQrFallback, code128Modules, innerWidthMm, MIN_MODULE_MM } from "./TileCode";
