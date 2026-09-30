@@ -115,11 +115,29 @@ describe("ScanService.lookup — external piece selling price", () => {
     ...over,
   });
 
-  const serviceFor = (line: unknown) =>
+  const serviceFor = (line: unknown, sale: unknown = null, ret: unknown = null) =>
     new ScanService({
       batchSareeRow: { findUnique: jest.fn().mockResolvedValue(null) },
       purchaseSareeLine: { findFirst: jest.fn().mockResolvedValue(line) },
+      saleRecord: { findFirst: jest.fn().mockResolvedValue(sale) },
+      returnRecord: { findFirst: jest.fn().mockResolvedValue(ret) },
     } as never);
+
+  it("reports a piece that has already been sold as SOLD, not sellable", async () => {
+    const result = await serviceFor(purchaseLine(), { date: new Date("2026-09-10") }).lookup("JJSI-OS-001-01");
+
+    expect(result.saleEligibility).toBe("SOLD");
+  });
+
+  it("offers a sold piece again once a customer return put it back on the shelf", async () => {
+    const result = await serviceFor(
+      purchaseLine(),
+      { date: new Date("2026-09-10") },
+      { restocked: true, createdAt: new Date("2026-09-12") },
+    ).lookup("JJSI-OS-001-01");
+
+    expect(result.saleEligibility).toBe("PASSED");
+  });
 
   it("prices one piece, not the whole line it was bought in", async () => {
     const result = await serviceFor(purchaseLine()).lookup("JJSI-OS-001-01");

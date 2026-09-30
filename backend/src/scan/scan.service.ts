@@ -155,6 +155,13 @@ export class ScanService {
     // whichever way this ends up used — see returnedPieceSet for which
     // positions count as returned.
     const returned = returnedPieceSet(line.quantity, line.returnedQuantity, line.returnedPieceNos).has(pieceNo);
+    // Sold unless a later customer return put it back on the shelf — the same
+    // rule SalesService applies before it will sell the piece.
+    const [latestSale, latestReturn] = await Promise.all([
+      this.prisma.saleRecord.findFirst({ where: { sareeId }, orderBy: { date: "desc" } }),
+      this.prisma.returnRecord.findFirst({ where: { sareeId }, orderBy: { createdAt: "desc" } }),
+    ]);
+    const sold = !!latestSale && !(latestReturn?.restocked && latestReturn.createdAt > latestSale.date);
 
     return {
       sareeId,
@@ -171,9 +178,13 @@ export class ScanService {
       batchDate: line.purchase.date,
       qc: null,
       finishing: null,
-      inventoryStatus: returned ? "RETURNED_TO_SUPPLIER" : null,
-      saleEligibility: returned ? ("DAMAGED_REVIEW_NEEDED" as const) : ("PASSED" as const),
-      atShop: !returned,
+      inventoryStatus: returned ? "RETURNED_TO_SUPPLIER" : sold ? "SOLD" : null,
+      saleEligibility: returned
+        ? ("DAMAGED_REVIEW_NEEDED" as const)
+        : sold
+          ? ("SOLD" as const)
+          : ("PASSED" as const),
+      atShop: !returned && !sold,
       sellingPrice: sellingPerPiece(Number(line.price), Number(line.sellPercent)),
       supplier: line.purchase.supplier
         ? { id: line.purchase.supplier.id, name: line.purchase.supplier.name, shortName: line.purchase.supplier.initials }

@@ -12,6 +12,7 @@ import { IdGeneratorService, businessSegment, nameSegment } from "../id-generato
 import { NotificationsService } from "../notifications/notifications.service";
 import { loadSareeDetails, type SareeSource } from "./saree-details";
 import { PrismaService } from "../prisma/prisma.service";
+import { returnedPieceSet } from "../purchases/returned-pieces";
 import { CreateReturnDto } from "./dto/create-return.dto";
 import { CreateSaleDto } from "./dto/create-sale.dto";
 import { ListReturnQueryDto } from "./dto/list-return-query.dto";
@@ -170,6 +171,14 @@ export class SalesService {
       // into inventory it is ordinary shop stock and must be sellable, so it
       // takes its own path rather than failing the woven-saree checks below.
       const registered = await this.prisma.saree.findUnique({ where: { id: dto.sareeId } });
+      // An external-purchase piece has no BatchSareeRow either: it exists only
+      // as a position on a supplier's PurchaseSareeLine until it is first
+      // sold, which is when its Saree row is written. Scanning always
+      // accepted these pieces; selling them used to fail as "not found".
+      if (!registered || registered.origin === SareeOrigin.EXTERNAL) {
+        const external = await this.findExternalPiece(dto.sareeId);
+        if (external) return this.sellExternalPiece(dto, external);
+      }
       if (!registered) {
         throw new NotFoundException(`Saree ${dto.sareeId} not found`);
       }
@@ -295,6 +304,121 @@ export class SalesService {
     const sale = await this.findOneSale(saleRef);
 
     return sale;
+  }
+
+  /**
+   * The supplier purchase line an external piece id points at
+   * ("{lineCode}-{pieceNo}", as ScanService.lookupExternalPiece reads it), or
+   * null when the id is not a valid piece of any line.
+   */
+  private async findExternalPiece(sareeId: string) {
+    const match = sareeId.match(/^(.+)-(\d{2,})$/);
+    if (!match) return null;
+    const pieceNo = Number(match[2]);
+    const line = await this.prisma.purchaseSareeLine.findFirst({
+      where: { code: match[1] },
+      select: { purchaseId: true, quantity: true, returnedQuantity: true, returnedPieceNos: true, weight: true, color: true },
+    });
+    if (!line || pieceNo < 1 || pieceNo > line.quantity) return null;
+    return { ...line, pieceNo };
+  }
+
+  /**
+   * Sells an external-purchase piece. Gates mirror the scan: the piece must
+   * not have gone back to the supplier, and must not be sold already (unless
+   * it was returned and restocked since). The Saree row is written here on
+   * the first sale so SaleRecord's foreign key and every "sold" check that
+   * reads Saree/InventoryRecord see it — no manual inventory step needed.
+   */
+  private async sellExternalPiece(
+    dto: CreateSaleDto,
+    piece: NonNullable<Awaited<ReturnType<SalesService["findExternalPiece"]>>>,
+  ) {
+    if (returnedPieceSet(piece.quantity, piece.returnedQuantity, piece.returnedPieceNos).has(piece.pieceNo)) {
+      throw new BadRequestException(`Saree ${dto.sareeId} was returned to the supplier`);
+    }
+    const alreadySold = await this.prisma.saleRecord.findFirst({ where: { sareeId: dto.sareeId }, orderBy: { date: "desc" } });
+    if (alreadySold) {
+      const latestReturn = await this.prisma.returnRecord.findFirst({
+        where: { sareeId: dto.sareeId },
+        orderBy: { createdAt: "desc" },
+      });
+      const backOnShelf = latestReturn?.restocked === true && latestReturn.createdAt > alreadySold.date;
+      if (!backOnShelf) {
+        throw new BadRequestException(`Saree ${dto.sareeId} has already been sold`);
+      }
+    }
+
+    const customer = await this.prisma.customer.findUnique({ where: { id: dto.customerId } });
+    if (!customer) {
+      throw new NotFoundException(`Customer ${dto.customerId} not found`);
+    }
+    const expectedType = dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL";
+    if (customer.type !== expectedType) {
+      throw new BadRequestException(
+        `${dto.channel === SalesChannel.WHOLESALE ? "Wholesale" : "Retail"} sales require a ${expectedType.toLowerCase()} customer (${customer.name} is ${customer.type.toLowerCase()})`,
+      );
+    }
+
+    const gst = await this.gstFields(dto);
+    const salePrefix = dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL";
+    const saleSegment =
+      dto.channel === SalesChannel.WHOLESALE
+        ? customer.code ?? businessSegment(customer.name, "Customer")
+        : customer.code ?? nameSegment(customer.name, "Customer");
+    const saleRef = await this.idGenerator.nextScoped(salePrefix, saleSegment);
+    const sareeStatus = dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL";
+    const firmLink = await this.retailFirmLink(dto.channel);
+    const weightG = piece.weight ? Number(piece.weight.replace(/g$/i, "")) || null : null;
+
+    await this.prisma.$transaction([
+      this.prisma.saree.upsert({
+        where: { id: dto.sareeId },
+        create: {
+          id: dto.sareeId,
+          origin: SareeOrigin.EXTERNAL,
+          purchaseId: piece.purchaseId,
+          weightG,
+          color: piece.color,
+          status: sareeStatus,
+        },
+        update: { status: sareeStatus },
+      }),
+      this.prisma.saleRecord.create({
+        data: {
+          saleRef,
+          sareeId: dto.sareeId,
+          channel: dto.channel,
+          customerId: dto.customerId,
+          amount: dto.amount,
+          paymentMethod: dto.paymentMethod,
+          paymentRef: dto.paymentRef,
+          soldById: dto.actorId,
+          billId: dto.billId,
+          ...gst,
+          ...firmLink,
+        },
+      }),
+      this.prisma.inventoryRecord.upsert({
+        where: { sareeId: dto.sareeId },
+        create: { sareeId: dto.sareeId, status: "SOLD", rawType: "READY_SAREE" },
+        update: { status: "SOLD" },
+      }),
+    ]);
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "SALES",
+      action: `Recorded sale ${saleRef} of external saree ${dto.sareeId} (${dto.channel})`,
+      entityType: "SaleRecord",
+      entityId: saleRef,
+      recordLabel: saleRef,
+      newValue: String(dto.amount),
+    });
+
+    await this.notifySaleRecorded(saleRef, dto, customer);
+
+    return this.findOneSale(saleRef);
   }
 
   /**
