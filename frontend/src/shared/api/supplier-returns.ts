@@ -86,6 +86,30 @@ export interface DecideSupplierReturnRequestPayload {
   decisionNote?: string;
 }
 
+export type ReturnablePieceStatus = "AVAILABLE" | "PENDING" | "RETURNED";
+
+/** One purchase line found by GET /supplier-debit-notes/lookup, with every piece's return status. */
+export interface ReturnableLine {
+  lineId: string;
+  lineCode: string;
+  sareeType: string | null;
+  color: string | null;
+  weight: string | null;
+  /** Buying price per piece, in rupees. */
+  price: number;
+  quantity: number;
+  imageUrl: string | null;
+  sareeDate: string | null;
+  purchase: { id: string; invoiceNumber: string | null; gstNumber: string | null; date: string };
+  /** Null for a purchase from an unregistered supplier — those can't be returned. */
+  supplier: { id: string; name: string; code: string | null; city: string | null; phone: string | null } | null;
+  supplierName: string | null;
+  pieces: { pieceNo: number; code: string; status: ReturnablePieceStatus; debitNoteId: string | null; imageUrl: string | null }[];
+  /** Set when the query was one exact piece tag. */
+  matchedPieceNo: number | null;
+  match: "PIECE" | "LINE" | "SEARCH";
+}
+
 interface PaginatedResponse<T> {
   items: T[];
   total: number;
@@ -116,6 +140,10 @@ export const supplierDebitNotesApi = {
     if (params.purchaseId) query.set("purchaseId", params.purchaseId);
     return apiClient.get<PaginatedResponse<BackendSupplierDebitNote>>(`/supplier-debit-notes?${query.toString()}`);
   },
+
+  /** Scanned tag, line code, or free text (invoice, supplier, type, colour) → matching lines. */
+  lookup: (q: string) =>
+    apiClient.get<ReturnableLine[]>(`/supplier-debit-notes/lookup?q=${encodeURIComponent(q)}`),
 
   get: (id: string) => apiClient.get<BackendSupplierDebitNote>(`/supplier-debit-notes/${encodeURIComponent(id)}`),
 

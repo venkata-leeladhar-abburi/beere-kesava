@@ -16,6 +16,7 @@ import { MobileFilterBar } from "../../../shared/ui/filter/MobileFilterBar";
 import { LuxuryStatsCard } from "@/shared/ui/LuxuryStatsCard";
 import { T, F } from "./externalPurchases/theme";
 import { SectionCard } from "./externalPurchases/common/primitives";
+import { RecordSupplierReturnPanel } from "./supplierReturns/RecordSupplierReturnPanel";
 import { DebitNoteModal, DEBIT_NOTE_STATUS_STYLE, useCanDecideReturns } from "./modals/DebitNoteModal";
 
 type StatusFilter = "ALL" | BackendSupplierReturnStatus;
@@ -290,6 +291,10 @@ export function SupplierReturnsPage() {
       <div className="px-4 md:px-7 xl:px-14 -mt-6 md:-mt-8 xl:-mt-[36px]" style={{ zIndex: 20, position: "relative" }}>
         <LuxuryStatsCard stats={statItems} />
       </div>
+      </div>
+
+      <div id="sr-record" className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32 }}>
+        <RecordSupplierReturnPanel onNoteRaised={id => { setStatusFilter("PENDING"); setOpenNote({ id, review: canDecide }); }} />
       </div>
 
       <div id="sr-history" className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32, paddingBottom: 60 }}>

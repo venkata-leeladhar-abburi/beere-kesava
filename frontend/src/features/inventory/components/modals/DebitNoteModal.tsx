@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Ban, CheckCircle2, X } from "lucide-react";
+import { Ban, CheckCircle2, Image as ImageIcon, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { pieceCodeFromLineCode } from "@/features/suppliers";
+import { resolveAssetUrl } from "@/shared/api/uploads";
+import { formatPaise, toPaise } from "../../../../lib/gst";
 import { STOPGAP_ACTING_USER_ID } from "@/shared/api/purchase-requests";
 import { supplierDebitNotesApi, type BackendSupplierDebitNote, type BackendSupplierReturnStatus } from "@/shared/api/supplier-returns";
 import { Button, IconButton, Textarea } from "../../../../shared/ui/primitives";
@@ -43,6 +45,22 @@ const formatDate = (iso: string | null | undefined) => {
 };
 
 const fullName = (u: { firstName: string; lastName: string } | null) => (u ? `${u.firstName} ${u.lastName}`.trim() : "");
+
+const formatRupees = (n: number) => formatPaise(toPaise(n));
+
+const linkBtn = (color: string): CSSProperties => ({
+  fontFamily: F.ui, fontSize: 11, fontWeight: 600, color, background: "none",
+  border: `1px solid ${T.borderDef}`, borderRadius: 6, cursor: "pointer", padding: "3px 10px",
+});
+
+function Fact({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div style={{ minWidth: 0 }}>
+      <div style={{ fontFamily: F.ui, fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: T.taupe }}>{label}</div>
+      <div style={{ fontFamily: mono ? "var(--font-mono)" : F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, overflowWrap: "anywhere", marginTop: 1 }}>{value}</div>
+    </div>
+  );
+}
 
 /** Backend debit note → the props DebitNoteDocument prints. */
 function toDocumentItems(note: BackendSupplierDebitNote): DebitNoteItem[] {
@@ -117,7 +135,8 @@ export function DebitNoteModal({ noteId, onClose, canDecide }: DebitNoteModalPro
   const totals = useMemo(() => {
     const requested = note?.requests.reduce((sum, r) => sum + r.quantity, 0) ?? 0;
     const accepted = Object.values(approved).reduce((sum, set) => sum + set.size, 0);
-    return { requested, accepted };
+    const value = note?.requests.reduce((sum, r) => sum + (approved[r.id]?.size ?? 0) * (Number(r.sareeLine.price) || 0), 0) ?? 0;
+    return { requested, accepted, value };
   }, [note, approved]);
 
   const togglePiece = (requestId: string, pieceNo: number) =>
@@ -188,8 +207,8 @@ export function DebitNoteModal({ noteId, onClose, canDecide }: DebitNoteModalPro
   const canCancel = !!note && note.status === "PENDING" && (isAdmin || note.requestedById === user?.id);
 
   return (
-    <Modal open onOpenChange={o => { if (!o) onClose(); }} size="xl">
-      <div className="flex flex-col h-[85vh] rounded-2xl overflow-hidden bg-[#FFFDF9]">
+    <Modal open onOpenChange={o => { if (!o) onClose(); }} size={showReview ? "full" : "xl"}>
+      <div className="flex flex-col h-[88vh] max-md:h-[90dvh] rounded-2xl overflow-hidden bg-[#FFFDF9]">
         <div
           style={{
             background: T.darkBurgundy, padding: "16px 20px", display: "flex",
@@ -232,67 +251,101 @@ export function DebitNoteModal({ noteId, onClose, canDecide }: DebitNoteModalPro
           <div className="flex flex-col md:flex-row flex-1 min-h-0">
             {showReview && (
               <div
-                className="md:w-[340px] shrink-0 overflow-y-auto border-b md:border-b-0 md:border-r max-h-[45%] md:max-h-none"
-                style={{ borderColor: T.borderDef, background: T.silkCream, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}
+                className="md:w-[380px] shrink-0 flex flex-col min-h-0 border-b md:border-b-0 md:border-r max-h-[50%] md:max-h-none"
+                style={{ borderColor: T.borderDef, background: T.silkCream }}
               >
-                <div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Review pieces</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
-                    Untick any piece the supplier won't take back. Only ticked pieces leave stock.
+                <div className="flex-1 min-h-0 overflow-y-auto" style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+                  {/* What's being returned, at a glance */}
+                  <div style={{ background: "#FFF", border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: 12 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 12px" }}>
+                      <Fact label="Supplier" value={note.supplier.name} />
+                      <Fact label="Purchase" value={note.purchaseId} mono />
+                      <Fact label="Raised by" value={`${fullName(note.requestedBy)} · ${formatDate(note.createdAt)}`} />
+                      <Fact label="Invoice" value={note.purchase.invoiceNumber ?? "—"} mono />
+                    </div>
+                    {note.reason && (
+                      <div style={{ marginTop: 10, paddingTop: 8, borderTop: `1px dashed ${T.borderDef}` }}>
+                        <Fact label="Reason" value={note.reason} />
+                      </div>
+                    )}
+                    <div style={{ marginTop: 10, display: "flex", justifyContent: "space-between", alignItems: "baseline", background: T.silkCream, borderRadius: 8, padding: "8px 10px" }}>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+                        Accepting <b>{totals.accepted}</b> of {totals.requested} pc{totals.requested === 1 ? "" : "s"}
+                      </span>
+                      <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.royalBurgundy }}>{formatRupees(totals.value)}</span>
+                    </div>
                   </div>
-                </div>
 
-                {note.requests.map(r => {
-                  const set = approved[r.id] ?? new Set<number>();
-                  return (
-                    <div key={r.id} style={{ background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: 10 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, overflowWrap: "anywhere" }}>{r.sareeLine.code}</div>
-                          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
-                            {[r.sareeLine.sareeType, r.sareeLine.color].filter(Boolean).join(" · ") || "—"} · {set.size}/{r.quantity} accepted
+                  <div>
+                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Review pieces</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2, lineHeight: 1.5 }}>
+                      Untick any piece the supplier won't take back. Only ticked pieces leave stock.
+                    </div>
+                  </div>
+
+                  {note.requests.map(r => {
+                    const set = approved[r.id] ?? new Set<number>();
+                    const photo = resolveAssetUrl(r.sareeLine.imageUrl);
+                    const rate = Number(r.sareeLine.price) || 0;
+                    return (
+                      <div key={r.id} style={{ background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
+                        <div style={{ display: "flex", gap: 10, padding: 10, borderBottom: `1px solid ${T.borderDef}` }}>
+                          <div style={{ width: 44, height: 56, borderRadius: 8, overflow: "hidden", flexShrink: 0, background: T.silkCream, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            {photo ? <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <ImageIcon size={16} color={T.taupe} />}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.royalBurgundy, overflowWrap: "anywhere" }}>{r.sareeLine.code}</div>
+                            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, marginTop: 1 }}>
+                              {[r.sareeLine.sareeType, r.sareeLine.color].filter(Boolean).join(" · ") || "Saree"}
+                            </div>
+                            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>
+                              {formatRupees(rate)} / pc · <b style={{ color: set.size === r.quantity ? T.green : "#8B6018" }}>{set.size}/{r.quantity} accepted</b>
+                            </div>
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
+                            <button type="button" onClick={() => setLine(r.id, r.pieceNos)} style={linkBtn(T.royalBurgundy)}>All</button>
+                            <button type="button" onClick={() => setLine(r.id, [])} style={linkBtn(T.taupe)}>None</button>
                           </div>
                         </div>
-                        <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                          <button type="button" onClick={() => setLine(r.id, r.pieceNos)} style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.royalBurgundy, background: "none", border: 0, cursor: "pointer", padding: 0 }}>All</button>
-                          <button type="button" onClick={() => setLine(r.id, [])} style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe, background: "none", border: 0, cursor: "pointer", padding: 0 }}>None</button>
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          {r.pieceNos.map(n => {
+                            const code = pieceCodeFromLineCode(r.sareeLine.code, n);
+                            const on = set.has(n);
+                            return (
+                              <label key={n} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "8px 12px", background: on ? "rgba(30,102,64,0.05)" : "#FAF7F2", borderTop: `1px solid ${T.borderDef}` }}>
+                                <input
+                                  type="checkbox"
+                                  checked={on}
+                                  onChange={() => togglePiece(r.id, n)}
+                                  aria-label={`Accept ${code}`}
+                                  style={{ width: 17, height: 17, accentColor: T.royalBurgundy, cursor: "pointer", flexShrink: 0 }}
+                                />
+                                <span style={{ flex: 1, fontFamily: "var(--font-mono)", fontSize: 13, color: on ? T.luxuryBrown : T.taupe, textDecoration: on ? undefined : "line-through" }}>{code}</span>
+                                <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: on ? T.green : T.crimson }}>{on ? "Accept" : "Keep"}</span>
+                              </label>
+                            );
+                          })}
                         </div>
                       </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        {r.pieceNos.map(n => {
-                          const code = pieceCodeFromLineCode(r.sareeLine.code, n);
-                          return (
-                            <label key={n} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontFamily: "var(--font-mono)", fontSize: 12, color: set.has(n) ? T.luxuryBrown : T.taupe }}>
-                              <input
-                                type="checkbox"
-                                checked={set.has(n)}
-                                onChange={() => togglePiece(r.id, n)}
-                                aria-label={`Accept ${code}`}
-                                style={{ width: 15, height: 15, accentColor: T.royalBurgundy, cursor: "pointer" }}
-                              />
-                              <span style={{ textDecoration: set.has(n) ? undefined : "line-through" }}>{code}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
+                    );
+                  })}
+
+                  <Textarea
+                    value={decisionNote}
+                    onChange={e => setDecisionNote(e.target.value)}
+                    placeholder="Approval note (optional)"
+                    rows={2}
+                  />
+
+                  {error && (
+                    <div role="alert" style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson, background: T.crimsonBg, border: "1px solid rgba(192,57,43,0.20)", borderRadius: 8, padding: "8px 12px" }}>
+                      {error}
                     </div>
-                  );
-                })}
+                  )}
+                </div>
 
-                <Textarea
-                  value={decisionNote}
-                  onChange={e => setDecisionNote(e.target.value)}
-                  placeholder="Approval note (optional)"
-                  rows={2}
-                />
-
-                {error && (
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson, background: T.crimsonBg, border: "1px solid rgba(192,57,43,0.20)", borderRadius: 8, padding: "8px 12px" }}>
-                    {error}
-                  </div>
-                )}
-
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {/* Actions stay in view however many pieces are listed above */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 16, borderTop: `1px solid ${T.borderDef}`, background: "#FFFDF9", flexShrink: 0 }}>
                   <Button
                     variant="primary"
                     iconLeft={CheckCircle2}
@@ -301,7 +354,7 @@ export function DebitNoteModal({ noteId, onClose, canDecide }: DebitNoteModalPro
                     onClick={() => submit(false)}
                     className="rounded-[10px]"
                   >
-                    {totals.accepted === totals.requested
+                    {submitting ? "Saving…" : totals.accepted === totals.requested
                       ? `Approve all ${totals.requested} piece${totals.requested === 1 ? "" : "s"}`
                       : `Approve ${totals.accepted} of ${totals.requested} pieces`}
                   </Button>

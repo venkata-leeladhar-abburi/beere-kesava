@@ -213,4 +213,47 @@ describe("SupplierDebitNotesService", () => {
       await expect(service.cancel("DN-RaviSilks-001-001", { id: "user-1", isAdmin: false })).rejects.toThrow(BadRequestException);
     });
   });
+  describe("lookupReturnable", () => {
+    const withPurchase = (line: typeof lineA) => ({
+      ...line, sareeType: "Kanchi", color: "Maroon", weight: null, price: "1995", imageUrl: null,
+      sareeDate: null, pieceImageUrls: [] as string[],
+      purchase: { id: "EXT-2026-001", invoiceNumber: "118", gstNumber: null, date: new Date(), supplierName: null, supplier },
+    });
+
+    it("resolves a scanned piece tag to its line and marks returned / pending pieces", async () => {
+      prisma.purchaseSareeLine.findMany.mockImplementation(({ where }: any) =>
+        Promise.resolve(where.code?.equals?.toUpperCase() === "RAVI-002" ? [withPurchase(lineB)] : []));
+      prisma.supplierReturnRequest.findMany.mockResolvedValue([]);
+
+      const [line] = await service.lookupReturnable("ravi-002-03");
+
+      expect(line.match).toBe("PIECE");
+      expect(line.matchedPieceNo).toBe(3);
+      expect(line.pieces.map((p) => p.status)).toEqual(["RETURNED", "RETURNED", "AVAILABLE"]);
+      expect(line.pieces[2].code).toBe("RAVI-002-03");
+    });
+
+    it("marks pieces already on a pending debit note with that note", async () => {
+      prisma.purchaseSareeLine.findMany.mockImplementation(({ where }: any) =>
+        Promise.resolve(where.code?.equals === "RAVI-001" ? [withPurchase(lineA)] : []));
+      prisma.supplierReturnRequest.findMany.mockResolvedValue([
+        { id: "RR-1", sareeLineId: "line-a", quantity: 1, pieceNos: [2], debitNoteId: "DN-1" },
+      ]);
+
+      const [line] = await service.lookupReturnable("RAVI-001");
+
+      expect(line.match).toBe("LINE");
+      expect(line.pieces[1]).toMatchObject({ status: "PENDING", debitNoteId: "DN-1" });
+      expect(line.pieces.filter((p) => p.status === "AVAILABLE")).toHaveLength(7);
+    });
+
+    it("unwraps the QR tag URL down to the code", async () => {
+      prisma.purchaseSareeLine.findMany.mockImplementation(({ where }: any) =>
+        Promise.resolve(where.code?.equals === "RAVI-001" ? [withPurchase(lineA)] : []));
+
+      const [line] = await service.lookupReturnable("https://app.example/scan?id=RAVI-001-04");
+
+      expect(line.matchedPieceNo).toBe(4);
+    });
+  });
 });

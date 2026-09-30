@@ -242,6 +242,14 @@
     zoom: var(--doc-zoom, 0.55);
   }
 }
+/* DocumentViewport measures its own width and sets --doc-zoom to fit the
+   sheet exactly — wins over the window-width fallback above. */
+.bk-doc-viewport.bk-doc-viewport--fit .bk-doc {
+  zoom: var(--doc-zoom, 1);
+}
+@media (max-width: 900px) {
+  .bk-doc-viewport { padding: var(--space-4); }
+}
 /* Firefox only shipped `zoom` in 126 — there, fall back to letting the
    viewport scroll horizontally rather than clipping the sheet. */
 @supports not (zoom: 0.5) {

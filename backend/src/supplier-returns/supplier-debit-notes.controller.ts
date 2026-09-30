@@ -7,6 +7,7 @@ import { CancelSupplierDebitNoteDto } from "./dto/cancel-supplier-debit-note.dto
 import { CreateSupplierDebitNoteDto } from "./dto/create-supplier-debit-note.dto";
 import { DecideSupplierDebitNoteDto } from "./dto/decide-supplier-debit-note.dto";
 import { ListSupplierDebitNotesQueryDto } from "./dto/list-supplier-debit-notes-query.dto";
+import { LookupReturnablePiecesQueryDto } from "./dto/lookup-returnable-pieces-query.dto";
 import { SupplierDebitNotesService } from "./supplier-debit-notes.service";
 
 // Same role split as supplier-returns: ACCOUNTANT raises and views, an admin decides.
@@ -23,6 +24,12 @@ export class SupplierDebitNotesController {
   @Get()
   findAll(@Query() query: ListSupplierDebitNotesQueryDto) {
     return this.debitNotesService.findAll(query);
+  }
+
+  // Declared before ":id" so "lookup" isn't read as a debit note number.
+  @Get("lookup")
+  lookup(@Query() query: LookupReturnablePiecesQueryDto) {
+    return this.debitNotesService.lookupReturnable(query.q);
   }
 
   @Get(":id")

@@ -48,10 +48,44 @@ export function DocumentPage({ children, className, band, pageInfo, size = "a4",
   );
 }
 
-/** Grey "PDF viewer" backdrop for the screen preview — wrap one or more DocumentPages. */
-export function DocumentViewport({ children, className, ...props }: React.ComponentProps<"div">) {
+/** 210mm at CSS's fixed 96dpi — the sheet's true unscaled width in px. */
+const SHEET_WIDTH_PX = 793.7;
+
+/**
+ * Grey "PDF viewer" backdrop for the screen preview — wrap one or more DocumentPages.
+ *
+ * The sheet is fit to the viewport's OWN width, not the window's: inside a
+ * modal with a side panel the window can be wide while the preview column is
+ * narrow, and a window media query then let the sheet's right edge run off
+ * behind the modal's overflow. The measured scale lands on `--doc-zoom`,
+ * which print.css applies as `zoom` (never enlarging past 1).
+ */
+export function DocumentViewport({ children, className, style, ...props }: React.ComponentProps<"div">) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [zoom, setZoom] = React.useState<number | undefined>(undefined);
+
+  React.useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const measure = () => {
+      const cs = getComputedStyle(el);
+      const available = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      if (available <= 0) return;
+      setZoom(Math.min(1, Math.floor((available / SHEET_WIDTH_PX) * 1000) / 1000));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
-    <div className={cn("bk-doc-viewport", className)} {...props}>
+    <div
+      ref={ref}
+      className={cn("bk-doc-viewport", zoom !== undefined && "bk-doc-viewport--fit", className)}
+      style={{ ...style, ...(zoom !== undefined ? { ["--doc-zoom" as string]: zoom } : null) }}
+      {...props}
+    >
       {children}
     </div>
   );

@@ -15,6 +15,48 @@ import { CreateSupplierDebitNoteDto } from "./dto/create-supplier-debit-note.dto
 import { DecideSupplierDebitNoteDto } from "./dto/decide-supplier-debit-note.dto";
 import { ListSupplierDebitNotesQueryDto } from "./dto/list-supplier-debit-notes-query.dto";
 
+/** Where one physical piece stands with respect to going back to its supplier. */
+export type ReturnablePieceStatus = "AVAILABLE" | "PENDING" | "RETURNED";
+
+export interface ReturnablePiece {
+  pieceNo: number;
+  /** LINECODE-NN, the code printed on the piece's tag. */
+  code: string;
+  status: ReturnablePieceStatus;
+  /** The pending debit note holding this piece, when there is one. */
+  debitNoteId: string | null;
+  imageUrl: string | null;
+}
+
+export interface ReturnableLine {
+  lineId: string;
+  lineCode: string;
+  sareeType: string | null;
+  color: string | null;
+  weight: string | null;
+  /** Buying price per piece, in rupees. */
+  price: number;
+  quantity: number;
+  imageUrl: string | null;
+  sareeDate: Date | null;
+  purchase: { id: string; invoiceNumber: string | null; gstNumber: string | null; date: Date };
+  /** Null for a purchase from an unregistered supplier — those can't be returned. */
+  supplier: { id: string; name: string; code: string | null; city: string | null; phone: string | null } | null;
+  supplierName: string | null;
+  pieces: ReturnablePiece[];
+  /** Set when the query named one exact piece (a scanned tag). */
+  matchedPieceNo: number | null;
+  /** How the query hit this line — an exact tag/line scan ranks above a text match. */
+  match: "PIECE" | "LINE" | "SEARCH";
+}
+
+/** Two-digit piece suffix — mirrors the frontend's pieceCodeFromLineCode. */
+export const pieceCode = (lineCode: string, pieceNo: number) =>
+  `${lineCode}-${String(pieceNo).padStart(2, "0")}`;
+
+/** Lines returned by a free-text lookup — enough to pick from, small enough to render. */
+const LOOKUP_LIMIT = 25;
+
 const userSelect = { select: { id: true, firstName: true, lastName: true } } as const;
 
 const include = {
@@ -205,6 +247,134 @@ export class SupplierDebitNotesService {
         );
       }
     }
+  }
+
+  /**
+   * Finds sarees to send back, from whatever the user has in hand: a scanned
+   * or typed piece tag (RAVI-34-001-03), a whole line code (RAVI-34-001), or
+   * free text matched against invoice number, supplier, saree type and
+   * colour. Every piece of each matching line comes back with its status, so
+   * the screen can show what is still with us before anything is picked.
+   */
+  async lookupReturnable(rawQuery: string): Promise<ReturnableLine[]> {
+    const q = rawQuery.trim();
+    if (q.length < 2) return [];
+
+    // A scanned QR tag carries a URL ending in ?id=<code> — reduce it to the code.
+    const fromUrl = /[?&]id=([^&#\s]+)/i.exec(q);
+    const code = decodeURIComponent(fromUrl ? fromUrl[1] : q).trim();
+
+    const lineInclude = { purchase: { include: { supplier: true } } } satisfies Prisma.PurchaseSareeLineInclude;
+    type LineRow = Prisma.PurchaseSareeLineGetPayload<{ include: typeof lineInclude }>;
+    const found: { line: LineRow; match: ReturnableLine["match"]; pieceNo: number | null }[] = [];
+    const seen = new Set<string>();
+    const add = (line: LineRow, match: ReturnableLine["match"], pieceNo: number | null) => {
+      if (seen.has(line.id)) return;
+      seen.add(line.id);
+      found.push({ line, match, pieceNo });
+    };
+
+    // 1. A piece tag: the line code plus a numeric suffix.
+    const pieceMatch = /^(.+)-(\d{1,3})$/.exec(code);
+    if (pieceMatch) {
+      const lines = await this.prisma.purchaseSareeLine.findMany({
+        where: { code: { equals: pieceMatch[1], mode: "insensitive" } },
+        include: lineInclude,
+      });
+      const n = Number(pieceMatch[2]);
+      for (const line of lines) if (n >= 1 && n <= line.quantity) add(line, "PIECE", n);
+    }
+
+    // 2. A whole line code.
+    const exactLines = await this.prisma.purchaseSareeLine.findMany({
+      where: { code: { equals: code, mode: "insensitive" } },
+      include: lineInclude,
+    });
+    for (const line of exactLines) add(line, "LINE", null);
+
+    // 3. Free text — only when nothing matched exactly, so a clean scan
+    //    doesn't drag in look-alike codes.
+    if (found.length === 0) {
+      const contains = { contains: code, mode: "insensitive" as const };
+      const lines = await this.prisma.purchaseSareeLine.findMany({
+        where: {
+          OR: [
+            { code: contains },
+            { sareeType: contains },
+            { color: contains },
+            { purchase: { invoiceNumber: contains } },
+            { purchase: { id: contains } },
+            { purchase: { supplierName: contains } },
+            { purchase: { supplier: { name: contains } } },
+            { purchase: { supplier: { code: contains } } },
+          ],
+        },
+        include: lineInclude,
+        orderBy: [{ purchase: { date: "desc" } }, { code: "asc" }],
+        take: LOOKUP_LIMIT,
+      });
+      for (const line of lines) add(line, "SEARCH", null);
+    }
+
+    if (found.length === 0) return [];
+
+    const pending = await this.prisma.supplierReturnRequest.findMany({
+      where: { sareeLineId: { in: found.map((f) => f.line.id) }, status: SupplierReturnStatus.PENDING },
+      select: { sareeLineId: true, quantity: true, pieceNos: true, debitNoteId: true, id: true },
+    });
+
+    return found.map(({ line, match, pieceNo }) => {
+      const returned = returnedPieceSet(line.quantity, line.returnedQuantity, line.returnedPieceNos);
+      const heldBy = new Map<number, string | null>();
+      const linePending = pending.filter((r) => r.sareeLineId === line.id);
+      for (const r of linePending) for (const n of r.pieceNos) heldBy.set(n, r.debitNoteId ?? r.id);
+      // Legacy requests name no pieces — reserve that many from the lowest
+      // positions still free, the same convention returnedPieceSet uses.
+      for (const r of linePending.filter((p) => p.pieceNos.length === 0)) {
+        let left = r.quantity;
+        for (let n = 1; left > 0 && n <= line.quantity; n++) {
+          if (returned.has(n) || heldBy.has(n)) continue;
+          heldBy.set(n, r.debitNoteId ?? r.id);
+          left--;
+        }
+      }
+
+      const pieces: ReturnablePiece[] = [];
+      for (let n = 1; n <= line.quantity; n++) {
+        const status: ReturnablePieceStatus = returned.has(n) ? "RETURNED" : heldBy.has(n) ? "PENDING" : "AVAILABLE";
+        pieces.push({
+          pieceNo: n,
+          code: pieceCode(line.code, n),
+          status,
+          debitNoteId: status === "PENDING" ? heldBy.get(n) ?? null : null,
+          imageUrl: line.pieceImageUrls[n - 1] || null,
+        });
+      }
+
+      const s = line.purchase.supplier;
+      return {
+        lineId: line.id,
+        lineCode: line.code,
+        sareeType: line.sareeType,
+        color: line.color,
+        weight: line.weight,
+        price: Number(line.price),
+        quantity: line.quantity,
+        imageUrl: line.imageUrl,
+        sareeDate: line.sareeDate,
+        purchase: {
+          id: line.purchase.id,
+          invoiceNumber: line.purchase.invoiceNumber,
+          gstNumber: line.purchase.gstNumber,
+          date: line.purchase.date,
+        },
+        supplier: s ? { id: s.id, name: s.name, code: s.code, city: s.city, phone: s.phone } : null,
+        supplierName: s?.name ?? line.purchase.supplierName,
+        pieces,
+        matchedPieceNo: pieceNo,
+        match,
+      };
+    });
   }
 
   async findAll(

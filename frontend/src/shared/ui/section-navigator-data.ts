@@ -91,7 +91,7 @@ export const PAGE_SECTIONS: Record<string, SectionNavItem[]> = {
     { id: "ep-history", label: "Purchase History" },
   ],
   SupplierReturns: [
-    { id: "sr-form", label: "Record Supplier Return" },
+    { id: "sr-record", label: "Record Supplier Return" },
     { id: "sr-history", label: "Returns History" },
   ],
   Weavers: [
