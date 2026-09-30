@@ -43,7 +43,7 @@ function loadPersistedTab(persistKey: string | undefined): TabKey {
 }
 
 // ── Main section ─────────────────────────────────────────────────────────────
-export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver", selectable = false, selectedIds, onToggleRow, onToggleAll, onVisibleChange, onAllRowsChange, persistKey, pickRule = DISPATCH_PICK_RULE }: {
+export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver", selectable = false, selectedIds, onToggleRow, onToggleAll, onVisibleChange, onAllRowsChange, persistKey, pickRule = DISPATCH_PICK_RULE, onUploadPhoto }: {
   /** Weaver id (WV-00X) or factory loom id (FL-00X), depending on ownerType. Unused when ownerType is "all". */
   weaverId?: string;
   weaverName?: string;
@@ -72,6 +72,8 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
    *  Defaults to the dispatch/quotation rule; the shop's New Sale picker
    *  passes salePickRule(). */
   pickRule?: PickRule;
+  /** When set, each row's photo gets an upload / replace control that calls this. */
+  onUploadPhoto?: (r: WeaverSareeRow) => void;
 }) {
   const isLoom = ownerType === "loom";
   const isAll = ownerType === "all";
@@ -647,6 +649,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           onToggleAll={onToggleAll}
           visible={visible}
           pickRule={pickRule}
+          onUploadPhoto={onUploadPhoto}
         />
       ) : (
         <MainSareesTable
@@ -666,6 +669,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           responsive={false}
           onPrintTag={r => printTags([r])}
           pickRule={pickRule}
+          onUploadPhoto={onUploadPhoto}
         />
       )}
 

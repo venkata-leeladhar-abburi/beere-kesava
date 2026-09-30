@@ -11,6 +11,7 @@ import { Button, Checkbox } from "../../../../shared/ui/primitives";
 import { useSuppliers } from "@/features/suppliers";
 import { usePrintSareeTags, type SareeTagData } from "./SareeTagPrint";
 import { DISPATCH_PICK_RULE, type PickRule } from "./utils";
+import { PhotoUploadButton } from "./PhotoUploadButton";
 
 interface ExternalSareesTableProps {
   pageRows: WeaverSareeRow[];
@@ -28,11 +29,13 @@ interface ExternalSareesTableProps {
   onToggleAll?: (visibleIds: string[]) => void;
   /** Which rows can be ticked — defaults to the dispatch rule. */
   pickRule?: PickRule;
+  /** Adds an upload / replace control beside each row's photo. */
+  onUploadPhoto?: (r: WeaverSareeRow) => void;
 }
 
 export function ExternalSareesTable({
   pageRows, canSeeMoney, pag, responsive = false,
-  selectable, selectedIds, onToggleRow, visible, onToggleAll, pickRule = DISPATCH_PICK_RULE,
+  selectable, selectedIds, onToggleRow, visible, onToggleAll, pickRule = DISPATCH_PICK_RULE, onUploadPhoto,
 }: ExternalSareesTableProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const { suppliers } = useSuppliers();
@@ -90,14 +93,19 @@ export function ExternalSareesTable({
       id: "photo", header: "Photo", accessor: r => photoOf(r), priority: 1,
       cell: (_v, r) => {
         const src = photoOf(r);
-        return src ? (
-          <button type="button" onClick={() => setPreview(src)} title={`View photo of ${r.sareeId}`} className="p-0 border-0 bg-transparent cursor-pointer">
-            <img src={src} alt={r.sareeId}
-              style={{ width: 38, height: 38, borderRadius: 8, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
-          </button>
-        ) : (
-          <div style={{ width: 38, height: 38, borderRadius: 8, background: "#F7F2EA", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ImageIcon size={14} color="rgba(139,112,96,0.6)" />
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            {src ? (
+              <button type="button" onClick={() => setPreview(src)} title={`View photo of ${r.sareeId}`} className="p-0 border-0 bg-transparent cursor-pointer">
+                <img src={src} alt={r.sareeId}
+                  style={{ width: 38, height: 38, borderRadius: 8, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
+              </button>
+            ) : (
+              <div style={{ width: 38, height: 38, borderRadius: 8, background: "#F7F2EA", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <ImageIcon size={14} color="rgba(139,112,96,0.6)" />
+              </div>
+            )}
+            {onUploadPhoto && <PhotoUploadButton row={r} hasPhoto={!!src} onUpload={onUploadPhoto} />}
           </div>
         );
       },

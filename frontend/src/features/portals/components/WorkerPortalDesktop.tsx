@@ -9,6 +9,7 @@ import { WorkerQC } from "./worker/WorkerQC";
 import { WorkerFinishing } from "./worker/WorkerFinishing";
 import { WorkerDispatch } from "./worker/WorkerDispatch";
 import { WorkerActivity } from "./worker/WorkerActivity";
+import { WorkerSareePhotos } from "./worker/WorkerSareePhotos";
 import { WorkerTopNav } from "./worker/WorkerTopNav";
 import { AdminViewingBanner } from "@/shared/ui/portal/AdminStaffView";
 import { PageHero, SectionHeading } from "./worker/primitives";
@@ -18,7 +19,7 @@ import { LogOut } from "lucide-react";
 import { Button } from "../../../shared/ui/primitives";
 import { toInitials } from "@/shared/lib/initials";
 
-type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "activity" | "profile";
+type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "photos" | "activity" | "profile";
 type WeaversSubPage = "menu" | "design" | "issue" | "receive-sarees";
 
 interface WorkerPortalDesktopProps {
@@ -202,6 +203,7 @@ export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActi
 
             {activeTab === "finishing" && <WorkerFinishing isDesktop={!isTablet} isTablet={isTablet} />}
             {activeTab === "dispatch" && <WorkerDispatch isDesktop={!isTablet} />}
+            {activeTab === "photos" && <WorkerSareePhotos isDesktop={!isTablet} />}
             {activeTab === "activity" && <WorkerActivity isDesktop={!isTablet} isTablet={isTablet} />}
             {activeTab === "profile" && <DesktopProfile />}
           </motion.div>

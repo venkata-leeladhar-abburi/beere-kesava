@@ -1,6 +1,6 @@
 import { WorkerHomeDesktop } from "./WorkerHomeDesktop";
 
-type Tab = "home" | "qc" | "weavers" | "finishing" | "activity";
+type Tab = "home" | "qc" | "weavers" | "finishing" | "photos" | "activity";
 
 interface WorkerHomeProps {
   onNavigate: (tab: Tab) => void;

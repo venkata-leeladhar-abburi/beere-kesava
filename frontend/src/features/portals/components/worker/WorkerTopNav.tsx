@@ -3,7 +3,7 @@ import { useAuth } from "../../../../contexts/AuthContext";
 import { motion } from "motion/react";
 import {
   User, Bell, ChevronLeft, LogOut,
-  Home, Search, Users, Sparkles, Truck, Activity,
+  Home, Search, Users, Sparkles, Truck, Activity, Camera,
   PackageCheck, ShieldCheck, ShieldAlert, CircleAlert, ArrowRight,
 } from "lucide-react";
 import { C, F } from "./tokens";
@@ -16,8 +16,8 @@ import { roleLabel, staffIdentitySubtitle, useAdminStaffView } from "@/shared/ui
 import { PortalSwitchMenuItems } from "@/shared/ui/portal/PortalSwitcher";
 import { toInitials } from "@/shared/lib/initials";
 
-type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "activity" | "profile";
-type NavTab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "activity";
+type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "photos" | "activity" | "profile";
+type NavTab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "photos" | "activity";
 
 function topNavItems(pendingQcCount: number): { id: NavTab; Icon: IconComponent; label: string; badge?: number }[] {
   return [
@@ -26,6 +26,7 @@ function topNavItems(pendingQcCount: number): { id: NavTab; Icon: IconComponent;
     { id: "weavers",   Icon: Users,    label: "Receive Sarees" },
     { id: "finishing", Icon: Sparkles, label: "Finishing" },
     { id: "dispatch",  Icon: Truck,    label: "Dispatch" },
+    { id: "photos",    Icon: Camera,   label: "Saree Photos" },
     { id: "activity",  Icon: Activity, label: "Activity" },
   ];
 }

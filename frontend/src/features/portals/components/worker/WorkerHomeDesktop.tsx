@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import {
-  ChevronRight, Package, Shield, CheckCircle2, ClipboardList,
+  ChevronRight, Package, Shield, CheckCircle2, ClipboardList, Camera,
 } from "lucide-react";
 import { C, F } from "./tokens";
 import { PageHero, StatsStrip, SectionHeading, type WorkerStat } from "./primitives";
@@ -12,7 +12,7 @@ import { useQc } from "@/features/qc";
 import { buildWorkerActivity, formatActivityTime } from "./activityFeed";
 import { Skeleton, StatusPill } from "../../../../shared/ui/primitives";
 
-type Tab = "home" | "qc" | "weavers" | "activity";
+type Tab = "home" | "qc" | "weavers" | "photos" | "activity";
 type WeaversSubPage = "menu" | "design" | "issue" | "receive-sarees";
 
 interface WorkerHomeDesktopProps {
@@ -121,7 +121,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
         title={greeting + ","}
         titleAccent={firstName}
         description={`Here's what needs your attention today. You have ${totalTasks} active task${totalTasks === 1 ? "" : "s"} waiting.`}
-        actions={
+        actions={<>
           <Button
             variant="primary"
             iconRight={ChevronRight}
@@ -130,7 +130,15 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
           >
             Start Today's Work
           </Button>
-        }
+          <Button
+            variant="secondary"
+            iconLeft={Camera}
+            onClick={() => onNavigate("photos")}
+            className="rounded-[14px] border border-[rgba(245,232,208,0.35)] bg-transparent px-5 py-[13px] text-[#F5E8D0] hover:!bg-[rgba(245,232,208,0.10)] hover:!text-[#E7C983]"
+          >
+            Saree Photos
+          </Button>
+        </>}
       />
 
       {/* Date chip, pinned to the hero like admin's */}

@@ -90,7 +90,7 @@ export function PageHero({
             ))}
           </div>
         )}
-        {actions && <div style={{ display: "flex", gap: 12, alignItems: "center" }}>{actions}</div>}
+        {actions && <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>{actions}</div>}
       </div>
 
       {image && (

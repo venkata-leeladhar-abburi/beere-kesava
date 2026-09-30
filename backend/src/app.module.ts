@@ -51,6 +51,7 @@ import { RatesModule } from "./rates/rates.module";
 import { ReportsModule } from "./reports/reports.module";
 import { SalesModule } from "./sales/sales.module";
 import { ScanModule } from "./scan/scan.module";
+import { SareePhotosModule } from "./saree-photos/saree-photos.module";
 import { SupplierReturnsModule } from "./supplier-returns/supplier-returns.module";
 import { SuppliersModule } from "./suppliers/suppliers.module";
 import { UploadsModule } from "./uploads/uploads.module";
@@ -124,6 +125,7 @@ import { WhatsAppModule } from "./whatsapp/whatsapp.module";
     NotificationsModule,
     LabelsModule,
     ScanModule,
+    SareePhotosModule,
     AuditLogModule,
     GeofenceModule,
     DesignDispatchesModule,

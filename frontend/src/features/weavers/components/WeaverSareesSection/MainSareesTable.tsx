@@ -8,6 +8,7 @@ import { inr, fmtDate, AGE_COLOR, QC_CFG, FIN_CFG, DISPATCH_CFG, DISPATCH_PICK_R
 import { Checkbox, IconButton } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
+import { PhotoUploadButton } from "./PhotoUploadButton";
 
 function PhotoThumb({ url, sareeId, onView }: { url: string | null; sareeId: string; onView: (image: ZoomImage) => void }) {
   return url ? (
@@ -58,6 +59,8 @@ interface MainSareesTableProps {
   onPrintTag?: (r: WeaverSareeRow) => void;
   /** Which rows can be ticked — defaults to the dispatch rule. */
   pickRule?: PickRule;
+  /** Adds an upload / replace control beside each row's photo. */
+  onUploadPhoto?: (r: WeaverSareeRow) => void;
 }
 
 function MainSareeCard({
@@ -74,6 +77,7 @@ function MainSareeCard({
   onPrintTag,
   onViewPhoto,
   pickRule,
+  onUploadPhoto,
 }: {
   r: WeaverSareeRow;
   selectable: boolean;
@@ -88,6 +92,7 @@ function MainSareeCard({
   onPrintTag?: (r: WeaverSareeRow) => void;
   onViewPhoto: (image: ZoomImage) => void;
   pickRule: PickRule;
+  onUploadPhoto?: (r: WeaverSareeRow) => void;
 }) {
   const isPickable = pickRule.canPick(r);
   const qc = QC_CFG[r.qcStatus];
@@ -110,6 +115,7 @@ function MainSareeCard({
                 />
               )}
               <PhotoThumb url={r.receivedPhotoUrl} sareeId={r.sareeId} onView={onViewPhoto} />
+              {onUploadPhoto && <PhotoUploadButton row={r} hasPhoto={!!r.receivedPhotoUrl} onUpload={onUploadPhoto} />}
               <div>
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color: T.royalBurgundy, wordBreak: "break-word" }}>
                   {r.sareeId}
@@ -236,7 +242,7 @@ function MainSareeCard({
 export function MainSareesTable({
   pageRows, visible, selectable, selectedIds, onToggleAll, onToggleRow,
   isAll, isLoom, tab, dateHeader, showQcMoney, showMoney, pag, responsive = false, onPrintTag,
-  pickRule = DISPATCH_PICK_RULE,
+  pickRule = DISPATCH_PICK_RULE, onUploadPhoto,
 }: MainSareesTableProps) {
   const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({ fontFamily: "var(--font-mono)", fontSize: 12, color, ...extra });
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
@@ -272,7 +278,12 @@ export function MainSareesTable({
     },
     {
       id: "photo", header: "Photo", accessor: r => r.receivedPhotoUrl,
-      cell: (_v, r) => <PhotoThumb url={r.receivedPhotoUrl} sareeId={r.sareeId} onView={setZoomImage} />,
+      cell: (_v, r) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <PhotoThumb url={r.receivedPhotoUrl} sareeId={r.sareeId} onView={setZoomImage} />
+          {onUploadPhoto && <PhotoUploadButton row={r} hasPhoto={!!r.receivedPhotoUrl} onUpload={onUploadPhoto} />}
+        </div>
+      ),
     },
     {
       id: "batch", header: "Batch", accessor: r => r.batchId, priority: 3,
@@ -423,6 +434,7 @@ export function MainSareesTable({
                   onPrintTag={onPrintTag}
                   onViewPhoto={setZoomImage}
                   pickRule={pickRule}
+                  onUploadPhoto={onUploadPhoto}
                 />
               ))}
             </div>

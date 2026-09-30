@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { DesignCodeCard } from "@/features/design-library";
 import { SareeTypeCard } from "@/features/pricing";
 import { WeaverSareesSection } from "@/features/weavers";
 import { MoneyAccessProvider } from "../../../shared/ui/MoneyAccess";
+import { useAuthGate } from "../../../contexts/AuthContext";
 
 import { T, F, card } from "./theme";
 import { InventoryRecord } from "./types";
@@ -21,6 +23,7 @@ import { PageHeaderAndStats } from "./sections/PageHeaderAndStats";
 import { ActionBar } from "./sections/ActionBar";
 import { QuickActionsSidebar } from "./sections/QuickActionsSidebar";
 import { useInventoryPageState } from "../hooks/useInventoryPageState";
+import { SareePhotoUploadDialog } from "./sareePhotos";
 
 // Re-exported so existing imports of `DispatchHistorySection` / `ResumeDispatchModal`
 // from this file (e.g. the Worker Staff portal) keep working unchanged.
@@ -106,6 +109,10 @@ export function InventoryPage({
   // bar and the table's checkboxes fold away together in that case.
   const hasAnyDispatchAction = canDispatchShop || canDispatchWholesale || canRaiseQuotation;
   const hasSidebar = showQuickDispatch || showCategorySplit;
+  // Photos are added by Worker Staff from their portal; here only an admin
+  // may add or replace one (PUT /saree-photos is WORKER + admin).
+  const canUploadPhotos = useAuthGate("admin", "superadmin");
+  const [photoSareeId, setPhotoSareeId] = useState<string | null>(null);
 
   return (
     <MoneyAccessProvider allowed={canSeeMoney}>
@@ -157,6 +164,7 @@ export function InventoryPage({
                 onToggleAll={toggleAllVisible}
                 onVisibleChange={rememberVisibleRows}
                 onAllRowsChange={rememberAllRows}
+                onUploadPhoto={canUploadPhotos ? r => setPhotoSareeId(r.sareeId) : undefined}
               />
             </div>
           </div>
@@ -303,6 +311,9 @@ export function InventoryPage({
           />
         )}
       </AnimatePresence>
+      {photoSareeId && (
+        <SareePhotoUploadDialog sareeId={photoSareeId} onClose={() => setPhotoSareeId(null)} />
+      )}
       <AnimatePresence>
         {openDesign && <DesignCodeCard design={openDesign} onClose={() => setOpenDesignCode(null)} />}
         {openSareeType && <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />}
