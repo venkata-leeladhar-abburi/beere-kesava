@@ -4,6 +4,7 @@ import { DecodeHintType, BarcodeFormat } from "@zxing/library";
 import { X, AlertCircle, ScanLine, Flashlight, FlashlightOff, SwitchCamera } from "lucide-react";
 import { Button } from "./primitives";
 import { canvasSize, extractScannedId, scanRegion, shouldMirror } from "./cameraScan";
+import { FrameScanner } from "./scanFrame";
 
 // The default camera picked by getUserMedia(undefined constraints) often
 // negotiates a low resolution (sometimes 640×480), which isn't enough to
@@ -13,7 +14,18 @@ import { canvasSize, extractScannedId, scanRegion, shouldMirror } from "./camera
 // are NOT put here: an unsupported `advanced` entry can fail the ENTIRE
 // getUserMedia call on some browsers. They're applied after the stream is
 // open instead, only when the track says it supports them (see tuneTrack).
-const RESOLUTION = { width: { ideal: 1920 }, height: { ideal: 1080 } } as const;
+//
+// Desktops ask for up to 4K: a laptop/USB webcam is the weakest camera the
+// scanner meets, and every extra pixel across a tag's thin bars is reading
+// distance. A camera that tops out lower just delivers its best. Phones stay
+// at 1080p — their lenses already resolve the bars, and a 4K stream only
+// costs them heat and decode time.
+const RESOLUTION_DESKTOP = { width: { ideal: 3840 }, height: { ideal: 2160 }, frameRate: { ideal: 30 } } as const;
+const RESOLUTION_PHONE = { width: { ideal: 1920 }, height: { ideal: 1080 } } as const;
+
+function isDesktopPointer(): boolean {
+  return typeof window.matchMedia === "function" && window.matchMedia("(pointer: fine)").matches;
+}
 
 const SCAN_HINTS = new Map<DecodeHintType, unknown>([
   [DecodeHintType.TRY_HARDER, true],
@@ -150,6 +162,10 @@ const SCANNER_CSS = `
  *    requirement — interleaved with a zoomed centre crop for a distant tag
  *    and the frame straightened in 10° steps to ±45° for a tilted barcode.
  *    See scanRegion in cameraScan.ts.
+ *  - Each attempt also locates the barcode itself and reads a straightened,
+ *    full-resolution crop of it with a blur-tolerant Code128 decoder (see
+ *    scanFrame.ts) — the part that makes a desktop webcam usable at a
+ *    normal distance.
  *  - Continuous autofocus/exposure when the camera supports it, a torch
  *    toggle for dim counters, and a camera switch for phones whose default
  *    rear lens can't focus close (remembered for next time).
@@ -163,7 +179,7 @@ export function CameraScannerModal({
   onClose,
   onDetected,
   title = "Scan Barcode",
-  hint = "Show the tag anywhere in the camera view — the QR code or the barcode, no need to line it up.",
+  hint = "Show the tag's barcode anywhere in the camera view — no need to line it up.",
   accentColor = "#6E0F2D",
 }: {
   open: boolean;
@@ -219,6 +235,8 @@ export function CameraScannerModal({
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     const reader = new BrowserMultiFormatReader(SCAN_HINTS);
     const barReader = new BrowserMultiFormatReader(BAR_HINTS);
+    const frameScanner = new FrameScanner();
+    const desktop = isDesktopPointer();
     // The <video> is always rendered while open, so it exists by the time
     // this effect runs; captured once so the cleanup detaches the same node.
     const videoEl = videoRef.current;
@@ -256,6 +274,36 @@ export function CameraScannerModal({
       if (cancelled) return;
       let attempt = 0;
 
+      // "Find the barcode, then read it close up": locate the stripes in the
+      // frame, straighten and crop them at full camera resolution, and read
+      // that with the blur-tolerant profile decoder, then with the regular
+      // decoder on an enlarged copy. This is what lets a webcam read a tag
+      // held at a normal distance, where the bars are only 2–3 camera pixels
+      // wide and every whole-frame decode misses them.
+      const readLocated = async (): Promise<string | null> => {
+        let candidates;
+        try { candidates = frameScanner.locate(video); } catch { return null; }
+        for (const found of candidates) {
+          if (cancelled) return null;
+          try {
+            const c = frameScanner.refine(video, found);
+            const viaProfile = frameScanner.readProfile(video, c);
+            if (viaProfile) return viaProfile;
+            const big = frameScanner.enlarged(video, c);
+            if (!big) continue;
+            if (native) {
+              const hit = (await native.detect(big)).find(f => f.rawValue && f.rawValue.trim());
+              if (hit) return hit.rawValue;
+            } else {
+              try { return barReader.decodeFromCanvas(big).getText(); } catch { /* not this one */ }
+            }
+          } catch {
+            // A failed read of one candidate is just "try the next".
+          }
+        }
+        return null;
+      };
+
       const tick = async () => {
         if (cancelled) return;
         let text: string | null = null;
@@ -277,6 +325,9 @@ export function CameraScannerModal({
             // NotFoundException on every frame without a code is the normal
             // steady state; any other decode error is also just "next frame".
           }
+          // Phones resolve tags fine without it, so there it runs on every
+          // other attempt to keep the loop quick; desktops run it every time.
+          if (!text && !cancelled && (desktop || attempt % 2 === 0)) text = await readLocated();
         }
         if (cancelled) return;
         if (text && text.trim()) {
@@ -324,7 +375,7 @@ export function CameraScannerModal({
       if (video.readyState >= 1) begin();
     };
 
-    const resolution = { ...RESOLUTION };
+    const resolution = desktop ? { ...RESOLUTION_DESKTOP } : { ...RESOLUTION_PHONE };
     const attempts: MediaStreamConstraints[] = [];
     if (deviceId) attempts.push({ audio: false, video: { deviceId: { exact: deviceId }, ...resolution } });
     attempts.push({ audio: false, video: { facingMode: { ideal: "environment" }, ...resolution } });

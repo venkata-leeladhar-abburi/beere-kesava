@@ -29,8 +29,8 @@ export const CENTER_CROP = 0.6;
  * first. A saree tag's Code128 is long and short, so a scanline only crosses
  * all of it at a small tilt — measured against ZXing, a tag barcode stops
  * reading past ~±5°. 10° steps leave no gap, out to ±45°, which covers any
- * casual way of holding a tag. The QR on the same tag reads at any angle
- * anyway; this is for the barcode.
+ * casual way of holding a tag. (A QR — printed only when an id is too long
+ * for a barcode — reads at any angle anyway.)
  */
 export const TILTS = [10, -10, 20, -20, 30, -30, 40, -40] as const;
 /**
@@ -85,11 +85,11 @@ export function canvasSize(region: ScanRegion): { width: number; height: number;
 }
 
 /**
- * A saree tag carries two codes: a Code128 barcode (decodes to the bare
- * saree id) and a QR code (decodes to a full "<FRONTEND_URL>/scan?id=<id>"
- * link, so a generic phone camera can open it directly — see
- * labels.service.ts). Every consumer of this scanner expects a bare id, so
- * unwrap the QR's URL form here, once, instead of in each caller.
+ * A printed tag's Code128 (or, for an id too long for bars, its QR) decodes
+ * to the bare saree id. The QR PNG from labels.service.ts instead encodes a
+ * full "<FRONTEND_URL>/scan?id=<id>" link, so a generic phone camera can
+ * open it directly. Every consumer of this scanner expects a bare id, so
+ * unwrap the URL form here, once, instead of in each caller.
  */
 export function extractScannedId(text: string): string {
   const trimmed = text.trim();
