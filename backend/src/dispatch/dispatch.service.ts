@@ -6,6 +6,7 @@ import { IdGeneratorService, businessSegment, financialYearCode } from "../id-ge
 import { NotificationsService } from "../notifications/notifications.service";
 import { loadSareeDetails } from "../sales/saree-details";
 import { PrismaService } from "../prisma/prisma.service";
+import { SareeCodesService } from "../saree-codes/saree-codes.service";
 import { CreateDispatchDto } from "./dto/create-dispatch.dto";
 import { ListDispatchQueryDto } from "./dto/list-dispatch-query.dto";
 import { UpdateDispatchDto } from "./dto/update-dispatch.dto";
@@ -29,9 +30,12 @@ export class DispatchService {
     private readonly auditLog: AuditLogService,
     private readonly idGenerator: IdGeneratorService,
     private readonly notifications: NotificationsService,
+    private readonly sareeCodes: SareeCodesService,
   ) {}
 
-  async create(dto: CreateDispatchDto) {
+  async create(input: CreateDispatchDto) {
+    // Old codes from tags printed before a re-code resolve to current ones.
+    const dto = { ...input, sareeIds: await this.sareeCodes.resolveMany(input.sareeIds) };
     // Attribution for the "Dispatched By" column. The id is only written when
     // it resolves to a real user — actorId can carry a stopgap placeholder,
     // and an unmatched value would fail the FK and reject the whole dispatch.

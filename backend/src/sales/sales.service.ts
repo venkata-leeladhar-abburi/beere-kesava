@@ -12,6 +12,7 @@ import { IdGeneratorService, businessSegment, nameSegment } from "../id-generato
 import { NotificationsService } from "../notifications/notifications.service";
 import { loadSareeDetails, type SareeSource } from "./saree-details";
 import { PrismaService } from "../prisma/prisma.service";
+import { SareeCodesService } from "../saree-codes/saree-codes.service";
 import { returnedPieceSet } from "../purchases/returned-pieces";
 import { CreateReturnDto } from "./dto/create-return.dto";
 import { CreateSaleDto } from "./dto/create-sale.dto";
@@ -86,6 +87,7 @@ export class SalesService {
     private readonly idGenerator: IdGeneratorService,
     private readonly auditLog: AuditLogService,
     private readonly notifications: NotificationsService,
+    private readonly sareeCodes: SareeCodesService,
   ) {}
 
 
@@ -157,7 +159,10 @@ export class SalesService {
     };
   }
 
-  async createSale(dto: CreateSaleDto) {
+  async createSale(input: CreateSaleDto) {
+    // A tag printed before its supplier short name / invoice number changed
+    // still carries the old code — sell the saree it now belongs to.
+    const dto = { ...input, sareeId: await this.sareeCodes.resolve(input.sareeId) };
     // The real production pipeline (BatchSareeRow → QcRecord) never writes a
     // `Saree` row — that table only exists to satisfy SaleRecord/ReturnRecord's
     // FK. So availability is decided the same way InventoryService.findAll()

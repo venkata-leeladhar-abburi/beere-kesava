@@ -1,5 +1,6 @@
 import { ConflictException, NotFoundException } from "@nestjs/common";
 import { normaliseCode, SareePhotosService } from "./saree-photos.service";
+import { passthroughSareeCodes } from "../saree-codes/testing";
 
 describe("SareePhotosService", () => {
   let prisma: any;
@@ -59,7 +60,7 @@ describe("SareePhotosService", () => {
       $transaction: jest.fn((fn: (tx: unknown) => unknown) => fn(prisma)),
     };
     auditLog = { recordAction: jest.fn().mockResolvedValue({}) };
-    service = new SareePhotosService(prisma, auditLog as any);
+    service = new SareePhotosService(prisma, auditLog as any, passthroughSareeCodes);
   });
 
   describe("lookup", () => {

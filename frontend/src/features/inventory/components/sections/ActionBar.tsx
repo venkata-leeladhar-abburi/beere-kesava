@@ -4,6 +4,7 @@ import { Scan, X, ShoppingBag, Users, FileText } from "lucide-react";
 import { T, F, EASE, card } from "../theme";
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 import { CameraScannerModal } from "../../../../shared/ui/CameraScannerModal";
+import { resolveSareeCode } from "@/shared/api/scan";
 import { WeaverSareeRow, externalSerialOf } from "@/features/weavers";
 import { formatMoney, rupees } from "@/lib/domain/money";
 
@@ -103,7 +104,8 @@ export function ActionBar({
 
   const handleDetected = (text: string) => {
     setCameraOpen(false);
-    onScan(text);
+    // Old sticker codes map to the saree's current code first.
+    void resolveSareeCode(text).then(onScan);
   };
 
   return (
@@ -119,7 +121,7 @@ export function ActionBar({
           onSubmit={e => {
             e.preventDefault();
             if (!scanValue.trim()) { setCameraOpen(true); return; }
-            onScan(scanValue);
+            void resolveSareeCode(scanValue).then(onScan);
             setScanValue("");
           }}
           style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}

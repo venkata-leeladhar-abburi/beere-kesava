@@ -48,4 +48,26 @@ export interface ScanLookupResult {
 
 export const scanApi = {
   lookup: (sareeId: string) => apiClient.get<ScanLookupResult>(`/scan/${encodeURIComponent(sareeId)}`),
+  /** The current code for a scanned/typed one — see resolveSareeCode. */
+  resolve: (code: string) => apiClient.get<{ code: string }>(`/scan/resolve?code=${encodeURIComponent(code)}`),
 };
+
+/**
+ * The code a saree carries now, for one read off a tag.
+ *
+ * An external-purchase saree's code is built from its supplier's short name
+ * and its invoice number; editing either re-codes the saree everywhere, but a
+ * sticker printed before the edit still carries the old code. Screens that
+ * match a scan against sarees already on screen run it through this first so
+ * an old sticker still finds its saree. Never throws: offline or on any
+ * error the scanned text is used as-is, exactly as before this existed.
+ */
+export async function resolveSareeCode(raw: string): Promise<string> {
+  const code = raw.trim();
+  if (!code) return code;
+  try {
+    return (await scanApi.resolve(code)).code || code;
+  } catch {
+    return code;
+  }
+}

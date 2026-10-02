@@ -1422,12 +1422,29 @@ model Purchase {
 // rich pricing/weight/photo entry the External Purchases form captures per
 // physical saree bought, distinct from `Purchase.sarees` (real production
 // Saree rows, a separate and currently unpopulated concern).
+// Former external-purchase line codes, kept when a line is re-coded because
+// its supplier's short name or its purchase's invoice number changed (see
+// SareeCodesService). The code is printed as the barcode on every piece's
+// tag, so a sticker printed before the change still carries the old one —
+// scanning it must keep finding the saree. One row per old LINE code; a piece
+// code ("{line}-{pieceNo}") is resolved through its line.
+model SareeCodeAlias {
+  oldCode   String   @id
+  newCode   String
+  createdAt DateTime @default(now())
+
+  @@index([newCode])
+}
+
 model PurchaseSareeLine {
   id               String    @id @default(uuid())
   purchaseId       String
   purchase         Purchase  @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
-  // Human-facing line code, e.g. RAVI-INV118-003 — computed client-side
-  // (buildSareeCode) and passed through; never regenerated server-side once set.
+  // Human-facing line code, e.g. RAVI-INV118-003 — "{supplier short name}-
+  // {invoice number}-{serial}". Set from the client on create; after that only
+  // SareeCodesService changes it, re-coding the line (and every table holding
+  // its pieces' ids) when the short name or invoice number is edited, and
+  // recording the old code in SareeCodeAlias so printed tags still scan.
   code             String
   weight           String?
   // Renamed from the frontend's `date` (which is per-line, defaulting to the

@@ -354,8 +354,12 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         // undefined (not part of this patch) leaves the link as it is.
         firmId: args.patch.firmId === undefined ? undefined : args.patch.firmId || null,
       }),
-    onSuccess: (updated) => {
+    onSuccess: (updated, args) => {
       setSuppliers(prev => prev.map(s => s.id === updated.id ? toSupplier(updated) : s));
+      // A new short name (or name) re-codes this supplier's sarees on the
+      // server — purchases, stock, dispatches, sales. Refetch everything so no
+      // screen keeps showing or printing the old codes.
+      if (args.patch.shortName !== undefined || args.patch.name !== undefined) void qc.invalidateQueries();
       toast.success("Supplier updated");
     },
     onError: (err: unknown) => {
@@ -395,6 +399,9 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
       purchasesApi.update(args.id, toUpdatePurchasePayload(args.patch)),
     onSuccess: (updated) => {
       setPurchases(prev => prev.map(p => p.id === updated.id ? toPurchase(updated) : p));
+      // A changed invoice number re-codes this purchase's sarees everywhere on
+      // the server; refetch so stock, dispatch and sales screens follow.
+      void qc.invalidateQueries();
       // The per-purchase detail query is what carries saree photos (the list
       // view strips them), so it has to be refreshed too — otherwise a photo
       // just uploaded disappears again the next time the saree list opens.

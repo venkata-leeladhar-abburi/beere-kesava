@@ -10,6 +10,7 @@ import { IdGeneratorService, businessSegment } from "../id-generator/id-generato
 import { Prisma, SupplierReturnStatus, UserRole } from "../generated/prisma/client";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { SareeCodesService } from "../saree-codes/saree-codes.service";
 import { returnedPieceSet } from "../purchases/returned-pieces";
 import { CreateSupplierDebitNoteDto } from "./dto/create-supplier-debit-note.dto";
 import { DecideSupplierDebitNoteDto } from "./dto/decide-supplier-debit-note.dto";
@@ -92,6 +93,7 @@ export class SupplierDebitNotesService {
     private readonly idGenerator: IdGeneratorService,
     private readonly auditLog: AuditLogService,
     private readonly notifications: NotificationsService,
+    private readonly sareeCodes: SareeCodesService,
   ) {}
 
   async create(dto: CreateSupplierDebitNoteDto): Promise<SupplierDebitNoteWithRelations> {
@@ -262,7 +264,8 @@ export class SupplierDebitNotesService {
 
     // A scanned QR tag carries a URL ending in ?id=<code> — reduce it to the code.
     const fromUrl = /[?&]id=([^&#\s]+)/i.exec(q);
-    const code = decodeURIComponent(fromUrl ? fromUrl[1] : q).trim();
+    // …and a code from a tag printed before a re-code, to its current one.
+    const code = await this.sareeCodes.resolve(decodeURIComponent(fromUrl ? fromUrl[1] : q).trim());
 
     const lineInclude = { purchase: { include: { supplier: true } } } satisfies Prisma.PurchaseSareeLineInclude;
     type LineRow = Prisma.PurchaseSareeLineGetPayload<{ include: typeof lineInclude }>;

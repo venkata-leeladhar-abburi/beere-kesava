@@ -6,6 +6,8 @@ import { PartyStatus, Prisma, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { supplierPrefix } from "../saree-codes/saree-codes";
+import { SareeCodesService } from "../saree-codes/saree-codes.service";
 import { CreateSupplierDto } from "./dto/create-supplier.dto";
 import { UpdateSupplierDto } from "./dto/update-supplier.dto";
 
@@ -16,6 +18,7 @@ export class SuppliersService {
     private readonly auditLog: AuditLogService,
     private readonly idGenerator: IdGeneratorService,
     private readonly notifications: NotificationsService,
+    private readonly sareeCodes: SareeCodesService,
   ) {}
 
   async create(dto: CreateSupplierDto) {
@@ -90,11 +93,29 @@ export class SuppliersService {
   async update(id: string, dto: UpdateSupplierDto) {
     const existing = await this.findOne(id);
     await this.assertFirmExists(dto.firmId);
-    const updated = await this.prisma.supplier.update({
-      where: { id },
-      // "" from a cleared picker means "not connected", same as null.
-      data: { ...dto, ...(dto.firmId !== undefined ? { firmId: dto.firmId || null } : {}) },
-    });
+    const data = { ...dto, ...(dto.firmId !== undefined ? { firmId: dto.firmId || null } : {}) };
+    // The short name (or, without one, the name) is the first segment of
+    // every saree code bought from this supplier and printed on its tags. When
+    // that segment changes, the supplier's sarees are re-coded in the same
+    // transaction — all of it saves, or none of it does.
+    const prefixChanges =
+      supplierPrefix(dto.name ?? existing.name, dto.shortName !== undefined ? dto.shortName : existing.shortName) !==
+      supplierPrefix(existing.name, existing.shortName);
+    const updated = prefixChanges
+      ? await this.prisma.$transaction(
+          async (tx) => {
+            const supplier = await tx.supplier.update({ where: { id }, data });
+            const purchases = await tx.purchase.findMany({ where: { supplierId: id }, select: { id: true } });
+            await this.sareeCodes.recodePurchases(tx, purchases.map((p) => p.id));
+            return supplier;
+          },
+          { timeout: 60_000 },
+        )
+      : await this.prisma.supplier.update({
+          where: { id },
+          // "" from a cleared picker means "not connected", same as null.
+          data,
+        });
 
     // Only a real status transition is announced. update() is the generic
     // edit endpoint, so a phone-number correction that re-sends the same

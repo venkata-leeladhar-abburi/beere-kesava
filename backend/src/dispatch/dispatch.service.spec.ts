@@ -3,6 +3,7 @@ import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { DispatchService } from "./dispatch.service";
 import { CreateDispatchDto } from "./dto/create-dispatch.dto";
 import { DispatchType } from "../generated/prisma/client";
+import { passthroughSareeCodes } from "../saree-codes/testing";
 
 /**
  * The shop-dispatch path: a saree that went straight from QC to the shop has no
@@ -43,7 +44,7 @@ describe("DispatchService.create — sarees with no InventoryRecord yet", () => 
       prisma,
       { recordAction: jest.fn() } as any,
       { nextScoped: jest.fn().mockResolvedValue("DC-2627-001") } as any,
-      notificationsStub(),
+      notificationsStub(), passthroughSareeCodes,
     );
   });
 
@@ -150,7 +151,7 @@ describe("DispatchService.remove — reverting inventory status", () => {
       inventoryRecord: { updateMany: jest.fn() },
       quotation: { update: jest.fn() },
     };
-    service = new DispatchService(prisma, { recordAction: jest.fn() } as any, {} as any, notificationsStub());
+    service = new DispatchService(prisma, { recordAction: jest.fn() } as any, {} as any, notificationsStub(), passthroughSareeCodes);
   });
 
   it("sends a finished saree back to FINISHING_COMPLETE and a QC-only saree back to QC_PASSED", async () => {
@@ -196,7 +197,7 @@ describe("DispatchService.create — challan numbering", () => {
     };
     idGenerator = { nextScoped: jest.fn().mockResolvedValue("DC-2627-001") };
     notifications = notificationMocks();
-    service = new DispatchService(prisma, { recordAction: jest.fn() } as any, idGenerator, notifications as unknown as NotificationsStub);
+    service = new DispatchService(prisma, { recordAction: jest.fn() } as any, idGenerator, notifications as unknown as NotificationsStub, passthroughSareeCodes);
   });
 
   it("allocates a DC number scoped to the financial year for a shop dispatch", async () => {

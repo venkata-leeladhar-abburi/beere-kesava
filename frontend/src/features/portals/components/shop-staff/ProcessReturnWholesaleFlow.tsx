@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { uploadsApi, resolveAssetUrl } from "@/shared/api/uploads";
 import { ApiError } from "@/shared/api/client";
+import { resolveSareeCode } from "@/shared/api/scan";
 import { C, F } from "./theme";
 import {
   Button, Combobox, Input, NumberInput, Select, SelectItem, Textarea,
@@ -121,7 +122,7 @@ function DraftCard({
       <BarcodeScannerModal
         open={scannerOpen}
         onClose={() => setScannerOpen(false)}
-        onDetected={text => { setScannerOpen(false); onChange({ sareeId: text.trim() }); }}
+        onDetected={text => { setScannerOpen(false); void resolveSareeCode(text).then(sareeId => onChange({ sareeId })); }}
         accent={ACCENT_WHOLESALE}
       />
 

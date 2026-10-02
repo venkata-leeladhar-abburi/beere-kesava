@@ -3,6 +3,7 @@ import { notificationsStub } from "../common/testing/notifications.stub";
 import { SalesService } from "./sales.service";
 import { SalesChannel } from "../generated/prisma/client";
 import { CreateSaleDto } from "./dto/create-sale.dto";
+import { passthroughSareeCodes } from "../saree-codes/testing";
 
 /**
  * GST on a counter bill: optional, bill-wide, and already included in each
@@ -44,7 +45,7 @@ describe("SalesService — GST on a counter sale", () => {
       $transaction: jest.fn().mockResolvedValue([]),
     };
     const idGenerator = { nextScoped: jest.fn().mockResolvedValue("RETAIL-Chetan-001") };
-    service = new SalesService(prisma, idGenerator as any, { recordAction: jest.fn() } as any, notificationsStub());
+    service = new SalesService(prisma, idGenerator as any, { recordAction: jest.fn() } as any, notificationsStub(), passthroughSareeCodes);
     // The admin feed is covered by the bill-notification spec.
     jest.spyOn(service as any, "sendSaleNotification").mockResolvedValue(undefined);
   });

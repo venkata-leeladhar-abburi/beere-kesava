@@ -13,6 +13,7 @@ import {
 } from "../../../../shared/api/shop-receipts";
 import { Button, Input, Textarea } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { resolveSareeCode } from "@/shared/api/scan";
 
 /**
  * Receiving one consignment at the shop counter — the step that turns an
@@ -138,8 +139,9 @@ export function ReceiveDispatchModal({
       setError(e instanceof Error ? `Could not record the receipt: ${e.message}` : "Could not record the receipt."),
   });
 
-  const onDetected = (text: string) => {
-    const scanned = text.trim();
+  const onDetected = async (text: string) => {
+    // A sticker printed before a re-code carries the old code.
+    const scanned = await resolveSareeCode(text);
     const match = outstanding.find(s => s.sareeId.toLowerCase() === scanned.toLowerCase());
     if (!match) {
       setScanMessage(`${scanned} is not awaiting receipt on this consignment.`);
@@ -298,7 +300,7 @@ export function ReceiveDispatchModal({
       <BarcodeScannerModal
         open={scanning}
         onClose={() => setScanning(false)}
-        onDetected={onDetected}
+        onDetected={text => void onDetected(text)}
         accent={ACCENT_SALE}
       />
     </>

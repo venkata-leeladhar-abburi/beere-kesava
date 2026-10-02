@@ -81,10 +81,12 @@ describe("assignLineCodes", () => {
     ]);
   });
 
-  it("keeps a saved line's stored code, even one from the old 4-letter prefix", () => {
+  it("previews a saved line under the current short name and invoice, keeping its serial", () => {
+    // What the server re-codes it to on save (SareeCodesService).
     expect(
       assignLineCodes([{ code: "SABO-3850-001" }, { code: "SABO-3850-002" }, {}], "Saboo Seide", "3850", "SabooSeide"),
-    ).toEqual(["SABO-3850-001", "SABO-3850-002", "SABOOSEIDE-3850-003"]);
+    ).toEqual(["SABOOSEIDE-3850-001", "SABOOSEIDE-3850-002", "SABOOSEIDE-3850-003"]);
+    expect(assignLineCodes([{ code: "SABO-EXCHNG-001" }], "Saboo Seide", "EXG", "SABO")).toEqual(["SABO-EXG-001"]);
   });
 
   it("never reuses a code a kept line already holds", () => {

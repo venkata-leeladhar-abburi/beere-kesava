@@ -1,6 +1,7 @@
 import { notificationsStub } from "../common/testing/notifications.stub";
 import { BadRequestException, ForbiddenException } from "@nestjs/common";
 import { SupplierDebitNotesService, decisionStatus } from "./supplier-debit-notes.service";
+import { passthroughSareeCodes } from "../saree-codes/testing";
 
 describe("SupplierDebitNotesService", () => {
   let prisma: any;
@@ -40,7 +41,7 @@ describe("SupplierDebitNotesService", () => {
       $transaction: jest.fn().mockImplementation((fn: any) => fn(prisma)),
     };
     idGenerator = { nextScoped: jest.fn().mockImplementation((p: string) => `${p}-RaviSilks-001-00${++counter}`) };
-    service = new SupplierDebitNotesService(prisma, idGenerator, { recordAction: jest.fn() } as any, notificationsStub());
+    service = new SupplierDebitNotesService(prisma, idGenerator, { recordAction: jest.fn() } as any, notificationsStub(), passthroughSareeCodes);
   });
 
   describe("decisionStatus", () => {

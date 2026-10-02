@@ -2,6 +2,7 @@ import { BadRequestException } from "@nestjs/common";
 import { notificationsStub } from "../common/testing/notifications.stub";
 import { SalesService } from "./sales.service";
 import { SalesChannel } from "../generated/prisma/client";
+import { passthroughSareeCodes } from "../saree-codes/testing";
 
 /**
  * External-purchase pieces ("{lineCode}-{pieceNo}") have no BatchSareeRow and
@@ -32,7 +33,7 @@ describe("SalesService — selling an external-purchase piece", () => {
       $transaction: jest.fn().mockResolvedValue([]),
     };
     const idGenerator = { nextScoped: jest.fn().mockResolvedValue("RETAIL-Vamsi-001") };
-    service = new SalesService(prisma, idGenerator as any, { recordAction: jest.fn() } as any, notificationsStub());
+    service = new SalesService(prisma, idGenerator as any, { recordAction: jest.fn() } as any, notificationsStub(), passthroughSareeCodes);
     jest.spyOn(service as any, "sendSaleNotification").mockResolvedValue(undefined);
   });
 

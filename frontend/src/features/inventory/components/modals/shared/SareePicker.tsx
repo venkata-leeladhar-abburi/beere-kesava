@@ -5,6 +5,7 @@ import { WeaverSareesSection, WeaverSareeRow } from "@/features/weavers";
 import { T, F } from "../../theme";
 import { Button, Chip, Input } from "../../../../../shared/ui/primitives";
 import { CameraScannerModal } from "../../../../../shared/ui/CameraScannerModal";
+import { resolveSareeCode } from "@/shared/api/scan";
 
 // ── Row → dispatch-saree mapper ───────────────────────────────────────────────
 // One definition shared by the page and the in-modal picker so a saree looks the
@@ -86,7 +87,9 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
 
   const handleDetected = (text: string) => {
     setCameraOpen(false);
-    scan(text);
+    // An old sticker (printed before a short name / invoice change) maps to
+    // the saree's current code before it's matched against the list.
+    void resolveSareeCode(text).then(scan);
   };
 
   return (
@@ -103,7 +106,7 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
             onSubmit={e => {
               e.preventDefault();
               if (!scanValue.trim()) { setCameraOpen(true); return; }
-              scan(scanValue);
+              void resolveSareeCode(scanValue).then(scan);
               setScanValue("");
             }}
             className="flex items-center gap-2 w-full sm:w-auto"

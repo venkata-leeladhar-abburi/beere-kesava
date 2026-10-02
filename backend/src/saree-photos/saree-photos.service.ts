@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from "@nestjs/common
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { Prisma, QcResult } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { SareeCodesService } from "../saree-codes/saree-codes.service";
 import { returnedPieceSet } from "../purchases/returned-pieces";
 
 /**
@@ -87,6 +88,7 @@ export class SareePhotosService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly sareeCodes: SareeCodesService,
   ) {}
 
   async lookup(rawCode: string): Promise<SareePhotoRecord> {
@@ -142,8 +144,10 @@ export class SareePhotosService {
    * the frontend). Matching is case-insensitive so a hand-typed code works.
    */
   private async resolve(rawCode: string): Promise<Resolved> {
-    const code = normaliseCode(rawCode);
-    if (!code) throw new NotFoundException("Enter or scan a saree ID.");
+    const typed = normaliseCode(rawCode);
+    if (!typed) throw new NotFoundException("Enter or scan a saree ID.");
+    // A tag printed before a re-code carries the old code.
+    const code = await this.sareeCodes.resolve(typed);
 
     const row =
       (await this.prisma.batchSareeRow.findUnique({ where: { sareeId: code }, select: productionSelect })) ??

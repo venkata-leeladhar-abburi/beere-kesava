@@ -1,6 +1,7 @@
 import { notificationMocks, type NotificationMocks, type NotificationsStub } from "../common/testing/notifications.stub";
 import { SalesService } from "./sales.service";
 import { SalesChannel } from "../generated/prisma/client";
+import { passthroughSareeCodes } from "../saree-codes/testing";
 
 /**
  * The shop records a basket one saree per request. Sarees sharing a billId
@@ -43,7 +44,7 @@ describe("SalesService — one notification per counter bill", () => {
         return Promise.resolve(null);
       }),
     };
-    service = new SalesService(prisma, {} as any, {} as any, notifications as unknown as NotificationsStub);
+    service = new SalesService(prisma, {} as any, {} as any, notifications as unknown as NotificationsStub, passthroughSareeCodes);
   });
 
   it("adds each saree on the bill to one notification and totals it", async () => {

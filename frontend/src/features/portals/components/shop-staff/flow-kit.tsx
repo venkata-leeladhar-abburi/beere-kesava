@@ -4,6 +4,7 @@ import { Check, ChevronLeft, ChevronRight, Camera, AlertCircle } from "lucide-re
 import type { LucideIcon } from "lucide-react";
 import { C, F } from "./theme";
 import { Button, Input } from "../../../../shared/ui/primitives";
+import { resolveSareeCode } from "@/shared/api/scan";
 import { BarcodeScannerModal } from "./BarcodeScannerModal";
 
 /**
@@ -313,12 +314,21 @@ export function ScanPanel({
   // A decoded barcode is a real value, not a keystroke — so it goes straight
   // to onValueChange + onSubmit rather than waiting for the operator to
   // notice the input filled in and press Find themselves.
+  // Every lookup goes through resolveSareeCode, so a sticker printed before
+  // its supplier short name / invoice number changed still finds the saree.
+  const submit = async (raw: string) => {
+    const resolved = await resolveSareeCode(raw);
+    if (!resolved) return;
+    if (resolved !== raw) onValueChange(resolved);
+    onSubmit(resolved);
+  };
+
   const handleDetected = (text: string) => {
     setScannerOpen(false);
     const decoded = text.trim();
     if (!decoded) return;
     onValueChange(decoded);
-    onSubmit(decoded);
+    void submit(decoded);
   };
 
   return (
@@ -358,7 +368,7 @@ export function ScanPanel({
           onChange={e => onValueChange(e.target.value)}
           // Enter only ever looks up typed text — it must not fire the camera,
           // which `canSubmit` now also allows through the button.
-          onKeyDown={e => { if (e.key === "Enter" && !cameraMode && canSubmit) { e.preventDefault(); onSubmit(); } }}
+          onKeyDown={e => { if (e.key === "Enter" && !cameraMode && canSubmit) { e.preventDefault(); void submit(value); } }}
           placeholder={placeholder}
           size="lg"
           className="flex-1 font-mono"
@@ -370,7 +380,7 @@ export function ScanPanel({
             variant="primary"
             size="lg"
             iconLeft={cameraMode ? Camera : undefined}
-            onClick={() => { if (cameraMode) { setScannerOpen(true); return; } onSubmit(); }}
+            onClick={() => { if (cameraMode) { setScannerOpen(true); return; } void submit(value); }}
             disabled={!canSubmit}
             className="h-12 rounded-xl bg-[var(--cta-bg)] px-6 hover:bg-[var(--cta-bg-hover)] disabled:cursor-not-allowed disabled:opacity-45"
           >

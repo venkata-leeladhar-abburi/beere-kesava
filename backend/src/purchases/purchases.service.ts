@@ -3,6 +3,7 @@ import { PaginatedResult } from "../common/pagination";
 import { Prisma, PurchaseDiscountType, PurchasePaymentStatus, SupplierReturnStatus } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { SareeCodesService } from "../saree-codes/saree-codes.service";
 import { CreatePurchaseDto } from "./dto/create-purchase.dto";
 import { CreatePurchaseSareeLineDto } from "./dto/create-purchase-saree-line.dto";
 import { ListPurchasesQueryDto } from "./dto/list-purchases-query.dto";
@@ -168,6 +169,7 @@ export class PurchasesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
+    private readonly sareeCodes: SareeCodesService,
   ) {}
 
   async create(dto: CreatePurchaseDto) {
@@ -191,27 +193,34 @@ export class PurchasesService {
     const bill = computeBill(dto.sarees, dto.discountType, dto.discountValue, dto.gstPercent);
     const id = await this.idGenerator.nextScoped(EXT_PURCHASE_ID_PREFIX, supplierSegment);
 
-    return this.prisma.purchase.create({
-      data: {
-        id,
-        supplierId: dto.supplierId,
-        supplierName: dto.supplierId ? undefined : dto.supplierName,
-        location: dto.location,
-        date: dto.date ? new Date(dto.date) : undefined,
-        sareeCount,
-        gstNumber: dto.gstNumber,
-        invoiceNumber: dto.invoiceNumber,
-        ...bill,
-        // A new purchase has nothing paid against it yet; payments recorded
-        // later move it to PARTIAL / PAID (recomputeStatus).
-        status: PurchasePaymentStatus.PENDING,
-        notes: dto.notes,
-        invoiceFileName: dto.invoiceFileName,
-        invoiceFileUrl: dto.invoiceFileUrl,
-        addedById: dto.addedById,
-        sareeLines: { create: dto.sarees.map((l, idx) => lineData(l, idx)) },
-      },
-      include,
+    // The form builds new line codes from the supplier short name it has
+    // loaded; recodePurchases normalises them against what's stored now (a
+    // stale cached short name would otherwise mint a mismatched code) and
+    // retires any alias that pointed at one of these codes.
+    return this.prisma.$transaction(async (tx) => {
+      await tx.purchase.create({
+        data: {
+          id,
+          supplierId: dto.supplierId,
+          supplierName: dto.supplierId ? undefined : dto.supplierName,
+          location: dto.location,
+          date: dto.date ? new Date(dto.date) : undefined,
+          sareeCount,
+          gstNumber: dto.gstNumber,
+          invoiceNumber: dto.invoiceNumber,
+          ...bill,
+          // A new purchase has nothing paid against it yet; payments recorded
+          // later move it to PARTIAL / PAID (recomputeStatus).
+          status: PurchasePaymentStatus.PENDING,
+          notes: dto.notes,
+          invoiceFileName: dto.invoiceFileName,
+          invoiceFileUrl: dto.invoiceFileUrl,
+          addedById: dto.addedById,
+          sareeLines: { create: dto.sarees.map((l, idx) => lineData(l, idx)) },
+        },
+      });
+      await this.sareeCodes.recodePurchases(tx, [id]);
+      return tx.purchase.findUniqueOrThrow({ where: { id }, include });
     });
   }
 
@@ -294,7 +303,16 @@ export class PurchasesService {
         }
         await tx.purchaseSareeLine.update({
           where: { id: existing.id },
-          data: { ...data, returnedQuantity: existing.returnedQuantity, returnedPieceNos: existing.returnedPieceNos },
+          // The stored code stays: a saved line is only ever re-coded by
+          // SareeCodesService, which also moves every record of its pieces.
+          // Writing the form's code here would rename the line alone and
+          // orphan its sales, dispatches and stock.
+          data: {
+            ...data,
+            code: existing.code,
+            returnedQuantity: existing.returnedQuantity,
+            returnedPieceNos: existing.returnedPieceNos,
+          },
         });
       }
     }
@@ -342,7 +360,7 @@ export class PurchasesService {
       if (linePlan) {
         await this.applyLineChanges(tx, id, linePlan);
       }
-      return tx.purchase.update({
+      await tx.purchase.update({
         where: { id },
         data: {
           supplierId: dto.supplierId,
@@ -360,8 +378,12 @@ export class PurchasesService {
             ? { sareeLines: { create: linePlan.created.map(({ line, idx }) => lineData(line, idx)) } }
             : {}),
         },
-        include,
       });
+      // A changed invoice number or supplier re-codes this purchase's sarees
+      // everywhere they're recorded (see SareeCodesService), in this same
+      // transaction.
+      await this.sareeCodes.recodePurchases(tx, [id]);
+      return tx.purchase.findUniqueOrThrow({ where: { id }, include });
     });
 
     // A changed bill moves the line between paid and owed: payments already

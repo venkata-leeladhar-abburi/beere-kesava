@@ -1,13 +1,25 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { sellingPerPiece } from "../sales/saree-details";
 import { PrismaService } from "../prisma/prisma.service";
+import { SareeCodesService } from "../saree-codes/saree-codes.service";
 import { returnedPieceSet } from "../purchases/returned-pieces";
 
 @Injectable()
 export class ScanService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly sareeCodes: SareeCodesService,
+  ) {}
 
-  async lookup(sareeId: string) {
+  /** The current code for a scanned or typed one (see SareeCodesService). */
+  resolveCode(code: string) {
+    return this.sareeCodes.resolve(code);
+  }
+
+  async lookup(scanned: string) {
+    // A tag printed before its supplier short name / invoice number changed
+    // still carries the old code — look up the saree it belongs to now.
+    const sareeId = await this.sareeCodes.resolve(scanned);
     const row = await this.prisma.batchSareeRow.findUnique({
       where: { sareeId },
       include: {

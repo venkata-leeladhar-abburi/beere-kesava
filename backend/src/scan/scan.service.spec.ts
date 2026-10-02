@@ -1,4 +1,5 @@
 import { ScanService } from "./scan.service";
+import { passthroughSareeCodes } from "../saree-codes/testing";
 
 /**
  * A SHOP dispatch delivers a saree to the shop floor — that is what *makes* it
@@ -39,7 +40,7 @@ describe("ScanService.lookup — sale eligibility", () => {
       saleRecord: { findFirst: jest.fn().mockResolvedValue(null) },
       returnRecord: { findFirst: jest.fn().mockResolvedValue(null) },
     };
-    service = new ScanService(prisma);
+    service = new ScanService(prisma, passthroughSareeCodes);
   });
 
   it("marks a saree dispatched to the shop as sellable at the counter", async () => {
@@ -121,7 +122,7 @@ describe("ScanService.lookup — external piece selling price", () => {
       purchaseSareeLine: { findFirst: jest.fn().mockResolvedValue(line) },
       saleRecord: { findFirst: jest.fn().mockResolvedValue(sale) },
       returnRecord: { findFirst: jest.fn().mockResolvedValue(ret) },
-    } as never);
+    } as never, passthroughSareeCodes);
 
   it("reports a piece that has already been sold as SOLD, not sellable", async () => {
     const result = await serviceFor(purchaseLine(), { date: new Date("2026-09-10") }).lookup("JJSI-OS-001-01");

@@ -189,11 +189,14 @@ export function buildSareeCode(supplier: string, serial: number, invoiceNumber: 
 /**
  * Codes for every line in the Add/Edit Purchase form, in order.
  *
- * A line already saved keeps its stored code: its barcodes may be printed
- * and stuck on sarees, and the server matches an edited line back to the
- * stored one by that code. Only new lines get a fresh code, numbered by
- * position but skipping any code a kept line already holds — so removing
- * line 2 of 3 and adding a line never hands out a second "-003".
+ * A line already saved keeps its serial but follows the current short name
+ * and invoice number — exactly what the server (SareeCodesService) will
+ * re-code it to on save, moving every record of its pieces and keeping the
+ * old code as an alias so stickers already printed still scan. The form only
+ * previews it; the server never takes a saved line's code from the form.
+ * New lines get a fresh serial, numbered by position but skipping any serial
+ * a saved line already holds — so removing line 2 of 3 and adding a line
+ * never hands out a second "-003".
  */
 export function assignLineCodes(
   rows: { code?: string }[],
@@ -201,10 +204,14 @@ export function assignLineCodes(
   invoiceNumber: string,
   shortName?: string | null,
 ): string[] {
-  const taken = new Set(rows.flatMap(r => (r.code ? [r.code] : [])));
+  const current = (code: string) => {
+    const serial = serialFromLineCode(code);
+    return serial ? buildSareeCode(supplier, Number(serial), invoiceNumber, shortName) : code;
+  };
+  const taken = new Set(rows.flatMap(r => (r.code ? [current(r.code)] : [])));
   let serial = 0;
   return rows.map((r, idx) => {
-    if (r.code) return r.code;
+    if (r.code) return current(r.code);
     serial = Math.max(serial, idx);
     let code: string;
     do {

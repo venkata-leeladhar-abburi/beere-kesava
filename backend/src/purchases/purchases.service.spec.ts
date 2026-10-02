@@ -85,18 +85,24 @@ describe("PurchasesService.update — saree lines", () => {
     returnedQuantity: 1, returnedPieceNos: [2],
   };
   let prisma: any;
+  let sareeCodes: any;
   let service: PurchasesService;
 
   beforeEach(() => {
     const existing = { id: "EXT-1", subtotal: 400, discountType: null, discountValue: 0, gstPercent: 0, billAmount: 400, sareeLines: [storedLine] };
     prisma = {
-      purchase: { findUnique: jest.fn().mockResolvedValue(existing), update: jest.fn().mockResolvedValue(existing) },
+      purchase: {
+        findUnique: jest.fn().mockResolvedValue(existing),
+        findUniqueOrThrow: jest.fn().mockResolvedValue(existing),
+        update: jest.fn().mockResolvedValue(existing),
+      },
       purchaseSareeLine: { update: jest.fn(), deleteMany: jest.fn() },
       supplierReturnRequest: { findMany: jest.fn().mockResolvedValue([]) },
       supplierPayment: { count: jest.fn().mockResolvedValue(0) },
       $transaction: jest.fn().mockImplementation((fn: any) => fn(prisma)),
     };
-    service = new PurchasesService(prisma, {} as any);
+    sareeCodes = { recodePurchases: jest.fn().mockResolvedValue([]) };
+    service = new PurchasesService(prisma, {} as any, sareeCodes);
   });
 
   it("updates a kept line in place instead of deleting and recreating it", async () => {
@@ -110,6 +116,21 @@ describe("PurchasesService.update — saree lines", () => {
     expect(prisma.purchase.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ sareeCount: 3 }) }),
     );
+  });
+
+  it("keeps a saved line's stored code and re-codes through SareeCodesService in the same transaction", async () => {
+    // The form may send a recomputed code for a saved line; writing it here
+    // would rename the line without moving its sales/dispatch/stock records.
+    await service.update("EXT-1", {
+      invoiceNumber: "NEW",
+      sarees: [{ id: "l1", code: "RAVI-NEW-001", price: 100, quantity: 4 }],
+    });
+
+    expect(prisma.purchaseSareeLine.update).toHaveBeenCalledWith({
+      where: { id: "l1" },
+      data: expect.objectContaining({ code: "RAVI-001" }),
+    });
+    expect(sareeCodes.recodePurchases).toHaveBeenCalledWith(prisma, ["EXT-1"]);
   });
 
   it("refuses to remove a line that has a return raised against it", async () => {

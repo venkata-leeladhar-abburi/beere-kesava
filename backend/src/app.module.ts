@@ -34,6 +34,7 @@ import { OpsJobsModule } from "./ops-jobs/ops-jobs.module";
 import { FinishingModule } from "./finishing/finishing.module";
 import { FirmsModule } from "./firms/firms.module";
 import { IdGeneratorModule } from "./id-generator/id-generator.module";
+import { SareeCodesModule } from "./saree-codes/saree-codes.module";
 import { InventoryModule } from "./inventory/inventory.module";
 import { InvoicesModule } from "./invoices/invoices.module";
 import { LabelsModule } from "./labels/labels.module";
@@ -86,6 +87,7 @@ import { WhatsAppModule } from "./whatsapp/whatsapp.module";
     StorageModule,
     PrismaModule,
     IdGeneratorModule,
+    SareeCodesModule,
     UsersModule,
     WeaversModule,
     UploadsModule,
