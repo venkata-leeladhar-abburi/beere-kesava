@@ -23,7 +23,7 @@ export function GrnBarcodeScannerModal({
       onClose={onClose}
       onDetected={onDetected}
       title="Scan GRN Batch Barcode"
-      hint="Hold the GRN batch tag steady inside the frame — it'll be picked up automatically."
+      hint="Show the GRN batch tag anywhere in the camera view — it's picked up automatically, no need to line it up."
     />
   );
 }

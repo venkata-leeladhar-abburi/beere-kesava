@@ -13,8 +13,9 @@ import type { FlowAccent } from "./flow-kit";
  * price, background — handed to a MultiFormat reader that then had to guess
  * at every symbology it knows. The live view looked perfectly fine and
  * nothing ever decoded. The shared scanner asks for 1080p off the rear
- * camera, restricts the reader to Code128/QR with TRY_HARDER, and decodes an
- * upscaled crop of just the guide box.
+ * camera, restricts the reader to Code128/QR with TRY_HARDER, and reads the
+ * whole frame plus zoomed and straightened crops, so the tag can be shown
+ * casually rather than lined up inside a box.
  *
  * It also unwraps the QR form of a tag ("<FRONTEND_URL>/scan?id=<id>") down
  * to the bare saree id, so a caller here gets the same string whichever of
