@@ -82,7 +82,11 @@ import { WhatsAppModule } from "./whatsapp/whatsapp.module";
     // tighter, named limit on top (see AuthController) since they're the
     // realistic brute-force target; this default just stops generic abuse
     // everywhere else.
-    ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 100 }]),
+    // Per-IP, and a whole shop shares one IP behind its router, so 100/min was
+    // easily exhausted by a few staff opening screens (each fires several
+    // requests) — surfacing as slow loads and 429s. Login/OTP keep their own
+    // much stricter @Throttle limits.
+    ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 600 }]),
     ScheduleModule.forRoot(),
     StorageModule,
     PrismaModule,

@@ -9,9 +9,11 @@ import { toastMessageForError } from "../shared/ui/state/errorMessages";
  * lifetime of the tab, meaning a batch created (or materials issued) in
  * one place never appeared in another until a hard reload.
  *
- * 30s keeps navigation cheap while letting cross-page writes surface on
- * their own; refetching on window focus picks up changes made in another
- * tab or by another user.
+ * 2 min keeps navigation cheap and stops a page load / window refocus from
+ * firing a burst of refetches at once (that burst queues behind the backend's
+ * DB pool and delays barcode scans). Writes still show immediately because
+ * mutations invalidate or patch the cache; refetching on window focus (only
+ * for data older than staleTime) picks up changes from another tab or user.
  *
  * retry: the old blanket `false` meant one transient blip (a cold-starting
  * backend, a dropped packet) turned into a permanent error screen with
@@ -30,7 +32,7 @@ import { toastMessageForError } from "../shared/ui/state/errorMessages";
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 30_000,
+      staleTime: 120_000,
       refetchOnWindowFocus: true,
       retry: (failureCount, error) => isRetryable(error) && !isSessionExpired(error) && failureCount < 2,
       retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8_000),
