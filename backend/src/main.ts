@@ -45,8 +45,11 @@ async function bootstrap() {
   app.enableCors({
     origin: corsOrigin ? corsOrigin.split(",").map((o) => o.trim()) : !isProduction,
   });
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  // Photos/imports travel as multipart (multer), not JSON, so JSON bodies are
+  // small. Raise JSON_BODY_LIMIT (e.g. "20mb") if a screen ever needs more.
+  const bodyLimit = configService.get<string>("JSON_BODY_LIMIT") ?? "5mb";
+  app.use(express.json({ limit: bodyLimit }));
+  app.use(express.urlencoded({ limit: bodyLimit, extended: true }));
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
