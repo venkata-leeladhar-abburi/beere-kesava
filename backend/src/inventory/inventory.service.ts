@@ -146,74 +146,79 @@ export class InventoryService {
    *   - assignedBy / assignedAt (no actor-tracking on InventoryRecord yet)
    */
   async findAll(): Promise<StockItem[]> {
-    const rows = await this.prisma.batchSareeRow.findMany({
-      where: { qcPassed: true, sareeId: { not: null } },
-      include: {
-        weaver: true,
-        factoryLoom: true,
-        sareeType: true,
-        design: true,
-        // select, not include: some legacy QcRecord.photoUrl values are still
-        // inline base64 data URLs (pre-disk-storage rows) rather than upload
-        // paths — pulling the whole row here drags multi-MB blobs through
-        // Supabase's pooler and can time the query out. Only loomNumber/qcDate
-        // are ever read below.
-        qcRecords: { orderBy: { qcDate: "desc" }, take: 1, select: { qcDate: true, loomNumber: true } },
-      },
-    });
-    if (rows.length === 0) {
-      return [];
-    }
-    const sareeIds = rows.map((r) => r.sareeId!);
-
-    const [dispatched, sold, inventoryRecords] = await Promise.all([
-      this.prisma.dispatchSaree.findMany({
-        where: { sareeId: { in: sareeIds } },
-        select: { sareeId: true },
-      }),
-      this.prisma.saleRecord.findMany({
-        where: { sareeId: { in: sareeIds } },
-        select: { sareeId: true },
-      }),
-      this.prisma.inventoryRecord.findMany({
-        where: { sareeId: { in: sareeIds }, status: "DAMAGED_REVIEW_NEEDED" },
-        select: { sareeId: true },
-      }),
-    ]);
-    const excluded = new Set([
-      ...dispatched.map((d) => d.sareeId),
-      ...sold.map((s) => s.sareeId),
-      ...inventoryRecords.map((i) => i.sareeId),
-    ]);
+    // One database query does everything: the exclusions (dispatched / sold /
+    // damaged) as NOT EXISTS on the sareeId indexes, the joins, and the latest
+    // QC per saree. Previously this loaded every QC-passed saree with five
+    // joins, sent the whole id list back in three IN (...) queries (which also
+    // breaks past ~32k ids — PostgreSQL's bind-parameter limit) and filtered in
+    // the app. A tagged $queryRaw is fully parameterised — no string building,
+    // so no injection risk.
+    //
+    // Latest QC is selected column-by-column on purpose: some legacy
+    // QcRecord.photoUrl values are inline base64 blobs, never pulled here.
+    const rows = await this.prisma.$queryRaw<
+      {
+        sareeId: string;
+        recipientType: string | null;
+        factoryLoomId: string | null;
+        weaverId: string | null;
+        designCode: string | null;
+        sareeTypeCode: string | null;
+        createdAt: Date;
+        weaverFirstName: string | null;
+        weaverLastName: string | null;
+        weaverCode: string | null;
+        loomCode: string | null;
+        loomLabel: string | null;
+        sareeTypeName: string | null;
+        qcDate: Date | null;
+        qcLoomNumber: string | null;
+      }[]
+    >`
+      SELECT b."sareeId", b."recipientType"::text AS "recipientType", b."factoryLoomId", b."weaverId",
+             b."designCode", b."sareeTypeCode", b."createdAt",
+             w."firstName" AS "weaverFirstName", w."lastName" AS "weaverLastName", w."code" AS "weaverCode",
+             fl."code" AS "loomCode", fl."loomNumber" AS "loomLabel",
+             st."type" AS "sareeTypeName",
+             q."qcDate", q."loomNumber" AS "qcLoomNumber"
+      FROM "BatchSareeRow" b
+      LEFT JOIN "Weaver" w ON w."id" = b."weaverId"
+      LEFT JOIN "FactoryLoom" fl ON fl."id" = b."factoryLoomId"
+      LEFT JOIN "SareeTypeRate" st ON st."code" = b."sareeTypeCode"
+      LEFT JOIN LATERAL (
+        SELECT "qcDate", "loomNumber" FROM "QcRecord"
+        WHERE "sareeId" = b."sareeId" ORDER BY "qcDate" DESC LIMIT 1
+      ) q ON true
+      WHERE b."qcPassed" = true
+        AND b."sareeId" IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM "DispatchSaree" d WHERE d."sareeId" = b."sareeId")
+        AND NOT EXISTS (SELECT 1 FROM "SaleRecord" s WHERE s."sareeId" = b."sareeId")
+        AND NOT EXISTS (
+          SELECT 1 FROM "InventoryRecord" i
+          WHERE i."sareeId" = b."sareeId" AND i."status" = 'DAMAGED_REVIEW_NEEDED'
+        )`;
 
     return rows
-      .filter((row) => !excluded.has(row.sareeId!))
       .map((row): StockItem => {
-        const isFactory =
-          row.recipientType === "FACTORY_LOOM" || row.factoryLoomId != null;
+        const isFactory = row.recipientType === "FACTORY_LOOM" || row.factoryLoomId != null;
         const source: StockSource = isFactory ? "factory" : "outsourced";
-        const latestQc = row.qcRecords[0];
         // The human-facing loom code ("Loom-002") when this saree came off a
         // factory loom — loomNumber is the legacy machine label and is only a
         // fallback, matching loomLabel() on the frontend.
-        const loomNumber = row.factoryLoom?.code ?? row.factoryLoom?.loomNumber ?? latestQc?.loomNumber ?? null;
+        const loomNumber = row.loomCode ?? row.loomLabel ?? row.qcLoomNumber ?? null;
 
         return {
-          sareeId: row.sareeId!,
+          sareeId: row.sareeId,
           source,
           status: "available",
-          weaverName: row.weaver
-            ? `${row.weaver.firstName} ${row.weaver.lastName}`.trim()
-            : null,
+          weaverName: row.weaverFirstName != null ? `${row.weaverFirstName} ${row.weaverLastName ?? ""}`.trim() : null,
           weaverId: row.weaverId ?? null,
-          weaverCode: row.weaver?.code ?? null,
+          weaverCode: row.weaverCode ?? null,
           loomNumber,
           designCode: row.designCode ?? null,
           sareeTypeCode: row.sareeTypeCode ?? null,
-          sareeTypeLabel: row.sareeType
-            ? `${row.sareeTypeCode} · ${row.sareeType.type}`
-            : row.sareeTypeCode ?? null,
-          qcDate: (latestQc?.qcDate ?? row.createdAt).toISOString(),
+          sareeTypeLabel: row.sareeTypeName != null ? `${row.sareeTypeCode} · ${row.sareeTypeName}` : row.sareeTypeCode ?? null,
+          qcDate: (row.qcDate ?? row.createdAt).toISOString(),
           saleRef: null,
           customer: null,
         };
