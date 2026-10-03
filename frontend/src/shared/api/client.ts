@@ -1,4 +1,5 @@
 import { defaultCodeForStatus, isErrorCode, type ErrorCode } from "./errors";
+import { acquireSlot, isPriorityRequest } from "./requestQueue";
 import { notifyRequestSettled, notifyRequestStarted } from "./requestActivity";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
@@ -185,6 +186,9 @@ function parseErrorBody(body: unknown, status: number): ApiError {
  * have to guess whether an unknown error was a connectivity problem.
  */
 async function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
+  // Wait for a free slot first (see requestQueue.ts) — the timeout and the
+  // "still working…" hint only start once the request is actually sent.
+  const release = await acquireSlot(isPriorityRequest(url, init.method));
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   const requestId = notifyRequestStarted();
@@ -202,6 +206,7 @@ async function fetchWithTimeout(url: string, init: RequestInit): Promise<Respons
   } finally {
     clearTimeout(timeout);
     notifyRequestSettled(requestId);
+    release();
   }
 }
 
