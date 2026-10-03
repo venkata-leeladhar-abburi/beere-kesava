@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useInView, AnimatePresence } from "motion/react";
 import { Package } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -139,13 +139,21 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
     return [...ledger, ...external];
   }, [raw, externalRows]);
 
-  const filtered = ALL_STOCK.filter(s => {
-    const q = search.trim().toLowerCase();
-    const matchSearch = q === "" || s.id.toLowerCase().includes(q) || (s.weaver || "").toLowerCase().includes(q) || s.design.toLowerCase().includes(q) || (s.supplier || "").toLowerCase().includes(q) || (s.invoiceNumber || "").toLowerCase().includes(q);
-    const matchStatus = statusFilter === "all" || s.status === statusFilter;
-    const matchSource = sourceFilter === "all" || s.source === sourceFilter;
-    return matchSearch && matchStatus && matchSource;
-  });
+  // Typing in the search box must stay instant even with tens of thousands of
+  // sarees: the filter below runs against a deferred copy of the text, so React
+  // renders the keystroke first and filters right after. Everything is memoised
+  // so unrelated re-renders (opening a dialog, changing page) don't re-scan
+  // the whole list.
+  const deferredSearch = useDeferredValue(search);
+  const filtered = useMemo(() => {
+    const q = deferredSearch.trim().toLowerCase();
+    return ALL_STOCK.filter(s => {
+      const matchSearch = q === "" || s.id.toLowerCase().includes(q) || (s.weaver || "").toLowerCase().includes(q) || s.design.toLowerCase().includes(q) || (s.supplier || "").toLowerCase().includes(q) || (s.invoiceNumber || "").toLowerCase().includes(q);
+      const matchStatus = statusFilter === "all" || s.status === statusFilter;
+      const matchSource = sourceFilter === "all" || s.source === sourceFilter;
+      return matchSearch && matchStatus && matchSource;
+    });
+  }, [ALL_STOCK, deferredSearch, statusFilter, sourceFilter]);
 
   const pag = usePagination(filtered, 10);
   // Narrowing the list while on a later page would otherwise strand the user
@@ -154,10 +162,17 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { pag.setPage(1); }, [search, statusFilter, sourceFilter]);
 
-  const availableCount  = ALL_STOCK.filter(s => s.status === "available").length;
-  const soldCount       = ALL_STOCK.filter(s => s.status === "sold").length;
-  const wholesaleCount  = ALL_STOCK.filter(s => s.status === "wholesale").length;
-  const externalCount   = ALL_STOCK.filter(s => s.source === "external").length;
+  // One pass instead of four full scans on every render.
+  const { availableCount, soldCount, wholesaleCount, externalCount } = useMemo(() => {
+    let available = 0, sold = 0, wholesale = 0, external = 0;
+    for (const s of ALL_STOCK) {
+      if (s.status === "available") available++;
+      else if (s.status === "sold") sold++;
+      else if (s.status === "wholesale") wholesale++;
+      if (s.source === "external") external++;
+    }
+    return { availableCount: available, soldCount: sold, wholesaleCount: wholesale, externalCount: external };
+  }, [ALL_STOCK]);
 
   return (
     <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
