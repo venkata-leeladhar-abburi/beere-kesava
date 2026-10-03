@@ -29,8 +29,8 @@ export const CENTER_CROP = 0.6;
  * first. A saree tag's Code128 is long and short, so a scanline only crosses
  * all of it at a small tilt — measured against ZXing, a tag barcode stops
  * reading past ~±5°. 10° steps leave no gap, out to ±45°, which covers any
- * casual way of holding a tag. (A QR — printed only when an id is too long
- * for a barcode — reads at any angle anyway.)
+ * casual way of holding a tag. Only the older Code128 tags need this; a QR
+ * reads at any angle and has its own, much cheaper pass (see qrRegion).
  */
 export const TILTS = [10, -10, 20, -20, 30, -30, 40, -40] as const;
 /**
@@ -70,6 +70,33 @@ export function scanRegion(attempt: number, vw: number, vh: number): ScanRegion 
 }
 
 /**
+ * Long side of the canvas a QR pass is decoded from. A saree tag's QR prints
+ * ~0.7mm modules — three times a Code128 bar — so it needs far fewer camera
+ * pixels than the bars do, and a smaller canvas is what keeps this pass to a
+ * few milliseconds, cheap enough to run on every single attempt.
+ */
+export const QR_LONG_SIDE = 1280;
+/**
+ * Centre fractions the QR pass cycles through between whole-frame looks. The
+ * whole frame is downscaled, which loses a tag held far away; each crop reads
+ * the middle of the frame closer to the camera's own resolution.
+ */
+export const QR_CROPS = [0.6, 0.35] as const;
+
+/**
+ * Which part of the frame QR attempt `attempt` looks at: the whole frame on
+ * every even attempt (a tag anywhere in view), a centre crop on the odd ones
+ * (a small or distant tag). Never rotated — a QR reads at any angle — and
+ * never upscaled, which would only cost time.
+ */
+export function qrRegion(attempt: number, vw: number, vh: number): ScanRegion {
+  const crop = attempt % 2 === 0 ? 1 : QR_CROPS[((attempt - 1) / 2) % QR_CROPS.length];
+  const w = vw * crop;
+  const h = vh * crop;
+  return { x: (vw - w) / 2, y: (vh - h) / 2, w, h, rotate: 0, longSide: Math.min(QR_LONG_SIDE, Math.max(w, h)) };
+}
+
+/**
  * Canvas a region is drawn into, and the scale the source is drawn at. The
  * canvas is the region's bounding box after rotation (so a tilted frame's
  * corners aren't clipped off), with its long side `region.longSide`.
@@ -85,8 +112,8 @@ export function canvasSize(region: ScanRegion): { width: number; height: number;
 }
 
 /**
- * A printed tag's Code128 (or, for an id too long for bars, its QR) decodes
- * to the bare saree id. The QR PNG from labels.service.ts instead encodes a
+ * A printed tag's QR (or an older tag's Code128) decodes to the bare saree
+ * id. The QR PNG from labels.service.ts instead encodes a
  * full "<FRONTEND_URL>/scan?id=<id>" link, so a generic phone camera can
  * open it directly. Every consumer of this scanner expects a bare id, so
  * unwrap the URL form here, once, instead of in each caller.

@@ -18,7 +18,7 @@ function decodeRendered(value: string, scale = 8): string {
   if (!encoded) throw new Error(`could not encode ${value}`);
 
   const extent = encoded.modules + QR_QUIET_ZONE * 2;
-  const px = extent * scale;
+  const px = Math.round(extent * scale);
 
   // The path is a run of `M{x} {y}h1v1h-1z` module rects — replay it onto a
   // pixel grid the way the SVG renderer would.
@@ -30,16 +30,17 @@ function decodeRendered(value: string, scale = 8): string {
   const luma = new Uint8ClampedArray(px * px);
   for (let py = 0; py < px; py++) {
     for (let pxi = 0; pxi < px; pxi++) {
-      const on = dark.has(`${Math.floor(pxi / scale)},${Math.floor(py / scale)}`);
+      const on = dark.has(`${Math.floor(((pxi + 0.5) / px) * extent)},${Math.floor(((py + 0.5) / px) * extent)}`);
       luma[py * px + pxi] = on ? 0 : 255;
     }
   }
 
   const source = new RGBLuminanceSource(luma, px, px);
   const bitmap = new BinaryBitmap(new HybridBinarizer(source));
-  const reader = new MultiFormatReader();
-  reader.setHints(new Map([[DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE]]]));
-  return reader.decode(bitmap).getText();
+  // Hints go to decode() itself — decode(image) with none resets the reader
+  // to every format, which is not what the scanner's QR pass runs.
+  const hints = new Map([[DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE]]]);
+  return new MultiFormatReader().decode(bitmap, hints).getText();
 }
 
 /** Every code shape the app actually prints on a tag. */
@@ -75,6 +76,23 @@ describe("ScannableCode", () => {
   it("handles the longest realistic vendor-scoped code", () => {
     const code = "GRN-LakshmisSilks-002-001-12";
     expect(decodeRendered(code)).toBe(code);
+  });
+
+  // Ids whose level-L code ZXing's reader cannot find at most camera
+  // distances — found by sweeping every tag of a real 213-saree purchase.
+  // encodeToPath has to notice and print a pattern that does read.
+  it.each([
+    "SRIS-626-002-12", "SRIS-626-002-36", "SRIS-626-004-12", "SRIS-626-011-02",
+  ])("picks a pattern the scanner can find for %s", code => {
+    const misses: number[] = [];
+    for (let scale = 3.5; scale <= 16; scale += 0.25) {
+      try {
+        if (decodeRendered(code, scale) !== code) misses.push(scale);
+      } catch {
+        misses.push(scale);
+      }
+    }
+    expect(misses).toEqual([]);
   });
 
   it("surrounds the code with a real quiet zone", () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
-  CENTER_CROP, DECODE_LONG_SIDE, ROTATED_LONG_SIDE, TILTS,
-  canvasSize, extractScannedId, scanRegion, shouldMirror,
+  CENTER_CROP, DECODE_LONG_SIDE, QR_CROPS, QR_LONG_SIDE, ROTATED_LONG_SIDE, TILTS,
+  canvasSize, extractScannedId, qrRegion, scanRegion, shouldMirror,
 } from "./cameraScan";
 
 describe("scanRegion", () => {
@@ -98,5 +98,40 @@ describe("shouldMirror", () => {
   it("mirrors an unlabelled desktop webcam but not an unlabelled phone camera", () => {
     expect(shouldMirror(undefined, true)).toBe(true);
     expect(shouldMirror(undefined, false)).toBe(false);
+  });
+});
+
+describe("qrRegion", () => {
+  it("reads the whole frame on every even attempt, so a tag anywhere in view is found at once", () => {
+    for (let i = 0; i < 12; i += 2) {
+      expect(qrRegion(i, 1920, 1080)).toMatchObject({ x: 0, y: 0, w: 1920, h: 1080, rotate: 0, longSide: QR_LONG_SIDE });
+    }
+  });
+
+  it("cycles through the centre crops on the odd attempts", () => {
+    const crops = [1, 3, 5, 7].map(i => qrRegion(i, 1920, 1080).w / 1920);
+    crops.forEach((c, i) => expect(c).toBeCloseTo(QR_CROPS[i % QR_CROPS.length]));
+    const r = qrRegion(1, 1920, 1080);
+    expect(r.x + r.w / 2).toBeCloseTo(960);
+    expect(r.y + r.h / 2).toBeCloseTo(540);
+  });
+
+  it("never rotates — a QR reads at any angle", () => {
+    for (let i = 0; i < 16; i++) expect(qrRegion(i, 1920, 1080).rotate).toBe(0);
+  });
+
+  it("never upscales a crop past the camera's own pixels", () => {
+    const r = qrRegion(3, 1920, 1080);
+    expect(r.longSide).toBeCloseTo(1920 * QR_CROPS[1]);
+    expect(canvasSize(r).scale).toBeCloseTo(1);
+  });
+
+  it("gives a 4K webcam's centre crops the full decode size", () => {
+    expect(qrRegion(1, 3840, 2160).longSide).toBe(QR_LONG_SIDE);
+    expect(qrRegion(3, 3840, 2160).longSide).toBe(QR_LONG_SIDE);
+  });
+
+  it("works for a portrait phone frame", () => {
+    expect(canvasSize(qrRegion(0, 1080, 1920))).toMatchObject({ width: 720, height: 1280 });
   });
 });

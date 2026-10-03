@@ -1,5 +1,4 @@
-import { useLabelStock, needsQrFallback } from "../../../shared/ui/document";
-import { Code128Bars, ScannableCode } from "../../../shared/ui/domain";
+import { ScannableCode } from "../../../shared/ui/domain";
 import { EntityCode } from "../../../shared/ui/domain";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { encodeCostCipher } from "@/lib/domain/costCipher";
@@ -19,27 +18,15 @@ const F = {
 /**
  * The on-screen preview of the tag's scannable code.
  *
- * Mirrors what <TileCode> will actually print, QR fallback included: a saree
- * id long enough to defeat a Code128 on a 50mm sticker (a weaver id like
- * VENKATESWARLU-L2-B7-014, or an external code carrying a long invoice
- * number) comes off the printer as a QR, and showing bars here would preview
- * a tag that does not exist.
+ * A QR, because that is what every saree tag now prints (see TagLayout in
+ * SareeTagPrint.tsx) — showing bars here would preview a tag that does not
+ * exist.
  */
 function BarcodeStrip({ code }: { code: string }) {
-  const stock = useLabelStock();
-  if (needsQrFallback(code, stock)) {
-    return (
-      <div style={{ alignSelf: "center" }}>
-        <ScannableCode value={code} size={60} />
-      </div>
-    );
-  }
   return (
-    <Code128Bars
-      value={code}
-      style={{ width: "100%", height: 44 }}
-      fallback={<div style={{ alignSelf: "center" }}><ScannableCode value={code} size={60} /></div>}
-    />
+    <div style={{ display: "flex", justifyContent: "center" }}>
+      <ScannableCode value={code} size={64} />
+    </div>
   );
 }
 

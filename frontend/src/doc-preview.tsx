@@ -285,7 +285,7 @@ const billFor = (copy: "customer" | "admin") => (
 
 // `?doc=tags-bulk` — every tag of the 213-saree external purchase
 // EXT-SRISAKTHILAKSHMICOLLECTION-005-001, whose "Print All Barcodes" sheet
-// used to come out with bars on only some tags. `&verify` then decodes each
+// used to come out with a code on only some tags. `&verify` then decodes each
 // one at thermal-printer resolution and puts the result on
 // window.__tagVerify, so the whole sheet can be checked, not eyeballed.
 const bulkLines: [string, number][] = [
@@ -318,49 +318,53 @@ const bulkSheet = (
 );
 
 /**
- * Decodes every tag's bars the way a thermal print would present them: the
- * SVG rasterised at 203dpi across the ~47mm the bars span on a 50mm sticker,
+ * Decodes every tag's QR the way a thermal print would present it: the SVG
+ * rasterised at 203dpi across the 20mm it spans on a 50mm sticker,
  * hard-thresholded to black/white dots, then read with the same ZXing the
  * app's scanner uses.
  */
 async function verifyBulkTags() {
   const { MultiFormatReader, BinaryBitmap, HybridBinarizer, RGBLuminanceSource, DecodeHintType, BarcodeFormat } =
     await import("@zxing/library");
-  const reader = new MultiFormatReader();
-  reader.setHints(new Map<number, unknown>([
-    [DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.CODE_128]],
+  const hints = new Map<number, unknown>([
+    [DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE]],
     [DecodeHintType.TRY_HARDER, true],
-  ]));
-  const DOTS_WIDE = Math.round((47 / 25.4) * 203);
-  const DOTS_HIGH = Math.round((7.4 / 25.4) * 203);
-  const results: { id: string; bars: boolean; decoded: string | null }[] = [];
+  ]);
+  const DOTS = Math.round((20 / 25.4) * 203);
+  const results: { id: string; code: boolean; decoded: string | null }[] = [];
 
   for (const el of Array.from(document.querySelectorAll<HTMLElement>("[data-tag-id]"))) {
     const id = el.dataset.tagId!;
-    const svg = el.querySelector<SVGSVGElement>('svg[aria-label^="Barcode for"]');
-    if (!svg) { results.push({ id, bars: false, decoded: null }); continue; }
+    const svg = el.querySelector<SVGSVGElement>('svg[aria-label^="Scannable code for"]');
+    if (!svg) { results.push({ id, code: false, decoded: null }); continue; }
 
-    const src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(svg));
+    const clone = svg.cloneNode(true) as SVGSVGElement;
+    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    clone.setAttribute("width", String(DOTS));
+    clone.setAttribute("height", String(DOTS));
+    const src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(clone));
     const img = new Image();
     await new Promise<void>((resolve, reject) => { img.onload = () => resolve(); img.onerror = reject; img.src = src; });
-    // A white margin around the sticker's bars, as the tag's border gives it.
+    // A white margin around the code, as the sticker itself gives it.
     const canvas = document.createElement("canvas");
-    canvas.width = DOTS_WIDE + 40; canvas.height = DOTS_HIGH + 40;
+    canvas.width = DOTS + 40; canvas.height = DOTS + 40;
     const ctx = canvas.getContext("2d")!;
     ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 20, 20, DOTS_WIDE, DOTS_HIGH);
+    ctx.drawImage(img, 20, 20, DOTS, DOTS);
     const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const lum = new Uint8ClampedArray(canvas.width * canvas.height);
     for (let i = 0; i < lum.length; i++) lum[i] = data[i * 4] < 128 ? 0 : 255;
     let decoded: string | null = null;
     try {
-      decoded = reader.decode(new BinaryBitmap(new HybridBinarizer(new RGBLuminanceSource(lum, canvas.width, canvas.height)))).getText();
+      decoded = new MultiFormatReader()
+        .decode(new BinaryBitmap(new HybridBinarizer(new RGBLuminanceSource(lum, canvas.width, canvas.height))), hints)
+        .getText();
     } catch { /* not decoded */ }
-    results.push({ id, bars: true, decoded });
+    results.push({ id, code: true, decoded });
   }
   (window as unknown as { __tagVerify: unknown }).__tagVerify = {
     total: results.length,
-    withBars: results.filter(r => r.bars).length,
+    withCode: results.filter(r => r.code).length,
     decodedCorrectly: results.filter(r => r.decoded === r.id).length,
     failures: results.filter(r => r.decoded !== r.id),
   };

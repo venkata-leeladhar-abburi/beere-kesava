@@ -3,7 +3,7 @@ import { BrowserMultiFormatReader } from "@zxing/browser";
 import { DecodeHintType, BarcodeFormat } from "@zxing/library";
 import { X, AlertCircle, ScanLine, Flashlight, FlashlightOff, SwitchCamera } from "lucide-react";
 import { Button } from "./primitives";
-import { canvasSize, extractScannedId, scanRegion, shouldMirror } from "./cameraScan";
+import { canvasSize, extractScannedId, qrRegion, scanRegion, shouldMirror } from "./cameraScan";
 import { FrameScanner } from "./scanFrame";
 
 // The default camera picked by getUserMedia(undefined constraints) often
@@ -27,13 +27,16 @@ function isDesktopPointer(): boolean {
   return typeof window.matchMedia === "function" && window.matchMedia("(pointer: fine)").matches;
 }
 
-const SCAN_HINTS = new Map<DecodeHintType, unknown>([
+// Every tag printed now carries a QR, so the QR is looked for first, on its
+// own, on every attempt: a QR-only decode of a modest canvas takes a few
+// milliseconds, where the Code128 search below takes many times that.
+const QR_HINTS = new Map<DecodeHintType, unknown>([
   [DecodeHintType.TRY_HARDER, true],
-  [DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.CODE_128, BarcodeFormat.QR_CODE]],
+  [DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE]],
 ]);
-// The straightened (rotated) passes exist only for the Code128 — a QR reads
-// at any angle on the upright passes — so they skip ZXing's QR search, which
-// is the expensive half of a decode on a large canvas.
+// The Code128 passes — whole frame, centre crop, and each straightened
+// (rotated) — exist only for tags printed before the switch to QR. They skip
+// ZXing's QR search, which the pass above has already done.
 const BAR_HINTS = new Map<DecodeHintType, unknown>([
   [DecodeHintType.TRY_HARDER, true],
   [DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.CODE_128]],
@@ -43,6 +46,15 @@ const BAR_HINTS = new Map<DecodeHintType, unknown>([
 // so a slow decode can never stack attempts on top of each other.
 const NATIVE_INTERVAL_MS = 60;
 const ZXING_INTERVAL_MS = 30;
+// After an attempt that only looked for a QR. That pass is cheap, so the
+// next look can follow almost at once — this is just long enough for the
+// browser to paint the preview in between.
+const QR_ONLY_INTERVAL_MS = 16;
+// The Code128 work for older tags is rested for as long as it last took, up
+// to this, and the QR is looked for meanwhile. On a 4K webcam that work runs
+// to several hundred milliseconds; back to back it left a QR tag waiting
+// over a second for its next look.
+const LEGACY_REST_MAX_MS = 400;
 
 /** Remembers the camera that last worked (e.g. the rear lens that can focus close). */
 const CAMERA_STORAGE_KEY = "bk.scanner.cameraId";
@@ -158,14 +170,17 @@ const SCANNER_CSS = `
  * Built so a tag can be shown casually rather than lined up carefully:
  *  - Full-screen on phones and a large window on desktop, with the whole
  *    camera view shown.
- *  - Decode attempts read the ENTIRE frame — the guide box is a hint, not a
- *    requirement — interleaved with a zoomed centre crop for a distant tag
- *    and the frame straightened in 10° steps to ±45° for a tilted barcode.
- *    See scanRegion in cameraScan.ts.
- *  - Each attempt also locates the barcode itself and reads a straightened,
- *    full-resolution crop of it with a blur-tolerant Code128 decoder (see
- *    scanFrame.ts) — the part that makes a desktop webcam usable at a
- *    normal distance.
+ *  - Every decode attempt looks for a QR — what every tag printed now
+ *    carries — across the ENTIRE frame (the guide box is a hint, not a
+ *    requirement), alternating with a zoomed centre crop for a distant tag.
+ *    A QR reads at any angle and this look takes milliseconds, so a tag is
+ *    read the moment it is in view. See qrRegion in cameraScan.ts.
+ *  - In between, at most half the time goes to the slower work older
+ *    Code128 tags need:
+ *    the frame straightened in 10° steps to ±45° for a tilted barcode (see
+ *    scanRegion), and the barcode itself located and read from a
+ *    straightened, full-resolution crop with a blur-tolerant decoder (see
+ *    scanFrame.ts).
  *  - Continuous autofocus/exposure when the camera supports it, a torch
  *    toggle for dim counters, and a camera switch for phones whose default
  *    rear lens can't focus close (remembered for next time).
@@ -178,8 +193,8 @@ export function CameraScannerModal({
   open,
   onClose,
   onDetected,
-  title = "Scan Barcode",
-  hint = "Show the tag's barcode anywhere in the camera view — no need to line it up.",
+  title = "Scan Tag",
+  hint = "Show the tag's QR code anywhere in the camera view, at any angle — no need to line it up.",
   accentColor = "#6E0F2D",
 }: {
   open: boolean;
@@ -233,7 +248,7 @@ export function CameraScannerModal({
     if (!canvasRef.current) canvasRef.current = document.createElement("canvas");
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    const reader = new BrowserMultiFormatReader(SCAN_HINTS);
+    const qrReader = new BrowserMultiFormatReader(QR_HINTS);
     const barReader = new BrowserMultiFormatReader(BAR_HINTS);
     const frameScanner = new FrameScanner();
     const desktop = isDesktopPointer();
@@ -304,31 +319,68 @@ export function CameraScannerModal({
         return null;
       };
 
+      // Every attempt looks for a QR first — what every tag printed now
+      // carries — and that look is cheap. The Code128 work for older tags (a
+      // straightened or cropped frame, and the locate-then-read pass) costs
+      // many times more, so it gets at most half the time: never on two
+      // attempts running, and not again until QR looks have had as long as
+      // it took. Run on every attempt it is what made a QR tag wait its turn
+      // behind passes that could never read it.
+      let legacyAttempt = 0;
+      let lastRanLegacy = true; // so the very first attempt is a QR look alone
+      let nextLegacyAt = 0;
+      const readLegacy = async (video: HTMLVideoElement): Promise<string | null> => {
+        const step = legacyAttempt++;
+        const region = scanRegion(step, video.videoWidth, video.videoHeight);
+        const isFullFrame = region.x === 0 && region.y === 0 && region.rotate === 0;
+        try {
+          if (native) {
+            // The upright whole frame was just read by the QR pass, which
+            // asks the native detector for both formats at once.
+            if (!isFullFrame && draw(video, region)) {
+              const hit = (await native.detect(canvas)).find(f => f.rawValue && f.rawValue.trim());
+              if (hit) return hit.rawValue;
+            }
+          } else if (draw(video, region)) {
+            return barReader.decodeFromCanvas(canvas).getText();
+          }
+        } catch {
+          // No barcode in this view — the normal steady state.
+        }
+        // Phones resolve tags fine without it, so there it runs on every
+        // other of these attempts; desktops run it every time.
+        if (!cancelled && (desktop || step % 2 === 1)) return readLocated();
+        return null;
+      };
+
       const tick = async () => {
         if (cancelled) return;
         let text: string | null = null;
+        let ranLegacy = false;
         if (video.videoWidth > 0 && video.readyState >= 2) {
-          const region = scanRegion(attempt++, video.videoWidth, video.videoHeight);
-          const isFullFrame = region.x === 0 && region.y === 0 && region.rotate === 0;
+          const n = attempt++;
           try {
             if (native) {
               // The video element itself is the full-resolution frame — no
-              // canvas copy needed for the whole-frame attempts.
-              const source = isFullFrame ? video : (draw(video, region) ? canvas : video);
-              const found = await native.detect(source);
-              const hit = found.find(f => f.rawValue && f.rawValue.trim());
+              // canvas copy needed, and the detector reads a QR at any angle.
+              const hit = (await native.detect(video)).find(f => f.rawValue && f.rawValue.trim());
               if (hit) text = hit.rawValue;
-            } else if (draw(video, region)) {
-              text = (region.rotate === 0 ? reader : barReader).decodeFromCanvas(canvas).getText();
+            } else if (draw(video, qrRegion(n, video.videoWidth, video.videoHeight))) {
+              text = qrReader.decodeFromCanvas(canvas).getText();
             }
           } catch {
             // NotFoundException on every frame without a code is the normal
             // steady state; any other decode error is also just "next frame".
           }
-          // Phones resolve tags fine without it, so there it runs on every
-          // other attempt to keep the loop quick; desktops run it every time.
-          if (!text && !cancelled && (desktop || attempt % 2 === 0)) text = await readLocated();
+          if (!text && !cancelled && !lastRanLegacy && performance.now() >= nextLegacyAt) {
+            ranLegacy = true;
+            const began = performance.now();
+            text = await readLegacy(video);
+            const ended = performance.now();
+            nextLegacyAt = ended + Math.min(ended - began, LEGACY_REST_MAX_MS);
+          }
         }
+        lastRanLegacy = ranLegacy;
         if (cancelled) return;
         if (text && text.trim()) {
           stopStream();
@@ -338,7 +390,8 @@ export function CameraScannerModal({
           return;
         }
         if (Date.now() - startedAt > UNREADABLE_AFTER_MS) setUnreadable(true);
-        timerRef.current = setTimeout(() => { void tick(); }, native ? NATIVE_INTERVAL_MS : ZXING_INTERVAL_MS);
+        const pause = !ranLegacy ? QR_ONLY_INTERVAL_MS : native ? NATIVE_INTERVAL_MS : ZXING_INTERVAL_MS;
+        timerRef.current = setTimeout(() => { void tick(); }, pause);
       };
       void tick();
     };
@@ -487,7 +540,7 @@ export function CameraScannerModal({
         <div className="relative min-h-0 flex-1" style={{ background: "#000" }}>
           <video
             ref={videoRef}
-            aria-label="Live camera feed for barcode scanning"
+            aria-label="Live camera feed for tag scanning"
             style={{ width: "100%", height: "100%", objectFit: "cover", transform: mirrored ? "scaleX(-1)" : undefined }}
             muted
             autoPlay
@@ -592,7 +645,7 @@ export function CameraScannerModal({
           </span>
           {/* Nothing has decoded for a while. The camera keeps running — this
               only points at the way out. The id is printed in plain text
-              under the bars on every tag, so typing it always works. */}
+              on every tag, so typing it always works. */}
           {unreadable && !error && !detected && (
             <span
               style={{
@@ -606,7 +659,7 @@ export function CameraScannerModal({
                 Still can&apos;t read it. Bring the tag a little closer, out of glare
                 {torchSupported ? " (or turn on the torch)" : ""}
                 {cameras.length > 1 ? ", or try the other camera" : ""}. If it still won&apos;t
-                read, close the camera and type the ID printed under the barcode.
+                read, close the camera and type the ID printed on the tag.
               </span>
             </span>
           )}
