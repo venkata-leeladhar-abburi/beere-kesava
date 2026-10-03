@@ -25,7 +25,6 @@ export function SariTagPrintModal({ saree, onClose }: Props) {
   const isExternal = saree.source === "external";
   const [showWeaver, setShowWeaver]     = useState(true);
   const [showDate, setShowDate]         = useState(true);
-  const [showBranding, setShowBranding] = useState(true);
   const [copies, setCopies]             = useState(1);
   const [printer, setPrinter]           = useState("TSC TE244");
   // Seeded from the configured stock (50mm × 25mm by default) and, unlike
@@ -41,40 +40,40 @@ export function SariTagPrintModal({ saree, onClose }: Props) {
   const [printed, setPrinted]           = useState(false);
   const printSareeTags = usePrintSareeTags();
 
-  // Was a fake setTimeout that flipped straight to "printed" without ever
-  // calling window.print() — nothing reached any printer, real or not. Now
-  // builds the same SareeTagData the rest of the app's tag-print buttons
-  // use (Inventory, External Purchases, Worker Staff history) and sends it
-  // through the same real print path, so this modal produces an identical,
-  // actually-printable tag instead of a dead-end preview.
+  // One tag, built once, for both the preview and the print — the same
+  // SareeTagData the rest of the app's tag-print buttons use (Inventory,
+  // External Purchases, Worker Staff history), so what is shown here is
+  // exactly what "Print Now" and "Print All Barcodes" put on the sticker.
+  const weightGrams = saree.weight ? Number(saree.weight.replace(/g$/i, "")) || null : null;
+  const tag: SareeTagData = isExternal
+    ? {
+        sareeId: saree.id,
+        isExternal: true,
+        sareeTypeCode: saree.sareeTypeCode ?? null,
+        sareeTypeName: saree.sareeType,
+        supplierShortName: saree.supplierShortName ?? null,
+        supplierName: saree.supplier ?? null,
+        invoiceNumber: saree.invoiceNumber ?? null,
+        serial: saree.serial ?? null,
+        sellingPrice: saree.sellingPrice ?? null,
+        costPrice: saree.costPrice ?? null,
+      }
+    : {
+        sareeId: saree.id,
+        designCode: saree.design,
+        sareeTypeCode: saree.sareeTypeCode ?? null,
+        sareeTypeName: saree.sareeType,
+        weight: weightGrams,
+        weaverName: showWeaver ? saree.weaver : null,
+        loomNumber: saree.source === "factory" ? saree.loom : null,
+        date: showDate ? saree.qcDate : null,
+      };
+  const stock = parseLabelSize(labelSize);
+
   const handlePrint = () => {
-    const weightGrams = saree.weight ? Number(saree.weight.replace(/g$/i, "")) || null : null;
-    const tag: SareeTagData = isExternal
-      ? {
-          sareeId: saree.id,
-          isExternal: true,
-          sareeTypeCode: saree.sareeTypeCode ?? null,
-          sareeTypeName: saree.sareeType,
-          supplierShortName: saree.supplierShortName ?? null,
-          supplierName: saree.supplier ?? null,
-          invoiceNumber: saree.invoiceNumber ?? null,
-          serial: saree.serial ?? null,
-          sellingPrice: saree.sellingPrice ?? null,
-          costPrice: saree.costPrice ?? null,
-        }
-      : {
-          sareeId: saree.id,
-          designCode: saree.design,
-          sareeTypeCode: saree.sareeTypeCode ?? null,
-          sareeTypeName: saree.sareeType,
-          weight: weightGrams,
-          weaverName: showWeaver ? saree.weaver : null,
-          loomNumber: saree.source === "factory" ? saree.loom : null,
-          date: showDate ? saree.qcDate : null,
-        };
     printSareeTags(
       Array.from({ length: Math.max(1, copies) }, () => tag),
-      parseLabelSize(labelSize),
+      stock,
     );
     setPrinting(true);
     setTimeout(() => { setPrinting(false); setPrinted(true); }, 400);
@@ -110,11 +109,13 @@ export function SariTagPrintModal({ saree, onClose }: Props) {
           {/* Body */}
           <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
             <SariTagPhysicalLabel
-              saree={saree}
-              isExternal={isExternal}
-              showWeaver={showWeaver}
-              showDate={showDate}
-              showBranding={showBranding}
+              tag={tag}
+              stock={stock}
+              caption={isExternal
+                ? `External Purchase · ${saree.supplierShortName || saree.supplier || "—"}`
+                : saree.source === "factory"
+                  ? `Own Factory · Loom ${saree.loom}`
+                  : `Outsourced · ${saree.weaver}`}
             />
 
             <SariTagPrintSettings
@@ -129,8 +130,6 @@ export function SariTagPrintModal({ saree, onClose }: Props) {
               setShowWeaver={setShowWeaver}
               showDate={showDate}
               setShowDate={setShowDate}
-              showBranding={showBranding}
-              setShowBranding={setShowBranding}
               printed={printed}
               printing={printing}
               handlePrint={handlePrint}

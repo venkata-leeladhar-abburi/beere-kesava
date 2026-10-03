@@ -26,8 +26,6 @@ interface SariTagPrintSettingsProps {
   setShowWeaver: (v: boolean) => void;
   showDate: boolean;
   setShowDate: (v: boolean) => void;
-  showBranding: boolean;
-  setShowBranding: (v: boolean) => void;
   printed: boolean;
   printing: boolean;
   handlePrint: () => void;
@@ -46,8 +44,6 @@ export function SariTagPrintSettings({
   setShowWeaver,
   showDate,
   setShowDate,
-  showBranding,
-  setShowBranding,
   printed,
   printing,
   handlePrint,
@@ -109,14 +105,18 @@ export function SariTagPrintSettings({
         />
       </div>
 
+      {/* Only what the printed tag actually carries can be switched off. An
+          external-purchase tag has no optional lines, so it offers none —
+          the date and branding boxes that used to sit here changed the old
+          mock preview and nothing on the sticker. */}
+      {!isExternal && (
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, marginBottom: 12 }}>
           Label Contents
         </div>
         {[
-          ...(isExternal ? [] : [{ label: "Show Weaver Name", value: showWeaver, set: setShowWeaver }]),
-          { label: isExternal ? "Show Date" : "Show QC / Dispatch Date", value: showDate, set: setShowDate },
-          { label: "Show BKB Silks Branding",   value: showBranding, set: setShowBranding },
+          { label: "Show Weaver Name", value: showWeaver, set: setShowWeaver },
+          { label: "Show QC / Dispatch Date", value: showDate, set: setShowDate },
         ].map(cb => (
           <div
             key={cb.label}
@@ -140,6 +140,7 @@ export function SariTagPrintSettings({
           </div>
         ))}
       </div>
+      )}
 
       <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
         {printed ? (
