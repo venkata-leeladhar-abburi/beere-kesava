@@ -84,3 +84,24 @@ describe("SareeCodesService.resolveMany", () => {
     ).resolves.toEqual(["SABO-EXG-001", "SABO-EXG-001-02", "SABO-EXG-001-01", "OTHER-1-001-01"]);
   });
 });
+
+describe("SareeCodesService.resolve with Redis cache", () => {
+  const findMany = jest.fn().mockResolvedValue([]);
+  const prisma = { sareeCodeAlias: { findMany } };
+
+  it("serves a hit without touching the database, and fills on a miss", async () => {
+    const redis = { enabled: true, get: jest.fn().mockResolvedValueOnce("CACHED").mockResolvedValueOnce(null), set: jest.fn(), del: jest.fn() };
+    const service = new SareeCodesService(prisma as never, redis as never);
+    await expect(service.resolve("OLD-1")).resolves.toBe("CACHED");
+    expect(findMany).not.toHaveBeenCalled();
+    await expect(service.resolve("PLAIN-1")).resolves.toBe("PLAIN-1");
+    expect(redis.set).toHaveBeenCalledWith("saree-alias:PLAIN-1", "PLAIN-1", 30);
+  });
+
+  it("bypasses the cache inside a transaction", async () => {
+    const redis = { enabled: true, get: jest.fn(), set: jest.fn(), del: jest.fn() };
+    const service = new SareeCodesService(prisma as never, redis as never);
+    await service.resolve("X-1", { sareeCodeAlias: { findMany } } as never);
+    expect(redis.get).not.toHaveBeenCalled();
+  });
+});

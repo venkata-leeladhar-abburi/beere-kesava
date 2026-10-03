@@ -22,6 +22,7 @@ import { AuditLogModule } from "./audit-log/audit-log.module";
 import { GeofenceModule } from "./geofence/geofence.module";
 import { BatchesModule } from "./batches/batches.module";
 import { BulkOrdersModule } from "./bulk-orders/bulk-orders.module";
+import { RedisModule } from "./common/redis/redis.module";
 import { StorageModule } from "./common/storage/storage.module";
 import { validateEnv } from "./config/env.validation";
 import { CustomersModule } from "./customers/customers.module";
@@ -88,6 +89,7 @@ import { WhatsAppModule } from "./whatsapp/whatsapp.module";
     // much stricter @Throttle limits.
     ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 600 }]),
     ScheduleModule.forRoot(),
+    RedisModule,
     StorageModule,
     PrismaModule,
     IdGeneratorModule,

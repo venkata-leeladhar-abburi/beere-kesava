@@ -1,6 +1,7 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, Optional } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
 import { Prisma } from "../generated/prisma/client";
+import { RedisService } from "../common/redis/redis.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { LineRename, mergeAliases, planLineRenames, splitPieceCode, supplierPrefix } from "./saree-codes";
 
@@ -21,6 +22,9 @@ const PIECE_COLUMNS: { table: string; column: string; externalOnly?: boolean }[]
   { table: "QuotationSaree", column: "sareeId" },
 ];
 
+/** Short on purpose: a re-code also deletes the affected keys, this bounds any race. */
+const ALIAS_CACHE_TTL_SECONDS = 30;
+
 export interface RecodeResult extends LineRename {
   purchaseId: string;
 }
@@ -38,7 +42,14 @@ export interface RecodeResult extends LineRename {
  */
 @Injectable()
 export class SareeCodesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly redis?: RedisService,
+  ) {}
+
+  private static cacheKey(code: string): string {
+    return `saree-alias:${code}`;
+  }
 
   /**
    * The current code for a scanned or typed one: itself, unless it's a line
@@ -46,7 +57,18 @@ export class SareeCodesService {
    * for codes typed by hand.
    */
   async resolve(raw: string, client: Client = this.prisma): Promise<string> {
+    // Scans resolve the same few codes repeatedly and nearly always find no
+    // alias; a short-lived Redis cache saves that DB round trip. Only used
+    // outside a transaction (a tx must see its own uncommitted aliases), and
+    // any Redis problem simply falls through to the database.
+    const useCache = !!this.redis?.enabled && client === this.prisma && raw?.trim();
+    const key = useCache ? SareeCodesService.cacheKey(raw.trim()) : null;
+    if (key) {
+      const hit = await this.redis!.get(key);
+      if (hit) return hit;
+    }
     const [resolved] = await this.resolveMany([raw], client);
+    if (key && resolved) await this.redis!.set(key, resolved, ALIAS_CACHE_TTL_SECONDS);
     return resolved;
   }
 
@@ -117,6 +139,11 @@ export class SareeCodesService {
       await this.rewrite(tx, renames.map((r) => ({ id: r.id, from: tmp(r), to: r.newCode })));
     }
     await this.updateAliases(tx, renames, purchaseIds);
+    // Drop cached resolutions for every code this re-code touched (best effort;
+    // the 30s TTL covers a concurrent scan that re-fills before commit).
+    await this.redis?.del(
+      renames.flatMap((r) => [r.oldCode, r.newCode]).map((c) => SareeCodesService.cacheKey(c)),
+    );
     return renames;
   }
 
