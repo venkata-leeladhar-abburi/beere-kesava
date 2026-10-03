@@ -5,7 +5,11 @@ services:
     plan: free
     rootDir: backend
     buildCommand: npm install --include=dev && npm run build
+    # Applies only committed, already-reviewed migrations; a no-op when none are
+    # pending. Requires DIRECT_URL. Run `npm run db:baseline` once first.
+    preDeployCommand: npm run db:migrate:deploy
     startCommand: npm run start:prod
+    healthCheckPath: /health
     envVars:
       # Pinned to the version CI tests against (.github/workflows/ci.yml).
       # Without this Render picks its own current default, which moves over
@@ -60,6 +64,9 @@ services:
       # AISENSY_API_KEY is the only secret here; the rest are plain config and
       # are checked in so a fresh deploy behaves the same as local.
       - key: AISENSY_API_KEY
+        sync: false
+      # Optional error tracking; unset = disabled.
+      - key: SENTRY_DSN
         sync: false
       - key: AISENSY_API_URL
         value: https://backend.aisensy.com/campaign/t1/api/v2

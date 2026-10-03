@@ -2,7 +2,9 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
@@ -10,6 +12,9 @@
     "test:cov": "jest --coverage",
     "typecheck": "prisma generate && tsc --noEmit",
     "db:push": "bash scripts/db-push.sh",
+    "db:migrate:dev": "bash scripts/db-migrate-dev.sh",
+    "db:migrate:deploy": "bash scripts/db-migrate-deploy.sh",
+    "db:baseline": "bash scripts/db-baseline.sh",
     "studio": "bash scripts/db-studio.sh",
     "db:seed": "bash scripts/db-seed.sh",
     "start": "nest start",
@@ -41,6 +46,7 @@
     "@nestjs/websockets": "^11.1.28",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
+    "@sentry/node": "^11.2.0",
     "bcryptjs": "^3.0.3",
     "bwip-js": "^4.11.2",
     "class-transformer": "^0.5.1",
