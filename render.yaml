@@ -65,6 +65,11 @@ services:
       # are checked in so a fresh deploy behaves the same as local.
       - key: AISENSY_API_KEY
         sync: false
+      # Optional Upstash Redis (set in the dashboard; never commit values).
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
       # Optional error tracking; unset = disabled.
       - key: SENTRY_DSN
         sync: false
