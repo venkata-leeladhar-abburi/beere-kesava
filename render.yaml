@@ -8,9 +8,9 @@ services:
     region: singapore
     rootDir: backend
     buildCommand: npm install --include=dev && npm run build
-    # Applies only committed, already-reviewed migrations; a no-op when none are
-    # pending. Requires DIRECT_URL. Run `npm run db:baseline` once first.
-    preDeployCommand: npm run db:migrate:deploy
+    # Free plan: no preDeployCommand here (Render ignores/rejects it on free
+    # instances). Run `npm run db:migrate:deploy` from your machine before any
+    # deploy that adds a migration.
     startCommand: npm run start:prod
     healthCheckPath: /health
     envVars:

@@ -1,9 +1,13 @@
 import { Controller, Get, Param, Query } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { ScanService } from "./scan.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
+// Same audience as the stock screens (inventory): everyone who handles sarees.
+// Weavers are excluded — a scan returns QC, finishing and (for purchased
+// pieces) cost details they have no need to see.
 @Controller("scan")
+@RequireRoles(UserRole.SHOP, UserRole.WORKER, UserRole.ACCOUNTANT, UserRole.ADMIN, UserRole.SUPERADMIN)
 export class ScanController {
   constructor(private readonly scanService: ScanService) {}
 

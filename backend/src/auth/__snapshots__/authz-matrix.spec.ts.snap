@@ -1851,13 +1851,25 @@ exports[`authz matrix / route inventory matches the committed authorization snap
   {
     "permissions": [],
     "public": false,
-    "roles": [],
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+      "WORKER",
+    ],
     "route": "GET /scan/resolve",
   },
   {
     "permissions": [],
     "public": false,
-    "roles": [],
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+      "WORKER",
+    ],
     "route": "GET /scan/:sareeId",
   },
   {
