@@ -56,13 +56,10 @@ services:
         sync: false
       - key: R2_SECRET_ACCESS_KEY
         sync: false
-      # Optional: overrides https://<account-id>.r2.cloudflarestorage.com
-      - key: R2_ENDPOINT
-        sync: false
-      # Optional: public bucket / custom-domain origin (e.g. https://cdn.example.com).
-      # Unset, reads are served as 1-hour presigned URLs instead.
-      - key: R2_PUBLIC_BASE_URL
-        sync: false
+      # Optional, add in the dashboard only if you need them (leave out otherwise):
+      #   R2_ENDPOINT        — overrides https://<account-id>.r2.cloudflarestorage.com
+      #   R2_PUBLIC_BASE_URL — public bucket / custom-domain origin. Unset, reads
+      #                        are served as 1-hour presigned URLs instead.
       # --- WhatsApp notifications via AiSensy ---
       # AISENSY_API_KEY is the only secret here; the rest are plain config and
       # are checked in so a fresh deploy behaves the same as local.
