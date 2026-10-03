@@ -8,6 +8,7 @@ import "dotenv/config";
 import "reflect-metadata";
 import * as express from "express";
 import helmet from "helmet";
+import compression from "compression";
 import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
@@ -31,6 +32,9 @@ async function bootstrap() {
   // (saree/defect photos, signatures — see UploadsModule/StorageService),
   // including the 302 redirect to R2 those endpoints return.
   app.use(requestLogger);
+  // gzip/br JSON responses: a 50k-row stock list is ~10x smaller on the wire,
+  // which is most of the wait on a mobile or shop-Wi-Fi connection.
+  app.use(compression({ threshold: 1024 }));
   app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 
   // CORS_ORIGIN: comma-separated allow-list for production (e.g. the deployed
