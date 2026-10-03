@@ -22,6 +22,7 @@ import { AuditLogModule } from "./audit-log/audit-log.module";
 import { GeofenceModule } from "./geofence/geofence.module";
 import { BatchesModule } from "./batches/batches.module";
 import { BulkOrdersModule } from "./bulk-orders/bulk-orders.module";
+import { ReadCacheModule } from "./common/cache/read-cache.module";
 import { RedisModule } from "./common/redis/redis.module";
 import { StorageModule } from "./common/storage/storage.module";
 import { validateEnv } from "./config/env.validation";
@@ -90,6 +91,7 @@ import { WhatsAppModule } from "./whatsapp/whatsapp.module";
     ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 600 }]),
     ScheduleModule.forRoot(),
     RedisModule,
+    ReadCacheModule,
     StorageModule,
     PrismaModule,
     IdGeneratorModule,
