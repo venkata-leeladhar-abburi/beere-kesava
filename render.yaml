@@ -69,10 +69,16 @@ services:
       - key: AISENSY_API_KEY
         sync: false
       # Optional Upstash Redis (set in the dashboard; never commit values).
+      # The endpoint URL is not a secret, so it is checked in; the token below is.
       - key: UPSTASH_REDIS_REST_URL
-        sync: false
+        value: https://suitable-trout-152084.upstash.io
       - key: UPSTASH_REDIS_REST_TOKEN
         sync: false
+      # In-memory read cache (single instance only; set to "false" if you ever scale to 2+).
+      - key: READ_CACHE_ENABLED
+        value: "true"
+      - key: READ_CACHE_MAX_MB
+        value: "100"
       # Optional error tracking; unset = disabled.
       - key: SENTRY_DSN
         sync: false
