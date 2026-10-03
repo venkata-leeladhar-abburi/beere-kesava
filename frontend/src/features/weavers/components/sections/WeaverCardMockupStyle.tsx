@@ -119,8 +119,10 @@ export function WeaverCardMockupStyle({
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/20 pointer-events-none" />
 
           {/* Top-Left Code Badge */}
-          <div className={`absolute top-3.5 left-3.5 text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-lg shadow-2xs z-20 ${badgeClass}`}>
-            {(weaver.code ?? weaver.id).slice(0, 8).toUpperCase()}
+          <div className={`absolute top-3.5 left-3.5 text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-lg shadow-2xs z-20 max-w-[calc(100%-28px)] truncate ${badgeClass}`}
+            title={weaver.code ?? weaver.id}
+          >
+            {(weaver.code ?? weaver.id).toUpperCase()}
           </div>
 
           {/* Bottom Weaver Name Overlay on Image */}
@@ -151,8 +153,10 @@ export function WeaverCardMockupStyle({
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(231,201,131,0.14)_0,transparent_70%)] pointer-events-none" />
 
           {/* Top-Left Code Badge */}
-          <div className={`absolute top-3.5 left-3.5 text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-lg shadow-2xs z-20 ${badgeClass}`}>
-            {(weaver.code ?? weaver.id).slice(0, 8).toUpperCase()}
+          <div className={`absolute top-3.5 left-3.5 text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-lg shadow-2xs z-20 max-w-[calc(100%-28px)] truncate ${badgeClass}`}
+            title={weaver.code ?? weaver.id}
+          >
+            {(weaver.code ?? weaver.id).toUpperCase()}
           </div>
 
           {/* Center Symbol / Emblem */}
