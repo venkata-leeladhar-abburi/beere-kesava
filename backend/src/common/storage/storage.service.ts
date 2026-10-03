@@ -51,7 +51,7 @@ export class StorageService {
       // R2 ignores the region but the SDK insists on one; "auto" is what
       // Cloudflare's own docs use.
       region: "auto",
-      endpoint: this.config.get<string>("R2_ENDPOINT") ?? `https://${accountId}.r2.cloudflarestorage.com`,
+      endpoint: this.config.get<string>("R2_ENDPOINT") || `https://${accountId}.r2.cloudflarestorage.com`,
       credentials: { accessKeyId, secretAccessKey },
     });
     this.logger.log(`Using Cloudflare R2 storage (bucket: ${bucket})`);
