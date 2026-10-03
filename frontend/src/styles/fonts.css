@@ -1,10 +1,11 @@
 /* ─── BK Loom typefaces — Phase 1 (design-system/01-FOUNDATIONS.md, Part D) ─── */
 /* Fraunces:      display/brand — page titles, hero numbers, document letterheads */
 /* Inter:         all UI — nav, buttons, labels, tables, body, forms, charts      */
+/* Instrument Serif: the admin + superadmin Overview hero headline ONLY            */
 /* IBM Plex Mono: entity codes ONLY — weaver/batch/invoice/PO numbers, HSN, GSTIN */
 /*                                                                                 */
 /* Replaces 9 families (Playfair Display, DM Mono, Plus Jakarta Sans, Inter,      */
 /* JetBrains Mono, Cormorant Garamond, DM Sans, Space Grotesk, DM Serif Display)  */
 /* down to 3, and 2 render-blocking requests down to 1 (~380KB → ~120KB).         */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Serif+Display:ital@0;1&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 

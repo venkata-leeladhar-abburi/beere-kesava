@@ -67,7 +67,7 @@ function SAHero() {
             <div key={text} style={{ overflow: "hidden", lineHeight: "1.15" }}>
               <motion.div initial={{ y: "110%", opacity: 0 }} animate={{ y: "0%", opacity: 1 }}
                 transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
-                style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontStyle: italic ? "italic" : "normal", fontSize: "clamp(36px, 5.5vw, 68px)", letterSpacing: "-0.01em", color }}
+                style={{ fontFamily: "'Instrument Serif', serif", fontWeight: 400, fontStyle: italic ? "italic" : "normal", fontSize: "clamp(40px, 5.8vw, 84px)", letterSpacing: "-0.01em", whiteSpace: "nowrap", color }}
               >{text}</motion.div>
             </div>
           ))}

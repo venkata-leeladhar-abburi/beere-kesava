@@ -59,9 +59,9 @@ export function Hero() {
                 animate={{ y: "0%", opacity: 1 }}
                 transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
                 style={{
-                  fontFamily: "'DM Serif Display', serif",
+                  fontFamily: "'Instrument Serif', serif",
                   fontWeight: 400, fontStyle: italic ? "italic" : "normal",
-                  fontSize: "clamp(48px, 5vw, 76px)", letterSpacing: "-0.01em", color,
+                  fontSize: "clamp(54px, 5.8vw, 90px)", letterSpacing: "-0.01em", whiteSpace: "nowrap", color,
                 }}
               >
                 {text}
