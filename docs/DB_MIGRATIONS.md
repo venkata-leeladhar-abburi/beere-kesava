@@ -8,7 +8,7 @@ Schema changes ship as committed Prisma migrations (`backend/prisma/migrations`)
 2. `cd backend && npm run db:baseline`
    Records `0_init` as applied in `_prisma_migrations`. Runs no schema SQL and
    changes no data.
-3. Verify: `DATABASE_URL=$DIRECT_URL npx prisma migrate status` → "Database schema is up to date".
+3. Verify: `npm run db:status` → "Database schema is up to date".
    Then check drift is empty:
    `npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code`
 
