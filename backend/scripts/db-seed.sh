@@ -2,6 +2,6 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 set -a
-source .env
+source <(tr -d '\015' < .env)
 set +a
 DATABASE_URL="$DIRECT_URL" CHECKPOINT_DISABLE=1 npx ts-node --transpile-only prisma/seed.ts

@@ -9,6 +9,6 @@ if [ "${ALLOW_DB_PUSH:-}" != "1" ]; then
 fi
 cd "$(dirname "$0")/.."
 set -a
-source .env
+source <(tr -d '\015' < .env)
 set +a
 DATABASE_URL="$DIRECT_URL" CHECKPOINT_DISABLE=1 npx prisma db push
