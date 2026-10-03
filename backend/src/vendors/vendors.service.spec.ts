@@ -37,7 +37,7 @@ describe("VendorsService duplicate guard", () => {
       bankName: "State Bank of India",
       accountNo: "1234567890",
       ifscCode: "SBIN0001234",
-    } as CreatePartyDto);
+    });
     expect(prisma.vendor.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({ where: { name: { equals: "Shiva Traders", mode: "insensitive" } } }),
     );

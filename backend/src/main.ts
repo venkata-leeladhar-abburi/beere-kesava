@@ -14,9 +14,12 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
 import { validationExceptionFactory } from "./common/errors/validation-exception.factory";
+import { initSentry } from "./common/observability/sentry";
+import { requestLogger } from "./common/observability/request-logger.middleware";
 import { ResponseInterceptor } from "./common/interceptors/response.interceptor";
 
 async function bootstrap() {
+  initSentry();
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
@@ -27,6 +30,7 @@ async function bootstrap() {
   // different domain in prod) from loading anything under /uploads
   // (saree/defect photos, signatures — see UploadsModule/StorageService),
   // including the 302 redirect to R2 those endpoints return.
+  app.use(requestLogger);
   app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 
   // CORS_ORIGIN: comma-separated allow-list for production (e.g. the deployed

@@ -7,6 +7,7 @@ import {
   Logger,
 } from "@nestjs/common";
 import { Request, Response } from "express";
+import { captureServerError } from "../observability/sentry";
 import { defaultCodeForStatus, isErrorCode, type ErrorCode } from "../errors/error-codes";
 
 interface ErrorResponseBody {
@@ -51,6 +52,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         `${request.method} ${request.url} -> ${statusCode} [${code}]`,
         exception instanceof Error ? exception.stack : undefined,
       );
+      captureServerError(exception, (request as Request & { requestId?: string }).requestId);
     }
 
     response.status(statusCode).json(body);
