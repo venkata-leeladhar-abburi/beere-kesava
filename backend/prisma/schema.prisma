@@ -879,6 +879,7 @@ model QcRecord {
   inspectedBy   User          @relation("InspectedBy", fields: [inspectedById], references: [id])
 
   @@index([sareeId])
+  @@index([sareeId, qcDate])
   @@index([weaverId])
   @@index([factoryLoomId])
   @@index([result])
@@ -1084,6 +1085,7 @@ model DispatchSaree {
 
   @@unique([dispatchId, sareeId])
   @@index([receiptStatus])
+  @@index([sareeId])
 }
 
 /// Shop Goods Receipt — the shop counter acknowledging a consignment that
