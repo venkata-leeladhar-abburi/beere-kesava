@@ -9,6 +9,11 @@ import {
 } from "./sales-seed";
 import type { UnifiedSaree } from "./sales-types";
 
+// Weaver ids as the backend mints them (UUIDs), shared by the fixtures and the
+// assertions that look the same weaver up again.
+const RAVI_ID = "b5f9178c-b1b9-4871-a7c3-0d68a462d57a";
+const PADMA_ID = "8937070a-ea63-43f3-9cb4-dcbcfd362ff7";
+
 function makeSaree(overrides: Partial<UnifiedSaree>): UnifiedSaree {
   return {
     sareeId: "TEST-001",
@@ -94,7 +99,7 @@ describe("rankSellers", () => {
       makeSaree({
         sareeId: "A",
         origin: "weaver",
-        weaverId: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a",
+        weaverId: RAVI_ID,
         weaverName: "Ravi Kumar",
         weaverLoom: 2,
         status: "retail",
@@ -103,7 +108,7 @@ describe("rankSellers", () => {
       makeSaree({
         sareeId: "B",
         origin: "weaver",
-        weaverId: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a",
+        weaverId: RAVI_ID,
         weaverName: "Ravi Kumar",
         weaverLoom: 2,
         status: "unsold",
@@ -111,7 +116,7 @@ describe("rankSellers", () => {
       makeSaree({
         sareeId: "C",
         origin: "weaver",
-        weaverId: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7",
+        weaverId: PADMA_ID,
         weaverName: "Padma Veni",
         weaverLoom: 1,
         status: "wholesale",
@@ -130,7 +135,7 @@ describe("rankSellers", () => {
     const ranked = rankSellers(sarees, "weaver");
     expect(ranked).toHaveLength(2);
 
-    const ravi = ranked.find((r) => r.key === "b5f9178c-b1b9-4871-a7c3-0d68a462d57a")!;
+    const ravi = ranked.find((r) => r.key === RAVI_ID)!;
     expect(ravi.produced).toBe(2);
     expect(ravi.sold).toBe(1);
     expect(ravi.retail).toBe(1);
@@ -138,7 +143,7 @@ describe("rankSellers", () => {
     expect(ravi.revenue).toBe(1000);
     expect(ravi.sellThroughPct).toBe(50);
 
-    const padma = ranked.find((r) => r.key === "8937070a-ea63-43f3-9cb4-dcbcfd362ff7")!;
+    const padma = ranked.find((r) => r.key === PADMA_ID)!;
     expect(padma.wholesale).toBe(1);
     expect(padma.revenue).toBe(2000);
   });
