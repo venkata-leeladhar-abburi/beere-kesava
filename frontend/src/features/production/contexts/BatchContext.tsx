@@ -181,7 +181,7 @@ function backendBatchToRecord(
         weaverCode: weaver?.code ?? null,
         weaverName: weaver?.name ?? null,
         weaverInitials: weaver?.initials ?? null,
-        weaverLoom: loomMatch ? parseInt(loomMatch[1], 10) : null,
+        weaverLoom: loomMatch ? parseInt(loomMatch[1]!, 10) : null,
         factoryLoomId: r.factoryLoomId,
         factoryLoomNumber: r.factoryLoomId ? (loomLookup.get(r.factoryLoomId) ?? null) : null,
         designCode: r.designCode,

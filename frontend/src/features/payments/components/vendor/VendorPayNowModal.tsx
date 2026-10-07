@@ -47,7 +47,7 @@ export function VendorPayNowModal({
     .map((p) => ({
       id: p.id,
       amount: Number(p.amount),
-      date: p.date ? p.date.split("T")[0] : "—",
+      date: p.date ? p.date.split("T")[0]! : "—",
       firm: firms.find((f) => f.id === p.firmId)?.firmName ?? p.firmId ?? "—",
       utr: p.utr ?? "—",
       method: p.method ?? "—",

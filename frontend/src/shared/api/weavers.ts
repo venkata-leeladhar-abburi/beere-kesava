@@ -104,7 +104,8 @@ export interface CreateWeaverPayload {
   cluster?: string;
   looms?: number;
   photoUrl: string;
-  email: string;
+  // Optional: the form sends undefined when the field is left blank.
+  email?: string;
   phone: string;
   bankName?: string;
   accountNo?: string;

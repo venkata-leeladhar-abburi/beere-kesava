@@ -53,7 +53,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
   } = useBatches();
   const { qcRecords, isLoading: qcLoading, isError: qcError, refetch: refetchQc } = useQc();
 
-  const firstName = user?.name ? user.name.split(" ")[0] : "Staff";
+  const firstName = user?.name ? user.name.split(" ")[0]! : "Staff";
 
   const pendingReceiptCount = batches
     .filter((b) => b.status === "active")

@@ -284,7 +284,7 @@ export function TopNav({
                     the same click, off stale state from the same render,
                     which could reopen/reclose the menu unpredictably. */}
                   <Button
-                    onClick={hasDropdown ? undefined : () => set(g.pages[0].key)}
+                    onClick={hasDropdown ? undefined : () => set(g.pages[0]!.key)}
                     variant="tertiary"
                     aria-current={isActive ? "page" : undefined}
                     aria-haspopup={hasDropdown ? "menu" : undefined}

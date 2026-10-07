@@ -73,10 +73,10 @@ import {
 // BackendWeaver) carries a few extra bank/contact fields that WeaverCardEntry
 // (the mock-data shape) doesn't declare — extend locally instead of `any`.
 type DrawerWeaver = (typeof WEAVERS)[0] & {
-  email?: string;
-  bankName?: string;
-  accountNo?: string;
-  ifsc?: string;
+  email?: string | null;
+  bankName?: string | null;
+  accountNo?: string | null;
+  ifsc?: string | null;
 };
 
 export function WeaverDrawer({
@@ -230,7 +230,7 @@ export function WeaverDrawer({
 
   const getBatchNum = (id: string) => {
     const match = id.match(/BATCH-(\d+)/);
-    return match ? parseInt(match[1], 10) : 0;
+    return match ? parseInt(match[1]!, 10) : 0;
   };
 
   // All batches (active, draft, completed) assigned to this weaver

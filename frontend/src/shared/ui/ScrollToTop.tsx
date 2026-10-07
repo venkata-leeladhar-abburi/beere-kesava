@@ -103,7 +103,7 @@ function savePosition(key: string) {
   // Cap the store so a long session doesn't grow sessionStorage unbounded —
   // drop the oldest entry (insertion order) before adding a new one.
   if (!(key in store) && keys.length >= MAX_SAVED_POSITIONS) {
-    delete store[keys[0]];
+    delete store[keys[0]!];
   }
   store[key] = {
     x: window.scrollX,

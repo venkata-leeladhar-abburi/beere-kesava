@@ -513,7 +513,7 @@ export function MainSareesTable({
               r.stock ? (
                 <Chip
                   label={`${r.stock.ageDays} days`}
-                  color={AGE_COLOR[ageBucket(r.stock.ageDays)]}
+                  color={AGE_COLOR[ageBucket(r.stock.ageDays)]!}
                 />
               ) : (
                 "—"

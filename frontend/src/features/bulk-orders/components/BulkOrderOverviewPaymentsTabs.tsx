@@ -158,7 +158,7 @@ export function BulkOrderOverviewTab({
                 justifyContent: "space-between",
                 padding: "9px 0",
                 borderBottom: `1px solid ${T.borderDef}`,
-                textTransform: k.includes("Status") ? ("capitalize" as const) : ("none" as const),
+                textTransform: k!.includes("Status") ? ("capitalize" as const) : ("none" as const),
               }}
             >
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{k}</span>

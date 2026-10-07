@@ -49,7 +49,7 @@ function StatusPill({ status }: { status: LinkedSaree["status"] }) {
     Dispatched: { bg: "rgba(110,15,45,0.08)", color: T.royalBurgundy },
     "Damaged — Review Needed": { bg: T.crimsonBg, color: T.crimson },
   };
-  const c = cfg[status] ?? cfg["QC Passed"];
+  const c = cfg[status] ?? cfg["QC Passed"]!;
   return (
     <span
       style={{

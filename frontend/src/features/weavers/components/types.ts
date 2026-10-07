@@ -38,7 +38,7 @@ export interface AnalyticsWeaver {
   passRate: number;
   totalEver: number;
   totalPaid: number;
-  photo: string | null;
+  photo: string | null | undefined;
   initials: string;
   bg: string;
 }

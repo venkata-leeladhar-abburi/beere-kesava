@@ -102,7 +102,7 @@ export function parseTypedDate(input: string, reference: Date = new Date()): Dat
 
   const relative = s.match(/^([+-]\d+)\s*([dwmy])$/);
   if (relative) {
-    const n = parseInt(relative[1], 10);
+    const n = parseInt(relative[1]!, 10);
     const base = startOfDay(reference);
     switch (relative[2]) {
       case "d":
@@ -125,9 +125,9 @@ export function parseTypedDate(input: string, reference: Date = new Date()): Dat
   // Day-first (Indian convention): 12/6/26, 12/06/2026, 12-6-26
   const slash = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
   if (slash) {
-    const day = parseInt(slash[1], 10);
-    const month = parseInt(slash[2], 10);
-    const year = slash[3].length === 2 ? 2000 + parseInt(slash[3], 10) : parseInt(slash[3], 10);
+    const day = parseInt(slash[1]!, 10);
+    const month = parseInt(slash[2]!, 10);
+    const year = slash[3]!.length === 2 ? 2000 + parseInt(slash[3]!, 10) : parseInt(slash[3]!, 10);
     const d = new Date(year, month - 1, day);
     return isValid(d) && d.getMonth() === month - 1 && d.getDate() === day ? d : null;
   }
@@ -135,10 +135,10 @@ export function parseTypedDate(input: string, reference: Date = new Date()): Dat
   // `12 jun 2026` / `12 june 2026`
   const named = s.match(/^(\d{1,2})\s+([a-z]+)\.?\s+(\d{4})$/);
   if (named) {
-    const day = parseInt(named[1], 10);
-    const monthIdx = MONTH_PREFIXES.findIndex((m) => named[2].startsWith(m));
+    const day = parseInt(named[1]!, 10);
+    const monthIdx = MONTH_PREFIXES.findIndex((m) => named[2]!.startsWith(m));
     if (monthIdx === -1) return null;
-    const d = new Date(parseInt(named[3], 10), monthIdx, day);
+    const d = new Date(parseInt(named[3]!, 10), monthIdx, day);
     return isValid(d) && d.getMonth() === monthIdx && d.getDate() === day ? d : null;
   }
 

@@ -256,10 +256,10 @@ export function SareeListModal({ purchase, onClose }: { purchase: Purchase; onCl
     updatePurchase(purchase.id, { sarees: next });
   };
 
-  const handleUploadPhoto = (row: (typeof rows)[number], url: string) =>
+  const handleUploadPhoto = (row: { id: string }, url: string) =>
     persistSarees(sarees.map((s) => (s.id === row.id ? { ...s, imageUrl: url } : s)));
 
-  const handleUploadPieceImage = (row: (typeof rows)[number], pieceNo: number, url: string) =>
+  const handleUploadPieceImage = (row: { id: string }, pieceNo: number, url: string) =>
     persistSarees(sarees.map((s) => (s.id === row.id ? withPieceImage(s, pieceNo, url) : s)));
 
   const totals = purchaseTotals(purchase.sarees);

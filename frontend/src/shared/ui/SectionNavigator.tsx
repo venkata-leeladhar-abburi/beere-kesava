@@ -183,7 +183,7 @@ export function SectionNavigator({
             }
 
             // If we are at the very top of the page, force the active section to be the first one.
-            const firstEl = document.getElementById(sections[0]?.id);
+            const firstEl = document.getElementById(sections[0]?.id ?? "");
             const container = firstEl ? findScrollContainer(firstEl) : null;
             const isWin =
               !container ||
@@ -215,7 +215,7 @@ export function SectionNavigator({
               .sort((a, b) => a.top - b.top);
 
             if (visible.length > 0) {
-              setActive(visible[0].id);
+              setActive(visible[0]!.id);
             }
           },
           {

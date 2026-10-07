@@ -114,7 +114,7 @@ export function ActionLogSection({
       !entry.action.toLowerCase().includes(actionFilter.toLowerCase())
     )
       return false;
-    if (!withinPeriod(rawItems[i].createdAt, periodFilter)) return false;
+    if (!withinPeriod(rawItems[i]!.createdAt, periodFilter)) return false;
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       const haystack =

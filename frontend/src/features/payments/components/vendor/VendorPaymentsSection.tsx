@@ -167,7 +167,7 @@ export function VendorPaymentsSection() {
   // Firms load asynchronously — backfill the sidebar's default once they're
   // in, rather than leaving the Select stuck on the empty initial value.
   React.useEffect(() => {
-    if (!sidebarFirmId && firms.length > 0) setSidebarFirmId(firms[0].id);
+    if (!sidebarFirmId && firms.length > 0) setSidebarFirmId(firms[0]!.id);
   }, [firms, sidebarFirmId]);
 
   const matchPO = (poNumber: string) => pos.find((p) => p.poNumber === poNumber);

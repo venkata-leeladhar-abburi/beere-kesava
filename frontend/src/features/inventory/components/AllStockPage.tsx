@@ -109,7 +109,7 @@ function externalToStockSaree(r: WeaverSareeRow, index: number): StockSaree {
     purchaseId: r.stock?.purchaseId ?? null,
     invoiceNumber: r.stock?.invoiceNumber ?? null,
     initials: "EX",
-    avatarBg: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
+    avatarBg: AVATAR_PALETTE[index % AVATAR_PALETTE.length]!,
   };
 }
 
@@ -146,7 +146,7 @@ function toStockSaree(item: BackendStockItem, index: number): StockSaree {
     assignedBy: null,
     assignedAt: null,
     initials,
-    avatarBg: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
+    avatarBg: AVATAR_PALETTE[index % AVATAR_PALETTE.length]!,
   };
 }
 

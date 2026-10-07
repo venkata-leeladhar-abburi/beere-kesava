@@ -75,7 +75,7 @@ function toSareeTag(l: BackendPurchaseSareeLine): SareeTag {
     id: l.code,
     lineId: l.id,
     weight: l.weight ?? "",
-    date: l.sareeDate ? l.sareeDate.split("T")[0] : "",
+    date: l.sareeDate ? l.sareeDate.split("T")[0]! : "",
     sareeType: l.sareeType ?? "",
     color: l.color ?? "",
     price: Number(l.price),
@@ -100,7 +100,7 @@ function toPurchase(p: BackendPurchase): Purchase {
       (p.supplier
         ? `${p.supplier.city ?? ""}, ${p.supplier.state ?? ""}`.replace(/^, |, $/, "")
         : ""),
-    date: p.date.split("T")[0],
+    date: p.date.split("T")[0]!,
     sareeCount: p.sareeCount,
     gstNumber: p.gstNumber ?? "",
     invoiceNumber: p.invoiceNumber ?? "",
@@ -278,7 +278,7 @@ function toPurchaseRequest(r: BackendPurchaseRequest, supplierName: string): Pur
     supplierId: r.supplierId ?? "",
     supplierName,
     requestedBy: "Admin",
-    requestedDate: r.createdAt.split("T")[0],
+    requestedDate: r.createdAt.split("T")[0]!,
     sareeType: r.sareeType ?? "",
     quantity: r.quantity,
     estimatedAmount: r.estimatedAmount ? Number(r.estimatedAmount) : 0,

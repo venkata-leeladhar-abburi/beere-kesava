@@ -53,7 +53,7 @@ function totalsByType(records: MaterialIssueRecord[]) {
       acc.set(key, { qty: (prev?.qty ?? 0) + m.quantity, unit: m.unit });
     }
   }
-  return Array.from(acc.entries()).map(([key, v]) => ({ type: key.split("|")[0], ...v }));
+  return Array.from(acc.entries()).map(([key, v]) => ({ type: key.split("|")[0]!, ...v }));
 }
 
 /** Every distinct parent GRN batch this group's materials were received under. */
@@ -211,8 +211,8 @@ function GroupCard({
                 fontFamily: F.ui,
                 fontSize: 11.5,
                 fontWeight: 700,
-                color: TYPE_TINT[t.type]?.fg ?? T.luxuryBrown,
-                background: TYPE_TINT[t.type]?.bg ?? T.warmCream,
+                color: TYPE_TINT[t.type ?? ""]?.fg ?? T.luxuryBrown,
+                background: TYPE_TINT[t.type ?? ""]?.bg ?? T.warmCream,
                 borderRadius: 999,
                 padding: "4px 10px",
                 whiteSpace: "nowrap",
@@ -291,7 +291,7 @@ function GroupCard({
               <tbody>
                 {records.flatMap((rec) =>
                   rec.materials.map((m, i) => {
-                    const tint = TYPE_TINT[m.materialType] ?? TYPE_TINT.Jari;
+                    const tint = TYPE_TINT[m.materialType] ?? TYPE_TINT.Jari!;
                     const st = STATUS_TINT[rec.status];
                     const desc = describe(m);
                     return (

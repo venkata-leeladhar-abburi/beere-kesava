@@ -87,7 +87,7 @@ export function RateHistorySection() {
   }, [loadHistory]);
 
   const filteredHistory = history.filter((row) => {
-    const matchDate = matchesDateFilter(row.date.split(" · ")[0], histDateFilter);
+    const matchDate = matchesDateFilter(row.date.split(" · ")[0]!, histDateFilter);
     const matchSearch =
       !search.trim() ||
       row.what.toLowerCase().includes(search.toLowerCase()) ||

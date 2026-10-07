@@ -131,7 +131,7 @@ export function OrderHistoryTab({
       accessor: (o) => o.paymentStatus,
       priority: 1,
       cell: (_v, o) => {
-        const pay = PAY_STATUS_META[o.paymentStatus ?? "pending"];
+        const pay = PAY_STATUS_META[o.paymentStatus ?? "pending"]!;
         return (
           <span
             style={{
@@ -258,7 +258,7 @@ export function OrderHistoryTab({
               <div className="grid grid-cols-1 gap-3.5">
                 {rows.map((o) => {
                   const money = custOrderMoney.get(o.ref);
-                  const pay = PAY_STATUS_META[o.paymentStatus ?? "pending"];
+                  const pay = PAY_STATUS_META[o.paymentStatus ?? "pending"]!;
                   return (
                     <div
                       key={o.ref}

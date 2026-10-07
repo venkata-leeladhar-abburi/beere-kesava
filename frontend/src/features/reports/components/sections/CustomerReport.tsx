@@ -161,7 +161,7 @@ export function CustomerReport() {
           spend,
           due,
           lastPurchase:
-            dates.length > 0 ? new Date(dates[dates.length - 1]).toLocaleDateString("en-IN") : "—",
+            dates.length > 0 ? new Date(dates[dates.length - 1]!).toLocaleDateString("en-IN") : "—",
           status: due > 0 ? ("overdue" as const) : ("paid" as const),
         };
       }
@@ -180,7 +180,7 @@ export function CustomerReport() {
         spend,
         due: 0,
         lastPurchase:
-          dates.length > 0 ? new Date(dates[dates.length - 1]).toLocaleDateString("en-IN") : "—",
+          dates.length > 0 ? new Date(dates[dates.length - 1]!).toLocaleDateString("en-IN") : "—",
         status: "paid" as const,
       };
     });

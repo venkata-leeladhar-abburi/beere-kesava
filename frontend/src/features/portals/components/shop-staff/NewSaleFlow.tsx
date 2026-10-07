@@ -113,7 +113,7 @@ export function NewSaleFlow() {
       const parts = c.name.split(" ").filter(Boolean);
       const initials =
         parts.length >= 2
-          ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+          ? `${parts[0]![0]}${parts[1]![0]}`.toUpperCase()
           : c.name.slice(0, 2).toUpperCase();
       return {
         id: c.id,
@@ -190,7 +190,7 @@ export function NewSaleFlow() {
       const price = result.sellingPrice ?? Number(getSareeTypeByCode(typeCode)?.retail ?? 0);
       return {
         id: result.sareeId,
-        batchId: result.batchId,
+        batchId: result.batchId ?? "",
         design: result.design?.code ?? "—",
         name: result.design?.name ?? result.sareeType?.type ?? "—",
         // Same "CODE · Name" order the Inventory table uses, so a saree reads
@@ -406,7 +406,7 @@ export function NewSaleFlow() {
     {
       label: "Sarees & price",
       summary:
-        cart.length === 1 ? cart[0].id : cart.length > 1 ? `${cart.length} sarees` : undefined,
+        cart.length === 1 ? cart[0]!.id : cart.length > 1 ? `${cart.length} sarees` : undefined,
     },
     {
       label: "Payment",
@@ -941,19 +941,19 @@ export function NewSaleFlow() {
                 // GST is worked out once on the whole bill, then shared
                 // across the sarees by their taxable value, so the recorded
                 // GST adds up to exactly what the bill prints.
-                const lineTaxable = cart.map((l, i) => l.soldPrice - billShares[i]);
+                const lineTaxable = cart.map((l, i) => l.soldPrice - billShares[i]!);
                 const gstShares = tax ? allocateByWeight(lineTaxable, tax.gst) : [];
                 const customerGstin =
                   tax && gst.gstin.trim() ? normalizeGstin(gst.gstin) : undefined;
                 let recordedSellerGstin: string | undefined;
                 try {
                   for (const [i, line] of cart.entries()) {
-                    const lineGst = tax ? gstShares[i] : 0;
+                    const lineGst = tax ? gstShares[i]! : 0;
                     const sale = await salesApi.create({
                       sareeId: line.id,
                       channel: "RETAIL",
                       // What was paid for this saree — GST included.
-                      amount: lineTaxable[i] + lineGst,
+                      amount: lineTaxable[i]! + lineGst,
                       customerId,
                       paymentMethod: payment ?? undefined,
                       paymentRef: payRef.trim() || undefined,

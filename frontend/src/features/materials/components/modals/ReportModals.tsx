@@ -476,7 +476,7 @@ export function ThresholdsModal({
       THRESHOLD_MATERIAL_TYPES.map((type) => {
         const items = stockItems.filter((i) => i.materialType === type);
         const currentStock = items.reduce((s, i) => s + Number(i.currentStock), 0);
-        const unit = items.length > 0 ? items[0].unit : type === "JARI" ? "Reels" : "KG";
+        const unit = items.length > 0 ? items[0]!.unit : type === "JARI" ? "Reels" : "KG";
         return { type, currentStock, unit, items };
       }),
     [stockItems]
@@ -664,7 +664,7 @@ export function POVendorDetailModal({
     Resham: { col: "#7A5E1C", bg: "rgba(200,155,71,0.13)" },
     Jari: { col: T.luxuryBrown, bg: "rgba(59,35,20,0.09)" },
   };
-  const cfg = po ? PO_STATUS_CFG[po.status] : null;
+  const cfg = po ? PO_STATUS_CFG[po.status as keyof typeof PO_STATUS_CFG] : null;
   return (
     <Dialog.Root
       open={!!po}
@@ -925,7 +925,7 @@ export function POVendorDetailModal({
                     }}
                   >
                     {po.materials.map((m) => {
-                      const mt = MT[m.materialType] || MT.Warp;
+                      const mt = MT[m.materialType] || MT.Warp!;
                       return (
                         // POItem has no stable id field; combine all per-line fields (including quantity/price) for a stable, collision-resistant key.
                         <div

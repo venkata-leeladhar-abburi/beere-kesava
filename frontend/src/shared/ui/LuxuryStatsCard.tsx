@@ -394,7 +394,7 @@ export function LuxuryStatsCard({ stats, className = "", style }: LuxuryStatsCar
     if (stats.length === 5) {
       const featuredIdx = stats.findIndex((s) => s.highlight);
       const hiIdx = featuredIdx >= 0 ? featuredIdx : 2;
-      const featuredItem = stats[hiIdx];
+      const featuredItem = stats[hiIdx]!;
       const otherItems = stats.filter((_, i) => i !== hiIdx);
       const top2 = otherItems.slice(0, 2);
       const bottom2 = otherItems.slice(2, 4);
@@ -414,8 +414,8 @@ export function LuxuryStatsCard({ stats, className = "", style }: LuxuryStatsCar
         >
           {/* Top Row: 2 tiles */}
           <div style={{ display: "flex", borderBottom: "1px solid rgba(245,232,208,0.12)" }}>
-            <SmallTile item={top2[0]} />
-            <SmallTile item={top2[1]} isLastInRow />
+            <SmallTile item={top2[0]!} />
+            <SmallTile item={top2[1]!} isLastInRow />
           </div>
 
           {/* Middle Row: Featured Full-Width Tile */}
@@ -423,8 +423,8 @@ export function LuxuryStatsCard({ stats, className = "", style }: LuxuryStatsCar
 
           {/* Bottom Row: 2 tiles */}
           <div style={{ display: "flex" }}>
-            <SmallTile item={bottom2[0]} />
-            <SmallTile item={bottom2[1]} isLastInRow />
+            <SmallTile item={bottom2[0]!} />
+            <SmallTile item={bottom2[1]!} isLastInRow />
           </div>
         </div>
       );
@@ -448,12 +448,12 @@ export function LuxuryStatsCard({ stats, className = "", style }: LuxuryStatsCar
           }}
         >
           <div style={{ display: "flex", borderBottom: "1px solid rgba(245,232,208,0.12)" }}>
-            <SmallTile item={top2[0]} />
-            <SmallTile item={top2[1]} isLastInRow />
+            <SmallTile item={top2[0]!} />
+            <SmallTile item={top2[1]!} isLastInRow />
           </div>
           <div style={{ display: "flex" }}>
-            <SmallTile item={bottom2[0]} />
-            <SmallTile item={bottom2[1]} isLastInRow />
+            <SmallTile item={bottom2[0]!} />
+            <SmallTile item={bottom2[1]!} isLastInRow />
           </div>
         </div>
       );
@@ -487,7 +487,7 @@ export function LuxuryStatsCard({ stats, className = "", style }: LuxuryStatsCar
               borderBottom: rIdx < rows.length - 1 ? "1px solid rgba(245,232,208,0.12)" : "none",
             }}
           >
-            <SmallTile item={row[0]} />
+            <SmallTile item={row[0]!} />
             {row[1] ? <SmallTile item={row[1]} isLastInRow /> : <div style={{ flex: 1 }} />}
           </div>
         ))}

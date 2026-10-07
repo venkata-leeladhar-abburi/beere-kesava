@@ -431,7 +431,7 @@ export function DrilldownTabs({
     { key: "sold", label: "Sold", rows: sold, color: T.green },
     { key: "outstanding", label: "Outstanding", rows: outstanding, color: T.crimson },
   ];
-  const active = tabs.find((t) => t.key === view) || tabs[2];
+  const active = tabs.find((t) => t.key === view) || tabs[2]!;
 
   return (
     <div>

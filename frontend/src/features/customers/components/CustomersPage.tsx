@@ -82,7 +82,7 @@ export function CustomersPage() {
         lastOrder: custOrders.length
           ? [...custOrders].sort((a, b) =>
               (b.createdDate ?? "").localeCompare(a.createdDate ?? "")
-            )[0].due
+            )[0]!.due
           : c.createdAt
             ? new Date(c.createdAt).toLocaleDateString("en-IN", {
                 day: "2-digit",

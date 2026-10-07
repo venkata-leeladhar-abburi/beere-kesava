@@ -583,7 +583,7 @@ export function BulkOrderDetailsModal({
               >
                 {order.customer}
               </div>
-              <EntityCode type="order" value={order.ref} size="sm" />
+              <EntityCode type="order" value={order.ref ?? ""} size="sm" />
             </div>
           </div>
           <span

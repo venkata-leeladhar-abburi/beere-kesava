@@ -217,7 +217,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
         const match = vendorsRes.items.find(
           (v) => v.name.toLowerCase() === po.vendor.toLowerCase()
         );
-        vendorId = match?.id ?? vendorsRes.items[0]?.id;
+        vendorId = match?.id ?? vendorsRes.items[0]?.id ?? "";
       }
       if (!vendorId) {
         throw new Error(`Could not find vendor "${po.vendor}" to create the purchase order.`);
@@ -258,7 +258,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
             ? {
                 ...p,
                 status: "approved" as const,
-                approvedDate: new Date().toISOString().split("T")[0],
+                approvedDate: new Date().toISOString().split("T")[0]!,
               }
             : p
         )

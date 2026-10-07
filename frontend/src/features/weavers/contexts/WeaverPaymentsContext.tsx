@@ -154,8 +154,12 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
         queryClient,
         QUERY_KEY,
         created.map((p, i) => ({
-          ...backendPaymentToFrontend(p, new Map([[p.weaverId, records[i].weaverName]]), new Map()),
-          firmName: records[i].firmName,
+          ...backendPaymentToFrontend(
+            p,
+            new Map([[p.weaverId, records[i]!.weaverName]]),
+            new Map()
+          ),
+          firmName: records[i]!.firmName,
         }))
       );
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });

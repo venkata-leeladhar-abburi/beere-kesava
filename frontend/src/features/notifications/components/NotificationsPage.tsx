@@ -36,18 +36,18 @@ function relativeTimeToDate(time: string): string {
   const now = new Date();
   if (time === "Just now") return now.toISOString();
   let m = time.match(/^(\d+)\s*min ago$/);
-  if (m) return new Date(now.getTime() - parseInt(m[1], 10) * 60000).toISOString();
+  if (m) return new Date(now.getTime() - parseInt(m[1]!, 10) * 60000).toISOString();
   m = time.match(/^(\d+)h ago$/);
-  if (m) return new Date(now.getTime() - parseInt(m[1], 10) * 3600000).toISOString();
+  if (m) return new Date(now.getTime() - parseInt(m[1]!, 10) * 3600000).toISOString();
   m = time.match(/^(\d+)\s*days? ago$/);
-  if (m) return new Date(now.getTime() - parseInt(m[1], 10) * 86400000).toISOString();
+  if (m) return new Date(now.getTime() - parseInt(m[1]!, 10) * 86400000).toISOString();
   if (time === "Yesterday") return new Date(now.getTime() - 86400000).toISOString();
   m = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
   if (m) {
-    let h = parseInt(m[1], 10) % 12;
+    let h = parseInt(m[1]!, 10) % 12;
     if (m[3] === "PM") h += 12;
     const d = new Date(now);
-    d.setHours(h, parseInt(m[2], 10), 0, 0);
+    d.setHours(h, parseInt(m[2]!, 10), 0, 0);
     return d.toISOString();
   }
   return now.toISOString();
@@ -529,7 +529,7 @@ export function NotificationsPage() {
                       const isRead = n.read;
                       const isSelected = selected?.id === n.id;
                       const PriorityIcon = cfg.Icon;
-                      const catCfg = CATEGORIES.find((c) => c.key === n.category) || CATEGORIES[0];
+                      const catCfg = CATEGORIES.find((c) => c.key === n.category) || CATEGORIES[0]!;
                       const CatIcon = catCfg.Icon;
 
                       return (

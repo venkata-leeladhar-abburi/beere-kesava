@@ -201,5 +201,5 @@ export function pageForTab(tab: string | undefined): string {
 
 export function findNavGroup(pageKey: string): NavGroup {
   const direct = NAV_GROUPS.find((g) => g.pages.some((p) => p.key === pageKey));
-  return direct ?? NAV_GROUPS[0];
+  return direct ?? NAV_GROUPS[0]!;
 }

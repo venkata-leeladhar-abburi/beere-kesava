@@ -78,7 +78,7 @@ export function SuppliersPage() {
     if (ratingFilter !== "All Ratings") {
       const match = ratingFilter.match(/(\d)/);
       if (match) {
-        const r = parseInt(match[1]);
+        const r = parseInt(match[1]!);
         mRating = Math.round(s.rating || 0) === r;
       }
     }
@@ -201,7 +201,7 @@ export function SuppliersPage() {
                     state: v.state,
                     address: v.address,
                     gstCode: v.gstCode,
-                    specialty: v.specialty,
+                    specialty: v.specialty!,
                     terms: v.terms,
                     bankName: v.bankName,
                     accountNo: v.accountNo,

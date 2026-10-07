@@ -393,7 +393,7 @@ export function PurchaseHistorySection({
       cell: (_v, v) => (
         <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
           {v.materials.map((m) => {
-            const mt = MAT_TAG[m.type as keyof typeof MAT_TAG] || MAT_TAG.Warp;
+            const mt = MAT_TAG[m.type as keyof typeof MAT_TAG] || MAT_TAG.Warp!;
             return (
               <span
                 key={m.label}

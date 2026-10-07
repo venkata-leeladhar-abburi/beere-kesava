@@ -555,7 +555,7 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
                 data={rows.map((r) => ({
                   ...r,
                   color:
-                    FIRM_COLORS[parseInt(r.firm.id.replace("FIRM-", ""), 10) % FIRM_COLORS.length],
+                    FIRM_COLORS[parseInt(r.firm.id.replace("FIRM-", ""), 10) % FIRM_COLORS.length]!,
                 }))}
                 getRowId={(r) => r.firm.id}
               />

@@ -100,7 +100,7 @@ async function exportXlsx<T>(cols: ColumnDef<T>[], rows: T[], filename: string) 
   ws["!cols"] = cols.map((c, ci) => {
     const widest = Math.max(
       headerText(c.header).length,
-      ...data.map((row) => displayLength(row[ci]))
+      ...data.map((row) => displayLength(row[ci]!))
     );
     return { wch: Math.min(40, Math.max(12, widest + 2)) };
   });

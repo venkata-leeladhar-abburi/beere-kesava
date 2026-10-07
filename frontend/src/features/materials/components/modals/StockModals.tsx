@@ -380,7 +380,7 @@ export function BatchViewDetailsModal({
   const sc = STATUS_CFG[batch.statusType];
   const remPct = batch.received > 0 ? Math.round((batch.remaining / batch.received) * 100) : 0;
   const usagePct = batch.received > 0 ? Math.round((batch.given / batch.received) * 100) : 0;
-  const mt = MAT_TAG[batch.type];
+  const mt = MAT_TAG[batch.type]!;
 
   return (
     <ModalOverlay open={!!batch} onClose={onClose}>
@@ -579,7 +579,7 @@ export function PrintBarcodeModal({
 }) {
   const { print } = useDocument();
   if (!batch) return null;
-  const mt = MAT_TAG[batch.type];
+  const mt = MAT_TAG[batch.type]!;
   const barPattern = batch.id.split("").map((c) => c.charCodeAt(0));
 
   // Same JSX that used to sit under `.print-area` — now portaled through

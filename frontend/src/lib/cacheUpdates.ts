@@ -86,7 +86,7 @@ export function upsertInList<T extends Identifiable>(
     }
 
     const next = current.slice();
-    next[index] = { ...current[index], ...item };
+    next[index] = { ...current[index], ...item } as T;
     return next;
   });
 }

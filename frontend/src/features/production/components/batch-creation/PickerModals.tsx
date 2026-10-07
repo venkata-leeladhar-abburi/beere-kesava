@@ -27,7 +27,7 @@ const PIP_PALETTE = [
 export function pipColor(id: string): string {
   let hash = 0;
   for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  return PIP_PALETTE[hash % PIP_PALETTE.length];
+  return PIP_PALETTE[hash % PIP_PALETTE.length]!;
 }
 
 // ─── Generic picker shell ──────────────────────────────────────────────────────
@@ -879,7 +879,7 @@ export function BulkWeaverLoomPickerModal({
         {weavers.length === 0
           ? "Assign a weaver to these rows first — a loom number belongs to a weaver."
           : weavers.length === 1
-            ? `${weavers[0].name} operates ${maxLoom} loom${maxLoom !== 1 ? "s" : ""}.`
+            ? `${weavers[0]!.name} operates ${maxLoom} loom${maxLoom !== 1 ? "s" : ""}.`
             : `${weavers.length} weavers selected — showing looms 1–${maxLoom}, the most ${limitedBy.map((w) => w.name).join(", ")} operate${limitedBy.length === 1 ? "s" : ""}.`}
       </div>
       {rowsWithoutWeaver > 0 && weavers.length > 0 && (

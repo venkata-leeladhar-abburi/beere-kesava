@@ -29,7 +29,7 @@ export function ChartLegend({ items }: { items: { label: string; value?: string 
               width: 10,
               height: 10,
               borderRadius: 3,
-              background: CHART_COLORS[i % CHART_COLORS.length],
+              background: CHART_COLORS[i % CHART_COLORS.length]!,
               flexShrink: 0,
             }}
           />

@@ -148,7 +148,7 @@ export function ReportTabNav({
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { exportExcel, canExport } = useReportPeriod();
-  const activeReportTab = REPORT_TABS.find((t) => t.key === activeTab) ?? REPORT_TABS[0];
+  const activeReportTab = REPORT_TABS.find((t) => t.key === activeTab) ?? REPORT_TABS[0]!;
 
   return (
     <div style={{ position: "relative", zIndex: 10 }}>

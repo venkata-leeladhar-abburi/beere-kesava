@@ -266,7 +266,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
             source: s.source,
             sarees: [] as SareeItem[],
           };
-        acc[s.weaver].sarees.push(s);
+        acc[s.weaver]!.sarees.push(s);
         return acc;
       },
       {} as Record<string, { name: string; code: string; source: string; sarees: SareeItem[] }>
@@ -277,7 +277,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     pending.reduce(
       (acc, s) => {
         if (!acc[s.batch]) acc[s.batch] = { id: s.batch, sarees: [] as SareeItem[] };
-        acc[s.batch].sarees.push(s);
+        acc[s.batch]!.sarees.push(s);
         return acc;
       },
       {} as Record<string, { id: string; sarees: SareeItem[] }>

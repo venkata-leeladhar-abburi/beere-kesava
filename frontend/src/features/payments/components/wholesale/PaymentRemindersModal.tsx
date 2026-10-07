@@ -23,7 +23,7 @@ export function PaymentRemindersModal({
 
   useEffect(() => {
     if (overdueInvoices.length > 0 && !selectedInvoiceId) {
-      setSelectedInvoiceId(overdueInvoices[0].id);
+      setSelectedInvoiceId(overdueInvoices[0]!.id);
     }
   }, [overdueInvoices, selectedInvoiceId]);
 

@@ -72,7 +72,7 @@ export function scanRegion(attempt: number, vw: number, vh: number): ScanRegion 
   const step = attempt % (TILTS.length * 4);
   if (step % 2 === 0) return step % 4 === 0 ? fullFrame(vw, vh) : centerCrop(vw, vh);
   const k = (step - 1) / 2;
-  const tilt = TILTS[k % TILTS.length];
+  const tilt = TILTS[k % TILTS.length]!;
   return k < TILTS.length ? fullFrame(vw, vh, tilt) : centerCrop(vw, vh, tilt);
 }
 
@@ -97,7 +97,7 @@ export const QR_CROPS = [0.6, 0.35] as const;
  * never upscaled, which would only cost time.
  */
 export function qrRegion(attempt: number, vw: number, vh: number): ScanRegion {
-  const crop = attempt % 2 === 0 ? 1 : QR_CROPS[((attempt - 1) / 2) % QR_CROPS.length];
+  const crop = attempt % 2 === 0 ? 1 : QR_CROPS[((attempt - 1) / 2) % QR_CROPS.length]!;
   const w = vw * crop;
   const h = vh * crop;
   return {

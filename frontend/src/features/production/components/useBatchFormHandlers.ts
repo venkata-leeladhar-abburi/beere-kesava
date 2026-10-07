@@ -145,7 +145,7 @@ export function useBatchFormHandlers(
       prev.map((r) => {
         if (!selected.has(r.serial) || !r.weaverName) return r;
         const seqMatch = r.sareeId ? r.sareeId.match(/-(\d+)$/) : null;
-        const seq = seqMatch ? parseInt(seqMatch[1], 10) : r.serial;
+        const seq = seqMatch ? parseInt(seqMatch[1]!, 10) : r.serial;
         return { ...r, weaverLoom: loomNum, sareeId: generateSareeId(r.weaverName, loomNum, seq) };
       })
     );
@@ -157,7 +157,7 @@ export function useBatchFormHandlers(
       prev.map((r) => {
         if (r.serial !== row.serial) return r;
         const seqMatch = r.sareeId ? r.sareeId.match(/-(\d+)$/) : null;
-        const seq = seqMatch ? parseInt(seqMatch[1], 10) : r.serial;
+        const seq = seqMatch ? parseInt(seqMatch[1]!, 10) : r.serial;
         const newSareeId = r.weaverName ? generateSareeId(r.weaverName, loomNum, seq) : r.sareeId;
         return { ...r, weaverLoom: loomNum, sareeId: newSareeId };
       })
@@ -171,7 +171,7 @@ export function useBatchFormHandlers(
       if (r.factoryLoomId === loom.id && r.sareeId) {
         const m = r.sareeId.match(/-(\d+)$/);
         if (m) {
-          const n = parseInt(m[1], 10);
+          const n = parseInt(m[1]!, 10);
           seqMap[loom.id] = Math.max(seqMap[loom.id] || 0, n);
         }
       }
@@ -220,8 +220,8 @@ export function useBatchFormHandlers(
     if (order) {
       const match = order.sareeType.match(/(.*)\s+·\s+(.*)/) || order.sareeType.match(/(.*)·(.*)/);
       if (match) {
-        sareeTypeName = match[1].trim();
-        sareeTypeCode = match[2].trim();
+        sareeTypeName = match[1]!.trim();
+        sareeTypeCode = match[2]!.trim();
       } else if (order.sareeType) {
         sareeTypeName = order.sareeType;
       }

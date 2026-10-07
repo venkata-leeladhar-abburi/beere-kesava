@@ -73,7 +73,7 @@ describe("upsertInList", () => {
 
     // React Query relies on reference identity to decide whether to re-render;
     // mutating in place would leave the screen stale.
-    expect(before[0].name).toBe("Old");
+    expect(before[0]!.name).toBe("Old");
     expect(qc.getQueryData(KEY)).not.toBe(before);
   });
 });
@@ -160,7 +160,7 @@ describe("patchListItems", () => {
       })
     );
 
-    expect(qc.getQueryData<Batch[]>(BATCH_KEY)?.[0].rows).toEqual([
+    expect(qc.getQueryData<Batch[]>(BATCH_KEY)?.[0]!.rows).toEqual([
       { serial: 1, tallied: false },
       { serial: 2, tallied: true },
     ]);

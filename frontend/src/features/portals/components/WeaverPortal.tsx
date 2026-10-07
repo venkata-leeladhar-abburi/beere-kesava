@@ -8,7 +8,7 @@ import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 
 import { DesktopWeaverPortal } from "./weaver-portal/DesktopWeaverPortal";
 import { MobileWeaverPortal } from "./weaver-portal/MobileWeaverPortal";
-type Tab5 = "batches" | "confirm" | "warp" | "payments";
+import type { Tab5 } from "./weaver-portal/theme";
 
 export function WeaverPortal({ onBack }: { onBack?: () => void }) {
   const { isMobile, w } = useResponsive();
@@ -24,7 +24,8 @@ export function WeaverPortal({ onBack }: { onBack?: () => void }) {
   else if (pathname.includes("/payments")) active = "payments";
 
   const setActive = (tab: Tab5) => {
-    const routeMap: Record<Tab5, string> = {
+    // Notifications has no route of its own: the portals open it in place.
+    const routeMap: Partial<Record<Tab5, string>> = {
       batches: "/weaver/batches",
       confirm: "/weaver/confirm",
       warp: "/weaver/warp",

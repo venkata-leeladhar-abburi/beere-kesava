@@ -714,7 +714,7 @@ export function ReportsSection({
                         {paymentMix.map((p, i) => (
                           <Cell
                             key={p.method}
-                            fill={CHART_COLORS[i % CHART_COLORS.length]}
+                            fill={CHART_COLORS[i % CHART_COLORS.length]!}
                             stroke="#FFF"
                             strokeWidth={2}
                           />

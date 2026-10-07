@@ -33,7 +33,11 @@ function isChunkLoadError(err: unknown): boolean {
   );
 }
 
-export function lazyWithRetry<T extends ComponentType<unknown>>(
+// `any` props, exactly as React.lazy itself is declared: a component that takes
+// props is not assignable to ComponentType<unknown> under strictFunctionTypes,
+// which typed every lazily-loaded page with props as `never`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function lazyWithRetry<T extends ComponentType<any>>(
   factory: () => Promise<{ default: T }>
 ) {
   return lazy(async () => {

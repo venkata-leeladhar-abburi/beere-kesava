@@ -562,7 +562,7 @@ export function CameraScannerModal({
   const switchCamera = useCallback(() => {
     if (cameras.length < 2) return;
     const current = cameras.findIndex((c) => c.deviceId === activeDeviceRef.current);
-    const next = cameras[(current + 1) % cameras.length];
+    const next = cameras[(current + 1) % cameras.length]!;
     writeStoredCamera(next.deviceId);
     setDeviceId(next.deviceId);
     setRestartKey((k) => k + 1);

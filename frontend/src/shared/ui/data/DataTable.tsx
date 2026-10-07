@@ -191,10 +191,10 @@ export function DataTable<T>({
       const info: { span: number; skip: boolean }[] = [];
       let i = 0;
       while (i < sortedData.length) {
-        const key = col.mergeKey!(sortedData[i]);
+        const key = col.mergeKey!(sortedData[i]!);
         let span = 1;
         if (key != null) {
-          while (i + span < sortedData.length && col.mergeKey!(sortedData[i + span]) === key)
+          while (i + span < sortedData.length && col.mergeKey!(sortedData[i + span]!) === key)
             span++;
         }
         for (let j = 0; j < span; j++)
@@ -550,7 +550,7 @@ function CardList<T>({
         {isFiltered ? (
           <TableFilteredEmpty onClearFilters={onClearFilters ?? (() => {})} />
         ) : (
-          <TableEmpty title={emptyTitle} description={emptyDescription} />
+          <TableEmpty title={emptyTitle ?? "Nothing here yet"} description={emptyDescription} />
         )}
       </div>
     );

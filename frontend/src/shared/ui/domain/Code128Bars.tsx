@@ -50,7 +50,7 @@ export function encodeCode128(value: string): Code128Drawing | null {
 
   const paths: Code128Drawing["paths"] = [];
   for (const [, attrs] of svg.matchAll(/<path\s([^>]*?)\/?>/g)) {
-    const a = Object.fromEntries([...attrs.matchAll(ATTR)].map((m) => [m[1], m[2]]));
+    const a = Object.fromEntries([...attrs!.matchAll(ATTR)].map((m) => [m[1], m[2]]));
     if (!a.d) continue;
     paths.push({ d: a.d, stroke: a.stroke, strokeWidth: a["stroke-width"], fill: a.fill });
   }

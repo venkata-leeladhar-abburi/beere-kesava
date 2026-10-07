@@ -38,7 +38,7 @@ function parseDMY(s: string): number {
 function summarizeAssignedBy(list: FinishingAssignment[]): string {
   const names = [...new Set(list.map((a) => a.assignedBy))];
   if (names.length === 0) return "—";
-  if (names.length === 1) return names[0];
+  if (names.length === 1) return names[0]!;
   return `${names.length} people`;
 }
 

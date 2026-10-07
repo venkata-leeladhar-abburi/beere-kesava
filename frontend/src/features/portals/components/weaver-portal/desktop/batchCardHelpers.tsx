@@ -15,7 +15,7 @@ export function useMaterialsGivenForBatch(batchId: string) {
   records.forEach((r) =>
     r.materials.forEach((m) => {
       if (!totals[m.materialType]) totals[m.materialType] = { qty: 0, unit: m.unit };
-      totals[m.materialType].qty += m.quantity;
+      totals[m.materialType]!.qty += m.quantity;
     })
   );
   return Object.entries(totals)

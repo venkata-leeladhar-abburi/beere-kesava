@@ -188,14 +188,14 @@ export function HistorySection({
   const byDay: Record<string, typeof filtered> = {};
   filtered.forEach((h) => {
     if (!byDay[h.date]) byDay[h.date] = [];
-    byDay[h.date].push(h);
+    byDay[h.date]!.push(h);
   });
 
   // Group by weaver/loom
   const byWeaver: Record<string, typeof filtered> = {};
   filtered.forEach((h) => {
     if (!byWeaver[h.weaver]) byWeaver[h.weaver] = [];
-    byWeaver[h.weaver].push(h);
+    byWeaver[h.weaver]!.push(h);
   });
 
   const toggleRow = (id: string) => {
@@ -222,7 +222,7 @@ export function HistorySection({
         entityLabel={uniqueSelWeavers.length === 1 ? "Weaver/Loom" : "Sarees"}
         entityValue={
           uniqueSelWeavers.length === 1
-            ? uniqueSelWeavers[0]
+            ? uniqueSelWeavers[0]!
             : `${selectedRows.length} selected · ${uniqueSelWeavers.length} weavers/looms`
         }
         onBack={() => setShowTagPrint(false)}

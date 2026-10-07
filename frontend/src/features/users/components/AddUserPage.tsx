@@ -225,7 +225,7 @@ export function AddUserPage() {
   const nextFinishingEmpId = useMemo(() => {
     const maxNum = allRows.reduce((max, u) => {
       const m = u.empId.match(/(\d+)\s*$/);
-      return m ? Math.max(max, parseInt(m[1], 10)) : max;
+      return m ? Math.max(max, parseInt(m[1]!, 10)) : max;
     }, 0);
     return `EMP-${String(maxNum + 1).padStart(3, "0")}`;
   }, [allRows]);
@@ -275,10 +275,10 @@ export function AddUserPage() {
         lastName,
         mobile,
         email: email.trim() || undefined,
-        role: FRONTEND_TO_BACKEND_ROLE[role],
+        role: FRONTEND_TO_BACKEND_ROLE[role]!,
         additionalRoles: additionalRoles
           .filter((r) => r !== role)
-          .map((r) => FRONTEND_TO_BACKEND_ROLE[r]),
+          .map((r) => FRONTEND_TO_BACKEND_ROLE[r]!),
         accessLevel: isAdmin ? frontendAccessLevelToBackend(accessLevel) : undefined,
         ...(isWeaver
           ? {
@@ -405,12 +405,12 @@ export function AddUserPage() {
       // Portals first: the levels endpoint refuses a level for a portal the
       // person isn't assigned yet, so a newly granted one has to land first.
       let updated = await usersApi.update(row.backendId, {
-        additionalRoles: changes.additionalRoles.map((r) => FRONTEND_TO_BACKEND_ROLE[r]),
+        additionalRoles: changes.additionalRoles.map((r) => FRONTEND_TO_BACKEND_ROLE[r]!),
       });
       // Its own endpoint behind its own permission, so it can't ride along on
       // the PATCH above.
       const levels = Object.entries(changes.accessLevels).map(([role, level]) => ({
-        role: FRONTEND_TO_BACKEND_ROLE[role],
+        role: FRONTEND_TO_BACKEND_ROLE[role]!,
         accessLevel: frontendAccessLevelToBackend(level),
       }));
       if (levels.length) {

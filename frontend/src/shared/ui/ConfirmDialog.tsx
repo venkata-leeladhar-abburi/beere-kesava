@@ -74,8 +74,8 @@ export function ConfirmDialog({
         dialogRef.current.focus();
         return;
       }
-      const first = items[0];
-      const last = items[items.length - 1];
+      const first = items[0]!;
+      const last = items[items.length - 1]!;
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault();
         last.focus();

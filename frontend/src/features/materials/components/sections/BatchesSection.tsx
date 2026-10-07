@@ -75,7 +75,7 @@ export function BatchTableView({
       header: "Material",
       accessor: (r) => r.type,
       cell: (_v, r) => {
-        const mt = MAT_TAG[r.type];
+        const mt = MAT_TAG[r.type]!;
         return (
           <span
             style={{
@@ -293,7 +293,7 @@ export function BatchCardView({
       >
         {pag.pageItems.map((r, i) => {
           const sc = STATUS_CFG[r.statusType];
-          const mt = MAT_TAG[r.type];
+          const mt = MAT_TAG[r.type]!;
           const remPct = r.received > 0 ? Math.round((r.remaining / r.received) * 100) : 0;
           const matIcon =
             r.type === "Warp" ? (

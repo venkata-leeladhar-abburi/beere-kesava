@@ -26,6 +26,7 @@ import { useFinishing } from "@/features/finishing";
 import { INVOICES } from "@/features/payments";
 import { ChartFigure } from "../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { rowFormatter } from "@/shared/ui/data/rowFormatter";
 
 const T = {
   silkCream: "#F7F2EA",
@@ -108,7 +109,7 @@ export function AllOrdersAnalyticsSection({
       return `${dateFilter.from || "start"} → ${dateFilter.to || "today"}`;
     if (dateFilter.mode === "month" && dateFilter.month) {
       const [y, m] = dateFilter.month.split("-");
-      return `${MONTH_ABBR[+m - 1]} ${y}`;
+      return `${MONTH_ABBR[+m! - 1]} ${y}`;
     }
     if (dateFilter.mode === "year" && dateFilter.year) return dateFilter.year;
     return "All time";
@@ -157,9 +158,9 @@ export function AllOrdersAnalyticsSection({
     () =>
       (["on-track", "at-risk", "overdue"] as const)
         .map((s) => ({
-          name: STATUS_META[s].label,
+          name: STATUS_META[s]!.label,
           value: filteredOrders.filter((o) => o.status === s).length,
-          color: STATUS_META[s].color,
+          color: STATUS_META[s]!.color,
         }))
         .filter((d) => d.value > 0),
     [filteredOrders]
@@ -210,11 +211,11 @@ export function AllOrdersAnalyticsSection({
   const byType = useMemo(() => {
     const m = new Map<string, number>();
     filteredOrders.forEach((o) => {
-      const label = o.sareeType.split(" · ")[0];
+      const label = o.sareeType.split(" · ")[0]!;
       m.set(label, (m.get(label) || 0) + o.total);
     });
     return [...m.entries()]
-      .map(([type, sarees], i) => ({ type, sarees, fill: TYPE_FILLS[i % TYPE_FILLS.length] }))
+      .map(([type, sarees], i) => ({ type, sarees, fill: TYPE_FILLS[i % TYPE_FILLS.length]! }))
       .sort((a, b) => b.sarees - a.sarees);
   }, [filteredOrders]);
 
@@ -498,11 +499,12 @@ export function AllOrdersAnalyticsSection({
                       </Pie>
                       <RechartsTooltip
                         contentStyle={tip}
-                        formatter={(
-                          v: number | string,
-                          _n: string,
-                          p: { payload: { name: string } }
-                        ) => [`${v} order${v === 1 ? "" : "s"}`, p.payload.name]}
+                        formatter={rowFormatter(
+                          (v: number | string, _n: string, p: { payload: { name: string } }) => [
+                            `${v} order${v === 1 ? "" : "s"}`,
+                            p.payload.name,
+                          ]
+                        )}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -630,14 +632,16 @@ export function AllOrdersAnalyticsSection({
                     <RechartsTooltip
                       cursor={{ fill: "rgba(110,15,45,0.04)" }}
                       contentStyle={tip}
-                      formatter={(
-                        v: number | string,
-                        _n: string,
-                        p: { payload: { sarees: number; orders: number; customer: string } }
-                      ) => [
-                        `${inr(Number(v))} · ${p.payload.sarees} sarees · ${p.payload.orders} order(s)`,
-                        p.payload.customer,
-                      ]}
+                      formatter={rowFormatter(
+                        (
+                          v: number | string,
+                          _n: string,
+                          p: { payload: { sarees: number; orders: number; customer: string } }
+                        ) => [
+                          `${inr(Number(v))} · ${p.payload.sarees} sarees · ${p.payload.orders} order(s)`,
+                          p.payload.customer,
+                        ]
+                      )}
                     />
                     <Bar
                       dataKey="value"
@@ -654,7 +658,7 @@ export function AllOrdersAnalyticsSection({
                       {topCustomers.map((c, i) => (
                         <Cell
                           key={c.customer}
-                          fill={semantic.chart.series[i % semantic.chart.series.length]}
+                          fill={semantic.chart.series[i % semantic.chart.series.length]!}
                         />
                       ))}
                     </Bar>
@@ -896,11 +900,12 @@ export function AllOrdersAnalyticsSection({
                     <RechartsTooltip
                       cursor={{ fill: "rgba(110,15,45,0.04)" }}
                       contentStyle={tip}
-                      formatter={(
-                        v: number | string,
-                        _n: string,
-                        p: { payload: { type: string } }
-                      ) => [`${v} sarees`, p.payload.type]}
+                      formatter={rowFormatter(
+                        (v: number | string, _n: string, p: { payload: { type: string } }) => [
+                          `${v} sarees`,
+                          p.payload.type,
+                        ]
+                      )}
                     />
                     <Bar dataKey="sarees" radius={[5, 5, 0, 0]}>
                       {byType.map((d) => (

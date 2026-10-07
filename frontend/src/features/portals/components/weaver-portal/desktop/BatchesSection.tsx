@@ -46,11 +46,11 @@ import { Money } from "@/shared/ui/domain";
 const MAX_ACTIVE_BATCHES = 2;
 
 type DefectiveSaree = {
-  sareeId: string;
+  sareeId: string | null;
   batchId: string;
-  designCode?: string;
-  sareeTypeCode?: string;
-  sareeTypeName?: string;
+  designCode?: string | null;
+  sareeTypeCode?: string | null;
+  sareeTypeName?: string | null;
   date: string;
   defect: string;
   deduction: number;

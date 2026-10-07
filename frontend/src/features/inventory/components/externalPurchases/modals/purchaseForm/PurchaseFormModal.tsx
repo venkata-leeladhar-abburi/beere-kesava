@@ -121,7 +121,7 @@ export function PurchaseFormModal({
       const sellPercent = Number(s.sellPercent) || 0;
       const quantity = Number(s.quantity) || 1;
       return {
-        id: lineCodes[idx],
+        id: lineCodes[idx]!,
         // Sent back so the server updates the saved line in place.
         lineId: s.lineId,
         weight: s.weight,

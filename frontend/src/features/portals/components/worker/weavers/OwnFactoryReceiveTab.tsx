@@ -80,7 +80,7 @@ export function OwnFactoryReceiveTab({
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!selectedLoom && LOOMS.length > 0) setSelectedLoom(LOOMS[0]);
+    if (!selectedLoom && LOOMS.length > 0) setSelectedLoom(LOOMS[0]!);
   }, [LOOMS, selectedLoom]);
 
   // Real per-loom batches, built the same way as the outsourced weaver flow:
@@ -103,7 +103,7 @@ export function OwnFactoryReceiveTab({
         if (r.qcResult === "passed") continue;
         if (dispatchedSareeIds.has(r.sareeId)) continue;
         if (!result[r.factoryLoomId]) result[r.factoryLoomId] = [];
-        let wb = result[r.factoryLoomId].find((x) => x.id === b.batchId);
+        let wb = result[r.factoryLoomId]!.find((x) => x.id === b.batchId);
         if (!wb) {
           wb = {
             id: b.batchId,
@@ -112,7 +112,7 @@ export function OwnFactoryReceiveTab({
             bulkOrderLabel: r.bulkOrderLabel ?? undefined,
             sarees: [],
           };
-          result[r.factoryLoomId].push(wb);
+          result[r.factoryLoomId]!.push(wb);
         }
         wb.sarees.push({
           no: r.serial,

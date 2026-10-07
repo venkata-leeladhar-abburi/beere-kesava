@@ -43,7 +43,7 @@ interface RetailSaleRow {
 
 function RetailWeeklyTooltip({ active, payload, label }: TooltipProps<ValueType, NameType>) {
   if (!active || !payload || !payload.length) return null;
-  const d = payload[0].payload;
+  const d = payload[0]!.payload;
   return (
     <div
       style={{
@@ -211,7 +211,7 @@ export function RetailSalesReport() {
     return entries.map(([name, value], i) => ({
       name,
       value,
-      color: colors[i % colors.length],
+      color: colors[i % colors.length]!,
     }));
   }, [retailSales, sareeInfoMap, returnBySareeId]);
 

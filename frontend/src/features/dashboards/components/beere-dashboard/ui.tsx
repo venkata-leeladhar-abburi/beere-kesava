@@ -91,8 +91,8 @@ function AnimatedNumber({ raw }: { raw: string }) {
   const [displayed, setDisplayed] = useState(() => {
     const m = raw.match(/(\d+(?:\.\d+)?)/);
     if (!m) return raw;
-    const isFloat = m[1].includes(".");
-    return raw.replace(m[1], isFloat ? "0.0" : "0");
+    const isFloat = m[1]!.includes(".");
+    return raw.replace(m[1]!, isFloat ? "0.0" : "0");
   });
 
   useEffect(() => {
@@ -102,7 +102,7 @@ function AnimatedNumber({ raw }: { raw: string }) {
       setDisplayed(raw);
       return;
     }
-    const numStr = match[1];
+    const numStr = match[1]!;
     const target = Number(numStr);
     const isFloat = numStr.includes(".");
     const idx = raw.indexOf(numStr);

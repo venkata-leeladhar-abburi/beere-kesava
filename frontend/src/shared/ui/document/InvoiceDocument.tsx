@@ -112,15 +112,15 @@ export function InvoiceDocument({
           taxableLabel: formatPaise(taxablePaise),
           cgstLabel:
             kind === "intra"
-              ? `${lines[0].ratePct}%  ${formatPaise(lines[0].amountPaise)}`
+              ? `${lines[0]!.ratePct}%  ${formatPaise(lines[0]!.amountPaise)}`
               : undefined,
           sgstLabel:
             kind === "intra"
-              ? `${lines[1].ratePct}%  ${formatPaise(lines[1].amountPaise)}`
+              ? `${lines[1]!.ratePct}%  ${formatPaise(lines[1]!.amountPaise)}`
               : undefined,
           igstLabel:
             kind === "inter"
-              ? `${lines[0].ratePct}%  ${formatPaise(lines[0].amountPaise)}`
+              ? `${lines[0]!.ratePct}%  ${formatPaise(lines[0]!.amountPaise)}`
               : undefined,
           totalTaxLabel: formatPaise(totalTaxPaise),
           totalTaxPaise,

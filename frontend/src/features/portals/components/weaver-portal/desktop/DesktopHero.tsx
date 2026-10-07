@@ -34,7 +34,7 @@ export function DesktopHero({
     sub: s.sub,
     highlight: s.highlight,
     goldVal: s.highlight,
-    icon: ICONS[i % ICONS.length],
+    icon: ICONS[i % ICONS.length]!,
   }));
 
   return (

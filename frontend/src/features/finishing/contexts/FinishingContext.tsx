@@ -343,7 +343,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         .filter(
           (a) =>
             a.batchSareeRow.qcRecords.length === 0 ||
-            a.batchSareeRow.qcRecords[0].result === "PASSED"
+            a.batchSareeRow.qcRecords[0]!.result === "PASSED"
         )
         .map((a) => backendAssignmentToFrontend(a, getSareeTypeByCode)),
     [backendAssignments, getSareeTypeByCode]

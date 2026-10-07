@@ -47,7 +47,7 @@ export function Avatar({
   bg,
   size = 44,
 }: {
-  photo: string | null;
+  photo: string | null | undefined;
   initials?: string;
   name?: string;
   bg: string;

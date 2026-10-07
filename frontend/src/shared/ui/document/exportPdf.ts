@@ -88,9 +88,9 @@ function findCutRow(canvas: HTMLCanvasElement, top: number, pageHeightPx: number
       // white — the cream zebra fill and the tinted cards are legitimate
       // gaps too, they just aren't #FFFFFF.
       if (
-        Math.abs(row[i] - row[0]) > 6 ||
-        Math.abs(row[i + 1] - row[1]) > 6 ||
-        Math.abs(row[i + 2] - row[2]) > 6
+        Math.abs(row[i]! - row[0]!) > 6 ||
+        Math.abs(row[i + 1]! - row[1]!) > 6 ||
+        Math.abs(row[i + 2]! - row[2]!) > 6
       ) {
         uniform = false;
         break;
@@ -207,7 +207,7 @@ async function buildDocumentPdf(node: React.ReactNode, options: ExportPdfOptions
     // Page geometry comes from the FIRST sheet: a receipt (.bk-doc--a5) is
     // A5 landscape, everything else A4 portrait. Mixing the two in one file
     // isn't a case any document type produces.
-    const isA5 = sheets[0].classList.contains("bk-doc--a5");
+    const isA5 = sheets[0]!.classList.contains("bk-doc--a5");
     const pageWidthMm = isA5 ? A5L_WIDTH_MM : A4_WIDTH_MM;
     const pageHeightMm = isA5 ? A5L_HEIGHT_MM : A4_HEIGHT_MM;
 

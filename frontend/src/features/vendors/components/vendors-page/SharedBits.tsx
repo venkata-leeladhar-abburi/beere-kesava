@@ -98,7 +98,7 @@ export function StatusPill({ status }: { status: string }) {
     inactive: { bg: "rgba(139,112,96,0.10)", color: T.taupe, label: "Inactive" },
     overdue: { bg: "rgba(192,57,43,0.08)", color: "#C0392B", label: "Overdue" },
   };
-  const s = map[status] ?? map.active;
+  const s = map[status] ?? map.active!;
   return (
     <span
       style={{

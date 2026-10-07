@@ -94,7 +94,7 @@ export function useInventoryPageState() {
           (bo) =>
             bo.design === s.designCode &&
             (bo.sareeType.toLowerCase().includes(s.sareeType.toLowerCase()) ||
-              s.sareeType.toLowerCase().includes(bo.sareeType.split(" · ")[0].toLowerCase()))
+              s.sareeType.toLowerCase().includes(bo.sareeType.split(" · ")[0]!.toLowerCase()))
         )?.ref;
       const bId = batches.find((b) => b.rows.some((row) => row.sareeId === s.id))?.batchId;
       list.push({
@@ -121,7 +121,7 @@ export function useInventoryPageState() {
         (bo) =>
           bo.design === r.designCode &&
           (bo.sareeType.toLowerCase().includes(r.sareeType.toLowerCase()) ||
-            r.sareeType.toLowerCase().includes(bo.sareeType.split(" · ")[0].toLowerCase()))
+            r.sareeType.toLowerCase().includes(bo.sareeType.split(" · ")[0]!.toLowerCase()))
       )?.ref;
       const bId = batches.find((b) => b.rows.some((row) => row.sareeId === r.sareeId))?.batchId;
       const status = dispatchedSareeIds.has(r.sareeId)
@@ -215,7 +215,7 @@ export function useInventoryPageState() {
         status: "Dispatched",
         rawType: "readySaree",
         originalId: sareeId,
-        bulkOrderRef: row?.bulkOrderRef,
+        bulkOrderRef: row?.bulkOrderRef ?? undefined,
         batchId: row ? batches.find((b) => b.rows.includes(row))?.batchId : undefined,
       });
     });
@@ -469,7 +469,7 @@ export function useInventoryPageState() {
     // Rounded to paise: summing typed prices in floating point can leave a
     // tail like .30000000000000004, which the server rightly rejects.
     const subtotal =
-      Math.round(sareeIds.reduce((sum, id) => sum + (parseFloat(inv.prices[id]) || 0), 0) * 100) /
+      Math.round(sareeIds.reduce((sum, id) => sum + (parseFloat(inv.prices[id]!) || 0), 0) * 100) /
       100;
     const gstAmount = inv.applyGst ? (subtotal * (parseFloat(inv.gstPct) || 0)) / 100 : 0;
     let created: { id: string; invoiceNumber?: string };
@@ -485,7 +485,7 @@ export function useInventoryPageState() {
         notes: transport.notes,
         customerId,
         customerName: customer?.name,
-        customerPhone: customer?.phone,
+        customerPhone: customer?.phone ?? undefined,
         expectedDelivery: transport.expectedDelivery,
         specialInstructions: transport.specialInstructions,
         invoiceDate: inv.invoiceDate,
@@ -539,7 +539,7 @@ export function useInventoryPageState() {
       sareeType: s.sareeType,
       weaverName: s.weaverName,
     }));
-    const subtotal = quoteSarees.reduce((sum, r) => sum + (parseFloat(inv.prices[r.id]) || 0), 0);
+    const subtotal = quoteSarees.reduce((sum, r) => sum + (parseFloat(inv.prices[r.id]!) || 0), 0);
     const gstAmount = inv.applyGst ? (subtotal * (parseFloat(inv.gstPct) || 0)) / 100 : 0;
     const firm = firms.find((f) => f.id === inv.firmId);
     const createdQuotation = await raiseQuotation({
@@ -549,10 +549,10 @@ export function useInventoryPageState() {
       quotationDate: inv.invoiceDate,
       customerId,
       customerName: customer?.name ?? "—",
-      customerCity: customer?.city,
-      customerPhone: customer?.phone,
-      customerAddress: customer?.address,
-      customerGst: customer?.gstCode,
+      customerCity: customer?.city ?? undefined,
+      customerPhone: customer?.phone ?? undefined,
+      customerAddress: customer?.address ?? undefined,
+      customerGst: customer?.gstCode ?? undefined,
       bulkOrderRef,
       sarees: quoteSarees.map((r) => ({
         sareeId: r.id,

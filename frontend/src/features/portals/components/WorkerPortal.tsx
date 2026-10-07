@@ -951,7 +951,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
       {/* Sticky Section Navigator — matching SuperadminDashboard layout */}
       {activeTab === "qc" && (
         <SectionNavigator
-          sections={PAGE_SECTIONS.WorkerQC}
+          sections={PAGE_SECTIONS.WorkerQC!}
           stickyTop={60}
           height={WORKER_SECTION_NAV_H}
           activeColor={C.burg}

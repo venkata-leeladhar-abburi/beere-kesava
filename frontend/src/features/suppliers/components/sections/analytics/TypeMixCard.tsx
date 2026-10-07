@@ -6,6 +6,7 @@ import { Layers } from "lucide-react";
 import { T, F } from "../../theme";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { ChartFigure } from "../../../../../shared/ui/data";
+import { rowFormatter } from "@/shared/ui/data/rowFormatter";
 
 function CardBloom() {
   return (
@@ -146,10 +147,12 @@ export function TypeMixCard({
               </Pie>
               <RechartsTooltip
                 contentStyle={tip}
-                formatter={(v: number | string, _n: string, p: { payload: ByTypeEntry }) => [
-                  `${formatMoney(rupees(Number(v)))} · ${p.payload.qty} pcs`,
-                  p.payload.type,
-                ]}
+                formatter={rowFormatter(
+                  (v: number | string, _n: string, p: { payload: ByTypeEntry }) => [
+                    `${formatMoney(rupees(Number(v)))} · ${p.payload.qty} pcs`,
+                    p.payload.type,
+                  ]
+                )}
               />
             </PieChart>
           </ResponsiveContainer>

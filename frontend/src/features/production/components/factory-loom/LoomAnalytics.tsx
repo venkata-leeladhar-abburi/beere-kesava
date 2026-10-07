@@ -24,6 +24,7 @@ import { LoomBatch, LoomMaterial, LoomSaree, MAT_TAG, LOOM_STATUS_TO_CONDITION }
 import { LoomThroughputAndAvailability, LoomMaterialDesignRow } from "./LoomAnalyticsCharts";
 import { ChartFigure } from "../../../../shared/ui/data";
 import { StatusPill, EntityCode } from "../../../../shared/ui/domain";
+import { rowFormatter } from "@/shared/ui/data/rowFormatter";
 
 function CardBloom() {
   return (
@@ -115,7 +116,7 @@ export function LoomAnalytics({
     if (filter.mode === "range") return `${filter.from || "start"} → ${filter.to || "today"}`;
     if (filter.mode === "month" && filter.month) {
       const [y, m] = filter.month.split("-");
-      return `${LA_MONTH_ABBR[+m - 1]} ${y}`;
+      return `${LA_MONTH_ABBR[+m! - 1]} ${y}`;
     }
     if (filter.mode === "year" && filter.year) return filter.year;
     return "All time";
@@ -131,9 +132,9 @@ export function LoomAnalytics({
       (["active", "idle", "maintenance"] as const)
         .map((k) => ({
           key: k,
-          name: UTIL_META[k].label,
+          name: UTIL_META[k]!.label,
           value: looms.filter((l) => l.status === k).length,
-          color: UTIL_META[k].color,
+          color: UTIL_META[k]!.color,
         }))
         .filter((d) => d.value > 0),
     [looms]
@@ -249,7 +250,7 @@ export function LoomAnalytics({
         type,
         short: type,
         ...v,
-        fill: FLOOR_FILLS[i % FLOOR_FILLS.length],
+        fill: FLOOR_FILLS[i % FLOOR_FILLS.length]!,
       }))
       .sort((a, b) => b.produced - a.produced)
       .slice(0, 5);
@@ -538,14 +539,12 @@ export function LoomAnalytics({
                       <RechartsTooltip
                         cursor={{ fill: "rgba(200,155,71,0.06)" }}
                         contentStyle={tip}
-                        formatter={(
-                          v: number,
-                          _n: string,
-                          p: { payload: (typeof rankedLooms)[number] }
-                        ) => [
-                          `${v} completed · ${p.payload.passRate}% pass · ${p.payload.wip} in progress`,
-                          `${p.payload.label} — ${p.payload.operatorName}`,
-                        ]}
+                        formatter={rowFormatter(
+                          (v: number, _n: string, p: { payload: (typeof rankedLooms)[number] }) => [
+                            `${v} completed · ${p.payload.passRate}% pass · ${p.payload.wip} in progress`,
+                            `${p.payload.label} — ${p.payload.operatorName}`,
+                          ]
+                        )}
                       />
                       <Bar
                         dataKey="produced"

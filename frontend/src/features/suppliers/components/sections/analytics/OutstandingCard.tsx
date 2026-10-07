@@ -199,7 +199,7 @@ export function OutstandingCard({
               >
                 <div
                   style={{
-                    width: `${(s.outstanding / (dueList[0].outstanding || 1)) * 100}%`,
+                    width: `${(s.outstanding / (dueList[0]!.outstanding || 1)) * 100}%`,
                     height: "100%",
                     borderRadius: 3,
                     background: `linear-gradient(90deg, ${T.royalBurgundy}, #C0392B)`,

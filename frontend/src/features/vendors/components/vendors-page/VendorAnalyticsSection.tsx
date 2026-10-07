@@ -44,6 +44,7 @@ import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { ChartFigure } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { toPaise, fromPaise } from "@/lib/gst";
+import { rowFormatter } from "@/shared/ui/data/rowFormatter";
 
 // ── Shared card style tokens ────────────────────────────────────────────────
 const CARD_BG = "#FFFFFF";
@@ -172,7 +173,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
     const items = (poRes?.items ?? []).filter((p) => p.status !== "REJECTED");
     return items.map((p) => ({
       vendorId: p.vendorId || p.vendor?.id || "",
-      date: p.createdAt ? p.createdAt.split("T")[0] : "",
+      date: p.createdAt ? p.createdAt.split("T")[0]! : "",
       amount: Number(p.totalValue || 0),
       materials: (p.items ?? []).map((item) => ({
         type:
@@ -212,7 +213,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
     if (f.mode === "range") return `${f.from || "start"} → ${f.to || "today"}`;
     if (f.mode === "month" && f.month) {
       const [y, m] = f.month.split("-");
-      return `${MONTH_ABBR[+m - 1]} ${y}`;
+      return `${MONTH_ABBR[+m! - 1]} ${y}`;
     }
     if (f.mode === "year" && f.year) return f.year;
     return "All time";
@@ -224,7 +225,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
   const spendByMonth = React.useMemo(() => {
     const m = new Map<string, { spend: number; orders: number }>();
     rows.forEach((r) => {
-      const key = r.date.slice(0, 7);
+      const key = r.date!.slice(0, 7);
       const e = m.get(key) || { spend: 0, orders: 0 };
       e.spend += r.amount;
       e.orders += 1;
@@ -238,8 +239,8 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
 
   const trendDelta = React.useMemo(() => {
     if (spendByMonth.length < 2) return null;
-    const last = spendByMonth[spendByMonth.length - 1].spend;
-    const prev = spendByMonth[spendByMonth.length - 2].spend;
+    const last = spendByMonth[spendByMonth.length - 1]!.spend;
+    const prev = spendByMonth[spendByMonth.length - 2]!.spend;
     if (!prev) return null;
     return Math.round(((last - prev) / prev) * 100);
   }, [spendByMonth]);
@@ -778,11 +779,13 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                         <RechartsTooltip
                           cursor={{ fill: "rgba(200,155,71,0.06)" }}
                           contentStyle={tipStyle}
-                          formatter={(
-                            v: number | string,
-                            _n: React.ReactNode,
-                            p: { payload: { orders: number; name: string } }
-                          ) => [`${L(Number(v))} · ${p.payload.orders} orders`, p.payload.name]}
+                          formatter={rowFormatter(
+                            (
+                              v: number | string,
+                              _n: React.ReactNode,
+                              p: { payload: { orders: number; name: string } }
+                            ) => [`${L(Number(v))} · ${p.payload.orders} orders`, p.payload.name]
+                          )}
                         />
                         <Bar
                           dataKey="spend"
@@ -954,7 +957,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                           >
                             <div
                               style={{
-                                width: `${(v.out / (outstandingList[0].out || 1)) * 100}%`,
+                                width: `${(v.out / (outstandingList[0]!.out || 1)) * 100}%`,
                                 height: "100%",
                                 borderRadius: 3,
                                 background: `linear-gradient(90deg, ${T.royalBurgundy}, #C0392B)`,
@@ -1021,11 +1024,13 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                         <RechartsTooltip
                           cursor={{ fill: "rgba(200,155,71,0.06)" }}
                           contentStyle={tipStyle}
-                          formatter={(
-                            v: number | string,
-                            _n: React.ReactNode,
-                            p: { payload: { state: string } }
-                          ) => [L(Number(v)), p.payload.state]}
+                          formatter={rowFormatter(
+                            (
+                              v: number | string,
+                              _n: React.ReactNode,
+                              p: { payload: { state: string } }
+                            ) => [L(Number(v)), p.payload.state]
+                          )}
                         />
                         <Bar dataKey="spend" fill={T.royalBurgundy} radius={[10, 10, 10, 10]} />
                       </BarChart>

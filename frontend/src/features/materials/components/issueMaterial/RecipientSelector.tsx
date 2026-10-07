@@ -140,7 +140,7 @@ export function RecipientSelector({
                     </div>
                   ) : (
                     filteredWeavers.map((w) => {
-                      const isSelected = selectedWeaver?.id === w.id;
+                      const isSelected = (selectedWeaver as WeaverLite | null)?.id === w.id;
                       return (
                         <button
                           type="button"
@@ -213,8 +213,8 @@ export function RecipientSelector({
                           </div>
                           <span
                             style={{
-                              background: STATUS_CFG[w.status].bg,
-                              color: STATUS_CFG[w.status].color,
+                              background: STATUS_CFG[w.status]!.bg,
+                              color: STATUS_CFG[w.status]!.color,
                               borderRadius: 999,
                               padding: "3px 10px",
                               fontFamily: F.ui,
@@ -223,7 +223,7 @@ export function RecipientSelector({
                               flexShrink: 0,
                             }}
                           >
-                            {STATUS_CFG[w.status].label}
+                            {STATUS_CFG[w.status]!.label}
                           </span>
                         </button>
                       );
@@ -286,8 +286,8 @@ export function RecipientSelector({
               </div>
               <span
                 style={{
-                  background: STATUS_CFG[selectedWeaver.status].bg,
-                  color: STATUS_CFG[selectedWeaver.status].color,
+                  background: STATUS_CFG[selectedWeaver.status]!.bg,
+                  color: STATUS_CFG[selectedWeaver.status]!.color,
                   borderRadius: 999,
                   padding: "4px 12px",
                   fontFamily: F.ui,
@@ -296,7 +296,7 @@ export function RecipientSelector({
                   flexShrink: 0,
                 }}
               >
-                {STATUS_CFG[selectedWeaver.status].label}
+                {STATUS_CFG[selectedWeaver.status]!.label}
               </span>
               <Button
                 onClick={() => {

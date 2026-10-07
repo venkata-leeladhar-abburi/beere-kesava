@@ -134,7 +134,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return" | "sales"
   }));
 
   const latestReturn = returnsList[0];
-  const firstName = user?.name ? user.name.split(" ")[0] : "Staff";
+  const firstName = user?.name ? user.name.split(" ")[0]! : "Staff";
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 

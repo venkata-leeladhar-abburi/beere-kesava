@@ -206,7 +206,7 @@ export function IssuanceHistorySection({
       accessor: (r) => r.status,
       type: "status",
       cell: (_v, r) => {
-        const badge = STATUS_BADGE[r.status];
+        const badge = STATUS_BADGE[r.status]!;
         return (
           <span
             style={{
@@ -392,7 +392,7 @@ export function IssuanceHistorySection({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               {pagedHistory.map((r) => {
-                const badge = STATUS_BADGE[r.status] ?? STATUS_BADGE["signed"];
+                const badge = STATUS_BADGE[r.status] ?? STATUS_BADGE["signed"]!;
                 const formattedDate = new Date(r.issuedAt).toLocaleDateString("en-IN", {
                   day: "2-digit",
                   month: "short",

@@ -147,7 +147,7 @@ export function RawMaterialReport() {
                 : "Jari";
           // Jari is always tallied in Reels — never sum raw quantities of
           // mismatched units (a GRN row might store it as KG).
-          totals[type].current +=
+          totals[type]!.current +=
             type === "Jari"
               ? jariToReels(item.quantity, item.unit ?? "KG")
               : Number(item.quantity || 0);
@@ -156,9 +156,9 @@ export function RawMaterialReport() {
     }
 
     return [
-      { material: "Warp", current: totals.Warp.current, prior: totals.Warp.prior },
-      { material: "Resham", current: totals.Resham.current, prior: totals.Resham.prior },
-      { material: "Jari", current: totals.Jari.current, prior: totals.Jari.prior },
+      { material: "Warp", current: totals.Warp!.current, prior: totals.Warp!.prior },
+      { material: "Resham", current: totals.Resham!.current, prior: totals.Resham!.prior },
+      { material: "Jari", current: totals.Jari!.current, prior: totals.Jari!.prior },
     ];
   }, [grnsInPeriod]);
 
@@ -179,7 +179,7 @@ export function RawMaterialReport() {
               : item.materialType === "RESHAM"
                 ? "Resham"
                 : "Jari";
-          totals[type].current +=
+          totals[type]!.current +=
             type === "Jari"
               ? jariToReels(Number(item.quantity || 0), item.unit ?? "REEL")
               : Number(item.quantity || 0);
@@ -188,9 +188,9 @@ export function RawMaterialReport() {
     }
 
     return [
-      { material: "Warp", current: totals.Warp.current, prior: totals.Warp.prior },
-      { material: "Resham", current: totals.Resham.current, prior: totals.Resham.prior },
-      { material: "Jari", current: totals.Jari.current, prior: totals.Jari.prior },
+      { material: "Warp", current: totals.Warp!.current, prior: totals.Warp!.prior },
+      { material: "Resham", current: totals.Resham!.current, prior: totals.Resham!.prior },
+      { material: "Jari", current: totals.Jari!.current, prior: totals.Jari!.prior },
     ];
   }, [issuesInPeriod]);
 
@@ -603,21 +603,21 @@ export function RawMaterialReport() {
                 {[
                   {
                     material: "Warp",
-                    current: stockByType.WARP.stock,
-                    oos: stockByType.WARP.outOfStockCount,
-                    max: Math.max(200, stockByType.WARP.stock),
+                    current: stockByType.WARP!.stock,
+                    oos: stockByType.WARP!.outOfStockCount,
+                    max: Math.max(200, stockByType.WARP!.stock),
                   },
                   {
                     material: "Resham",
-                    current: stockByType.RESHAM.stock,
-                    oos: stockByType.RESHAM.outOfStockCount,
-                    max: Math.max(150, stockByType.RESHAM.stock),
+                    current: stockByType.RESHAM!.stock,
+                    oos: stockByType.RESHAM!.outOfStockCount,
+                    max: Math.max(150, stockByType.RESHAM!.stock),
                   },
                   {
                     material: "Jari",
-                    current: stockByType.JARI.stock,
-                    oos: stockByType.JARI.outOfStockCount,
-                    max: Math.max(80, stockByType.JARI.stock),
+                    current: stockByType.JARI!.stock,
+                    oos: stockByType.JARI!.outOfStockCount,
+                    max: Math.max(80, stockByType.JARI!.stock),
                   },
                 ].map((d, i) => {
                   const pct = d.max > 0 ? (d.current / d.max) * 100 : 0;

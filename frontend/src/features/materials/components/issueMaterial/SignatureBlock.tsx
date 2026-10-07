@@ -21,7 +21,7 @@ export function SignatureBlock({
   setSigned: (v: boolean) => void;
   remoteSent: boolean;
   setRemoteSent: (v: boolean) => void;
-  canvasRef: React.RefObject<SignatureCanvasHandle | null>;
+  canvasRef: React.RefObject<SignatureCanvasHandle>;
 }) {
   return (
     <div>

@@ -147,8 +147,8 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
             subtotal: 0,
           };
         }
-        acc[entry.code].count += 1;
-        acc[entry.code].subtotal += entry.rate;
+        acc[entry.code]!.count += 1;
+        acc[entry.code]!.subtotal += entry.rate;
         return acc;
       },
       {} as Record<

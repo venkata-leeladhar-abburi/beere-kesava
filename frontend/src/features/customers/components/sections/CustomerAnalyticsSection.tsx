@@ -319,8 +319,8 @@ export function CustomerAnalyticsSection({
       .map((c) => {
         let freq = "Single purchase";
         if (c.purchases > 1) {
-          const first = new Date(c.dates[0]).getTime();
-          const last = new Date(c.dates[c.dates.length - 1]).getTime();
+          const first = new Date(c.dates[0]!).getTime();
+          const last = new Date(c.dates[c.dates.length - 1]!).getTime();
           const spanDays = Math.max(1, Math.round((last - first) / 86400000));
           const avgGap = Math.round(spanDays / (c.purchases - 1));
           freq = avgGap <= 1 ? "Daily" : `Every ~${avgGap} days`;
@@ -337,12 +337,12 @@ export function CustomerAnalyticsSection({
     const sixMonthsAgo = Date.now() - 1000 * 60 * 60 * 24 * 182;
     return custRows
       .filter((c) => c.purchases > 0)
-      .filter((c) => new Date(c.dates[c.dates.length - 1]).getTime() < sixMonthsAgo)
+      .filter((c) => new Date(c.dates[c.dates.length - 1]!).getTime() < sixMonthsAgo)
       .map((c) => ({
         id: c.id,
         name: c.name,
         type: c.type,
-        time: new Date(c.dates[c.dates.length - 1]).toLocaleDateString("en-IN"),
+        time: new Date(c.dates[c.dates.length - 1]!).toLocaleDateString("en-IN"),
       }))
       .slice(0, 10);
   }, [custRows]);
@@ -363,7 +363,7 @@ export function CustomerAnalyticsSection({
         state: city,
         count,
         pct: total > 0 ? Math.round((count / total) * 100) : 0,
-        color: LOC_PALETTE[i % LOC_PALETTE.length],
+        color: LOC_PALETTE[i % LOC_PALETTE.length]!,
         size: 14,
       }));
   }, [custRows]);

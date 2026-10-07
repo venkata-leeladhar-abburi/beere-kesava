@@ -109,7 +109,7 @@ export function resolveBulkOrderRef(
     (bo) =>
       bo.design === designCode &&
       (bo.sareeType.toLowerCase().includes(sareeType.toLowerCase()) ||
-        sareeType.toLowerCase().includes(bo.sareeType.split(" · ")[0].toLowerCase()))
+        sareeType.toLowerCase().includes(bo.sareeType.split(" · ")[0]!.toLowerCase()))
   );
   return match?.ref;
 }

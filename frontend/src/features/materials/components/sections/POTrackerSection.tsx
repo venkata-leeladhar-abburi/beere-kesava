@@ -372,7 +372,7 @@ export function POTrackerSection({
                 }}
               >
                 {pag.pageItems.map((po) => {
-                  const cfg = PO_STATUS_CFG[po.status];
+                  const cfg = PO_STATUS_CFG[po.status as keyof typeof PO_STATUS_CFG];
                   return (
                     <motion.div
                       key={po.id}
@@ -531,7 +531,7 @@ export function POTrackerSection({
                             Materials Requested
                           </div>
                           {po.materials.map((m, mi) => {
-                            const mt = MAT_TAG[m.materialType] || MAT_TAG.Warp;
+                            const mt = MAT_TAG[m.materialType] || MAT_TAG.Warp!;
                             return (
                               <div
                                 key={`${m.materialType}-${m.subtype || m.description || "item"}`}

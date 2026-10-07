@@ -139,7 +139,7 @@ export function PaymentAnalyticsSection() {
       name: nameById.get(weaverId) ?? weaverId,
       amount,
       pct: Math.round((amount / maxAmount) * 100),
-      color: DIST_PALETTE[i % DIST_PALETTE.length],
+      color: DIST_PALETTE[i % DIST_PALETTE.length]!,
     }));
     return { weaverDistData: data, totalTop5: data.reduce((s, d) => s + d.amount, 0) };
   }, [weaverPaymentsRes, weaversRes]);

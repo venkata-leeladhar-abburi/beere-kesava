@@ -53,7 +53,7 @@ export function SupplierAnalytics() {
     if (filter.mode === "range") return `${filter.from || "start"} → ${filter.to || "today"}`;
     if (filter.mode === "month" && filter.month) {
       const [y, m] = filter.month.split("-");
-      return `${MONTH_ABBR[+m - 1]} ${y}`;
+      return `${MONTH_ABBR[+m! - 1]} ${y}`;
     }
     if (filter.mode === "year" && filter.year) return filter.year;
     return "All time";
@@ -97,8 +97,8 @@ export function SupplierAnalytics() {
 
   const trendDelta = useMemo(() => {
     if (monthly.length < 2) return null;
-    const a = monthly[monthly.length - 1].spend,
-      b = monthly[monthly.length - 2].spend;
+    const a = monthly[monthly.length - 1]!.spend,
+      b = monthly[monthly.length - 2]!.spend;
     return b ? Math.round(((a - b) / b) * 100) : null;
   }, [monthly]);
 
@@ -121,7 +121,7 @@ export function SupplierAnalytics() {
         ...v,
         markup: v.cost ? Math.round(((v.retail - v.cost) / v.cost) * 100) : 0,
         avgCost: v.qty ? Math.round(v.cost / v.qty) : 0,
-        fill: TYPE_FILLS[i % TYPE_FILLS.length],
+        fill: TYPE_FILLS[i % TYPE_FILLS.length]!,
       }))
       .sort((a, b) => b.cost - a.cost);
   }, [buys]);

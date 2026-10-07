@@ -195,7 +195,7 @@ export function StatementOfAccountDocument({
           <thead>
             <tr>
               {ageing.map((b) => (
-                <th key={b.label} data-num={b.label !== ageing[0].label || undefined}>
+                <th key={b.label} data-num={b.label !== ageing[0]!.label || undefined}>
                   {b.label}
                 </th>
               ))}

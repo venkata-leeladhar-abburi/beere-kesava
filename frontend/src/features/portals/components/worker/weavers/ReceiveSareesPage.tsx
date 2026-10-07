@@ -87,7 +87,7 @@ export function ReceiveSareesPage({
 
   // Default to the first weaver once the real list loads.
   useEffect(() => {
-    if (!selectedWeaver && WEAVERS.length > 0) setSelectedWeaver(WEAVERS[0]);
+    if (!selectedWeaver && WEAVERS.length > 0) setSelectedWeaver(WEAVERS[0]!);
   }, [WEAVERS, selectedWeaver]);
 
   // Real per-weaver batches, built from active batches' rows that have
@@ -110,7 +110,7 @@ export function ReceiveSareesPage({
         if (r.qcResult === "passed") continue;
         if (dispatchedSareeIds.has(r.sareeId)) continue;
         if (!result[r.weaverId]) result[r.weaverId] = [];
-        let wb = result[r.weaverId].find((x) => x.id === b.batchId);
+        let wb = result[r.weaverId]!.find((x) => x.id === b.batchId);
         if (!wb) {
           wb = {
             id: b.batchId,
@@ -122,7 +122,7 @@ export function ReceiveSareesPage({
             loomNumber: r.weaverLoom ?? undefined,
             sarees: [],
           };
-          result[r.weaverId].push(wb);
+          result[r.weaverId]!.push(wb);
         }
         wb.sarees.push({
           no: r.serial,

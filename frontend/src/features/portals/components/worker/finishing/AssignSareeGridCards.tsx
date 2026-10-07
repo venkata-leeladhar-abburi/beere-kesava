@@ -64,7 +64,7 @@ export function AssignBatchGrid({
       badgeStyle={READY_PILL}
       secondaryLabel={(rows) => {
         const names = Array.from(new Set(rows.map(producerOf)));
-        return names.length === 1 ? names[0] : `${names.length} weavers / looms`;
+        return names.length === 1 ? names[0]! : `${names.length} weavers / looms`;
       }}
     />
   );

@@ -321,7 +321,7 @@ export function WorkerPortalDesktop({
                 >
                   <SectionNavigator
                     inline
-                    sections={PAGE_SECTIONS.WorkerQC}
+                    sections={PAGE_SECTIONS.WorkerQC!}
                     activeColor={C.burg}
                     mutedColor={C.muted}
                     borderColor={C.bdr}

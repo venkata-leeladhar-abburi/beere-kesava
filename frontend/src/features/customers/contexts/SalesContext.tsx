@@ -186,7 +186,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
                     month: "short",
                     year: "numeric",
                   }),
-                  reason: ret.reason,
+                  reason: ret.reason ?? "",
                   refundAmount: Number(ret.refundAmount ?? 0),
                   restocked: true,
                 }
@@ -312,7 +312,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
                   month: "short",
                   year: "numeric",
                 }),
-                reason: ret.reason,
+                reason: ret.reason ?? "",
                 refundAmount: Number(ret.refundAmount ?? 0),
                 restocked: true,
               }

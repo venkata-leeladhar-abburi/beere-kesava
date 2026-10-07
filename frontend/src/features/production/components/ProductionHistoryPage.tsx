@@ -111,7 +111,7 @@ function useHistoryBatches(): {
         const produced = rows.every((r) => r.qcPassed === true || r.finished === true);
         if (!produced || rows.length === 0) return;
 
-        const isWeaver = !!rows[0].weaverId;
+        const isWeaver = !!rows[0]!.weaverId;
         const groupQc = qcRecords.filter(
           (r) =>
             r.batchId === b.batchId &&
@@ -123,20 +123,20 @@ function useHistoryBatches(): {
         const makingChargesAmount = rupees(makingCharges);
         makingChargesPaise.push(makingChargesAmount);
 
-        const firstRow = rows.find((r) => r.sareeTypeName || r.designCode) ?? rows[0];
+        const firstRow = rows.find((r) => r.sareeTypeName || r.designCode) ?? rows[0]!;
         const weaverLabel =
-          isWeaver && rows[0].weaverInitials
-            ? [{ initials: rows[0].weaverInitials, bg: PIP_COLORS[0]! }]
+          isWeaver && rows[0]!.weaverInitials
+            ? [{ initials: rows[0]!.weaverInitials, bg: PIP_COLORS[0]! }]
             : isWeaver
               ? [
                   {
-                    initials: (rows[0].weaverName ?? "?").slice(0, 2).toUpperCase(),
+                    initials: (rows[0]!.weaverName ?? "?").slice(0, 2).toUpperCase(),
                     bg: PIP_COLORS[0]!,
                   },
                 ]
               : [
                   {
-                    initials: (rows[0].factoryLoomNumber ?? "FL").slice(0, 2).toUpperCase(),
+                    initials: (rows[0]!.factoryLoomNumber ?? "FL").slice(0, 2).toUpperCase(),
                     bg: PIP_COLORS[1]!,
                   },
                 ];
@@ -230,7 +230,7 @@ function BatchSquares({ size }: { size: number }) {
             width: 10,
             height: 10,
             borderRadius: 2,
-            background: colors[i % colors.length],
+            background: colors[i % colors.length]!,
             opacity: 0.85,
           }}
         />

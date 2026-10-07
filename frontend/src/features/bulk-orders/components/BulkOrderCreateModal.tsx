@@ -131,7 +131,7 @@ export function BulkOrderCreateModal({
       done: 0,
       total: parseInt(quantity, 10),
       instructions: instructions || undefined,
-      createdDate: new Date().toISOString().split("T")[0],
+      createdDate: new Date().toISOString().split("T")[0]!,
       dispatchStatus: "pending",
       paymentStatus: "pending",
       amountDue: estimatedValue ? parseInt(estimatedValue, 10) : 0,

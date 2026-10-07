@@ -38,5 +38,5 @@ export const getSareeColor = (id: string): string => {
     hash = id.charCodeAt(i) + ((hash << 5) - hash);
   }
   const index = Math.abs(hash) % colors.length;
-  return colors[index];
+  return colors[index]!;
 };

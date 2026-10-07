@@ -103,9 +103,9 @@ interface BatchTableProps {
   setSareeTypeFilter: (v: string) => void;
   orderFilter: string;
   setOrderFilter: (v: string) => void;
-  weaverOptions: (string | undefined)[];
-  orderOptions: (string | undefined)[];
-  sareeTypeOptions: (string | undefined)[];
+  weaverOptions: (string | null | undefined)[];
+  orderOptions: (string | null | undefined)[];
+  sareeTypeOptions: (string | null | undefined)[];
   completeRows: SareeRow[];
   incompleteRows: SareeRow[];
   setPicker: (p: ActivePicker) => void;

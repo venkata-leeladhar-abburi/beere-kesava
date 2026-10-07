@@ -193,7 +193,7 @@ function rnd(seed: number): number {
 function pick<T>(arr: readonly T[], seed: number): T {
   // arr is always non-empty at every call site, but noUncheckedIndexedAccess
   // can't verify that from the index expression — assert the invariant.
-  const item = arr[Math.floor(rnd(seed) * arr.length) % arr.length];
+  const item = arr[Math.floor(rnd(seed) * arr.length) % arr.length]!;
   if (item === undefined) throw new Error("pick() called with an empty array");
   return item;
 }
@@ -286,7 +286,7 @@ function buildDataset(): UnifiedSaree[] {
           weaverId: w.weaverId,
           weaverName: w.weaverName,
           weaverLoom: w.weaverLoom,
-          batchId: WEAVER_BATCHES[(wi + n) % WEAVER_BATCHES.length],
+          batchId: WEAVER_BATCHES[(wi + n) % WEAVER_BATCHES.length]!,
         })
       );
     }
@@ -304,7 +304,7 @@ function buildDataset(): UnifiedSaree[] {
           factoryLoomNumber: l.factoryLoomNumber,
           operatorName: l.operatorName,
           loomLocation: l.loomLocation,
-          batchId: LOOM_BATCHES[(li + n) % LOOM_BATCHES.length],
+          batchId: LOOM_BATCHES[(li + n) % LOOM_BATCHES.length]!,
         })
       );
     }

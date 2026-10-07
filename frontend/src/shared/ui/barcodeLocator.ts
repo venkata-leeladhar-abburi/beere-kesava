@@ -56,7 +56,7 @@ export function toGray(rgba: Uint8ClampedArray, width: number, height: number): 
   const out = new Uint8ClampedArray(width * height);
   for (let i = 0, j = 0; j < out.length; i += 4, j++) {
     // Integer Rec.601 luma.
-    out[j] = (rgba[i] * 77 + rgba[i + 1] * 150 + rgba[i + 2] * 29) >> 8;
+    out[j] = (rgba[i]! * 77 + rgba[i + 1]! * 150 + rgba[i + 2]! * 29) >> 8;
   }
   return { data: out, width, height };
 }
@@ -90,24 +90,24 @@ export function locateBarcodes(img: Gray, max = 2): BarcodeCandidate[] {
     const by = Math.floor(y / BLOCK) * bw;
     for (let x = 1; x < bw * BLOCK - 1 && x < W - 1; x++) {
       const i = row + x;
-      const gx = data[i + 1] - data[i - 1];
-      const gy = data[i + W] - data[i - W];
+      const gx = data[i + 1]! - data[i - 1]!;
+      const gy = data[i + W]! - data[i - W]!;
       const b = by + Math.floor(x / BLOCK);
-      jxx[b] += gx * gx;
-      jyy[b] += gy * gy;
-      jxy[b] += gx * gy;
+      jxx[b]! += gx * gx;
+      jyy[b]! += gy * gy;
+      jxy[b]! += gx * gy;
     }
   }
 
   let maxEnergy = 0;
   for (let b = 0; b < n; b++) {
-    const e = jxx[b] + jyy[b];
+    const e = jxx[b]! + jyy[b]!;
     if (e <= 0) continue;
-    const coh = Math.sqrt((jxx[b] - jyy[b]) ** 2 + 4 * jxy[b] ** 2) / e;
+    const coh = Math.sqrt((jxx[b]! - jyy[b]!) ** 2 + 4 * jxy[b]! ** 2) / e;
     // Gradient direction (across the bars).
-    angle[b] = (0.5 * Math.atan2(2 * jxy[b], jxx[b] - jyy[b]) * 180) / Math.PI;
+    angle[b] = (0.5 * Math.atan2(2 * jxy[b]!, jxx[b]! - jyy[b]!) * 180) / Math.PI;
     energy[b] = coh >= MIN_COHERENCE ? e * coh * coh : 0;
-    if (energy[b] > maxEnergy) maxEnergy = energy[b];
+    if (energy[b]! > maxEnergy) maxEnergy = energy[b]!;
   }
   if (maxEnergy <= 0) return [];
 
@@ -117,12 +117,12 @@ export function locateBarcodes(img: Gray, max = 2): BarcodeCandidate[] {
   const visited = new Uint8Array(n);
   const found: BarcodeCandidate[] = [];
   const order = Array.from({ length: n }, (_, b) => b)
-    .filter((b) => energy[b] > floor)
-    .sort((a, b) => energy[b] - energy[a]);
+    .filter((b) => energy[b]! > floor)
+    .sort((a, b) => energy[b]! - energy[a]!);
 
   for (const seed of order) {
     if (visited[seed]) continue;
-    const seedAngle = angle[seed];
+    const seedAngle = angle[seed]!;
     const stack = [seed];
     visited[seed] = 1;
     const members: number[] = [];
@@ -130,7 +130,7 @@ export function locateBarcodes(img: Gray, max = 2): BarcodeCandidate[] {
     while (stack.length) {
       const b = stack.pop()!;
       members.push(b);
-      sum += energy[b];
+      sum += energy[b]!;
       const bx = b % bw;
       const by = (b - bx) / bw;
       for (let dy = -1; dy <= 1; dy++) {
@@ -140,8 +140,8 @@ export function locateBarcodes(img: Gray, max = 2): BarcodeCandidate[] {
           const ny = by + dy;
           if (nx < 0 || ny < 0 || nx >= bw || ny >= bh) continue;
           const nb = ny * bw + nx;
-          if (visited[nb] || energy[nb] <= floor * 0.5) continue;
-          if (angleDiff(angle[nb], seedAngle) > MAX_ANGLE_DIFF_DEG) continue;
+          if (visited[nb] || energy[nb]! <= floor * 0.5) continue;
+          if (angleDiff(angle[nb]!, seedAngle) > MAX_ANGLE_DIFF_DEG) continue;
           visited[nb] = 1;
           stack.push(nb);
         }
@@ -154,9 +154,9 @@ export function locateBarcodes(img: Gray, max = 2): BarcodeCandidate[] {
     let c2 = 0;
     let s2 = 0;
     for (const b of members) {
-      const r = (angle[b] * Math.PI) / 90;
-      c2 += Math.cos(r) * energy[b];
-      s2 += Math.sin(r) * energy[b];
+      const r = (angle[b]! * Math.PI) / 90;
+      c2 += Math.cos(r) * energy[b]!;
+      s2 += Math.sin(r) * energy[b]!;
     }
     const theta = (Math.atan2(s2, c2) * 90) / Math.PI;
     const t = (theta * Math.PI) / 180;
@@ -218,8 +218,8 @@ export function dominantAngle(img: Gray): number {
     const row = y * W;
     for (let x = 1; x < W - 1; x++) {
       const i = row + x;
-      const gx = data[i + 1] - data[i - 1];
-      const gy = data[i + W] - data[i - W];
+      const gx = data[i + 1]! - data[i - 1]!;
+      const gy = data[i + W]! - data[i - W]!;
       const m = gx * gx + gy * gy;
       if (m < 400) continue;
       xx += gx * gx;

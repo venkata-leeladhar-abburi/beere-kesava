@@ -331,7 +331,7 @@ export function AddVendorInvoiceModal({
               Amount by Material
             </div>
             {matchedPO.materials.map((m, mi) => {
-              const mt = MAT_TAG[m.materialType] || MAT_TAG.Warp;
+              const mt = MAT_TAG[m.materialType] || MAT_TAG.Warp!;
               return (
                 <div
                   key={`${m.materialType}-${m.unit}`}

@@ -47,7 +47,7 @@ function reformat(raw: string, allowDecimal: boolean): { formatted: string; nume
   }
 
   const [intPart, decPart] = cleaned.split(".");
-  const groupedInt = groupIndian(intPart.replace(/^0+(?=\d)/, "") || "0");
+  const groupedInt = groupIndian(intPart!.replace(/^0+(?=\d)/, "") || "0");
   const formatted = decPart !== undefined ? `${groupedInt}.${decPart}` : groupedInt;
   const numeric = Number(cleaned);
   return { formatted, numeric: Number.isNaN(numeric) ? "" : numeric };
@@ -57,7 +57,7 @@ function formatForDisplay(value: number | "" | undefined, allowDecimal: boolean)
   if (value === "" || value === undefined || Number.isNaN(value)) return "";
   if (!allowDecimal) return groupIndian(String(Math.trunc(value)));
   const [intPart, decPart] = String(value).split(".");
-  const groupedInt = groupIndian(intPart.replace("-", ""));
+  const groupedInt = groupIndian(intPart!.replace("-", ""));
   return decPart !== undefined ? `${groupedInt}.${decPart}` : groupedInt;
 }
 
@@ -74,7 +74,7 @@ function isAnchorChar(c: string): boolean {
 function anchorsBefore(str: string, index: number): number {
   let n = 0;
   for (let i = 0; i < index && i < str.length; i++) {
-    if (isAnchorChar(str[i])) n++;
+    if (isAnchorChar(str[i]!)) n++;
   }
   return n;
 }
@@ -84,7 +84,7 @@ function positionAfterAnchors(str: string, n: number): number {
   if (n <= 0) return 0;
   let count = 0;
   for (let i = 0; i < str.length; i++) {
-    if (isAnchorChar(str[i])) {
+    if (isAnchorChar(str[i]!)) {
       count++;
       if (count === n) return i + 1;
     }

@@ -229,7 +229,7 @@ export const semantic = {
 
 /** Convenience: `chartColor(i)` wraps safely past the 8th series. */
 export const chartColor = (i: number): string =>
-  semantic.chart.series[i % semantic.chart.series.length];
+  semantic.chart.series[i % semantic.chart.series.length]!;
 
 /* ═══════════════════════════════════════════════════════════════════════════
    3. TYPOGRAPHY
@@ -563,7 +563,7 @@ function luminance(hex: string): number {
     const c = parseInt(h.slice(i, i + 2), 16) / 255;
     return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
   });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
 }
 
 /** WCAG 2.1 contrast ratio between two hex colours (1–21). */

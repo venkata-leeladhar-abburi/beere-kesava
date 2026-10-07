@@ -40,7 +40,7 @@ export interface WeaverCardEntry {
   status: "active" | "idle" | "qc";
   batch: string;
   design: string;
-  photo: string | undefined;
+  photo: string | null | undefined;
   thisMonth: number;
   passRate: number;
   totalEver: number;

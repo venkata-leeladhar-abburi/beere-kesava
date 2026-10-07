@@ -49,7 +49,7 @@ interface POCreateModalProps {
 }
 
 export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreateModalProps) {
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split("T")[0]!;
   const todayDisplay = new Date().toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -121,7 +121,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
     }
   }, [open, nextPONumber]);
 
-  const vendor = selectedVendorIdx >= 0 ? vendors[selectedVendorIdx] : null;
+  const vendor = selectedVendorIdx >= 0 ? vendors[selectedVendorIdx]! : null;
   const selectedFirm = firms.find((f) => f.id === selectedFirmId) ?? null;
 
   const validate = (): boolean => {
@@ -184,7 +184,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
       // and left Goods Receipt History's firm column blank.
       firmId: selectedFirmId,
       firmName: selectedFirm?.firmName,
-      deliveryDate: deliveryDate || new Date().toISOString().split("T")[0],
+      deliveryDate: deliveryDate || new Date().toISOString().split("T")[0]!,
       materials: materials.map((m) => ({
         materialType: m.materialType,
         subtype: m.subtype,

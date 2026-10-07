@@ -69,7 +69,7 @@ const Separator = () => (
 export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
   if (items.length === 0) return null;
 
-  const last = items[items.length - 1];
+  const last = items[items.length - 1]!;
   const parent = items.length > 1 ? items[items.length - 2] : undefined;
 
   // Mobile: only "‹ Parent" (falls back to nothing if there's no parent level).
@@ -98,7 +98,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
   ) : null;
 
   const collapse = items.length > 4;
-  const visible = collapse ? [items[0], ...items.slice(-2)] : items;
+  const visible = collapse ? [items[0]!, ...items.slice(-2)] : items;
   const hidden = collapse ? items.slice(1, -2) : [];
 
   return (

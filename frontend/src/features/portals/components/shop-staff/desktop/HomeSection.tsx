@@ -124,7 +124,7 @@ export function HomeSection({
   }));
 
   const latestReturn = returnsList[0];
-  const firstName = user?.name ? user.name.split(" ")[0] : "Staff";
+  const firstName = user?.name ? user.name.split(" ")[0]! : "Staff";
   const today = new Date().toLocaleDateString("en-IN", {
     weekday: "long",
     day: "2-digit",

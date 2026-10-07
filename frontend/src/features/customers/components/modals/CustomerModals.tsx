@@ -246,7 +246,7 @@ export function CustomerModals({
                     </div>
                   </div>
                 </div>
-                {modalWholesale.activeOrder && (
+                {!!modalWholesale.activeOrder && (
                   <div
                     style={{
                       background: T.luxuryBrown,

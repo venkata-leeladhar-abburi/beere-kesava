@@ -459,7 +459,7 @@ export function ReceiveRecipientPicker({
   useEffect(() => {
     if (visibleBatches.length === 0) return;
     if (!selectedBatchId || !visibleBatches.some((b) => b.id === selectedBatchId)) {
-      onPickBatch(visibleBatches[0].id);
+      onPickBatch(visibleBatches[0]!.id);
     }
   }, [visibleBatches, selectedBatchId, onPickBatch]);
 

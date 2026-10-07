@@ -86,7 +86,7 @@ export function ScanBar({
   onDetected?: (text: string) => void;
   label?: string;
   tone?: "burgundy" | "green";
-  inputRef?: React.RefObject<HTMLInputElement | null>;
+  inputRef?: React.RefObject<HTMLInputElement>;
   className?: string;
 }) {
   const [cameraOpen, setCameraOpen] = useState(false);

@@ -33,13 +33,13 @@ interface State {
  * around the router as a last-resort catch-all.
  */
 export class ErrorBoundary extends React.Component<Props, State> {
-  state: State = { error: null };
+  override state: State = { error: null };
 
   static getDerivedStateFromError(error: Error): State {
     return { error };
   }
 
-  componentDidUpdate(prevProps: Props) {
+  override componentDidUpdate(prevProps: Props) {
     if (!this.state.error || !this.props.resetKeys) return;
     const changed = this.props.resetKeys.some((key, i) => key !== prevProps.resetKeys?.[i]);
     if (changed) this.setState({ error: null });
@@ -54,7 +54,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
     window.location.href = this.props.resetTo ?? "/";
   };
 
-  render() {
+  override render() {
     if (this.state.error) {
       if (this.props.fallback) return this.props.fallback;
 

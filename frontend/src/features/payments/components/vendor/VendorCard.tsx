@@ -12,7 +12,7 @@ import { EntityCode, Money } from "@/shared/ui/domain";
 function formatDisplayDate(dateStr?: string): string {
   if (!dateStr) return "—";
   if (dateStr.includes("T")) {
-    return dateStr.split("T")[0];
+    return dateStr.split("T")[0]!;
   }
   return dateStr;
 }
@@ -333,7 +333,7 @@ export function VendorCard({
               Materials Requested
             </div>
             {matchedPO.materials.map((m, mi) => {
-              const mt = MAT_TAG_PO[m.materialType] || MAT_TAG_PO.Warp;
+              const mt = MAT_TAG_PO[m.materialType] || MAT_TAG_PO.Warp!;
               const materialKey = `${m.materialType}-${m.subtype ?? "none"}-${mi}`;
               return (
                 <div

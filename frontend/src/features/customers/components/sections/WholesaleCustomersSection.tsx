@@ -1125,7 +1125,7 @@ export function WholesaleCustomersSection({
 
         {/* Wholesale Cards View */}
         {wholesaleView === "card" && isLoading && <LoadingState variant="skeleton" rows={4} />}
-        {wholesaleView === "card" && !isLoading && loadError && (
+        {wholesaleView === "card" && !isLoading && !!loadError && (
           <ErrorState error={loadError} onRetry={refetch} />
         )}
         {wholesaleView === "card" &&

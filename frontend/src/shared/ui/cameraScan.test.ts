@@ -135,7 +135,7 @@ describe("qrRegion", () => {
 
   it("cycles through the centre crops on the odd attempts", () => {
     const crops = [1, 3, 5, 7].map((i) => qrRegion(i, 1920, 1080).w / 1920);
-    crops.forEach((c, i) => expect(c).toBeCloseTo(QR_CROPS[i % QR_CROPS.length]));
+    crops.forEach((c, i) => expect(c).toBeCloseTo(QR_CROPS[i % QR_CROPS.length]!));
     const r = qrRegion(1, 1920, 1080);
     expect(r.x + r.w / 2).toBeCloseTo(960);
     expect(r.y + r.h / 2).toBeCloseTo(540);

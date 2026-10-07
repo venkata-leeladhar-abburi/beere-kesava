@@ -38,7 +38,7 @@ const PAYMENT_STATUS_KEY: Record<string, StatusValueOf<"payment">> = {
 
 function WholesaleWeeklyTooltip({ active, payload, label }: TooltipProps<ValueType, NameType>) {
   if (!active || !payload || !payload.length) return null;
-  const d = payload[0].payload as { sarees: number; revenue: number };
+  const d = payload[0]!.payload as { sarees: number; revenue: number };
   return (
     <div
       style={{
@@ -141,7 +141,7 @@ export function WholesaleSalesReport() {
       let revenue = 0;
 
       for (const order of bulkOrders) {
-        const d = new Date(order.createdDate);
+        const d = new Date(order.createdDate ?? NaN);
         if (isNaN(d.getTime())) continue;
         const day = d.getDate();
         if (day >= w.from && day <= w.to) {
@@ -164,7 +164,7 @@ export function WholesaleSalesReport() {
     const map = new Map<string, { month: string; rev: number }>();
 
     for (const order of bulkOrders) {
-      const d = new Date(order.createdDate);
+      const d = new Date(order.createdDate ?? NaN);
       if (isNaN(d.getTime())) continue;
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       const label = d

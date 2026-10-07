@@ -153,9 +153,9 @@ const E_TABLE: Map<string, { value: number; bars: number }[]> = (() => {
   const m = new Map<string, { value: number; bars: number }[]>();
   CODE128_PATTERNS.forEach((p, value) => {
     const w = [...p].map(Number);
-    const key = `${w[0] + w[1]}${w[1] + w[2]}${w[2] + w[3]}${w[3] + w[4]}`;
+    const key = `${w[0]! + w[1]!}${w[1]! + w[2]!}${w[2]! + w[3]!}${w[3]! + w[4]!}`;
     const list = m.get(key) ?? [];
-    list.push({ value, bars: w[0] + w[2] + w[4] });
+    list.push({ value, bars: w[0]! + w[2]! + w[4]! });
     m.set(key, list);
   });
   return m;
@@ -167,12 +167,12 @@ const E_TABLE: Map<string, { value: number; bars: number }[]> = (() => {
  */
 export function classifyCharacter(widths: ArrayLike<number>, offset = 0): number {
   let total = 0;
-  for (let i = 0; i < 6; i++) total += widths[offset + i];
+  for (let i = 0; i < 6; i++) total += widths[offset + i]!;
   if (!(total > 0)) return -1;
   const unit = total / 11;
   let key = "";
   for (let i = 0; i < 4; i++) {
-    const e = (widths[offset + i] + widths[offset + i + 1]) / unit;
+    const e = (widths[offset + i]! + widths[offset + i + 1]!) / unit;
     const r = Math.round(e);
     // The reference algorithm's acceptance band: each e-measure must land
     // within its integer ±0.5, and 2..7 modules is all Code128 can contain.
@@ -181,9 +181,9 @@ export function classifyCharacter(widths: ArrayLike<number>, offset = 0): number
   }
   const candidates = E_TABLE.get(key);
   if (!candidates) return -1;
-  if (candidates.length === 1) return candidates[0].value;
-  const bars = (widths[offset] + widths[offset + 2] + widths[offset + 4]) / unit;
-  let best = candidates[0];
+  if (candidates.length === 1) return candidates[0]!.value;
+  const bars = (widths[offset]! + widths[offset + 2]! + widths[offset + 4]!) / unit;
+  let best = candidates[0]!;
   for (const c of candidates) if (Math.abs(c.bars - bars) < Math.abs(best.bars - bars)) best = c;
   return best.value;
 }
@@ -196,7 +196,7 @@ export function symbolsToText(values: number[]): string | null {
   let out = "";
   let shift = false;
   for (let i = 1; i < values.length; i++) {
-    const v = values[i];
+    const v = values[i]!;
     const cur = shift ? (set === "A" ? "B" : "A") : set;
     shift = false;
     if (cur === "C") {
@@ -249,7 +249,7 @@ export function findEdges(profile: ArrayLike<number>): { pos: number[]; falling:
   if (n < 8) return { pos, falling };
 
   const d = new Float32Array(n);
-  for (let i = 1; i < n - 1; i++) d[i] = (profile[i + 1] - profile[i - 1]) / 2;
+  for (let i = 1; i < n - 1; i++) d[i] = (profile[i + 1]! - profile[i - 1]!) / 2;
 
   // Local reference slope: the strongest |slope| within a window. The window
   // is a fixed share of the profile — the profile is a crop of one barcode,
@@ -263,30 +263,31 @@ export function findEdges(profile: ArrayLike<number>): { pos: number[]; falling:
   for (let i = 0, j = 0; i < n; i++) {
     const hi = Math.min(n - 1, i + win);
     for (; j <= hi; j++) {
-      while (dq.length > head && absD[dq[dq.length - 1]] <= absD[j]) dq.pop();
+      while (dq.length > head && absD[dq[dq.length - 1]!]! <= absD[j]!) dq.pop();
       dq.push(j);
     }
-    while (dq[head] < i - win) head++;
-    localMax[i] = absD[dq[head]];
+    while (dq[head]! < i - win) head++;
+    localMax[i] = absD[dq[head]!]!;
   }
   let globalMax = 0;
-  for (let i = 0; i < n; i++) if (absD[i] > globalMax) globalMax = absD[i];
+  for (let i = 0; i < n; i++) if (absD[i]! > globalMax) globalMax = absD[i]!;
   if (globalMax <= 0) return { pos, falling };
 
   for (let i = 2; i < n - 2; i++) {
-    const v = d[i];
-    const a = absD[i];
-    if (a < localMax[i] * 0.18 || a < globalMax * 0.06) continue;
-    const isPeak = v > 0 ? v >= d[i - 1] && v > d[i + 1] : v <= d[i - 1] && v < d[i + 1];
+    const v = d[i]!;
+    const a = absD[i]!;
+    if (a < localMax[i]! * 0.18 || a < globalMax * 0.06) continue;
+    const isPeak = v > 0 ? v >= d[i - 1]! && v > d[i + 1]! : v <= d[i - 1]! && v < d[i + 1]!;
     if (!isPeak) continue;
     // Parabolic sub-pixel refinement of the slope peak.
-    const den = d[i - 1] - 2 * v + d[i + 1];
-    const off = den !== 0 ? Math.max(-0.5, Math.min(0.5, (0.5 * (d[i - 1] - d[i + 1])) / den)) : 0;
+    const den = d[i - 1]! - 2 * v + d[i + 1]!;
+    const off =
+      den !== 0 ? Math.max(-0.5, Math.min(0.5, (0.5 * (d[i - 1]! - d[i + 1]!)) / den)) : 0;
     const isFalling = v < 0;
     const last = falling.length - 1;
     if (last >= 0 && falling[last] === isFalling) {
       // Two slopes the same way in a row: keep the stronger one.
-      if (a > strength[last]) {
+      if (a > strength[last]!) {
         pos[last] = i + off;
         strength[last] = a;
       }
@@ -310,20 +311,20 @@ export function findEdges(profile: ArrayLike<number>): { pos: number[]; falling:
 function dropPhantoms(pos: number[], falling: boolean[]): { pos: number[]; falling: boolean[] } {
   if (pos.length < 12) return { pos, falling };
   const widths: number[] = [];
-  for (let k = 0; k + 1 < pos.length; k++) widths.push(pos[k + 1] - pos[k]);
+  for (let k = 0; k + 1 < pos.length; k++) widths.push(pos[k + 1]! - pos[k]!);
   const sorted = [...widths].sort((a, b) => a - b);
-  const module = sorted[Math.floor(sorted.length * 0.2)];
+  const module = sorted[Math.floor(sorted.length * 0.2)]!;
   const min = module * 0.4;
   const outPos: number[] = [];
   const outFalling: boolean[] = [];
   for (let k = 0; k < pos.length; k++) {
-    const w = k + 1 < pos.length ? pos[k + 1] - pos[k] : Infinity;
+    const w = k + 1 < pos.length ? pos[k + 1]! - pos[k]! : Infinity;
     if (w < min && k > 0 && k + 1 < pos.length - 1) {
       k++; // skip this edge and the next: the thin element vanishes
       continue;
     }
-    outPos.push(pos[k]);
-    outFalling.push(falling[k]);
+    outPos.push(pos[k]!);
+    outFalling.push(falling[k]!);
   }
   return { pos: outPos, falling: outFalling };
 }
@@ -336,7 +337,7 @@ function dropPhantoms(pos: number[], falling: boolean[]): { pos: number[]; falli
 function decodeEdges(rawPos: number[], rawFalling: boolean[]): string | null {
   const { pos, falling } = dropPhantoms(rawPos, rawFalling);
   const widths: number[] = [];
-  for (let k = 0; k + 1 < pos.length; k++) widths.push(pos[k + 1] - pos[k]);
+  for (let k = 0; k + 1 < pos.length; k++) widths.push(pos[k + 1]! - pos[k]!);
 
   for (let s = 0; s + 6 * 3 + 7 <= widths.length + 1; s++) {
     if (!falling[s]) continue; // a symbol starts with a bar
@@ -345,7 +346,7 @@ function decodeEdges(rawPos: number[], rawFalling: boolean[]): string | null {
     const charWidth = widths.slice(s, s + 6).reduce((a, b) => a + b, 0);
     // Quiet zone: at least ~5 modules of space before the start character
     // (the spec says 10; a tight crop or blur eats into it).
-    const before = s > 0 ? widths[s - 1] : pos[s];
+    const before = s > 0 ? widths[s - 1]! : pos[s]!;
     if (before < (charWidth / 11) * 5) continue;
 
     const values = [start];
@@ -371,8 +372,8 @@ function decodeEdges(rawPos: number[], rawFalling: boolean[]): string | null {
     if (!ok || values.length < 3) continue;
 
     const check = values.pop()!;
-    let sum = values[0];
-    for (let k = 1; k < values.length; k++) sum += values[k] * k;
+    let sum = values[0]!;
+    for (let k = 1; k < values.length; k++) sum += values[k]! * k;
     if (sum % 103 !== check) continue;
     const text = symbolsToText(values);
     if (text) return text;
@@ -387,12 +388,12 @@ function gaussianBlur(p: ArrayLike<number>, sigma: number): Float32Array {
   let ks = 0;
   for (let i = -r; i <= r; i++) {
     k[i + r] = Math.exp(-(i * i) / (2 * sigma * sigma));
-    ks += k[i + r];
+    ks += k[i + r]!;
   }
   const out = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     let acc = 0;
-    for (let j = -r; j <= r; j++) acc += p[Math.min(n - 1, Math.max(0, i + j))] * k[j + r];
+    for (let j = -r; j <= r; j++) acc += p[Math.min(n - 1, Math.max(0, i + j))]! * k[j + r]!;
     out[i] = acc / ks;
   }
   return out;
@@ -411,7 +412,7 @@ function deconvolve(p: ArrayLike<number>, sigma: number, iterations: number): Fl
   const f = Float32Array.from(observed);
   for (let it = 0; it < iterations; it++) {
     const g = gaussianBlur(f, sigma);
-    for (let i = 0; i < f.length; i++) f[i] += observed[i] - g[i];
+    for (let i = 0; i < f.length; i++) f[i]! += observed[i]! - g[i]!;
   }
   return f;
 }
@@ -453,10 +454,10 @@ function averageRows(data: ArrayLike<number>, W: number, y0: number, y1: number)
   const profile = new Float32Array(W);
   for (let y = y0; y < y1; y++) {
     const row = y * W;
-    for (let x = 0; x < W; x++) profile[x] += data[row + x];
+    for (let x = 0; x < W; x++) profile[x]! += data[row + x]!;
   }
   const inv = 1 / Math.max(1, y1 - y0);
-  for (let x = 0; x < W; x++) profile[x] *= inv;
+  for (let x = 0; x < W; x++) profile[x]! *= inv;
   return profile;
 }
 
@@ -473,11 +474,11 @@ function barRows(data: ArrayLike<number>, W: number, H: number): [number, number
   const std = new Float32Array(H);
   for (let y = 0; y < H; y++) {
     let m = 0;
-    for (let x = 0; x < W; x++) m += data[y * W + x];
+    for (let x = 0; x < W; x++) m += data[y * W + x]!;
     m /= W;
     let v = 0;
     for (let x = 0; x < W; x++) {
-      const q = data[y * W + x] - m;
+      const q = data[y * W + x]! - m;
       v += q * q;
     }
     mean[y] = m;
@@ -486,14 +487,14 @@ function barRows(data: ArrayLike<number>, W: number, H: number): [number, number
   const vdiff = new Float32Array(H);
   for (let y = 0; y + 2 < H; y++) {
     let d = 0;
-    for (let x = 0; x < W; x++) d += Math.abs(data[y * W + x] - data[(y + 2) * W + x]);
+    for (let x = 0; x < W; x++) d += Math.abs(data[y * W + x]! - data[(y + 2) * W + x]!);
     vdiff[y] = d / W;
   }
   let seed = -1;
   let best = 0;
   for (let y = 2; y + 4 < H; y++) {
     let sc = 0;
-    for (let k = -2; k <= 2; k++) sc += std[y + k] - vdiff[y + k];
+    for (let k = -2; k <= 2; k++) sc += std[y + k]! - vdiff[y + k]!;
     if (sc > best) {
       best = sc;
       seed = y;
@@ -502,14 +503,14 @@ function barRows(data: ArrayLike<number>, W: number, H: number): [number, number
   if (seed < 0) return null;
   const ref = averageRows(data, W, Math.max(0, seed - 2), Math.min(H, seed + 3));
   let rm = 0;
-  for (let x = 0; x < W; x++) rm += ref[x];
+  for (let x = 0; x < W; x++) rm += ref[x]!;
   rm /= W;
   let rv = 0;
-  for (let x = 0; x < W; x++) rv += (ref[x] - rm) ** 2;
+  for (let x = 0; x < W; x++) rv += (ref[x]! - rm) ** 2;
   const corr = (y: number) => {
     let c = 0;
-    for (let x = 0; x < W; x++) c += (data[y * W + x] - mean[y]) * (ref[x] - rm);
-    const den = Math.sqrt(rv) * std[y] * Math.sqrt(W);
+    for (let x = 0; x < W; x++) c += (data[y * W + x]! - mean[y]!) * (ref[x]! - rm);
+    const den = Math.sqrt(rv) * std[y]! * Math.sqrt(W);
     return den > 0 ? c / den : 0;
   };
   let y0 = seed;
@@ -554,7 +555,7 @@ export function decodeStraightCrop(
     [0.55, 0.7],
     [0.2, 0.8],
   ]) {
-    bands.push([Math.floor(H * a), Math.ceil(H * b)]);
+    bands.push([Math.floor(H * a!), Math.ceil(H * b!)]);
   }
   // Plain reads of every band first (cheap); the deblurring passes, which
   // cost ~20x more, only on the best few bands — this runs many times a

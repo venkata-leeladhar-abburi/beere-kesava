@@ -16,7 +16,7 @@ export function rowToDispatchSaree(r: WeaverSareeRow): FinishingReturn {
     assignmentId: "DIRECT-DISPATCH",
     sareeId: r.sareeId,
     designCode: r.designCode || "",
-    sareeTypeCode: r.sareeTypeCode,
+    sareeTypeCode: r.sareeTypeCode ?? undefined,
     sareeType: r.sareeTypeName || r.sareeTypeCode || "—",
     weaverName: r.ownerLabel || "—",
     condition: "perfect",

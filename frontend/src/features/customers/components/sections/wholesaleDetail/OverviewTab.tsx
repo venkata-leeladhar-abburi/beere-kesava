@@ -118,7 +118,7 @@ export function OverviewTab({
       header: "Payment",
       accessor: (o) => o.paymentStatus,
       cell: (_v, o) => {
-        const pay = PAY_STATUS_META[o.paymentStatus ?? "pending"];
+        const pay = PAY_STATUS_META[o.paymentStatus ?? "pending"]!;
         return (
           <span
             style={{
@@ -190,7 +190,7 @@ export function OverviewTab({
           <div className="space-y-4">
             {custActiveOrders.map((o) => {
               const pct = o.total ? Math.round((o.done / o.total) * 100) : 0;
-              const meta = ORDER_STATUS_META[o.status] ?? ORDER_STATUS_META["on-track"];
+              const meta = ORDER_STATUS_META[o.status] ?? ORDER_STATUS_META["on-track"]!;
               return (
                 <div
                   key={o.ref}
@@ -297,7 +297,7 @@ export function OverviewTab({
                 <div className="grid grid-cols-1 gap-3.5">
                   {custOrders.slice(0, 4).map((o) => {
                     const money = custOrderMoney.get(o.ref);
-                    const pay = PAY_STATUS_META[o.paymentStatus ?? "pending"];
+                    const pay = PAY_STATUS_META[o.paymentStatus ?? "pending"]!;
                     return (
                       <div
                         key={o.ref}

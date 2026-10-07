@@ -255,7 +255,7 @@ export function WeaversPage({
 
             const getBatchNum = (id: string) => {
               const match = id.match(/BATCH-(\d+)/);
-              return match ? parseInt(match[1], 10) : 0;
+              return match ? parseInt(match[1]!, 10) : 0;
             };
             const sorted = [...weaverCompletedBatches].sort(
               (a, b) => getBatchNum(b.batchId) - getBatchNum(a.batchId)

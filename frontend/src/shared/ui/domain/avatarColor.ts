@@ -27,5 +27,5 @@ export function hashName(name: string): number {
 /** Deterministic colour for a given name — the same name always resolves to
  *  the same colour, spread evenly across the 8-colour set. */
 export function avatarColorFor(name: string): string {
-  return AVATAR_COLORS[hashName(name) % AVATAR_COLORS.length];
+  return AVATAR_COLORS[hashName(name) % AVATAR_COLORS.length]!;
 }

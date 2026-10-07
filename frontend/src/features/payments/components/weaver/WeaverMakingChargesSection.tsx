@@ -88,7 +88,7 @@ function toWeaverRecord(
     code: w.code,
     name: w.name,
     initials: w.initials,
-    bg: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
+    bg: AVATAR_PALETTE[index % AVATAR_PALETTE.length]!,
     village: w.village || "—",
     sb: 0,
     hz: 0,

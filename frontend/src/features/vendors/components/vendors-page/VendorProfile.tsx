@@ -154,8 +154,8 @@ export function VendorProfile({
       return {
         id: b.id.slice(0, 8).toUpperCase(),
         invoiceNo: b.poId ? `PO ${b.poId.slice(0, 8).toUpperCase()}` : b.description || "—",
-        date: b.createdAt ? b.createdAt.split("T")[0] : "",
-        dueDate: b.dueDate ? b.dueDate.split("T")[0] : "—",
+        date: b.createdAt ? b.createdAt.split("T")[0]! : "",
+        dueDate: b.dueDate ? b.dueDate.split("T")[0]! : "—",
         amount,
         paid,
         balance,
@@ -167,7 +167,7 @@ export function VendorProfile({
     const txns: VendorPaymentTxn[] = rawPayments.map((p) => ({
       id: p.id.slice(0, 8).toUpperCase(),
       billId: p.billId ? p.billId.slice(0, 8).toUpperCase() : "General",
-      date: p.date ? p.date.split("T")[0] : "",
+      date: p.date ? p.date.split("T")[0]! : "",
       amount: Number(p.amount),
       mode: p.method || "—",
       reference: p.utr || "—",
@@ -198,7 +198,7 @@ export function VendorProfile({
         const grnId = p.grnReceipt?.id ?? p.grnId ?? undefined;
         return {
           id: p.poNumber || `PO-${p.id.slice(0, 8).toUpperCase()}`,
-          date: p.createdAt ? p.createdAt.split("T")[0] : "",
+          date: p.createdAt ? p.createdAt.split("T")[0]! : "",
           materials: poItems.map((item, i) => ({
             type:
               item.materialType === "WARP"
@@ -222,7 +222,7 @@ export function VendorProfile({
             ? (p.grnReceipt?.firm?.firmName ?? p.firm?.firmName ?? undefined)
             : undefined,
           receivedDate: p.grnReceipt?.receivedDate
-            ? p.grnReceipt.receivedDate.split("T")[0]
+            ? p.grnReceipt.receivedDate.split("T")[0]!
             : undefined,
           status: (p.status === "RECEIVED"
             ? "Delivered"
@@ -237,7 +237,7 @@ export function VendorProfile({
     [vendorPos]
   );
 
-  const lastOrderDate = orders.length ? orders[0].date : null;
+  const lastOrderDate = orders.length ? orders[0]!.date : null;
   const overdueBills = ledger.bills.filter((b) => b.status === "Overdue" || b.daysOverdue > 0);
   const moneyVisible = useMoneyVisible();
   // Rejected orders never actually cost anything — exclude them from spend,
@@ -721,7 +721,9 @@ export function VendorProfile({
                     {
                       label: "Total Orders",
                       value: orders.length,
-                      sub: lastOrderDate ? `Last order ${lastOrderDate.split("T")[0]}` : "All time",
+                      sub: lastOrderDate
+                        ? `Last order ${lastOrderDate.split("T")[0]!}`
+                        : "All time",
                       color: T.luxuryBrown,
                     },
                     {

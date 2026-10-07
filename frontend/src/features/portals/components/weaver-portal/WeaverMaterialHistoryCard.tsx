@@ -52,7 +52,7 @@ export const SignatureCanvas = forwardRef<
   const getPos = (e: React.MouseEvent | React.TouchEvent) => {
     const rect = canvasRef.current!.getBoundingClientRect();
     if ("touches" in e) {
-      return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+      return { x: e.touches[0]!.clientX - rect.left, y: e.touches[0]!.clientY - rect.top };
     }
     return {
       x: (e as React.MouseEvent).clientX - rect.left,

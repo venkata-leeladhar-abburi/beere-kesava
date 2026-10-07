@@ -23,6 +23,7 @@ import { Supplier } from "../../../contexts/SupplierContext";
 import { PerSupplierEntry } from "./TopSuppliersCard";
 import { ChartFigure } from "../../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { rowFormatter } from "@/shared/ui/data/rowFormatter";
 
 function CardBloom() {
   return (
@@ -170,10 +171,12 @@ export function RatingCard({
             <RechartsTooltip
               cursor={{ fill: "rgba(200,155,71,0.06)" }}
               contentStyle={tip}
-              formatter={(v: number, _n: string, p: { payload: (typeof data)[number] }) => [
-                `${v} suppliers`,
-                p.payload.rating,
-              ]}
+              formatter={rowFormatter(
+                (v: number, _n: string, p: { payload: (typeof data)[number] }) => [
+                  `${v} suppliers`,
+                  p.payload.rating,
+                ]
+              )}
             />
             <Bar
               dataKey="count"
@@ -271,10 +274,12 @@ export function PaymentModeCard({
                 </Pie>
                 <RechartsTooltip
                   contentStyle={tip}
-                  formatter={(v: number, _n: string, p: { payload: (typeof byMode)[number] }) => [
-                    formatMoney(rupees(v)),
-                    p.payload.mode,
-                  ]}
+                  formatter={rowFormatter(
+                    (v: number, _n: string, p: { payload: (typeof byMode)[number] }) => [
+                      formatMoney(rupees(v)),
+                      p.payload.mode,
+                    ]
+                  )}
                 />
               </PieChart>
             </ResponsiveContainer>

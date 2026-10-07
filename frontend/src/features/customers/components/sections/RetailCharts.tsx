@@ -193,7 +193,7 @@ export function RetailChartsRow1() {
         const name = cust?.name ?? "Walk-in Customer";
         if (!spends[sale.customerId])
           spends[sale.customerId] = { customerId: sale.customerId, name, spend: 0 };
-        spends[sale.customerId].spend += Number(sale.amount);
+        spends[sale.customerId]!.spend += Number(sale.amount);
       }
     }
     return Object.values(spends)
@@ -231,7 +231,7 @@ export function RetailChartsRow1() {
     return entries.map(([name, value], i) => ({
       name,
       value,
-      fill: colors[i % colors.length],
+      fill: colors[i % colors.length]!,
     }));
   }, [retailSales, sareeInfoMap]);
 
@@ -661,7 +661,7 @@ export function RetailChartsRow2() {
         const name = cust?.name ?? "Walk-in Customer";
         if (!counts[sale.customerId])
           counts[sale.customerId] = { customerId: sale.customerId, name, count: 0 };
-        counts[sale.customerId].count += 1;
+        counts[sale.customerId]!.count += 1;
       }
     }
 
@@ -686,7 +686,7 @@ export function RetailChartsRow2() {
         const d = new Date(sale.saleDate);
         if (
           !lastSaleByCust[sale.customerId] ||
-          d.getTime() > lastSaleByCust[sale.customerId].date.getTime()
+          d.getTime() > lastSaleByCust[sale.customerId]!.date.getTime()
         ) {
           lastSaleByCust[sale.customerId] = {
             customerId: sale.customerId,

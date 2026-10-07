@@ -425,7 +425,7 @@ export function WorkerGRN({
                 key={m.id ?? `${m.materialType}-${i}`}
                 material={m}
                 index={i}
-                comparison={comparisons[i]}
+                comparison={comparisons[i]!}
                 receivedQty={receivedQty[i] ?? ""}
                 setReceivedQty={setReceivedQty}
                 receivedUnit={receivedUnit[i] || (m.materialType === "Jari" ? "Buns" : "kg")}

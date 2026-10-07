@@ -132,28 +132,28 @@ export function ProductionAnalyticsSection() {
         label: "Weaving in Progress",
         note: "On the loom",
         count: weaving,
-        color: CHART.ramp[0],
+        color: CHART.ramp[0]!,
         widthPct: Math.round((weaving / max) * 100),
       },
       {
         label: "Submitted — Waiting QC",
         note: "Handed in, not yet checked",
         count: submitted,
-        color: CHART.ramp[1],
+        color: CHART.ramp[1]!,
         widthPct: Math.round((submitted / max) * 100),
       },
       {
         label: "Quality Check Passed",
         note: "Cleared inspection",
         count: qcPassed,
-        color: CHART.ramp[2],
+        color: CHART.ramp[2]!,
         widthPct: Math.round((qcPassed / max) * 100),
       },
       {
         label: "In Stock — Ready for Sale",
         note: "Available to sell",
         count: inStock,
-        color: CHART.ramp[3],
+        color: CHART.ramp[3]!,
         widthPct: Math.round((inStock / max) * 100),
       },
     ];
@@ -519,7 +519,7 @@ export function ProductionAnalyticsSection() {
                     <StatFooter
                       stats={[
                         { num: <CountUp value={totalActiveBatches} />, label: "Active Batches" },
-                        { num: <CountUp value={STAGE_FUNNEL[3].count} />, label: "Ready to Sell" },
+                        { num: <CountUp value={STAGE_FUNNEL[3]!.count} />, label: "Ready to Sell" },
                       ]}
                     />
                   </div>

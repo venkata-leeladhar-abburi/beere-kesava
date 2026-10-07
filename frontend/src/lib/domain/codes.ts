@@ -431,7 +431,7 @@ export function parseCode(type: EntityCodeType, code: string): ParsedCode {
   // scopes on the financial year instead.
   const m = new RegExp(`^(.+)-(${SERIAL})$`).exec(rest);
   if (!m) return { type, serial: NaN, valid: false };
-  const parent = m[1];
+  const parent = m[1]!;
   if (spec.parentIsFinancialYear) {
     return { type, segment: parent, serial: Number(m[2]), valid: /^\d{4}$/.test(parent) };
   }
@@ -467,7 +467,7 @@ export function parseAnyCode(code: string): ParsedCode | null {
     const parsed = parseCode(type, value);
     if (parsed.valid) return parsed;
   }
-  return matches.length ? parseCode(matches[0], value) : null;
+  return matches.length ? parseCode(matches[0]!, value) : null;
 }
 
 /** `isValidCode('supplier', 'SUP-7141A9E5')` → `false` — supplier codes are

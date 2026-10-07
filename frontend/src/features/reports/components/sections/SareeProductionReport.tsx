@@ -95,26 +95,28 @@ export function ExternalPurchasesSection() {
     {
       id: "vendor",
       header: "Vendor / Supplier",
-      accessor: (r) => r.supplier.name,
-      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.supplier.name}</span>,
+      accessor: (r) => r.supplier?.name ?? "—",
+      cell: (_v, r) => (
+        <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.supplier?.name ?? "—"}</span>
+      ),
     },
     {
       id: "location",
       header: "Location",
-      accessor: (r) => [r.supplier.city, r.supplier.state].filter(Boolean).join(", "),
+      accessor: (r) => [r.supplier?.city, r.supplier?.state].filter(Boolean).join(", "),
       cell: (_v, r) => (
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-          {[r.supplier.city, r.supplier.state].filter(Boolean).join(", ") || "—"}
+          {[r.supplier?.city, r.supplier?.state].filter(Boolean).join(", ") || "—"}
         </span>
       ),
     },
     {
       id: "gst",
       header: "GST Number",
-      accessor: (r) => r.gstNumber || r.supplier.gstCode,
+      accessor: (r) => r.gstNumber || r.supplier?.gstCode,
       cell: (_v, r) => (
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
-          {r.gstNumber || r.supplier.gstCode || "—"}
+          {r.gstNumber || r.supplier?.gstCode || "—"}
         </span>
       ),
     },
@@ -632,7 +634,7 @@ export function SareeProductionReport() {
     [scopedQc]
   );
   const totalQc = qcDonutData.reduce((s, d) => s + d.value, 0);
-  const passRatePct = totalQc > 0 ? Math.round((qcDonutData[0].value / totalQc) * 100) : 0;
+  const passRatePct = totalQc > 0 ? Math.round((qcDonutData[0]!.value / totalQc) * 100) : 0;
   const dispatchedCount = production?.finishingByStatus?.["DISPATCHED"] ?? 0;
   // Counted from the batches in scope. `production.totalSareesProduced` is an
   // all-time backend figure and would ignore both the period and the source
@@ -1129,17 +1131,17 @@ export function SareeProductionReport() {
           <SilkSumCard
             icon={<CheckCircle2 size={22} color={T.antiqueGold} />}
             label="Passed Quality Check"
-            value={`${qcDonutData[0].value}`}
+            value={`${qcDonutData[0]!.value}`}
             sub={totalQc > 0 ? `${passRatePct}% pass rate` : "No QC records yet"}
             gid="spr-q"
           />
           <SilkSumCard
             icon={<AlertTriangle size={22} color={T.antiqueGold} />}
             label="Rejected at Quality Check"
-            value={`${qcDonutData[2].value}`}
+            value={`${qcDonutData[2]!.value}`}
             sub={
               totalQc > 0
-                ? `${Math.round((qcDonutData[2].value / totalQc) * 100)}% rejection rate`
+                ? `${Math.round((qcDonutData[2]!.value / totalQc) * 100)}% rejection rate`
                 : "No QC records yet"
             }
             gid="spr-r"

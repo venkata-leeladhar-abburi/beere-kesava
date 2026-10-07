@@ -47,7 +47,7 @@ export function ContextBatchCard({
 }) {
   const { getDesign } = useDesignLibrary();
   const firstRow = b.rows[0];
-  const designObj = firstRow ? getDesign(firstRow.designCode) : undefined;
+  const designObj = firstRow?.designCode ? getDesign(firstRow.designCode) : undefined;
   const designImage = designObj?.colorSlipPhoto || designObj?.designGraph || imgSaree;
 
   const completeCount = b.rows.filter(rowComplete).length;

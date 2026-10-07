@@ -806,7 +806,9 @@ export function FirmDetailPage({
                   {firm.createdAt && (
                     <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm text-white/70">
                       Added{" "}
-                      {firm.createdAt.includes("T") ? firm.createdAt.split("T")[0] : firm.createdAt}
+                      {firm.createdAt.includes("T")
+                        ? firm.createdAt.split("T")[0]!
+                        : firm.createdAt}
                     </div>
                   )}
                 </div>

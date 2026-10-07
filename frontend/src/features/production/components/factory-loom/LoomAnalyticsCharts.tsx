@@ -21,6 +21,7 @@ import {
 import { FactoryLoom } from "../../data/factoryLooms";
 import { T, F } from "./theme";
 import { ChartFigure } from "../../../../shared/ui/data";
+import { rowFormatter } from "@/shared/ui/data/rowFormatter";
 
 function CardBloom() {
   return (
@@ -316,10 +317,12 @@ export function LoomThroughputAndAvailability({
                 </Pie>
                 <RechartsTooltip
                   contentStyle={tip}
-                  formatter={(v: number | string, _n: string, p: { payload: UtilisationDatum }) => [
-                    `${v} looms`,
-                    p.payload.name,
-                  ]}
+                  formatter={rowFormatter(
+                    (v: number | string, _n: string, p: { payload: UtilisationDatum }) => [
+                      `${v} looms`,
+                      p.payload.name,
+                    ]
+                  )}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -484,11 +487,13 @@ export function LoomMaterialDesignRow({
                   <RechartsTooltip
                     cursor={{ fill: "rgba(200,155,71,0.06)" }}
                     contentStyle={tip}
-                    formatter={(
-                      v: number | string,
-                      _n: string,
-                      p: { payload: MaterialConsumptionDatum }
-                    ) => [`${v} ${p.payload.unit}`, p.payload.type]}
+                    formatter={rowFormatter(
+                      (
+                        v: number | string,
+                        _n: string,
+                        p: { payload: MaterialConsumptionDatum }
+                      ) => [`${v} ${p.payload.unit}`, p.payload.type]
+                    )}
                   />
                   <Bar dataKey="qty" radius={[10, 10, 10, 10]}>
                     {byMaterial.map((d) => (
@@ -598,10 +603,12 @@ export function LoomMaterialDesignRow({
               <RechartsTooltip
                 cursor={{ fill: "rgba(200,155,71,0.06)" }}
                 contentStyle={tip}
-                formatter={(v: number | string, _n: string, p: { payload: DesignOutputDatum }) => [
-                  `${v} sarees`,
-                  p.payload.type,
-                ]}
+                formatter={rowFormatter(
+                  (v: number | string, _n: string, p: { payload: DesignOutputDatum }) => [
+                    `${v} sarees`,
+                    p.payload.type,
+                  ]
+                )}
               />
               <Bar dataKey="produced" radius={[10, 10, 10, 10]}>
                 {byDesign.map((d) => (

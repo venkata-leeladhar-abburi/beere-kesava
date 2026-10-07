@@ -111,8 +111,8 @@ function toDisplayWeaver(
     photo: resolveAssetUrl(w.photoUrl),
     initials: w.initials,
     looms: w.looms,
-    avatarBg: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
-    accentColor: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
+    avatarBg: AVATAR_PALETTE[index % AVATAR_PALETTE.length]!,
+    accentColor: AVATAR_PALETTE[index % AVATAR_PALETTE.length]!,
     status: weaverStatusFromStats(stats),
     // No monthly breakdown from the backend yet — only an all-time total.
     thisMonth: 0,

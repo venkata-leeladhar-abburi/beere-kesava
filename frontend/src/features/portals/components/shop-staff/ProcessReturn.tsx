@@ -141,10 +141,10 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
         );
         return prev;
       }
-      if (prev.length > 0 && customerKeyOf(prev[0]) !== customerKeyOf(sale)) {
+      if (prev.length > 0 && customerKeyOf(prev[0]!) !== customerKeyOf(sale)) {
         setFindError(
           `${sareeId} was sold to ${sale.customer?.name ?? "another customer"}, not ` +
-            `${prev[0].customer?.name ?? "this customer"}. One return covers one customer — ` +
+            `${prev[0]!.customer?.name ?? "this customer"}. One return covers one customer — ` +
             `finish this one first, then start another.`
         );
         return prev;
@@ -625,17 +625,17 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
                             marginBottom: 3,
                           }}
                         >
-                          {(returnsRes?.items ?? [])[0].sareeId}
+                          {(returnsRes?.items ?? [])[0]!.sareeId}
                         </div>
                         <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>
                           Return Record
-                          {canSeePrices && (returnsRes?.items ?? [])[0].refundAmount
-                            ? ` · ${formatMoney(rupees(Number((returnsRes?.items ?? [])[0].refundAmount)))}`
+                          {canSeePrices && (returnsRes?.items ?? [])[0]!.refundAmount
+                            ? ` · ${formatMoney(rupees(Number((returnsRes?.items ?? [])[0]!.refundAmount)))}`
                             : ""}
                         </div>
                         <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
-                          {(returnsRes?.items ?? [])[0].reason} ·{" "}
-                          {new Date((returnsRes?.items ?? [])[0].returnDate).toLocaleDateString(
+                          {(returnsRes?.items ?? [])[0]!.reason} ·{" "}
+                          {new Date((returnsRes?.items ?? [])[0]!.returnDate).toLocaleDateString(
                             "en-IN",
                             { month: "short", day: "numeric" }
                           )}
@@ -652,7 +652,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
                         paddingTop: 12,
                       }}
                     >
-                      Return Reference: {(returnsRes?.items ?? [])[0].returnRef}
+                      Return Reference: {(returnsRes?.items ?? [])[0]!.returnRef}
                     </div>
                   </>
                 ) : (
@@ -768,7 +768,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
             const label = returnReasons.find((r) => r.id === reason)?.label ?? "Other";
             const fullReason =
               reason === "other" && otherReason.trim() ? `${label} — ${otherReason.trim()}` : label;
-            const customerName = selectedSales[0].customer?.name ?? "Walk-in Customer";
+            const customerName = selectedSales[0]!.customer?.name ?? "Walk-in Customer";
             setRetailSubmitting(true);
             setRetailError(null);
             // One ReturnRecord per saree, written one after another: each call

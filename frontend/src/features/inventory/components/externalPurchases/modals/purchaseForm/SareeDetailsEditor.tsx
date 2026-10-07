@@ -121,7 +121,7 @@ export function SareeDetailsEditor({
             key={s._uid}
             s={s}
             idx={idx}
-            code={lineCodes[idx]}
+            code={lineCodes[idx]!}
             updateSareeRow={updateSareeRow}
             removeSareeRow={removeSareeRow}
           />

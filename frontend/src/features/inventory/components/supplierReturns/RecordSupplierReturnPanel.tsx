@@ -185,7 +185,7 @@ export function RecordSupplierReturnPanel({
       setResults(null);
       setLastQuery("");
       if (failed.length === 0) setReason("");
-      onNoteRaised(raised[0]);
+      onNoteRaised(raised[0]!);
     }
     if (failed.length) setRaiseError(failed.join("\n"));
   };

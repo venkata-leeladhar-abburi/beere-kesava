@@ -145,7 +145,7 @@ function findNavGroup(pageKey: string): NavGroup {
   const direct = NAV_GROUPS.find((g) => g.pages.some((p) => p.key === pageKey));
   if (direct) return direct;
   const fallback = NAV_GROUP_FALLBACK[pageKey];
-  return NAV_GROUPS.find((g) => g.key === fallback) ?? NAV_GROUPS[0];
+  return NAV_GROUPS.find((g) => g.key === fallback) ?? NAV_GROUPS[0]!;
 }
 
 const GLOBAL_STYLE = `

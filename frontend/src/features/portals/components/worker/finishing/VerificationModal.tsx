@@ -158,7 +158,7 @@ export function VerificationModal({
 
   const applyPhoto = (target: "bulk" | string, url: string | undefined) => {
     if (target === "bulk") setBulkDamagePhotoUrl(url);
-    else setPerSaree((prev) => ({ ...prev, [target]: { ...prev[target], damagePhotoUrl: url } }));
+    else setPerSaree((prev) => ({ ...prev, [target]: { ...prev[target]!, damagePhotoUrl: url } }));
   };
 
   const openCamera = (target: "bulk" | string) => {
@@ -451,9 +451,9 @@ export function VerificationModal({
             /* Per-saree mode */
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {assignments.map((a) => {
-                const d = perSaree[a.id];
+                const d = perSaree[a.id]!;
                 const update = (patch: Partial<VerifData>) =>
-                  setPerSaree((prev) => ({ ...prev, [a.id]: { ...prev[a.id], ...patch } }));
+                  setPerSaree((prev) => ({ ...prev, [a.id]: { ...prev[a.id]!, ...patch } }));
                 return (
                   <div
                     key={a.id}

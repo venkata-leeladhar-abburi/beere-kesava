@@ -40,7 +40,7 @@ export function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
 
       if (current >= reorder) return null;
 
-      const unit = type === "JARI" ? "Reels" : items[0].unit || "KG";
+      const unit = type === "JARI" ? "Reels" : items[0]!.unit || "KG";
       const pct = Math.min(100, Math.round((current / Math.max(1, reorder)) * 100));
       const displayName = type.charAt(0) + type.slice(1).toLowerCase() + " (Total)";
 

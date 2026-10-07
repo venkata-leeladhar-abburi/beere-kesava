@@ -75,7 +75,7 @@ export function PurchaseOrderHistoryTable({ orders }: { orders: PurchaseOrderHis
       cell: (_v, o) => (
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {materialRows(o.materials).map(({ m, key, isLast }) => {
-            const mt = MAT_TAG_PO[m.type] || MAT_TAG_PO.Warp;
+            const mt = MAT_TAG_PO[m.type] || MAT_TAG_PO.Warp!;
             return (
               <div
                 key={key}

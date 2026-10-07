@@ -195,7 +195,7 @@ export function SATopNav({
                     which could reopen/reclose the menu unpredictably
                     (same bug fixed in the admin dashboard's TopNav.tsx). */}
                 <Button
-                  onClick={hasDropdown ? undefined : () => set(g.pages[0].key)}
+                  onClick={hasDropdown ? undefined : () => set(g.pages[0]!.key)}
                   variant="tertiary"
                   aria-current={isActive ? "page" : undefined}
                   aria-haspopup={hasDropdown ? "menu" : undefined}

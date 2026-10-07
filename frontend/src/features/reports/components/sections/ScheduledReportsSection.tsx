@@ -128,8 +128,8 @@ function isValidPhone(value: string): boolean {
 function formatClock(hhmm: string): string {
   const [h, m] = hhmm.split(":").map(Number);
   if (!Number.isFinite(h) || !Number.isFinite(m)) return hhmm;
-  const suffix = h < 12 ? "AM" : "PM";
-  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  const suffix = h! < 12 ? "AM" : "PM";
+  const hour12 = h! % 12 === 0 ? 12 : h! % 12;
   return `${String(hour12).padStart(2, "0")}:${String(m).padStart(2, "0")} ${suffix}`;
 }
 
@@ -137,7 +137,7 @@ const SCHEDULES_KEY = ["reports-schedules-list"] as const;
 
 export function ScheduledReportsSection() {
   const [showForm, setShowForm] = useState(false);
-  const [reportType, setReportType] = useState(REPORT_TYPES[0]);
+  const [reportType, setReportType] = useState(REPORT_TYPES[0]!);
   const [frequency, setFrequency] = useState<ReportFrequency>("DAILY");
   const [deliveryTime, setDeliveryTime] = useState("09:00");
   const [recipientPhone, setRecipientPhone] = useState("");
@@ -348,7 +348,7 @@ export function ScheduledReportsSection() {
                 <ScheduleCard
                   key={s.id}
                   schedule={s}
-                  icon={scheduleIcons[i % scheduleIcons.length]}
+                  icon={scheduleIcons[i % scheduleIcons.length]!}
                   myNumber={myNumber}
                   expanded={expandedId === s.id}
                   onToggleExpand={() => setExpandedId(expandedId === s.id ? null : s.id)}

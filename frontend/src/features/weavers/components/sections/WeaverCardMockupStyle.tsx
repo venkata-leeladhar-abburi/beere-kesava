@@ -107,7 +107,7 @@ export function WeaverCardMockupStyle({
   const statusColor = hasUploadedImage ? "#E7C983" : isDarkCard ? "#E7C983" : "#8D5802";
 
   // Header Display Name: For dark cards use uppercase first name; for light cards use Title Case
-  const headerDisplayName = isDarkCard ? weaver.name.split(" ")[0].toUpperCase() : weaver.name;
+  const headerDisplayName = isDarkCard ? weaver.name.split(" ")[0]!.toUpperCase() : weaver.name;
 
   return (
     <div className="relative flex flex-col justify-between rounded-[12px] bg-[#FFFDFB] border border-[#F0E5D8] overflow-hidden text-left shadow-[0_4px_20px_rgba(74,6,27,0.05)] cursor-pointer h-full min-h-[490px]">

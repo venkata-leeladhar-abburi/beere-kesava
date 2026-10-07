@@ -288,7 +288,7 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
             ? {
                 ...o,
                 dispatchStatus: "dispatched" as const,
-                dispatchDate: new Date().toISOString().split("T")[0],
+                dispatchDate: new Date().toISOString().split("T")[0]!,
                 ...(invoiceId ? { invoiceId } : {}),
               }
             : o

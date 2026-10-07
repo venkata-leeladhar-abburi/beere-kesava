@@ -128,8 +128,8 @@ export function allocateBillDiscount(
   const byRemainder = exact.map((x, i) => ({ i, r: x - Math.floor(x) })).sort((a, b) => b.r - a.r);
   for (const { i } of byRemainder) {
     if (left <= 0) break;
-    if (shares[i] < lines[i].soldPrice) {
-      shares[i] += 1;
+    if (shares[i]! < lines[i]!.soldPrice) {
+      shares[i]! += 1;
       left -= 1;
     }
   }
@@ -230,7 +230,7 @@ export function allocateByWeight(weights: number[], total: number): number[] {
   const byRemainder = exact.map((x, i) => ({ i, r: x - Math.floor(x) })).sort((a, b) => b.r - a.r);
   for (const { i } of byRemainder) {
     if (left <= 0) break;
-    shares[i] += 1;
+    shares[i]! += 1;
     left -= 1;
   }
   return shares;

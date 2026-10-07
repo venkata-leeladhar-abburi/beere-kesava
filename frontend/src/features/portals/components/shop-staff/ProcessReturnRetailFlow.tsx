@@ -123,8 +123,8 @@ export function ProcessReturnRetailFlow({
   // One return belongs to one customer. As soon as the first saree is ticked,
   // the rest of the picker is locked to that customer — mixing two customers
   // onto one return would produce refunds against the wrong purchase history.
-  const lockedCustomerKey = saleFound ? customerKeyOf(selectedSales[0]) : null;
-  const lockedCustomerName = saleFound ? customerOf(selectedSales[0]) : null;
+  const lockedCustomerKey = saleFound ? customerKeyOf(selectedSales[0]!) : null;
+  const lockedCustomerName = saleFound ? customerOf(selectedSales[0]!) : null;
 
   const customers = useMemo(() => {
     const byKey = new Map<string, string>();
@@ -300,7 +300,7 @@ export function ProcessReturnRetailFlow({
       label: "Find Sale",
       summary: saleFound
         ? selectedSales.length === 1
-          ? selectedSales[0].sareeId
+          ? selectedSales[0]!.sareeId
           : `${selectedSales.length} sarees`
         : undefined,
     },

@@ -43,7 +43,7 @@ export function billGstFromSales(
   const taxed = sales.filter((s) => saleGstRate(s) !== null);
   if (taxed.length === 0) return undefined;
   return {
-    rate: saleGstRate(taxed[0])!,
+    rate: saleGstRate(taxed[0]!)!,
     amount: taxed.reduce((sum, s) => sum + toPaise(s.gstAmount), 0) / 100,
     customerGstin: taxed.find((s) => s.customerGstin)?.customerGstin ?? undefined,
     sellerGstin: taxed.find((s) => s.sellerGstin)?.sellerGstin ?? undefined,

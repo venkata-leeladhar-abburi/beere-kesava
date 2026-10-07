@@ -35,6 +35,7 @@ import { resolveAssetUrl } from "../../../../shared/api/uploads";
 import { ChartFigure } from "../../../../shared/ui/data";
 import { Button } from "../../../../shared/ui/primitives";
 import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
+import { rowFormatter } from "@/shared/ui/data/rowFormatter";
 
 function CardBloom() {
   return (
@@ -203,12 +204,12 @@ export function WeaverAnalytics() {
           id: w.id,
           name: w.name,
           village: w.village || "—",
-          cluster: (w.cluster || w.village || "—").split(",")[0].trim(),
+          cluster: (w.cluster || w.village || "—").split(",")[0]!.trim(),
           looms: w.looms,
           status,
           photo: resolveAssetUrl(w.photoUrl),
           initials: w.initials,
-          bg: AVATAR_PALETTE[i % AVATAR_PALETTE.length],
+          bg: AVATAR_PALETTE[i % AVATAR_PALETTE.length]!,
           produced,
           passed,
           payout: earningsById.get(w.id)?.totalEarned ?? 0,
@@ -265,7 +266,7 @@ export function WeaverAnalytics() {
       m.set(w.cluster, e);
     });
     return [...m.entries()]
-      .map(([cluster, v], i) => ({ cluster, ...v, fill: CLUSTER_FILLS[i % CLUSTER_FILLS.length] }))
+      .map(([cluster, v], i) => ({ cluster, ...v, fill: CLUSTER_FILLS[i % CLUSTER_FILLS.length]! }))
       .sort((a, b) => b.produced - a.produced);
   }, [perWeaver]);
 
@@ -460,7 +461,7 @@ export function WeaverAnalytics() {
                       title="Sarees Produced vs Passed"
                       summary={
                         monthlySeries.length
-                          ? `${monthlySeries.length} months to ${monthlySeries[monthlySeries.length - 1].label}, ending at ${monthlySeries[monthlySeries.length - 1].produced} sarees produced.`
+                          ? `${monthlySeries.length} months to ${monthlySeries[monthlySeries.length - 1]!.label}, ending at ${monthlySeries[monthlySeries.length - 1]!.produced} sarees produced.`
                           : "No monthly production recorded yet."
                       }
                     >
@@ -900,11 +901,13 @@ export function WeaverAnalytics() {
                           <RechartsTooltip
                             cursor={{ fill: "rgba(200,155,71,0.06)" }}
                             contentStyle={tip}
-                            formatter={(
-                              v: number,
-                              _n: string,
-                              p: { payload: (typeof loomProductivity)[number] }
-                            ) => [`${v} per loom · ${p.payload.looms} looms`, p.payload.name]}
+                            formatter={rowFormatter(
+                              (
+                                v: number,
+                                _n: string,
+                                p: { payload: (typeof loomProductivity)[number] }
+                              ) => [`${v} per loom · ${p.payload.looms} looms`, p.payload.name]
+                            )}
                           />
                           <Bar dataKey="perLoomR" radius={[10, 10, 10, 10]}>
                             {loomProductivity.map((w) => (

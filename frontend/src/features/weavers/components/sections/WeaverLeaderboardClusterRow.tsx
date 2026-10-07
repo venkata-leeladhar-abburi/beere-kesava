@@ -16,6 +16,7 @@ import { T, F } from "../theme";
 import { Avatar, qcColor } from "../common/primitives";
 import { ChartFigure } from "../../../../shared/ui/data";
 import type { ValueType, NameType, Payload } from "recharts/types/component/DefaultTooltipContent";
+import { rowFormatter } from "@/shared/ui/data/rowFormatter";
 
 function CardBloom() {
   return (
@@ -130,7 +131,7 @@ interface TopWeaverRow {
   id: string;
   name: string;
   short: string;
-  photo: string | undefined;
+  photo: string | null | undefined;
   initials: string;
   bg: string;
   produced: number;
@@ -205,10 +206,10 @@ export function WeaverLeaderboardClusterRow({
               <RechartsTooltip
                 cursor={{ fill: "rgba(200,155,71,0.06)" }}
                 contentStyle={tip}
-                formatter={(v: number, _n: string, p: { payload: TopWeaverRow }) => [
+                formatter={rowFormatter((v: number, _n: string, p: { payload: TopWeaverRow }) => [
                   `${v} sarees · ${p.payload.periodPassRate}% pass`,
                   p.payload.name,
-                ]}
+                ])}
               />
               <Bar
                 dataKey="produced"
@@ -321,10 +322,12 @@ export function WeaverLeaderboardClusterRow({
               </Pie>
               <RechartsTooltip
                 contentStyle={tip}
-                formatter={(v: ValueType, _n: NameType, p: Payload<ValueType, NameType>) => {
-                  const entry = p.payload as ClusterRow;
-                  return [`${v} sarees · ${entry.weavers} weavers`, entry.cluster];
-                }}
+                formatter={rowFormatter(
+                  (v: ValueType, _n: NameType, p: Payload<ValueType, NameType>) => {
+                    const entry = p.payload as ClusterRow;
+                    return [`${v} sarees · ${entry.weavers} weavers`, entry.cluster];
+                  }
+                )}
               />
             </PieChart>
           </ResponsiveContainer>

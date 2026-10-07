@@ -10,11 +10,11 @@ export function monthsSinceLabel(label: string | undefined | null): number {
   if (s === "today") return 0;
   if (s === "yesterday") return 0;
   const monthsMatch = s.match(/(\d+)\s*month/);
-  if (monthsMatch) return parseInt(monthsMatch[1], 10);
+  if (monthsMatch) return parseInt(monthsMatch[1]!, 10);
   const daysMatch = s.match(/(\d+)\s*day/);
-  if (daysMatch) return parseInt(daysMatch[1], 10) / 30;
+  if (daysMatch) return parseInt(daysMatch[1]!, 10) / 30;
   const weeksMatch = s.match(/(\d+)\s*week/);
-  if (weeksMatch) return (parseInt(weeksMatch[1], 10) * 7) / 30;
+  if (weeksMatch) return (parseInt(weeksMatch[1]!, 10) * 7) / 30;
   const d = new Date(label);
   if (!isNaN(d.getTime())) {
     const diffMs = Date.now() - d.getTime();
