@@ -13,13 +13,17 @@ export type IssueSource = "own" | "outsourced" | null;
 // HistorySection.tsx both compare/lookup against these exact literals and are outside
 // this pass's file list — retyping needs a follow-up touching those two call sites too.
 export interface ReceivedSareeLog {
-  id: string; weaver: string;
+  id: string;
+  weaver: string;
   /** Weaver UUID — identity, used as the weaverId in QC/finishing payloads. Never displayed. */
   wcode: string;
   /** Human-facing weaver code ("Ramarao-001") — the only weaver id shown in the UI. */
   weaverCode?: string;
   batch: string;
-  weight: string; date: string; color: string; status: "Passed QC" | "Defective" | "Pending QC";
+  weight: string;
+  date: string;
+  color: string;
+  status: "Passed QC" | "Defective" | "Pending QC";
   /** Photo captured at receipt (data URL or hosted URL) — shown as a thumbnail in Received History. */
   photoUrl?: string | null;
   /** Which loom (weaver's own, 1..N) this saree was woven on, when known. */
@@ -31,14 +35,31 @@ export interface ReceivedSareeLog {
 }
 
 export function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 500, color: C.text, marginBottom: 5 }}>{children}</div>;
+  return (
+    <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 500, color: C.text, marginBottom: 5 }}>
+      {children}
+    </div>
+  );
 }
 
 export function SectionLabel({ step, title }: { step: number; title: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "14px 16px 8px" }}>
-      <div style={{ width: 20, height: 20, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: "#FFF" }}>{step}</span>
+      <div
+        style={{
+          width: 20,
+          height: 20,
+          borderRadius: "50%",
+          background: C.burg,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: "#FFF" }}>
+          {step}
+        </span>
       </div>
       <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.burg }}>{title}</span>
     </div>
@@ -47,9 +68,26 @@ export function SectionLabel({ step, title }: { step: number; title: string }) {
 
 export function PageHeader({ title, onBack }: { title: string; onBack: () => void }) {
   return (
-    <div style={{ height: 48, background: C.burg, display: "flex", alignItems: "center", padding: "0 14px", gap: 10 }}>
-      <IconButton icon={ChevronLeft} label="Back" variant="ghost" onClick={onBack} className="text-white/85" />
-      <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: "#FFF", flex: 1 }}>{title}</span>
+    <div
+      style={{
+        height: 48,
+        background: C.burg,
+        display: "flex",
+        alignItems: "center",
+        padding: "0 14px",
+        gap: 10,
+      }}
+    >
+      <IconButton
+        icon={ChevronLeft}
+        label="Back"
+        variant="ghost"
+        onClick={onBack}
+        className="text-white/85"
+      />
+      <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: "#FFF", flex: 1 }}>
+        {title}
+      </span>
     </div>
   );
 }

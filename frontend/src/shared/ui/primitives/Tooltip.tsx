@@ -18,7 +18,12 @@ export interface SimpleTooltipProps {
 }
 
 /** The 95% case: one trigger, one text tooltip. */
-export function Tooltip({ content, children, side = "top", delayDuration = 500 }: SimpleTooltipProps) {
+export function Tooltip({
+  content,
+  children,
+  side = "top",
+  delayDuration = 500,
+}: SimpleTooltipProps) {
   return (
     <TooltipPrimitive.Provider delayDuration={delayDuration}>
       <TooltipPrimitive.Root delayDuration={delayDuration}>
@@ -35,7 +40,11 @@ export function Tooltip({ content, children, side = "top", delayDuration = 500 }
             )}
           >
             {content}
-            <TooltipPrimitive.Arrow className="fill-[var(--surface-inverse)]" width={10} height={5} />
+            <TooltipPrimitive.Arrow
+              className="fill-[var(--surface-inverse)]"
+              width={10}
+              height={5}
+            />
           </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
       </TooltipPrimitive.Root>

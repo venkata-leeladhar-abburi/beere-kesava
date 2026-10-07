@@ -35,7 +35,10 @@ export const CodeInput = React.forwardRef<HTMLInputElement, CodeInputProps>(func
       spellCheck={false}
       autoComplete="off"
       onChange={handleChange}
-      className={cn("font-code text-[length:var(--text-code-md)] tabular-nums tracking-normal", className)}
+      className={cn(
+        "font-code text-[length:var(--text-code-md)] tabular-nums tracking-normal",
+        className
+      )}
       {...props}
     />
   );

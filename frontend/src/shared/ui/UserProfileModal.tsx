@@ -1,7 +1,12 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { BACKEND_TO_FRONTEND_ROLE, BackendRole, BackendAccessLevel, backendAccessLevelToFrontend } from "../api/users";
+import {
+  BACKEND_TO_FRONTEND_ROLE,
+  BackendRole,
+  BackendAccessLevel,
+  backendAccessLevelToFrontend,
+} from "../api/users";
 import { IconButton, Button } from "./primitives";
 import { Modal } from "./overlay";
 
@@ -16,7 +21,11 @@ const ROLE_TITLE: Record<string, string> = {
 
 function formatJoined(iso: string | null | undefined): string | null {
   if (!iso) return null;
-  return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 /**
@@ -30,8 +39,19 @@ export function UserProfileModal({ onClose }: { onClose: () => void }) {
   const { user } = useAuth();
 
   const name = user?.name || "—";
-  const initials = name === "—" ? "—" : name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
-  const frontendRole = user?.role ? (BACKEND_TO_FRONTEND_ROLE[user.role as BackendRole] ?? user.role) : "—";
+  const initials =
+    name === "—"
+      ? "—"
+      : name
+          .split(" ")
+          .filter(Boolean)
+          .map((w) => w[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase();
+  const frontendRole = user?.role
+    ? (BACKEND_TO_FRONTEND_ROLE[user.role as BackendRole] ?? user.role)
+    : "—";
   const joined = formatJoined(user?.dateAdded);
 
   const rows: { label: string; value: string }[] = [
@@ -41,71 +61,169 @@ export function UserProfileModal({ onClose }: { onClose: () => void }) {
     // Shown for any role, not just Admin: the level is per-portal now, so a
     // restriction can apply to whichever portal this session is in.
     ...(user?.accessLevel
-      ? [{ label: "Access Level", value: backendAccessLevelToFrontend(user.accessLevel as BackendAccessLevel) }]
+      ? [
+          {
+            label: "Access Level",
+            value: backendAccessLevelToFrontend(user.accessLevel as BackendAccessLevel),
+          },
+        ]
       : []),
   ];
 
   return (
-    <Modal open onOpenChange={o => !o && onClose()} size="xs">
-        {/* Banner */}
-        <div style={{ background: "linear-gradient(135deg, #4A061B 0%, #6B1A2A 100%)", padding: "32px 24px 28px", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" as const }}>
-          <Dialog.Title className="sr-only">User Profile</Dialog.Title>
-          <Dialog.Description className="sr-only">Your account profile</Dialog.Description>
-          <Dialog.Close asChild>
-            <IconButton
-              icon={X}
-              label="Close"
-              onClick={onClose}
-              variant="ghost"
-              shape="circle"
-              className="absolute top-4 right-4 border-none bg-white/12 text-white hover:bg-white/20 hover:text-white"
-            />
-          </Dialog.Close>
+    <Modal open onOpenChange={(o) => !o && onClose()} size="xs">
+      {/* Banner */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, #4A061B 0%, #6B1A2A 100%)",
+          padding: "32px 24px 28px",
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center" as const,
+        }}
+      >
+        <Dialog.Title className="sr-only">User Profile</Dialog.Title>
+        <Dialog.Description className="sr-only">Your account profile</Dialog.Description>
+        <Dialog.Close asChild>
+          <IconButton
+            icon={X}
+            label="Close"
+            onClick={onClose}
+            variant="ghost"
+            shape="circle"
+            className="absolute top-4 right-4 border-none bg-white/12 text-white hover:bg-white/20 hover:text-white"
+          />
+        </Dialog.Close>
 
-          <div style={{ width: 85, height: 85, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
-            <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 30, fontWeight: 700, color: "#FFF" }}>
-              {initials}
-            </span>
-          </div>
-
-          <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>
-            {name}
-          </div>
-
-          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>
-            {user?.empId || "—"}
-          </div>
-
-          <div style={{ marginTop: 8, display: "inline-block", background: "rgba(196,146,58,0.22)", border: "1px solid rgba(196,146,58,0.40)", borderRadius: 999, padding: "4px 14px" }}>
-            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "#845E04" }}>
-              {ROLE_TITLE[frontendRole] ?? frontendRole}
-            </span>
-          </div>
+        <div
+          style={{
+            width: 85,
+            height: 85,
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.15)",
+            border: "2px solid rgba(255,255,255,0.3)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 12,
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 30,
+              fontWeight: 700,
+              color: "#FFF",
+            }}
+          >
+            {initials}
+          </span>
         </div>
 
-        {/* Details List */}
-        <div style={{ padding: "24px 24px" }}>
-          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "#69635E", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 12 }}>Contact & Account Details</div>
+        <div
+          style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 20,
+            fontWeight: 700,
+            color: "#FFF",
+            lineHeight: 1.2,
+          }}
+        >
+          {name}
+        </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {rows.map(item => (
-              <div key={item.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "1px solid rgba(139,26,46,0.06)", paddingBottom: 10 }}>
-                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#69635E" }}>{item.label}</span>
-                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: "#1A0A0F", textAlign: "right" as const }}>{item.value}</span>
-              </div>
-            ))}
-          </div>
+        <div
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 13,
+            color: "rgba(255,255,255,0.65)",
+            marginTop: 4,
+          }}
+        >
+          {user?.empId || "—"}
+        </div>
 
-          <div style={{ marginTop: 24, textAlign: "center" as const }}>
-            <Button
-              onClick={onClose}
-              variant="primary"
-              className="!rounded-full !bg-[#6B1A2A] !px-6 !shadow-[0_4px_14px_rgba(107,26,42,0.2)] hover:!bg-[#5A1523]"
+        <div
+          style={{
+            marginTop: 8,
+            display: "inline-block",
+            background: "rgba(196,146,58,0.22)",
+            border: "1px solid rgba(196,146,58,0.40)",
+            borderRadius: 999,
+            padding: "4px 14px",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 12,
+              fontWeight: 600,
+              color: "#845E04",
+            }}
+          >
+            {ROLE_TITLE[frontendRole] ?? frontendRole}
+          </span>
+        </div>
+      </div>
+
+      {/* Details List */}
+      <div style={{ padding: "24px 24px" }}>
+        <div
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 12,
+            fontWeight: 600,
+            color: "#69635E",
+            letterSpacing: 1.2,
+            textTransform: "uppercase",
+            marginBottom: 12,
+          }}
+        >
+          Contact & Account Details
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {rows.map((item) => (
+            <div
+              key={item.label}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                borderBottom: "1px solid rgba(139,26,46,0.06)",
+                paddingBottom: 10,
+              }}
             >
-              Close Profile
-            </Button>
-          </div>
+              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#69635E" }}>
+                {item.label}
+              </span>
+              <span
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#1A0A0F",
+                  textAlign: "right" as const,
+                }}
+              >
+                {item.value}
+              </span>
+            </div>
+          ))}
         </div>
+
+        <div style={{ marginTop: 24, textAlign: "center" as const }}>
+          <Button
+            onClick={onClose}
+            variant="primary"
+            className="!rounded-full !bg-[#6B1A2A] !px-6 !shadow-[0_4px_14px_rgba(107,26,42,0.2)] hover:!bg-[#5A1523]"
+          >
+            Close Profile
+          </Button>
+        </div>
+      </div>
     </Modal>
   );
 }

@@ -43,14 +43,20 @@ export function ReportPeriodProvider({ children }: { children: React.ReactNode }
   const value = useMemo<ReportPeriodValue>(() => {
     const { current, prior } = resolvePeriod(period, custom);
     return {
-      period, setPeriod, custom, setCustom, compareOn, setCompareOn,
-      current, prior,
+      period,
+      setPeriod,
+      custom,
+      setCustom,
+      compareOn,
+      setCompareOn,
+      current,
+      prior,
       label: current?.label ?? "All time",
       priorLabel: prior?.label ?? null,
-      inCurrent: v => inRange(current, v),
+      inCurrent: (v) => inRange(current, v),
       // With no prior window (All Time) nothing is 'prior' — inRange's
       // null case means 'unbounded', which is the wrong default here.
-      inPrior: v => (prior ? inRange(prior, v) : false),
+      inPrior: (v) => (prior ? inRange(prior, v) : false),
       setExport,
       canExport: !!reportExport && reportExport.rows.length > 0,
       exportExcel: () => {
@@ -60,13 +66,17 @@ export function ReportPeriodProvider({ children }: { children: React.ReactNode }
           exportFilename(reportExport.name, periodLabel),
           reportExport.name,
           reportExport.headers,
-          reportExport.rows,
+          reportExport.rows
         );
         // Recorded so the page's own "Reports Generated" / "Downloads This
         // Month" counters reflect real activity. A failure here must not
         // break the download the user actually asked for.
         void reportsApi
-          .recordDownload({ reportName: reportExport.name, fileType: "XLSX", filtersUsed: { period: periodLabel } })
+          .recordDownload({
+            reportName: reportExport.name,
+            fileType: "XLSX",
+            filtersUsed: { period: periodLabel },
+          })
           .catch(() => undefined);
       },
     };

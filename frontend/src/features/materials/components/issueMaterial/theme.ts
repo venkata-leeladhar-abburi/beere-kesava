@@ -1,25 +1,25 @@
-import { brand, fonts, semantic } from '@/design-system/tokens';
+import { brand, fonts, semantic } from "@/design-system/tokens";
 // ── Design Tokens (matches MaterialsPage.tsx / WeaversPage.tsx) ─────────────
 export const T = {
-  silkCream:     semantic.surface.canvas,
-  warmIvory:     semantic.surface.raised,
+  silkCream: semantic.surface.canvas,
+  warmIvory: semantic.surface.raised,
   royalBurgundy: brand.burgundy[900],
-  deepWine:      brand.burgundy[950],
-  darkBurgundy:  "#3D0E1A",
-  antiqueGold:   brand.gold[500],
-  goldLight:     "#E7C983",
-  luxuryBrown:   "#3B2314",
-  warmCream:     "#F5E8D0",
-  taupe:         semantic.text.tertiary,
-  crimson:       semantic.text.danger,
-  green:         semantic.text.success,
-  borderDef:     "rgba(110,15,45,0.10)",
-  borderGold:    "rgba(200,155,71,0.22)",
+  deepWine: brand.burgundy[950],
+  darkBurgundy: "#3D0E1A",
+  antiqueGold: brand.gold[500],
+  goldLight: "#E7C983",
+  luxuryBrown: "#3B2314",
+  warmCream: "#F5E8D0",
+  taupe: semantic.text.tertiary,
+  crimson: semantic.text.danger,
+  green: semantic.text.success,
+  borderDef: "rgba(110,15,45,0.10)",
+  borderGold: "rgba(200,155,71,0.22)",
 };
 export const F = {
   display: fonts.display,
-  ui:      fonts.ui,
-  mono:    fonts.code,
+  ui: fonts.ui,
+  mono: fonts.code,
 };
 export const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -29,12 +29,18 @@ export interface WeaverLite {
   id: string;
   /** Human-facing weaver ID (e.g. "Swarna-003") — this is what the UI displays. */
   code: string;
-  name: string; village: string; initials: string; bg: string; status: "active" | "qc" | "idle"; looms: number; phone: string;
+  name: string;
+  village: string;
+  initials: string;
+  bg: string;
+  status: "active" | "qc" | "idle";
+  looms: number;
+  phone: string;
 }
 export const STATUS_CFG: Record<string, { label: string; color: string; bg: string }> = {
-  active: { label: "Active",   color: T.green,   bg: "rgba(30,102,64,0.10)" },
-  qc:     { label: "In QC",    color: T.antiqueGold, bg: "rgba(200,155,71,0.14)" },
-  idle:   { label: "Idle",     color: T.taupe,    bg: "rgba(139,112,96,0.10)" },
+  active: { label: "Active", color: T.green, bg: "rgba(30,102,64,0.10)" },
+  qc: { label: "In QC", color: T.antiqueGold, bg: "rgba(200,155,71,0.14)" },
+  idle: { label: "Idle", color: T.taupe, bg: "rgba(139,112,96,0.10)" },
 };
 
 // ── GRN directory, shaped as the receipt hierarchy the UI actually needs ─────
@@ -75,20 +81,20 @@ export interface GrnBatch {
 export const INITIAL_GRN_BATCHES: GrnBatch[] = [];
 
 export const RESHAM_COLORS = [
-  { name: "Gold",         hex: "#C4923A" },
+  { name: "Gold", hex: "#C4923A" },
   { name: "Silver/White", hex: "#D8D2C4" },
-  { name: "Red",          hex: "#B22222" },
-  { name: "Maroon",       hex: "#6E0F2D" },
-  { name: "Green",        hex: "#1E6640" },
-  { name: "Blue",         hex: "#1565C0" },
+  { name: "Red", hex: "#B22222" },
+  { name: "Maroon", hex: "#6E0F2D" },
+  { name: "Green", hex: "#1E6640" },
+  { name: "Blue", hex: "#1565C0" },
 ];
 export const JARI_COLORS = [
-  { name: "Gold",   hex: "#C4923A" },
+  { name: "Gold", hex: "#C4923A" },
   { name: "Silver", hex: "#9E9E9E" },
   { name: "Copper", hex: "#B87333" },
-  { name: "Pink",   hex: "#E91E8C" },
-  { name: "Blue",   hex: "#1565C0" },
-  { name: "Green",  hex: "#1E6640" },
+  { name: "Pink", hex: "#E91E8C" },
+  { name: "Blue", hex: "#1565C0" },
+  { name: "Green", hex: "#1E6640" },
 ];
 
 export interface MaterialRowState {

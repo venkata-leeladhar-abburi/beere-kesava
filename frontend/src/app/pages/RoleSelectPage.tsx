@@ -28,29 +28,53 @@ export function RoleSelectPage() {
   if (role && !hasChoice) return <Navigate to={ROLE_ROUTES[role]} replace />;
 
   const card: React.CSSProperties = {
-    maxWidth: hasChoice ? 520 : 440, width: "100%", background: "#FFFFFF", borderRadius: 20,
-    border: `1px solid ${T.borderDef}`, padding: isMobile ? "32px 24px" : "44px 40px",
-    textAlign: "center", boxShadow: "0 12px 40px rgba(0,0,0,0.08)",
+    maxWidth: hasChoice ? 520 : 440,
+    width: "100%",
+    background: "#FFFFFF",
+    borderRadius: 20,
+    border: `1px solid ${T.borderDef}`,
+    padding: isMobile ? "32px 24px" : "44px 40px",
+    textAlign: "center",
+    boxShadow: "0 12px 40px rgba(0,0,0,0.08)",
   };
 
   return (
-    <div style={{
-      minHeight: "100dvh", background: "#FAFAF8", display: "flex",
-      alignItems: "center", justifyContent: "center", padding: isMobile ? 24 : 40,
-      fontFamily: F.ui,
-    }}>
+    <div
+      style={{
+        minHeight: "100dvh",
+        background: "#FAFAF8",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: isMobile ? 24 : 40,
+        fontFamily: F.ui,
+      }}
+    >
       <div style={card}>
-        <img src={logo} alt="Beere Kesava Logo" style={{ width: 44, height: 44, objectFit: "contain", margin: "0 auto 20px" }} />
+        <img
+          src={logo}
+          alt="Beere Kesava Logo"
+          style={{ width: 44, height: 44, objectFit: "contain", margin: "0 auto 20px" }}
+        />
         {hasChoice ? (
           <>
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 24, color: T.luxuryBrown, marginBottom: 8 }}>
+            <div
+              style={{
+                fontFamily: F.display,
+                fontWeight: 700,
+                fontSize: 24,
+                color: T.luxuryBrown,
+                marginBottom: 8,
+              }}
+            >
               Choose a Portal
             </div>
             <div style={{ fontSize: 14, color: T.taupe, lineHeight: 1.6, marginBottom: 24 }}>
-              {user?.name ? `Welcome, ${user.name}. ` : ""}Your account has access to {availableRoles.length} portals. You can switch anytime from inside a portal.
+              {user?.name ? `Welcome, ${user.name}. ` : ""}Your account has access to{" "}
+              {availableRoles.length} portals. You can switch anytime from inside a portal.
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left" }}>
-              {availableRoles.map(r => {
+              {availableRoles.map((r) => {
                 const Icon = PORTAL_ICONS[r];
                 const busy = switching === r;
                 return (
@@ -60,17 +84,31 @@ export function RoleSelectPage() {
                     disabled={switching !== null}
                     onClick={() => void go(r)}
                     style={{
-                      display: "flex", alignItems: "center", gap: 14, width: "100%",
-                      padding: "14px 16px", borderRadius: 14, border: `1px solid ${T.borderDef}`,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 14,
+                      width: "100%",
+                      padding: "14px 16px",
+                      borderRadius: 14,
+                      border: `1px solid ${T.borderDef}`,
                       background: busy ? "rgba(110,15,45,0.06)" : "#FFFFFF",
-                      cursor: switching ? "wait" : "pointer", fontFamily: F.ui,
+                      cursor: switching ? "wait" : "pointer",
+                      fontFamily: F.ui,
                       opacity: switching && !busy ? 0.6 : 1,
                     }}
                   >
-                    <span style={{
-                      width: 40, height: 40, borderRadius: 12, background: "rgba(110,15,45,0.08)",
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                    }}>
+                    <span
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 12,
+                        background: "rgba(110,15,45,0.08)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
                       <Icon size={20} color={T.royalBurgundy} />
                     </span>
                     <span style={{ flex: 1, fontWeight: 600, fontSize: 15, color: T.luxuryBrown }}>
@@ -84,10 +122,19 @@ export function RoleSelectPage() {
             </div>
             <button
               type="button"
-              onClick={() => { logout(); navigate("/login"); }}
+              onClick={() => {
+                logout();
+                navigate("/login");
+              }}
               style={{
-                marginTop: 22, background: "none", border: "none", color: T.taupe,
-                fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                marginTop: 22,
+                background: "none",
+                border: "none",
+                color: T.taupe,
+                fontFamily: F.ui,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
               }}
             >
               Log out
@@ -95,24 +142,51 @@ export function RoleSelectPage() {
           </>
         ) : (
           <>
-            <div style={{
-              width: 56, height: 56, borderRadius: "50%", background: "rgba(171,56,50,0.10)",
-              display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px",
-            }}>
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: "50%",
+                background: "rgba(171,56,50,0.10)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 18px",
+              }}
+            >
               <ShieldAlert size={28} color="#AB3832" />
             </div>
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, color: T.luxuryBrown, marginBottom: 10 }}>
+            <div
+              style={{
+                fontFamily: F.display,
+                fontWeight: 700,
+                fontSize: 22,
+                color: T.luxuryBrown,
+                marginBottom: 10,
+              }}
+            >
               No Portal Assigned
             </div>
             <div style={{ fontSize: 14, color: T.taupe, lineHeight: 1.65, marginBottom: 28 }}>
-              This phone number isn't set up with access to any portal. Contact an administrator to get your account assigned a role, then log in again.
+              This phone number isn't set up with access to any portal. Contact an administrator to
+              get your account assigned a role, then log in again.
             </div>
             <button
-              onClick={() => { logout(); navigate("/login"); }}
+              onClick={() => {
+                logout();
+                navigate("/login");
+              }}
               style={{
-                width: "100%", height: 48, borderRadius: 999, border: "none",
-                background: T.royalBurgundy, color: "#FFFFFF", fontFamily: F.ui,
-                fontWeight: 600, fontSize: 14, cursor: "pointer",
+                width: "100%",
+                height: 48,
+                borderRadius: 999,
+                border: "none",
+                background: T.royalBurgundy,
+                color: "#FFFFFF",
+                fontFamily: F.ui,
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: "pointer",
               }}
             >
               Back to Login

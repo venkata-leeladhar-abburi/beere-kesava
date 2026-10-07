@@ -35,11 +35,37 @@ import { SareeTagPreview, SareeTagSheet } from "./features/weavers";
 import { GrnLabelSheet } from "./features/portals";
 
 const items: InvoiceLineItem[] = [
-  { id: "SAR-DVM-10241", description: "Kanchipuram Pure Silk · Peacock Zari Border", batchLabel: "BATCH-2026-04", ratePaise: toPaise(18500) },
-  { id: "SAR-DVM-10242", description: "Kanchipuram Pure Silk · Peacock Zari Border", batchLabel: "BATCH-2026-04", ratePaise: toPaise(18500) },
-  { id: "SAR-DVM-10243", description: "Dharmavaram Silk · Contrast Pallu, Gold Buta", batchLabel: "BATCH-2026-04", ratePaise: toPaise(22750) },
-  { id: "SAR-DVM-10244", description: "Dharmavaram Silk · Contrast Pallu, Gold Buta", batchLabel: "BATCH-2026-05", ratePaise: toPaise(22750) },
-  { id: "ZAR-9911", description: "Pure Zari Thread · 12% slab", hsn: "5605", qty: 4, ratePaise: toPaise(3250) },
+  {
+    id: "SAR-DVM-10241",
+    description: "Kanchipuram Pure Silk · Peacock Zari Border",
+    batchLabel: "BATCH-2026-04",
+    ratePaise: toPaise(18500),
+  },
+  {
+    id: "SAR-DVM-10242",
+    description: "Kanchipuram Pure Silk · Peacock Zari Border",
+    batchLabel: "BATCH-2026-04",
+    ratePaise: toPaise(18500),
+  },
+  {
+    id: "SAR-DVM-10243",
+    description: "Dharmavaram Silk · Contrast Pallu, Gold Buta",
+    batchLabel: "BATCH-2026-04",
+    ratePaise: toPaise(22750),
+  },
+  {
+    id: "SAR-DVM-10244",
+    description: "Dharmavaram Silk · Contrast Pallu, Gold Buta",
+    batchLabel: "BATCH-2026-05",
+    ratePaise: toPaise(22750),
+  },
+  {
+    id: "ZAR-9911",
+    description: "Pure Zari Thread · 12% slab",
+    hsn: "5605",
+    qty: 4,
+    ratePaise: toPaise(3250),
+  },
 ];
 
 // Hoisted so the screen path and the ?print path render byte-identical trees —
@@ -56,7 +82,11 @@ const invoice = (
       phone: "+91 98490 22145",
       placeOfSupplyCode: "37",
     }}
-    bank={{ bankName: "State Bank of India — Dharmavaram Branch", accountNo: "3021 4455 8890", ifsc: "SBIN0021455" }}
+    bank={{
+      bankName: "State Bank of India — Dharmavaram Branch",
+      accountNo: "3021 4455 8890",
+      ifsc: "SBIN0021455",
+    }}
     customer={{
       name: "Sree Lakshmi Silk House",
       address: "Shop 14, Commercial Complex, Pantheon Road, Egmore, Chennai 600008",
@@ -80,9 +110,27 @@ const invoice = (
 );
 
 const poMaterials: PODocumentItem[] = [
-  { materialType: "Warp", subtype: "Cotton, 40s count", quantity: 120, unit: "kg", pricePerUnit: 420 },
-  { materialType: "Resham", subtype: "Mulberry silk, natural white", quantity: 60, unit: "kg", pricePerUnit: 3850 },
-  { materialType: "Jari", subtype: "Real zari, gold tone", quantity: 25, unit: "reels", pricePerUnit: 1650 },
+  {
+    materialType: "Warp",
+    subtype: "Cotton, 40s count",
+    quantity: 120,
+    unit: "kg",
+    pricePerUnit: 420,
+  },
+  {
+    materialType: "Resham",
+    subtype: "Mulberry silk, natural white",
+    quantity: 60,
+    unit: "kg",
+    pricePerUnit: 3850,
+  },
+  {
+    materialType: "Jari",
+    subtype: "Real zari, gold tone",
+    quantity: 25,
+    unit: "reels",
+    pricePerUnit: 1650,
+  },
 ];
 
 const purchaseOrder = (
@@ -91,7 +139,11 @@ const purchaseOrder = (
     submittedDate="09 Aug 2026"
     deliveryDate="20 Aug 2026"
     firm={DEFAULT_LETTERHEAD_FIRM}
-    supplier={{ name: "Sri Venkateswara Silk Traders", city: "Kanchipuram, Tamil Nadu", contact: "+91 94430 12876" }}
+    supplier={{
+      name: "Sri Venkateswara Silk Traders",
+      city: "Kanchipuram, Tamil Nadu",
+      contact: "+91 94430 12876",
+    }}
     materials={poMaterials}
     totalValue={120 * 420 + 60 * 3850 + 25 * 1650}
     urgency="Urgent"
@@ -104,7 +156,12 @@ const purchaseOrder = (
 );
 
 const quotationItems: QuotationLineItem[] = [
-  { id: "SAR-DVM-20011", description: "Kanchipuram Pure Silk · Peacock Border", batchLabel: "BATCH-2026-06", ratePaise: toPaise(19500) },
+  {
+    id: "SAR-DVM-20011",
+    description: "Kanchipuram Pure Silk · Peacock Border",
+    batchLabel: "BATCH-2026-06",
+    ratePaise: toPaise(19500),
+  },
   { id: "SAR-DVM-20012", description: "Dharmavaram Silk · Gold Buta", ratePaise: toPaise(23500) },
 ];
 const quotation = (
@@ -122,15 +179,29 @@ const quotation = (
 );
 
 const challanItems: ChallanLineItem[] = [
-  { id: "SAR-DVM-30021", description: "Kanchipuram Pure Silk, sample for approval", hsn: "5007", transportValuePaise: toPaise(18500) },
-  { id: "SAR-DVM-30022", description: "Dharmavaram Silk, sample for approval", hsn: "5007", transportValuePaise: toPaise(21000) },
+  {
+    id: "SAR-DVM-30021",
+    description: "Kanchipuram Pure Silk, sample for approval",
+    hsn: "5007",
+    transportValuePaise: toPaise(18500),
+  },
+  {
+    id: "SAR-DVM-30022",
+    description: "Dharmavaram Silk, sample for approval",
+    hsn: "5007",
+    transportValuePaise: toPaise(21000),
+  },
 ];
 const challan = (
   <DeliveryChallanDocument
     challanNumber="DC-2026-0142"
     challanDate="09 Aug 2026"
     firm={DEFAULT_LETTERHEAD_FIRM}
-    party={{ label: "Deliver To", name: "Sri Lakshmi Silk Emporium", address: "T. Nagar, Chennai 600017" }}
+    party={{
+      label: "Deliver To",
+      name: "Sri Lakshmi Silk Emporium",
+      address: "T. Nagar, Chennai 600017",
+    }}
     items={challanItems}
     reason="Sample Approval"
     vehicleNumber="TN 09 CD 5521"
@@ -154,9 +225,24 @@ const receipt = (
 );
 
 const ledgerEntries: LedgerEntry[] = [
-  { date: "02 Aug 2026", particulars: "Invoice INV-WS-2026-0171", ref: "INV-0171", debitPaise: toPaise(42000) },
-  { date: "05 Aug 2026", particulars: "Payment received — NEFT", ref: "UTR2608051122", creditPaise: toPaise(30000) },
-  { date: "09 Aug 2026", particulars: "Invoice INV-WS-2026-0184", ref: "INV-0184", debitPaise: toPaise(101185) },
+  {
+    date: "02 Aug 2026",
+    particulars: "Invoice INV-WS-2026-0171",
+    ref: "INV-0171",
+    debitPaise: toPaise(42000),
+  },
+  {
+    date: "05 Aug 2026",
+    particulars: "Payment received — NEFT",
+    ref: "UTR2608051122",
+    creditPaise: toPaise(30000),
+  },
+  {
+    date: "09 Aug 2026",
+    particulars: "Invoice INV-WS-2026-0184",
+    ref: "INV-0184",
+    debitPaise: toPaise(101185),
+  },
 ];
 const statement = (
   <StatementOfAccountDocument
@@ -165,7 +251,11 @@ const statement = (
     periodFrom="01 Apr 2026"
     periodTo="09 Aug 2026"
     firm={DEFAULT_LETTERHEAD_FIRM}
-    party={{ name: "Sree Lakshmi Silk House", address: "Egmore, Chennai 600008", gstin: "33AAGCS9021H1Z4" }}
+    party={{
+      name: "Sree Lakshmi Silk House",
+      address: "Egmore, Chennai 600008",
+      gstin: "33AAGCS9021H1Z4",
+    }}
     openingBalancePaise={toPaise(12000)}
     entries={ledgerEntries}
     ageing={[
@@ -222,7 +312,16 @@ const weaverTag = (
 // `?doc=tags` — both sticker variants side by side, for comparing the shared
 // layout across them in one glance.
 const bothTags = (
-  <div style={{ display: "flex", justifyContent: "center", alignItems: "flex-start", gap: 48, flexWrap: "wrap", padding: 32 }}>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "flex-start",
+      gap: 48,
+      flexWrap: "wrap",
+      padding: 32,
+    }}
+  >
     {weaverTag}
     {sareeTag}
   </div>
@@ -233,12 +332,36 @@ const bothTags = (
 // and the ordinary case, where the vendor's whole business name is inside the
 // code and it has to fall back to a QR to be scannable at all.
 const grnLabels = (
-  <div style={{ display: "flex", justifyContent: "center", alignItems: "flex-start", gap: 48, flexWrap: "wrap", padding: 32 }}>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "flex-start",
+      gap: 48,
+      flexWrap: "wrap",
+      padding: 32,
+    }}
+  >
     {[
-      { code: "GRN-Ravi-2-1", grnBatchId: "GRN-Ravi-002", materialType: "Silk Yarn", quantity: "12 kg", vendor: "Ravi Silks" },
-      { code: "GRN-SreeLakshmiSilkHouse-001-003-12", grnBatchId: "GRN-SLSH-001", materialType: "Zari", quantity: "4 reels", vendor: "Sree Lakshmi" },
-    ].map(label => (
-      <div key={label.code} style={{ ["--label-zoom" as string]: 3, zoom: 3, width: "fit-content" }}>
+      {
+        code: "GRN-Ravi-2-1",
+        grnBatchId: "GRN-Ravi-002",
+        materialType: "Silk Yarn",
+        quantity: "12 kg",
+        vendor: "Ravi Silks",
+      },
+      {
+        code: "GRN-SreeLakshmiSilkHouse-001-003-12",
+        grnBatchId: "GRN-SLSH-001",
+        materialType: "Zari",
+        quantity: "4 reels",
+        vendor: "Sree Lakshmi",
+      },
+    ].map((label) => (
+      <div
+        key={label.code}
+        style={{ ["--label-zoom" as string]: 3, zoom: 3, width: "fit-content" }}
+      >
         <GrnLabelSheet labels={[label]} />
       </div>
     ))}
@@ -259,9 +382,11 @@ const billLines: RetailBillLineItem[] = Array.from({ length: 14 }, (_, i) => {
     soldPrice: Math.round(rate - (rate * pct) / 100 - flat),
     discountNote: pct ? `${pct}%` : undefined,
     source:
-      kind === "weaver" ? { kind, name: "Ramoji Rao", detail: "Loom 1" }
-      : kind === "factory" ? { kind, name: "Factory Loom FL-03" }
-      : { kind, name: "Sree Lakshmi Silk House", detail: "Invoice INV-2291" },
+      kind === "weaver"
+        ? { kind, name: "Ramoji Rao", detail: "Loom 1" }
+        : kind === "factory"
+          ? { kind, name: "Factory Loom FL-03" }
+          : { kind, name: "Sree Lakshmi Silk House", detail: "Invoice INV-2291" },
   };
 });
 // A 5% discount on the whole bill, on top of the per-saree discounts above.
@@ -289,19 +414,36 @@ const billFor = (copy: "customer" | "admin") => (
 // one at thermal-printer resolution and puts the result on
 // window.__tagVerify, so the whole sheet can be checked, not eyeballed.
 const bulkLines: [string, number][] = [
-  ["SRIS-626-001", 14], ["SRIS-626-002", 38], ["SRIS-626-003", 17], ["SRIS-626-004", 20],
-  ["SRIS-626-005", 23], ["SRIS-626-006", 6], ["SRIS-626-007", 56], ["SRIS-626-008", 18],
-  ["SRIS-626-009", 6], ["SRIS-626-010", 11], ["SRIS-626-011", 4],
+  ["SRIS-626-001", 14],
+  ["SRIS-626-002", 38],
+  ["SRIS-626-003", 17],
+  ["SRIS-626-004", 20],
+  ["SRIS-626-005", 23],
+  ["SRIS-626-006", 6],
+  ["SRIS-626-007", 56],
+  ["SRIS-626-008", 18],
+  ["SRIS-626-009", 6],
+  ["SRIS-626-010", 11],
+  ["SRIS-626-011", 4],
 ];
 const bulkIds = bulkLines.flatMap(([line, qty]) =>
-  Array.from({ length: qty }, (_, i) => `${line}-${String(i + 1).padStart(2, "0")}`));
+  Array.from({ length: qty }, (_, i) => `${line}-${String(i + 1).padStart(2, "0")}`)
+);
 const bulkTags = (
   <div style={{ display: "flex", flexWrap: "wrap", gap: 12, padding: 24 }}>
-    {bulkIds.map(id => (
+    {bulkIds.map((id) => (
       <div key={id} data-tag-id={id}>
         <SareeTagPreview
           zoom={1.5}
-          tag={{ sareeId: id, isExternal: true, invoiceNumber: "626", serial: id.split("-")[2], supplierShortName: "SRIS", costPrice: 560, sellingPrice: 900 }}
+          tag={{
+            sareeId: id,
+            isExternal: true,
+            invoiceNumber: "626",
+            serial: id.split("-")[2],
+            supplierShortName: "SRIS",
+            costPrice: 560,
+            sellingPrice: 900,
+          }}
         />
       </div>
     ))}
@@ -313,7 +455,15 @@ const bulkTags = (
 // against the number of sarees.
 const bulkSheet = (
   <SareeTagSheet
-    rows={bulkIds.map(id => ({ sareeId: id, isExternal: true, invoiceNumber: "626", serial: id.split("-")[2], supplierShortName: "SRIS", costPrice: 560, sellingPrice: 900 }))}
+    rows={bulkIds.map((id) => ({
+      sareeId: id,
+      isExternal: true,
+      invoiceNumber: "626",
+      serial: id.split("-")[2],
+      supplierShortName: "SRIS",
+      costPrice: 560,
+      sellingPrice: 900,
+    }))}
   />
 );
 
@@ -324,8 +474,14 @@ const bulkSheet = (
  * app's scanner uses.
  */
 async function verifyBulkTags() {
-  const { MultiFormatReader, BinaryBitmap, HybridBinarizer, RGBLuminanceSource, DecodeHintType, BarcodeFormat } =
-    await import("@zxing/library");
+  const {
+    MultiFormatReader,
+    BinaryBitmap,
+    HybridBinarizer,
+    RGBLuminanceSource,
+    DecodeHintType,
+    BarcodeFormat,
+  } = await import("@zxing/library");
   const hints = new Map<number, unknown>([
     [DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE]],
     [DecodeHintType.TRY_HARDER, true],
@@ -336,20 +492,31 @@ async function verifyBulkTags() {
   for (const el of Array.from(document.querySelectorAll<HTMLElement>("[data-tag-id]"))) {
     const id = el.dataset.tagId!;
     const svg = el.querySelector<SVGSVGElement>('svg[aria-label^="Scannable code for"]');
-    if (!svg) { results.push({ id, code: false, decoded: null }); continue; }
+    if (!svg) {
+      results.push({ id, code: false, decoded: null });
+      continue;
+    }
 
     const clone = svg.cloneNode(true) as SVGSVGElement;
     clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     clone.setAttribute("width", String(DOTS));
     clone.setAttribute("height", String(DOTS));
-    const src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(clone));
+    const src =
+      "data:image/svg+xml;charset=utf-8," +
+      encodeURIComponent(new XMLSerializer().serializeToString(clone));
     const img = new Image();
-    await new Promise<void>((resolve, reject) => { img.onload = () => resolve(); img.onerror = reject; img.src = src; });
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = reject;
+      img.src = src;
+    });
     // A white margin around the code, as the sticker itself gives it.
     const canvas = document.createElement("canvas");
-    canvas.width = DOTS + 40; canvas.height = DOTS + 40;
+    canvas.width = DOTS + 40;
+    canvas.height = DOTS + 40;
     const ctx = canvas.getContext("2d")!;
-    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 20, 20, DOTS, DOTS);
     const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const lum = new Uint8ClampedArray(canvas.width * canvas.height);
@@ -357,35 +524,55 @@ async function verifyBulkTags() {
     let decoded: string | null = null;
     try {
       decoded = new MultiFormatReader()
-        .decode(new BinaryBitmap(new HybridBinarizer(new RGBLuminanceSource(lum, canvas.width, canvas.height))), hints)
+        .decode(
+          new BinaryBitmap(
+            new HybridBinarizer(new RGBLuminanceSource(lum, canvas.width, canvas.height))
+          ),
+          hints
+        )
         .getText();
-    } catch { /* not decoded */ }
+    } catch {
+      /* not decoded */
+    }
     results.push({ id, code: true, decoded });
   }
   (window as unknown as { __tagVerify: unknown }).__tagVerify = {
     total: results.length,
-    withCode: results.filter(r => r.code).length,
-    decodedCorrectly: results.filter(r => r.decoded === r.id).length,
-    failures: results.filter(r => r.decoded !== r.id),
+    withCode: results.filter((r) => r.code).length,
+    decodedCorrectly: results.filter((r) => r.decoded === r.id).length,
+    failures: results.filter((r) => r.decoded !== r.id),
   };
 }
 
 const DOC = new URLSearchParams(location.search).get("doc");
 const activeDoc =
-  DOC === "po" ? purchaseOrder :
-  DOC === "qt" ? quotation :
-  DOC === "dc" ? challan :
-  DOC === "receipt" ? receipt :
-  DOC === "soa" ? statement :
-  DOC === "tag" ? sareeTag :
-  DOC === "tag-weaver" ? weaverTag :
-  DOC === "tags" ? bothTags :
-  DOC === "grn" ? grnLabels :
-  DOC === "tags-bulk" ? bulkTags :
-  DOC === "tags-sheet" ? bulkSheet :
-  DOC === "bill" ? billFor("customer") :
-  DOC === "bill-admin" ? billFor("admin") :
-  invoice;
+  DOC === "po"
+    ? purchaseOrder
+    : DOC === "qt"
+      ? quotation
+      : DOC === "dc"
+        ? challan
+        : DOC === "receipt"
+          ? receipt
+          : DOC === "soa"
+            ? statement
+            : DOC === "tag"
+              ? sareeTag
+              : DOC === "tag-weaver"
+                ? weaverTag
+                : DOC === "tags"
+                  ? bothTags
+                  : DOC === "grn"
+                    ? grnLabels
+                    : DOC === "tags-bulk"
+                      ? bulkTags
+                      : DOC === "tags-sheet"
+                        ? bulkSheet
+                        : DOC === "bill"
+                          ? billFor("customer")
+                          : DOC === "bill-admin"
+                            ? billFor("admin")
+                            : invoice;
 
 // useDocument() → useDownloadsAllowed() → useAuth(), which throws outside a
 // real <AuthProvider>. The harness has no login flow, so it supplies a
@@ -394,9 +581,26 @@ const activeDoc =
 // preview the DOWNLOAD_RESTRICTED / blocked-download state.
 const RESTRICTED = new URLSearchParams(location.search).has("restricted");
 const fakeAuth = {
-  isAuthenticated: true, role: "admin" as const, phone: "9999999999", token: "dev",
-  user: { id: "dev", name: "Preview User", email: "", mobile: "", role: "admin", accessLevel: RESTRICTED ? "DOWNLOAD_RESTRICTED" : undefined },
-  login: () => {}, selectRole: () => {}, logout: () => {}, adminViewingAs: null, clearAdminView: () => {}, enterStaffView: () => {}, availableRoles: [], switchPortal: async () => {},
+  isAuthenticated: true,
+  role: "admin" as const,
+  phone: "9999999999",
+  token: "dev",
+  user: {
+    id: "dev",
+    name: "Preview User",
+    email: "",
+    mobile: "",
+    role: "admin",
+    accessLevel: RESTRICTED ? "DOWNLOAD_RESTRICTED" : undefined,
+  },
+  login: () => {},
+  selectRole: () => {},
+  logout: () => {},
+  adminViewingAs: null,
+  clearAdminView: () => {},
+  enterStaffView: () => {},
+  availableRoles: [],
+  switchPortal: async () => {},
 };
 
 function App() {
@@ -422,18 +626,24 @@ function App() {
 const PRINT_MODE = new URLSearchParams(location.search).has("print");
 
 if (PRINT_MODE) {
-  const printRoot = document.getElementById("document-print-root")! as HTMLElement & { _root?: ReturnType<typeof createRoot> };
+  const printRoot = document.getElementById("document-print-root")! as HTMLElement & {
+    _root?: ReturnType<typeof createRoot>;
+  };
   printRoot._root ??= createRoot(printRoot);
   printRoot._root.render(activeDoc);
   document.body.setAttribute("data-printing-document", "");
 } else {
   // Reuse the root across HMR updates — calling createRoot twice on the same
   // container is a React error and spams the console during editing.
-  const container = document.getElementById("root")! as HTMLElement & { _root?: ReturnType<typeof createRoot> };
+  const container = document.getElementById("root")! as HTMLElement & {
+    _root?: ReturnType<typeof createRoot>;
+  };
   container._root ??= createRoot(container);
   container._root.render(<App />);
 }
 
 if (DOC === "tags-bulk" && new URLSearchParams(location.search).has("verify")) {
-  setTimeout(() => { void verifyBulkTags(); }, 500);
+  setTimeout(() => {
+    void verifyBulkTags();
+  }, 500);
 }

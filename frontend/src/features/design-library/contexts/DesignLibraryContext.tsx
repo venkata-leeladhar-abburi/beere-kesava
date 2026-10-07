@@ -1,7 +1,11 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { BackendDesign, UpdateDesignPayload, designLibraryApi } from "../../../shared/api/design-library";
+import {
+  BackendDesign,
+  UpdateDesignPayload,
+  designLibraryApi,
+} from "../../../shared/api/design-library";
 import { designDispatchesApi, BackendDesignDispatch } from "../../../shared/api/design-dispatches";
 import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
 import { useAuthGate } from "../../../contexts/AuthContext";
@@ -38,23 +42,28 @@ function backendDispatchToRecord(d: BackendDesignDispatch): DispatchRecord {
     colorSlipImage: resolveAssetUrl(d.colorSlipImageUrl),
     designGraphImage: resolveAssetUrl(d.designGraphImageUrl),
     sentAt: new Date(d.sentAt).toLocaleString("en-US", {
-      day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     }),
   };
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface DesignEntry {
-  code: string;           // mandatory, unique
-  name: string;           // design name / label
-  typeCode: string;       // saree type code e.g. "HZ-003"
-  typeName: string;       // saree type name e.g. "Heavy Zari"
-  desc: string;           // description
-  color: string;          // body colour of the saree, shown in saree listings
-  weaverName: string;     // optional weaver name
+  code: string; // mandatory, unique
+  name: string; // design name / label
+  typeCode: string; // saree type code e.g. "HZ-003"
+  typeName: string; // saree type name e.g. "Heavy Zari"
+  desc: string; // description
+  color: string; // body colour of the saree, shown in saree listings
+  weaverName: string; // optional weaver name
   notesForWeaver: string; // optional weaver notes
-  colorSlipPhoto: string | null;  // url/dataURL or null
-  designGraph: string | null;     // url/dataURL or null
+  colorSlipPhoto: string | null; // url/dataURL or null
+  designGraph: string | null; // url/dataURL or null
   batches: number;
   total: number;
   hasColorSlip: boolean;
@@ -64,9 +73,9 @@ export interface DesignEntry {
 export interface DispatchRecord {
   id: string;
   recipientType: "weaver" | "loom";
-  recipientId: string;      // weaver id (e.g. "b5f9178c-b1b9-4871-a7c3-0d68a462d57a") or loom label (e.g. "Loom 3")
+  recipientId: string; // weaver id (e.g. "b5f9178c-b1b9-4871-a7c3-0d68a462d57a") or loom label (e.g. "Loom 3")
   recipientName: string;
-  batches: string[];        // linked batch IDs
+  batches: string[]; // linked batch IDs
   instructions: string;
   colorSlipImage: string | null;
   designGraphImage: string | null;
@@ -80,7 +89,10 @@ interface DesignLibraryContextValue {
   getDesign: (code: string) => DesignEntry | undefined;
   dispatches: DispatchRecord[];
   addDispatch: (d: Omit<DispatchRecord, "id" | "sentAt">) => DispatchRecord;
-  updateDispatch: (id: string, patch: Partial<Pick<DispatchRecord, "instructions" | "colorSlipImage" | "designGraphImage">>) => void;
+  updateDispatch: (
+    id: string,
+    patch: Partial<Pick<DispatchRecord, "instructions" | "colorSlipImage" | "designGraphImage">>
+  ) => void;
   deleteDispatch: (id: string) => void;
   getDispatchesForWeaver: (weaverId: string) => DispatchRecord[];
   isError: boolean;
@@ -103,7 +115,13 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
   // they got back nothing but a "your role is not permitted" 403.
   const enabled = useAuthGate("worker", "weaver", "admin", "superadmin");
 
-  const { data: designs = [], isError, error, isLoading, refetch } = useQuery({
+  const {
+    data: designs = [],
+    isError,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: DESIGNS_KEY,
     queryFn: async () => (await designLibraryApi.list()).items.map(backendDesignToEntry),
     enabled,
@@ -132,10 +150,10 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
         designGraphUrl: toStoredAssetPath(d.designGraph) ?? undefined,
       }),
     onSuccess: (created) => {
-      queryClient.setQueryData<DesignEntry[]>(DESIGNS_KEY, prev => {
+      queryClient.setQueryData<DesignEntry[]>(DESIGNS_KEY, (prev) => {
         const list = prev ?? [];
         const entry = backendDesignToEntry(created);
-        if (list.some(x => x.code === entry.code)) return list;
+        if (list.some((x) => x.code === entry.code)) return list;
         return [entry, ...list];
       });
       toast.success("Design added");
@@ -157,8 +175,10 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
     if (patch.desc !== undefined) payload.description = patch.desc;
     if (patch.color !== undefined) payload.color = patch.color;
     if (patch.notesForWeaver !== undefined) payload.notesForWeaver = patch.notesForWeaver;
-    if (patch.colorSlipPhoto) payload.colorSlipPhotoUrl = toStoredAssetPath(patch.colorSlipPhoto) ?? undefined;
-    if (patch.designGraph) payload.designGraphUrl = toStoredAssetPath(patch.designGraph) ?? undefined;
+    if (patch.colorSlipPhoto)
+      payload.colorSlipPhotoUrl = toStoredAssetPath(patch.colorSlipPhoto) ?? undefined;
+    if (patch.designGraph)
+      payload.designGraphUrl = toStoredAssetPath(patch.designGraph) ?? undefined;
     return payload;
   };
 
@@ -171,8 +191,8 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
       return args;
     },
     onSuccess: ({ code, patch }) => {
-      queryClient.setQueryData<DesignEntry[]>(DESIGNS_KEY, prev =>
-        (prev ?? []).map(d => d.code === code ? { ...d, ...patch } : d)
+      queryClient.setQueryData<DesignEntry[]>(DESIGNS_KEY, (prev) =>
+        (prev ?? []).map((d) => (d.code === code ? { ...d, ...patch } : d))
       );
       toast.success("Design updated");
     },
@@ -193,7 +213,7 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
         batches: d.batches,
       }),
     onSuccess: (created: BackendDesignDispatch) => {
-      queryClient.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, prev => {
+      queryClient.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, (prev) => {
         const list = prev ?? [];
         return [backendDispatchToRecord(created), ...list];
       });
@@ -205,15 +225,24 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
   });
 
   const updateDispatchMutation = useMutation({
-    mutationFn: (args: { id: string; patch: Partial<Pick<DispatchRecord, "instructions" | "colorSlipImage" | "designGraphImage">> }) =>
+    mutationFn: (args: {
+      id: string;
+      patch: Partial<Pick<DispatchRecord, "instructions" | "colorSlipImage" | "designGraphImage">>;
+    }) =>
       designDispatchesApi.update(args.id, {
         instructions: args.patch.instructions,
-        colorSlipImageUrl: args.patch.colorSlipImage !== undefined ? toStoredAssetPath(args.patch.colorSlipImage) : undefined,
-        designGraphImageUrl: args.patch.designGraphImage !== undefined ? toStoredAssetPath(args.patch.designGraphImage) : undefined,
+        colorSlipImageUrl:
+          args.patch.colorSlipImage !== undefined
+            ? toStoredAssetPath(args.patch.colorSlipImage)
+            : undefined,
+        designGraphImageUrl:
+          args.patch.designGraphImage !== undefined
+            ? toStoredAssetPath(args.patch.designGraphImage)
+            : undefined,
       }),
     onSuccess: (updated: BackendDesignDispatch) => {
-      queryClient.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, prev =>
-        (prev ?? []).map(d => d.id === updated.id ? backendDispatchToRecord(updated) : d)
+      queryClient.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, (prev) =>
+        (prev ?? []).map((d) => (d.id === updated.id ? backendDispatchToRecord(updated) : d))
       );
       toast.success("Dispatch updated");
     },
@@ -225,7 +254,9 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
   const deleteDispatchMutation = useMutation({
     mutationFn: (id: string) => designDispatchesApi.delete(id),
     onSuccess: (_res, id) => {
-      queryClient.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, prev => (prev ?? []).filter(d => d.id !== id));
+      queryClient.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, (prev) =>
+        (prev ?? []).filter((d) => d.id !== id)
+      );
       toast.success("Dispatch deleted");
     },
     onError: (err: unknown) => {
@@ -234,33 +265,58 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
   });
 
   const addDesign = (d: DesignEntry) => addDesignMutation.mutate(d);
-  const updateDesign = (code: string, patch: Partial<DesignEntry>) => updateDesignMutation.mutate({ code, patch });
-  const getDesign = useCallback((code: string) => designs.find(d => d.code === code), [designs]);
+  const updateDesign = (code: string, patch: Partial<DesignEntry>) =>
+    updateDesignMutation.mutate({ code, patch });
+  const getDesign = useCallback((code: string) => designs.find((d) => d.code === code), [designs]);
 
   const addDispatch = (d: Omit<DispatchRecord, "id" | "sentAt">): DispatchRecord => {
     const created: DispatchRecord = {
       ...d,
       id: `DISP-${String(dispatches.length + 1).padStart(3, "0")}`,
       sentAt: new Date().toLocaleString("en-US", {
-        day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
       }),
     };
     addDispatchMutation.mutate(d);
     return created;
   };
 
-  const updateDispatch = (id: string, patch: Partial<Pick<DispatchRecord, "instructions" | "colorSlipImage" | "designGraphImage">>) =>
-    updateDispatchMutation.mutate({ id, patch });
+  const updateDispatch = (
+    id: string,
+    patch: Partial<Pick<DispatchRecord, "instructions" | "colorSlipImage" | "designGraphImage">>
+  ) => updateDispatchMutation.mutate({ id, patch });
 
   const deleteDispatch = (id: string) => deleteDispatchMutation.mutate(id);
 
   const getDispatchesForWeaver = useCallback(
-    (weaverId: string) => dispatches.filter(d => d.recipientType === "weaver" && d.recipientId === weaverId),
+    (weaverId: string) =>
+      dispatches.filter((d) => d.recipientType === "weaver" && d.recipientId === weaverId),
     [dispatches]
   );
 
   return (
-    <DesignLibraryContext.Provider value={{ designs, addDesign, updateDesign, getDesign, dispatches, addDispatch, updateDispatch, deleteDispatch, getDispatchesForWeaver, isError, error, isLoading, refetch: () => void refetch() }}>
+    <DesignLibraryContext.Provider
+      value={{
+        designs,
+        addDesign,
+        updateDesign,
+        getDesign,
+        dispatches,
+        addDispatch,
+        updateDispatch,
+        deleteDispatch,
+        getDispatchesForWeaver,
+        isError,
+        error,
+        isLoading,
+        refetch: () => void refetch(),
+      }}
+    >
       {children}
     </DesignLibraryContext.Provider>
   );
@@ -272,7 +328,7 @@ const FALLBACK_DESIGN_LIBRARY: DesignLibraryContextValue = {
   updateDesign: () => {},
   getDesign: () => undefined,
   dispatches: [],
-  addDispatch: (d) => ({ id: "", sentAt: "", ...d } as DispatchRecord),
+  addDispatch: (d) => ({ id: "", sentAt: "", ...d }) as DispatchRecord,
   updateDispatch: () => {},
   deleteDispatch: () => {},
   getDispatchesForWeaver: () => [],

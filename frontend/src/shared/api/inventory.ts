@@ -98,7 +98,7 @@ export const inventoryApi = {
    *  portal's stock, deliberately not the factory list. */
   shopStock: (dispatchId?: string) =>
     apiClient.get<ShopStockItem[]>(
-      `/inventory/shop${dispatchId ? `?dispatchId=${encodeURIComponent(dispatchId)}` : ""}`,
+      `/inventory/shop${dispatchId ? `?dispatchId=${encodeURIComponent(dispatchId)}` : ""}`
     ),
 
   /** GET /inventory/production-catalog — see ProductionCatalogItem. */

@@ -16,18 +16,23 @@ export function useWeaverDashboardMetrics() {
   const { getSareeTypeByCode } = useRatesPricing();
 
   const myRows = weaverId
-    ? batches.filter(b => b.status !== "draft").flatMap(b => b.rows.filter(r => r.weaverId === weaverId))
+    ? batches
+        .filter((b) => b.status !== "draft")
+        .flatMap((b) => b.rows.filter((r) => r.weaverId === weaverId))
     : [];
   const myActiveBatchIds = new Set(
     (weaverId
-      ? batches.filter(b => b.status !== "draft" && b.rows.some(r => r.weaverId === weaverId && !r.qcPassed))
+      ? batches.filter(
+          (b) => b.status !== "draft" && b.rows.some((r) => r.weaverId === weaverId && !r.qcPassed)
+        )
       : []
-    ).map(b => b.batchId),
+    ).map((b) => b.batchId)
   );
 
   const qcRecords = weaverId ? getQcForWeaver(weaverId) : [];
-  const passedCount = qcRecords.filter(q => q.result === "passed").length;
-  const qcPassRate = qcRecords.length > 0 ? Math.round((passedCount / qcRecords.length) * 100) : 100;
+  const passedCount = qcRecords.filter((q) => q.result === "passed").length;
+  const qcPassRate =
+    qcRecords.length > 0 ? Math.round((passedCount / qcRecords.length) * 100) : 100;
 
   const formatCurrency = (n: number) => formatMoney(rupees(n), { compact: true });
 
@@ -36,22 +41,51 @@ export function useWeaverDashboardMetrics() {
   // up as a plain QC pass here, so counting QC alone undercounts it. A
   // semi-approved saree is neither: it went back to the weaver for rework and
   // has to be handed in and received again.
-  const producedRows = myRows.filter(r => r.qcPassed === true || r.finished === true);
+  const producedRows = myRows.filter((r) => r.qcPassed === true || r.finished === true);
   const producedCount = producedRows.length;
   const totalCharge = producedRows.reduce(
-    (sum, r) => sum + (r.sareeTypeCode ? Number(getSareeTypeByCode(r.sareeTypeCode)?.charge ?? 0) : 0),
-    0,
+    (sum, r) =>
+      sum + (r.sareeTypeCode ? Number(getSareeTypeByCode(r.sareeTypeCode)?.charge ?? 0) : 0),
+    0
   );
 
   return {
     isLoading: false,
     isError: batchesError,
     metrics: [
-      { label: "Active Batches", val: String(myActiveBatchIds.size), sub: "Currently assigned to you", hi: false },
-      { label: "Sarees Assigned", val: String(myRows.length), sub: "Across all your batches", hi: false },
-      { label: "QC Pass Rate", val: `${qcPassRate}%`, sub: qcRecords.length === 0 ? "No inspections yet" : `${passedCount} of ${qcRecords.length} passed`, hi: qcPassRate < 90 && qcRecords.length > 0 },
-      { label: "Sarees Produced", val: String(producedCount), sub: "QC-passed or finished via quotation", hi: false },
-      { label: "Gross Charge", val: formatCurrency(totalCharge), sub: "From produced sarees", hi: totalCharge > 0 },
+      {
+        label: "Active Batches",
+        val: String(myActiveBatchIds.size),
+        sub: "Currently assigned to you",
+        hi: false,
+      },
+      {
+        label: "Sarees Assigned",
+        val: String(myRows.length),
+        sub: "Across all your batches",
+        hi: false,
+      },
+      {
+        label: "QC Pass Rate",
+        val: `${qcPassRate}%`,
+        sub:
+          qcRecords.length === 0
+            ? "No inspections yet"
+            : `${passedCount} of ${qcRecords.length} passed`,
+        hi: qcPassRate < 90 && qcRecords.length > 0,
+      },
+      {
+        label: "Sarees Produced",
+        val: String(producedCount),
+        sub: "QC-passed or finished via quotation",
+        hi: false,
+      },
+      {
+        label: "Gross Charge",
+        val: formatCurrency(totalCharge),
+        sub: "From produced sarees",
+        hi: totalCharge > 0,
+      },
     ],
   };
 }

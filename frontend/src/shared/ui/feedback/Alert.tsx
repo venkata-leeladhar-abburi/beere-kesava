@@ -58,7 +58,15 @@ export interface AlertProps extends Omit<React.ComponentProps<"div">, "title"> {
   onDismiss?: () => void;
 }
 
-export function Alert({ tone = "info", title, children, action, onDismiss, className, ...props }: AlertProps) {
+export function Alert({
+  tone = "info",
+  title,
+  children,
+  action,
+  onDismiss,
+  className,
+  ...props
+}: AlertProps) {
   return (
     <div
       role={TONE_ROLE[tone]}
@@ -74,12 +82,25 @@ export function Alert({ tone = "info", title, children, action, onDismiss, class
         <Icon name={TONE_ICON[tone]} size="sm" />
       </span>
       <div className="flex-1 min-w-0">
-        <p className="bk-label-lg" style={{ color: TONE_TEXT[tone] }}>{title}</p>
-        {children && <p className="bk-body-sm mt-0.5" style={{ color: "var(--text-secondary)" }}>{children}</p>}
+        <p className="bk-label-lg" style={{ color: TONE_TEXT[tone] }}>
+          {title}
+        </p>
+        {children && (
+          <p className="bk-body-sm mt-0.5" style={{ color: "var(--text-secondary)" }}>
+            {children}
+          </p>
+        )}
         {action && <div className="mt-2">{action}</div>}
       </div>
       {onDismiss && (
-        <IconButton icon="close" label="Dismiss" size="sm" variant="ghost" onClick={onDismiss} className="shrink-0 -m-1" />
+        <IconButton
+          icon="close"
+          label="Dismiss"
+          size="sm"
+          variant="ghost"
+          onClick={onDismiss}
+          className="shrink-0 -m-1"
+        />
       )}
     </div>
   );

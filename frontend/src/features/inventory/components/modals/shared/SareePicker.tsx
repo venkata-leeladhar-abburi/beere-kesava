@@ -29,7 +29,13 @@ export function rowToDispatchSaree(r: WeaverSareeRow): FinishingReturn {
 // ── Saree picker (scan + pick from inventory) ─────────────────────────────────
 // "Select from Inventory" embeds the very same inventory table the page shows —
 // identical columns, tabs and filters — so nothing has to be learned twice.
-export function SareePicker({ available, picked, onChange, label, onBrowseChange }: {
+export function SareePicker({
+  available,
+  picked,
+  onChange,
+  label,
+  onBrowseChange,
+}: {
   available: FinishingReturn[];
   picked: FinishingReturn[];
   onChange: (next: FinishingReturn[]) => void;
@@ -42,44 +48,66 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
   const [cameraOpen, setCameraOpen] = useState(false);
   const [rows, setRows] = useState<WeaverSareeRow[]>([]);
 
-  const pickedIds = useMemo(() => new Set(picked.map(s => s.sareeId || s.id)), [picked]);
+  const pickedIds = useMemo(() => new Set(picked.map((s) => s.sareeId || s.id)), [picked]);
   // Before the table has been opened it has reported no rows, so the page's
   // pool stands in for scanning.
   const pool = rows.length ? rows.map(rowToDispatchSaree) : available;
 
-  const toggleBrowse = () => setBrowse(b => { onBrowseChange?.(!b); return !b; });
+  const toggleBrowse = () =>
+    setBrowse((b) => {
+      onBrowseChange?.(!b);
+      return !b;
+    });
 
-  const toggleRow = useCallback((sareeId: string) => {
-    if (pickedIds.has(sareeId)) { onChange(picked.filter(s => (s.sareeId || s.id) !== sareeId)); return; }
-    const row = rows.find(r => r.sareeId === sareeId);
-    const found = row ? rowToDispatchSaree(row) : available.find(s => (s.sareeId || s.id) === sareeId);
-    if (found) onChange([...picked, found]);
-  }, [pickedIds, picked, rows, available, onChange]);
+  const toggleRow = useCallback(
+    (sareeId: string) => {
+      if (pickedIds.has(sareeId)) {
+        onChange(picked.filter((s) => (s.sareeId || s.id) !== sareeId));
+        return;
+      }
+      const row = rows.find((r) => r.sareeId === sareeId);
+      const found = row
+        ? rowToDispatchSaree(row)
+        : available.find((s) => (s.sareeId || s.id) === sareeId);
+      if (found) onChange([...picked, found]);
+    },
+    [pickedIds, picked, rows, available, onChange]
+  );
 
-  const toggleAll = useCallback((ids: string[]) => {
-    const allOn = ids.length > 0 && ids.every(id => pickedIds.has(id));
-    if (allOn) { onChange(picked.filter(s => !ids.includes(s.sareeId || s.id))); return; }
-    const additions = ids
-      .filter(id => !pickedIds.has(id))
-      .map(id => {
-        const row = rows.find(r => r.sareeId === id);
-        return row ? rowToDispatchSaree(row) : available.find(s => (s.sareeId || s.id) === id);
-      })
-      .filter(Boolean) as FinishingReturn[];
-    onChange([...picked, ...additions]);
-  }, [pickedIds, picked, rows, available, onChange]);
+  const toggleAll = useCallback(
+    (ids: string[]) => {
+      const allOn = ids.length > 0 && ids.every((id) => pickedIds.has(id));
+      if (allOn) {
+        onChange(picked.filter((s) => !ids.includes(s.sareeId || s.id)));
+        return;
+      }
+      const additions = ids
+        .filter((id) => !pickedIds.has(id))
+        .map((id) => {
+          const row = rows.find((r) => r.sareeId === id);
+          return row ? rowToDispatchSaree(row) : available.find((s) => (s.sareeId || s.id) === id);
+        })
+        .filter(Boolean) as FinishingReturn[];
+      onChange([...picked, ...additions]);
+    },
+    [pickedIds, picked, rows, available, onChange]
+  );
 
   // Adds the saree whose id was actually scanned. Barcode scanners type the
   // code and press Enter, so the same input covers scanning and manual entry.
   // This previously picked a *random* unpicked saree regardless of input.
   const scan = (rawId: string) => {
     const id = rawId.trim();
-    const show = (msg: string) => { setScanMsg(msg); setTimeout(() => setScanMsg(""), 2200); };
+    const show = (msg: string) => {
+      setScanMsg(msg);
+      setTimeout(() => setScanMsg(""), 2200);
+    };
     if (!id) return show("Scan a barcode or type a saree ID.");
 
-    const match = pool.find(s => (s.sareeId || s.id).toLowerCase() === id.toLowerCase());
+    const match = pool.find((s) => (s.sareeId || s.id).toLowerCase() === id.toLowerCase());
     if (!match) return show(`No saree "${id}" available here.`);
-    if (pickedIds.has(match.sareeId || match.id)) return show(`${match.sareeId || match.id} is already added.`);
+    if (pickedIds.has(match.sareeId || match.id))
+      return show(`${match.sareeId || match.id} is already added.`);
 
     onChange([...picked, match]);
     show(`Added ${match.sareeId || match.id}`);
@@ -93,9 +121,26 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
   };
 
   return (
-    <div style={{ border: `1.5px solid ${T.borderGold}`, background: "rgba(200,155,71,0.05)", borderRadius: 14 }} className="p-3.5 sm:p-4 mb-4.5 overflow-hidden">
+    <div
+      style={{
+        border: `1.5px solid ${T.borderGold}`,
+        background: "rgba(200,155,71,0.05)",
+        borderRadius: 14,
+      }}
+      className="p-3.5 sm:p-4 mb-4.5 overflow-hidden"
+    >
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.05em" }} className="truncate">
+        <span
+          style={{
+            fontFamily: F.ui,
+            fontSize: 12,
+            fontWeight: 700,
+            color: T.luxuryBrown,
+            textTransform: "uppercase" as const,
+            letterSpacing: "0.05em",
+          }}
+          className="truncate"
+        >
           {label} <span style={{ color: T.royalBurgundy }}>({picked.length})</span>
         </span>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
@@ -103,9 +148,12 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
               that saree, and with the field empty it opens the camera for
               devices with no hardware scanner attached. */}
           <form
-            onSubmit={e => {
+            onSubmit={(e) => {
               e.preventDefault();
-              if (!scanValue.trim()) { setCameraOpen(true); return; }
+              if (!scanValue.trim()) {
+                setCameraOpen(true);
+                return;
+              }
               void resolveSareeCode(scanValue).then(scan);
               setScanValue("");
             }}
@@ -113,7 +161,7 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
           >
             <Input
               value={scanValue}
-              onChange={e => setScanValue(e.target.value)}
+              onChange={(e) => setScanValue(e.target.value)}
               placeholder="Scan or type saree ID"
               aria-label="Saree ID to scan"
               title="Type an ID and press Scan, or press Scan with the box empty to use the camera"
@@ -142,19 +190,46 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
             size="sm"
             iconLeft={Package}
             iconRight={browse ? ChevronUp : ChevronDown}
-            className={browse ? "shrink-0 rounded-[10px] bg-[var(--bk-burgundy-900)] w-full sm:w-auto h-9" : "shrink-0 rounded-[10px] w-full sm:w-auto h-9"}
+            className={
+              browse
+                ? "shrink-0 rounded-[10px] bg-[var(--bk-burgundy-900)] w-full sm:w-auto h-9"
+                : "shrink-0 rounded-[10px] w-full sm:w-auto h-9"
+            }
           >
             Select from Inventory
           </Button>
         </div>
       </div>
       {scanMsg && (
-        <div style={{ marginTop: 10, fontFamily: F.ui, fontSize: 12, color: T.green, background: T.greenBg, borderRadius: 8, padding: "7px 12px", display: "inline-block" }}>{scanMsg}</div>
+        <div
+          style={{
+            marginTop: 10,
+            fontFamily: F.ui,
+            fontSize: 12,
+            color: T.green,
+            background: T.greenBg,
+            borderRadius: 8,
+            padding: "7px 12px",
+            display: "inline-block",
+          }}
+        >
+          {scanMsg}
+        </div>
       )}
 
       {/* The page's own inventory table, with its tabs and filters intact */}
       {browse && (
-        <div style={{ marginTop: 12, background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: 16, maxHeight: 460, overflowY: "auto" }}>
+        <div
+          style={{
+            marginTop: 12,
+            background: "#FFF",
+            border: `1px solid ${T.borderDef}`,
+            borderRadius: 12,
+            padding: 16,
+            maxHeight: 460,
+            overflowY: "auto",
+          }}
+        >
           <WeaverSareesSection
             ownerType="all"
             selectable
@@ -169,13 +244,13 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
       {/* Picked chips */}
       {picked.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 8, marginTop: 12 }}>
-          {picked.map(s => {
+          {picked.map((s) => {
             const sId = s.sareeId || s.id;
             return (
               <Chip
                 key={sId}
                 label={sId}
-                onRemove={() => onChange(picked.filter(s => (s.sareeId || s.id) !== sId))}
+                onRemove={() => onChange(picked.filter((s) => (s.sareeId || s.id) !== sId))}
                 className="font-code"
               />
             );

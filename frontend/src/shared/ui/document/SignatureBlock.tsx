@@ -10,29 +10,62 @@ export interface SignatureBlockProps {
   roleLabel?: string;
 }
 
-export function SignatureBlock({ firmName, roleLabel = "Authorised Signatory" }: SignatureBlockProps) {
+export function SignatureBlock({
+  firmName,
+  roleLabel = "Authorised Signatory",
+}: SignatureBlockProps) {
   return (
     <div
       className="bk-doc__signature"
       style={{
-        display: "flex", justifyContent: "space-between", alignItems: "flex-end",
-        marginTop: "6mm", paddingTop: "3.5mm", borderTop: "0.3mm solid var(--doc-rule)",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-end",
+        marginTop: "6mm",
+        paddingTop: "3.5mm",
+        borderTop: "0.3mm solid var(--doc-rule)",
       }}
     >
       <div style={{ maxWidth: "80mm" }}>
-        <div style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)", fontStyle: "italic" }}>
+        <div
+          style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)", fontStyle: "italic" }}
+        >
           This is a computer-generated document.
         </div>
-        <div style={{ fontSize: "var(--doc-small)", color: "var(--doc-gold-text)", marginTop: "1.5mm", letterSpacing: "0.10em", textTransform: "uppercase", fontWeight: 600 }}>
+        <div
+          style={{
+            fontSize: "var(--doc-small)",
+            color: "var(--doc-gold-text)",
+            marginTop: "1.5mm",
+            letterSpacing: "0.10em",
+            textTransform: "uppercase",
+            fontWeight: 600,
+          }}
+        >
           Tradition · Trust · Timeless Quality
         </div>
       </div>
       <div style={{ textAlign: "center", minWidth: "52mm" }}>
-        <div style={{ fontSize: "var(--doc-body)", fontWeight: 600, color: "var(--doc-burgundy)", marginBottom: "8mm" }}>
+        <div
+          style={{
+            fontSize: "var(--doc-body)",
+            fontWeight: 600,
+            color: "var(--doc-burgundy)",
+            marginBottom: "8mm",
+          }}
+        >
           For {firmName}
         </div>
         <div style={{ borderTop: "0.4mm solid var(--doc-rule)", paddingTop: "1.5mm" }}>
-          <span style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)", letterSpacing: "0.04em" }}>{roleLabel}</span>
+          <span
+            style={{
+              fontSize: "var(--doc-small)",
+              color: "var(--doc-muted)",
+              letterSpacing: "0.04em",
+            }}
+          >
+            {roleLabel}
+          </span>
         </div>
       </div>
     </div>

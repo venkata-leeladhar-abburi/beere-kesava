@@ -32,22 +32,22 @@ function getPrintContainer(): HTMLElement {
 
 /** Resolves after React has committed and the browser has painted. */
 function nextPaint(): Promise<void> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
   });
 }
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | void> {
-  return Promise.race([promise, new Promise<void>(resolve => setTimeout(resolve, ms))]);
+  return Promise.race([promise, new Promise<void>((resolve) => setTimeout(resolve, ms))]);
 }
 
 /** Every <img> in the subtree has either loaded or definitively failed. */
 function imagesSettled(container: HTMLElement): Promise<unknown> {
   const images = Array.from(container.querySelectorAll("img"));
   return Promise.all(
-    images.map(img => {
+    images.map((img) => {
       if (img.complete) return Promise.resolve();
-      return new Promise<void>(resolve => {
+      return new Promise<void>((resolve) => {
         img.addEventListener("load", () => resolve(), { once: true });
         img.addEventListener("error", () => resolve(), { once: true });
       });
@@ -85,9 +85,12 @@ async function renderAndPrint(node: React.ReactNode) {
   const unscannable = container.querySelectorAll("[data-code-unavailable]").length;
   if (unscannable > 0) {
     printRoot?.render(null);
-    toast.error(`Not printed — ${unscannable} tag${unscannable === 1 ? "" : "s"} could not be given a scannable code.`, {
-      description: "Check those saree IDs for unusual characters, then print again.",
-    });
+    toast.error(
+      `Not printed — ${unscannable} tag${unscannable === 1 ? "" : "s"} could not be given a scannable code.`,
+      {
+        description: "Check those saree IDs for unusual characters, then print again.",
+      }
+    );
     return;
   }
 

@@ -51,7 +51,11 @@ export const Chip = React.forwardRef<HTMLSpanElement, ChipProps>(function Chip(
           aria-label={removeLabel ?? `Remove ${typeof label === "string" ? label : "filter"}`}
           className="relative inline-flex items-center justify-center size-4 rounded-full hover:bg-[var(--bk-burgundy-200)] shrink-0"
         >
-          <span aria-hidden="true" className="absolute pointer-events-none" style={{ inset: -14 }} />
+          <span
+            aria-hidden="true"
+            className="absolute pointer-events-none"
+            style={{ inset: -14 }}
+          />
           <Icon name="close" size="xs" />
         </button>
       )}

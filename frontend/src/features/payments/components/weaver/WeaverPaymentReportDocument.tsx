@@ -42,14 +42,25 @@ export function WeaverPaymentReportDocument({
       deduction: acc.deduction + r.deduction,
       amountPaid: acc.amountPaid + r.amountPaid,
     }),
-    { makingCharges: 0, deduction: 0, amountPaid: 0 },
+    { makingCharges: 0, deduction: 0, amountPaid: 0 }
   );
 
   return (
     <DocumentPage band={<Letterhead title="Weaver Payment Report" documentNumber={reportNumber} />}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: "5mm" }}>
-        <div style={{ fontSize: "var(--doc-heading)", fontWeight: 700, color: "var(--doc-ink)" }}>{periodLabel}</div>
-        <div style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)" }}>Generated {generatedDate}</div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          marginTop: "5mm",
+        }}
+      >
+        <div style={{ fontSize: "var(--doc-heading)", fontWeight: 700, color: "var(--doc-ink)" }}>
+          {periodLabel}
+        </div>
+        <div style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)" }}>
+          Generated {generatedDate}
+        </div>
       </div>
 
       {/* eslint-disable-next-line no-restricted-syntax -- printable document template */}
@@ -74,30 +85,38 @@ export function WeaverPaymentReportDocument({
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={11} style={{ textAlign: "center", color: "var(--doc-muted)" }}>No weaver payment data for this period.</td>
+              <td colSpan={11} style={{ textAlign: "center", color: "var(--doc-muted)" }}>
+                No weaver payment data for this period.
+              </td>
             </tr>
-          ) : rows.map((r) => (
-            // UTR number is the bank's own unique reference for a payment,
-            // making it a stable natural key for a payment-report row.
-            <tr key={r.utrNumber || `${r.weaverId}-${r.paymentDate}`}>
-              <td style={{ fontFamily: "var(--font-code)" }}>{r.weaverId}</td>
-              <td>{r.weaverName}</td>
-              <td style={{ fontFamily: "var(--font-code)" }}>{r.batches || "—"}</td>
-              <td>{r.loomNumber || "—"}</td>
-              <td data-num>{r.noOfSarees}</td>
-              <td data-num>{formatMoney(rupees(r.makingCharges))}</td>
-              <td data-num>{formatMoney(rupees(r.deduction))}</td>
-              <td data-num style={{ fontWeight: 600 }}>{formatMoney(rupees(r.amountPaid))}</td>
-              <td style={{ fontFamily: "var(--font-code)" }}>{r.utrNumber || "—"}</td>
-              <td>{r.firmName || "—"}</td>
-              <td>{r.paymentDate || "—"}</td>
-            </tr>
-          ))}
+          ) : (
+            rows.map((r) => (
+              // UTR number is the bank's own unique reference for a payment,
+              // making it a stable natural key for a payment-report row.
+              <tr key={r.utrNumber || `${r.weaverId}-${r.paymentDate}`}>
+                <td style={{ fontFamily: "var(--font-code)" }}>{r.weaverId}</td>
+                <td>{r.weaverName}</td>
+                <td style={{ fontFamily: "var(--font-code)" }}>{r.batches || "—"}</td>
+                <td>{r.loomNumber || "—"}</td>
+                <td data-num>{r.noOfSarees}</td>
+                <td data-num>{formatMoney(rupees(r.makingCharges))}</td>
+                <td data-num>{formatMoney(rupees(r.deduction))}</td>
+                <td data-num style={{ fontWeight: 600 }}>
+                  {formatMoney(rupees(r.amountPaid))}
+                </td>
+                <td style={{ fontFamily: "var(--font-code)" }}>{r.utrNumber || "—"}</td>
+                <td>{r.firmName || "—"}</td>
+                <td>{r.paymentDate || "—"}</td>
+              </tr>
+            ))
+          )}
         </tbody>
         {rows.length > 0 && (
           <tfoot>
             <tr style={{ fontWeight: 700 }}>
-              <td colSpan={5}>Totals — {rows.length} weaver{rows.length !== 1 ? "s" : ""}</td>
+              <td colSpan={5}>
+                Totals — {rows.length} weaver{rows.length !== 1 ? "s" : ""}
+              </td>
               <td data-num>{formatMoney(rupees(totals.makingCharges))}</td>
               <td data-num>{formatMoney(rupees(totals.deduction))}</td>
               <td data-num>{formatMoney(rupees(totals.amountPaid))}</td>

@@ -19,169 +19,206 @@ export function DetailDrawer({
   onViewSarees: (row: Purchase) => void;
 }) {
   return (
-    <Drawer open={!!detailRow} onOpenChange={next => { if (!next) onClose(); }} side="right" size="md">
+    <Drawer
+      open={!!detailRow}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+      side="right"
+      size="md"
+    >
       {detailRow && (
+        <div
+          style={{
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           <div
             style={{
-              height: "100%",
+              padding: "22px 28px",
+              borderBottom: `1px solid ${T.borderDef}`,
               display: "flex",
-              flexDirection: "column",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexShrink: 0,
             }}
           >
-            <div
-              style={{
-                padding: "22px 28px",
-                borderBottom: `1px solid ${T.borderDef}`,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                flexShrink: 0,
-              }}
-            >
-              <Dialog.Title asChild>
-                <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown }}>
-                  Purchase Details
-                </span>
-              </Dialog.Title>
-              <Dialog.Description className="sr-only">Full details for this external purchase</Dialog.Description>
-              <Dialog.Close asChild>
-                <IconButton
-                  icon={X}
-                  label="Close"
-                  onClick={onClose}
-                  variant="secondary"
-                  shape="circle"
-                  size="sm"
-                />
-              </Dialog.Close>
-            </div>
-
-            <div
-              style={{
-                flex: 1,
-                overflowY: "auto",
-                padding: "24px 28px",
-                display: "flex",
-                flexDirection: "column",
-                gap: 18,
-              }}
-            >
-              {[
-                { label: "Serial Number", value: detailRow.id, mono: true, gold: true },
-                { label: "Supplier Name", value: detailRow.supplier },
-                { label: "Location", value: detailRow.location },
-                { label: "Purchase Date", value: detailRow.date },
-                { label: "Number of Sarees", value: String(purchasePieces(detailRow)) },
-                { label: "GST Number", value: detailRow.gstNumber || "—", mono: true },
-                { label: "Invoice Number", value: detailRow.invoiceNumber || "—", mono: true },
-                // Bill breakdown — only purchases whose bill was calculated
-                // from their sarees have one; older ones show the bill alone.
-                ...(detailRow.subtotal !== undefined
-                  ? [
-                      { label: "Sarees Total", value: formatMoneyExact(rupees(detailRow.subtotal)) },
-                      ...(detailRow.discountAmount
-                        ? [{
-                            label: detailRow.discountType === "percent" ? `Discount (${detailRow.discountValue}%)` : "Discount",
-                            value: `− ${formatMoneyExact(rupees(detailRow.discountAmount))}`,
-                          }]
-                        : []),
-                      ...(detailRow.gstPercent
-                        ? [{ label: `GST (${detailRow.gstPercent}%)`, value: `+ ${formatMoneyExact(rupees(detailRow.gstAmount ?? 0))}` }]
-                        : []),
-                    ]
-                  : []),
-                { label: "Bill Amount", value: detailRow.billAmount, gold: true },
-                { label: "Invoice File", value: detailRow.invoiceFileName || "Not uploaded" },
-              ].map((field) => (
-                <div key={field.label}>
-                  <div
-                    style={{
-                      fontFamily: F.ui,
-                      fontWeight: 600,
-                      fontSize: 12,
-                      color: T.luxuryBrown,
-                      marginBottom: 4,
-                    }}
-                  >
-                    {field.label}
-                  </div>
-                    <div
-                      style={{
-                        fontFamily: F.ui,
-                        fontSize: 14,
-                        color: field.gold ? T.antiqueGold : field.mono ? T.royalBurgundy : T.taupe,
-                        fontWeight: field.mono ? 700 : 400,
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
-                      {field.value}
-                    </div>
-                </div>
-              ))}
-
-              {detailRow.notes && (
-                <div>
-                  <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.luxuryBrown, marginBottom: 4 }}>
-                    Notes
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: F.ui,
-                      fontSize: 14,
-                      color: T.taupe,
-                      background: T.silkCream,
-                      borderRadius: 8,
-                      padding: "10px 12px",
-                      lineHeight: 1.6,
-                    }}
-                  >
-                    {detailRow.notes}
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.luxuryBrown, marginBottom: 8 }}>
-                  Saree Barcodes ({purchasePieces(detailRow)})
-                </div>
-                <Button
-                  onClick={() => onViewSarees(detailRow)}
-                  variant="secondary"
-                  fullWidth
-                  iconLeft={Tag}
-                >
-                  View &amp; Print Saree Tags
-                </Button>
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: "18px 28px",
-                borderTop: `1px solid ${T.borderDef}`,
-                display: "flex",
-                gap: 10,
-                flexShrink: 0,
-              }}
-            >
-              <Button
-                onClick={() => onEdit(detailRow.id)}
-                variant="primary"
-                fullWidth
-                className="rounded-full"
+            <Dialog.Title asChild>
+              <span
+                style={{
+                  fontFamily: F.display,
+                  fontWeight: 700,
+                  fontSize: 20,
+                  color: T.luxuryBrown,
+                }}
               >
-                Edit Entry
-              </Button>
-              <Button
+                Purchase Details
+              </span>
+            </Dialog.Title>
+            <Dialog.Description className="sr-only">
+              Full details for this external purchase
+            </Dialog.Description>
+            <Dialog.Close asChild>
+              <IconButton
+                icon={X}
+                label="Close"
                 onClick={onClose}
                 variant="secondary"
-                fullWidth
-                className="rounded-full"
+                shape="circle"
+                size="sm"
+              />
+            </Dialog.Close>
+          </div>
+
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: "24px 28px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 18,
+            }}
+          >
+            {[
+              { label: "Serial Number", value: detailRow.id, mono: true, gold: true },
+              { label: "Supplier Name", value: detailRow.supplier },
+              { label: "Location", value: detailRow.location },
+              { label: "Purchase Date", value: detailRow.date },
+              { label: "Number of Sarees", value: String(purchasePieces(detailRow)) },
+              { label: "GST Number", value: detailRow.gstNumber || "—", mono: true },
+              { label: "Invoice Number", value: detailRow.invoiceNumber || "—", mono: true },
+              // Bill breakdown — only purchases whose bill was calculated
+              // from their sarees have one; older ones show the bill alone.
+              ...(detailRow.subtotal !== undefined
+                ? [
+                    { label: "Sarees Total", value: formatMoneyExact(rupees(detailRow.subtotal)) },
+                    ...(detailRow.discountAmount
+                      ? [
+                          {
+                            label:
+                              detailRow.discountType === "percent"
+                                ? `Discount (${detailRow.discountValue}%)`
+                                : "Discount",
+                            value: `− ${formatMoneyExact(rupees(detailRow.discountAmount))}`,
+                          },
+                        ]
+                      : []),
+                    ...(detailRow.gstPercent
+                      ? [
+                          {
+                            label: `GST (${detailRow.gstPercent}%)`,
+                            value: `+ ${formatMoneyExact(rupees(detailRow.gstAmount ?? 0))}`,
+                          },
+                        ]
+                      : []),
+                  ]
+                : []),
+              { label: "Bill Amount", value: detailRow.billAmount, gold: true },
+              { label: "Invoice File", value: detailRow.invoiceFileName || "Not uploaded" },
+            ].map((field) => (
+              <div key={field.label}>
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontWeight: 600,
+                    fontSize: 12,
+                    color: T.luxuryBrown,
+                    marginBottom: 4,
+                  }}
+                >
+                  {field.label}
+                </div>
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 14,
+                    color: field.gold ? T.antiqueGold : field.mono ? T.royalBurgundy : T.taupe,
+                    fontWeight: field.mono ? 700 : 400,
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {field.value}
+                </div>
+              </div>
+            ))}
+
+            {detailRow.notes && (
+              <div>
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontWeight: 600,
+                    fontSize: 12,
+                    color: T.luxuryBrown,
+                    marginBottom: 4,
+                  }}
+                >
+                  Notes
+                </div>
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 14,
+                    color: T.taupe,
+                    background: T.silkCream,
+                    borderRadius: 8,
+                    padding: "10px 12px",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {detailRow.notes}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <div
+                style={{
+                  fontFamily: F.ui,
+                  fontWeight: 600,
+                  fontSize: 12,
+                  color: T.luxuryBrown,
+                  marginBottom: 8,
+                }}
               >
-                Close
+                Saree Barcodes ({purchasePieces(detailRow)})
+              </div>
+              <Button
+                onClick={() => onViewSarees(detailRow)}
+                variant="secondary"
+                fullWidth
+                iconLeft={Tag}
+              >
+                View &amp; Print Saree Tags
               </Button>
             </div>
           </div>
+
+          <div
+            style={{
+              padding: "18px 28px",
+              borderTop: `1px solid ${T.borderDef}`,
+              display: "flex",
+              gap: 10,
+              flexShrink: 0,
+            }}
+          >
+            <Button
+              onClick={() => onEdit(detailRow.id)}
+              variant="primary"
+              fullWidth
+              className="rounded-full"
+            >
+              Edit Entry
+            </Button>
+            <Button onClick={onClose} variant="secondary" fullWidth className="rounded-full">
+              Close
+            </Button>
+          </div>
+        </div>
       )}
     </Drawer>
   );

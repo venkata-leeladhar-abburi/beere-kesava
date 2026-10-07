@@ -38,7 +38,10 @@ export function Avatar({ src, name, size = "md", status, className, ...props }: 
 
   return (
     <AvatarPrimitive.Root
-      className={cn("relative inline-flex shrink-0 rounded-[var(--radius-full)] overflow-hidden", className)}
+      className={cn(
+        "relative inline-flex shrink-0 rounded-[var(--radius-full)] overflow-hidden",
+        className
+      )}
       style={{ width: px, height: px }}
       {...props}
     >
@@ -86,7 +89,12 @@ export function AvatarGroup({ avatars, size = "md", max = 4 }: AvatarGroupProps)
       {visible.map((a, i) => (
         // eslint-disable-next-line react/no-array-index-key -- AvatarGroupProps only carries name/src, and duplicate names are possible, so index is combined with name to keep the key stable per-slot.
         <div key={`${a.name}-${i}`} style={{ marginLeft: i === 0 ? 0 : -px * 0.2 }}>
-          <Avatar name={a.name} src={a.src} size={size} className="ring-2 ring-[var(--surface-raised)]" />
+          <Avatar
+            name={a.name}
+            src={a.src}
+            size={size}
+            className="ring-2 ring-[var(--surface-raised)]"
+          />
         </div>
       ))}
       {overflow > 0 && (

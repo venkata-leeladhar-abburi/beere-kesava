@@ -39,14 +39,22 @@ export interface StatementOfAccountDocumentProps {
 }
 
 export function StatementOfAccountDocument({
-  statementNumber, generatedDate, periodFrom, periodTo, firm, party,
-  openingBalancePaise, entries, ageing, pageInfo,
+  statementNumber,
+  generatedDate,
+  periodFrom,
+  periodTo,
+  firm,
+  party,
+  openingBalancePaise,
+  entries,
+  ageing,
+  pageInfo,
 }: StatementOfAccountDocumentProps) {
   // Running balance computed once, top to bottom — debit increases what the
   // party owes, credit reduces it, matching the accounts-receivable
   // convention (this statement is issued BY the firm TO the party).
   let running = openingBalancePaise;
-  const rows = entries.map(e => {
+  const rows = entries.map((e) => {
     running = running + (e.debitPaise ?? 0) - (e.creditPaise ?? 0);
     return { ...e, balancePaise: running };
   });
@@ -63,10 +71,14 @@ export function StatementOfAccountDocument({
   return (
     <DocumentPage
       pageInfo={pageInfo}
-      band={<Letterhead firm={firm} title="Statement of Account" documentNumber={statementNumber} />}
+      band={
+        <Letterhead firm={firm} title="Statement of Account" documentNumber={statementNumber} />
+      }
     >
       <PartyBlock
-        parties={[{ label: "Statement For", name: party.name, address: party.address, gstin: party.gstin }]}
+        parties={[
+          { label: "Statement For", name: party.name, address: party.address, gstin: party.gstin },
+        ]}
         meta={meta}
       />
 
@@ -76,9 +88,15 @@ export function StatementOfAccountDocument({
             <th style={{ width: "20mm" }}>Date</th>
             <th style={{ width: "70mm" }}>Particulars</th>
             <th style={{ width: "24mm" }}>Ref</th>
-            <th data-num style={{ width: "24mm" }}>Debit</th>
-            <th data-num style={{ width: "24mm" }}>Credit</th>
-            <th data-num style={{ width: "28mm" }}>Balance</th>
+            <th data-num style={{ width: "24mm" }}>
+              Debit
+            </th>
+            <th data-num style={{ width: "24mm" }}>
+              Credit
+            </th>
+            <th data-num style={{ width: "28mm" }}>
+              Balance
+            </th>
           </tr>
           {/* Opening Balance lives inside the SAME <thead> as the column
               headers — a table can only have one, and only <thead> repeats
@@ -87,8 +105,28 @@ export function StatementOfAccountDocument({
               every break," rather than a <tbody> row that would print once
               on page 1 and never again. */}
           <tr style={{ fontWeight: 700, background: "var(--doc-warm)" }}>
-            <td colSpan={5} style={{ padding: "1.9mm 2.5mm", color: "var(--doc-ink)", textTransform: "none", letterSpacing: "normal", fontSize: "var(--doc-table)" }}>Balance Brought Forward</td>
-            <td data-num style={{ padding: "1.9mm 2.5mm", color: "var(--doc-ink)", fontSize: "var(--doc-table)" }}>{formatPaise(openingBalancePaise)}</td>
+            <td
+              colSpan={5}
+              style={{
+                padding: "1.9mm 2.5mm",
+                color: "var(--doc-ink)",
+                textTransform: "none",
+                letterSpacing: "normal",
+                fontSize: "var(--doc-table)",
+              }}
+            >
+              Balance Brought Forward
+            </td>
+            <td
+              data-num
+              style={{
+                padding: "1.9mm 2.5mm",
+                color: "var(--doc-ink)",
+                fontSize: "var(--doc-table)",
+              }}
+            >
+              {formatPaise(openingBalancePaise)}
+            </td>
           </tr>
         </thead>
         <tbody>
@@ -102,7 +140,9 @@ export function StatementOfAccountDocument({
               <td style={{ fontFamily: "var(--font-code)" }}>{r.ref || "—"}</td>
               <td data-num>{r.debitPaise ? formatPaise(r.debitPaise) : "—"}</td>
               <td data-num>{r.creditPaise ? formatPaise(r.creditPaise) : "—"}</td>
-              <td data-num style={{ fontWeight: 600 }}>{formatPaise(r.balancePaise)}</td>
+              <td data-num style={{ fontWeight: 600 }}>
+                {formatPaise(r.balancePaise)}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -118,9 +158,34 @@ export function StatementOfAccountDocument({
 
       <div style={{ marginTop: "5mm", display: "flex", justifyContent: "flex-end" }}>
         <div className="bk-doc__totals-card" style={{ width: "70mm" }}>
-          <div className="bk-doc__totals-grand" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "3.2mm 4mm" }}>
-            <span style={{ fontSize: "var(--doc-body)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.10em" }}>Closing Balance</span>
-            <span style={{ fontSize: "var(--doc-total)", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{formatPaise(closingBalancePaise)}</span>
+          <div
+            className="bk-doc__totals-grand"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "3.2mm 4mm",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "var(--doc-body)",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.10em",
+              }}
+            >
+              Closing Balance
+            </span>
+            <span
+              style={{
+                fontSize: "var(--doc-total)",
+                fontWeight: 700,
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {formatPaise(closingBalancePaise)}
+            </span>
           </div>
         </div>
       </div>
@@ -129,12 +194,20 @@ export function StatementOfAccountDocument({
         <table className="bk-doc__table bk-doc__tax-summary" style={{ marginTop: "5mm" }}>
           <thead>
             <tr>
-              {ageing.map(b => <th key={b.label} data-num={b.label !== ageing[0].label || undefined}>{b.label}</th>)}
+              {ageing.map((b) => (
+                <th key={b.label} data-num={b.label !== ageing[0].label || undefined}>
+                  {b.label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             <tr>
-              {ageing.map(b => <td key={b.label} data-num>{formatPaise(b.amountPaise)}</td>)}
+              {ageing.map((b) => (
+                <td key={b.label} data-num>
+                  {formatPaise(b.amountPaise)}
+                </td>
+              ))}
             </tr>
           </tbody>
         </table>

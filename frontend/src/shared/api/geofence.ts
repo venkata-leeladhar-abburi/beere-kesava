@@ -84,7 +84,8 @@ export type UpdateSitePayload = Partial<CreateSitePayload>;
 
 export const geofenceApi = {
   listSites: () => apiClient.get<GeofenceSite[]>("/geofence/sites"),
-  createSite: (payload: CreateSitePayload) => apiClient.post<GeofenceSite>("/geofence/sites", payload),
+  createSite: (payload: CreateSitePayload) =>
+    apiClient.post<GeofenceSite>("/geofence/sites", payload),
   updateSite: (id: string, payload: UpdateSitePayload) =>
     apiClient.patch<GeofenceSite>(`/geofence/sites/${id}`, payload),
   deleteSite: (id: string) => apiClient.delete<{ ok: boolean }>(`/geofence/sites/${id}`),

@@ -10,12 +10,32 @@ export interface EmptyStateProps {
 }
 
 /** No data has ever existed here — the non-table equivalent of TableEmpty. */
-export function EmptyState({ icon = "info", title, description, action, compact }: EmptyStateProps) {
-  return <StateView icon={icon} title={title} description={description} action={action} compact={compact} />;
+export function EmptyState({
+  icon = "info",
+  title,
+  description,
+  action,
+  compact,
+}: EmptyStateProps) {
+  return (
+    <StateView
+      icon={icon}
+      title={title}
+      description={description}
+      action={action}
+      compact={compact}
+    />
+  );
 }
 
 /** Data exists, current filters matched nothing. Never render identically to EmptyState. */
-export function FilteredEmptyState({ onClearFilters, compact }: { onClearFilters: () => void; compact?: boolean }) {
+export function FilteredEmptyState({
+  onClearFilters,
+  compact,
+}: {
+  onClearFilters: () => void;
+  compact?: boolean;
+}) {
   return (
     <StateView
       icon="search"

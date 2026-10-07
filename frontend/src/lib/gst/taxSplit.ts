@@ -6,7 +6,10 @@
  */
 export type TaxKind = "intra" | "inter";
 
-export function taxSplitKind(supplierGstin: string | undefined | null, placeOfSupplyCode: string | undefined | null): TaxKind {
+export function taxSplitKind(
+  supplierGstin: string | undefined | null,
+  placeOfSupplyCode: string | undefined | null
+): TaxKind {
   const supplierState = (supplierGstin ?? "").slice(0, 2);
   if (!supplierState || !placeOfSupplyCode) return "intra"; // default, e.g. no GSTIN on file yet
   return supplierState === placeOfSupplyCode ? "intra" : "inter";
@@ -25,7 +28,9 @@ export interface TaxLine {
  */
 export function taxLines(taxableValuePaise: number, ratePct: number, kind: TaxKind): TaxLine[] {
   if (kind === "inter") {
-    return [{ label: "IGST", ratePct, amountPaise: Math.round((taxableValuePaise * ratePct) / 100) }];
+    return [
+      { label: "IGST", ratePct, amountPaise: Math.round((taxableValuePaise * ratePct) / 100) },
+    ];
   }
   const halfRate = ratePct / 2;
   const cgst = Math.round((taxableValuePaise * halfRate) / 100);

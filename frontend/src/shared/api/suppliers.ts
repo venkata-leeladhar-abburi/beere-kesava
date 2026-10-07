@@ -61,7 +61,8 @@ interface PaginatedResponse<T> {
 export const suppliersApi = {
   list: (pageSize = 100) =>
     apiClient.get<PaginatedResponse<BackendSupplier>>(`/suppliers?pageSize=${pageSize}`),
-  create: (payload: CreateSupplierPayload) => apiClient.post<BackendSupplier>("/suppliers", payload),
+  create: (payload: CreateSupplierPayload) =>
+    apiClient.post<BackendSupplier>("/suppliers", payload),
   update: (id: string, payload: Partial<CreateSupplierPayload> & { status?: string }) =>
     apiClient.patch<BackendSupplier>(`/suppliers/${id}`, payload),
   remove: (id: string) => apiClient.delete<void>(`/suppliers/${id}`),

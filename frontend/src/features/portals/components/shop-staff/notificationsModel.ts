@@ -12,7 +12,14 @@
  */
 import React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Package, RotateCcw, Settings2, ShoppingBag, TriangleAlert, type LucideIcon } from "lucide-react";
+import {
+  Package,
+  RotateCcw,
+  Settings2,
+  ShoppingBag,
+  TriangleAlert,
+  type LucideIcon,
+} from "lucide-react";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { notificationsApi } from "../../../../shared/api/notifications";
 import { salesApi } from "../../../../shared/api/sales";
@@ -95,12 +102,21 @@ function describePayload(payload: Record<string, unknown> | null): string {
   if (!payload || typeof payload !== "object") return "Store activity alert";
   const parts = Object.entries(payload)
     .filter(([, v]) => v !== null && v !== undefined && typeof v !== "object")
-    .map(([k, v]) => `${k.replace(/([A-Z])/g, " $1").replace(/^./, c => c.toUpperCase()).trim()}: ${String(v)}`);
+    .map(
+      ([k, v]) =>
+        `${k
+          .replace(/([A-Z])/g, " $1")
+          .replace(/^./, (c) => c.toUpperCase())
+          .trim()}: ${String(v)}`
+    );
   return parts.length > 0 ? parts.join(" · ") : "Store activity alert";
 }
 
 function titleCase(type: string): string {
-  return type.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+  return type
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export function useShopNotifications(limit = 50) {
@@ -127,7 +143,7 @@ export function useShopNotifications(limit = 50) {
   const [locallyRead, setLocallyRead] = React.useState<Set<string>>(() => new Set());
 
   const notifications: ShopNotification[] = React.useMemo(() => {
-    const backend: ShopNotification[] = (notifQ.data?.items ?? []).map(n => ({
+    const backend: ShopNotification[] = (notifQ.data?.items ?? []).map((n) => ({
       id: `notif-${n.id}`,
       backendId: n.id,
       type: n.type,
@@ -139,7 +155,7 @@ export function useShopNotifications(limit = 50) {
       unread: !n.readAt,
     }));
 
-    const returns: ShopNotification[] = (returnsQ.data?.items ?? []).map(r => ({
+    const returns: ShopNotification[] = (returnsQ.data?.items ?? []).map((r) => ({
       id: `return-${r.returnRef}`,
       type: "return",
       category: "return" as const,
@@ -150,7 +166,7 @@ export function useShopNotifications(limit = 50) {
       unread: true,
     }));
 
-    const sales: ShopNotification[] = (salesQ.data?.items ?? []).map(s => ({
+    const sales: ShopNotification[] = (salesQ.data?.items ?? []).map((s) => ({
       id: `sale-${s.saleRef}`,
       type: "sale",
       category: "sale" as const,
@@ -162,26 +178,37 @@ export function useShopNotifications(limit = 50) {
     }));
 
     return [...backend, ...returns, ...sales]
-      .map(n => (locallyRead.has(n.id) ? { ...n, unread: false } : n))
+      .map((n) => (locallyRead.has(n.id) ? { ...n, unread: false } : n))
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [notifQ.data, returnsQ.data, salesQ.data, locallyRead]);
 
-  const unreadCount = notifications.filter(n => n.unread).length;
+  const unreadCount = notifications.filter((n) => n.unread).length;
 
-  const markRead = React.useCallback(async (n: ShopNotification) => {
-    if (!n.unread) return;
-    setLocallyRead(prev => new Set(prev).add(n.id));
-    if (n.backendId) {
-      try { await notificationsApi.markRead(n.backendId); } catch { /* optimistic — keep the local read state */ }
-      qc.invalidateQueries({ queryKey: ["shop-notifications", limit] });
-    }
-  }, [qc, limit]);
+  const markRead = React.useCallback(
+    async (n: ShopNotification) => {
+      if (!n.unread) return;
+      setLocallyRead((prev) => new Set(prev).add(n.id));
+      if (n.backendId) {
+        try {
+          await notificationsApi.markRead(n.backendId);
+        } catch {
+          /* optimistic — keep the local read state */
+        }
+        qc.invalidateQueries({ queryKey: ["shop-notifications", limit] });
+      }
+    },
+    [qc, limit]
+  );
 
   const markAllRead = React.useCallback(async () => {
-    setLocallyRead(new Set(notifications.map(n => n.id)));
+    setLocallyRead(new Set(notifications.map((n) => n.id)));
     for (const n of notifQ.data?.items ?? []) {
       if (!n.readAt) {
-        try { await notificationsApi.markRead(n.id); } catch { /* ignore single failure */ }
+        try {
+          await notificationsApi.markRead(n.id);
+        } catch {
+          /* ignore single failure */
+        }
       }
     }
     qc.invalidateQueries({ queryKey: ["shop-notifications", limit] });
@@ -192,7 +219,11 @@ export function useShopNotifications(limit = 50) {
     unreadCount,
     loading: notifQ.isLoading || returnsQ.isLoading || salesQ.isLoading,
     error: notifQ.isError,
-    refetch: () => { notifQ.refetch(); returnsQ.refetch(); salesQ.refetch(); },
+    refetch: () => {
+      notifQ.refetch();
+      returnsQ.refetch();
+      salesQ.refetch();
+    },
     markRead,
     markAllRead,
   };

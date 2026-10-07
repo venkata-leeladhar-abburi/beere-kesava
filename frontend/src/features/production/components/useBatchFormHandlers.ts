@@ -6,13 +6,24 @@ import type { BulkOrder } from "@/features/bulk-orders";
 // Minimal shapes accepted by the row-mutation helpers below — real data now
 // comes from the backend (see WeaverOption/LoomOption in PickerModals.tsx),
 // not the old static WEAVERS/FACTORY_LOOMS_LIST mocks.
-export interface WeaverOption { id: string; /** Human-facing weaver code ("Ramarao-001") — the only weaver id shown in the UI. */ code: string; name: string; initials: string; looms: number }
+export interface WeaverOption {
+  id: string;
+  /** Human-facing weaver code ("Ramarao-001") — the only weaver id shown in the UI. */ code: string;
+  name: string;
+  initials: string;
+  looms: number;
+}
 export interface LoomOption {
   id: string;
   /** Human-facing loom code ("Loom-002") — the only loom id shown in the UI. */
   displayCode: string | null;
-  loomNumber: string; location: string; status: string;
-  operatorName: string; operatorPhone: string; installedYear: number | null; notes: string;
+  loomNumber: string;
+  location: string;
+  status: string;
+  operatorName: string;
+  operatorPhone: string;
+  installedYear: number | null;
+  notes: string;
 }
 
 /**
@@ -40,7 +51,7 @@ export interface BulkOrderCapacityConflict {
 export function useBatchFormHandlers(
   bulkOrders: BulkOrder[],
   /** Sarees already tied to each bulk order ref in *other* batches, keyed by ref. */
-  assignedElsewhereByRef: Record<string, number> = {},
+  assignedElsewhereByRef: Record<string, number> = {}
 ) {
   const [rows, setRows] = useState<SareeRow[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -51,45 +62,78 @@ export function useBatchFormHandlers(
   function generateRows(totalCount: string) {
     const n = parseInt(totalCount, 10);
     if (!n || n < 1 || n > 500) return;
-    setRows(Array.from({ length: n }, (_, i) => ({
-      serial: i + 1,
-      sareeId: null, recipientType: undefined,
-      weaverId: null, weaverCode: null, weaverName: null, weaverInitials: null, weaverLoom: null,
-      factoryLoomId: null, factoryLoomNumber: null,
-      designCode: null, sareeTypeCode: null, sareeTypeName: null,
-      bulkOrderRef: null, bulkOrderLabel: null,
-      receivedAt: null, receivedWeight: null, receivedColor: null, receivedPhotoUrl: null,
-      receivedWarpG: null, receivedReshamG: null, receivedJariReels: null, receivedBy: null,
-      tallied: false, talliedBy: null, talliedAt: null,
-    })));
+    setRows(
+      Array.from({ length: n }, (_, i) => ({
+        serial: i + 1,
+        sareeId: null,
+        recipientType: undefined,
+        weaverId: null,
+        weaverCode: null,
+        weaverName: null,
+        weaverInitials: null,
+        weaverLoom: null,
+        factoryLoomId: null,
+        factoryLoomNumber: null,
+        designCode: null,
+        sareeTypeCode: null,
+        sareeTypeName: null,
+        bulkOrderRef: null,
+        bulkOrderLabel: null,
+        receivedAt: null,
+        receivedWeight: null,
+        receivedColor: null,
+        receivedPhotoUrl: null,
+        receivedWarpG: null,
+        receivedReshamG: null,
+        receivedJariReels: null,
+        receivedBy: null,
+        tallied: false,
+        talliedBy: null,
+        talliedAt: null,
+      }))
+    );
     setSelected(new Set());
     setGenerated(true);
   }
 
   const allSelected = rows.length > 0 && selected.size === rows.length;
-  function toggleAll() { setSelected(allSelected ? new Set() : new Set(rows.map(r => r.serial))); }
+  function toggleAll() {
+    setSelected(allSelected ? new Set() : new Set(rows.map((r) => r.serial)));
+  }
   function toggleRow(serial: number) {
-    setSelected(prev => { const n = new Set(prev); if (n.has(serial)) n.delete(serial); else n.add(serial); return n; });
+    setSelected((prev) => {
+      const n = new Set(prev);
+      if (n.has(serial)) n.delete(serial);
+      else n.add(serial);
+      return n;
+    });
   }
 
   function applyWeaver(w: WeaverOption) {
-    setRows(prev => prev.map(r => {
-      if (!selected.has(r.serial)) return r;
-      return {
-        ...r, recipientType: "weaver" as const,
-        weaverId: w.id, weaverCode: w.code, weaverName: w.name, weaverInitials: w.initials,
-        // Which of the weaver's looms this saree sits on is a real decision —
-        // it goes into the saree ID and drives per-loom payment reporting.
-        // Defaulting to loom 1 quietly filed every saree under the first loom
-        // for weavers who run several, so it is left unassigned here and the
-        // admin picks it via "Assign Loom No.". The saree ID can't be built
-        // without it, so the row stays incomplete until they do, which the
-        // existing finalize gate already enforces.
-        weaverLoom: null,
-        factoryLoomId: null, factoryLoomNumber: null,
-        sareeId: null,
-      };
-    }));
+    setRows((prev) =>
+      prev.map((r) => {
+        if (!selected.has(r.serial)) return r;
+        return {
+          ...r,
+          recipientType: "weaver" as const,
+          weaverId: w.id,
+          weaverCode: w.code,
+          weaverName: w.name,
+          weaverInitials: w.initials,
+          // Which of the weaver's looms this saree sits on is a real decision —
+          // it goes into the saree ID and drives per-loom payment reporting.
+          // Defaulting to loom 1 quietly filed every saree under the first loom
+          // for weavers who run several, so it is left unassigned here and the
+          // admin picks it via "Assign Loom No.". The saree ID can't be built
+          // without it, so the row stays incomplete until they do, which the
+          // existing finalize gate already enforces.
+          weaverLoom: null,
+          factoryLoomId: null,
+          factoryLoomNumber: null,
+          sareeId: null,
+        };
+      })
+    );
     setPicker(null);
   }
 
@@ -97,29 +141,33 @@ export function useBatchFormHandlers(
   // every selected row that already has a weaver. Rows still without a weaver
   // are skipped rather than silently given a loom they can't belong to.
   function applyWeaverLoomToSelected(loomNum: number) {
-    setRows(prev => prev.map(r => {
-      if (!selected.has(r.serial) || !r.weaverName) return r;
-      const seqMatch = r.sareeId ? r.sareeId.match(/-(\d+)$/) : null;
-      const seq = seqMatch ? parseInt(seqMatch[1], 10) : r.serial;
-      return { ...r, weaverLoom: loomNum, sareeId: generateSareeId(r.weaverName, loomNum, seq) };
-    }));
+    setRows((prev) =>
+      prev.map((r) => {
+        if (!selected.has(r.serial) || !r.weaverName) return r;
+        const seqMatch = r.sareeId ? r.sareeId.match(/-(\d+)$/) : null;
+        const seq = seqMatch ? parseInt(seqMatch[1], 10) : r.serial;
+        return { ...r, weaverLoom: loomNum, sareeId: generateSareeId(r.weaverName, loomNum, seq) };
+      })
+    );
     setPicker(null);
   }
 
   function applyWeaverLoomToRow(row: SareeRow, loomNum: number) {
-    setRows(prev => prev.map(r => {
-      if (r.serial !== row.serial) return r;
-      const seqMatch = r.sareeId ? r.sareeId.match(/-(\d+)$/) : null;
-      const seq = seqMatch ? parseInt(seqMatch[1], 10) : r.serial;
-      const newSareeId = r.weaverName ? generateSareeId(r.weaverName, loomNum, seq) : r.sareeId;
-      return { ...r, weaverLoom: loomNum, sareeId: newSareeId };
-    }));
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r.serial !== row.serial) return r;
+        const seqMatch = r.sareeId ? r.sareeId.match(/-(\d+)$/) : null;
+        const seq = seqMatch ? parseInt(seqMatch[1], 10) : r.serial;
+        const newSareeId = r.weaverName ? generateSareeId(r.weaverName, loomNum, seq) : r.sareeId;
+        return { ...r, weaverLoom: loomNum, sareeId: newSareeId };
+      })
+    );
     setLoomPickerRow(null);
   }
 
   function applyFactoryLoom(loom: LoomOption) {
     const seqMap: Record<string, number> = {};
-    rows.forEach(r => {
+    rows.forEach((r) => {
       if (r.factoryLoomId === loom.id && r.sareeId) {
         const m = r.sareeId.match(/-(\d+)$/);
         if (m) {
@@ -129,26 +177,36 @@ export function useBatchFormHandlers(
       }
     });
     let seq = seqMap[loom.id] || 0;
-    setRows(prev => prev.map(r => {
-      if (!selected.has(r.serial)) return r;
-      seq++;
-      return {
-        ...r, recipientType: "factoryLoom" as const,
-        weaverId: null, weaverCode: null, weaverName: null, weaverInitials: null, weaverLoom: null,
-        factoryLoomId: loom.id, factoryLoomNumber: loom.loomNumber,
-        // Matches backend buildSareeId(): {loomNumber}-B{batchSeq}-{seq3}. We don't have batchSeq yet so use B***.
-        sareeId: `${loom.loomNumber}-B***-${String(seq).padStart(3, "0")}`,
-      };
-    }));
+    setRows((prev) =>
+      prev.map((r) => {
+        if (!selected.has(r.serial)) return r;
+        seq++;
+        return {
+          ...r,
+          recipientType: "factoryLoom" as const,
+          weaverId: null,
+          weaverCode: null,
+          weaverName: null,
+          weaverInitials: null,
+          weaverLoom: null,
+          factoryLoomId: loom.id,
+          factoryLoomNumber: loom.loomNumber,
+          // Matches backend buildSareeId(): {loomNumber}-B{batchSeq}-{seq3}. We don't have batchSeq yet so use B***.
+          sareeId: `${loom.loomNumber}-B***-${String(seq).padStart(3, "0")}`,
+        };
+      })
+    );
     setPicker(null);
   }
 
-  const [bulkOrderConflict, setBulkOrderConflict] = useState<BulkOrderCapacityConflict | null>(null);
+  const [bulkOrderConflict, setBulkOrderConflict] = useState<BulkOrderCapacityConflict | null>(
+    null
+  );
 
   // Writes the order (and the saree type / design it implies) onto every row in
   // `allowed`; anything selected but not allowed is left untouched.
   function commitBulkOrder(ref: string | null, label: string, allowed: Set<number> | null) {
-    const order = bulkOrders.find(o => o.ref === ref);
+    const order = bulkOrders.find((o) => o.ref === ref);
     // Only set when the order actually specifies one — a row's existing
     // saree type / design (already picked via "Assign Saree Type"/"Assign
     // Design Code") must survive linking an order that doesn't carry its
@@ -170,23 +228,25 @@ export function useBatchFormHandlers(
       if (order.design) designCode = order.design;
     }
 
-    setRows(prev => prev.map(r => {
-      if (!selected.has(r.serial)) return r;
-      if (allowed && !allowed.has(r.serial)) return r;
-      return {
-        ...r,
-        bulkOrderRef: ref,
-        bulkOrderLabel: label,
-        sareeTypeCode: sareeTypeCode ?? r.sareeTypeCode,
-        sareeTypeName: sareeTypeName ?? r.sareeTypeName,
-        designCode: designCode ?? r.designCode,
-      };
-    }));
+    setRows((prev) =>
+      prev.map((r) => {
+        if (!selected.has(r.serial)) return r;
+        if (allowed && !allowed.has(r.serial)) return r;
+        return {
+          ...r,
+          bulkOrderRef: ref,
+          bulkOrderLabel: label,
+          sareeTypeCode: sareeTypeCode ?? r.sareeTypeCode,
+          sareeTypeName: sareeTypeName ?? r.sareeTypeName,
+          designCode: designCode ?? r.designCode,
+        };
+      })
+    );
     setPicker(null);
   }
 
   function applyBulkOrder(ref: string | null, label: string) {
-    const order = bulkOrders.find(o => o.ref === ref);
+    const order = bulkOrders.find((o) => o.ref === ref);
 
     // General Stock is unbounded — nothing to check.
     if (!order || !ref) {
@@ -197,8 +257,10 @@ export function useBatchFormHandlers(
     // A bulk order only has room for as many sarees as it was placed for.
     // Its remaining capacity is its total minus rows already on it — both
     // elsewhere in this batch and in every other batch.
-    const selectedCount = rows.filter(r => selected.has(r.serial)).length;
-    const assignedInBatch = rows.filter(r => r.bulkOrderRef === ref && !selected.has(r.serial)).length;
+    const selectedCount = rows.filter((r) => selected.has(r.serial)).length;
+    const assignedInBatch = rows.filter(
+      (r) => r.bulkOrderRef === ref && !selected.has(r.serial)
+    ).length;
     const assignedElsewhere = assignedElsewhereByRef[ref] ?? 0;
     const capacity = Math.max(0, order.total - assignedInBatch - assignedElsewhere);
 
@@ -207,8 +269,13 @@ export function useBatchFormHandlers(
       // let them choose to take the part that does.
       setPicker(null);
       setBulkOrderConflict({
-        order, ref, label, selectedCount, capacity,
-        assignedInBatch, assignedElsewhere,
+        order,
+        ref,
+        label,
+        selectedCount,
+        capacity,
+        assignedInBatch,
+        assignedElsewhere,
         overflow: selectedCount - capacity,
       });
       return;
@@ -222,26 +289,38 @@ export function useBatchFormHandlers(
     const c = bulkOrderConflict;
     if (!c) return;
     const allowed = new Set(
-      rows.filter(r => selected.has(r.serial)).map(r => r.serial).sort((a, b) => a - b).slice(0, c.capacity),
+      rows
+        .filter((r) => selected.has(r.serial))
+        .map((r) => r.serial)
+        .sort((a, b) => a - b)
+        .slice(0, c.capacity)
     );
     commitBulkOrder(c.ref, c.label, allowed);
     setBulkOrderConflict(null);
   }
 
-  function dismissBulkOrderConflict() { setBulkOrderConflict(null); }
+  function dismissBulkOrderConflict() {
+    setBulkOrderConflict(null);
+  }
 
   function applyDesign(code: string) {
-    setRows(prev => prev.map(r => selected.has(r.serial) ? { ...r, designCode: code } : r));
+    setRows((prev) => prev.map((r) => (selected.has(r.serial) ? { ...r, designCode: code } : r)));
     setPicker(null);
   }
 
   function applySareeType(code: string, name: string) {
-    setRows(prev => prev.map(r => selected.has(r.serial) ? { ...r, sareeTypeCode: code, sareeTypeName: name } : r));
+    setRows((prev) =>
+      prev.map((r) =>
+        selected.has(r.serial) ? { ...r, sareeTypeCode: code, sareeTypeName: name } : r
+      )
+    );
     setPicker(null);
   }
 
   function removeSelected() {
-    setRows(prev => prev.filter(r => !selected.has(r.serial)).map((r, i) => ({ ...r, serial: i + 1 })));
+    setRows((prev) =>
+      prev.filter((r) => !selected.has(r.serial)).map((r, i) => ({ ...r, serial: i + 1 }))
+    );
     setSelected(new Set());
   }
 
@@ -250,28 +329,66 @@ export function useBatchFormHandlers(
   // rows, so it's safe to call while editing a draft/active batch.
   function addRows(n: number) {
     if (!n || n < 1) return;
-    setRows(prev => {
+    setRows((prev) => {
       const startSerial = prev.length;
       const extra: SareeRow[] = Array.from({ length: n }, (_, i) => ({
         serial: startSerial + i + 1,
-        sareeId: null, recipientType: undefined,
-        weaverId: null, weaverCode: null, weaverName: null, weaverInitials: null, weaverLoom: null,
-        factoryLoomId: null, factoryLoomNumber: null,
-        designCode: null, sareeTypeCode: null, sareeTypeName: null,
-        bulkOrderRef: null, bulkOrderLabel: null,
-        receivedAt: null, receivedWeight: null, receivedColor: null, receivedPhotoUrl: null,
-        receivedWarpG: null, receivedReshamG: null, receivedJariReels: null, receivedBy: null,
-        tallied: false, talliedBy: null, talliedAt: null,
+        sareeId: null,
+        recipientType: undefined,
+        weaverId: null,
+        weaverCode: null,
+        weaverName: null,
+        weaverInitials: null,
+        weaverLoom: null,
+        factoryLoomId: null,
+        factoryLoomNumber: null,
+        designCode: null,
+        sareeTypeCode: null,
+        sareeTypeName: null,
+        bulkOrderRef: null,
+        bulkOrderLabel: null,
+        receivedAt: null,
+        receivedWeight: null,
+        receivedColor: null,
+        receivedPhotoUrl: null,
+        receivedWarpG: null,
+        receivedReshamG: null,
+        receivedJariReels: null,
+        receivedBy: null,
+        tallied: false,
+        talliedBy: null,
+        talliedAt: null,
       }));
       return [...prev, ...extra];
     });
   }
 
   return {
-    rows, setRows, selected, setSelected, picker, setPicker, generated, setGenerated,
-    loomPickerRow, setLoomPickerRow, generateRows, addRows, allSelected, toggleAll, toggleRow,
-    applyWeaver, applyWeaverLoomToRow, applyWeaverLoomToSelected, applyFactoryLoom, applyBulkOrder, applyDesign,
-    applySareeType, removeSelected,
-    bulkOrderConflict, assignBulkOrderUpToCapacity, dismissBulkOrderConflict,
+    rows,
+    setRows,
+    selected,
+    setSelected,
+    picker,
+    setPicker,
+    generated,
+    setGenerated,
+    loomPickerRow,
+    setLoomPickerRow,
+    generateRows,
+    addRows,
+    allSelected,
+    toggleAll,
+    toggleRow,
+    applyWeaver,
+    applyWeaverLoomToRow,
+    applyWeaverLoomToSelected,
+    applyFactoryLoom,
+    applyBulkOrder,
+    applyDesign,
+    applySareeType,
+    removeSelected,
+    bulkOrderConflict,
+    assignBulkOrderUpToCapacity,
+    dismissBulkOrderConflict,
   };
 }

@@ -110,7 +110,14 @@ export function Combobox({
         )}
       >
         <span className="truncate">{selected ? selected.label : placeholder}</span>
-        <Icon name="expandDown" size="sm" className={cn("shrink-0 transition-transform duration-[var(--duration-fast)]", open && "rotate-180")} />
+        <Icon
+          name="expandDown"
+          size="sm"
+          className={cn(
+            "shrink-0 transition-transform duration-[var(--duration-fast)]",
+            open && "rotate-180"
+          )}
+        />
       </button>
 
       {open && (
@@ -123,7 +130,10 @@ export function Combobox({
           )}
         >
           <CommandPrimitive shouldFilter loop>
-            <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] px-3" style={{ color: "var(--text-tertiary)" }}>
+            <div
+              className="flex items-center gap-2 border-b border-[var(--border-subtle)] px-3"
+              style={{ color: "var(--text-tertiary)" }}
+            >
               <Icon name="search" size="sm" />
               <CommandPrimitive.Input
                 ref={searchInputRef}
@@ -132,7 +142,10 @@ export function Combobox({
               />
             </div>
             <CommandPrimitive.List className="max-h-[320px] overflow-y-auto p-1">
-              <CommandPrimitive.Empty className="py-6 text-center bk-caption" style={{ color: "var(--text-tertiary)" }}>
+              <CommandPrimitive.Empty
+                className="py-6 text-center bk-caption"
+                style={{ color: "var(--text-tertiary)" }}
+              >
                 {emptyMessage}
               </CommandPrimitive.Empty>
               {options.map((option) => (
@@ -150,15 +163,22 @@ export function Combobox({
                     "text-[var(--text-primary)]",
                     "data-[selected=true]:bg-[rgba(110,15,45,0.06)]",
                     "data-[disabled=true]:opacity-50 data-[disabled=true]:cursor-not-allowed",
-                    option.value === value && "bg-[rgba(110,15,45,0.08)] font-semibold text-[var(--text-brand)]"
+                    option.value === value &&
+                      "bg-[rgba(110,15,45,0.08)] font-semibold text-[var(--text-brand)]"
                   )}
                 >
                   <span className="truncate">{option.label}</span>
                   {option.hint && (
-                    <span className="truncate text-[12px] font-normal text-[var(--text-tertiary)]">{option.hint}</span>
+                    <span className="truncate text-[12px] font-normal text-[var(--text-tertiary)]">
+                      {option.hint}
+                    </span>
                   )}
                   {option.value === value && (
-                    <Icon name="check" size="sm" className="absolute right-2 top-1/2 -translate-y-1/2" />
+                    <Icon
+                      name="check"
+                      size="sm"
+                      className="absolute right-2 top-1/2 -translate-y-1/2"
+                    />
                   )}
                 </CommandPrimitive.Item>
               ))}

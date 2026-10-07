@@ -69,7 +69,6 @@ const MOCK_STAFF: BackendFinishingStaff[] = [
   },
 ];
 
-
 /** Exercises the public hook exactly as a real consumer would. */
 function Harness() {
   const { members, activeMembers, addMember, toggleStatus } = useFinishingStaff();
@@ -94,8 +93,10 @@ function Harness() {
         Add
       </button>
       <button onClick={() => toggleStatus("fs-seed-001")}>Toggle first</button>
-      {members.map(m => (
-        <div key={m.id} data-testid={`member-${m.id}`}>{m.firstName} — {m.status}</div>
+      {members.map((m) => (
+        <div key={m.id} data-testid={`member-${m.id}`}>
+          {m.firstName} — {m.status}
+        </div>
       ))}
     </div>
   );
@@ -105,7 +106,7 @@ function renderHarness() {
   return renderWithQueryClient(
     <FinishingStaffProvider>
       <Harness />
-    </FinishingStaffProvider>,
+    </FinishingStaffProvider>
   );
 }
 
@@ -137,9 +138,13 @@ describe("FinishingStaffContext", () => {
 
   it("toggleStatus flips Active to Inactive and updates activeMembers", async () => {
     renderHarness();
-    await waitFor(() => expect(screen.getByTestId("member-fs-seed-001")).toHaveTextContent("Anand — Active"));
+    await waitFor(() =>
+      expect(screen.getByTestId("member-fs-seed-001")).toHaveTextContent("Anand — Active")
+    );
     fireEvent.click(screen.getByText("Toggle first"));
-    await waitFor(() => expect(finishingStaffApi.update).toHaveBeenCalledWith("fs-seed-001", { status: "INACTIVE" }));
+    await waitFor(() =>
+      expect(finishingStaffApi.update).toHaveBeenCalledWith("fs-seed-001", { status: "INACTIVE" })
+    );
   });
 
   it("throws when used outside a FinishingStaffProvider", () => {
@@ -150,9 +155,8 @@ describe("FinishingStaffContext", () => {
       return null;
     }
     expect(() => renderWithQueryClient(<Orphan />)).toThrow(
-      "useFinishingStaff must be used inside FinishingStaffProvider",
+      "useFinishingStaff must be used inside FinishingStaffProvider"
     );
     spy.mockRestore();
   });
 });
-

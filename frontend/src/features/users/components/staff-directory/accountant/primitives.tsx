@@ -67,7 +67,8 @@ export function useMoneyFormatter() {
   const visible = useMoneyVisible();
   return {
     visible,
-    money: (amount: number, opts?: MoneyOpts) => (visible ? formatMoney(rupees(amount), opts) : "\u2022\u2022\u2022\u2022"),
+    money: (amount: number, opts?: MoneyOpts) =>
+      visible ? formatMoney(rupees(amount), opts) : "\u2022\u2022\u2022\u2022",
   };
 }
 
@@ -125,7 +126,7 @@ export function VolumeSparkline({
   // Bar heights are relative amounts. Drawing them for an account whose
   // figures are masked would leak the shape of exactly what the flag hides.
   const moneyVisible = useMoneyVisible();
-  const peak = Math.max(...series.map(d => d.out + d.in), 0);
+  const peak = Math.max(...series.map((d) => d.out + d.in), 0);
 
   if (!moneyVisible) {
     return (
@@ -147,7 +148,13 @@ export function VolumeSparkline({
   const barWidth = Math.max(1, (width - gap * (series.length - 1)) / series.length);
 
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden focusable="false">
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      aria-hidden
+      focusable="false"
+    >
       {series.map((d, i) => {
         const total = d.out + d.in;
         const x = i * (barWidth + gap);
@@ -170,10 +177,26 @@ export function VolumeSparkline({
         return (
           <g key={d.date}>
             {inHeight > 0 && (
-              <rect x={x} y={height - barHeight} width={barWidth} height={inHeight} rx={1} fill={IN_COLOR} opacity={0.85} />
+              <rect
+                x={x}
+                y={height - barHeight}
+                width={barWidth}
+                height={inHeight}
+                rx={1}
+                fill={IN_COLOR}
+                opacity={0.85}
+              />
             )}
             {outHeight > 0 && (
-              <rect x={x} y={height - outHeight} width={barWidth} height={outHeight} rx={1} fill={OUT_COLOR} opacity={0.85} />
+              <rect
+                x={x}
+                y={height - outHeight}
+                width={barWidth}
+                height={outHeight}
+                rx={1}
+                fill={OUT_COLOR}
+                opacity={0.85}
+              />
             )}
           </g>
         );

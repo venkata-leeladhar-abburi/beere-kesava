@@ -6,7 +6,14 @@ import { useAuth } from "../../contexts/AuthContext";
 /** Signed-in sessions end after this long with no user activity. */
 export const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 const LAST_ACTIVITY_KEY = "bk_last_activity";
-const ACTIVITY_EVENTS = ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "wheel"] as const;
+const ACTIVITY_EVENTS = [
+  "mousemove",
+  "mousedown",
+  "keydown",
+  "scroll",
+  "touchstart",
+  "wheel",
+] as const;
 
 function readLastActivity(): number {
   try {
@@ -18,7 +25,11 @@ function readLastActivity(): number {
 }
 
 function writeLastActivity(ts: number) {
-  try { localStorage.setItem(LAST_ACTIVITY_KEY, String(ts)); } catch { /* ignore */ }
+  try {
+    localStorage.setItem(LAST_ACTIVITY_KEY, String(ts));
+  } catch {
+    /* ignore */
+  }
 }
 
 /**
@@ -35,7 +46,11 @@ export function IdleLogout() {
     if (!isAuthenticated) return;
 
     const expire = () => {
-      try { localStorage.removeItem(LAST_ACTIVITY_KEY); } catch { /* ignore */ }
+      try {
+        localStorage.removeItem(LAST_ACTIVITY_KEY);
+      } catch {
+        /* ignore */
+      }
       logout();
       toast.info("You were logged out after 5 minutes of inactivity.");
       navigate("/login", { replace: true });
@@ -57,7 +72,7 @@ export function IdleLogout() {
         writeLastActivity(now);
       }
     };
-    ACTIVITY_EVENTS.forEach(e => window.addEventListener(e, onActivity, { passive: true }));
+    ACTIVITY_EVENTS.forEach((e) => window.addEventListener(e, onActivity, { passive: true }));
     onActivity();
 
     const timer = window.setInterval(() => {
@@ -65,7 +80,7 @@ export function IdleLogout() {
     }, 10_000);
 
     return () => {
-      ACTIVITY_EVENTS.forEach(e => window.removeEventListener(e, onActivity));
+      ACTIVITY_EVENTS.forEach((e) => window.removeEventListener(e, onActivity));
       window.clearInterval(timer);
     };
   }, [isAuthenticated, logout, navigate]);

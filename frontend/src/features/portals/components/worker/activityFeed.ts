@@ -15,8 +15,7 @@ import type { QcRecord } from "@/features/qc";
 import type { BatchRecord } from "@/features/production";
 
 export type WorkerActivityType =
-  | "qc-passed" | "qc-semi" | "qc-defective"
-  | "received" | "finished" | "tallied";
+  "qc-passed" | "qc-semi" | "qc-defective" | "received" | "finished" | "tallied";
 
 /** Coarse grouping used by the Activity page's category filter. */
 export type WorkerActivityCategory = "qc" | "receipt" | "finishing" | "tally";
@@ -86,7 +85,7 @@ function isValidDate(iso: string | null | undefined): iso is string {
  */
 export function buildWorkerActivity(
   qcRecords: QcRecord[],
-  batches: BatchRecord[],
+  batches: BatchRecord[]
 ): WorkerActivityEvent[] {
   const events: WorkerActivityEvent[] = [];
 
@@ -165,7 +164,7 @@ export function buildWorkerActivity(
   // submit, not two inspections — the home card was showing three identical
   // "RAMARAO-L2-B014-004 passed quality check · 27 Aug, 04:08 pm" rows.
   const seen = new Set<string>();
-  return events.filter(e => {
+  return events.filter((e) => {
     const minute = e.isoDate.slice(0, 16);
     const sig = `${e.type}|${e.sareeId}|${minute}`;
     if (seen.has(sig)) return false;
@@ -179,8 +178,12 @@ export function formatActivityTime(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
   return d.toLocaleString("en-IN", {
-    day: "numeric", month: "short", year: "numeric",
-    hour: "2-digit", minute: "2-digit", hour12: true,
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
   });
 }
 

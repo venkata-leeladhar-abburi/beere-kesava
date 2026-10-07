@@ -26,19 +26,69 @@ interface GRNSuccessProps {
 
 export function GRNSuccessView({ grnBatchId, onPrint, onReset }: GRNSuccessProps) {
   return (
-    <div style={{ padding: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 14, paddingTop: 40 }}>
-      <div style={{ width: 60, height: 60, borderRadius: "50%", background: "#E8F5E9", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div
+      style={{
+        padding: 24,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 14,
+        paddingTop: 40,
+      }}
+    >
+      <div
+        style={{
+          width: 60,
+          height: 60,
+          borderRadius: "50%",
+          background: "#E8F5E9",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <CheckCircle2 size={32} color={C.green} />
       </div>
-      <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: C.text, textAlign: "center" }}>GRN Created Successfully</div>
-      <div style={{ fontFamily: F.m, fontSize: 16, fontWeight: 600, color: C.burg }}>{grnBatchId}</div>
-      <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center", lineHeight: 1.6 }}>
+      <div
+        style={{
+          fontFamily: F.d,
+          fontSize: 20,
+          fontWeight: 700,
+          color: C.text,
+          textAlign: "center",
+        }}
+      >
+        GRN Created Successfully
+      </div>
+      <div style={{ fontFamily: F.m, fontSize: 16, fontWeight: 600, color: C.burg }}>
+        {grnBatchId}
+      </div>
+      <div
+        style={{
+          fontFamily: F.u,
+          fontSize: 13,
+          color: C.muted,
+          textAlign: "center",
+          lineHeight: 1.6,
+        }}
+      >
         Barcodes are being generated — tap below to print labels
       </div>
-      <Button variant="primary" fullWidth iconLeft={Printer} onClick={onPrint} className="rounded-[14px] bg-[#6E0F2D] hover:bg-[#6E0F2D]">
+      <Button
+        variant="primary"
+        fullWidth
+        iconLeft={Printer}
+        onClick={onPrint}
+        className="rounded-[14px] bg-[#6E0F2D] hover:bg-[#6E0F2D]"
+      >
         Print GRN Label
       </Button>
-      <Button variant="secondary" fullWidth onClick={onReset} className="mt-0.5 rounded-[14px] border-[rgba(110,15,45,0.30)] text-[#6E0F2D]">
+      <Button
+        variant="secondary"
+        fullWidth
+        onClick={onReset}
+        className="mt-0.5 rounded-[14px] border-[rgba(110,15,45,0.30)] text-[#6E0F2D]"
+      >
         Back to GRN
       </Button>
     </div>
@@ -70,7 +120,8 @@ export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
       // Falls back to a position-derived id only for rows received before
       // itemCode existed — every new receipt gets the real persisted one.
       code: item.itemCode || `${grnBatchId}-${i + 1}`,
-      materialType: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
+      materialType:
+        item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
       description: item.description || item.name,
       quantity: qtyText,
       grnBatchId,
@@ -81,19 +132,52 @@ export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
 
   return (
     <div style={{ paddingBottom: 24 }}>
-      <div style={{ padding: "14px 20px 0", fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>Barcode Labels</div>
-      <div style={{ padding: "4px 20px 12px", fontFamily: F.u, fontSize: 13, color: C.muted }}>Print labels for all batches in {grnBatchId}</div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "0 20px 16px" }}>
+      <div
+        style={{
+          padding: "14px 20px 0",
+          fontFamily: F.u,
+          fontSize: 14,
+          fontWeight: 600,
+          color: C.text,
+        }}
+      >
+        Barcode Labels
+      </div>
+      <div style={{ padding: "4px 20px 12px", fontFamily: F.u, fontSize: 13, color: C.muted }}>
+        Print labels for all batches in {grnBatchId}
+      </div>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "0 20px 16px" }}
+      >
         {batches.map((b) => (
           <div key={b.code} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {/* A mini replica of the physical tag itself — same bordered
                 card, header row, and centered barcode-then-code layout as
                 GrnLabelSheet's printed LabelTile, so what's on screen looks
                 like what comes off the printer, not just a plain data list. */}
-            <div style={{ border: `1px solid ${C.burg}33`, borderRadius: 8, padding: "10px 12px", background: "#FFF" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6, gap: 6 }}>
-                <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 11, color: C.text }}>Beere Kesava &amp; Brothers Silks</span>
-                <span style={{ fontFamily: F.m, fontSize: 10, color: C.muted, flexShrink: 0 }}>{b.grnBatchId}</span>
+            <div
+              style={{
+                border: `1px solid ${C.burg}33`,
+                borderRadius: 8,
+                padding: "10px 12px",
+                background: "#FFF",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  marginBottom: 6,
+                  gap: 6,
+                }}
+              >
+                <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 11, color: C.text }}>
+                  Beere Kesava &amp; Brothers Silks
+                </span>
+                <span style={{ fontFamily: F.m, fontSize: 10, color: C.muted, flexShrink: 0 }}>
+                  {b.grnBatchId}
+                </span>
               </div>
 
               {/* The same code that prints, so what's on screen is what the
@@ -103,7 +187,9 @@ export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
                   sticker; the printed label falls back to a QR for those, and
                   drawing bars here would have quietly misrepresented the tag
                   the operator is about to stick on a drum. */}
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+              <div
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}
+              >
                 {needsQrFallback(b.code, labelStock) ? (
                   <ScannableCode value={b.code} size={52} />
                 ) : (
@@ -113,31 +199,93 @@ export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
                     fallback={<ScannableCode value={b.code} size={52} />}
                   />
                 )}
-                <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 11, color: C.text, textAlign: "center", wordBreak: "break-all" }}>{b.code}</span>
+                <span
+                  style={{
+                    fontFamily: F.m,
+                    fontWeight: 600,
+                    fontSize: 11,
+                    color: C.text,
+                    textAlign: "center",
+                    wordBreak: "break-all",
+                  }}
+                >
+                  {b.code}
+                </span>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 6, marginTop: 6, fontFamily: F.u, fontSize: 11, color: C.muted }}>
-                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.materialType} · {b.quantity}</span>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 6,
+                  marginTop: 6,
+                  fontFamily: F.u,
+                  fontSize: 11,
+                  color: C.muted,
+                }}
+              >
+                <span
+                  style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                >
+                  {b.materialType} · {b.quantity}
+                </span>
                 {b.vendor && <span style={{ flexShrink: 0 }}>{b.vendor}</span>}
               </div>
               {b.description && (
-                <div style={{ fontFamily: F.u, fontSize: 10.5, color: C.muted, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <div
+                  style={{
+                    fontFamily: F.u,
+                    fontSize: 10.5,
+                    color: C.muted,
+                    marginTop: 2,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   {b.description}
                 </div>
               )}
               {b.receivedDate && (
-                <div style={{ fontFamily: F.m, fontSize: 10.5, color: C.muted, marginTop: 2 }}>{b.receivedDate}</div>
+                <div style={{ fontFamily: F.m, fontSize: 10.5, color: C.muted, marginTop: 2 }}>
+                  {b.receivedDate}
+                </div>
               )}
             </div>
-            <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => print(<GrnLabelSheet labels={[b]} stock={labelStock} />)} className="rounded-[7px] border-[rgba(110,15,45,0.12)] bg-[#FFF8E7] text-[#6E0F2D] hover:bg-[#FFF8E7]">
+            <Button
+              variant="secondary"
+              fullWidth
+              size="sm"
+              iconLeft={Printer}
+              onClick={() => print(<GrnLabelSheet labels={[b]} stock={labelStock} />)}
+              className="rounded-[7px] border-[rgba(110,15,45,0.12)] bg-[#FFF8E7] text-[#6E0F2D] hover:bg-[#FFF8E7]"
+            >
               Print
             </Button>
           </div>
         ))}
       </div>
       <div style={{ padding: "0 20px" }}>
-        <Button variant="primary" fullWidth iconLeft={Printer} disabled={batches.length === 0} onClick={() => print(<GrnLabelSheet labels={batches} stock={labelStock} />)} className="rounded-[14px] bg-[#6E0F2D] hover:bg-[#6E0F2D] mb-2.5">Print All Labels</Button>
-        {onReset && <Button variant="secondary" fullWidth onClick={onReset} className="rounded-[14px] border-[rgba(110,15,45,0.30)] text-[#6E0F2D]">Done — Skip Printing</Button>}
+        <Button
+          variant="primary"
+          fullWidth
+          iconLeft={Printer}
+          disabled={batches.length === 0}
+          onClick={() => print(<GrnLabelSheet labels={batches} stock={labelStock} />)}
+          className="rounded-[14px] bg-[#6E0F2D] hover:bg-[#6E0F2D] mb-2.5"
+        >
+          Print All Labels
+        </Button>
+        {onReset && (
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={onReset}
+            className="rounded-[14px] border-[rgba(110,15,45,0.30)] text-[#6E0F2D]"
+          >
+            Done — Skip Printing
+          </Button>
+        )}
       </div>
     </div>
   );

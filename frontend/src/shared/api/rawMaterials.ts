@@ -98,8 +98,8 @@ export const rawMaterialsApi = {
     const qs = q.toString();
     return apiClient.get<{ items: GrnReceiptItem[] }>(`/materials/grn${qs ? `?${qs}` : ""}`);
   },
-  createGrn: (payload: CreateGrnPayload) => apiClient.post<GrnReceiptItem>("/materials/grn", payload),
+  createGrn: (payload: CreateGrnPayload) =>
+    apiClient.post<GrnReceiptItem>("/materials/grn", payload),
   updateReorderLevels: (payload: { thresholds: { id: string; reorderLevel: number }[] }) =>
     apiClient.patch<{ success: boolean }>("/materials/reorder-levels", payload),
 };
-

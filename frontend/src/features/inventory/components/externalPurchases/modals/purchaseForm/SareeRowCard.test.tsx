@@ -17,8 +17,16 @@ vi.mock("@/shared/hooks/useImageUpload", () => ({
 
 function Harness({ initial }: { initial: Partial<SareeRow> }) {
   const [row, setRow] = useState<SareeRow>({
-    _uid: "u1", weight: "", date: "2026-01-01", sareeType: "Kanjivaram", color: "Maroon",
-    price: 13600, sellPercent: 98, quantity: 6, finalAmount: 0, notes: "",
+    _uid: "u1",
+    weight: "",
+    date: "2026-01-01",
+    sareeType: "Kanjivaram",
+    color: "Maroon",
+    price: 13600,
+    sellPercent: 98,
+    quantity: 6,
+    finalAmount: 0,
+    notes: "",
     ...initial,
   } as SareeRow);
   return (

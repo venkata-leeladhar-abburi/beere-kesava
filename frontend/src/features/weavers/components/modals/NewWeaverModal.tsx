@@ -10,8 +10,20 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { T, F } from "../theme";
 import { FadeUp } from "../common/primitives";
-import { weaversApi, CreateWeaverPayload, WEAVERS_LIST_QUERY_KEY, type BackendWeaver } from "../../../../shared/api/weavers";
-import { Button, Field, Input, PhoneInput, NumberInput, IconButton } from "../../../../shared/ui/primitives";
+import {
+  weaversApi,
+  CreateWeaverPayload,
+  WEAVERS_LIST_QUERY_KEY,
+  type BackendWeaver,
+} from "../../../../shared/api/weavers";
+import {
+  Button,
+  Field,
+  Input,
+  PhoneInput,
+  NumberInput,
+  IconButton,
+} from "../../../../shared/ui/primitives";
 import { PhotoUploadField } from "../../../../shared/ui/PhotoUploadField";
 import { Modal } from "../../../../shared/ui/overlay";
 import { invalidateQueriesMentioning, prependToEnvelope } from "../../../../lib/cacheUpdates";
@@ -30,17 +42,31 @@ interface FormState {
 }
 
 const EMPTY_FORM: FormState = {
-  firstName: "", lastName: "", email: "", phone: "", village: "", looms: "",
-  bankName: "", accountNo: "", ifsc: "", photoUrl: "",
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  village: "",
+  looms: "",
+  bankName: "",
+  accountNo: "",
+  ifsc: "",
+  photoUrl: "",
 };
 
-export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; setExpanded: (v: boolean) => void }) {
+export function NewWeaverModal({
+  expanded,
+  setExpanded,
+}: {
+  expanded: boolean;
+  setExpanded: (v: boolean) => void;
+}) {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const set = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm(prev => ({ ...prev, [key]: e.target.value }));
+    setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
   const createWeaver = useMutation({
     mutationFn: (payload: CreateWeaverPayload) => weaversApi.create(payload),
@@ -58,7 +84,8 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
       toast.success("Weaver registered");
     },
     onError: (err: unknown) => {
-      const message = err instanceof Error ? err.message : "Failed to save weaver. Please try again.";
+      const message =
+        err instanceof Error ? err.message : "Failed to save weaver. Please try again.";
       setError(message);
       toast.error(message);
     },
@@ -106,7 +133,7 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
           labelText="Photo of Weaver"
           helpText="Upload a clear photo for easy identification. Appears on profile and batch records."
           photoUrl={form.photoUrl || null}
-          onChange={url => setForm(prev => ({ ...prev, photoUrl: url }))}
+          onChange={(url) => setForm((prev) => ({ ...prev, photoUrl: url }))}
         />
       </div>
 
@@ -119,44 +146,144 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
           <Input placeholder="Last name" value={form.lastName} onChange={set("lastName")} />
         </Field>
         <div style={{ gridColumn: "1 / -1" }}>
-          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: -16, marginBottom: 20 }}>
+          <div
+            style={{
+              fontFamily: F.ui,
+              fontSize: 13,
+              color: T.taupe,
+              marginTop: -16,
+              marginBottom: 20,
+            }}
+          >
             The weaver will be identified by their first name in all batch IDs and saree records.
           </div>
         </div>
         {/* Email */}
         <div style={{ gridColumn: "1 / -1" }}>
-          <Field label={<>Email ID<span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 400, color: T.taupe, marginLeft: 8 }}>Optional — used for records and notifications.</span></>}>
-            <Input type="email" placeholder="weaver@example.com" value={form.email} onChange={set("email")} />
+          <Field
+            label={
+              <>
+                Email ID
+                <span
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 13,
+                    fontWeight: 400,
+                    color: T.taupe,
+                    marginLeft: 8,
+                  }}
+                >
+                  Optional — used for records and notifications.
+                </span>
+              </>
+            }
+          >
+            <Input
+              type="email"
+              placeholder="weaver@example.com"
+              value={form.email}
+              onChange={set("email")}
+            />
           </Field>
         </div>
-        <Field label="Mobile Number *"><PhoneInput value={form.phone} onValueChange={v => set("phone")({ target: { value: v } } as React.ChangeEvent<HTMLInputElement>)} /></Field>
-        <Field label="Village / Area"><Input placeholder="E.g., Dharmavaram, AP" value={form.village} onChange={set("village")} /></Field>
+        <Field label="Mobile Number *">
+          <PhoneInput
+            value={form.phone}
+            onValueChange={(v) =>
+              set("phone")({ target: { value: v } } as React.ChangeEvent<HTMLInputElement>)
+            }
+          />
+        </Field>
+        <Field label="Village / Area">
+          <Input
+            placeholder="E.g., Dharmavaram, AP"
+            value={form.village}
+            onChange={set("village")}
+          />
+        </Field>
         <Field label="Number of Looms">
-          <NumberInput min={0} placeholder="Total active looms" value={form.looms === "" ? "" : Number(form.looms)} onValueChange={v => setForm(prev => ({ ...prev, looms: v === "" ? "" : String(v) }))} />
+          <NumberInput
+            min={0}
+            placeholder="Total active looms"
+            value={form.looms === "" ? "" : Number(form.looms)}
+            onValueChange={(v) =>
+              setForm((prev) => ({ ...prev, looms: v === "" ? "" : String(v) }))
+            }
+          />
         </Field>
       </div>
 
-      <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 18, color: T.luxuryBrown, marginBottom: 20, paddingTop: 8, borderTop: `1px solid ${T.borderDef}` }}>
+      <div
+        style={{
+          fontFamily: F.ui,
+          fontWeight: 600,
+          fontSize: 18,
+          color: T.luxuryBrown,
+          marginBottom: 20,
+          paddingTop: 8,
+          borderTop: `1px solid ${T.borderDef}`,
+        }}
+      >
         Bank Account Details
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 24, marginBottom: 24 }}>
-        <Field label="Bank Name *"><Input placeholder="E.g., State Bank of India" value={form.bankName} onChange={set("bankName")} /></Field>
-        <Field label="Account Number *"><Input placeholder="Account number" value={form.accountNo} onChange={set("accountNo")} /></Field>
-        <Field label="IFSC Code *"><Input placeholder="11-character IFSC code" value={form.ifsc} onChange={set("ifsc")} /></Field>
+        <Field label="Bank Name *">
+          <Input
+            placeholder="E.g., State Bank of India"
+            value={form.bankName}
+            onChange={set("bankName")}
+          />
+        </Field>
+        <Field label="Account Number *">
+          <Input placeholder="Account number" value={form.accountNo} onChange={set("accountNo")} />
+        </Field>
+        <Field label="IFSC Code *">
+          <Input placeholder="11-character IFSC code" value={form.ifsc} onChange={set("ifsc")} />
+        </Field>
       </div>
 
       {error && (
-        <div style={{ fontFamily: F.ui, fontSize: 14, color: "#C0392B", background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", borderRadius: 10, padding: "10px 14px", marginBottom: 20 }}>
+        <div
+          style={{
+            fontFamily: F.ui,
+            fontSize: 14,
+            color: "#C0392B",
+            background: "rgba(192,57,43,0.08)",
+            border: "1px solid rgba(192,57,43,0.2)",
+            borderRadius: 10,
+            padding: "10px 14px",
+            marginBottom: 20,
+          }}
+        >
           {error}
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 16, justifyContent: "flex-end", borderTop: `1px solid ${T.borderDef}`, paddingTop: 32 }}>
-        <Button onClick={handleCancel} variant="secondary" size="lg" className="w-[140px] h-14 rounded-xl">
+      <div
+        style={{
+          display: "flex",
+          gap: 16,
+          justifyContent: "flex-end",
+          borderTop: `1px solid ${T.borderDef}`,
+          paddingTop: 32,
+        }}
+      >
+        <Button
+          onClick={handleCancel}
+          variant="secondary"
+          size="lg"
+          className="w-[140px] h-14 rounded-xl"
+        >
           Cancel
         </Button>
-        <Button onClick={handleSave} disabled={createWeaver.isPending} loading={createWeaver.isPending} variant="primary" size="lg"
-          className="w-[240px] h-14 rounded-xl bg-[#6E0F2D]">
+        <Button
+          onClick={handleSave}
+          disabled={createWeaver.isPending}
+          loading={createWeaver.isPending}
+          variant="primary"
+          size="lg"
+          className="w-[240px] h-14 rounded-xl bg-[#6E0F2D]"
+        >
           {createWeaver.isPending ? "Saving…" : "Save Weaver"}
         </Button>
       </div>
@@ -165,19 +292,41 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
 
   if (expanded) {
     return (
-      <Modal open onOpenChange={o => !o && handleCancel()} size="xl">
-        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 32px", paddingRight: 64, position: "relative", flexShrink: 0 }}>
+      <Modal open onOpenChange={(o) => !o && handleCancel()} size="xl">
+        <div
+          style={{
+            background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`,
+            padding: "24px 32px",
+            paddingRight: 64,
+            position: "relative",
+            flexShrink: 0,
+          }}
+        >
           <Dialog.Title asChild>
             <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: "#FFFDF9" }}>
               New Weaver Registration
             </div>
           </Dialog.Title>
-          <Dialog.Description style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.85)", marginTop: 4, margin: 0 }}>
+          <Dialog.Description
+            style={{
+              fontFamily: F.ui,
+              fontSize: 13,
+              color: "rgba(255,253,249,0.85)",
+              marginTop: 4,
+              margin: 0,
+            }}
+          >
             Fill in all the details below. Fields marked with * are required.
           </Dialog.Description>
           <Dialog.Close asChild>
-            <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={handleCancel}
-              className="absolute right-6 top-6 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />
+            <IconButton
+              icon={X}
+              label="Close"
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+              className="absolute right-6 top-6 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]"
+            />
           </Dialog.Close>
         </div>
         <div style={{ padding: "28px 32px 32px", overflowY: "auto", flex: 1, minHeight: 0 }}>
@@ -190,13 +339,43 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
   return (
     <div style={{ padding: "40px 48px", paddingBottom: 80 }}>
       <FadeUp>
-        <div className="max-w-[900px]" style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, padding: "32px", boxShadow: "0 8px 32px rgba(74,6,27,0.06)", margin: "0 auto" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-            <h2 style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, margin: 0 }}>Add a New Weaver</h2>
-            <Button onClick={() => setExpanded(true)} variant="primary" className="rounded-[10px] bg-[#6E0F2D]">Open Form</Button>
+        <div
+          className="max-w-[900px]"
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 20,
+            border: `1px solid ${T.borderDef}`,
+            padding: "32px",
+            boxShadow: "0 8px 32px rgba(74,6,27,0.06)",
+            margin: "0 auto",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 24,
+            }}
+          >
+            <h2 style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, margin: 0 }}>
+              Add a New Weaver
+            </h2>
+            <Button
+              onClick={() => setExpanded(true)}
+              variant="primary"
+              className="rounded-[10px] bg-[#6E0F2D]"
+            >
+              Open Form
+            </Button>
           </div>
-          <Button onClick={() => setExpanded(true)} variant="primary" size="lg" fullWidth
-            className="h-[60px] rounded-2xl bg-[linear-gradient(135deg,#6E0F2D,#4A061B)]">
+          <Button
+            onClick={() => setExpanded(true)}
+            variant="primary"
+            size="lg"
+            fullWidth
+            className="h-[60px] rounded-2xl bg-[linear-gradient(135deg,#6E0F2D,#4A061B)]"
+          >
             <Plus size={20} /> Register New Weaver
           </Button>
         </div>

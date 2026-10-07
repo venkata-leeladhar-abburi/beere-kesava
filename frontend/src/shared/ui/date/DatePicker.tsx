@@ -90,7 +90,12 @@ export function DatePicker({
             calendar once the input is already focused but closed (e.g. after
             Escape) since a focus event only fires on a focus *transition*. */}
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-        <div style={{ position: "relative" }} onMouseDown={() => { if (!disabled) setOpen(true); }}>
+        <div
+          style={{ position: "relative" }}
+          onMouseDown={() => {
+            if (!disabled) setOpen(true);
+          }}
+        >
           <Input
             id={resolvedId}
             iconLeft="calendar"
@@ -104,13 +109,13 @@ export function DatePicker({
               onChange(null);
               setDirty(false);
             }}
-            onChange={e => {
+            onChange={(e) => {
               setText(e.target.value);
               setDirty(true);
             }}
             onFocus={() => setOpen(true)}
-            onBlur={e => commitText(e.target.value)}
-            onKeyDown={e => {
+            onBlur={(e) => commitText(e.target.value)}
+            onKeyDown={(e) => {
               if (e.key === "Enter") {
                 commitText((e.target as HTMLInputElement).value);
                 setOpen(false);
@@ -125,7 +130,7 @@ export function DatePicker({
         <Popover.Content
           align="start"
           sideOffset={8}
-          onOpenAutoFocus={e => e.preventDefault()}
+          onOpenAutoFocus={(e) => e.preventDefault()}
           className={cn(
             "rounded-[var(--radius-lg)] border shadow-[var(--shadow-lg)] p-2",
             "bg-[var(--surface-overlay)] border-[var(--border-default)]",
@@ -140,13 +145,21 @@ export function DatePicker({
             minDate={min}
             maxDate={max}
             hasDataDates={hasDataDates}
-            onSelect={date => {
+            onSelect={(date) => {
               onInvalid?.(null);
               onChange(date ?? null);
               setDirty(false);
               setOpen(false);
             }}
-            onClear={clearable ? () => { onChange(null); setDirty(false); setOpen(false); } : undefined}
+            onClear={
+              clearable
+                ? () => {
+                    onChange(null);
+                    setDirty(false);
+                    setOpen(false);
+                  }
+                : undefined
+            }
           />
         </Popover.Content>
       </Popover.Portal>

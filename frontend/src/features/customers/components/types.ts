@@ -4,8 +4,9 @@
 // split a pure refactor.
 import { wholesaleData, retailData } from "./data";
 
-export type WholesaleCustomer = typeof wholesaleData[number];
-export type RetailCustomer = typeof retailData[number];
+export type WholesaleCustomer = (typeof wholesaleData)[number];
+export type RetailCustomer = (typeof retailData)[number];
 
-export type WholesaleTab = "Overview" | "Order History" | "Payment History" | "Contact Details" | "Edit Profile";
+export type WholesaleTab =
+  "Overview" | "Order History" | "Payment History" | "Contact Details" | "Edit Profile";
 export type ViewMode = "card" | "list" | "table";

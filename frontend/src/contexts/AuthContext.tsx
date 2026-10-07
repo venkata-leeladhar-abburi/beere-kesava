@@ -73,7 +73,9 @@ const IMPERSONATE_WEAVER_KEY = "admin_impersonate_weaver_id";
 const KNOWN_ROLES: Role[] = ["superadmin", "admin", "worker", "weaver", "shop", "accountant"];
 
 function toRoles(raw: string[] | undefined, fallback: Role | null): Role[] {
-  const list = (raw ?? []).map(r => r.toLowerCase() as Role).filter(r => KNOWN_ROLES.includes(r));
+  const list = (raw ?? [])
+    .map((r) => r.toLowerCase() as Role)
+    .filter((r) => KNOWN_ROLES.includes(r));
   const unique = [...new Set(list)];
   return unique.length ? unique : fallback ? [fallback] : [];
 }
@@ -121,17 +123,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [state]);
 
   const clearAdminView = useCallback(() => {
-    try { localStorage.removeItem(ADMIN_VIEW_KEY); } catch { /* ignore */ }
+    try {
+      localStorage.removeItem(ADMIN_VIEW_KEY);
+    } catch {
+      /* ignore */
+    }
     setAdminViewingAs(null);
   }, []);
 
   const enterStaffView = useCallback((target: Role) => {
-    setState(prev => {
+    setState((prev) => {
       // Remember the role being left, not whatever is in storage already —
       // re-entering from a staff portal must not overwrite the original
       // admin role with a staff one and strand the way back.
       if (prev.role === "admin" || prev.role === "superadmin") {
-        try { localStorage.setItem(ADMIN_VIEW_KEY, prev.role); } catch { /* ignore */ }
+        try {
+          localStorage.setItem(ADMIN_VIEW_KEY, prev.role);
+        } catch {
+          /* ignore */
+        }
         setAdminViewingAs(prev.role);
       }
       return { ...prev, role: target };
@@ -147,7 +157,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Fresh idle clock — a stale value from an earlier session would make
       // IdleLogout end this one the moment it starts.
       localStorage.setItem("bk_last_activity", String(Date.now()));
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     setAdminViewingAs(null);
     const normalizedRole = user?.role ? (user.role.toLowerCase() as Role) : null;
     // Several portals assigned → no role yet; /select-role asks which one.
@@ -165,7 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Entering or leaving a staff portal always writes the flag and then calls
   // selectRole, so re-reading here keeps the state in step with the dashboards.
   const selectRole = useCallback((role: Role | null) => {
-    setState(prev => ({ ...prev, role }));
+    setState((prev) => ({ ...prev, role }));
     setAdminViewingAs(readAdminView());
   }, []);
 
@@ -173,15 +185,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const res = await authApi.switchRole(target.toUpperCase());
     // Written synchronously so requests fired by the next portal's first
     // render already carry the new token (saveState runs a tick later).
-    try { localStorage.setItem("token", res.token); localStorage.removeItem(ADMIN_VIEW_KEY); } catch { /* ignore */ }
+    try {
+      localStorage.setItem("token", res.token);
+      localStorage.removeItem(ADMIN_VIEW_KEY);
+    } catch {
+      /* ignore */
+    }
     setAdminViewingAs(null);
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       role: target,
       token: res.token,
       // accessLevel is per-portal (MoneyValue/DownloadAccess read it), so the
       // one cached from login would be the wrong portal's after a switch.
-      user: prev.user ? { ...prev.user, roles: res.roles, accessLevel: res.accessLevel } : prev.user,
+      user: prev.user
+        ? { ...prev.user, roles: res.roles, accessLevel: res.accessLevel }
+        : prev.user,
     }));
   }, []);
 
@@ -191,24 +210,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // must still work offline or with the API down. The login history losing
     // one logout row is a better failure than a user stuck on a spinner, so
     // the rejection is swallowed rather than surfaced.
-    void authApi.logout().catch(() => { /* logout is local-first */ });
+    void authApi.logout().catch(() => {
+      /* logout is local-first */
+    });
     setState({ isAuthenticated: false, role: null, phone: null });
     localStorage.removeItem(STORAGE_KEY);
     try {
       localStorage.removeItem("token");
       localStorage.removeItem(ADMIN_VIEW_KEY);
       sessionStorage.removeItem(IMPERSONATE_WEAVER_KEY);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     setAdminViewingAs(null);
   }, []);
 
   const availableRoles = React.useMemo(
     () => toRoles(state.user?.roles, state.role),
-    [state.user?.roles, state.role],
+    [state.user?.roles, state.role]
   );
 
   return (
-    <AuthContext.Provider value={{ ...state, login, selectRole, logout, adminViewingAs, clearAdminView, enterStaffView, availableRoles, switchPortal }}>
+    <AuthContext.Provider
+      value={{
+        ...state,
+        login,
+        selectRole,
+        logout,
+        adminViewingAs,
+        clearAdminView,
+        enterStaffView,
+        availableRoles,
+        switchPortal,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

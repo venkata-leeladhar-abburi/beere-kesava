@@ -4,7 +4,14 @@ import { Supplier } from "@/features/suppliers";
 import { T, F } from "../../theme";
 import { FormState } from "../../types";
 import { inputStyle, labelStyle } from "../../common/primitives";
-import { Field, Input, Select, SelectItem, Button, Textarea } from "../../../../../../shared/ui/primitives";
+import {
+  Field,
+  Input,
+  Select,
+  SelectItem,
+  Button,
+  Textarea,
+} from "../../../../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../../../../shared/ui/date";
 
 /**
@@ -43,7 +50,11 @@ export function SupplierSection({
           value={form.supplierId || (form.supplier ? "__other__" : "")}
           onValueChange={(val) => {
             if (val === "" || val === "__other__") {
-              setForm((f) => ({ ...f, supplierId: "", ...(val === "" ? { supplier: "", location: "", gstNumber: "" } : {}) }));
+              setForm((f) => ({
+                ...f,
+                supplierId: "",
+                ...(val === "" ? { supplier: "", location: "", gstNumber: "" } : {}),
+              }));
               return;
             }
             const s = suppliers.find((x) => x.id === val);
@@ -58,14 +69,26 @@ export function SupplierSection({
           }}
         >
           {suppliers.map((s) => (
-            <SelectItem key={s.id} value={s.id}>{s.name} · {s.city} · {s.specialty}</SelectItem>
+            <SelectItem key={s.id} value={s.id}>
+              {s.name} · {s.city} · {s.specialty}
+            </SelectItem>
           ))}
           <SelectItem value="__other__">Other (enter manually)</SelectItem>
         </Select>
       </Field>
 
       {selectedSupplier && (
-        <div className="grid grid-cols-1 md:grid-cols-3" style={{ marginBottom: 16, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 14px", gap: 10 }}>
+        <div
+          className="grid grid-cols-1 md:grid-cols-3"
+          style={{
+            marginBottom: 16,
+            background: T.silkCream,
+            border: `1px solid ${T.borderDef}`,
+            borderRadius: 10,
+            padding: "12px 14px",
+            gap: 10,
+          }}
+        >
           {[
             ["Supplier ID", selectedSupplier.code || selectedSupplier.id],
             ["Contact", selectedSupplier.contactName],
@@ -75,8 +98,29 @@ export function SupplierSection({
             ["GST", selectedSupplier.gstCode || "—"],
           ].map(([k, v]) => (
             <div key={k}>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.9px", color: T.taupe, marginBottom: 3 }}>{String(k).toUpperCase()}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600, wordBreak: "break-word" }}>{v}</div>
+              <div
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  letterSpacing: "0.9px",
+                  color: T.taupe,
+                  marginBottom: 3,
+                }}
+              >
+                {String(k).toUpperCase()}
+              </div>
+              <div
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: 12,
+                  color: T.luxuryBrown,
+                  fontWeight: 600,
+                  wordBreak: "break-word",
+                }}
+              >
+                {v}
+              </div>
             </div>
           ))}
         </div>
@@ -105,8 +149,17 @@ export function SupplierSection({
         </Field>
         <div>
           <div style={labelStyle}>Number of Sarees</div>
-          <div style={{ ...inputStyle, display: "flex", alignItems: "center", color: T.taupe, background: T.cream }}>
-            {pieceCount} saree{pieceCount !== 1 ? "s" : ""} in {sareeDetailsCount} line{sareeDetailsCount !== 1 ? "s" : ""} below
+          <div
+            style={{
+              ...inputStyle,
+              display: "flex",
+              alignItems: "center",
+              color: T.taupe,
+              background: T.cream,
+            }}
+          >
+            {pieceCount} saree{pieceCount !== 1 ? "s" : ""} in {sareeDetailsCount} line
+            {sareeDetailsCount !== 1 ? "s" : ""} below
           </div>
         </div>
         <Field label="Invoice Number">
@@ -131,7 +184,9 @@ export function SupplierSection({
           >
             <UploadCloud size={14} />
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {uploadingInvoice ? "Uploading…" : form.invoiceFileName || "Choose file from supplier..."}
+              {uploadingInvoice
+                ? "Uploading…"
+                : form.invoiceFileName || "Choose file from supplier..."}
             </span>
             <Input
               type="file"
@@ -142,14 +197,20 @@ export function SupplierSection({
             />
           </label>
           {invoiceUploadError && (
-            <div style={{ marginTop: 4, fontFamily: F.ui, fontSize: 11, color: "#C0392B" }}>{invoiceUploadError}</div>
+            <div style={{ marginTop: 4, fontFamily: F.ui, fontSize: 11, color: "#C0392B" }}>
+              {invoiceUploadError}
+            </div>
           )}
           {form.invoiceFileName && (
             <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
               <FileText size={12} color={T.royalBurgundy} />
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{form.invoiceFileName}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                {form.invoiceFileName}
+              </span>
               {!uploadingInvoice && !form.invoiceFileUrl && (
-                <span style={{ fontFamily: F.ui, fontSize: 11, color: "#C0392B" }}>Upload failed</span>
+                <span style={{ fontFamily: F.ui, fontSize: 11, color: "#C0392B" }}>
+                  Upload failed
+                </span>
               )}
               <Button
                 variant="link"

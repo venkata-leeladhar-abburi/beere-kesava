@@ -22,9 +22,11 @@ export function RoyalSubTabStrip<T extends string = string>({
   className?: string;
 }) {
   return (
-    <div className={`w-full overflow-x-auto section-nav-scroll pb-0.5 mb-6 border-b-2 border-[rgba(110,15,45,0.12)] ${className}`}>
+    <div
+      className={`w-full overflow-x-auto section-nav-scroll pb-0.5 mb-6 border-b-2 border-[rgba(110,15,45,0.12)] ${className}`}
+    >
       <div className="flex items-center justify-between w-full min-w-full gap-4 px-1">
-        {tabs.map(t => {
+        {tabs.map((t) => {
           const isActive = activeTab === t.key;
           return (
             <button
@@ -38,7 +40,9 @@ export function RoyalSubTabStrip<T extends string = string>({
                   : "bg-transparent text-[#886A58] hover:text-[#6E0F2D] hover:bg-[rgba(110,15,45,0.03)] font-semibold border-b-[3.5px] border-transparent")
               }
             >
-              {t.icon && <span className={isActive ? "text-[#6E0F2D]" : "text-[#886A58]"}>{t.icon}</span>}
+              {t.icon && (
+                <span className={isActive ? "text-[#6E0F2D]" : "text-[#886A58]"}>{t.icon}</span>
+              )}
               <span>{t.label}</span>
             </button>
           );

@@ -2,11 +2,13 @@ import { useMemo, useState } from "react";
 import { useListDetailScroll } from "@/shared/ui/ScrollToTop";
 import { useLocation } from "react-router";
 import { AnimatePresence } from "motion/react";
-import {
-  useSuppliers, Supplier, SareeTag, totalPieces,
-} from "../contexts/SupplierContext";
+import { useSuppliers, Supplier, SareeTag, totalPieces } from "../contexts/SupplierContext";
 import { MaterialsFooter } from "@/features/materials";
-import { PurchaseFormModal, FormState as PurchaseFormState, EMPTY_FORM as EMPTY_PURCHASE_FORM } from "@/features/inventory";
+import {
+  PurchaseFormModal,
+  FormState as PurchaseFormState,
+  EMPTY_FORM as EMPTY_PURCHASE_FORM,
+} from "@/features/inventory";
 
 import { T } from "./theme";
 import { Toast } from "./common/primitives";
@@ -35,7 +37,9 @@ export function SuppliersPage() {
   const { openDetail, backToList } = useListDetailScroll();
   // Command palette "New Supplier" action deep-links here with ?new=1 to open
   // the add-supplier form straight away.
-  const [showAdd, setShowAdd] = useState(() => new URLSearchParams(location.search).get("new") === "1");
+  const [showAdd, setShowAdd] = useState(
+    () => new URLSearchParams(location.search).get("new") === "1"
+  );
   const [requestFor, setRequestFor] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -43,11 +47,14 @@ export function SuppliersPage() {
   const [toast, setToast] = useState("");
 
   // Keep the open profile in step with edits made from the Edit Profile tab.
-  const liveSelected = selected ? suppliers.find(s => s.id === selected.id) ?? null : null;
+  const liveSelected = selected ? (suppliers.find((s) => s.id === selected.id) ?? null) : null;
 
   const totals = useMemo(() => {
-    let purchased = 0, paid = 0, outstanding = 0, sarees = 0;
-    suppliers.forEach(s => {
+    let purchased = 0,
+      paid = 0,
+      outstanding = 0,
+      sarees = 0;
+    suppliers.forEach((s) => {
       const st = statsFor(s.id);
       purchased += st.totalPurchased;
       paid += st.totalPaid;
@@ -57,9 +64,14 @@ export function SuppliersPage() {
     return { purchased, paid, outstanding, sarees };
   }, [suppliers, statsFor]);
 
-  const filtered = suppliers.filter(s => {
+  const filtered = suppliers.filter((s) => {
     const q = search.toLowerCase();
-    const mSearch = !q || s.name.toLowerCase().includes(q) || s.city.toLowerCase().includes(q) || s.id.toLowerCase().includes(q) || s.contactName.toLowerCase().includes(q);
+    const mSearch =
+      !q ||
+      s.name.toLowerCase().includes(q) ||
+      s.city.toLowerCase().includes(q) ||
+      s.id.toLowerCase().includes(q) ||
+      s.contactName.toLowerCase().includes(q);
     const mStatus = statusFilter === "All" || s.status === statusFilter.toLowerCase();
 
     let mRating = true;
@@ -78,7 +90,7 @@ export function SuppliersPage() {
   // purchase — supplier, invoice and per-saree detail — so it's ready to convert
   // into a real purchase the moment the superadmin approves it.
   const initialPurchaseFormFor = (supplierId: string | null): PurchaseFormState => {
-    const s = suppliers.find(x => x.id === supplierId);
+    const s = suppliers.find((x) => x.id === supplierId);
     return {
       ...EMPTY_PURCHASE_FORM,
       supplierId: s?.id || "",
@@ -114,13 +126,21 @@ export function SuppliersPage() {
     setTimeout(() => setToast(""), 3200);
   };
   return (
-    <div style={{ background: T.silkCream, minHeight: "100dvh", display: "flex", flexDirection: "column", paddingBottom: 0 }}>
+    <div
+      style={{
+        background: T.silkCream,
+        minHeight: "100dvh",
+        display: "flex",
+        flexDirection: "column",
+        paddingBottom: 0,
+      }}
+    >
       {liveSelected ? (
         <>
           <SupplierProfile
             supplier={liveSelected}
             onBack={() => backToList(() => setSelected(null))}
-            onRaiseRequest={id => setRequestFor(id)}
+            onRaiseRequest={(id) => setRequestFor(id)}
           />
           <AnimatePresence>
             {requestFor && (
@@ -146,21 +166,25 @@ export function SuppliersPage() {
 
           <div id="supp-directory">
             <SupplierDirectorySection
-            filtered={filtered}
-            search={search}
-            setSearch={setSearch}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            ratingFilter={ratingFilter}
-            setRatingFilter={setRatingFilter}
-            onAddSupplier={() => setShowAdd(true)}
-            onViewSupplier={s => openDetail(() => setSelected(s))}
-          />
+              filtered={filtered}
+              search={search}
+              setSearch={setSearch}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              ratingFilter={ratingFilter}
+              setRatingFilter={setRatingFilter}
+              onAddSupplier={() => setShowAdd(true)}
+              onViewSupplier={(s) => openDetail(() => setSelected(s))}
+            />
           </div>
 
-          <div id="supp-analytics"><SupplierAnalytics /></div>
+          <div id="supp-analytics">
+            <SupplierAnalytics />
+          </div>
 
-          <div id="supp-history"><ExternalPurchaseHistorySection purchases={purchases} /></div>
+          <div id="supp-history">
+            <ExternalPurchaseHistorySection purchases={purchases} />
+          </div>
 
           <AnimatePresence>
             {showAdd && (
@@ -168,10 +192,24 @@ export function SuppliersPage() {
                 onCancel={() => setShowAdd(false)}
                 onSave={(v, cardUrl) => {
                   addSupplier({
-                    name: v.name, shortName: v.shortName || undefined, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
-                    city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
-                    specialty: v.specialty, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo, ifscCode: v.ifscCode,
-                    notes: v.notes, visitingCard: cardUrl || undefined, status: "active", rating: v.rating || 3,
+                    name: v.name,
+                    shortName: v.shortName || undefined,
+                    contactName: v.contactName,
+                    phone: v.phone,
+                    whatsapp: v.whatsapp,
+                    city: v.city,
+                    state: v.state,
+                    address: v.address,
+                    gstCode: v.gstCode,
+                    specialty: v.specialty,
+                    terms: v.terms,
+                    bankName: v.bankName,
+                    accountNo: v.accountNo,
+                    ifscCode: v.ifscCode,
+                    notes: v.notes,
+                    visitingCard: cardUrl || undefined,
+                    status: "active",
+                    rating: v.rating || 3,
                     firmId: v.firmId || undefined,
                   });
                   setShowAdd(false);

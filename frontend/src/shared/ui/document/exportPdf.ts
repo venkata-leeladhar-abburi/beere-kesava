@@ -130,21 +130,21 @@ function getPdfContainer(): HTMLElement {
 }
 
 function nextPaint(): Promise<void> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
   });
 }
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | void> {
-  return Promise.race([promise, new Promise<void>(resolve => setTimeout(resolve, ms))]);
+  return Promise.race([promise, new Promise<void>((resolve) => setTimeout(resolve, ms))]);
 }
 
 function imagesSettled(container: HTMLElement): Promise<unknown> {
   const images = Array.from(container.querySelectorAll("img"));
   return Promise.all(
-    images.map(img => {
+    images.map((img) => {
       if (img.complete) return Promise.resolve();
-      return new Promise<void>(resolve => {
+      return new Promise<void>((resolve) => {
         img.addEventListener("load", () => resolve(), { once: true });
         img.addEventListener("error", () => resolve(), { once: true });
       });
@@ -159,7 +159,10 @@ let pdfRoot: Root | null = null;
 
 /** Trim a filename down to something a filesystem will accept. */
 function safeFileName(name: string): string {
-  const cleaned = name.replace(/[^\w.\- ]+/g, "-").replace(/-+/g, "-").trim();
+  const cleaned = name
+    .replace(/[^\w.\- ]+/g, "-")
+    .replace(/-+/g, "-")
+    .trim();
   return (cleaned || "document").slice(0, 120);
 }
 
@@ -208,7 +211,8 @@ async function buildDocumentPdf(node: React.ReactNode, options: ExportPdfOptions
     const pageWidthMm = isA5 ? A5L_WIDTH_MM : A4_WIDTH_MM;
     const pageHeightMm = isA5 ? A5L_HEIGHT_MM : A4_HEIGHT_MM;
 
-    const orientation: "portrait" | "landscape" = pageWidthMm >= pageHeightMm ? "landscape" : "portrait";
+    const orientation: "portrait" | "landscape" =
+      pageWidthMm >= pageHeightMm ? "landscape" : "portrait";
     const pdf = new jsPDF({
       orientation,
       unit: "mm",
@@ -271,7 +275,13 @@ async function buildDocumentPdf(node: React.ReactNode, options: ExportPdfOptions
         firstPage = false;
         pdf.addImage(
           canvas.toDataURL("image/jpeg", JPEG_QUALITY),
-          "JPEG", offsetX, 0, renderWidthMm, renderHeightMm, undefined, "FAST"
+          "JPEG",
+          offsetX,
+          0,
+          renderWidthMm,
+          renderHeightMm,
+          undefined,
+          "FAST"
         );
         continue;
       }
@@ -289,14 +299,30 @@ async function buildDocumentPdf(node: React.ReactNode, options: ExportPdfOptions
         if (!ctx) throw new Error("Could not create the export canvas.");
         ctx.fillStyle = "#FFFFFF";
         ctx.fillRect(0, 0, slice.width, slice.height);
-        ctx.drawImage(canvas, 0, sliceTop, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+        ctx.drawImage(
+          canvas,
+          0,
+          sliceTop,
+          canvas.width,
+          sliceHeight,
+          0,
+          0,
+          canvas.width,
+          sliceHeight
+        );
 
         if (!firstPage) pdf.addPage([pageWidthMm, pageHeightMm], orientation);
         firstPage = false;
 
         pdf.addImage(
           slice.toDataURL("image/jpeg", JPEG_QUALITY),
-          "JPEG", 0, 0, pageWidthMm, sliceHeight / pxPerMm, undefined, "FAST"
+          "JPEG",
+          0,
+          0,
+          pageWidthMm,
+          sliceHeight / pxPerMm,
+          undefined,
+          "FAST"
         );
 
         sliceTop += sliceHeight;
@@ -317,7 +343,10 @@ async function buildDocumentPdf(node: React.ReactNode, options: ExportPdfOptions
  * Renders `node` offscreen at true A4 width, rasterises every `.bk-doc`
  * sheet in it, and saves the result as a single PDF.
  */
-export async function exportDocumentPdf(node: React.ReactNode, options: ExportPdfOptions = {}): Promise<void> {
+export async function exportDocumentPdf(
+  node: React.ReactNode,
+  options: ExportPdfOptions = {}
+): Promise<void> {
   const pdf = await buildDocumentPdf(node, options);
   pdf.save(`${safeFileName(options.fileName || options.title || "document")}.pdf`);
 }
@@ -327,7 +356,10 @@ export async function exportDocumentPdf(node: React.ReactNode, options: ExportPd
  * instead of triggering a browser download — for flows that upload the file
  * elsewhere (e.g. "Share with Vendor" posting it to /whatsapp/send-po-document).
  */
-export async function exportDocumentPdfBlob(node: React.ReactNode, options: ExportPdfOptions = {}): Promise<Blob> {
+export async function exportDocumentPdfBlob(
+  node: React.ReactNode,
+  options: ExportPdfOptions = {}
+): Promise<Blob> {
   const pdf = await buildDocumentPdf(node, options);
   return pdf.output("blob");
 }

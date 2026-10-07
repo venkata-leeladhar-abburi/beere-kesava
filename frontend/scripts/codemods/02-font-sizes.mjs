@@ -80,18 +80,42 @@ function walk(dir) {
 // Ordered so the mapping lookup below finds an exact match first, then
 // falls through to the SIZE_MAP table.
 const SIZE_MAP = new Map([
-  [8, 12], [8.5, 12], [9, 12], [9.5, 12], [10, 12], [10.5, 12], [11, 12], [11.5, 12],
-  [12, 12], [12.5, 12],
-  [13, 13], [13.5, 13],
-  [14, 14], [14.5, 14], [15, 14],
-  [16, 16], [17, 16],
-  [18, 18], [19, 18],
-  [20, 20], [21, 20], [22, 20],
-  [24, 24], [26, 24],
-  [28, 30], [30, 30], [32, 30],
-  [34, 38], [36, 38], [38, 38], [40, 38],
-  [44, 48], [48, 48], [52, 48],
-  [56, 60], [60, 60],
+  [8, 12],
+  [8.5, 12],
+  [9, 12],
+  [9.5, 12],
+  [10, 12],
+  [10.5, 12],
+  [11, 12],
+  [11.5, 12],
+  [12, 12],
+  [12.5, 12],
+  [13, 13],
+  [13.5, 13],
+  [14, 14],
+  [14.5, 14],
+  [15, 14],
+  [16, 16],
+  [17, 16],
+  [18, 18],
+  [19, 18],
+  [20, 20],
+  [21, 20],
+  [22, 20],
+  [24, 24],
+  [26, 24],
+  [28, 30],
+  [30, 30],
+  [32, 30],
+  [34, 38],
+  [36, 38],
+  [38, 38],
+  [40, 38],
+  [44, 48],
+  [48, 48],
+  [52, 48],
+  [56, 60],
+  [60, 60],
 ]);
 
 const SUB_12_FLOOR = new Set([8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5]);
@@ -152,7 +176,9 @@ console.log(`Codemod 02 — font sizes ${dryRun ? "(dry run)" : ""}`);
 console.log(`Scope: ${path.relative(SRC, TARGET_ROOT) || "src/features"}`);
 console.log("");
 console.log(`  total fontSize replacements     : ${totalReplacements}`);
-console.log(`  of which raised the 12px floor  : ${floorReplacements}  (visible size increase — review)`);
+console.log(
+  `  of which raised the 12px floor  : ${floorReplacements}  (visible size increase — review)`
+);
 console.log(`  files changed                   : ${filesChanged}`);
 
 if (reviewSites.length) {
@@ -173,7 +199,9 @@ if (reviewSites.length) {
     writeFileSync(reportPath, reportLines, "utf8");
     console.log(`\n  Review report written to ${reportPath}`);
   } else {
-    console.log(`\n  ${reviewSites.length} floor-raise sites (first 15 shown; use --report=<path> for the full list):`);
+    console.log(
+      `\n  ${reviewSites.length} floor-raise sites (first 15 shown; use --report=<path> for the full list):`
+    );
     for (const s of reviewSites.slice(0, 15)) {
       console.log(`    ${s.file}:${s.line}  ${s.from}px → ${s.to}px`);
     }

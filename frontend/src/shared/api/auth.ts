@@ -42,7 +42,9 @@ export interface VerifyOtpResponse {
  * before it reads the OTP row, so a refused attempt has not consumed the
  * code or spent one of the three allowed guesses.
  */
-async function withLocationIfRequired<T>(send: (fix: LocationFix | null) => Promise<T>): Promise<T> {
+async function withLocationIfRequired<T>(
+  send: (fix: LocationFix | null) => Promise<T>
+): Promise<T> {
   try {
     return await send(null);
   } catch (error) {
@@ -60,11 +62,11 @@ async function withLocationIfRequired<T>(send: (fix: LocationFix | null) => Prom
 export const authApi = {
   requestOtp: (phone: string) =>
     withLocationIfRequired((fix) =>
-      apiClient.post<RequestOtpResponse>("/auth/request-otp", { phone, ...fix }),
+      apiClient.post<RequestOtpResponse>("/auth/request-otp", { phone, ...fix })
     ),
   verifyOtp: (phone: string, code: string) =>
     withLocationIfRequired((fix) =>
-      apiClient.post<VerifyOtpResponse>("/auth/verify-otp", { phone, code, ...fix }),
+      apiClient.post<VerifyOtpResponse>("/auth/verify-otp", { phone, code, ...fix })
     ),
   /** Re-issues the token for another portal assigned to the same person. */
   switchRole: (role: string) =>
@@ -76,8 +78,8 @@ export const authApi = {
     withLocationIfRequired((fix) =>
       apiClient.post<{ token: string; role: string; roles: string[]; accessLevel: string }>(
         "/auth/switch-role",
-        { role, ...fix },
-      ),
+        { role, ...fix }
+      )
     ),
   /** Closes the session in the login history. Needs the token, so it must be
    *  called before local credentials are cleared. */

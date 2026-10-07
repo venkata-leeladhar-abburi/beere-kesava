@@ -2,8 +2,13 @@ import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Save } from "lucide-react";
 import {
-  useSuppliers, SareeTag, parseINR,
-  assignLineCodes, computeFinalAmount, computePurchaseBill, purchaseTotals,
+  useSuppliers,
+  SareeTag,
+  parseINR,
+  assignLineCodes,
+  computeFinalAmount,
+  computePurchaseBill,
+  purchaseTotals,
 } from "@/features/suppliers";
 import { T, F } from "../../theme";
 import { Button, IconButton } from "../../../../../../shared/ui/primitives";
@@ -37,13 +42,16 @@ export function PurchaseFormModal({
   onSubmit: (data: FormState, sarees: SareeTag[]) => void;
 }) {
   const { suppliers } = useSuppliers();
-  const { upload: uploadInvoiceFile, uploading: uploadingInvoice, error: invoiceUploadError } = useReceiptUpload();
+  const {
+    upload: uploadInvoiceFile,
+    uploading: uploadingInvoice,
+    error: invoiceUploadError,
+  } = useReceiptUpload();
   const [form, setForm] = useState<FormState>(initial);
   const [sareeDetails, setSareeDetails] = useState(() => initialSarees.map(toSareeRow));
   const selectedSupplier = suppliers.find((s) => s.id === form.supplierId) ?? null;
 
-  const set = (key: keyof FormState, value: string) =>
-    setForm((f) => ({ ...f, [key]: value }));
+  const set = (key: keyof FormState, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
   const addSareeRow = () => {
     setSareeDetails((prev) => [
@@ -66,10 +74,8 @@ export function PurchaseFormModal({
   };
   const removeSareeRow = (uid: string) =>
     setSareeDetails((prev) => prev.filter((s) => s._uid !== uid));
-  const updateSareeRow = (uid: string, patch: Partial<typeof sareeDetails[number]>) =>
-    setSareeDetails((prev) =>
-      prev.map((s) => (s._uid === uid ? { ...s, ...patch } : s))
-    );
+  const updateSareeRow = (uid: string, patch: Partial<(typeof sareeDetails)[number]>) =>
+    setSareeDetails((prev) => prev.map((s) => (s._uid === uid ? { ...s, ...patch } : s)));
 
   const handleInvoiceFile = (file: File | null) => {
     if (!file) return;
@@ -81,7 +87,12 @@ export function PurchaseFormModal({
 
   // Recomputed every render so a new line's code follows the supplier and
   // invoice number live as they're typed; saved lines keep their stored code.
-  const lineCodes = assignLineCodes(sareeDetails, form.supplier, form.invoiceNumber, selectedSupplier?.shortName);
+  const lineCodes = assignLineCodes(
+    sareeDetails,
+    form.supplier,
+    form.invoiceNumber,
+    selectedSupplier?.shortName
+  );
 
   const totals = purchaseTotals(sareeDetails);
   const pieceCount = totals.pieces;
@@ -89,11 +100,13 @@ export function PurchaseFormModal({
     sareeDetails,
     form.discountType,
     Number(form.discountValue) || 0,
-    Number(form.gstPercent) || 0,
+    Number(form.gstPercent) || 0
   );
   // An older purchase's hand-typed bill that the calculation will replace.
   const previousBill =
-    previousBillAmount && parseINR(previousBillAmount) !== bill.billAmount ? previousBillAmount : undefined;
+    previousBillAmount && parseINR(previousBillAmount) !== bill.billAmount
+      ? previousBillAmount
+      : undefined;
 
   const valid =
     form.supplier.trim() !== "" &&
@@ -128,7 +141,7 @@ export function PurchaseFormModal({
     });
 
   return (
-    <Modal open onOpenChange={o => !o && onClose()} size="md">
+    <Modal open onOpenChange={(o) => !o && onClose()} size="md">
       <div
         style={{
           background: T.darkBurgundy,
@@ -145,7 +158,9 @@ export function PurchaseFormModal({
           </div>
         </Dialog.Title>
         <Dialog.Description className="sr-only">
-          {mode === "add" ? "Record a new external purchase" : `Edit external purchase from ${initial.supplier}`}
+          {mode === "add"
+            ? "Record a new external purchase"
+            : `Edit external purchase from ${initial.supplier}`}
         </Dialog.Description>
         <Dialog.Close asChild>
           <IconButton
@@ -209,11 +224,7 @@ export function PurchaseFormModal({
         >
           {mode === "add" ? "Add Purchase & Generate Barcodes" : "Save Changes"}
         </Button>
-        <Button
-          variant="secondary"
-          onClick={onClose}
-          className="flex-none rounded-full"
-        >
+        <Button variant="secondary" onClick={onClose} className="flex-none rounded-full">
           Cancel
         </Button>
       </div>

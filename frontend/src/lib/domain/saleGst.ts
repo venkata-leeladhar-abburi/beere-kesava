@@ -25,7 +25,8 @@ export function saleGstRate(s: Pick<SaleGstFields, "gstRate">): number | null {
 }
 
 /** This sale's GST in rupees (0 when none was charged). */
-export const saleGstAmount = (s: Pick<SaleGstFields, "gstAmount">): number => toPaise(s.gstAmount) / 100;
+export const saleGstAmount = (s: Pick<SaleGstFields, "gstAmount">): number =>
+  toPaise(s.gstAmount) / 100;
 
 /** What GST was charged on — the price of the piece before tax. */
 export const saleTaxable = (s: Pick<SaleGstFields, "amount" | "gstAmount">): number =>
@@ -36,14 +37,15 @@ export const saleTaxable = (s: Pick<SaleGstFields, "amount" | "gstAmount">): num
  * GSTINs — in the shape RetailBillDocument prints. Undefined when none of the
  * sales charged GST.
  */
-export function billGstFromSales(sales: SaleGstFields[]):
-  { rate: number; amount: number; customerGstin?: string; sellerGstin?: string } | undefined {
-  const taxed = sales.filter(s => saleGstRate(s) !== null);
+export function billGstFromSales(
+  sales: SaleGstFields[]
+): { rate: number; amount: number; customerGstin?: string; sellerGstin?: string } | undefined {
+  const taxed = sales.filter((s) => saleGstRate(s) !== null);
   if (taxed.length === 0) return undefined;
   return {
     rate: saleGstRate(taxed[0])!,
     amount: taxed.reduce((sum, s) => sum + toPaise(s.gstAmount), 0) / 100,
-    customerGstin: taxed.find(s => s.customerGstin)?.customerGstin ?? undefined,
-    sellerGstin: taxed.find(s => s.sellerGstin)?.sellerGstin ?? undefined,
+    customerGstin: taxed.find((s) => s.customerGstin)?.customerGstin ?? undefined,
+    sellerGstin: taxed.find((s) => s.sellerGstin)?.sellerGstin ?? undefined,
   };
 }

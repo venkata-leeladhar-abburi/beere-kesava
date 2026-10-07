@@ -18,15 +18,27 @@ const T = {
   borderDef: "rgba(110,15,45,0.10)",
 };
 
-const F = { display: "'Plus Jakarta Sans', sans-serif", ui: "'Inter', sans-serif", mono: "'JetBrains Mono', monospace" };
+const F = {
+  display: "'Plus Jakarta Sans', sans-serif",
+  ui: "'Inter', sans-serif",
+  mono: "'JetBrains Mono', monospace",
+};
 
 function CardBloom() {
   return (
-    <span aria-hidden style={{
-      position: "absolute", top: -70, right: -70, width: 200, height: 200, borderRadius: "50%",
-      background: "radial-gradient(circle, rgba(110,15,45,0.05) 0%, rgba(110,15,45,0) 70%)",
-      pointerEvents: "none",
-    }} />
+    <span
+      aria-hidden
+      style={{
+        position: "absolute",
+        top: -70,
+        right: -70,
+        width: 200,
+        height: 200,
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(110,15,45,0.05) 0%, rgba(110,15,45,0) 70%)",
+        pointerEvents: "none",
+      }}
+    />
   );
 }
 
@@ -44,14 +56,38 @@ const luxuryCardStyle: React.CSSProperties = {
 };
 
 const QC_QUEUE = [
-  { batchId: "BATCH-081", weaver: "Suresh Murti", sareeType: "Plain Silk", count: 4, submitted: "20 May 2026" },
-  { batchId: "BATCH-084", weaver: "Anand K.",     sareeType: "Bridal Special", count: 8, submitted: "21 May 2026" },
-  { batchId: "BATCH-088", weaver: "Ravi Kumar",   sareeType: "Heavy Zari", count: 6, submitted: "22 May 2026" },
-  { batchId: "BATCH-090", weaver: "Kamala B.",    sareeType: "Self Brocade", count: 5, submitted: "22 May 2026" },
+  {
+    batchId: "BATCH-081",
+    weaver: "Suresh Murti",
+    sareeType: "Plain Silk",
+    count: 4,
+    submitted: "20 May 2026",
+  },
+  {
+    batchId: "BATCH-084",
+    weaver: "Anand K.",
+    sareeType: "Bridal Special",
+    count: 8,
+    submitted: "21 May 2026",
+  },
+  {
+    batchId: "BATCH-088",
+    weaver: "Ravi Kumar",
+    sareeType: "Heavy Zari",
+    count: 6,
+    submitted: "22 May 2026",
+  },
+  {
+    batchId: "BATCH-090",
+    weaver: "Kamala B.",
+    sareeType: "Self Brocade",
+    count: 5,
+    submitted: "22 May 2026",
+  },
 ];
 
 export function QcHistoryPage({ onBack }: { onBack?: () => void }) {
-  const [selected, setSelected] = useState<typeof QC_QUEUE[0] | null>(null);
+  const [selected, setSelected] = useState<(typeof QC_QUEUE)[0] | null>(null);
 
   return (
     <PageShell>
@@ -73,12 +109,7 @@ export function QcHistoryPage({ onBack }: { onBack?: () => void }) {
           subtitle="All batches awaiting and completed quality checks."
           actions={
             onBack && (
-              <Button
-                variant="secondary"
-                size="md"
-                iconLeft={ArrowLeft}
-                onClick={onBack}
-              >
+              <Button variant="secondary" size="md" iconLeft={ArrowLeft} onClick={onBack}>
                 Back to Production
               </Button>
             )
@@ -95,37 +126,71 @@ export function QcHistoryPage({ onBack }: { onBack?: () => void }) {
                   style={luxuryCardStyle}
                 >
                   <CardBloom />
-                  
+
                   <div>
                     {/* Top Row: Batch ID badge & Status Pill */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: 14,
+                      }}
+                    >
                       <EntityCode
                         type="batch"
                         value={q.batchId}
                         size="sm"
                         className="font-bold text-[#6E0F2D] bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.15)] rounded-lg px-2.5 py-1"
                       />
-                      <div style={{
-                        background: "rgba(200,155,71,0.12)", border: `1px solid rgba(200,155,71,0.25)`,
-                        borderRadius: 20, padding: "3px 10px",
-                        fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.antiqueGold,
-                      }}>
+                      <div
+                        style={{
+                          background: "rgba(200,155,71,0.12)",
+                          border: `1px solid rgba(200,155,71,0.25)`,
+                          borderRadius: 20,
+                          padding: "3px 10px",
+                          fontFamily: F.ui,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: T.antiqueGold,
+                        }}
+                      >
                         Awaiting QC
                       </div>
                     </div>
 
                     {/* Weaver Name */}
-                    <h3 style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 6px 0", lineHeight: 1.2 }}>
+                    <h3
+                      style={{
+                        fontFamily: F.display,
+                        fontSize: 18,
+                        fontWeight: 700,
+                        color: T.luxuryBrown,
+                        margin: "0 0 6px 0",
+                        lineHeight: 1.2,
+                      }}
+                    >
                       {q.weaver}
                     </h3>
 
                     {/* Sarees Count & Type */}
-                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 4 }}>
-                      {q.count} sarees <span style={{ color: T.taupe, fontWeight: 400 }}>· {q.sareeType}</span>
+                    <div
+                      style={{
+                        fontFamily: F.ui,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: T.luxuryBrown,
+                        marginBottom: 4,
+                      }}
+                    >
+                      {q.count} sarees{" "}
+                      <span style={{ color: T.taupe, fontWeight: 400 }}>· {q.sareeType}</span>
                     </div>
 
                     {/* Submission Date */}
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 18 }}>
+                    <div
+                      style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 18 }}
+                    >
                       Submitted {q.submitted}
                     </div>
                   </div>
@@ -149,10 +214,14 @@ export function QcHistoryPage({ onBack }: { onBack?: () => void }) {
       </div>
 
       {selected && (
-        <ProductionDialog open={!!selected} title="Start quality check" onClose={() => setSelected(null)}>
+        <ProductionDialog
+          open={!!selected}
+          title="Start quality check"
+          onClose={() => setSelected(null)}
+        >
           <div style={{ fontFamily: F.ui, color: T.luxuryBrown }}>
-            Begin QC for <b>{selected.batchId}</b> from {selected.weaver}. Record pass/reject results for{" "}
-            {selected.count} sarees.
+            Begin QC for <b>{selected.batchId}</b> from {selected.weaver}. Record pass/reject
+            results for {selected.count} sarees.
           </div>
         </ProductionDialog>
       )}

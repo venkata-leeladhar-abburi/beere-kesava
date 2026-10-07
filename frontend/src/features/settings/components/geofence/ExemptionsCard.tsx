@@ -33,7 +33,13 @@ export function ExemptionsCard() {
   const [reason, setReason] = useState("");
   const [expiresAt, setExpiresAt] = useState<Date | null>(defaultExpiry);
 
-  const { data: exemptions, isLoading, isError, error, refetch } = useQuery({
+  const {
+    data: exemptions,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["geofence", "exemptions"],
     queryFn: () => geofenceApi.listExemptions(),
   });
@@ -49,8 +55,11 @@ export function ExemptionsCard() {
     () =>
       (staff?.items ?? [])
         .filter((user) => user.role !== "ADMIN" && user.role !== "SUPERADMIN")
-        .map((user) => ({ id: user.id, label: `${user.firstName} ${user.lastName} · ${user.role}` })),
-    [staff],
+        .map((user) => ({
+          id: user.id,
+          label: `${user.firstName} ${user.lastName} · ${user.role}`,
+        })),
+    [staff]
   );
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["geofence", "exemptions"] });
@@ -120,10 +129,20 @@ export function ExemptionsCard() {
                 }}
               >
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14.5, color: T.luxuryBrown }}>
+                  <div
+                    style={{
+                      fontFamily: F.display,
+                      fontWeight: 700,
+                      fontSize: 14.5,
+                      color: T.luxuryBrown,
+                    }}
+                  >
                     {exemption.user.firstName} {exemption.user.lastName}
-                    <span style={{ fontFamily: F.ui, fontWeight: 500, color: T.taupe, fontSize: 13 }}>
-                      {" "}· {exemption.user.role}
+                    <span
+                      style={{ fontFamily: F.ui, fontWeight: 500, color: T.taupe, fontSize: 13 }}
+                    >
+                      {" "}
+                      · {exemption.user.role}
                     </span>
                   </div>
                   <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 3 }}>
@@ -140,7 +159,11 @@ export function ExemptionsCard() {
                         ? "1 day left"
                         : `${remaining} days left`}
                   </StatusPill>
-                  <QuietButton onClick={() => revoke.mutate(exemption.id)} disabled={revoke.isPending} danger>
+                  <QuietButton
+                    onClick={() => revoke.mutate(exemption.id)}
+                    disabled={revoke.isPending}
+                    danger
+                  >
                     End now
                   </QuietButton>
                 </div>

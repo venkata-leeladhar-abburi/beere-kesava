@@ -16,7 +16,7 @@ const detailKey = (id: string) => ["suppliers", "purchases", "detail", id] as co
 
 export function usePurchasePhotos(purchases: Purchase[]): Purchase[] {
   const results = useQueries({
-    queries: purchases.map(p => ({
+    queries: purchases.map((p) => ({
       queryKey: detailKey(p.id),
       queryFn: () => purchasesApi.getOne(p.id),
       staleTime: 60_000,
@@ -24,28 +24,28 @@ export function usePurchasePhotos(purchases: Purchase[]): Purchase[] {
   });
 
   // Re-derive only when a detail response actually lands, not on every render.
-  const stamp = results.map(r => r.dataUpdatedAt).join(",");
+  const stamp = results.map((r) => r.dataUpdatedAt).join(",");
 
   return useMemo(
     () =>
       purchases.map((p, i) => {
         const detail = results[i]?.data;
         if (!detail) return p;
-        const byCode = new Map(detail.sareeLines.map(l => [l.code, l]));
+        const byCode = new Map(detail.sareeLines.map((l) => [l.code, l]));
         return {
           ...p,
-          sarees: p.sarees.map(s => {
+          sarees: p.sarees.map((s) => {
             const line = byCode.get(s.id);
             if (!line) return s;
             return {
               ...s,
               imageUrl: resolveAssetUrl(line.imageUrl) ?? undefined,
-              pieceImageUrls: line.pieceImageUrls?.map(u => resolveAssetUrl(u) ?? ""),
+              pieceImageUrls: line.pieceImageUrls?.map((u) => resolveAssetUrl(u) ?? ""),
             };
           }),
         };
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [purchases, stamp],
+    [purchases, stamp]
   );
 }

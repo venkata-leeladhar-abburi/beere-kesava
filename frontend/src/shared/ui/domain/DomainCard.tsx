@@ -97,7 +97,9 @@ export function DomainCard({
       >
         <Avatar name={avatarName} src={avatarSrc} size="sm" />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[13px] font-medium text-[var(--text-primary)]">{title}</span>
+          <span className="block truncate text-[13px] font-medium text-[var(--text-primary)]">
+            {title}
+          </span>
           {code && <span className="block truncate">{code}</span>}
         </span>
         {status}
@@ -120,16 +122,22 @@ export function DomainCard({
         <Avatar name={avatarName} src={avatarSrc} size="md" />
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
-            <span className="truncate text-[14px] font-semibold text-[var(--text-primary)]">{title}</span>
+            <span className="truncate text-[14px] font-semibold text-[var(--text-primary)]">
+              {title}
+            </span>
             {code}
           </span>
-          {meta && <span className="block truncate text-[13px] text-[var(--text-secondary)]">{meta}</span>}
+          {meta && (
+            <span className="block truncate text-[13px] text-[var(--text-secondary)]">{meta}</span>
+          )}
         </span>
         {stats && stats.length > 0 && (
           <span className="hidden shrink-0 items-center gap-4 sm:flex">
             {stats.slice(0, 3).map((s) => (
               <span key={s.label} className="text-right">
-                <span className="block text-[13px] font-semibold tabular-nums text-[var(--text-primary)]">{s.value}</span>
+                <span className="block text-[13px] font-semibold tabular-nums text-[var(--text-primary)]">
+                  {s.value}
+                </span>
                 <span className="block text-[11px] text-[var(--text-tertiary)]">{s.label}</span>
               </span>
             ))}
@@ -150,37 +158,69 @@ export function DomainCard({
         clickable && "cursor-pointer",
         className
       )}
-      style={{ 
-        background: "#FFFDF9",
-        borderRadius: 12,
-        border: "1.5px solid #C89B47",
-        boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
-        color: "#4A2B1D",
-        containerType: "inline-size" 
-      } as React.CSSProperties}
+      style={
+        {
+          background: "#FFFDF9",
+          borderRadius: 12,
+          border: "1.5px solid #C89B47",
+          boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
+          color: "#4A2B1D",
+          containerType: "inline-size",
+        } as React.CSSProperties
+      }
     >
       {/* Accent top */}
-      <div style={{ height: 4, background: "#6E0F2D", width: "100%", opacity: 0.8, flexShrink: 0 }} />
+      <div
+        style={{ height: 4, background: "#6E0F2D", width: "100%", opacity: 0.8, flexShrink: 0 }}
+      />
 
-      <div style={{ padding: "20px 22px 18px", display: "flex", gap: 16, alignItems: "flex-start" }}>
+      <div
+        style={{ padding: "20px 22px 18px", display: "flex", gap: 16, alignItems: "flex-start" }}
+      >
         <Avatar name={avatarName} src={avatarSrc} size="lg" />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <span className="font-bold text-[20px] text-[#4A2B1D] leading-snug tracking-tight">{title}</span>
+            <span className="font-bold text-[20px] text-[#4A2B1D] leading-snug tracking-tight">
+              {title}
+            </span>
             <div className="shrink-0">{status}</div>
           </div>
-          {code && <div className="mt-1 text-[13px] text-[#6E0F2D] font-mono tracking-wide">{code}</div>}
-          {meta && <div className="mt-2 text-[13px] text-[#8A7968] font-medium tracking-wide uppercase">{meta}</div>}
+          {code && (
+            <div className="mt-1 text-[13px] text-[#6E0F2D] font-mono tracking-wide">{code}</div>
+          )}
+          {meta && (
+            <div className="mt-2 text-[13px] text-[#8A7968] font-medium tracking-wide uppercase">
+              {meta}
+            </div>
+          )}
         </div>
       </div>
 
       {(notes || (stats && stats.length > 0) || progress != null) && (
-        <div style={{ padding: "8px 22px 18px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
+        <div
+          style={{
+            padding: "8px 22px 18px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+            flex: 1,
+          }}
+        >
           {stats && stats.length > 0 && (
-            <div className="grid grid-cols-2 gap-3" style={{ background: "rgba(110,15,45,0.03)", padding: 12, borderRadius: 10, border: "1px solid rgba(200,155,71,0.2)" }}>
+            <div
+              className="grid grid-cols-2 gap-3"
+              style={{
+                background: "rgba(110,15,45,0.03)",
+                padding: 12,
+                borderRadius: 10,
+                border: "1px solid rgba(200,155,71,0.2)",
+              }}
+            >
               {stats.map((s) => (
                 <div key={s.label}>
-                  <div className="text-[12px] font-medium text-[#8A7968] uppercase tracking-wider mb-1">{s.label}</div>
+                  <div className="text-[12px] font-medium text-[#8A7968] uppercase tracking-wider mb-1">
+                    {s.label}
+                  </div>
                   <div className="text-[15px] font-bold text-[#6E0F2D]">{s.value}</div>
                 </div>
               ))}
@@ -189,8 +229,12 @@ export function DomainCard({
 
           {notes && (
             <div>
-              <div className="text-[12px] font-medium text-[#8A7968] uppercase tracking-wider mb-1">Notes</div>
-              <div className="text-[13px] text-[#4A2B1D] leading-relaxed whitespace-pre-wrap break-words">{notes}</div>
+              <div className="text-[12px] font-medium text-[#8A7968] uppercase tracking-wider mb-1">
+                Notes
+              </div>
+              <div className="text-[13px] text-[#4A2B1D] leading-relaxed whitespace-pre-wrap break-words">
+                {notes}
+              </div>
             </div>
           )}
 
@@ -203,7 +247,14 @@ export function DomainCard({
       )}
 
       {actions && (
-        <div style={{ padding: "18px 22px 22px", display: "flex", gap: 12, borderTop: "1px solid rgba(200,155,71,0.2)" }}>
+        <div
+          style={{
+            padding: "18px 22px 22px",
+            display: "flex",
+            gap: 12,
+            borderTop: "1px solid rgba(200,155,71,0.2)",
+          }}
+        >
           {actions}
         </div>
       )}

@@ -4,7 +4,13 @@ export interface BackendPurchaseOrder {
   id: string;
   poNumber: string;
   vendorId: string;
-  vendor: { id: string; code: string | null; name: string; city: string | null; contactName: string | null };
+  vendor: {
+    id: string;
+    code: string | null;
+    name: string;
+    city: string | null;
+    contactName: string | null;
+  };
   firmId: string | null;
   firm?: { id: string; firmName: string } | null;
   deliveryDate: string | null;
@@ -88,7 +94,9 @@ export const purchaseOrdersApi = {
   list: (vendorId?: string, pageSize = 100) => {
     const params = new URLSearchParams({ pageSize: String(pageSize) });
     if (vendorId) params.set("vendorId", vendorId);
-    return apiClient.get<PaginatedResponse<BackendPurchaseOrder>>(`/purchase-orders?${params.toString()}`);
+    return apiClient.get<PaginatedResponse<BackendPurchaseOrder>>(
+      `/purchase-orders?${params.toString()}`
+    );
   },
   create: (payload: CreatePurchaseOrderPayload) =>
     apiClient.post<BackendPurchaseOrder>("/purchase-orders", payload),

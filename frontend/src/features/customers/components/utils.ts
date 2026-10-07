@@ -25,7 +25,9 @@ export function monthsSinceLabel(label: string | undefined | null): number {
 
 export function downloadCustomerCSV(customerName: string, fields: [string, string | undefined][]) {
   const rows = fields.filter(([, value]) => !!value) as [string, string][];
-  const csvString = rows.map(([label, value]) => `"${label}","${String(value).replace(/"/g, '""')}"`).join("\n");
+  const csvString = rows
+    .map(([label, value]) => `"${label}","${String(value).replace(/"/g, '""')}"`)
+    .join("\n");
   const blob = new Blob([csvString], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -35,10 +37,14 @@ export function downloadCustomerCSV(customerName: string, fields: [string, strin
   URL.revokeObjectURL(url);
 }
 
-export function downloadDataAsCSV(filename: string, headers: string[], rows: (string | number | null | undefined)[][]) {
+export function downloadDataAsCSV(
+  filename: string,
+  headers: string[],
+  rows: (string | number | null | undefined)[][]
+) {
   const csvContent = [
-    headers.map(h => `"${h.replace(/"/g, '""')}"`).join(","),
-    ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+    headers.map((h) => `"${h.replace(/"/g, '""')}"`).join(","),
+    ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")),
   ].join("\n");
 
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });

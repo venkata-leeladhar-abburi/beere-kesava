@@ -13,7 +13,9 @@ export function SessionExpiredState() {
   const returnTo = params.get("returnTo");
 
   return (
-    <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div
+      style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}
+    >
       <StateView
         role="alert"
         icon="sessionExpired"

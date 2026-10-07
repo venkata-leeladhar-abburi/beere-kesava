@@ -18,8 +18,15 @@
  */
 import * as React from "react";
 import {
-  BarcodeFormat, BinaryBitmap, DecodeHintType, EncodeHintType, HybridBinarizer,
-  QRCodeDecoderErrorCorrectionLevel, QRCodeReader, QRCodeWriter, RGBLuminanceSource,
+  BarcodeFormat,
+  BinaryBitmap,
+  DecodeHintType,
+  EncodeHintType,
+  HybridBinarizer,
+  QRCodeDecoderErrorCorrectionLevel,
+  QRCodeReader,
+  QRCodeWriter,
+  RGBLuminanceSource,
   type BitMatrix,
 } from "@zxing/library";
 
@@ -125,7 +132,10 @@ function bestMatrix(value: string): BitMatrix | null {
       if (!readsBack(matrix, value, scale)) misses++;
       if (misses >= bestMisses) break; // already no better than what we have
     }
-    if (misses < bestMisses) { best = matrix; bestMisses = misses; }
+    if (misses < bestMisses) {
+      best = matrix;
+      bestMisses = misses;
+    }
     if (misses === 0) break;
   }
   return best;
@@ -176,10 +186,18 @@ export function ScannableCode({ value, size = 96, className }: ScannableCodeProp
         // useDocument refuses to print a sheet carrying one of these.
         data-code-unavailable=""
         style={{
-          width: size, height: size, display: "flex", alignItems: "center",
-          justifyContent: "center", textAlign: "center", padding: 4,
-          border: "1px dashed var(--border-default, #999)", borderRadius: 4,
-          fontFamily: "var(--font-ui)", fontSize: 9, lineHeight: 1.3,
+          width: size,
+          height: size,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          padding: 4,
+          border: "1px dashed var(--border-default, #999)",
+          borderRadius: 4,
+          fontFamily: "var(--font-ui)",
+          fontSize: 9,
+          lineHeight: 1.3,
           color: "var(--text-tertiary, #666)",
         }}
       >

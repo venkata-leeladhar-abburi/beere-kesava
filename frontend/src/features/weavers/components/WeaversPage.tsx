@@ -42,7 +42,9 @@ import { NewWeaverModal } from "./modals/NewWeaverModal";
  * replaced, which requires the WV-XXX-id migration and production-stats
  * wiring called out as out of scope for this pass.
  */
-export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: unknown) => void } = {}) {
+export function WeaversPage({
+  onNavigate,
+}: { onNavigate?: (tab: string, ctx?: unknown) => void } = {}) {
   const location = useLocation();
   const navState = location.state as { weaverId?: string; mode?: "view" | "edit" } | null;
 
@@ -64,7 +66,8 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
         id: navWeaver.id,
         code: navWeaver.code,
         name: navWeaver.name,
-        initials: navWeaver.initials || `${navWeaver.firstName.charAt(0)}${navWeaver.lastName.charAt(0)}`,
+        initials:
+          navWeaver.initials || `${navWeaver.firstName.charAt(0)}${navWeaver.lastName.charAt(0)}`,
         bg: "#6E0F2D",
         village: navWeaver.village || "—",
         cluster: navWeaver.cluster || "—",
@@ -93,12 +96,16 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
   const [view, setView] = useState("card");
   const [filter, setFilter] = useState("All Weavers");
   const [search, setSearch] = useState("");
-  const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(null);
+  const [selectedWeaver, setSelectedWeaver] = useState<(typeof WEAVERS)[0] | null>(null);
   // Command palette "New Weaver" action deep-links here with ?new=1 to open
   // the registration form straight away.
-  const [newWeaverExpanded, setNewWeaverExpanded] = useState(() => new URLSearchParams(location.search).get("new") === "1");
-  const [drawerMode, setDrawerMode] = useState<"view" | "edit">(navState?.mode === "edit" ? "edit" : "view");
-  const [batchDialog, setBatchDialog] = useState<typeof WEAVERS[0] | null>(null);
+  const [newWeaverExpanded, setNewWeaverExpanded] = useState(
+    () => new URLSearchParams(location.search).get("new") === "1"
+  );
+  const [drawerMode, setDrawerMode] = useState<"view" | "edit">(
+    navState?.mode === "edit" ? "edit" : "view"
+  );
+  const [batchDialog, setBatchDialog] = useState<(typeof WEAVERS)[0] | null>(null);
   const { batches } = useBatches();
 
   // Use the live-fetched weaver when navigating from AllWeavers, otherwise the
@@ -109,7 +116,7 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
   // only returns the top 10, so the roster + the bulk GET /weavers/stats are
   // used to compute true totals/averages across everyone.
   const { roster, allStats } = useWeaverRosterStats();
-  const totalActiveWeavers = roster.filter(w => w.status === "ACTIVE").length;
+  const totalActiveWeavers = roster.filter((w) => w.status === "ACTIVE").length;
   const totalSareesWoven = allStats.reduce((s, st) => s + st.totalSareesWoven, 0);
   // Weighted across sarees, not a mean of per-weaver percentages: averaging
   // the rates gave every weaver equal weight and counted anyone with no
@@ -131,80 +138,197 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
   const totalPaidToWeavers = paymentSummary?.weaverTotal ?? 0;
 
   const realStats: WeaverStatTile[] = [
-    { label: "TOTAL ACTIVE WEAVERS", value: `${totalActiveWeavers}`, sub: "All currently working with the firm", gold: false, crimson: false },
-    { label: "TOTAL SAREES WOVEN", value: `${totalSareesWoven}`, sub: "All-time, across all weavers", gold: false, crimson: false },
-    { label: "QUALITY CHECK PASS RATE", value: `${avgPassRate}%`, sub: "Average across all weavers", gold: true, crimson: false },
-    { label: "WARP REQUESTS PENDING", value: `${warpRequestsPending}`, sub: "Awaiting admin approval", gold: false, crimson: warpRequestsPending > 0 },
-    { label: "TOTAL PAID TO WEAVERS", value: formatMoney(rupees(totalPaidToWeavers)), sub: "All-time payments recorded", gold: false, crimson: false },
+    {
+      label: "TOTAL ACTIVE WEAVERS",
+      value: `${totalActiveWeavers}`,
+      sub: "All currently working with the firm",
+      gold: false,
+      crimson: false,
+    },
+    {
+      label: "TOTAL SAREES WOVEN",
+      value: `${totalSareesWoven}`,
+      sub: "All-time, across all weavers",
+      gold: false,
+      crimson: false,
+    },
+    {
+      label: "QUALITY CHECK PASS RATE",
+      value: `${avgPassRate}%`,
+      sub: "Average across all weavers",
+      gold: true,
+      crimson: false,
+    },
+    {
+      label: "WARP REQUESTS PENDING",
+      value: `${warpRequestsPending}`,
+      sub: "Awaiting admin approval",
+      gold: false,
+      crimson: warpRequestsPending > 0,
+    },
+    {
+      label: "TOTAL PAID TO WEAVERS",
+      value: formatMoney(rupees(totalPaidToWeavers)),
+      sub: "All-time payments recorded",
+      gold: false,
+      crimson: false,
+    },
   ];
 
   if (activeWeaver) {
     return (
-      <WeaverDrawer weaver={activeWeaver} initialMode={drawerMode} onClose={() => setSelectedWeaver(null)} onNavigate={onNavigate} />
+      <WeaverDrawer
+        weaver={activeWeaver}
+        initialMode={drawerMode}
+        onClose={() => setSelectedWeaver(null)}
+        onNavigate={onNavigate}
+      />
     );
   }
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        background: T.silkCream,
+        minHeight: "100dvh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <PageHeader />
       <StatsStrip stats={realStats} />
       <WarpRequestsSection />
       <div id="weav-all-weavers">
-        <AllWeaversControls view={view} setView={setView} filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} onAddWeaver={() => setNewWeaverExpanded(true)} onViewAll={() => onNavigate?.("AllWeavers")}>
-          <WeaverDirectory view={view} search={search} filter={filter} onSelect={(w) => { setDrawerMode("view"); setSelectedWeaver(w); }} onEdit={(w) => { setDrawerMode("edit"); setSelectedWeaver(w); }} onBatches={setBatchDialog} />
+        <AllWeaversControls
+          view={view}
+          setView={setView}
+          filter={filter}
+          setFilter={setFilter}
+          search={search}
+          setSearch={setSearch}
+          onAddWeaver={() => setNewWeaverExpanded(true)}
+          onViewAll={() => onNavigate?.("AllWeavers")}
+        >
+          <WeaverDirectory
+            view={view}
+            search={search}
+            filter={filter}
+            onSelect={(w) => {
+              setDrawerMode("view");
+              setSelectedWeaver(w);
+            }}
+            onEdit={(w) => {
+              setDrawerMode("edit");
+              setSelectedWeaver(w);
+            }}
+            onBatches={setBatchDialog}
+          />
         </AllWeaversControls>
       </div>
-      <div id="weav-performance"><WeaverAnalytics /></div>
-      <div id="weav-activities"><LeaderboardAndQC onActivities={() => onNavigate?.("Notifications")} onNavigate={onNavigate} /></div>
+      <div id="weav-performance">
+        <WeaverAnalytics />
+      </div>
+      <div id="weav-activities">
+        <LeaderboardAndQC
+          onActivities={() => onNavigate?.("Notifications")}
+          onNavigate={onNavigate}
+        />
+      </div>
       <NewWeaverModal expanded={newWeaverExpanded} setExpanded={setNewWeaverExpanded} />
       <div style={{ marginTop: "auto" }}>
         <MaterialsFooter />
       </div>
 
       <AnimatePresence>
-        {batchDialog && (() => {
-          // Backend never transitions a batch's own status to "completed"
-          // (only draft→active exists), so gating on b.status alone always
-          // returned zero rows here. A batch counts as done once every row
-          // has passed QC — same fallback DraftsTab.tsx already uses.
-          const weaverCompletedBatches = batches.filter(b =>
-            (b.status === "completed" || (b.totalCount > 0 && b.rows.every(r => r.qcPassed === true))) &&
-            b.rows.some(r => r.weaverId === batchDialog.id)
-          );
+        {batchDialog &&
+          (() => {
+            // Backend never transitions a batch's own status to "completed"
+            // (only draft→active exists), so gating on b.status alone always
+            // returned zero rows here. A batch counts as done once every row
+            // has passed QC — same fallback DraftsTab.tsx already uses.
+            const weaverCompletedBatches = batches.filter(
+              (b) =>
+                (b.status === "completed" ||
+                  (b.totalCount > 0 && b.rows.every((r) => r.qcPassed === true))) &&
+                b.rows.some((r) => r.weaverId === batchDialog.id)
+            );
 
-          const getBatchNum = (id: string) => {
-            const match = id.match(/BATCH-(\d+)/);
-            return match ? parseInt(match[1], 10) : 0;
-          };
-          const sorted = [...weaverCompletedBatches].sort((a, b) => getBatchNum(b.batchId) - getBatchNum(a.batchId));
+            const getBatchNum = (id: string) => {
+              const match = id.match(/BATCH-(\d+)/);
+              return match ? parseInt(match[1], 10) : 0;
+            };
+            const sorted = [...weaverCompletedBatches].sort(
+              (a, b) => getBatchNum(b.batchId) - getBatchNum(a.batchId)
+            );
 
-          return (
-            <ActionDialog open={!!batchDialog} title={`${batchDialog.name} Completed Batches`} onClose={() => setBatchDialog(null)}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 350, overflowY: "auto" }}>
-                {sorted.length > 0 ? (
-                  sorted.map(b => {
-                    const totalSarees = b.rows.filter(r => r.weaverId === batchDialog.id).length;
-                    const distinctDesigns = Array.from(new Set(b.rows.filter(r => r.weaverId === batchDialog.id && r.designCode).map(r => r.designCode).filter(Boolean))).join(", ") || "—";
-                    return (
-                      <div key={b.batchId} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 14, border: `1px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui }}>
-                        <span>
-                          <b>{b.batchId}</b> · Design: {distinctDesigns}
-                        </span>
-                        <span style={{ color: T.taupe }}>
-                          {totalSarees} sarees · Due: {b.dueDate || "—"}
-                        </span>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div style={{ padding: 14, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontStyle: "italic" }}>
-                    No completed batches found.
-                  </div>
-                )}
-              </div>
-            </ActionDialog>
-          );
-        })()}
+            return (
+              <ActionDialog
+                open={!!batchDialog}
+                title={`${batchDialog.name} Completed Batches`}
+                onClose={() => setBatchDialog(null)}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 10,
+                    maxHeight: 350,
+                    overflowY: "auto",
+                  }}
+                >
+                  {sorted.length > 0 ? (
+                    sorted.map((b) => {
+                      const totalSarees = b.rows.filter(
+                        (r) => r.weaverId === batchDialog.id
+                      ).length;
+                      const distinctDesigns =
+                        Array.from(
+                          new Set(
+                            b.rows
+                              .filter((r) => r.weaverId === batchDialog.id && r.designCode)
+                              .map((r) => r.designCode)
+                              .filter(Boolean)
+                          )
+                        ).join(", ") || "—";
+                      return (
+                        <div
+                          key={b.batchId}
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            padding: 14,
+                            border: `1px solid ${T.borderDef}`,
+                            borderRadius: 12,
+                            fontFamily: F.ui,
+                          }}
+                        >
+                          <span>
+                            <b>{b.batchId}</b> · Design: {distinctDesigns}
+                          </span>
+                          <span style={{ color: T.taupe }}>
+                            {totalSarees} sarees · Due: {b.dueDate || "—"}
+                          </span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div
+                      style={{
+                        padding: 14,
+                        textAlign: "center",
+                        color: T.taupe,
+                        fontFamily: F.ui,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      No completed batches found.
+                    </div>
+                  )}
+                </div>
+              </ActionDialog>
+            );
+          })()}
       </AnimatePresence>
     </div>
   );

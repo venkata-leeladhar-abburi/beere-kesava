@@ -32,7 +32,13 @@ import { DesignLibraryLinkCard, AllSareesSection } from "./sections/MiscCards";
  * features/dashboards/*, features/qc/components/QcHistoryPage.tsx):
  * `ProductionPage`, `BulkOrder` (type), `BulkOrderCard`, `ProductionDialog`.
  */
-export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?: boolean; onNavigate?: (tab: string) => void }) {
+export function ProductionPage({
+  superadmin = false,
+  onNavigate,
+}: {
+  superadmin?: boolean;
+  onNavigate?: (tab: string) => void;
+}) {
   const { getDesign } = useDesignLibrary();
   const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
   const { getSareeTypeByCode } = useRatesPricing();
@@ -42,7 +48,10 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
   // "View Order" / "Payment" replace the whole page with the bulk order's own
   // full page — the same pattern the Weavers page uses for a weaver's profile —
   // rather than a cramped modal.
-  const [viewingOrder, setViewingOrder] = useState<{ order: BulkOrder; tab: "overview" | "payments" } | null>(null);
+  const [viewingOrder, setViewingOrder] = useState<{
+    order: BulkOrder;
+    tab: "overview" | "payments";
+  } | null>(null);
   // Batch tally is likewise its own full page rather than a dialog.
   const [tallyBatchId, setTallyBatchId] = useState<string | null>(null);
   const { setPendingOpenBatchId } = useBatches();
@@ -74,22 +83,45 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
   }
 
   return (
-    <div style={{ fontFamily: F.ui, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{ fontFamily: F.ui, minHeight: "100dvh", display: "flex", flexDirection: "column" }}
+    >
       <PageHeader />
       <StatsStrip />
       <AllSareesSection />
       <div style={{ background: "#F7F2EA", paddingBottom: 48, flex: 1 }}>
-        <BulkOrdersSection superadmin={superadmin} onNavigate={onNavigate} onOpenOrder={(order, tab) => openDetail(() => setViewingOrder({ order, tab }))} />
-        <ActiveBatchesSection onNavigate={onNavigate} onOpenTally={id => openDetail(() => setTallyBatchId(id))} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
-        <DefectiveSareesSection superadmin={superadmin} onNavigate={onNavigate} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
+        <BulkOrdersSection
+          superadmin={superadmin}
+          onNavigate={onNavigate}
+          onOpenOrder={(order, tab) => openDetail(() => setViewingOrder({ order, tab }))}
+        />
+        <ActiveBatchesSection
+          onNavigate={onNavigate}
+          onOpenTally={(id) => openDetail(() => setTallyBatchId(id))}
+          onDesignClick={setOpenDesignCode}
+          onSareeTypeClick={setOpenSareeTypeCode}
+        />
+        <DefectiveSareesSection
+          superadmin={superadmin}
+          onNavigate={onNavigate}
+          onDesignClick={setOpenDesignCode}
+          onSareeTypeClick={setOpenSareeTypeCode}
+        />
         <ProductionAnalyticsSection />
         <DesignLibraryLinkCard onNavigate={onNavigate} />
-        <ProductionHistorySection onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
+        <ProductionHistorySection
+          onDesignClick={setOpenDesignCode}
+          onSareeTypeClick={setOpenSareeTypeCode}
+        />
       </div>
       <MaterialsFooter />
       <AnimatePresence>
-        {openDesign && <DesignCodeCard design={openDesign} onClose={() => setOpenDesignCode(null)} />}
-        {openSareeType && <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />}
+        {openDesign && (
+          <DesignCodeCard design={openDesign} onClose={() => setOpenDesignCode(null)} />
+        )}
+        {openSareeType && (
+          <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />
+        )}
       </AnimatePresence>
     </div>
   );

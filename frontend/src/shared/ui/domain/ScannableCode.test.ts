@@ -1,7 +1,11 @@
 import { describe, it, expect } from "vitest";
 import {
-  BarcodeFormat, BinaryBitmap, DecodeHintType, HybridBinarizer,
-  MultiFormatReader, RGBLuminanceSource,
+  BarcodeFormat,
+  BinaryBitmap,
+  DecodeHintType,
+  HybridBinarizer,
+  MultiFormatReader,
+  RGBLuminanceSource,
 } from "@zxing/library";
 import { encodeToPath, QR_QUIET_ZONE } from "./ScannableCode";
 
@@ -30,7 +34,9 @@ function decodeRendered(value: string, scale = 8): string {
   const luma = new Uint8ClampedArray(px * px);
   for (let py = 0; py < px; py++) {
     for (let pxi = 0; pxi < px; pxi++) {
-      const on = dark.has(`${Math.floor(((pxi + 0.5) / px) * extent)},${Math.floor(((py + 0.5) / px) * extent)}`);
+      const on = dark.has(
+        `${Math.floor(((pxi + 0.5) / px) * extent)},${Math.floor(((py + 0.5) / px) * extent)}`
+      );
       luma[py * px + pxi] = on ? 0 : 255;
     }
   }
@@ -58,7 +64,7 @@ describe("ScannableCode", () => {
   // robustness — some levels produce codes this very reader cannot find.
   // Sweeping render scales stands in for the range of camera distances a
   // tag gets scanned at.
-  it.each(REAL_CODES)("round-trips %s at every render scale", code => {
+  it.each(REAL_CODES)("round-trips %s at every render scale", (code) => {
     for (const scale of [4, 6, 8, 12, 16]) {
       expect(decodeRendered(code, scale)).toBe(code);
     }
@@ -81,19 +87,20 @@ describe("ScannableCode", () => {
   // Ids whose level-L code ZXing's reader cannot find at most camera
   // distances — found by sweeping every tag of a real 213-saree purchase.
   // encodeToPath has to notice and print a pattern that does read.
-  it.each([
-    "SRIS-626-002-12", "SRIS-626-002-36", "SRIS-626-004-12", "SRIS-626-011-02",
-  ])("picks a pattern the scanner can find for %s", code => {
-    const misses: number[] = [];
-    for (let scale = 3.5; scale <= 16; scale += 0.25) {
-      try {
-        if (decodeRendered(code, scale) !== code) misses.push(scale);
-      } catch {
-        misses.push(scale);
+  it.each(["SRIS-626-002-12", "SRIS-626-002-36", "SRIS-626-004-12", "SRIS-626-011-02"])(
+    "picks a pattern the scanner can find for %s",
+    (code) => {
+      const misses: number[] = [];
+      for (let scale = 3.5; scale <= 16; scale += 0.25) {
+        try {
+          if (decodeRendered(code, scale) !== code) misses.push(scale);
+        } catch {
+          misses.push(scale);
+        }
       }
+      expect(misses).toEqual([]);
     }
-    expect(misses).toEqual([]);
-  });
+  );
 
   it("surrounds the code with a real quiet zone", () => {
     const encoded = encodeToPath("GRN-A-001-1");

@@ -14,7 +14,12 @@ function formatDate(value?: string): string {
   return parsed.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-const cellText: React.CSSProperties = { fontFamily: F.u, fontSize: 12, color: C.text, whiteSpace: "nowrap" };
+const cellText: React.CSSProperties = {
+  fontFamily: F.u,
+  fontSize: 12,
+  color: C.text,
+  whiteSpace: "nowrap",
+};
 const cellMuted: React.CSSProperties = { ...cellText, color: C.muted };
 
 /**
@@ -24,7 +29,12 @@ const cellMuted: React.CSSProperties = { ...cellText, color: C.muted };
  * batch, when it was finished and which quotation it belongs to — with search
  * and pagination, since this list runs to hundreds of pieces.
  */
-export function AwaitingDispatchTable({ sarees, loading, error, onRetry }: {
+export function AwaitingDispatchTable({
+  sarees,
+  loading,
+  error,
+  onRetry,
+}: {
   sarees: FinishingReturn[];
   loading?: boolean;
   error?: boolean;
@@ -35,9 +45,17 @@ export function AwaitingDispatchTable({ sarees, loading, error, onRetry }: {
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
     const matched = q
-      ? sarees.filter(s =>
-          [s.sareeId, s.designCode, s.sareeType, s.sareeTypeCode, s.weaverName, s.batchId, s.quotationRef]
-            .some(field => field?.toLowerCase().includes(q)))
+      ? sarees.filter((s) =>
+          [
+            s.sareeId,
+            s.designCode,
+            s.sareeType,
+            s.sareeTypeCode,
+            s.weaverName,
+            s.batchId,
+            s.quotationRef,
+          ].some((field) => field?.toLowerCase().includes(q))
+        )
       : sarees;
     // Longest-waiting first — that is the order the queue is worked in.
     return [...matched].sort((a, b) => (a.receivedDate ?? "").localeCompare(b.receivedDate ?? ""));
@@ -47,17 +65,33 @@ export function AwaitingDispatchTable({ sarees, loading, error, onRetry }: {
 
   const columns: ColumnDef<FinishingReturn>[] = [
     {
-      id: "sareeId", header: "Saree ID", accessor: s => s.sareeId, type: "code", width: 190, priority: 1,
+      id: "sareeId",
+      header: "Saree ID",
+      accessor: (s) => s.sareeId,
+      type: "code",
+      width: 190,
+      priority: 1,
       cell: (_v, s) => <EntityCode type="saree" value={s.sareeId} size="sm" />,
     },
     {
-      id: "design", header: "Design", accessor: s => s.designCode, width: 130, priority: 2,
-      cell: (_v, s) => s.designCode && s.designCode !== "—"
-        ? <EntityCode type="design" value={s.designCode} size="sm" />
-        : <span style={cellMuted}>—</span>,
+      id: "design",
+      header: "Design",
+      accessor: (s) => s.designCode,
+      width: 130,
+      priority: 2,
+      cell: (_v, s) =>
+        s.designCode && s.designCode !== "—" ? (
+          <EntityCode type="design" value={s.designCode} size="sm" />
+        ) : (
+          <span style={cellMuted}>—</span>
+        ),
     },
     {
-      id: "type", header: "Saree Type", accessor: s => s.sareeType, width: 160, priority: 2,
+      id: "type",
+      header: "Saree Type",
+      accessor: (s) => s.sareeType,
+      width: 160,
+      priority: 2,
       cell: (_v, s) => (
         <div>
           <div style={{ ...cellText, fontWeight: 600 }}>{s.sareeType}</div>
@@ -68,27 +102,71 @@ export function AwaitingDispatchTable({ sarees, loading, error, onRetry }: {
       ),
     },
     {
-      id: "weaver", header: "Weaver", accessor: s => s.weaverName, width: 150, priority: 2,
+      id: "weaver",
+      header: "Weaver",
+      accessor: (s) => s.weaverName,
+      width: 150,
+      priority: 2,
       cell: (_v, s) => <span style={cellText}>{s.weaverName}</span>,
     },
     {
-      id: "batch", header: "Batch", accessor: s => s.batchId ?? "", width: 130, priority: 3,
+      id: "batch",
+      header: "Batch",
+      accessor: (s) => s.batchId ?? "",
+      width: 130,
+      priority: 3,
       cell: (_v, s) => <span style={cellMuted}>{s.batchId || "—"}</span>,
     },
     {
-      id: "finished", header: "Finished On", accessor: s => s.receivedDate, type: "date", width: 140, priority: 3,
-      cell: (_v, s) => <span style={{ ...cellMuted, fontVariantNumeric: "tabular-nums" }}>{formatDate(s.receivedDate)}</span>,
+      id: "finished",
+      header: "Finished On",
+      accessor: (s) => s.receivedDate,
+      type: "date",
+      width: 140,
+      priority: 3,
+      cell: (_v, s) => (
+        <span style={{ ...cellMuted, fontVariantNumeric: "tabular-nums" }}>
+          {formatDate(s.receivedDate)}
+        </span>
+      ),
     },
     {
-      id: "quotation", header: "Quotation", accessor: s => s.quotationRef ?? "", width: 150, priority: 3,
-      cell: (_v, s) => s.quotationRef
-        ? <EntityCode type="quotation" value={s.quotationRef} size="sm" truncate />
-        : <span style={cellMuted}>—</span>,
+      id: "quotation",
+      header: "Quotation",
+      accessor: (s) => s.quotationRef ?? "",
+      width: 150,
+      priority: 3,
+      cell: (_v, s) =>
+        s.quotationRef ? (
+          <EntityCode type="quotation" value={s.quotationRef} size="sm" truncate />
+        ) : (
+          <span style={cellMuted}>—</span>
+        ),
     },
     {
-      id: "status", header: "Status", accessor: () => "Finished", type: "status", width: 130, priority: 2,
+      id: "status",
+      header: "Status",
+      accessor: () => "Finished",
+      type: "status",
+      width: 130,
+      priority: 2,
       cell: () => (
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.green, background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.20)", borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            fontFamily: F.u,
+            fontSize: 12,
+            fontWeight: 600,
+            color: C.green,
+            background: "rgba(30,102,64,0.10)",
+            border: "1px solid rgba(30,102,64,0.20)",
+            borderRadius: 999,
+            padding: "3px 10px",
+            whiteSpace: "nowrap",
+          }}
+        >
           <PackageCheck size={12} /> Finished
         </span>
       ),
@@ -96,12 +174,21 @@ export function AwaitingDispatchTable({ sarees, loading, error, onRetry }: {
   ];
 
   return (
-    <div id="sarees-awaiting-dispatch-table" style={{ border: `1px solid ${C.bdr}`, borderRadius: 12, background: C.ivory, boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
+    <div
+      id="sarees-awaiting-dispatch-table"
+      style={{
+        border: `1px solid ${C.bdr}`,
+        borderRadius: 12,
+        background: C.ivory,
+        boxShadow: "0 2px 8px rgba(74,6,27,0.04)",
+        overflow: "hidden",
+      }}
+    >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 p-3">
         <div className="w-full sm:max-w-[320px]">
           <SearchInput
             value={query}
-            onChange={e => setQuery(e.target.value)}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder="Search saree, design, weaver, batch…"
             aria-label="Search sarees awaiting dispatch"
             className="w-full"
@@ -117,7 +204,7 @@ export function AwaitingDispatchTable({ sarees, loading, error, onRetry }: {
           responsive
           columns={columns}
           data={pag.pageItems}
-          getRowId={s => s.id}
+          getRowId={(s) => s.id}
           loading={loading}
           error={error}
           onRetry={onRetry}

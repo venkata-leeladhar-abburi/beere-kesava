@@ -14,10 +14,17 @@ export function OfflineBanner() {
     <div
       role="status"
       style={{
-        display: "flex", alignItems: "center", justifyContent: "center", gap: "var(--space-2)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "var(--space-2)",
         padding: "var(--space-2) var(--space-4)",
-        background: "var(--surface-warning, #fef3c7)", color: "var(--text-warning, #92400e)",
-        fontSize: "13px", position: "sticky", top: 0, zIndex: "var(--z-banner, 40)",
+        background: "var(--surface-warning, #fef3c7)",
+        color: "var(--text-warning, #92400e)",
+        fontSize: "13px",
+        position: "sticky",
+        top: 0,
+        zIndex: "var(--z-banner, 40)",
       }}
     >
       <Icon name="offline" size="sm" />

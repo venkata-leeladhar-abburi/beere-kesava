@@ -8,12 +8,25 @@ import { T, F, EASE } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
 import { useReportPeriod } from "../PeriodContext";
 
-export function FadeUp({ children, delay = 0, style = {} }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
+export function FadeUp({
+  children,
+  delay = 0,
+  style = {},
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  style?: React.CSSProperties;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   return (
-    <motion.div ref={ref} initial={{ opacity: 0, y: 22 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, ease: EASE, delay }} style={style}>
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 22 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, ease: EASE, delay }}
+      style={style}
+    >
       {children}
     </motion.div>
   );
@@ -29,40 +42,82 @@ export function AnimCount({ raw }: { raw: string }) {
   useEffect(() => {
     if (!inView) return;
     const m = raw.match(/[\d.]+/);
-    if (!m) { setDisp(raw); return; }
+    if (!m) {
+      setDisp(raw);
+      return;
+    }
     // eslint-disable-next-line no-restricted-syntax
     const target = parseFloat(m[0]);
     const isFloat = m[0].includes(".");
     const idx = raw.indexOf(m[0]);
-    const pre = raw.slice(0, idx), suf = raw.slice(idx + m[0].length);
-    const dur = 1400; let t0: number | null = null;
+    const pre = raw.slice(0, idx),
+      suf = raw.slice(idx + m[0].length);
+    const dur = 1400;
+    let t0: number | null = null;
     const step = (ts: number) => {
       if (!t0) t0 = ts;
       const p = Math.min((ts - t0) / dur, 1);
       const e = 1 - Math.pow(1 - p, 4);
       setDisp(`${pre}${isFloat ? (e * target).toFixed(1) : Math.round(e * target)}${suf}`);
-      if (p < 1) requestAnimationFrame(step); else setDisp(raw);
+      if (p < 1) requestAnimationFrame(step);
+      else setDisp(raw);
     };
     requestAnimationFrame(step);
   }, [inView, raw]);
   return <span ref={ref}>{disp}</span>;
 }
 
-export function AnimBar({ pct, color, height = 6, delay = 0 }: { pct: number; color: string; height?: number; delay?: number }) {
+export function AnimBar({
+  pct,
+  color,
+  height = 6,
+  delay = 0,
+}: {
+  pct: number;
+  color: string;
+  height?: number;
+  delay?: number;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   return (
-    <div ref={ref} style={{ height, borderRadius: 99, background: "rgba(110,15,45,0.08)", overflow: "hidden" }}>
-      <motion.div initial={{ width: "0%" }} animate={inView ? { width: `${pct}%` } : {}}
+    <div
+      ref={ref}
+      style={{ height, borderRadius: 99, background: "rgba(110,15,45,0.08)", overflow: "hidden" }}
+    >
+      <motion.div
+        initial={{ width: "0%" }}
+        animate={inView ? { width: `${pct}%` } : {}}
         transition={{ duration: 1.2, delay: 0.2 + delay, ease: EASE }}
-        style={{ height: "100%", borderRadius: 99, background: color }} />
+        style={{ height: "100%", borderRadius: 99, background: color }}
+      />
     </div>
   );
 }
 
 // ── Shared Table Styles ───────────────────────────────────────────────────────
-export const TH: React.CSSProperties = { fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", padding: "13px 14px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
-export const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "13px 14px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
+export const TH: React.CSSProperties = {
+  fontFamily: "var(--font-mono)",
+  fontSize: 12,
+  fontWeight: 600,
+  color: T.taupe,
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.8px",
+  padding: "13px 14px",
+  textAlign: "left" as const,
+  background: T.warmCream,
+  borderBottom: `1px solid ${T.borderDef}`,
+  whiteSpace: "nowrap" as const,
+};
+export const TD: React.CSSProperties = {
+  fontFamily: F.ui,
+  fontSize: 13,
+  color: T.luxuryBrown,
+  padding: "13px 14px",
+  verticalAlign: "middle" as const,
+  borderBottom: `1px solid ${T.borderDef}`,
+  whiteSpace: "nowrap" as const,
+};
 
 // ── ChartCard ─────────────────────────────────────────────────────────────────
 // A `<figure>` per design-system/04-DATA-DISPLAY.md Part K.7 — screen readers
@@ -70,8 +125,18 @@ export const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: 
 // unchanged markup. `summary`/`viewAsTable` are additive/optional so every
 // existing call site (none pass them yet) renders byte-identical to before.
 let chartCardIdSeq = 0;
-export function ChartCard({ title, sub, icon, children, summary, viewAsTable }: {
-  title: string; sub?: string; icon?: React.ReactNode; children: React.ReactNode;
+export function ChartCard({
+  title,
+  sub,
+  icon,
+  children,
+  summary,
+  viewAsTable,
+}: {
+  title: string;
+  sub?: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
   /** Prose description of the trend (not raw numbers) for aria-describedby. */
   summary?: string;
   /** "View as table" fallback — the same data rendered as a real table. */
@@ -86,31 +151,95 @@ export function ChartCard({ title, sub, icon, children, summary, viewAsTable }: 
       role="group"
       aria-labelledby={titleId}
       aria-describedby={summary ? summaryId : undefined}
-      style={{ display: "flex", flexDirection: "column", background: T.warmIvory, borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.07)", overflow: "hidden", margin: 0 }}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        background: T.warmIvory,
+        borderRadius: 18,
+        border: `1px solid ${T.borderDef}`,
+        boxShadow: "0 2px 14px rgba(74,6,27,0.07)",
+        overflow: "hidden",
+        margin: 0,
+      }}
     >
-      <figcaption style={{ padding: "18px 22px 14px", borderBottom: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
+      <figcaption
+        style={{
+          padding: "18px 22px 14px",
+          borderBottom: `1px solid ${T.borderDef}`,
+          flexShrink: 0,
+        }}
+      >
         {icon ? (
           <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(110,15,45,0.07)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                background: "rgba(110,15,45,0.07)",
+                border: `1px solid ${T.borderDef}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
               {icon}
             </div>
             <div>
-              <div id={titleId} style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
-              {sub && <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 3 }}>{sub}</div>}
+              <div
+                id={titleId}
+                style={{
+                  fontFamily: F.display,
+                  fontSize: 16,
+                  fontWeight: 700,
+                  color: T.luxuryBrown,
+                }}
+              >
+                {title}
+              </div>
+              {sub && (
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 3 }}>
+                  {sub}
+                </div>
+              )}
             </div>
           </div>
         ) : (
           <>
-            <div id={titleId} style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
-            {sub && <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 3 }}>{sub}</div>}
+            <div
+              id={titleId}
+              style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}
+            >
+              {title}
+            </div>
+            {sub && (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 3 }}>
+                {sub}
+              </div>
+            )}
           </>
         )}
       </figcaption>
-      {summary && <p id={summaryId} className="sr-only">{summary}</p>}
+      {summary && (
+        <p id={summaryId} className="sr-only">
+          {summary}
+        </p>
+      )}
       <div style={{ flex: 1, padding: "16px 18px" }}>{children}</div>
       {viewAsTable && (
         <details style={{ borderTop: `1px solid ${T.borderDef}`, padding: "10px 18px" }}>
-          <summary style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>View as table</summary>
+          <summary
+            style={{
+              fontFamily: F.ui,
+              fontSize: 12,
+              fontWeight: 600,
+              color: T.taupe,
+              cursor: "pointer",
+            }}
+          >
+            View as table
+          </summary>
           <div style={{ marginTop: 10 }}>{viewAsTable}</div>
         </details>
       )}
@@ -120,15 +249,45 @@ export function ChartCard({ title, sub, icon, children, summary, viewAsTable }: 
 
 // ── SilkSumCard ───────────────────────────────────────────────────────────────
 /** Premium silk-saree summary card — matches the payments stat cards. */
-export function SilkSumCard({ icon, label, value, sub, gid }: { icon: React.ReactNode; label: string; value: string; sub: string; gid: string }) {
+export function SilkSumCard({
+  icon,
+  label,
+  value,
+  sub,
+  gid,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  sub: string;
+  gid: string;
+}) {
   return (
-    <div style={{ position: "relative", borderRadius: 14, border: `1px solid ${T.borderDef}`, background: "#FFFDF9", boxShadow: "0 2px 16px rgba(0,0,0,0.06), 0 6px 30px rgba(0,0,0,0.04)", overflow: "visible", display: "flex", flexDirection: "column" as const, alignItems: "center", minHeight: 236 }}>
-
+    <div
+      style={{
+        position: "relative",
+        borderRadius: 14,
+        border: `1px solid ${T.borderDef}`,
+        background: "#FFFDF9",
+        boxShadow: "0 2px 16px rgba(0,0,0,0.06), 0 6px 30px rgba(0,0,0,0.04)",
+        overflow: "visible",
+        display: "flex",
+        flexDirection: "column" as const,
+        alignItems: "center",
+        minHeight: 236,
+      }}
+    >
       {/* ── Header — royal burgundy gradient ── */}
       <svg
         viewBox="0 0 300 90"
         preserveAspectRatio="none"
-        style={{ width: "100%", height: 44, display: "block", borderRadius: "12px 12px 0 0", flexShrink: 0 }}
+        style={{
+          width: "100%",
+          height: 44,
+          display: "block",
+          borderRadius: "12px 12px 0 0",
+          flexShrink: 0,
+        }}
       >
         <defs>
           <linearGradient id={`bk-head-${gid}`} x1="0" y1="0" x2="0.3" y2="1">
@@ -162,45 +321,175 @@ export function SilkSumCard({ icon, label, value, sub, gid }: { icon: React.Reac
         />
         {/* Tiny gold ornament at centre of curve */}
         <g transform="translate(150,86)" opacity="0.45">
-          <path d="M-6,0 C-8,-3 -11,-2 -10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
-          <path d="M6,0 C8,-3 11,-2 10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
-          {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament (a peacock-feather flourish), not a chart data mark */}
-          <rect x="-2" y="-2" width="4" height="4" rx="0.3" fill={T.antiqueGold} transform="rotate(45)" />
+          <path
+            d="M-6,0 C-8,-3 -11,-2 -10,0"
+            fill="none"
+            stroke={T.antiqueGold}
+            strokeWidth="0.8"
+            strokeLinecap="round"
+          />
+          <path
+            d="M6,0 C8,-3 11,-2 10,0"
+            fill="none"
+            stroke={T.antiqueGold}
+            strokeWidth="0.8"
+            strokeLinecap="round"
+          />
+          <rect
+            x="-2"
+            y="-2"
+            width="4"
+            height="4"
+            rx="0.3"
+            // eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament (a peacock-feather flourish), not a chart data mark
+            fill={T.antiqueGold}
+            transform="rotate(45)"
+          />
         </g>
       </svg>
 
       {/* ── Circular icon badge ── */}
-      <div style={{ position: "absolute", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 4 }}>
-        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(155deg, #7A1232 0%, #6E0F2D 40%, #4A061B 100%)", border: `2.5px solid rgba(200,155,71,0.45)`, boxShadow: "0 4px 14px rgba(74,6,27,0.25), 0 0 0 3px rgba(255,253,249,0.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div
+        style={{
+          position: "absolute",
+          top: 20,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 4,
+        }}
+      >
+        <div
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: "50%",
+            background: "linear-gradient(155deg, #7A1232 0%, #6E0F2D 40%, #4A061B 100%)",
+            border: `2.5px solid rgba(200,155,71,0.45)`,
+            boxShadow: "0 4px 14px rgba(74,6,27,0.25), 0 0 0 3px rgba(255,253,249,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           {icon}
         </div>
       </div>
 
       {/* ── Card body content ── */}
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", flex: 1, padding: "34px 20px 0", width: "100%" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column" as const,
+          alignItems: "center",
+          flex: 1,
+          padding: "34px 20px 0",
+          width: "100%",
+        }}
+      >
         {/* Label */}
-        <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: 1, textTransform: "uppercase" as const, textAlign: "center" as const, lineHeight: 1.45 }}>{label}</div>
+        <div
+          style={{
+            fontFamily: F.ui,
+            fontSize: 11,
+            fontWeight: 700,
+            color: T.royalBurgundy,
+            letterSpacing: 1,
+            textTransform: "uppercase" as const,
+            textAlign: "center" as const,
+            lineHeight: 1.45,
+          }}
+        >
+          {label}
+        </div>
 
         {/* Value */}
-        <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginTop: 14, textAlign: "center" as const }}>{value}</div>
+        <div
+          style={{
+            fontFamily: F.display,
+            fontSize: 36,
+            fontWeight: 700,
+            color: T.luxuryBrown,
+            lineHeight: 1,
+            marginTop: 14,
+            textAlign: "center" as const,
+          }}
+        >
+          {value}
+        </div>
 
         {/* ── Thin divider with diamond ── */}
-        <div style={{ width: "45%", display: "flex", alignItems: "center", justifyContent: "center", margin: "16px 0 12px" }}>
-          <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, rgba(110,15,45,0.14), transparent)` }} />
-          <div style={{ width: 5, height: 5, background: "rgba(110,15,45,0.22)", transform: "rotate(45deg)", flexShrink: 0, margin: "0 4px" }} />
-          <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, rgba(110,15,45,0.14), transparent)` }} />
+        <div
+          style={{
+            width: "45%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "16px 0 12px",
+          }}
+        >
+          <div
+            style={{
+              flex: 1,
+              height: 1,
+              background: `linear-gradient(90deg, transparent, rgba(110,15,45,0.14), transparent)`,
+            }}
+          />
+          <div
+            style={{
+              width: 5,
+              height: 5,
+              background: "rgba(110,15,45,0.22)",
+              transform: "rotate(45deg)",
+              flexShrink: 0,
+              margin: "0 4px",
+            }}
+          />
+          <div
+            style={{
+              flex: 1,
+              height: 1,
+              background: `linear-gradient(90deg, transparent, rgba(110,15,45,0.14), transparent)`,
+            }}
+          />
         </div>
 
         {/* Sub text */}
-        <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, textAlign: "center" as const, lineHeight: 1.4 }}>{sub}</div>
+        <div
+          style={{
+            fontFamily: F.ui,
+            fontSize: 12.5,
+            color: T.taupe,
+            textAlign: "center" as const,
+            lineHeight: 1.4,
+          }}
+        >
+          {sub}
+        </div>
       </div>
 
       {/* ── Footer strip — royal burgundy ── */}
-      <div style={{ width: "100%", marginTop: "auto", position: "relative", overflow: "hidden", borderRadius: "0 0 12px 12px", height: 30, flexShrink: 0 }}>
+      <div
+        style={{
+          width: "100%",
+          marginTop: "auto",
+          position: "relative",
+          overflow: "hidden",
+          borderRadius: "0 0 12px 12px",
+          height: 30,
+          flexShrink: 0,
+        }}
+      >
         <svg
           viewBox="0 0 300 40"
           preserveAspectRatio="none"
-          style={{ width: "100%", height: "100%", display: "block", position: "absolute", top: 0, left: 0 }}
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "block",
+            position: "absolute",
+            top: 0,
+            left: 0,
+          }}
         >
           <defs>
             <linearGradient id={`bk-foot-${gid}`} x1="0" y1="0" x2="0" y2="1">
@@ -216,11 +505,27 @@ export function SilkSumCard({ icon, label, value, sub, gid }: { icon: React.Reac
           />
         </svg>
         {/* Elegant gold fleur-de-lis motif at centre */}
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-end", justifyItems: "center", justifyContent: "center", paddingBottom: 0 }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "flex-end",
+            justifyItems: "center",
+            justifyContent: "center",
+            paddingBottom: 0,
+          }}
+        >
           <img
             src="/assets/gold-fleur-footer.png"
             alt="Ornament"
-            style={{ height: 26, maxWidth: "100%", objectFit: "contain", opacity: 0.9, transform: "translateY(1px)" }}
+            style={{
+              height: 26,
+              maxWidth: "100%",
+              objectFit: "contain",
+              opacity: 0.9,
+              transform: "translateY(1px)",
+            }}
           />
         </div>
       </div>
@@ -229,32 +534,95 @@ export function SilkSumCard({ icon, label, value, sub, gid }: { icon: React.Reac
 }
 
 // ── SumCard ───────────────────────────────────────────────────────────────────
-export function SumCard({ icon, label, value, sub, hi = false, crimsonHi = false, greenHi = false }: {
-  icon: React.ReactNode; label: string; value: string; sub?: string;
-  hi?: boolean; crimsonHi?: boolean; greenHi?: boolean;
+export function SumCard({
+  icon,
+  label,
+  value,
+  sub,
+  hi = false,
+  crimsonHi = false,
+  greenHi = false,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  sub?: string;
+  hi?: boolean;
+  crimsonHi?: boolean;
+  greenHi?: boolean;
 }) {
   const valColor = hi ? T.antiqueGold : crimsonHi ? T.crimson : greenHi ? T.green : T.luxuryBrown;
-  const iconBg   = hi ? "rgba(200,155,71,0.12)" : crimsonHi ? T.crimsonBg : greenHi ? T.greenBg : "rgba(110,15,45,0.07)";
-  const iconBdr  = hi ? T.borderGold : crimsonHi ? "rgba(192,57,43,0.18)" : greenHi ? "rgba(30,102,64,0.18)" : T.borderDef;
+  const iconBg = hi
+    ? "rgba(200,155,71,0.12)"
+    : crimsonHi
+      ? T.crimsonBg
+      : greenHi
+        ? T.greenBg
+        : "rgba(110,15,45,0.07)";
+  const iconBdr = hi
+    ? T.borderGold
+    : crimsonHi
+      ? "rgba(192,57,43,0.18)"
+      : greenHi
+        ? "rgba(30,102,64,0.18)"
+        : T.borderDef;
   return (
-    <div style={{
-      display: "flex", flexDirection: "column", gap: 10,
-      background: hi ? `linear-gradient(145deg,${T.warmCream},#FDF6E4)` : T.warmIvory,
-      borderRadius: 16,
-      border: `1px solid ${hi ? T.borderGold : crimsonHi ? "rgba(192,57,43,0.18)" : greenHi ? "rgba(30,102,64,0.18)" : T.borderDef}`,
-      borderTop: hi ? `3px solid ${T.antiqueGold}` : crimsonHi ? `3px solid ${T.crimson}` : greenHi ? `3px solid ${T.green}` : `1px solid ${T.borderDef}`,
-      boxShadow: hi ? "0 4px 20px rgba(200,155,71,0.12)" : "0 2px 10px rgba(74,6,27,0.05)",
-      padding: "22px 22px 20px",
-      minHeight: 175,
-    }}>
-      <div style={{ width: 52, height: 52, borderRadius: 14, background: iconBg, border: `1px solid ${iconBdr}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        background: hi ? `linear-gradient(145deg,${T.warmCream},#FDF6E4)` : T.warmIvory,
+        borderRadius: 16,
+        border: `1px solid ${hi ? T.borderGold : crimsonHi ? "rgba(192,57,43,0.18)" : greenHi ? "rgba(30,102,64,0.18)" : T.borderDef}`,
+        borderTop: hi
+          ? `3px solid ${T.antiqueGold}`
+          : crimsonHi
+            ? `3px solid ${T.crimson}`
+            : greenHi
+              ? `3px solid ${T.green}`
+              : `1px solid ${T.borderDef}`,
+        boxShadow: hi ? "0 4px 20px rgba(200,155,71,0.12)" : "0 2px 10px rgba(74,6,27,0.05)",
+        padding: "22px 22px 20px",
+        minHeight: 175,
+      }}
+    >
+      <div
+        style={{
+          width: 52,
+          height: 52,
+          borderRadius: 14,
+          background: iconBg,
+          border: `1px solid ${iconBdr}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
         {icon}
       </div>
-      <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, lineHeight: 1.4 }}>{label}</div>
-      <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: valColor, lineHeight: 1.1 }}>
+      <div
+        style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, lineHeight: 1.4 }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontFamily: F.display,
+          fontSize: 38,
+          fontWeight: 700,
+          color: valColor,
+          lineHeight: 1.1,
+        }}
+      >
         <AnimCount raw={value} />
       </div>
-      {sub && <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginTop: "auto" }}>{sub}</div>}
+      {sub && (
+        <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginTop: "auto" }}>
+          {sub}
+        </div>
+      )}
     </div>
   );
 }
@@ -268,20 +636,59 @@ export function SumCard({ icon, label, value, sub, hi = false, crimsonHi = false
 export function ReportDLBar({ note }: { note?: string }) {
   const { label, priorLabel, compareOn, exportExcel, canExport } = useReportPeriod();
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0" style={{ background: T.warmIvory, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 20px", marginBottom: 24, boxShadow: "0 2px 8px rgba(74,6,27,0.04)" }}>
+    <div
+      className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0"
+      style={{
+        background: T.warmIvory,
+        borderRadius: 12,
+        border: `1px solid ${T.borderDef}`,
+        padding: "14px 20px",
+        marginBottom: 24,
+        boxShadow: "0 2px 8px rgba(74,6,27,0.04)",
+      }}
+    >
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 9, background: "rgba(200,155,71,0.12)", border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 9,
+            background: "rgba(200,155,71,0.12)",
+            border: `1px solid ${T.borderGold}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
           <Calendar size={17} color={T.antiqueGold} />
         </div>
         <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-          Showing: <span style={{ fontFamily: F.display, fontWeight: 700, color: T.luxuryBrown }}>{label}</span>
-          {compareOn && priorLabel && <> · Compared with: <span style={{ fontFamily: F.display, fontWeight: 700, color: T.antiqueGold }}>{priorLabel}</span></>}
+          Showing:{" "}
+          <span style={{ fontFamily: F.display, fontWeight: 700, color: T.luxuryBrown }}>
+            {label}
+          </span>
+          {compareOn && priorLabel && (
+            <>
+              {" "}
+              · Compared with:{" "}
+              <span style={{ fontFamily: F.display, fontWeight: 700, color: T.antiqueGold }}>
+                {priorLabel}
+              </span>
+            </>
+          )}
           {note && <span style={{ fontStyle: "italic" }}> · {note}</span>}
         </span>
       </div>
       <DownloadGate>
         <div className="w-full sm:w-auto flex flex-wrap gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-[rgba(110,15,45,0.08)] sm:border-transparent mt-1 sm:mt-0">
-          <Button variant="primary" size="sm" iconLeft={Download} onClick={exportExcel} disabled={!canExport}>
+          <Button
+            variant="primary"
+            size="sm"
+            iconLeft={Download}
+            onClick={exportExcel}
+            disabled={!canExport}
+          >
             Download Excel
           </Button>
         </div>
@@ -309,39 +716,135 @@ export function SectionCard({
   id?: string;
 }) {
   return (
-    <div id={id} style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
-      <div className="p-4 sm:p-7" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
+    <div
+      id={id}
+      style={{
+        background: "#FFFFFF",
+        borderRadius: 20,
+        border: `1px solid ${T.borderDef}`,
+        boxShadow: "0 6px 32px rgba(74,6,27,0.08)",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        className="p-4 sm:p-7"
+        style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}
+      >
         <div className="flex items-start gap-3.5 sm:gap-4 w-full">
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "rgba(255,255,255,0.12)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              marginTop: 2,
+            }}
+          >
             <Icon size={24} color="#FFFDF9" />
           </div>
           <div className="flex flex-col items-start gap-3 flex-1 min-w-0">
             <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px", lineHeight: 1.2 }}>{title}</div>
-              {subtitle && <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.70)", marginTop: 4, lineHeight: 1.5 }}>{subtitle}</div>}
+              <div
+                style={{
+                  fontFamily: F.display,
+                  fontWeight: 700,
+                  fontSize: 20,
+                  color: "#FFFDF9",
+                  letterSpacing: "-0.2px",
+                  lineHeight: 1.2,
+                }}
+              >
+                {title}
+              </div>
+              {subtitle && (
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 14,
+                    color: "rgba(255,253,249,0.70)",
+                    marginTop: 4,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {subtitle}
+                </div>
+              )}
             </div>
-            {actions && <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto pt-1">{actions}</div>}
+            {actions && (
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto pt-1">
+                {actions}
+              </div>
+            )}
           </div>
         </div>
       </div>
-      <div className="p-2.5 sm:p-5 md:p-6 pb-2.5 sm:pb-4">
-        {children}
-      </div>
+      <div className="p-2.5 sm:p-5 md:p-6 pb-2.5 sm:pb-4">{children}</div>
     </div>
   );
 }
 
 // ── Shared Chart Tooltip ──────────────────────────────────────────────────────
-export function ChartTip({ active, payload, label, prefix = "", suffix = "" }: TooltipProps<ValueType, NameType> & { prefix?: string; suffix?: string }) {
+export function ChartTip({
+  active,
+  payload,
+  label,
+  prefix = "",
+  suffix = "",
+}: TooltipProps<ValueType, NameType> & { prefix?: string; suffix?: string }) {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "10px 14px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
-      {label && <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginBottom: 5, textTransform: "uppercase" }}>{label}</div>}
+    <div
+      style={{
+        background: "#FFFDF9",
+        border: `1px solid ${T.borderDef}`,
+        borderRadius: 9,
+        padding: "10px 14px",
+        boxShadow: "0 4px 16px rgba(74,6,27,0.12)",
+      }}
+    >
+      {label && (
+        <div
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            color: T.taupe,
+            marginBottom: 5,
+            textTransform: "uppercase",
+          }}
+        >
+          {label}
+        </div>
+      )}
       {payload.map((p) => (
-        <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color || p.fill || p.stroke }} />
+        <div
+          key={p.name}
+          style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}
+        >
+          <div
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: p.color || p.fill || p.stroke,
+            }}
+          />
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.name}:</span>
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{prefix}{typeof p.value === "number" ? p.value.toLocaleString("en-IN") : p.value}{suffix}</span>
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              fontWeight: 700,
+              color: T.luxuryBrown,
+            }}
+          >
+            {prefix}
+            {typeof p.value === "number" ? p.value.toLocaleString("en-IN") : p.value}
+            {suffix}
+          </span>
         </div>
       ))}
     </div>
@@ -349,35 +852,119 @@ export function ChartTip({ active, payload, label, prefix = "", suffix = "" }: T
 }
 
 // ── Mini SVG Donut ────────────────────────────────────────────────────────────
-export function MiniDonut({ value, max, color, label, unit = "kg", badge, badgeType = "ok", footNote }: {
-  value: number; max: number; color: string; label: string;
-  unit?: string; badge?: string; badgeType?: "ok" | "low" | "out"; footNote?: string;
+export function MiniDonut({
+  value,
+  max,
+  color,
+  label,
+  unit = "kg",
+  badge,
+  badgeType = "ok",
+  footNote,
+}: {
+  value: number;
+  max: number;
+  color: string;
+  label: string;
+  unit?: string;
+  badge?: string;
+  badgeType?: "ok" | "low" | "out";
+  footNote?: string;
 }) {
   const pct = max > 0 ? Math.min(value / max, 1) : 0;
-  const r = 30; const circ = 2 * Math.PI * r;
-  const dash = pct * circ; const gap = circ - dash;
-  const badgeBg = badgeType === "out" ? T.crimsonBg : badgeType === "low" ? "rgba(200,155,71,0.12)" : T.greenBg;
+  const r = 30;
+  const circ = 2 * Math.PI * r;
+  const dash = pct * circ;
+  const gap = circ - dash;
+  const badgeBg =
+    badgeType === "out" ? T.crimsonBg : badgeType === "low" ? "rgba(200,155,71,0.12)" : T.greenBg;
   const badgeColor = badgeType === "out" ? T.crimson : badgeType === "low" ? "#8B6018" : T.green;
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
       <div style={{ position: "relative", width: 80, height: 80 }}>
         <svg width="80" height="80" viewBox="0 0 80 80">
-          <circle cx="40" cy="40" r={r} fill="none" stroke="rgba(110,15,45,0.08)" strokeWidth="10" />
+          <circle
+            cx="40"
+            cy="40"
+            r={r}
+            fill="none"
+            stroke="rgba(110,15,45,0.08)"
+            strokeWidth="10"
+          />
           {pct > 0 && (
-            <circle cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="10"
-              strokeDasharray={`${dash} ${gap}`} strokeLinecap="round"
-              transform="rotate(-90 40 40)" />
+            <circle
+              cx="40"
+              cy="40"
+              r={r}
+              fill="none"
+              stroke={color}
+              strokeWidth="10"
+              strokeDasharray={`${dash} ${gap}`}
+              strokeLinecap="round"
+              transform="rotate(-90 40 40)"
+            />
           )}
         </svg>
-        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{value}</span>
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{unit}</span>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <span
+            style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}
+          >
+            {value}
+          </span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
+            {unit}
+          </span>
         </div>
       </div>
       <div style={{ textAlign: "center" }}>
-        <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 3 }}>{label}</div>
-        {footNote && <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginBottom: 3 }}>{footNote}</div>}
-        {badge && <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 10, background: badgeBg, color: badgeColor, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700 }}>{badge}</span>}
+        <div
+          style={{
+            fontFamily: F.ui,
+            fontSize: 13,
+            fontWeight: 600,
+            color: T.luxuryBrown,
+            marginBottom: 3,
+          }}
+        >
+          {label}
+        </div>
+        {footNote && (
+          <div
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              color: T.taupe,
+              marginBottom: 3,
+            }}
+          >
+            {footNote}
+          </div>
+        )}
+        {badge && (
+          <span
+            style={{
+              display: "inline-block",
+              padding: "2px 8px",
+              borderRadius: 10,
+              background: badgeBg,
+              color: badgeColor,
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              fontWeight: 700,
+            }}
+          >
+            {badge}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -386,11 +973,24 @@ export function MiniDonut({ value, max, color, label, unit = "kg", badge, badgeT
 // ── Table pagination footer ───────────────────────────────────────────────────
 export function TablePager({ total, showing }: { total: number; showing: number }) {
   return (
-    <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", background: T.warmIvory }}>
-      <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Showing {showing} of {total} records</span>
+    <div
+      style={{
+        padding: "14px 20px",
+        borderTop: `1px solid ${T.borderDef}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        background: T.warmIvory,
+      }}
+    >
+      <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+        Showing {showing} of {total} records
+      </span>
       <div style={{ display: "flex", gap: 5 }}>
-        {["Prev", "1", "2", "3", "Next"].map(p => (
-          <Button key={p} variant={p === "1" ? "primary" : "secondary"} size="sm">{p}</Button>
+        {["Prev", "1", "2", "3", "Next"].map((p) => (
+          <Button key={p} variant={p === "1" ? "primary" : "secondary"} size="sm">
+            {p}
+          </Button>
         ))}
       </div>
     </div>
@@ -398,17 +998,36 @@ export function TablePager({ total, showing }: { total: number; showing: number 
 }
 
 // ── StatusPill ────────────────────────────────────────────────────────────────
-export function StatusPill({ label, type = "neutral" }: { label: string; type?: "ok" | "warn" | "bad" | "neutral" | "gold" }) {
+export function StatusPill({
+  label,
+  type = "neutral",
+}: {
+  label: string;
+  type?: "ok" | "warn" | "bad" | "neutral" | "gold";
+}) {
   const map = {
-    ok:      { bg: "rgba(30,102,64,0.10)",  color: T.green },
-    warn:    { bg: "rgba(200,155,71,0.13)", color: "#8B6018" },
-    bad:     { bg: "rgba(192,57,43,0.10)",  color: T.crimson },
-    neutral: { bg: "rgba(110,15,45,0.06)",  color: T.taupe },
-    gold:    { bg: "rgba(200,155,71,0.13)", color: T.antiqueGold },
+    ok: { bg: "rgba(30,102,64,0.10)", color: T.green },
+    warn: { bg: "rgba(200,155,71,0.13)", color: "#8B6018" },
+    bad: { bg: "rgba(192,57,43,0.10)", color: T.crimson },
+    neutral: { bg: "rgba(110,15,45,0.06)", color: T.taupe },
+    gold: { bg: "rgba(200,155,71,0.13)", color: T.antiqueGold },
   };
   const c = map[type];
   return (
-    <span style={{ display: "inline-block", padding: "4px 11px", borderRadius: 20, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, background: c.bg, color: c.color, whiteSpace: "nowrap" as const }}>{label}</span>
+    <span
+      style={{
+        display: "inline-block",
+        padding: "4px 11px",
+        borderRadius: 20,
+        fontFamily: "var(--font-mono)",
+        fontSize: 12,
+        fontWeight: 700,
+        background: c.bg,
+        color: c.color,
+        whiteSpace: "nowrap" as const,
+      }}
+    >
+      {label}
+    </span>
   );
 }
-

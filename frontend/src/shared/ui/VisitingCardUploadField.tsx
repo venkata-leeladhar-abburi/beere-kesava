@@ -51,7 +51,11 @@ export function VisitingCardUploadField({
       const { url } = await uploadsApi.uploadPhoto(file);
       onChange(url);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not upload the visiting card. Please try again.");
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Could not upload the visiting card. Please try again."
+      );
       setPreview(null);
     } finally {
       setUploading(false);
@@ -60,41 +64,84 @@ export function VisitingCardUploadField({
 
   return (
     <div>
-      <label style={{ fontFamily: "inherit", fontSize: 12, fontWeight: 600, display: "block", marginBottom: 6 }}>{labelText}</label>
+      <label
+        style={{
+          fontFamily: "inherit",
+          fontSize: 12,
+          fontWeight: 600,
+          display: "block",
+          marginBottom: 6,
+        }}
+      >
+        {labelText}
+      </label>
       <div style={{ position: "relative" }}>
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
           style={{
-            width: "100%", height: 120, borderRadius: 10,
+            width: "100%",
+            height: 120,
+            borderRadius: 10,
             border: `1.5px dashed rgba(110,15,45,0.25)`,
             background: displayUrl ? "transparent" : "rgba(110,15,45,0.04)",
-            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-            cursor: uploading ? "wait" : "pointer", overflow: "hidden", padding: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: uploading ? "wait" : "pointer",
+            overflow: "hidden",
+            padding: 0,
           }}
         >
           {displayUrl ? (
-            <img src={displayUrl} alt="Visiting card preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img
+              src={displayUrl}
+              alt="Visiting card preview"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
           ) : uploading ? (
             <Loader2 size={22} color="rgba(110,15,45,0.5)" className="animate-spin" />
           ) : (
             <>
               <CreditCard size={22} color="rgba(110,15,45,0.35)" strokeWidth={1.5} />
-              <span style={{ fontSize: 12, color: "rgba(110,15,45,0.45)", marginTop: 6, fontWeight: 600 }}>Upload Visiting Card</span>
+              <span
+                style={{
+                  fontSize: 12,
+                  color: "rgba(110,15,45,0.45)",
+                  marginTop: 6,
+                  fontWeight: 600,
+                }}
+              >
+                Upload Visiting Card
+              </span>
             </>
           )}
         </button>
         {displayUrl && !uploading && (
           <button
             type="button"
-            onClick={() => { setPreview(null); onChange(null); }}
+            onClick={() => {
+              setPreview(null);
+              onChange(null);
+            }}
             aria-label="Remove visiting card"
             title="Remove"
             style={{
-              position: "absolute", top: 6, right: 6, width: 24, height: 24, borderRadius: "50%",
-              background: "rgba(0,0,0,0.55)", border: "none", color: "#FFF",
-              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+              position: "absolute",
+              top: 6,
+              right: 6,
+              width: 24,
+              height: 24,
+              borderRadius: "50%",
+              background: "rgba(0,0,0,0.55)",
+              border: "none",
+              color: "#FFF",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
             }}
           >
             <X size={13} />
@@ -111,7 +158,7 @@ export function VisitingCardUploadField({
         accept={IMAGE_ACCEPT_ATTR}
         aria-label={labelText || "Upload visiting card"}
         style={{ display: "none" }}
-        onChange={e => {
+        onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) void handleFile(file);
           e.target.value = "";

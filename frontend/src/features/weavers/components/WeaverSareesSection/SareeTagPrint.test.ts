@@ -1,10 +1,18 @@
 import { describe, expect, it } from "vitest";
 import {
-  BarcodeFormat, BinaryBitmap, DecodeHintType, HybridBinarizer,
-  MultiFormatReader, RGBLuminanceSource,
+  BarcodeFormat,
+  BinaryBitmap,
+  DecodeHintType,
+  HybridBinarizer,
+  MultiFormatReader,
+  RGBLuminanceSource,
 } from "@zxing/library";
 import { encodeToPath, QR_QUIET_ZONE } from "@/shared/ui/domain/ScannableCode";
-import { DEFAULT_LABEL_STOCK, parseLabelSize, LABEL_SIZE_OPTIONS } from "@/shared/ui/document/LabelSheet";
+import {
+  DEFAULT_LABEL_STOCK,
+  parseLabelSize,
+  LABEL_SIZE_OPTIONS,
+} from "@/shared/ui/document/LabelSheet";
 import { tagColumnEm, tagFigureEm, tagIdFit, tagQrEm } from "./SareeTagPrint";
 
 /** Saree id shapes the system actually prints on a tag. */
@@ -30,7 +38,8 @@ function decodeAt(value: string, scale: number): string {
   for (const [, x, y] of encoded.path.matchAll(/M(\d+) (\d+)h1v1h-1z/g)) {
     const mx = (Number(x) + QR_QUIET_ZONE) * scale;
     const my = (Number(y) + QR_QUIET_ZONE) * scale;
-    for (let dy = 0; dy < scale; dy++) for (let dx = 0; dx < scale; dx++) luma[(my + dy) * px + mx + dx] = 0;
+    for (let dy = 0; dy < scale; dy++)
+      for (let dx = 0; dx < scale; dx++) luma[(my + dy) * px + mx + dx] = 0;
   }
   // Hints go to decode() itself: decode(image) with none resets the reader to
   // every format, which is not what the scanner's QR pass runs.
@@ -43,11 +52,11 @@ function decodeAt(value: string, scale: number): string {
 }
 
 describe("saree tag QR", () => {
-  it.each(SAREE_IDS)("%s reads back, down to 3 camera pixels per module", id => {
+  it.each(SAREE_IDS)("%s reads back, down to 3 camera pixels per module", (id) => {
     for (const scale of [3, 4, 6, 10]) expect(decodeAt(id, scale)).toBe(id);
   });
 
-  it.each(SAREE_IDS)("%s prints modules a 203dpi thermal head resolves several dots wide", id => {
+  it.each(SAREE_IDS)("%s prints modules a 203dpi thermal head resolves several dots wide", (id) => {
     const encoded = encodeToPath(id)!;
     const moduleMm = tagQrEm(DEFAULT_LABEL_STOCK) / (encoded.modules + QR_QUIET_ZONE * 2);
     // 0.45mm is over three and a half printer dots — twice the old Code128's bars.
@@ -65,7 +74,7 @@ describe("saree tag layout", () => {
     expect(tagColumnEm(DEFAULT_LABEL_STOCK)).toBeCloseTo(26.4, 1);
   });
 
-  it.each(LABEL_SIZE_OPTIONS)("leaves a usable text column on %s", size => {
+  it.each(LABEL_SIZE_OPTIONS)("leaves a usable text column on %s", (size) => {
     const stock = parseLabelSize(size);
     expect(tagQrEm(stock)).toBeGreaterThanOrEqual(11);
     expect(tagColumnEm(stock)).toBeGreaterThanOrEqual(13);

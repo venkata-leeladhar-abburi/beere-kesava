@@ -6,7 +6,11 @@ import { PageShell } from "@/shared/ui/PageShell";
 import { Input, Select, SelectItem } from "@/shared/ui/primitives";
 import { DataTable, type ColumnDef } from "@/shared/ui/data";
 import { LuxuryStatsCard } from "@/shared/ui/LuxuryStatsCard";
-import { DateFilterBar, DEFAULT_DATE_FILTER, type DateFilterState } from "@/shared/ui/DateFilterBar";
+import {
+  DateFilterBar,
+  DEFAULT_DATE_FILTER,
+  type DateFilterState,
+} from "@/shared/ui/DateFilterBar";
 import { ErrorState, LoadingState, EmptyState } from "@/shared/ui/state";
 import { useAuthGate } from "@/contexts/AuthContext";
 import { usersApi, type BackendUser } from "@/shared/api/users";
@@ -15,8 +19,12 @@ import { staffFinanceApi, UNATTRIBUTED_ID, type StaffLedgerKind } from "@/shared
 import { ACCOUNTANT_SCOPE } from "../portalScopes";
 import { AccountantMemberPage } from "./AccountantMemberPage";
 import {
-  KIND_CONFIG, KIND_ORDER, emptyTotals,
-  dailySeries, dateFilterToRange, groupByRecorder,
+  KIND_CONFIG,
+  KIND_ORDER,
+  emptyTotals,
+  dailySeries,
+  dateFilterToRange,
+  groupByRecorder,
   type LedgerTotals,
 } from "./ledger";
 import { DirectionAmount, MoneyText, VolumeSparkline, useMoneyFormatter } from "./primitives";
@@ -144,12 +152,12 @@ export function AccountantDirectoryPage() {
 
   const sparklineByRecorder = useMemo(
     () => groupByRecorder(sparklineQuery.data?.items ?? []),
-    [sparklineQuery.data],
+    [sparklineQuery.data]
   );
 
   const rows = useMemo<DirectoryRow[]>(() => {
     const staff = usersQuery.data?.items ?? [];
-    const built: DirectoryRow[] = staff.map(u => ({
+    const built: DirectoryRow[] = staff.map((u) => ({
       key: u.id,
       user: u,
       name: fullName(u),
@@ -184,11 +192,11 @@ export function AccountantDirectoryPage() {
     const q = search.trim().toLowerCase();
     if (!q) return rows;
     return rows.filter(
-      r =>
+      (r) =>
         r.name.toLowerCase().includes(q) ||
         r.empId.toLowerCase().includes(q) ||
         r.mobile.includes(q) ||
-        (r.user?.email ?? "").toLowerCase().includes(q),
+        (r.user?.email ?? "").toLowerCase().includes(q)
     );
   }, [rows, search]);
 
@@ -208,7 +216,7 @@ export function AccountantDirectoryPage() {
     const txns = rows.reduce((sum, r) => sum + r.totals.txns, 0);
     return { paidOut, collectedIn, txns, avgTxn: txns === 0 ? 0 : (paidOut + collectedIn) / txns };
   }, [rows]);
-  const activeCount = (usersQuery.data?.items ?? []).filter(u => u.status === "ACTIVE").length;
+  const activeCount = (usersQuery.data?.items ?? []).filter((u) => u.status === "ACTIVE").length;
   const isFiltered = kindFilter !== "all" || dateFilter.mode !== "all" || search.trim() !== "";
 
   if (openRow) {
@@ -226,7 +234,7 @@ export function AccountantDirectoryPage() {
     {
       id: "name",
       header: "Accountant",
-      accessor: r => r.name,
+      accessor: (r) => r.name,
       priority: 1,
       sortable: true,
       cell: (_v, r) => (
@@ -238,10 +246,16 @@ export function AccountantDirectoryPage() {
             {r.user ? initialsOf(r.user) : "—"}
           </div>
           <div className="min-w-0">
-            <div className="truncate text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>
+            <div
+              className="truncate text-[13px] font-semibold"
+              style={{ color: "var(--text-primary)" }}
+            >
               {r.name}
             </div>
-            <div className="truncate font-mono text-[11px]" style={{ color: "var(--text-tertiary)" }}>
+            <div
+              className="truncate font-mono text-[11px]"
+              style={{ color: "var(--text-tertiary)" }}
+            >
               {r.empId}
             </div>
           </div>
@@ -251,7 +265,7 @@ export function AccountantDirectoryPage() {
     {
       id: "paidOut",
       header: "Paid out",
-      accessor: r => r.totals.paidOut,
+      accessor: (r) => r.totals.paidOut,
       type: "currency",
       priority: 1,
       sortable: true,
@@ -259,13 +273,15 @@ export function AccountantDirectoryPage() {
         r.totals.paidOut > 0 ? (
           <DirectionAmount amount={r.totals.paidOut} direction="OUT" />
         ) : (
-          <span className="text-[12px]" style={{ color: "var(--text-tertiary)" }}>—</span>
+          <span className="text-[12px]" style={{ color: "var(--text-tertiary)" }}>
+            —
+          </span>
         ),
     },
     {
       id: "collectedIn",
       header: "Collected in",
-      accessor: r => r.totals.collectedIn,
+      accessor: (r) => r.totals.collectedIn,
       type: "currency",
       priority: 2,
       sortable: true,
@@ -273,24 +289,32 @@ export function AccountantDirectoryPage() {
         r.totals.collectedIn > 0 ? (
           <DirectionAmount amount={r.totals.collectedIn} direction="IN" />
         ) : (
-          <span className="text-[12px]" style={{ color: "var(--text-tertiary)" }}>—</span>
+          <span className="text-[12px]" style={{ color: "var(--text-tertiary)" }}>
+            —
+          </span>
         ),
     },
     {
       id: "txns",
       header: "Entries",
-      accessor: r => r.totals.txns,
+      accessor: (r) => r.totals.txns,
       type: "number",
       priority: 2,
       sortable: true,
       // Entries are exact for the period. Portal actions are not: the action
       // log endpoint caps pageSize at 200, so that second line is a recent
       // window across all accountant areas, and is labelled "recent" to match.
-      headerTooltip: "Money entries for the selected period. Portal actions are counted from the 200 most recent across all accountant areas.",
+      headerTooltip:
+        "Money entries for the selected period. Portal actions are counted from the 200 most recent across all accountant areas.",
       cell: (_v, r) => (
         <div className="min-w-0">
-          <div className="text-[12px]" style={{ color: r.totals.txns ? "var(--text-secondary)" : "var(--text-tertiary)" }}>
-            {r.totals.txns === 0 ? "None" : `${r.totals.txns} entr${r.totals.txns === 1 ? "y" : "ies"}`}
+          <div
+            className="text-[12px]"
+            style={{ color: r.totals.txns ? "var(--text-secondary)" : "var(--text-tertiary)" }}
+          >
+            {r.totals.txns === 0
+              ? "None"
+              : `${r.totals.txns} entr${r.totals.txns === 1 ? "y" : "ies"}`}
           </div>
           {/* Portal actions sit beside the money count on purpose: an
               accountant busy in the portal but moving nothing, or moving a
@@ -308,7 +332,7 @@ export function AccountantDirectoryPage() {
     {
       id: "sparkline",
       header: "Last 14 days",
-      accessor: r => r.sparkline.reduce((sum, d) => sum + d.out + d.in, 0),
+      accessor: (r) => r.sparkline.reduce((sum, d) => sum + d.out + d.in, 0),
       priority: 3,
       sortable: true,
       cell: (_v, r) => <VolumeSparkline series={r.sparkline} />,
@@ -316,7 +340,7 @@ export function AccountantDirectoryPage() {
     {
       id: "lastActivity",
       header: "Last entry",
-      accessor: r => r.totals.lastActivity ?? "",
+      accessor: (r) => r.totals.lastActivity ?? "",
       priority: 3,
       sortable: true,
       cell: (_v, r) => (
@@ -328,7 +352,7 @@ export function AccountantDirectoryPage() {
     {
       id: "status",
       header: "Status",
-      accessor: r => r.user?.status ?? "—",
+      accessor: (r) => r.user?.status ?? "—",
       priority: 3,
       cell: (_v, r) =>
         r.user ? (
@@ -343,7 +367,9 @@ export function AccountantDirectoryPage() {
             {r.user.status === "ACTIVE" ? "Active" : "Inactive"}
           </span>
         ) : (
-          <span className="text-[11px]" style={{ color: "var(--text-tertiary)" }}>Historic</span>
+          <span className="text-[11px]" style={{ color: "var(--text-tertiary)" }}>
+            Historic
+          </span>
         ),
     },
     {
@@ -361,24 +387,86 @@ export function AccountantDirectoryPage() {
   return (
     <PageShell>
       {/* Hero Banner Header */}
-      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
+      <header
+        style={{
+          background: "#0D0207",
+          position: "relative",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <div
           className="px-4 md:px-7 xl:px-12 flex-col xl:flex-row"
-          style={{ position: "relative", zIndex: 2, paddingTop: 44, paddingBottom: 76, width: "100%", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 20 }}
+          style={{
+            position: "relative",
+            zIndex: 2,
+            paddingTop: 44,
+            paddingBottom: 76,
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 20,
+          }}
         >
           <div>
-            <div style={{ fontFamily: "var(--font-ui, sans-serif)", fontSize: "clamp(11px, 1.4vw, 13px)", color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 10 }}>
+            <div
+              style={{
+                fontFamily: "var(--font-ui, sans-serif)",
+                fontSize: "clamp(11px, 1.4vw, 13px)",
+                color: "rgba(255,253,249,0.50)",
+                letterSpacing: "1.8px",
+                textTransform: "uppercase",
+                marginBottom: 10,
+              }}
+            >
               Since 1999 · {SCOPE.label} Directory &amp; Oversight
             </div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
-              <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 6vw, 52px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: 12,
+                flexWrap: "wrap",
+                marginBottom: 8,
+              }}
+            >
+              <h1
+                style={{
+                  fontFamily: "'DM Serif Display', serif",
+                  fontSize: "clamp(32px, 6vw, 52px)",
+                  fontWeight: 400,
+                  color: "#FFFDF9",
+                  margin: 0,
+                  lineHeight: 1.1,
+                }}
+              >
                 {SCOPE.label}
               </h1>
-              <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(20px, 4.5vw, 32px)", fontStyle: "italic", color: "#C89B47", fontWeight: 400 }}>
+              <span
+                style={{
+                  fontFamily: "'DM Serif Display', serif",
+                  fontSize: "clamp(20px, 4.5vw, 32px)",
+                  fontStyle: "italic",
+                  color: "#C89B47",
+                  fontWeight: 400,
+                }}
+              >
                 &amp; Money Oversight
               </span>
             </div>
-            <p className="max-w-[640px]" style={{ fontFamily: "var(--font-ui, sans-serif)", fontWeight: 400, fontSize: "clamp(13px, 2vw, 15px)", color: "rgba(255,253,249,0.70)", lineHeight: 1.6, margin: 0 }}>
+            <p
+              className="max-w-[640px]"
+              style={{
+                fontFamily: "var(--font-ui, sans-serif)",
+                fontWeight: 400,
+                fontSize: "clamp(13px, 2vw, 15px)",
+                color: "rgba(255,253,249,0.70)",
+                lineHeight: 1.6,
+                margin: 0,
+              }}
+            >
               {SCOPE.blurb}
             </p>
           </div>
@@ -386,7 +474,10 @@ export function AccountantDirectoryPage() {
       </header>
 
       {/* Stats strip — every figure below reflects the period selected in the toolbar. */}
-      <div className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-12 xl:-mt-[62px]" style={{ position: "relative", zIndex: 20 }}>
+      <div
+        className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-12 xl:-mt-[62px]"
+        style={{ position: "relative", zIndex: 20 }}
+      >
         <LuxuryStatsCard
           stats={[
             {
@@ -406,7 +497,9 @@ export function AccountantDirectoryPage() {
               label: "ENTRIES",
               value: String(overall.txns),
               icon: <Receipt size={20} color="rgba(245,232,208,0.90)" />,
-              sub: overall.txns ? `Avg ${money(overall.avgTxn, { compact: true })}` : "Nothing in this period",
+              sub: overall.txns
+                ? `Avg ${money(overall.avgTxn, { compact: true })}`
+                : "Nothing in this period",
             },
             {
               label: "ACCOUNTANTS",
@@ -422,7 +515,7 @@ export function AccountantDirectoryPage() {
         <PageShell.Toolbar>
           <Input
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Search accountants by name, ID or mobile…"
             iconLeft={Search}
             className="w-full md:max-w-[340px]"
@@ -432,10 +525,10 @@ export function AccountantDirectoryPage() {
               size="sm"
               className="w-full"
               value={kindFilter}
-              onValueChange={v => setKindFilter(v as "all" | StaffLedgerKind)}
+              onValueChange={(v) => setKindFilter(v as "all" | StaffLedgerKind)}
             >
               <SelectItem value="all">All money types</SelectItem>
-              {KIND_ORDER.map(kind => (
+              {KIND_ORDER.map((kind) => (
                 <SelectItem key={kind} value={kind}>
                   {KIND_CONFIG[kind].label}
                 </SelectItem>
@@ -474,8 +567,8 @@ export function AccountantDirectoryPage() {
               <DataTable
                 columns={columns}
                 data={visibleRows}
-                getRowId={r => r.key}
-                onRowClick={r => openDetail(() => setOpenRow(r))}
+                getRowId={(r) => r.key}
+                onRowClick={(r) => openDetail(() => setOpenRow(r))}
                 responsive
                 pagination
                 pageSize={10}

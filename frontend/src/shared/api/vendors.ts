@@ -53,7 +53,8 @@ interface PaginatedResponse<T> {
 }
 
 export const vendorsApi = {
-  list: (pageSize = 100) => apiClient.get<PaginatedResponse<BackendVendor>>(`/vendors?pageSize=${pageSize}`),
+  list: (pageSize = 100) =>
+    apiClient.get<PaginatedResponse<BackendVendor>>(`/vendors?pageSize=${pageSize}`),
   create: (payload: CreateVendorPayload) => apiClient.post<BackendVendor>("/vendors", payload),
   update: (id: string, payload: Partial<CreateVendorPayload> & { status?: string }) =>
     apiClient.patch<BackendVendor>(`/vendors/${id}`, payload),

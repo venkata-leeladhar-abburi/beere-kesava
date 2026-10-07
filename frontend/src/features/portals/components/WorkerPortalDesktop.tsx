@@ -39,7 +39,14 @@ function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
 function DesktopProfile() {
   const { user, logout } = useAuth();
   const userName = user?.name || "Ravindra Kumar";
-  const initials = userName.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "RK";
+  const initials =
+    userName
+      .split(" ")
+      .filter(Boolean)
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "RK";
   const userPhone = user?.mobile || "1234567890";
   const workerId = user?.empId || "STAFF-001";
 
@@ -48,16 +55,65 @@ function DesktopProfile() {
       <PageHeader title="My Profile" subtitle="Your worker staff portal identity." />
 
       {/* Hero User Banner Card */}
-      <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 60%, #8B1A30 100%)`, borderRadius: 20, padding: "28px 36px", marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 28, boxShadow: "0 8px 32px rgba(74,6,27,0.18)" }}>
+      <div
+        style={{
+          background: `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 60%, #8B1A30 100%)`,
+          borderRadius: 20,
+          padding: "28px 36px",
+          marginBottom: 24,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 28,
+          boxShadow: "0 8px 32px rgba(74,6,27,0.18)",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ fontFamily: F.d, fontSize: 30, fontWeight: 700, color: "#FFF" }}>{toInitials(initials)}</span>
+          <div
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: "50%",
+              background: "rgba(255,255,255,0.15)",
+              border: "2px solid rgba(255,255,255,0.35)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <span style={{ fontFamily: F.d, fontSize: 30, fontWeight: 700, color: "#FFF" }}>
+              {toInitials(initials)}
+            </span>
           </div>
           <div>
-            <div style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: "#FFF", marginBottom: 4 }}>{userName}</div>
-            <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.75)" }}>{userPhone}</div>
-            <div style={{ marginTop: 8, display: "inline-block", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 999, padding: "3px 12px" }}>
-              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF" }}>Worker Staff</span>
+            <div
+              style={{
+                fontFamily: F.d,
+                fontSize: 24,
+                fontWeight: 700,
+                color: "#FFF",
+                marginBottom: 4,
+              }}
+            >
+              {userName}
+            </div>
+            <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.75)" }}>
+              {userPhone}
+            </div>
+            <div
+              style={{
+                marginTop: 8,
+                display: "inline-block",
+                background: "rgba(255,255,255,0.12)",
+                border: "1px solid rgba(255,255,255,0.25)",
+                borderRadius: 999,
+                padding: "3px 12px",
+              }}
+            >
+              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF" }}>
+                Worker Staff
+              </span>
             </div>
           </div>
         </div>
@@ -72,23 +128,76 @@ function DesktopProfile() {
       </div>
 
       {/* 3 Metric Stats strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "20px 0", marginBottom: 24, boxShadow: "0 2px 10px rgba(110,15,45,0.04)" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr 1fr",
+          background: "#FFF",
+          border: `1px solid ${C.bdr}`,
+          borderRadius: 16,
+          padding: "20px 0",
+          marginBottom: 24,
+          boxShadow: "0 2px 10px rgba(110,15,45,0.04)",
+        }}
+      >
         {[
           { val: "8 yrs", label: "Tenure" },
           { val: "Morning", label: "Shift" },
           { val: "Active", label: "Status" },
         ].map((s, i) => (
-          <div key={s.label} style={{ padding: "0 12px", textAlign: "center", borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 22, color: C.burg, marginBottom: 3 }}>{s.val}</div>
+          <div
+            key={s.label}
+            style={{
+              padding: "0 12px",
+              textAlign: "center",
+              borderRight: i < 2 ? `1px solid ${C.bdr}` : "none",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: F.d,
+                fontWeight: 700,
+                fontSize: 22,
+                color: C.burg,
+                marginBottom: 3,
+              }}
+            >
+              {s.val}
+            </div>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.label}</div>
           </div>
         ))}
       </div>
 
       {/* Work Details Section */}
-      <div style={{ background: "#FFF", border: `1px solid rgba(110,15,45,0.12)`, borderRadius: 16, overflow: "hidden", boxShadow: "0 4px 16px rgba(74,6,27,0.04)" }}>
-        <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)`, background: "rgba(110,15,45,0.02)" }}>
-          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" }}>WORK DETAILS</span>
+      <div
+        style={{
+          background: "#FFF",
+          border: `1px solid rgba(110,15,45,0.12)`,
+          borderRadius: 16,
+          overflow: "hidden",
+          boxShadow: "0 4px 16px rgba(74,6,27,0.04)",
+        }}
+      >
+        <div
+          style={{
+            padding: "16px 20px",
+            borderBottom: `1px solid rgba(110,15,45,0.08)`,
+            background: "rgba(110,15,45,0.02)",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: F.u,
+              fontSize: 12,
+              fontWeight: 700,
+              color: C.muted,
+              letterSpacing: "1px",
+              textTransform: "uppercase",
+            }}
+          >
+            WORK DETAILS
+          </span>
         </div>
         {[
           { label: "Worker ID", value: workerId, mono: true },
@@ -97,9 +206,27 @@ function DesktopProfile() {
           { label: "Factory", value: "Beere Kesava & Brothers Silks", mono: false },
           { label: "Joined", value: "March 2018", mono: false },
         ].map((item, i, arr) => (
-          <div key={item.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: i < arr.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
+          <div
+            key={item.label}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "16px 20px",
+              borderBottom: i < arr.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none",
+            }}
+          >
             <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>{item.label}</span>
-            <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: item.mono ? C.burg : C.dark }}>{item.value}</span>
+            <span
+              style={{
+                fontFamily: F.u,
+                fontSize: 14,
+                fontWeight: 600,
+                color: item.mono ? C.burg : C.dark,
+              }}
+            >
+              {item.value}
+            </span>
           </div>
         ))}
       </div>
@@ -107,16 +234,24 @@ function DesktopProfile() {
   );
 }
 
-export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActiveTab }: WorkerPortalDesktopProps) {
+export function WorkerPortalDesktop({
+  onBack,
+  bp = "desktop",
+  activeTab,
+  setActiveTab,
+}: WorkerPortalDesktopProps) {
   const isTablet = bp === "tablet";
   const [weaversSub, setWeaversSub] = useState<WeaversSubPage>("menu");
   const { batches } = useBatches();
 
-  const pendingQcCount = useMemo(() => batches
-    .filter(b => b.status === "active")
-    .flatMap(b => b.rows)
-    .filter(r => r.sareeId && r.weaverName && r.receivedAt && r.qcPassed == null).length,
-  [batches]);
+  const pendingQcCount = useMemo(
+    () =>
+      batches
+        .filter((b) => b.status === "active")
+        .flatMap((b) => b.rows)
+        .filter((r) => r.sareeId && r.weaverName && r.receivedAt && r.qcPassed == null).length,
+    [batches]
+  );
 
   const handleNavigate = (tab: Tab, sub?: WeaversSubPage) => {
     setActiveTab(tab);
@@ -124,7 +259,10 @@ export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActi
   };
 
   const weaversSubPageMap: Record<WeaversSubPage, "menu" | "design" | "issue" | "receive"> = {
-    menu: "menu", design: "design", issue: "issue", "receive-sarees": "receive",
+    menu: "menu",
+    design: "design",
+    issue: "issue",
+    "receive-sarees": "receive",
   };
 
   return (
@@ -147,15 +285,18 @@ export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActi
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2, ease: EASE }}
           >
-            {activeTab === "home" && (
-              <WorkerHomeDesktop onNavigate={handleNavigate} />
-            )}
+            {activeTab === "home" && <WorkerHomeDesktop onNavigate={handleNavigate} />}
 
             {activeTab === "weavers" && (
               <WorkerWeavers
                 subPage={weaversSubPageMap[weaversSub]}
                 onSubPageChange={(p) => {
-                  const inv: Record<string, WeaversSubPage> = { menu: "menu", design: "design", issue: "issue", receive: "receive-sarees" };
+                  const inv: Record<string, WeaversSubPage> = {
+                    menu: "menu",
+                    design: "design",
+                    issue: "issue",
+                    receive: "receive-sarees",
+                  };
                   setWeaversSub(inv[p] || "menu");
                 }}
               />
@@ -201,10 +342,14 @@ export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActi
               </div>
             )}
 
-            {activeTab === "finishing" && <WorkerFinishing isDesktop={!isTablet} isTablet={isTablet} />}
+            {activeTab === "finishing" && (
+              <WorkerFinishing isDesktop={!isTablet} isTablet={isTablet} />
+            )}
             {activeTab === "dispatch" && <WorkerDispatch isDesktop={!isTablet} />}
             {activeTab === "photos" && <WorkerSareePhotos isDesktop={!isTablet} />}
-            {activeTab === "activity" && <WorkerActivity isDesktop={!isTablet} isTablet={isTablet} />}
+            {activeTab === "activity" && (
+              <WorkerActivity isDesktop={!isTablet} isTablet={isTablet} />
+            )}
             {activeTab === "profile" && <DesktopProfile />}
           </motion.div>
         </AnimatePresence>

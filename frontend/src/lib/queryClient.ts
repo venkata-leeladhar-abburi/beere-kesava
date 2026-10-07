@@ -34,7 +34,8 @@ export const queryClient = new QueryClient({
     queries: {
       staleTime: 120_000,
       refetchOnWindowFocus: true,
-      retry: (failureCount, error) => isRetryable(error) && !isSessionExpired(error) && failureCount < 2,
+      retry: (failureCount, error) =>
+        isRetryable(error) && !isSessionExpired(error) && failureCount < 2,
       retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8_000),
     },
   },

@@ -1,15 +1,26 @@
 import { useCanSeePrices, PageHero, PortalStatsStrip, TabId, type PortalStat } from "./theme";
-import { ShoppingBag, Check, Send, AlertTriangle, Package, RotateCcw, ArrowUpRight, X, ChevronRight, BarChart2 } from "lucide-react";
+import {
+  ShoppingBag,
+  Check,
+  Send,
+  AlertTriangle,
+  Package,
+  RotateCcw,
+  ArrowUpRight,
+  X,
+  ChevronRight,
+  BarChart2,
+} from "lucide-react";
 import { useAuth } from "../../../../contexts/AuthContext";
-import { useState } from 'react';
-import * as Dialog from '@radix-ui/react-dialog';
+import { useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Modal } from "../../../../shared/ui/overlay";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../shared/api/sales";
 import { inventoryApi } from "../../../../shared/api/inventory";
 import { customersApi } from "../../../../shared/api/customers";
 import { notificationsApi } from "../../../../shared/api/notifications";
-import { C, F, Card, Btn, Chip, SectionTitle } from './theme';
+import { C, F, Card, Btn, Chip, SectionTitle } from "./theme";
 import { Button, IconButton, Textarea } from "../../../../shared/ui/primitives";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -50,18 +61,29 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return" | "sales"
       setAlerted(true);
       setLowStockMsg("");
     } catch (err) {
-      setLowStockError(err instanceof Error ? err.message : "Could not send the alert. Please try again.");
+      setLowStockError(
+        err instanceof Error ? err.message : "Could not send the alert. Please try again."
+      );
     } finally {
       setLowStockSending(false);
     }
   };
 
-  const { data: salesRes, isError: salesError, isLoading: salesLoading, refetch: refetchSales } = useQuery({
+  const {
+    data: salesRes,
+    isError: salesError,
+    isLoading: salesLoading,
+    refetch: refetchSales,
+  } = useQuery({
     queryKey: ["sales-list-shophome"],
     queryFn: () => salesApi.list(100),
   });
 
-  const { data: inventoryRes, isError: inventoryError, refetch: refetchInventory } = useQuery({
+  const {
+    data: inventoryRes,
+    isError: inventoryError,
+    refetch: refetchInventory,
+  } = useQuery({
     // Shop stock, not factory stock — these tiles are labelled "Shop
     // inventory" but counted every QC-passed saree in the factory, including
     // ones that had never been dispatched here.
@@ -69,7 +91,11 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return" | "sales"
     queryFn: () => inventoryApi.shopStock(),
   });
 
-  const { data: returnsRes, isError: returnsError, refetch: refetchReturns } = useQuery({
+  const {
+    data: returnsRes,
+    isError: returnsError,
+    refetch: refetchReturns,
+  } = useQuery({
     queryKey: ["returns-list-shophome"],
     queryFn: () => salesApi.listReturns(100),
   });
@@ -81,19 +107,26 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return" | "sales"
 
   const salesList = salesRes?.items ?? [];
   // Sold pieces are still delivered stock, but they are not what "in stock" means.
-  const inventoryList = (inventoryRes ?? []).filter(s => s.status !== "sold");
+  const inventoryList = (inventoryRes ?? []).filter((s) => s.status !== "sold");
   const returnsList = returnsRes?.items ?? [];
-  const customerMap = new Map((customersRes?.items ?? []).map(c => [c.id, c.name]));
+  const customerMap = new Map((customersRes?.items ?? []).map((c) => [c.id, c.name]));
 
   const todayStr = new Date().toDateString();
-  const todaySales = salesList.filter(s => new Date(s.saleDate).toDateString() === todayStr);
+  const todaySales = salesList.filter((s) => new Date(s.saleDate).toDateString() === todayStr);
   const todayRevenue = todaySales.reduce((sum, s) => sum + Number(s.amount), 0);
-  const todayReturns = returnsList.filter(r => new Date(r.returnDate).toDateString() === todayStr);
+  const todayReturns = returnsList.filter(
+    (r) => new Date(r.returnDate).toDateString() === todayStr
+  );
 
-  const recentSales = salesList.slice(0, 5).map(s => ({
+  const recentSales = salesList.slice(0, 5).map((s) => ({
     id: s.sareeId,
-    customer: s.customerId ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`) : "Retail Counter",
-    sareeType: sareeTypeText({ sareeTypeCode: s.saree?.sareeTypeCode ?? null, sareeTypeLabel: s.saree?.sareeType?.type ?? s.externalSareeType ?? null }),
+    customer: s.customerId
+      ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`)
+      : "Retail Counter",
+    sareeType: sareeTypeText({
+      sareeTypeCode: s.saree?.sareeTypeCode ?? null,
+      sareeTypeLabel: s.saree?.sareeType?.type ?? s.externalSareeType ?? null,
+    }),
     amt: formatMoney(rupees(Number(s.amount))),
     time: dateLabel(s.saleDate),
     color: "#6E0F2D",
@@ -106,10 +139,40 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return" | "sales"
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   const stats: PortalStat[] = [
-    { label: "Today's sales", value: salesError ? "Error" : todaySales.length, sub: salesError ? "Tap to retry" : "Recorded today", icon: ShoppingBag, highlight: true, onClick: salesError ? () => refetchSales() : undefined },
-    ...(canSeePrices ? [{ label: "Today's revenue", value: salesError ? "Error" : formatMoney(rupees(todayRevenue)), sub: salesError ? "Tap to retry" : `From ${todaySales.length} sales`, icon: BarChart2, onClick: salesError ? () => refetchSales() : undefined }] : []),
-    { label: "Shop inventory", value: inventoryError ? "Error" : inventoryList.length, sub: inventoryError ? "Tap to retry" : "Currently in stock", icon: Package, onClick: inventoryError ? () => refetchInventory() : undefined },
-    { label: "Returns today", value: returnsError ? "Error" : todayReturns.length, sub: returnsError ? "Tap to retry" : "Processed and recorded", icon: RotateCcw, alert: todayReturns.length > 0, onClick: returnsError ? () => refetchReturns() : undefined },
+    {
+      label: "Today's sales",
+      value: salesError ? "Error" : todaySales.length,
+      sub: salesError ? "Tap to retry" : "Recorded today",
+      icon: ShoppingBag,
+      highlight: true,
+      onClick: salesError ? () => refetchSales() : undefined,
+    },
+    ...(canSeePrices
+      ? [
+          {
+            label: "Today's revenue",
+            value: salesError ? "Error" : formatMoney(rupees(todayRevenue)),
+            sub: salesError ? "Tap to retry" : `From ${todaySales.length} sales`,
+            icon: BarChart2,
+            onClick: salesError ? () => refetchSales() : undefined,
+          },
+        ]
+      : []),
+    {
+      label: "Shop inventory",
+      value: inventoryError ? "Error" : inventoryList.length,
+      sub: inventoryError ? "Tap to retry" : "Currently in stock",
+      icon: Package,
+      onClick: inventoryError ? () => refetchInventory() : undefined,
+    },
+    {
+      label: "Returns today",
+      value: returnsError ? "Error" : todayReturns.length,
+      sub: returnsError ? "Tap to retry" : "Processed and recorded",
+      icon: RotateCcw,
+      alert: todayReturns.length > 0,
+      onClick: returnsError ? () => refetchReturns() : undefined,
+    },
   ];
 
   return (
@@ -134,20 +197,63 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return" | "sales"
 
       {/* Quick New Sale */}
       <div style={{ margin: "24px 20px 0" }}>
-        <div style={{
-          background: "linear-gradient(160deg, rgba(200,155,71,0.10) 0%, rgba(110,15,45,0.05) 100%)",
-          border: `2px solid ${C.burg}`, borderRadius: 20, padding: "22px 20px", boxShadow: "0 4px 18px rgba(110,15,45,0.08)",
-        }}>
+        <div
+          style={{
+            background:
+              "linear-gradient(160deg, rgba(200,155,71,0.10) 0%, rgba(110,15,45,0.05) 100%)",
+            border: `2px solid ${C.burg}`,
+            borderRadius: 20,
+            padding: "22px 20px",
+            boxShadow: "0 4px 18px rgba(110,15,45,0.08)",
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 18 }}>
-            <div style={{ width: 60, height: 60, borderRadius: 18, background: C.gold, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 14px rgba(200,155,71,0.35)" }}>
+            <div
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: 18,
+                background: C.gold,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 4px 14px rgba(200,155,71,0.35)",
+              }}
+            >
               <ShoppingBag size={30} color={C.text} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text, lineHeight: 1.2 }}>New Retail Sale</div>
-              <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 3, lineHeight: 1.4 }}>Record a sale at the counter</div>
+              <div
+                style={{
+                  fontFamily: F.d,
+                  fontWeight: 700,
+                  fontSize: 20,
+                  color: C.text,
+                  lineHeight: 1.2,
+                }}
+              >
+                New Retail Sale
+              </div>
+              <div
+                style={{
+                  fontFamily: F.u,
+                  fontSize: 14,
+                  color: C.muted,
+                  marginTop: 3,
+                  lineHeight: 1.4,
+                }}
+              >
+                Record a sale at the counter
+              </div>
             </div>
           </div>
-          <Button variant="primary" onClick={() => onNavigate("sale")} fullWidth className="h-14 rounded-[14px] bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none font-bold text-base gap-2 shadow-[0_6px_18px_rgba(110,15,45,0.30)]">
+          <Button
+            variant="primary"
+            onClick={() => onNavigate("sale")}
+            fullWidth
+            className="h-14 rounded-[14px] bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none font-bold text-base gap-2 shadow-[0_6px_18px_rgba(110,15,45,0.30)]"
+          >
             <ArrowUpRight size={20} /> Start New Sale
           </Button>
         </div>
@@ -155,8 +261,20 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return" | "sales"
 
       {/* Recent Sales */}
       <div style={{ margin: "24px 20px 0" }}>
-        <SectionTitle title="Recent Sales — Today" link="View All →" onLink={() => onNavigate("sales")} />
-        <Card style={{ margin: 0, padding: 0, overflow: "hidden", border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 16 }}>
+        <SectionTitle
+          title="Recent Sales — Today"
+          link="View All →"
+          onLink={() => onNavigate("sales")}
+        />
+        <Card
+          style={{
+            margin: 0,
+            padding: 0,
+            overflow: "hidden",
+            border: `1px solid rgba(110,15,45,0.18)`,
+            borderRadius: 16,
+          }}
+        >
           {salesLoading ? (
             <div style={{ padding: 16 }}>
               <LoadingState variant="skeleton" rows={3} />
@@ -164,24 +282,79 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return" | "sales"
           ) : salesError ? (
             <ErrorState error={undefined} onRetry={() => void refetchSales()} />
           ) : recentSales.length === 0 ? (
-            <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
+            <div
+              style={{
+                padding: "24px 16px",
+                textAlign: "center",
+                fontFamily: F.u,
+                fontSize: 14,
+                color: C.muted,
+              }}
+            >
               No sales recorded today yet.
             </div>
           ) : (
             recentSales.map((s, i) => (
-              <div key={s.id} style={{ display: "flex", alignItems: "center", padding: "16px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(110,15,45,0.08)` : "none" }}>
-                <div style={{ width: 6, height: 40, borderRadius: 3, background: s.color, marginRight: 14, flexShrink: 0 }} />
+              <div
+                key={s.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "16px",
+                  borderBottom:
+                    i < recentSales.length - 1 ? `1px solid rgba(110,15,45,0.08)` : "none",
+                }}
+              >
+                <div
+                  style={{
+                    width: 6,
+                    height: 40,
+                    borderRadius: 3,
+                    background: s.color,
+                    marginRight: 14,
+                    flexShrink: 0,
+                  }}
+                />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
-                    <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg, fontWeight: 700 }}>{s.id}</span>
-                    {s.ext && <Chip label="📦 External" color={C.gold} bg="rgba(200,155,71,0.12)" />}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      flexWrap: "wrap" as const,
+                    }}
+                  >
+                    <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg, fontWeight: 700 }}>
+                      {s.id}
+                    </span>
+                    {s.ext && (
+                      <Chip label="📦 External" color={C.gold} bg="rgba(200,155,71,0.12)" />
+                    )}
                   </div>
-                  <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginTop: 3 }}>{s.customer}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 1 }}>{s.sareeType}</div>
+                  <div
+                    style={{
+                      fontFamily: F.u,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      color: C.text,
+                      marginTop: 3,
+                    }}
+                  >
+                    {s.customer}
+                  </div>
+                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 1 }}>
+                    {s.sareeType}
+                  </div>
                 </div>
                 <div style={{ textAlign: "right" as const, flexShrink: 0, marginLeft: 8 }}>
-                  {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}
-                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 3 }}>{s.time}</div>
+                  {canSeePrices && (
+                    <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>
+                      {s.amt}
+                    </div>
+                  )}
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 3 }}>
+                    {s.time}
+                  </div>
                 </div>
               </div>
             ))
@@ -192,21 +365,52 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return" | "sales"
       {/* Returns Today */}
       <div style={{ margin: "24px 20px 0" }}>
         <SectionTitle title="Returns Today" />
-        <div style={{ background: C.white, border: `1px solid rgba(110,15,45,0.18)`, borderLeft: `4px solid ${C.crim}`, borderRadius: 16, padding: "16px" }}>
+        <div
+          style={{
+            background: C.white,
+            border: `1px solid rgba(110,15,45,0.18)`,
+            borderLeft: `4px solid ${C.crim}`,
+            borderRadius: 16,
+            padding: "16px",
+          }}
+        >
           {latestReturn ? (
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flexWrap: "wrap" as const }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+                flexWrap: "wrap" as const,
+              }}
+            >
               <Chip label="↩ Return" color={C.crim} bg="rgba(192,57,43,0.10)" />
               <div style={{ flex: 1, minWidth: 180 }}>
-                <div style={{ fontFamily: F.m, fontSize: 13, color: C.burg, fontWeight: 700 }}>{latestReturn.sareeId}</div>
-                <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginTop: 2, lineHeight: 1.4 }}>
+                <div style={{ fontFamily: F.m, fontSize: 13, color: C.burg, fontWeight: 700 }}>
+                  {latestReturn.sareeId}
+                </div>
+                <div
+                  style={{
+                    fontFamily: F.u,
+                    fontSize: 14,
+                    color: C.text,
+                    marginTop: 2,
+                    lineHeight: 1.4,
+                  }}
+                >
                   {latestReturn.reason}
-                  {canSeePrices && latestReturn.refundAmount ? ` · ${formatMoney(rupees(Number(latestReturn.refundAmount)))}` : ""}
+                  {canSeePrices && latestReturn.refundAmount
+                    ? ` · ${formatMoney(rupees(Number(latestReturn.refundAmount)))}`
+                    : ""}
                 </div>
               </div>
-              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{dateLabel(latestReturn.returnDate)}</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>
+                {dateLabel(latestReturn.returnDate)}
+              </div>
             </div>
           ) : (
-            <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>No returns recorded today.</div>
+            <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
+              No returns recorded today.
+            </div>
           )}
         </div>
       </div>
@@ -214,95 +418,229 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return" | "sales"
       {/* Low Stock Alert */}
       <div style={{ margin: "24px 20px 0" }}>
         <SectionTitle title="Stock Alert" />
-        <div style={{ background: "rgba(192,57,43,0.06)", borderRadius: 16, borderLeft: `4px solid ${C.crim}`, padding: "18px" }}>
-          <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 14, lineHeight: 1.5 }}>
-            ⚠ Shop stock is running low — only <strong>{inventoryList.length} sarees</strong> remaining.
+        <div
+          style={{
+            background: "rgba(192,57,43,0.06)",
+            borderRadius: 16,
+            borderLeft: `4px solid ${C.crim}`,
+            padding: "18px",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: F.u,
+              fontWeight: 500,
+              fontSize: 14,
+              color: C.text,
+              marginBottom: 14,
+              lineHeight: 1.5,
+            }}
+          >
+            ⚠ Shop stock is running low — only <strong>{inventoryList.length} sarees</strong>{" "}
+            remaining.
           </div>
           {alerted ? (
             <div style={{ display: "flex", alignItems: "center", gap: 8, color: C.green }}>
               <Check size={18} />
-              <span style={{ fontFamily: F.u, fontSize: 14, lineHeight: 1.4 }}>Admin and Superadmin have been notified about low stock.</span>
+              <span style={{ fontFamily: F.u, fontSize: 14, lineHeight: 1.4 }}>
+                Admin and Superadmin have been notified about low stock.
+              </span>
             </div>
           ) : (
-            <Btn label="Report Low Stock to Admin" icon={<Send size={16} />} onClick={() => setShowLowStockDialog(true)} style={{ width: "100%", height: 54, background: C.burg, fontSize: 14 }} />
+            <Btn
+              label="Report Low Stock to Admin"
+              icon={<Send size={16} />}
+              onClick={() => setShowLowStockDialog(true)}
+              style={{ width: "100%", height: 54, background: C.burg, fontSize: 14 }}
+            />
           )}
         </div>
       </div>
 
       {/* Low Stock Dialog — bottom sheet */}
-      <Modal open={showLowStockDialog} onOpenChange={o => !o && setShowLowStockDialog(false)} size="sm">
-            <div style={{ padding: "28px 20px 36px", overflowY: "auto" }}>
-              {/* Header */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <AlertTriangle size={24} color={C.crim} />
-                </div>
-                <div>
-                  <Dialog.Title asChild>
-                    <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text }}>Report Low Stock</div>
-                  </Dialog.Title>
-                  <Dialog.Description asChild><div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 2 }}>Notify Admin & Superadmin</div></Dialog.Description>
-                </div>
-                <Dialog.Close asChild>
-                  <IconButton
-                    icon={X}
-                    label="Close"
-                    variant="ghost"
-                    shape="circle"
-                    className="ml-auto bg-[rgba(139,112,96,0.10)] text-[#69635E] w-9 h-9"
-                  />
-                </Dialog.Close>
-              </div>
-              {/* Stock info */}
-              <div style={{ background: "rgba(192,57,43,0.06)", border: `1px solid rgba(192,57,43,0.22)`, borderRadius: 12, padding: "14px 16px", marginBottom: 20 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>Current stock</span>
-                  <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.crim }}>{inventoryList.length}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
-                  <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Minimum threshold</span>
-                  <span style={{ fontFamily: F.m, fontSize: 14, color: C.muted }}>100 sarees</span>
-                </div>
-                <div style={{ height: 6, borderRadius: 3, background: "rgba(192,57,43,0.12)", marginTop: 12, overflow: "hidden" }}>
-                  <div style={{ width: `${Math.min(100, (inventoryList.length / 100) * 100)}%`, height: "100%", background: C.crim, borderRadius: 3 }} />
-                </div>
-              </div>
-              {/* Priority */}
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 10 }}>Priority</div>
-                <div style={{ display: "flex", gap: 10 }}>
-                  {(["urgent", "normal"] as const).map(p => {
-                    const isActive = lowStockPriority === p;
-                    const activeColor = p === "urgent" ? "border-[#C0392B] bg-[rgba(192,57,43,0.08)] text-[#C0392B]" : "border-[#6E0F2D] bg-[rgba(110,15,45,0.06)] text-[#6E0F2D]";
-                    return (
-                      <Button
-                        key={p}
-                        onClick={() => setLowStockPriority(p)}
-                        variant="ghost"
-                        className={"flex-1 h-11 rounded-[10px] border-2 font-semibold text-sm " + (isActive ? activeColor : "border-[rgba(110,15,45,0.12)] bg-transparent text-[#69635E]")}
-                      >
-                        {p === "urgent" ? "🔴 Urgent" : "🟡 Normal"}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
-              {/* Optional message */}
-              <div style={{ marginBottom: 22 }}>
-                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 8 }}>Additional note <span style={{ fontWeight: 400, color: C.muted }}>(optional)</span></div>
-                <Textarea value={lowStockMsg} onChange={e => setLowStockMsg(e.target.value)} placeholder="E.g. We need silk sarees urgently for upcoming festival orders..." rows={3}
-                  className="rounded-xl min-h-[90px] resize-none" />
-              </div>
-              {/* Confirm */}
-              {lowStockError && (
-                <div style={{ marginBottom: 12, fontFamily: F.u, fontSize: 13, color: "#C0392B", background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.20)", borderRadius: 8, padding: "9px 12px" }}>
-                  {lowStockError}
-                </div>
-              )}
-              <Button onClick={sendLowStockAlert} disabled={lowStockSending} fullWidth className="h-[54px] bg-[#C0392B] border-none rounded-[14px] font-bold text-base text-white gap-2">
-                {lowStockSending ? "Sending…" : <><Send size={18} /> Send Report to Admin</>}
-              </Button>
+      <Modal
+        open={showLowStockDialog}
+        onOpenChange={(o) => !o && setShowLowStockDialog(false)}
+        size="sm"
+      >
+        <div style={{ padding: "28px 20px 36px", overflowY: "auto" }}>
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 14,
+                background: "rgba(192,57,43,0.10)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <AlertTriangle size={24} color={C.crim} />
             </div>
+            <div>
+              <Dialog.Title asChild>
+                <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text }}>
+                  Report Low Stock
+                </div>
+              </Dialog.Title>
+              <Dialog.Description asChild>
+                <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 2 }}>
+                  Notify Admin & Superadmin
+                </div>
+              </Dialog.Description>
+            </div>
+            <Dialog.Close asChild>
+              <IconButton
+                icon={X}
+                label="Close"
+                variant="ghost"
+                shape="circle"
+                className="ml-auto bg-[rgba(139,112,96,0.10)] text-[#69635E] w-9 h-9"
+              />
+            </Dialog.Close>
+          </div>
+          {/* Stock info */}
+          <div
+            style={{
+              background: "rgba(192,57,43,0.06)",
+              border: `1px solid rgba(192,57,43,0.22)`,
+              borderRadius: 12,
+              padding: "14px 16px",
+              marginBottom: 20,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>Current stock</span>
+              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.crim }}>
+                {inventoryList.length}
+              </span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: 4,
+              }}
+            >
+              <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
+                Minimum threshold
+              </span>
+              <span style={{ fontFamily: F.m, fontSize: 14, color: C.muted }}>100 sarees</span>
+            </div>
+            <div
+              style={{
+                height: 6,
+                borderRadius: 3,
+                background: "rgba(192,57,43,0.12)",
+                marginTop: 12,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  width: `${Math.min(100, (inventoryList.length / 100) * 100)}%`,
+                  height: "100%",
+                  background: C.crim,
+                  borderRadius: 3,
+                }}
+              />
+            </div>
+          </div>
+          {/* Priority */}
+          <div style={{ marginBottom: 16 }}>
+            <div
+              style={{
+                fontFamily: F.u,
+                fontWeight: 600,
+                fontSize: 14,
+                color: C.text,
+                marginBottom: 10,
+              }}
+            >
+              Priority
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              {(["urgent", "normal"] as const).map((p) => {
+                const isActive = lowStockPriority === p;
+                const activeColor =
+                  p === "urgent"
+                    ? "border-[#C0392B] bg-[rgba(192,57,43,0.08)] text-[#C0392B]"
+                    : "border-[#6E0F2D] bg-[rgba(110,15,45,0.06)] text-[#6E0F2D]";
+                return (
+                  <Button
+                    key={p}
+                    onClick={() => setLowStockPriority(p)}
+                    variant="ghost"
+                    className={
+                      "flex-1 h-11 rounded-[10px] border-2 font-semibold text-sm " +
+                      (isActive
+                        ? activeColor
+                        : "border-[rgba(110,15,45,0.12)] bg-transparent text-[#69635E]")
+                    }
+                  >
+                    {p === "urgent" ? "🔴 Urgent" : "🟡 Normal"}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+          {/* Optional message */}
+          <div style={{ marginBottom: 22 }}>
+            <div
+              style={{
+                fontFamily: F.u,
+                fontWeight: 600,
+                fontSize: 14,
+                color: C.text,
+                marginBottom: 8,
+              }}
+            >
+              Additional note <span style={{ fontWeight: 400, color: C.muted }}>(optional)</span>
+            </div>
+            <Textarea
+              value={lowStockMsg}
+              onChange={(e) => setLowStockMsg(e.target.value)}
+              placeholder="E.g. We need silk sarees urgently for upcoming festival orders..."
+              rows={3}
+              className="rounded-xl min-h-[90px] resize-none"
+            />
+          </div>
+          {/* Confirm */}
+          {lowStockError && (
+            <div
+              style={{
+                marginBottom: 12,
+                fontFamily: F.u,
+                fontSize: 13,
+                color: "#C0392B",
+                background: "rgba(192,57,43,0.08)",
+                border: "1px solid rgba(192,57,43,0.20)",
+                borderRadius: 8,
+                padding: "9px 12px",
+              }}
+            >
+              {lowStockError}
+            </div>
+          )}
+          <Button
+            onClick={sendLowStockAlert}
+            disabled={lowStockSending}
+            fullWidth
+            className="h-[54px] bg-[#C0392B] border-none rounded-[14px] font-bold text-base text-white gap-2"
+          >
+            {lowStockSending ? (
+              "Sending…"
+            ) : (
+              <>
+                <Send size={18} /> Send Report to Admin
+              </>
+            )}
+          </Button>
+        </div>
       </Modal>
     </div>
   );

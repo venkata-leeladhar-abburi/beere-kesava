@@ -3,10 +3,7 @@ import { apiClient } from "./client";
 // Backend enum values (backend/prisma/schema.prisma UserRole / AccessLevel).
 export type BackendRole = "ADMIN" | "SUPERADMIN" | "WORKER" | "WEAVER" | "SHOP" | "ACCOUNTANT";
 export type BackendAccessLevel =
-  | "FULL_ACCESS"
-  | "RESTRICTED"
-  | "DOWNLOAD_RESTRICTED"
-  | "MONEY_HIDDEN";
+  "FULL_ACCESS" | "RESTRICTED" | "DOWNLOAD_RESTRICTED" | "MONEY_HIDDEN";
 export type BackendStatus = "ACTIVE" | "INACTIVE";
 
 /** One portal's access level — see backend UserPortalAccess. */
@@ -78,8 +75,9 @@ export function backendAccessLevelToFrontend(level: BackendAccessLevel): Fronten
 }
 
 export function frontendAccessLevelToBackend(level: FrontendAccessLevel): BackendAccessLevel {
-  const found = (Object.entries(ACCESS_LEVEL_LABELS) as [BackendAccessLevel, FrontendAccessLevel][])
-    .find(([, label]) => label === level);
+  const found = (
+    Object.entries(ACCESS_LEVEL_LABELS) as [BackendAccessLevel, FrontendAccessLevel][]
+  ).find(([, label]) => label === level);
   return found ? found[0] : "FULL_ACCESS";
 }
 
@@ -90,8 +88,8 @@ export function frontendAccessLevelToBackend(level: FrontendAccessLevel): Backen
  */
 export function portalAccessLevels(user: BackendUser): BackendPortalAccess[] {
   const roles = [...new Set([user.role, ...(user.additionalRoles ?? [])])];
-  return roles.map(role => {
-    const explicit = user.portalAccess?.find(p => p.role === role);
+  return roles.map((role) => {
+    const explicit = user.portalAccess?.find((p) => p.role === role);
     if (explicit) return explicit;
     return { role, accessLevel: role === user.role ? user.accessLevel : ("FULL_ACCESS" as const) };
   });
@@ -133,13 +131,17 @@ const USERS_MAX_PAGE_SIZE = 100;
 
 export const usersApi = {
   list: async (
-    params: number | { pageSize?: number; role?: BackendRole; search?: string } = USERS_MAX_PAGE_SIZE,
+    params:
+      number | { pageSize?: number; role?: BackendRole; search?: string } = USERS_MAX_PAGE_SIZE
   ): Promise<PaginatedResponse<BackendUser>> => {
     // Historically this took a bare pageSize; kept working so existing call
     // sites don't have to change, with an options object for the staff
     // directories that need a role/search filter.
     const opts = typeof params === "number" ? { pageSize: params } : params;
-    const pageSize = Math.min(Math.max(opts.pageSize ?? USERS_MAX_PAGE_SIZE, 1), USERS_MAX_PAGE_SIZE);
+    const pageSize = Math.min(
+      Math.max(opts.pageSize ?? USERS_MAX_PAGE_SIZE, 1),
+      USERS_MAX_PAGE_SIZE
+    );
     const fetchPage = (page: number) => {
       const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
       if (opts.role) query.set("role", opts.role);

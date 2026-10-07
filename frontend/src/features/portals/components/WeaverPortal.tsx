@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useResponsive } from "../../../hooks/useResponsive";
@@ -7,8 +6,8 @@ import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 
-import { DesktopWeaverPortal } from './weaver-portal/DesktopWeaverPortal';
-import { MobileWeaverPortal } from './weaver-portal/MobileWeaverPortal';
+import { DesktopWeaverPortal } from "./weaver-portal/DesktopWeaverPortal";
+import { MobileWeaverPortal } from "./weaver-portal/MobileWeaverPortal";
 type Tab5 = "batches" | "confirm" | "warp" | "payments";
 
 export function WeaverPortal({ onBack }: { onBack?: () => void }) {
@@ -37,15 +36,25 @@ export function WeaverPortal({ onBack }: { onBack?: () => void }) {
 
   return (
     <>
-      {isMobile
-        ? <MobileWeaverPortal onBack={onBack} active={active} setActive={setActive} onProfile={() => setShowProfileModal(true)} />
-        : <DesktopWeaverPortal onBack={onBack} bp={bp} active={active} setActive={setActive} onProfile={() => setShowProfileModal(true)} />}
+      {isMobile ? (
+        <MobileWeaverPortal
+          onBack={onBack}
+          active={active}
+          setActive={setActive}
+          onProfile={() => setShowProfileModal(true)}
+        />
+      ) : (
+        <DesktopWeaverPortal
+          onBack={onBack}
+          bp={bp}
+          active={active}
+          setActive={setActive}
+          onProfile={() => setShowProfileModal(true)}
+        />
+      )}
       <AnimatePresence>
-        {showProfileModal && (
-          <UserProfileModal onClose={() => setShowProfileModal(false)} />
-        )}
+        {showProfileModal && <UserProfileModal onClose={() => setShowProfileModal(false)} />}
       </AnimatePresence>
     </>
   );
 }
-

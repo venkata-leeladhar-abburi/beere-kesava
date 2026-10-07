@@ -24,7 +24,11 @@ export interface QuantityProps {
 export function Quantity({ value, unit, className }: QuantityProps) {
   if (value == null) {
     return (
-      <span className={cn("text-[var(--text-tertiary)]", className)} style={tabular} aria-label="Not available">
+      <span
+        className={cn("text-[var(--text-tertiary)]", className)}
+        style={tabular}
+        aria-label="Not available"
+      >
         —
       </span>
     );

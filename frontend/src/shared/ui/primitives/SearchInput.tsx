@@ -5,7 +5,10 @@
 import * as React from "react";
 import { Input, type InputProps } from "./Input";
 
-export interface SearchInputProps extends Omit<InputProps, "type" | "iconLeft" | "clearable" | "onClear" | "onChange" | "aria-label"> {
+export interface SearchInputProps extends Omit<
+  InputProps,
+  "type" | "iconLeft" | "clearable" | "onClear" | "onChange" | "aria-label"
+> {
   /** Fires `debounceMs` after the user stops typing (default 300ms). */
   onSearch?: (value: string) => void;
   debounceMs?: number;
@@ -22,45 +25,47 @@ export interface SearchInputProps extends Omit<InputProps, "type" | "iconLeft" |
   "aria-label": string;
 }
 
-export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(function SearchInput(
-  { onSearch, debounceMs = 300, onChange, defaultValue, value, ...props },
-  ref
-) {
-  const [internalValue, setInternalValue] = React.useState(value ?? defaultValue ?? "");
-  const timerRef = React.useRef<ReturnType<typeof setTimeout>>();
+export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
+  function SearchInput(
+    { onSearch, debounceMs = 300, onChange, defaultValue, value, ...props },
+    ref
+  ) {
+    const [internalValue, setInternalValue] = React.useState(value ?? defaultValue ?? "");
+    const timerRef = React.useRef<ReturnType<typeof setTimeout>>();
 
-  React.useEffect(() => {
-    if (value !== undefined) setInternalValue(value);
-  }, [value]);
+    React.useEffect(() => {
+      if (value !== undefined) setInternalValue(value);
+    }, [value]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInternalValue(e.target.value);
-    onChange?.(e);
-    if (onSearch) {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInternalValue(e.target.value);
+      onChange?.(e);
+      if (onSearch) {
+        clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => onSearch(e.target.value), debounceMs);
+      }
+    };
+
+    const handleClear = () => {
+      setInternalValue("");
+      onChange?.({ target: { value: "" } } as React.ChangeEvent<HTMLInputElement>);
       clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => onSearch(e.target.value), debounceMs);
-    }
-  };
+      onSearch?.("");
+    };
 
-  const handleClear = () => {
-    setInternalValue("");
-    onChange?.({ target: { value: "" } } as React.ChangeEvent<HTMLInputElement>);
-    clearTimeout(timerRef.current);
-    onSearch?.("");
-  };
-
-  return (
-    <Input
-      ref={ref}
-      type="search"
-      role="searchbox"
-      iconLeft="search"
-      clearable
-      onClear={handleClear}
-      value={internalValue}
-      onChange={handleChange}
-      placeholder="Search…"
-      {...props}
-    />
-  );
-});
+    return (
+      <Input
+        ref={ref}
+        type="search"
+        role="searchbox"
+        iconLeft="search"
+        clearable
+        onClear={handleClear}
+        value={internalValue}
+        onChange={handleChange}
+        placeholder="Search…"
+        {...props}
+      />
+    );
+  }
+);

@@ -27,9 +27,12 @@ export function useAnimatedNumber(raw: string, duration = 1600) {
   useEffect(() => {
     if (!inView) return;
     const numStr = raw.match(/(\d+(?:\.\d+)?)/)?.[1];
-    if (!numStr) { setDisplayed(raw); return; }
+    if (!numStr) {
+      setDisplayed(raw);
+      return;
+    }
 
-    const target  = parseFloat(numStr);
+    const target = parseFloat(numStr);
     const isFloat = numStr.includes(".");
     const idx = raw.indexOf(numStr);
     const pre = raw.slice(0, idx);

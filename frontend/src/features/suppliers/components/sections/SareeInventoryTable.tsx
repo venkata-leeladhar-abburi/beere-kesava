@@ -7,11 +7,29 @@
 import React, { useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { motion } from "motion/react";
-import { ChevronRight, ChevronDown, Image as ImageIcon, Printer, Camera, Upload, Loader2, X as XIcon, ExternalLink, FileText } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronDown,
+  Image as ImageIcon,
+  Printer,
+  Camera,
+  Upload,
+  Loader2,
+  X as XIcon,
+  ExternalLink,
+  FileText,
+} from "lucide-react";
 import { toast } from "sonner";
 import { resolveAssetUrl, uploadsApi } from "@/shared/api/uploads";
 import { T, F } from "../theme";
-import { SareeTag, expandSareePieces, formatSellPercent, remainingQuantity, serialFromPieceCode, useSuppliers } from "../../contexts/SupplierContext";
+import {
+  SareeTag,
+  expandSareePieces,
+  formatSellPercent,
+  remainingQuantity,
+  serialFromPieceCode,
+  useSuppliers,
+} from "../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
@@ -19,7 +37,12 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { SariTagPrintModal } from "@/features/production";
 import { usePrintSareeTags, type SareeTagData } from "@/features/weavers";
 
-export type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string; supplier: string; supplierId?: string };
+export type SareeRow = SareeTag & {
+  purchaseId: string;
+  invoiceNumber: string;
+  supplier: string;
+  supplierId?: string;
+};
 
 /** Optional per-piece badge/selection, supplied by callers that track
  * return-request state (e.g. the External Purchases saree list) — Order
@@ -31,7 +54,8 @@ export interface PieceExtra {
   selectable?: boolean;
 }
 
-type UploadTarget = { kind: "line"; row: SareeRow } | { kind: "piece"; row: SareeRow; pieceNo: number };
+type UploadTarget =
+  { kind: "line"; row: SareeRow } | { kind: "piece"; row: SareeRow; pieceNo: number };
 
 export function SareeInventoryTable({
   rows,
@@ -68,7 +92,9 @@ export function SareeInventoryTable({
   const uploadTargetRef = useRef<UploadTarget | null>(null);
 
   const targetKey = (t: UploadTarget) =>
-    t.kind === "line" ? `line:${t.row.purchaseId}:${t.row.id}` : `piece:${t.row.purchaseId}:${t.row.id}:${t.pieceNo}`;
+    t.kind === "line"
+      ? `line:${t.row.purchaseId}:${t.row.id}`
+      : `piece:${t.row.purchaseId}:${t.row.id}:${t.pieceNo}`;
 
   /** Opens the OS camera ("capture") or the file picker for the given tile. */
   const pickSource = (target: UploadTarget, source: "camera" | "gallery") => {
@@ -120,14 +146,26 @@ export function SareeInventoryTable({
           title="Add or replace photo"
           aria-label="Add or replace photo"
           style={{
-            position: "absolute", bottom: -4, right: -4, width: size, height: size, borderRadius: "50%",
-            background: T.royalBurgundy, border: "1.5px solid #FFF", display: "flex", alignItems: "center",
-            justifyContent: "center", cursor: busy ? "wait" : "pointer", padding: 0,
+            position: "absolute",
+            bottom: -4,
+            right: -4,
+            width: size,
+            height: size,
+            borderRadius: "50%",
+            background: T.royalBurgundy,
+            border: "1.5px solid #FFF",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: busy ? "wait" : "pointer",
+            padding: 0,
           }}
         >
-          {busy
-            ? <Loader2 size={size / 2} color="#FFF" className="animate-spin" />
-            : <Camera size={size / 2} color="#FFF" />}
+          {busy ? (
+            <Loader2 size={size / 2} color="#FFF" className="animate-spin" />
+          ) : (
+            <Camera size={size / 2} color="#FFF" />
+          )}
         </button>
         {open && !busy && <SourceMenu target={target} />}
       </>
@@ -141,27 +179,52 @@ export function SareeInventoryTable({
         type="button"
         aria-label="Close photo menu"
         onClick={() => setPickerKey(null)}
-        style={{ position: "fixed", inset: 0, zIndex: 40, background: "transparent", border: 0, cursor: "default" }}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 40,
+          background: "transparent",
+          border: 0,
+          cursor: "default",
+        }}
       />
       <div
         style={{
-          position: "absolute", top: "100%", left: 0, zIndex: 41, marginTop: 6, minWidth: 152,
-          background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10,
-          boxShadow: "0 12px 30px rgba(0,0,0,0.16)", padding: 4,
+          position: "absolute",
+          top: "100%",
+          left: 0,
+          zIndex: 41,
+          marginTop: 6,
+          minWidth: 152,
+          background: "#FFF",
+          border: `1px solid ${T.borderDef}`,
+          borderRadius: 10,
+          boxShadow: "0 12px 30px rgba(0,0,0,0.16)",
+          padding: 4,
         }}
       >
-        {([
+        {[
           { label: "Take photo", icon: Camera, source: "camera" as const },
           { label: "Choose file", icon: Upload, source: "gallery" as const },
-        ]).map(({ label, icon: Icon, source }) => (
+        ].map(({ label, icon: Icon, source }) => (
           <button
             key={source}
             type="button"
             onClick={() => pickSource(target, source)}
             style={{
-              display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px",
-              background: "transparent", border: 0, borderRadius: 7, cursor: "pointer",
-              fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, textAlign: "left" as const,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              width: "100%",
+              padding: "7px 10px",
+              background: "transparent",
+              border: 0,
+              borderRadius: 7,
+              cursor: "pointer",
+              fontFamily: F.ui,
+              fontSize: 12,
+              color: T.luxuryBrown,
+              textAlign: "left" as const,
             }}
           >
             <Icon size={13} color={T.royalBurgundy} />
@@ -173,31 +236,51 @@ export function SareeInventoryTable({
   );
 
   if (rows.length === 0) {
-    return <div style={{ padding: "40px 24px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No sarees match this filter.</div>;
+    return (
+      <div
+        style={{
+          padding: "40px 24px",
+          textAlign: "center",
+          fontFamily: F.ui,
+          fontSize: 13,
+          color: T.taupe,
+        }}
+      >
+        No sarees match this filter.
+      </div>
+    );
   }
 
   const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({
-    fontFamily: "var(--font-mono)", fontSize: 12, color, ...extra,
+    fontFamily: "var(--font-mono)",
+    fontSize: 12,
+    color,
+    ...extra,
   });
 
   const rowId = (s: SareeRow) => `${s.purchaseId}-${s.id}`;
 
-  const toggle = (id: string) => setExpandedIds(prev => {
-    const next = new Set(prev);
-    if (next.has(id)) next.delete(id); else next.add(id);
-    return next;
-  });
+  const toggle = (id: string) =>
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   /** One real physical tag per piece — barcode, invoice, serial, ciphered
    *  cost, plain selling price. Previously this printed a single text table
    *  (Saree Code/Type/Colour/Weight, no price, no barcode graphic at all) —
    *  "Print All" didn't actually print any barcodes. */
-  const toExternalTagData = (row: SareeRow, p: ReturnType<typeof expandSareePieces>[number]): SareeTagData => ({
+  const toExternalTagData = (
+    row: SareeRow,
+    p: ReturnType<typeof expandSareePieces>[number]
+  ): SareeTagData => ({
     sareeId: p.id,
     isExternal: true,
     sareeTypeName: p.sareeType || null,
     color: p.color || null,
-    supplierShortName: suppliers.find(sup => sup.id === row.supplierId)?.shortName ?? null,
+    supplierShortName: suppliers.find((sup) => sup.id === row.supplierId)?.shortName ?? null,
     supplierName: row.supplier,
     invoiceNumber: row.invoiceNumber,
     serial: serialFromPieceCode(p.id),
@@ -206,35 +289,65 @@ export function SareeInventoryTable({
   });
 
   const printAllForRow = (s: SareeRow) => {
-    const pieces = expandSareePieces([s]).filter(p => !p.returned);
-    printSareeTags(pieces.map(p => toExternalTagData(s, p)));
+    const pieces = expandSareePieces([s]).filter((p) => !p.returned);
+    printSareeTags(pieces.map((p) => toExternalTagData(s, p)));
   };
 
   const columns: ColumnDef<SareeRow>[] = [
     {
-      id: "expand", header: "", accessor: () => null,
+      id: "expand",
+      header: "",
+      accessor: () => null,
       cell: (_v, s) => (
         <IconButton
           icon={expandedIds.has(rowId(s)) ? ChevronDown : ChevronRight}
           label={expandedIds.has(rowId(s)) ? "Collapse sarees" : "Expand sarees"}
-          variant="ghost" size="sm"
+          variant="ghost"
+          size="sm"
           onClick={() => toggle(rowId(s))}
         />
       ),
     },
     {
-      id: "photo", header: "Photo", accessor: s => s.imageUrl,
+      id: "photo",
+      header: "Photo",
+      accessor: (s) => s.imageUrl,
       cell: (_v, s) => {
         const src = resolveAssetUrl(s.imageUrl);
         return (
           <div style={{ position: "relative", width: 40, height: 40 }}>
             {src ? (
-              <button type="button" onClick={() => setPreview(src)} title={`View photo of ${s.id}`} className="p-0 border-0 bg-transparent cursor-pointer">
-                <img src={src} alt={s.id}
-                  style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
+              <button
+                type="button"
+                onClick={() => setPreview(src)}
+                title={`View photo of ${s.id}`}
+                className="p-0 border-0 bg-transparent cursor-pointer"
+              >
+                <img
+                  src={src}
+                  alt={s.id}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 8,
+                    objectFit: "cover",
+                    border: `1px solid ${T.borderDef}`,
+                  }}
+                />
               </button>
             ) : (
-              <div style={{ width: 40, height: 40, borderRadius: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 8,
+                  background: T.silkCream,
+                  border: `1px solid ${T.borderDef}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <ImageIcon size={14} color={T.taupe} />
               </div>
             )}
@@ -244,67 +357,125 @@ export function SareeInventoryTable({
       },
     },
     {
-      id: "sareeId", header: "Saree ID", accessor: s => s.id,
+      id: "sareeId",
+      header: "Saree ID",
+      accessor: (s) => s.id,
       cell: (_v, s) => <span style={mono(T.royalBurgundy, { fontWeight: 600 })}>{s.id}</span>,
     },
     {
-      id: "serial", header: "Serial No.", accessor: s => s.id,
-      cell: (_v, s) => <span style={mono(T.luxuryBrown, { fontWeight: 700 })}>{s.id.split("-").pop() || "—"}</span>,
+      id: "serial",
+      header: "Serial No.",
+      accessor: (s) => s.id,
+      cell: (_v, s) => (
+        <span style={mono(T.luxuryBrown, { fontWeight: 700 })}>{s.id.split("-").pop() || "—"}</span>
+      ),
     },
     {
-      id: "po", header: "Purchase Order", accessor: s => s.purchaseId,
+      id: "po",
+      header: "Purchase Order",
+      accessor: (s) => s.purchaseId,
       cell: (_v, s) => <span style={mono(T.taupe)}>{s.purchaseId}</span>,
     },
     {
       // Returned pieces are no longer ours, so the count shown is what is left.
-      id: "qty", header: "Quantity", accessor: s => remainingQuantity(s),
+      id: "qty",
+      header: "Quantity",
+      accessor: (s) => remainingQuantity(s),
       cell: (_v, s) => {
         const left = remainingQuantity(s);
         const returned = (Number(s.quantity) || 1) - left;
         return (
           <span style={mono(T.luxuryBrown)}>
             {left} pcs
-            {returned > 0 && <span style={{ fontFamily: F.ui, fontSize: 11, color: T.crimson }}> ({returned} returned)</span>}
+            {returned > 0 && (
+              <span style={{ fontFamily: F.ui, fontSize: 11, color: T.crimson }}>
+                {" "}
+                ({returned} returned)
+              </span>
+            )}
           </span>
         );
       },
     },
     {
-      id: "type", header: "Type", accessor: s => s.sareeType,
-      cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{s.sareeType || "—"}</span>,
+      id: "type",
+      header: "Type",
+      accessor: (s) => s.sareeType,
+      cell: (_v, s) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+          {s.sareeType || "—"}
+        </span>
+      ),
     },
     {
-      id: "colour", header: "Colour", accessor: s => s.color,
-      cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{s.color || "—"}</span>,
+      id: "colour",
+      header: "Colour",
+      accessor: (s) => s.color,
+      cell: (_v, s) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+          {s.color || "—"}
+        </span>
+      ),
     },
     {
-      id: "weight", header: "Weight", accessor: s => s.weight,
+      id: "weight",
+      header: "Weight",
+      accessor: (s) => s.weight,
       cell: (_v, s) => <span style={mono(T.taupe)}>{s.weight || "—"}</span>,
     },
     {
-      id: "date", header: "Purchase Date", accessor: s => s.date,
-      cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.date}</span>,
+      id: "date",
+      header: "Purchase Date",
+      accessor: (s) => s.date,
+      cell: (_v, s) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.date}</span>
+      ),
     },
     {
-      id: "buying", header: "Buying Price", accessor: s => s.price,
+      id: "buying",
+      header: "Buying Price",
+      accessor: (s) => s.price,
       cell: (_v, s) => <span style={mono(T.luxuryBrown)}>{formatMoney(rupees(s.price))}</span>,
     },
     {
-      id: "sellPct", header: "Sell %", accessor: s => s.sellPercent,
+      id: "sellPct",
+      header: "Sell %",
+      accessor: (s) => s.sellPercent,
       cell: (_v, s) => <span style={mono(T.taupe)}>{formatSellPercent(s.sellPercent)}</span>,
     },
     {
-      id: "selling", header: "Selling Price", accessor: s => s.finalAmount,
-      cell: (_v, s) => <span style={mono("#8B6018", { fontWeight: 700 })}>{formatMoney(rupees(s.finalAmount))}</span>,
-    },
-    {
-      id: "profit", header: "Profit", accessor: s => (s.finalAmount - s.price) * remainingQuantity(s),
-      cell: (_v, s) => <span style={mono(T.green, { fontWeight: 700 })}>{formatMoney(rupees((s.finalAmount - s.price) * remainingQuantity(s)))}</span>,
-    },
-    {
-      id: "barcodes", header: "Barcodes", accessor: () => null, type: "actions",
+      id: "selling",
+      header: "Selling Price",
+      accessor: (s) => s.finalAmount,
       cell: (_v, s) => (
-        <Button variant="secondary" size="sm" iconLeft={Printer} onClick={() => printAllForRow(s)} className="whitespace-nowrap">
+        <span style={mono("#8B6018", { fontWeight: 700 })}>
+          {formatMoney(rupees(s.finalAmount))}
+        </span>
+      ),
+    },
+    {
+      id: "profit",
+      header: "Profit",
+      accessor: (s) => (s.finalAmount - s.price) * remainingQuantity(s),
+      cell: (_v, s) => (
+        <span style={mono(T.green, { fontWeight: 700 })}>
+          {formatMoney(rupees((s.finalAmount - s.price) * remainingQuantity(s)))}
+        </span>
+      ),
+    },
+    {
+      id: "barcodes",
+      header: "Barcodes",
+      accessor: () => null,
+      type: "actions",
+      cell: (_v, s) => (
+        <Button
+          variant="secondary"
+          size="sm"
+          iconLeft={Printer}
+          onClick={() => printAllForRow(s)}
+          className="whitespace-nowrap"
+        >
           Print All
         </Button>
       ),
@@ -320,61 +491,133 @@ export function SareeInventoryTable({
         pagination
         emptyTitle="No sarees match this filter"
         expandedIds={expandedIds}
-        renderExpandedRow={s => {
+        renderExpandedRow={(s) => {
           const pieces = expandSareePieces([s]);
-          const withUs = pieces.filter(p => !p.returned).length;
+          const withUs = pieces.filter((p) => !p.returned).length;
           return (
             <div style={{ padding: "10px 16px 16px 56px", background: "rgba(247,242,234,0.6)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
-                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>
+                <div
+                  style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}
+                >
                   {withUs} saree{withUs !== 1 ? "s" : ""} under serial {s.id.split("-").pop()}
                   {pieces.length - withUs > 0 && (
-                    <span style={{ fontWeight: 600, color: T.crimson }}> · {pieces.length - withUs} returned</span>
+                    <span style={{ fontWeight: 600, color: T.crimson }}>
+                      {" "}
+                      · {pieces.length - withUs} returned
+                    </span>
                   )}
                 </div>
-                <Button variant="primary" size="sm" iconLeft={Printer} onClick={() => printAllForRow(s)}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  iconLeft={Printer}
+                  onClick={() => printAllForRow(s)}
+                >
                   Print All Barcodes
                 </Button>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {pieces.map(p => {
+                {pieces.map((p) => {
                   const extra = pieceExtra?.(p.id);
                   const checked = selectedPieceIds?.has(p.id) ?? false;
                   const pieceSrc = resolveAssetUrl(p.imageUrl);
                   const pieceTarget: UploadTarget = { kind: "piece", row: s, pieceNo: p.pieceNo };
                   const pieceKey = targetKey(pieceTarget);
                   return (
-                    <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 16, width: "fit-content", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px" }}>
+                    <div
+                      key={p.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 16,
+                        width: "fit-content",
+                        background: "#FFF",
+                        border: `1px solid ${T.borderDef}`,
+                        borderRadius: 8,
+                        padding: "8px 12px",
+                      }}
+                    >
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         {(pieceSrc || onUploadPieceImage) && (
-                          <div style={{ position: "relative", width: 36, height: 36, flexShrink: 0 }}>
+                          <div
+                            style={{ position: "relative", width: 36, height: 36, flexShrink: 0 }}
+                          >
                             {pieceSrc ? (
-                              <button type="button" onClick={() => setPreview(pieceSrc)} title={`View photo of ${p.id}`} className="p-0 border-0 bg-transparent cursor-pointer">
-                                <img src={pieceSrc} alt={p.id}
-                                  style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
+                              <button
+                                type="button"
+                                onClick={() => setPreview(pieceSrc)}
+                                title={`View photo of ${p.id}`}
+                                className="p-0 border-0 bg-transparent cursor-pointer"
+                              >
+                                <img
+                                  src={pieceSrc}
+                                  alt={p.id}
+                                  style={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 8,
+                                    objectFit: "cover",
+                                    border: `1px solid ${T.borderDef}`,
+                                  }}
+                                />
                               </button>
                             ) : onUploadPieceImage ? (
                               // No photo yet — the whole tile is the upload target, so the
                               // designer isn't hunting for a 14px badge.
                               <button
                                 type="button"
-                                onClick={() => setPickerKey(pieceKey === pickerKey ? null : pieceKey)}
+                                onClick={() =>
+                                  setPickerKey(pieceKey === pickerKey ? null : pieceKey)
+                                }
                                 title={`Upload photo for ${p.id}`}
                                 disabled={uploadingKey === pieceKey}
-                                style={{ width: 36, height: 36, borderRadius: 8, background: T.silkCream, border: `1px dashed ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}
+                                style={{
+                                  width: 36,
+                                  height: 36,
+                                  borderRadius: 8,
+                                  background: T.silkCream,
+                                  border: `1px dashed ${T.borderDef}`,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  cursor: "pointer",
+                                  padding: 0,
+                                }}
                               >
-                                {uploadingKey === pieceKey
-                                  ? <Loader2 size={13} color={T.royalBurgundy} className="animate-spin" />
-                                  : <Camera size={13} color={T.royalBurgundy} />}
+                                {uploadingKey === pieceKey ? (
+                                  <Loader2
+                                    size={13}
+                                    color={T.royalBurgundy}
+                                    className="animate-spin"
+                                  />
+                                ) : (
+                                  <Camera size={13} color={T.royalBurgundy} />
+                                )}
                               </button>
                             ) : (
-                              <div style={{ width: 36, height: 36, borderRadius: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <div
+                                style={{
+                                  width: 36,
+                                  height: 36,
+                                  borderRadius: 8,
+                                  background: T.silkCream,
+                                  border: `1px solid ${T.borderDef}`,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
                                 <ImageIcon size={13} color={T.taupe} />
                               </div>
                             )}
-                            {onUploadPieceImage && (pieceSrc
-                              ? <UploadBadge target={pieceTarget} size={16} />
-                              : pickerKey === pieceKey && uploadingKey !== pieceKey && <SourceMenu target={pieceTarget} />)}
+                            {onUploadPieceImage &&
+                              (pieceSrc ? (
+                                <UploadBadge target={pieceTarget} size={16} />
+                              ) : (
+                                pickerKey === pieceKey &&
+                                uploadingKey !== pieceKey && <SourceMenu target={pieceTarget} />
+                              ))}
                           </div>
                         )}
                         {onTogglePieceSelect && extra?.selectable && (
@@ -383,28 +626,67 @@ export function SareeInventoryTable({
                             aria-label={`Select ${p.id} for return`}
                             checked={checked}
                             onChange={() => onTogglePieceSelect(p.id)}
-                            style={{ width: 15, height: 15, accentColor: T.royalBurgundy, cursor: "pointer" }}
+                            style={{
+                              width: 15,
+                              height: 15,
+                              accentColor: T.royalBurgundy,
+                              cursor: "pointer",
+                            }}
                           />
                         )}
                         <span style={mono(T.royalBurgundy, { fontWeight: 700 })}>{p.id}</span>
-                        <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>pc {p.pieceNo}/{p.lineQuantity}</span>
-                        {extra?.badge && (extra.badge.onClick ? (
-                          <button
-                            type="button"
-                            onClick={extra.badge.onClick}
-                            title={extra.badge.title}
-                            style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: extra.badge.color, background: extra.badge.bg, border: `1px solid ${extra.badge.color}`, borderRadius: 6, padding: "1px 7px", whiteSpace: "nowrap" as const, cursor: "pointer" }}
-                          >
-                            <FileText size={10} />
-                            {extra.badge.label}
-                          </button>
-                        ) : (
-                          <span title={extra.badge.title} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: extra.badge.color, background: extra.badge.bg, borderRadius: 6, padding: "2px 7px", whiteSpace: "nowrap" as const }}>
-                            {extra.badge.label}
-                          </span>
-                        ))}
+                        <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
+                          pc {p.pieceNo}/{p.lineQuantity}
+                        </span>
+                        {extra?.badge &&
+                          (extra.badge.onClick ? (
+                            <button
+                              type="button"
+                              onClick={extra.badge.onClick}
+                              title={extra.badge.title}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                fontFamily: F.ui,
+                                fontSize: 10,
+                                fontWeight: 700,
+                                color: extra.badge.color,
+                                background: extra.badge.bg,
+                                border: `1px solid ${extra.badge.color}`,
+                                borderRadius: 6,
+                                padding: "1px 7px",
+                                whiteSpace: "nowrap" as const,
+                                cursor: "pointer",
+                              }}
+                            >
+                              <FileText size={10} />
+                              {extra.badge.label}
+                            </button>
+                          ) : (
+                            <span
+                              title={extra.badge.title}
+                              style={{
+                                fontFamily: F.ui,
+                                fontSize: 10,
+                                fontWeight: 700,
+                                color: extra.badge.color,
+                                background: extra.badge.bg,
+                                borderRadius: 6,
+                                padding: "2px 7px",
+                                whiteSpace: "nowrap" as const,
+                              }}
+                            >
+                              {extra.badge.label}
+                            </span>
+                          ))}
                       </div>
-                      <Button variant="secondary" size="sm" iconLeft={Printer} onClick={() => setPrintSaree({ row: s, pieceId: p.id })}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        iconLeft={Printer}
+                        onClick={() => setPrintSaree({ row: s, pieceId: p.id })}
+                      >
                         Print
                       </Button>
                     </div>
@@ -427,7 +709,7 @@ export function SareeInventoryTable({
             aria-label="Upload saree photo from a file"
           />
           {/* `capture` asks a phone to open the rear camera directly instead
-            * of the gallery; desktop browsers ignore it and show the picker. */}
+           * of the gallery; desktop browsers ignore it and show the picker. */}
           <input
             type="file"
             accept="image/*"
@@ -440,10 +722,24 @@ export function SareeInventoryTable({
         </>
       )}
 
-      <Modal open={!!preview} onOpenChange={o => { if (!o) setPreview(null); }} size="xl">
+      <Modal
+        open={!!preview}
+        onOpenChange={(o) => {
+          if (!o) setPreview(null);
+        }}
+        size="xl"
+      >
         <Dialog.Title className="sr-only">Saree photo preview</Dialog.Title>
         <Dialog.Description className="sr-only">Full-size saree photo</Dialog.Description>
-        <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 24,
+          }}
+        >
           {preview && (
             <>
               <motion.img
@@ -454,8 +750,13 @@ export function SareeInventoryTable({
                 // `contain` inside a tall box: the whole saree is visible at
                 // once rather than cropped to a square the way the thumbnail is.
                 style={{
-                  maxWidth: "100%", maxHeight: "82vh", width: "auto", height: "auto",
-                  objectFit: "contain", borderRadius: 14, boxShadow: "0 30px 80px rgba(0,0,0,0.5)",
+                  maxWidth: "100%",
+                  maxHeight: "82vh",
+                  width: "auto",
+                  height: "auto",
+                  objectFit: "contain",
+                  borderRadius: 14,
+                  boxShadow: "0 30px 80px rgba(0,0,0,0.5)",
                 }}
               />
               <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 8 }}>
@@ -465,14 +766,28 @@ export function SareeInventoryTable({
                   rel="noreferrer"
                   title="Open the full-size photo in a new tab"
                   style={{
-                    display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 8,
-                    background: "rgba(255,255,255,0.92)", border: `1px solid ${T.borderDef}`,
-                    fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, textDecoration: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "6px 10px",
+                    borderRadius: 8,
+                    background: "rgba(255,255,255,0.92)",
+                    border: `1px solid ${T.borderDef}`,
+                    fontFamily: F.ui,
+                    fontSize: 12,
+                    color: T.luxuryBrown,
+                    textDecoration: "none",
                   }}
                 >
                   <ExternalLink size={13} /> Full size
                 </a>
-                <IconButton icon={XIcon} label="Close preview" variant="ghost" size="sm" onClick={() => setPreview(null)} />
+                <IconButton
+                  icon={XIcon}
+                  label="Close preview"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setPreview(null)}
+                />
               </div>
             </>
           )}
@@ -491,7 +806,8 @@ export function SareeInventoryTable({
             source: "external",
             loom: 0,
             supplier: printSaree.row.supplier,
-            supplierShortName: suppliers.find(s => s.id === printSaree.row.supplierId)?.shortName ?? null,
+            supplierShortName:
+              suppliers.find((s) => s.id === printSaree.row.supplierId)?.shortName ?? null,
             invoiceNumber: printSaree.row.invoiceNumber,
             serial: serialFromPieceCode(printSaree.pieceId),
             sellingPrice: printSaree.row.finalAmount,

@@ -16,7 +16,7 @@ const MAX_IMPORT_FILE_BYTES = 5 * 1024 * 1024;
 /** Returns an error message to show the user, or null if the file is acceptable. */
 export function validateImportFile(file: File): string | null {
   const name = file.name.toLowerCase();
-  if (!ALLOWED_EXTENSIONS.some(ext => name.endsWith(ext))) {
+  if (!ALLOWED_EXTENSIONS.some((ext) => name.endsWith(ext))) {
     return "Please upload a spreadsheet file (.xlsx, .xlsm or .csv).";
   }
   if (file.size > MAX_IMPORT_FILE_BYTES) {

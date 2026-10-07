@@ -10,7 +10,11 @@ const T = {
   taupe: "#69635E",
   borderDef: "rgba(110,15,45,0.10)",
 };
-const F = { display: "'Plus Jakarta Sans', sans-serif", ui: "'Inter', sans-serif", mono: "'JetBrains Mono', monospace" };
+const F = {
+  display: "'Plus Jakarta Sans', sans-serif",
+  ui: "'Inter', sans-serif",
+  mono: "'JetBrains Mono', monospace",
+};
 
 interface AllOrdersFilterBarProps {
   search: string;
@@ -52,9 +56,33 @@ export function AllOrdersFilterBar({
       ],
       onChange: (m: string) => {
         const mode = m as DateFilterState["mode"];
-        if (mode === "day") setDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
-        else if (mode === "month") setDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
-        else if (mode === "year") setDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
+        if (mode === "day")
+          setDateFilter({
+            mode,
+            day: new Date().toISOString().slice(0, 10),
+            from: "",
+            to: "",
+            month: "",
+            year: "",
+          });
+        else if (mode === "month")
+          setDateFilter({
+            mode,
+            day: "",
+            from: "",
+            to: "",
+            month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`,
+            year: "",
+          });
+        else if (mode === "year")
+          setDateFilter({
+            mode,
+            day: "",
+            from: "",
+            to: "",
+            month: "",
+            year: String(new Date().getFullYear()),
+          });
         else setDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
       },
     },
@@ -105,17 +133,12 @@ export function AllOrdersFilterBar({
             <SearchInput
               aria-label="Search by order ref, customer, saree type, or design"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by order ref, customer, saree type, or design..."
             />
           </div>
           {(search || statusFilter !== "all" || paymentFilter !== "all") && (
-            <Button
-              onClick={resetFilters}
-              variant="tertiary"
-              size="md"
-              iconLeft={RotateCcw}
-            >
+            <Button onClick={resetFilters} variant="tertiary" size="md" iconLeft={RotateCcw}>
               Reset Filters
             </Button>
           )}
@@ -126,8 +149,21 @@ export function AllOrdersFilterBar({
         {/* Timeline */}
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Timeline:</span>
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>by delivery deadline</span>
+            <span
+              style={{
+                fontFamily: F.ui,
+                fontSize: 12,
+                fontWeight: 700,
+                color: T.taupe,
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}
+            >
+              Timeline:
+            </span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+              by delivery deadline
+            </span>
           </div>
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
         </div>
@@ -138,17 +174,30 @@ export function AllOrdersFilterBar({
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap", alignItems: "center" }}>
           {/* Status Categories */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Status:</span>
+            <span
+              style={{
+                fontFamily: F.ui,
+                fontSize: 12,
+                fontWeight: 700,
+                color: T.taupe,
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}
+            >
+              Status:
+            </span>
             <div style={{ display: "flex", gap: 6 }}>
               {[
                 { key: "all", label: "All Statuses" },
                 { key: "on-track", label: "On Track" },
                 { key: "at-risk", label: "At Risk / Delayed" },
-                { key: "completed", label: "Completed" }
-              ].map(item => (
+                { key: "completed", label: "Completed" },
+              ].map((item) => (
                 <Button
                   key={item.key}
-                  onClick={() => setStatusFilter(item.key as "all" | "on-track" | "at-risk" | "completed")}
+                  onClick={() =>
+                    setStatusFilter(item.key as "all" | "on-track" | "at-risk" | "completed")
+                  }
                   size="sm"
                   variant={statusFilter === item.key ? "primary" : "tertiary"}
                 >
@@ -160,17 +209,30 @@ export function AllOrdersFilterBar({
 
           {/* Payment Status Categories */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Payments:</span>
+            <span
+              style={{
+                fontFamily: F.ui,
+                fontSize: 12,
+                fontWeight: 700,
+                color: T.taupe,
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}
+            >
+              Payments:
+            </span>
             <div style={{ display: "flex", gap: 6 }}>
               {[
                 { key: "all", label: "All Payments" },
                 { key: "paid", label: "Paid" },
                 { key: "partial", label: "Partial" },
-                { key: "pending", label: "Pending" }
-              ].map(item => (
+                { key: "pending", label: "Pending" },
+              ].map((item) => (
                 <Button
                   key={item.key}
-                  onClick={() => setPaymentFilter(item.key as "all" | "paid" | "partial" | "pending")}
+                  onClick={() =>
+                    setPaymentFilter(item.key as "all" | "paid" | "partial" | "pending")
+                  }
                   size="sm"
                   variant={paymentFilter === item.key ? "primary" : "tertiary"}
                 >

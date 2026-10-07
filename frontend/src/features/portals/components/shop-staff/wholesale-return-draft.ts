@@ -74,14 +74,14 @@ export function duplicateDraft(d: WholesaleReturnDraft): WholesaleReturnDraft {
 /** Why this row cannot be submitted yet, or null when it is complete. */
 export function draftProblem(
   d: WholesaleReturnDraft,
-  allDrafts: WholesaleReturnDraft[],
+  allDrafts: WholesaleReturnDraft[]
 ): string | null {
   if (d.noTagId) {
     if (!d.sareeType.trim()) return "Pick a saree type — needed to generate an id without a tag";
   } else {
     const id = d.sareeId.trim();
     if (!id) return "Scan or type the tag id";
-    if (allDrafts.some(o => o.key !== d.key && !o.noTagId && o.sareeId.trim() === id)) {
+    if (allDrafts.some((o) => o.key !== d.key && !o.noTagId && o.sareeId.trim() === id)) {
       return "This tag id is used on another row";
     }
   }

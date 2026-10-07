@@ -151,6 +151,8 @@ for (let i = 0; i < seriesHex.length - 1; i++) {
 }
 
 console.log(lines.join("\n"));
-console.log(`\n${failed ? "FAIL" : "PASS"}  ·  ${failed ? "contrast regression detected" : "0 regressions"}`);
+console.log(
+  `\n${failed ? "FAIL" : "PASS"}  ·  ${failed ? "contrast regression detected" : "0 regressions"}`
+);
 
 if (failed) process.exit(1);

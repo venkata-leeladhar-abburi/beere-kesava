@@ -32,7 +32,7 @@ async function openProfileMenu() {
   render(
     <MemoryRouter>
       <MobileTopNav {...handlers} />
-    </MemoryRouter>,
+    </MemoryRouter>
   );
   // The avatar button is the only one labelled "BK".
   await userEvent.click(screen.getByRole("button", { name: /^BK$/ }));

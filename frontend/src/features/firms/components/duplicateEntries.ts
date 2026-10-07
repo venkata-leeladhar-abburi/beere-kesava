@@ -39,7 +39,10 @@ function mentionsParty(text: string, party: string): boolean {
   if (haystack.includes(needle)) return true;
   // Fall back to the party's most distinctive word, so "Sree Ganesha Silks
   // Pvt Ltd" still matches a description that wrote it as "Sree Ganesha".
-  const longest = needle.split(/\s+/).filter(w => w.length >= 4).sort((a, b) => b.length - a.length)[0];
+  const longest = needle
+    .split(/\s+/)
+    .filter((w) => w.length >= 4)
+    .sort((a, b) => b.length - a.length)[0];
   return longest ? haystack.includes(longest) : false;
 }
 
@@ -56,10 +59,10 @@ export interface DuplicateMatch {
 export function findDuplicateEntries(
   entries: (FinancialEntry | MiscEntry)[],
   payments: FirmPayment[],
-  direction: "INCOME" | "EXPENSE",
+  direction: "INCOME" | "EXPENSE"
 ): Map<string, DuplicateMatch> {
   const matches = new Map<string, DuplicateMatch>();
-  const candidates = payments.filter(p => p.direction === direction);
+  const candidates = payments.filter((p) => p.direction === direction);
   if (candidates.length === 0) return matches;
 
   // One payment can only explain one manual entry — otherwise a single ₹2,000
@@ -67,11 +70,12 @@ export function findDuplicateEntries(
   const claimed = new Set<string>();
 
   for (const entry of entries) {
-    const hit = candidates.find(p =>
-      !claimed.has(p.id) &&
-      sameAmount(p.amount, entry.amount) &&
-      daysApart(p.date, entry.date) <= DAY_WINDOW &&
-      mentionsParty(entry.description, p.party),
+    const hit = candidates.find(
+      (p) =>
+        !claimed.has(p.id) &&
+        sameAmount(p.amount, entry.amount) &&
+        daysApart(p.date, entry.date) <= DAY_WINDOW &&
+        mentionsParty(entry.description, p.party)
     );
     if (hit) {
       claimed.add(hit.id);

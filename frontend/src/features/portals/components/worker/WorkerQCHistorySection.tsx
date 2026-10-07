@@ -4,7 +4,11 @@ import { T, F, PassedLogItem } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";
 import { WorkerQCPassedCard } from "./WorkerQCPassedCard";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
-import { DateFilterBar, type DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import {
+  DateFilterBar,
+  type DateFilterState,
+  matchesDateFilter,
+} from "../../../../shared/ui/DateFilterBar";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { EntityCode } from "../../../../shared/ui/domain";
@@ -18,10 +22,16 @@ interface WorkerQCHistorySectionProps {
   isTablet?: boolean;
 }
 
-export function WorkerQCHistorySection({ items, historyFilter, setHistoryFilter, isDesktop, isTablet }: WorkerQCHistorySectionProps) {
+export function WorkerQCHistorySection({
+  items,
+  historyFilter,
+  setHistoryFilter,
+  isDesktop,
+  isTablet,
+}: WorkerQCHistorySectionProps) {
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const cols = isDesktop ? "repeat(4, 1fr)" : isTablet ? "repeat(2, 1fr)" : "1fr";
-  const filtered = items.filter(p => matchesDateFilter(p.isoDate, historyFilter));
+  const filtered = items.filter((p) => matchesDateFilter(p.isoDate, historyFilter));
   const ITEMS_PER_PAGE = isDesktop ? 20 : isTablet ? 10 : 5;
   const pag = usePagination(filtered, ITEMS_PER_PAGE);
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
@@ -30,7 +40,7 @@ export function WorkerQCHistorySection({ items, historyFilter, setHistoryFilter,
     {
       id: "photo",
       header: "Photo",
-      accessor: p => p.photoUrl ?? "",
+      accessor: (p) => p.photoUrl ?? "",
       priority: 3,
       cell: (_v, p) =>
         p.photoUrl ? (
@@ -55,44 +65,62 @@ export function WorkerQCHistorySection({ items, historyFilter, setHistoryFilter,
     {
       id: "sareeId",
       header: "Saree ID",
-      accessor: p => p.id,
+      accessor: (p) => p.id,
       priority: 1,
       cell: (_v, p) => <EntityCode type="saree" value={p.id} size="sm" />,
     },
     {
       id: "weaver",
       header: "Weaver",
-      accessor: p => p.weaver,
+      accessor: (p) => p.weaver,
       priority: 2,
-      cell: (_v, p) => <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: T.brown }}>{p.weaver}</span>,
+      cell: (_v, p) => (
+        <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: T.brown }}>
+          {p.weaver}
+        </span>
+      ),
     },
     {
       id: "sareeType",
       header: "Saree Type",
-      accessor: p => p.sareeType,
+      accessor: (p) => p.sareeType,
       priority: 2,
-      cell: (_v, p) => <span style={{ fontFamily: F.u, fontSize: 13, color: T.brown }}>{p.sareeType}</span>,
+      cell: (_v, p) => (
+        <span style={{ fontFamily: F.u, fontSize: 13, color: T.brown }}>{p.sareeType}</span>
+      ),
     },
     {
       id: "date",
       header: "Completed Date",
-      accessor: p => p.date,
+      accessor: (p) => p.date,
       priority: 3,
-      cell: (_v, p) => <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>{p.date}</span>,
+      cell: (_v, p) => (
+        <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>
+          {p.date}
+        </span>
+      ),
     },
     {
       id: "payable",
       header: "Payable",
-      accessor: p => p.payable,
+      accessor: (p) => p.payable,
       priority: 2,
-      cell: (_v, p) => <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: T.burg }}>{p.payable}</span>,
+      cell: (_v, p) => (
+        <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: T.burg }}>
+          {p.payable}
+        </span>
+      ),
     },
     {
       id: "inspectedBy",
       header: "Inspected By",
-      accessor: p => p.inspectedBy ?? "—",
+      accessor: (p) => p.inspectedBy ?? "—",
       priority: 3,
-      cell: (_v, p) => <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted }}>{p.inspectedBy ?? "—"}</span>,
+      cell: (_v, p) => (
+        <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted }}>
+          {p.inspectedBy ?? "—"}
+        </span>
+      ),
     },
     {
       id: "status",
@@ -100,7 +128,22 @@ export function WorkerQCHistorySection({ items, historyFilter, setHistoryFilter,
       accessor: () => "Passed",
       type: "status",
       cell: () => (
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#1E6640", background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.20)", borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            fontFamily: F.u,
+            fontSize: 12,
+            fontWeight: 700,
+            color: "#1E6640",
+            background: "rgba(30,102,64,0.10)",
+            border: "1px solid rgba(30,102,64,0.20)",
+            borderRadius: 999,
+            padding: "3px 10px",
+            whiteSpace: "nowrap",
+          }}
+        >
           <CheckCircle2 size={12} /> Passed ✓
         </span>
       ),
@@ -114,7 +157,18 @@ export function WorkerQCHistorySection({ items, historyFilter, setHistoryFilter,
         title="QC History"
         subtitle="All sarees that have passed quality check."
         actions={
-          <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
+          <span
+            style={{
+              fontFamily: F.u,
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#FFFDF9",
+              background: "rgba(255,255,255,0.14)",
+              border: "1px solid rgba(255,255,255,0.20)",
+              padding: "5px 12px",
+              borderRadius: 999,
+            }}
+          >
             {filtered.length} of {items.length}
           </span>
         }
@@ -147,27 +201,48 @@ export function WorkerQCHistorySection({ items, historyFilter, setHistoryFilter,
             </Button>
           </div>
 
-          <DateFilterBar filter={historyFilter} onChange={(f) => { setHistoryFilter(f); pag.setPage(1); }} />
+          <DateFilterBar
+            filter={historyFilter}
+            onChange={(f) => {
+              setHistoryFilter(f);
+              pag.setPage(1);
+            }}
+          />
         </div>
 
         {filtered.length === 0 ? (
           <div style={{ padding: "32px 0", textAlign: "center" }}>
-            <div style={{ fontFamily: F.u, fontSize: 14, color: T.muted }}>No passed sarees in this range.</div>
+            <div style={{ fontFamily: F.u, fontSize: 14, color: T.muted }}>
+              No passed sarees in this range.
+            </div>
           </div>
         ) : (
           <>
             {viewMode === "card" ? (
               <div style={{ display: "grid", gridTemplateColumns: cols, gap: 16 }}>
                 {pag.pageItems.map((p) => (
-                  <WorkerQCPassedCard key={p.recordId || p.id} id={p.id} weaver={p.weaver} date={p.date} sareeType={p.sareeType} payable={p.payable} inspectedBy={p.inspectedBy} photoUrl={p.photoUrl} onViewPhoto={setZoomImage} />
+                  <WorkerQCPassedCard
+                    key={p.recordId || p.id}
+                    id={p.id}
+                    weaver={p.weaver}
+                    date={p.date}
+                    sareeType={p.sareeType}
+                    payable={p.payable}
+                    inspectedBy={p.inspectedBy}
+                    photoUrl={p.photoUrl}
+                    onViewPhoto={setZoomImage}
+                  />
                 ))}
               </div>
             ) : (
-              <div className="w-full overflow-x-auto" style={{ border: `1.5px solid ${T.bdr}`, borderRadius: 12, overflow: "hidden" }}>
+              <div
+                className="w-full overflow-x-auto"
+                style={{ border: `1.5px solid ${T.bdr}`, borderRadius: 12, overflow: "hidden" }}
+              >
                 <DataTable
                   columns={columns}
                   data={pag.pageItems}
-                  getRowId={p => p.recordId || p.id}
+                  getRowId={(p) => p.recordId || p.id}
                   pagination={false}
                 />
               </div>

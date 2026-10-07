@@ -13,7 +13,7 @@ import { formatDate } from "@/shared/ui/date/format";
  * identically rather than changing number under the operator.
  */
 export function challanReference(
-  dispatch: Pick<DispatchRecord, "id" | "dispatchDate"> & { challanNumber?: string },
+  dispatch: Pick<DispatchRecord, "id" | "dispatchDate"> & { challanNumber?: string }
 ): string {
   if (dispatch.challanNumber) return dispatch.challanNumber;
   return derivedChallanReference(dispatch);

@@ -1,32 +1,103 @@
-import React from 'react';
-import * as Dialog from '@radix-ui/react-dialog';
-import { motion } from 'motion/react';
-import { ChevronRight, Menu, LogOut, UserRound, X, Bell, Users, Store, Eye, IndianRupee } from 'lucide-react';
-import { imgBKLogo } from '../../../../shared/constants/weaverImages';
-import { T, F, G, EASE, findNavGroup, NAV_GROUPS } from './theme';
-import { Button, IconButton } from '../../../../shared/ui/primitives';
-import { Drawer } from '../../../../shared/ui/overlay';
-import { MOBILE_NAV_H } from '../../../../shared/ui/SectionNavigator';
-import { PortalSwitchButtonRows } from '../../../../shared/ui/portal/PortalSwitcher';
+import React from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { motion } from "motion/react";
+import {
+  ChevronRight,
+  Menu,
+  LogOut,
+  UserRound,
+  X,
+  Bell,
+  Users,
+  Store,
+  Eye,
+  IndianRupee,
+} from "lucide-react";
+import { imgBKLogo } from "../../../../shared/constants/weaverImages";
+import { T, F, G, EASE, findNavGroup, NAV_GROUPS } from "./theme";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { Drawer } from "../../../../shared/ui/overlay";
+import { MOBILE_NAV_H } from "../../../../shared/ui/SectionNavigator";
+import { PortalSwitchButtonRows } from "../../../../shared/ui/portal/PortalSwitcher";
 
-export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
-  open: boolean; onClose: () => void; activeTab: string; setTab: (v: string) => void;
+export function MobileMenuDrawer({
+  open,
+  onClose,
+  activeTab,
+  setTab,
+}: {
+  open: boolean;
+  onClose: () => void;
+  activeTab: string;
+  setTab: (v: string) => void;
 }) {
   return (
-    <Drawer open={open} onOpenChange={next => { if (!next) onClose(); }} side="left" size="sm">
+    <Drawer
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+      side="left"
+      size="sm"
+    >
       <div style={{ display: "flex", flexDirection: "column", height: "100%", overflowY: "auto" }}>
         {/* Drawer header */}
-        <div style={{ padding: "20px 20px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", background: G.button, flexShrink: 0 }}>
+        <div
+          style={{
+            padding: "20px 20px 16px",
+            borderBottom: `1px solid ${T.borderDef}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            background: G.button,
+            flexShrink: 0,
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 11, overflow: "hidden", border: "1.5px solid rgba(200,155,71,0.40)" }}>
-              <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 11,
+                overflow: "hidden",
+                border: "1.5px solid rgba(200,155,71,0.40)",
+              }}
+            >
+              <img
+                src={imgBKLogo}
+                alt="BK"
+                style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              />
             </div>
             <div>
               <Dialog.Title asChild>
-                <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.warmCream, lineHeight: 1.1 }}>Beere Kesava</div>
+                <div
+                  style={{
+                    fontFamily: F.display,
+                    fontWeight: 400,
+                    fontSize: 14,
+                    color: T.warmCream,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  Beere Kesava
+                </div>
               </Dialog.Title>
-              <Dialog.Description className="sr-only">Admin dashboard navigation menu</Dialog.Description>
-              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>Est. 1999</div>
+              <Dialog.Description className="sr-only">
+                Admin dashboard navigation menu
+              </Dialog.Description>
+              <div
+                style={{
+                  fontFamily: F.ui,
+                  fontWeight: 500,
+                  fontSize: 12,
+                  color: "rgba(231,201,131,0.85)",
+                  letterSpacing: "2px",
+                  textTransform: "uppercase",
+                }}
+              >
+                Est. 1999
+              </div>
             </div>
           </div>
           <Dialog.Close asChild>
@@ -45,93 +116,166 @@ export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
 
         {/* Nav items — grouped */}
         <div style={{ flex: 1, padding: "10px 12px" }}>
-              {NAV_GROUPS.map((group, gi) => {
-                const GroupIcon = group.icon;
-                const isGroupActive = findNavGroup(activeTab).key === group.key;
-                return (
-                  <div key={group.key} style={{ marginBottom: 14 }}>
-                    <div style={{
-                      display: "flex", alignItems: "center", gap: 10,
-                      padding: "10px 10px 6px",
-                    }}>
-                      <GroupIcon size={16} color={isGroupActive ? T.royalBurgundy : T.taupe} />
-                      <span style={{
-                        fontFamily: F.ui, fontWeight: 700, fontSize: 13,
-                        color: isGroupActive ? T.royalBurgundy : T.luxuryBrown,
-                        letterSpacing: "0.4px", textTransform: "uppercase" as const,
-                      }}>
-                        {group.label}
-                      </span>
-                    </div>
+          {NAV_GROUPS.map((group, gi) => {
+            const GroupIcon = group.icon;
+            const isGroupActive = findNavGroup(activeTab).key === group.key;
+            return (
+              <div key={group.key} style={{ marginBottom: 14 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "10px 10px 6px",
+                  }}
+                >
+                  <GroupIcon size={16} color={isGroupActive ? T.royalBurgundy : T.taupe} />
+                  <span
+                    style={{
+                      fontFamily: F.ui,
+                      fontWeight: 700,
+                      fontSize: 13,
+                      color: isGroupActive ? T.royalBurgundy : T.luxuryBrown,
+                      letterSpacing: "0.4px",
+                      textTransform: "uppercase" as const,
+                    }}
+                  >
+                    {group.label}
+                  </span>
+                </div>
 
-                    {/* Sub-items tree container with left indentation & guide line */}
-                    <div style={{
-                      marginLeft: 18,
-                      paddingLeft: 14,
-                      borderLeft: `2px solid ${isGroupActive ? "rgba(110,15,45,0.18)" : "rgba(110,15,45,0.08)"}`,
-                      marginTop: 3,
-                    }}>
-                      {group.pages.map((page, i) => {
-                        const isActive = activeTab === page.key;
-                        return (
-                          <motion.div
-                            key={page.key}
-                            initial={{ opacity: 0, x: -18 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.32, delay: 0.04 + (gi * 3 + i) * 0.03, ease: EASE }}
+                {/* Sub-items tree container with left indentation & guide line */}
+                <div
+                  style={{
+                    marginLeft: 18,
+                    paddingLeft: 14,
+                    borderLeft: `2px solid ${isGroupActive ? "rgba(110,15,45,0.18)" : "rgba(110,15,45,0.08)"}`,
+                    marginTop: 3,
+                  }}
+                >
+                  {group.pages.map((page, i) => {
+                    const isActive = activeTab === page.key;
+                    return (
+                      <motion.div
+                        key={page.key}
+                        initial={{ opacity: 0, x: -18 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{
+                          duration: 0.32,
+                          delay: 0.04 + (gi * 3 + i) * 0.03,
+                          ease: EASE,
+                        }}
+                        style={{
+                          borderRadius: 10,
+                          marginBottom: 3,
+                          border: isActive ? `1px solid ${T.borderMed}` : "1px solid transparent",
+                          background: isActive
+                            ? `linear-gradient(135deg, rgba(110,15,45,0.08) 0%, rgba(200,155,71,0.06) 100%)`
+                            : "transparent",
+                        }}
+                      >
+                        <Button
+                          variant="tertiary"
+                          fullWidth
+                          onClick={() => {
+                            setTab(page.key);
+                            onClose();
+                          }}
+                          className="!justify-start !gap-2.5 !py-[9px] !px-3 !bg-transparent !border-none"
+                        >
+                          <div
                             style={{
-                              borderRadius: 10, marginBottom: 3,
-                              border: isActive ? `1px solid ${T.borderMed}` : "1px solid transparent",
-                              background: isActive ? `linear-gradient(135deg, rgba(110,15,45,0.08) 0%, rgba(200,155,71,0.06) 100%)` : "transparent",
+                              flex: 1,
+                              textAlign: "left",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
                             }}
                           >
-                            <Button
-                              variant="tertiary"
-                              fullWidth
-                              onClick={() => { setTab(page.key); onClose(); }}
-                              className="!justify-start !gap-2.5 !py-[9px] !px-3 !bg-transparent !border-none"
+                            <span
+                              style={{
+                                width: 5,
+                                height: 5,
+                                borderRadius: "50%",
+                                background: isActive ? T.royalBurgundy : "rgba(105,99,94,0.40)",
+                                flexShrink: 0,
+                              }}
+                            />
+                            <div
+                              style={{
+                                fontFamily: F.ui,
+                                fontWeight: isActive ? 600 : 400,
+                                fontSize: 13.5,
+                                color: isActive ? T.royalBurgundy : T.luxuryBrown,
+                                letterSpacing: "0.05px",
+                              }}
                             >
-                              <div style={{ flex: 1, textAlign: "left", display: "flex", alignItems: "center", gap: 8 }}>
-                                <span style={{
-                                  width: 5,
-                                  height: 5,
-                                  borderRadius: "50%",
-                                  background: isActive ? T.royalBurgundy : "rgba(105,99,94,0.40)",
-                                  flexShrink: 0,
-                                }} />
-                                <div style={{ fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13.5, color: isActive ? T.royalBurgundy : T.luxuryBrown, letterSpacing: "0.05px" }}>
-                                  {page.label}
-                                </div>
-                              </div>
-                              {isActive && <ChevronRight size={13} color={T.royalBurgundy} />}
-                            </Button>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                              {page.label}
+                            </div>
+                          </div>
+                          {isActive && <ChevronRight size={13} color={T.royalBurgundy} />}
+                        </Button>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
-            {/* Drawer footer */}
-            <div style={{ padding: "16px 20px 28px", borderTop: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 30, height: 30, borderRadius: 9, background: G.button, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 3px 10px rgba(110,15,45,0.28)` }}>
-                  <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 12, color: T.warmCream }}>BK</span>
-                </div>
-                <div>
-                  <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.luxuryBrown }}>Admin</div>
-                  <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe }}>Administrator</div>
-                </div>
+        {/* Drawer footer */}
+        <div
+          style={{
+            padding: "16px 20px 28px",
+            borderTop: `1px solid ${T.borderDef}`,
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 9,
+                background: G.button,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: `0 3px 10px rgba(110,15,45,0.28)`,
+              }}
+            >
+              <span
+                style={{ fontFamily: F.display, fontWeight: 400, fontSize: 12, color: T.warmCream }}
+              >
+                BK
+              </span>
+            </div>
+            <div>
+              <div
+                style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.luxuryBrown }}
+              >
+                Admin
+              </div>
+              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe }}>
+                Administrator
               </div>
             </div>
           </div>
+        </div>
+      </div>
     </Drawer>
   );
 }
 
-export function MobileTopNav({ onMenuOpen, onLogout, onProfile, onNotifications, set, onViewAs }: {
+export function MobileTopNav({
+  onMenuOpen,
+  onLogout,
+  onProfile,
+  onNotifications,
+  set,
+  onViewAs,
+}: {
   onMenuOpen: () => void;
   onLogout?: () => void;
   onProfile?: () => void;
@@ -155,10 +299,13 @@ export function MobileTopNav({ onMenuOpen, onLogout, onProfile, onNotifications,
   const overlayOpen = showNotif || showProfile;
   const overlayOpenRef = React.useRef(overlayOpen);
   overlayOpenRef.current = overlayOpen;
-  React.useEffect(() => { if (overlayOpen) setIsHidden(false); }, [overlayOpen]);
+  React.useEffect(() => {
+    if (overlayOpen) setIsHidden(false);
+  }, [overlayOpen]);
 
   React.useEffect(() => {
-    const readY = () => window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    const readY = () =>
+      window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
     lastScrollYRef.current = readY();
     let ticking = false;
     const handleScroll = () => {
@@ -218,12 +365,46 @@ export function MobileTopNav({ onMenuOpen, onLogout, onProfile, onNotifications,
         className="!size-9 !rounded-[10px] border border-[rgba(110,15,45,0.10)] bg-transparent hover:bg-[rgba(0,0,0,0.04)]"
       />
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 9, overflow: "hidden", flexShrink: 0, border: `1px solid rgba(200,155,71,0.25)` }}>
-          <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 9,
+            overflow: "hidden",
+            flexShrink: 0,
+            border: `1px solid rgba(200,155,71,0.25)`,
+          }}
+        >
+          <img
+            src={imgBKLogo}
+            alt="BK"
+            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+          />
         </div>
         <div>
-          <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.1, letterSpacing: "0.1px" }}>Beere Kesava</div>
-          <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, letterSpacing: "0.2px" }}>&amp; Brothers Silks · Est. 1999</div>
+          <div
+            style={{
+              fontFamily: F.display,
+              fontWeight: 400,
+              fontSize: 14,
+              color: T.luxuryBrown,
+              lineHeight: 1.1,
+              letterSpacing: "0.1px",
+            }}
+          >
+            Beere Kesava
+          </div>
+          <div
+            style={{
+              fontFamily: F.ui,
+              fontWeight: 400,
+              fontSize: 12,
+              color: T.taupe,
+              letterSpacing: "0.2px",
+            }}
+          >
+            &amp; Brothers Silks · Est. 1999
+          </div>
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -232,32 +413,113 @@ export function MobileTopNav({ onMenuOpen, onLogout, onProfile, onNotifications,
           <IconButton
             icon={Bell}
             label="Notifications"
-            onClick={() => { setShowNotif(n => !n); setShowProfile(false); }}
+            onClick={() => {
+              setShowNotif((n) => !n);
+              setShowProfile(false);
+            }}
             variant="ghost"
             className={`!size-9 !rounded-[10px] border border-[rgba(110,15,45,0.10)] bg-transparent hover:bg-[rgba(0,0,0,0.04)] ${showNotif ? "text-[#C4923A] bg-rgba(110,15,45,0.06)" : "text-[#6E0F2D]"}`}
           />
-          <div style={{ position: "absolute", top: 4, right: 4, width: 7, height: 7, borderRadius: "50%", background: "#C4923A", border: "1.5px solid #FFFDF9", pointerEvents: "none" }} />
+          <div
+            style={{
+              position: "absolute",
+              top: 4,
+              right: 4,
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              background: "#C4923A",
+              border: "1.5px solid #FFFDF9",
+              pointerEvents: "none",
+            }}
+          />
           {showNotif && (
-            <div style={{
-              position: "absolute", top: "calc(100% + 10px)", right: -42,
-              zIndex: "var(--z-tooltip)", background: "#FFFDF9",
-              borderRadius: 16, border: `1px solid ${T.borderDef}`,
-              boxShadow: "0 10px 36px rgba(44,24,16,0.18)",
-              width: "calc(100vw - 32px)", maxWidth: 310, overflow: "hidden"
-            }}>
-              <div style={{ padding: "14px 18px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(110,15,45,0.03)" }}>
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 10px)",
+                right: -42,
+                zIndex: "var(--z-tooltip)",
+                background: "#FFFDF9",
+                borderRadius: 16,
+                border: `1px solid ${T.borderDef}`,
+                boxShadow: "0 10px 36px rgba(44,24,16,0.18)",
+                width: "calc(100vw - 32px)",
+                maxWidth: 310,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  padding: "14px 18px",
+                  borderBottom: `1px solid ${T.borderDef}`,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  background: "rgba(110,15,45,0.03)",
+                }}
+              >
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Notifications</span>
-                  <span style={{ background: T.royalBurgundy, color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, borderRadius: 999, padding: "2px 7px" }}>0</span>
+                  <span
+                    style={{
+                      fontFamily: F.display,
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: T.luxuryBrown,
+                    }}
+                  >
+                    Notifications
+                  </span>
+                  <span
+                    style={{
+                      background: T.royalBurgundy,
+                      color: "#FFFDF9",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      borderRadius: 999,
+                      padding: "2px 7px",
+                    }}
+                  >
+                    0
+                  </span>
                 </div>
-                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.antiqueGold, cursor: "pointer" }}>Mark all read</span>
+                <span
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: T.antiqueGold,
+                    cursor: "pointer",
+                  }}
+                >
+                  Mark all read
+                </span>
               </div>
-              <div style={{ padding: "22px 18px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+              <div
+                style={{
+                  padding: "22px 18px",
+                  textAlign: "center",
+                  fontFamily: F.ui,
+                  fontSize: 13,
+                  color: T.taupe,
+                }}
+              >
                 No new notifications.
               </div>
-              <div style={{ padding: "10px 14px", borderTop: `1px solid ${T.borderDef}`, background: "#F7F2EA", textAlign: "center" }}>
+              <div
+                style={{
+                  padding: "10px 14px",
+                  borderTop: `1px solid ${T.borderDef}`,
+                  background: "#F7F2EA",
+                  textAlign: "center",
+                }}
+              >
                 <Button
-                  onClick={() => { setShowNotif(false); onNotifications?.(); }}
+                  onClick={() => {
+                    setShowNotif(false);
+                    onNotifications?.();
+                  }}
                   variant="tertiary"
                   fullWidth
                   className="!text-xs !font-semibold !text-[#6E0F2D] !py-1.5"
@@ -271,64 +533,158 @@ export function MobileTopNav({ onMenuOpen, onLogout, onProfile, onNotifications,
 
         {/* Profile Avatar */}
         <div style={{ position: "relative" }}>
-          <div style={{ borderRadius: 10, border: `1px solid ${showProfile ? T.royalBurgundy : T.borderDef}`, boxShadow: `0 3px 10px rgba(110,15,45,0.28)`, display: "inline-block" }}>
+          <div
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${showProfile ? T.royalBurgundy : T.borderDef}`,
+              boxShadow: `0 3px 10px rgba(110,15,45,0.28)`,
+              display: "inline-block",
+            }}
+          >
             <Button
-              onClick={() => setShowProfile(p => !p)}
+              onClick={() => setShowProfile((p) => !p)}
               variant="tertiary"
               className="!size-9 !rounded-[10px] !p-0 !border-none !bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:!bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)]"
             >
-              <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 12, color: T.warmCream }}>BK</span>
+              <span
+                style={{ fontFamily: F.display, fontWeight: 400, fontSize: 12, color: T.warmCream }}
+              >
+                BK
+              </span>
             </Button>
           </div>
-        {showProfile && (
-          <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: "var(--z-tooltip)", background: "#FFFDF9", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 226, maxHeight: "calc(100dvh - 84px)", overflowY: "auto", overflowX: "hidden" }}>
-            <div style={{ padding: "14px 16px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
-              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Admin User</div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>Admin · Beere Kesava Silks</div>
-            </div>
-            <div style={{ padding: "6px 0" }}>
-              <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <UserRound size={14} color={T.taupe} /> View Profile
-              </Button>
-              <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-              {/* Staff oversight — the same rows the desktop TopNav has
+          {showProfile && (
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 8px)",
+                right: 0,
+                zIndex: "var(--z-tooltip)",
+                background: "#FFFDF9",
+                borderRadius: 14,
+                border: `1px solid ${T.borderDef}`,
+                boxShadow: "0 8px 32px rgba(44,24,16,0.14)",
+                minWidth: 226,
+                maxHeight: "calc(100dvh - 84px)",
+                overflowY: "auto",
+                overflowX: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  padding: "14px 16px",
+                  background: "rgba(110,15,45,0.03)",
+                  borderBottom: `1px solid ${T.borderDef}`,
+                }}
+              >
+                <div
+                  style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}
+                >
+                  Admin User
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 12,
+                    color: T.taupe,
+                    marginTop: 2,
+                  }}
+                >
+                  Admin · Beere Kesava Silks
+                </div>
+              </div>
+              <div style={{ padding: "6px 0" }}>
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    onProfile?.();
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+                >
+                  <UserRound size={14} color={T.taupe} /> View Profile
+                </Button>
+                <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
+                {/* Staff oversight — the same rows the desktop TopNav has
                   carried all along. They were desktop-only, so an admin on a
                   phone could not reach the staff directories at all. */}
-              <Button onClick={() => { setShowProfile(false); set?.("WorkerStaff"); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <Users size={14} color={T.taupe} /> Worker Staff
-              </Button>
-              <Button onClick={() => { setShowProfile(false); set?.("ShopStaff"); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <Store size={14} color={T.taupe} /> Shop Staff
-              </Button>
-              <Button onClick={() => { setShowProfile(false); set?.("AccountantStaff"); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <IndianRupee size={14} color={T.taupe} /> Accountant Staff
-              </Button>
-              <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-              {/* Opens the staff portal as yourself — not impersonation.
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    set?.("WorkerStaff");
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+                >
+                  <Users size={14} color={T.taupe} /> Worker Staff
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    set?.("ShopStaff");
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+                >
+                  <Store size={14} color={T.taupe} /> Shop Staff
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    set?.("AccountantStaff");
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+                >
+                  <IndianRupee size={14} color={T.taupe} /> Accountant Staff
+                </Button>
+                <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
+                {/* Opens the staff portal as yourself — not impersonation.
                   Anything recorded in there is attributed to this admin. */}
-              <Button onClick={() => { setShowProfile(false); onViewAs?.("worker"); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <Eye size={14} color={T.taupe} /> View as Worker Staff
-              </Button>
-              <Button onClick={() => { setShowProfile(false); onViewAs?.("shop"); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <Eye size={14} color={T.taupe} /> View as Shop Staff
-              </Button>
-              {/* Only for someone actually assigned a second portal — this
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    onViewAs?.("worker");
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+                >
+                  <Eye size={14} color={T.taupe} /> View as Worker Staff
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    onViewAs?.("shop");
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+                >
+                  <Eye size={14} color={T.taupe} /> View as Shop Staff
+                </Button>
+                {/* Only for someone actually assigned a second portal — this
                   used to be a "Switch Portal" row that just logged you out. */}
-              <PortalSwitchButtonRows onBeforeSwitch={() => setShowProfile(false)} />
-              <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-              <Button onClick={() => { setShowProfile(false); onLogout?.(); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]">
-                <LogOut size={14} color="#C0392B" /> Logout
-              </Button>
+                <PortalSwitchButtonRows onBeforeSwitch={() => setShowProfile(false)} />
+                <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    onLogout?.();
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]"
+                >
+                  <LogOut size={14} color="#C0392B" /> Logout
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
         </div>
       </div>
     </motion.nav>

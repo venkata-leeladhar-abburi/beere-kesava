@@ -48,11 +48,20 @@ export interface QuotationDocumentProps {
 const lineTotal = (it: QuotationLineItem) => it.ratePaise * (it.qty ?? 1);
 
 export function QuotationDocument({
-  quotationNumber, quotationDate, validUntil, firm, customer, items,
-  estGstPct, bulkOrderRef, leadTime, notes, pageInfo,
+  quotationNumber,
+  quotationDate,
+  validUntil,
+  firm,
+  customer,
+  items,
+  estGstPct,
+  bulkOrderRef,
+  leadTime,
+  notes,
+  pageInfo,
 }: QuotationDocumentProps) {
   const subtotalPaise = items.reduce((sum, it) => sum + lineTotal(it), 0);
-  const estGstPaise = estGstPct ? Math.round(subtotalPaise * estGstPct / 100) : 0;
+  const estGstPaise = estGstPct ? Math.round((subtotalPaise * estGstPct) / 100) : 0;
   const grandTotalPaise = subtotalPaise + estGstPaise;
 
   const meta: MetaField[] = [
@@ -82,7 +91,14 @@ export function QuotationDocument({
       band={<Letterhead firm={firm} title="Quotation" documentNumber={quotationNumber} />}
     >
       <PartyBlock
-        parties={[{ label: "Quoted To", name: customer.name, address: customer.address || customer.city, phone: customer.phone }]}
+        parties={[
+          {
+            label: "Quoted To",
+            name: customer.name,
+            address: customer.address || customer.city,
+            phone: customer.phone,
+          },
+        ]}
         meta={meta}
       />
 
@@ -90,22 +106,59 @@ export function QuotationDocument({
         columns={[
           { header: "#", align: "center", width: "9mm", cell: (_row, i) => i + 1 },
           {
-            header: "Description", width: "90mm",
-            cell: row => (
+            header: "Description",
+            width: "90mm",
+            cell: (row) => (
               <div>
-                <div style={{ display: "flex", alignItems: "baseline", gap: "2.5mm", flexWrap: "wrap" }}>
-                  <span style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-code)", fontWeight: 600, color: "var(--doc-burgundy)" }}>{row.id}</span>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: "2.5mm",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: "var(--font-code)",
+                      fontSize: "var(--doc-code)",
+                      fontWeight: 600,
+                      color: "var(--doc-burgundy)",
+                    }}
+                  >
+                    {row.id}
+                  </span>
                   {row.batchLabel && (
-                    <span style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-small)", color: "var(--doc-faint)" }}>{row.batchLabel}</span>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-code)",
+                        fontSize: "var(--doc-small)",
+                        color: "var(--doc-faint)",
+                      }}
+                    >
+                      {row.batchLabel}
+                    </span>
                   )}
                 </div>
-                <div style={{ color: "var(--doc-muted)", marginTop: "0.3mm", lineHeight: 1.3 }}>{row.description}</div>
+                <div style={{ color: "var(--doc-muted)", marginTop: "0.3mm", lineHeight: 1.3 }}>
+                  {row.description}
+                </div>
               </div>
             ),
           },
-          { header: "Qty", align: "end", width: "16mm", cell: row => row.qty ?? 1 },
-          { header: "Est. Rate", align: "end", width: "28mm", cell: row => formatPaise(row.ratePaise) },
-          { header: "Est. Amount", align: "end", width: "30mm", cell: row => <strong>{formatPaise(lineTotal(row))}</strong> },
+          { header: "Qty", align: "end", width: "16mm", cell: (row) => row.qty ?? 1 },
+          {
+            header: "Est. Rate",
+            align: "end",
+            width: "28mm",
+            cell: (row) => formatPaise(row.ratePaise),
+          },
+          {
+            header: "Est. Amount",
+            align: "end",
+            width: "30mm",
+            cell: (row) => <strong>{formatPaise(lineTotal(row))}</strong>,
+          },
         ]}
         rows={items}
       />
@@ -113,24 +166,51 @@ export function QuotationDocument({
       <TotalsBlock rows={totalsRows} />
 
       {/* H.2's mandatory disclaimer distinguishing this from a tax invoice. */}
-      <div style={{ marginTop: "4mm", fontSize: "var(--doc-small)", color: "var(--doc-faint)", fontStyle: "italic" }}>
+      <div
+        style={{
+          marginTop: "4mm",
+          fontSize: "var(--doc-small)",
+          color: "var(--doc-faint)",
+          fontStyle: "italic",
+        }}
+      >
         This is a quotation, not a tax invoice.
       </div>
 
       <TermsBlock terms={terms} termsLabel="Terms & Conditions" />
 
       {notes && (
-        <div style={{ marginTop: "4mm", fontSize: "var(--doc-small)", color: "var(--doc-muted)", lineHeight: 1.5 }}>{notes}</div>
+        <div
+          style={{
+            marginTop: "4mm",
+            fontSize: "var(--doc-small)",
+            color: "var(--doc-muted)",
+            lineHeight: 1.5,
+          }}
+        >
+          {notes}
+        </div>
       )}
 
       {/* H.2's acceptance block — bottom-left, distinct from Invoice's signature. */}
-      <div style={{ marginTop: "8mm", paddingTop: "3.5mm", borderTop: "0.3mm solid var(--doc-rule)" }}>
-        <div style={{ fontSize: "var(--doc-body)", fontWeight: 600, color: "var(--doc-burgundy)", marginBottom: "6mm" }}>
+      <div
+        style={{ marginTop: "8mm", paddingTop: "3.5mm", borderTop: "0.3mm solid var(--doc-rule)" }}
+      >
+        <div
+          style={{
+            fontSize: "var(--doc-body)",
+            fontWeight: 600,
+            color: "var(--doc-burgundy)",
+            marginBottom: "6mm",
+          }}
+        >
           Accepted by
         </div>
         <div style={{ display: "flex", gap: "10mm" }}>
           <div style={{ flex: 1, borderTop: "0.4mm solid var(--doc-rule)", paddingTop: "1.5mm" }}>
-            <span style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)" }}>Signature</span>
+            <span style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)" }}>
+              Signature
+            </span>
           </div>
           <div style={{ flex: 1, borderTop: "0.4mm solid var(--doc-rule)", paddingTop: "1.5mm" }}>
             <span style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)" }}>Date</span>
@@ -148,7 +228,7 @@ export function toQuotationItems(
   batchOf: (sareeId: string) => string | undefined,
   prices: Record<string, string>
 ): QuotationLineItem[] {
-  return sarees.map(s => {
+  return sarees.map((s) => {
     const sId = s.sareeId || s.id;
     return {
       id: sId,

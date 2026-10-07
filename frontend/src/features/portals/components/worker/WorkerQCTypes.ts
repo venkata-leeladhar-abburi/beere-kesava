@@ -4,25 +4,25 @@ import { brand, fonts, semantic } from "@/design-system/tokens";
 
 /** Same design-system re-export as worker/tokens.ts — see the note there. */
 export const T = {
-  bg:       semantic.surface.canvas,
-  card:     semantic.surface.raised,
-  burg:     brand.burgundy[900],
-  wine:     brand.burgundy[950],
-  gold:     brand.gold[500],
-  goldL:    "#E7C983",
-  brown:    semantic.text.primary,
-  green:    semantic.text.success,
-  crim:     semantic.text.danger,
-  muted:    semantic.text.tertiary,
-  bdr:      "rgba(110,15,45,0.10)",
-  bdrMed:   "rgba(110,15,45,0.20)",
-  cream:    "#F5E8D0",
-  inp:      semantic.surface.raised,
-  bgGold:   "rgba(200,155,71,0.15)",
-  bgGreen:  "rgba(30,102,64,0.10)",
-  bgCrim:   "rgba(110,15,45,0.10)",
+  bg: semantic.surface.canvas,
+  card: semantic.surface.raised,
+  burg: brand.burgundy[900],
+  wine: brand.burgundy[950],
+  gold: brand.gold[500],
+  goldL: "#E7C983",
+  brown: semantic.text.primary,
+  green: semantic.text.success,
+  crim: semantic.text.danger,
+  muted: semantic.text.tertiary,
+  bdr: "rgba(110,15,45,0.10)",
+  bdrMed: "rgba(110,15,45,0.20)",
+  cream: "#F5E8D0",
+  inp: semantic.surface.raised,
+  bgGold: "rgba(200,155,71,0.15)",
+  bgGreen: "rgba(30,102,64,0.10)",
+  bgCrim: "rgba(110,15,45,0.10)",
   gradHero: `linear-gradient(100deg, ${brand.burgundy[950]} 0%, ${brand.burgundy[900]} 100%)`,
-  shadow:   "0 2px 12px rgba(74,6,27,0.07)",
+  shadow: "0 2px 12px rgba(74,6,27,0.07)",
   shadowLg: "0 6px 32px rgba(74,6,27,0.12)",
 };
 
@@ -111,14 +111,13 @@ export interface PassedLogItem {
 // named weavers, real weaver UUIDs and invented QC deductions, and had no
 // importers — WorkerQC.tsx reads live rows from context instead.
 
-
 export const DEFECT_TYPES: { label: string; Icon: React.ElementType }[] = [
-  { label: "Thread Break",       Icon: Scissors   },
-  { label: "Design Error",       Icon: Palette    },
-  { label: "Jari Issue",         Icon: Sparkles   },
-  { label: "Weight Problem",     Icon: Scale      },
-  { label: "Measurement Error",  Icon: Ruler      },
-  { label: "Other",              Icon: HelpCircle },
+  { label: "Thread Break", Icon: Scissors },
+  { label: "Design Error", Icon: Palette },
+  { label: "Jari Issue", Icon: Sparkles },
+  { label: "Weight Problem", Icon: Scale },
+  { label: "Measurement Error", Icon: Ruler },
+  { label: "Other", Icon: HelpCircle },
 ];
 
 export function variance(w: number, std: number) {
@@ -127,7 +126,12 @@ export function variance(w: number, std: number) {
 }
 
 export function initials(name: string) {
-  return name.split(" ").map(p => p[0]).join("").toUpperCase().slice(0, 2);
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 }
 
 export function splitDesignField(design: string): { code: string; typeName: string } {

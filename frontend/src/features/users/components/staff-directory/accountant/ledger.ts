@@ -26,8 +26,18 @@ export interface KindConfig {
 export const KIND_CONFIG: Record<StaffLedgerKind, KindConfig> = {
   WEAVER: { label: "Weaver payment", short: "Weaver", direction: "OUT", partyLabel: "Weaver" },
   VENDOR: { label: "Vendor payment", short: "Vendor", direction: "OUT", partyLabel: "Vendor" },
-  SUPPLIER: { label: "Supplier payment", short: "Supplier", direction: "OUT", partyLabel: "Supplier" },
-  RETAIL_SALE: { label: "Retail collection", short: "Retail", direction: "IN", partyLabel: "Customer" },
+  SUPPLIER: {
+    label: "Supplier payment",
+    short: "Supplier",
+    direction: "OUT",
+    partyLabel: "Supplier",
+  },
+  RETAIL_SALE: {
+    label: "Retail collection",
+    short: "Retail",
+    direction: "IN",
+    partyLabel: "Customer",
+  },
 };
 
 export const KIND_ORDER: StaffLedgerKind[] = ["WEAVER", "VENDOR", "SUPPLIER", "RETAIL_SALE"];
@@ -40,7 +50,14 @@ export type LedgerTotals = Omit<StaffFinanceTotals, "recordedById">;
 /** A fresh zeroed total. A shared constant would be one stray mutation away
  *  from corrupting every person who happens to have no money this period. */
 export function emptyTotals(): LedgerTotals {
-  return { paidOut: 0, collectedIn: 0, txns: 0, avgTxn: 0, lastActivity: null, byKind: emptyByKind() };
+  return {
+    paidOut: 0,
+    collectedIn: 0,
+    txns: 0,
+    avgTxn: 0,
+    lastActivity: null,
+    byKind: emptyByKind(),
+  };
 }
 
 /**
@@ -130,7 +147,11 @@ function isoDay(d: Date): string {
  * today would render an empty chart above tiles full of real figures the
  * moment someone filters to an earlier month.
  */
-export function dailySeries(rows: StaffLedgerRow[], days = 14, endDate?: string | null): DayPoint[] {
+export function dailySeries(
+  rows: StaffLedgerRow[],
+  days = 14,
+  endDate?: string | null
+): DayPoint[] {
   const buckets = new Map<string, DayPoint>();
   const end = endDate ? new Date(endDate) : new Date();
   if (Number.isNaN(end.getTime())) end.setTime(Date.now());

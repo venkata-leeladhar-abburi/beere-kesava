@@ -23,32 +23,48 @@ export function TabsNav({
   setActiveTab: (t: "po" | "warp" | "rate") => void;
 }) {
   return (
-    <div className="px-4 md:px-7 xl:px-14" style={{
-      position: "relative", zIndex: 10,
-      background: "#FFF",
-      borderBottom: "1px solid " + T.borderDef,
-      marginTop: 32,
-      display: "flex", alignItems: "center",
-      overflowX: "auto", WebkitOverflowScrolling: "touch",
-    }}>
+    <div
+      className="px-4 md:px-7 xl:px-14"
+      style={{
+        position: "relative",
+        zIndex: 10,
+        background: "#FFF",
+        borderBottom: "1px solid " + T.borderDef,
+        marginTop: 32,
+        display: "flex",
+        alignItems: "center",
+        overflowX: "auto",
+        WebkitOverflowScrolling: "touch",
+      }}
+    >
       <div style={{ display: "flex", alignItems: "center", minWidth: "max-content" }}>
-      {tabs.map(tab => (
-        <Button
-          key={tab.key}
-          onClick={() => setActiveTab(tab.key)}
-          variant={activeTab === tab.key ? "primary" : "tertiary"} size="md"
-          className={"rounded-none border-b-2 " + (activeTab === tab.key ? "border-b-[var(--bk-gold-500,#C89B47)]" : "border-b-transparent")}
-        >
-          {tab.label}
-          <span style={{
-            background: activeTab === tab.key ? "rgba(255,255,255,0.20)" : T.cream,
-            color: activeTab === tab.key ? "#FFF" : T.taupe,
-            borderRadius: 10, padding: "1px 7px", fontSize: 12,
-          }}>
-            {tab.count}
-          </span>
-        </Button>
-      ))}
+        {tabs.map((tab) => (
+          <Button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            variant={activeTab === tab.key ? "primary" : "tertiary"}
+            size="md"
+            className={
+              "rounded-none border-b-2 " +
+              (activeTab === tab.key
+                ? "border-b-[var(--bk-gold-500,#C89B47)]"
+                : "border-b-transparent")
+            }
+          >
+            {tab.label}
+            <span
+              style={{
+                background: activeTab === tab.key ? "rgba(255,255,255,0.20)" : T.cream,
+                color: activeTab === tab.key ? "#FFF" : T.taupe,
+                borderRadius: 10,
+                padding: "1px 7px",
+                fontSize: 12,
+              }}
+            >
+              {tab.count}
+            </span>
+          </Button>
+        ))}
       </div>
     </div>
   );
@@ -98,11 +114,19 @@ export function TabContent({
   // lands. The invalidate still follows and reconciles (it matches by prefix,
   // so the weavers-page and all-weavers pending counts refresh with it).
   const handleWarpAction = (id: string) => {
-    removeFromEnvelopeWhere<BackendWarpRequest>(queryClient, ["warp-requests-pending"], r => r.id === id);
+    removeFromEnvelopeWhere<BackendWarpRequest>(
+      queryClient,
+      ["warp-requests-pending"],
+      (r) => r.id === id
+    );
     void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] });
   };
   const handleRateAction = (id: string) => {
-    removeFromEnvelopeWhere<BackendRateChangeRequest>(queryClient, ["rate-requests-pending"], r => r.id === id);
+    removeFromEnvelopeWhere<BackendRateChangeRequest>(
+      queryClient,
+      ["rate-requests-pending"],
+      (r) => r.id === id
+    );
     void queryClient.invalidateQueries({ queryKey: ["rate-requests-pending"] });
   };
   return (
@@ -124,18 +148,20 @@ export function TabContent({
                 <BulkActionStrip
                   count={combinedPOList.length}
                   noun="purchase orders"
-                  onApproveAll={() => contextPendingItems.forEach(p => approvePO(p.id))}
+                  onApproveAll={() => contextPendingItems.forEach((p) => approvePO(p.id))}
                 />
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                   <AnimatePresence>
-                    {combinedPOList.map(item => (
+                    {combinedPOList.map((item) => (
                       <POCard
                         key={item.id}
                         item={item}
                         onAction={() => {}}
-                        onApprove={id => approvePO(id)}
-                        onReject={id => rejectPO(id)}
-                        onViewDoc={pos.some(p => p.id === item.id) ? (id) => setViewDocPOId(id) : undefined}
+                        onApprove={(id) => approvePO(id)}
+                        onReject={(id) => rejectPO(id)}
+                        onViewDoc={
+                          pos.some((p) => p.id === item.id) ? (id) => setViewDocPOId(id) : undefined
+                        }
                       />
                     ))}
                   </AnimatePresence>
@@ -161,16 +187,14 @@ export function TabContent({
                 <BulkActionStrip
                   count={warpList.length}
                   noun="warp requests"
-                  onApproveAll={() => void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] })}
+                  onApproveAll={() =>
+                    void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] })
+                  }
                 />
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                   <AnimatePresence>
-                    {warpList.map(item => (
-                      <WarpCard
-                        key={item.id}
-                        item={item}
-                        onAction={handleWarpAction}
-                      />
+                    {warpList.map((item) => (
+                      <WarpCard key={item.id} item={item} onAction={handleWarpAction} />
                     ))}
                   </AnimatePresence>
                 </div>
@@ -195,16 +219,14 @@ export function TabContent({
                 <BulkActionStrip
                   count={rateList.length}
                   noun="rate change requests"
-                  onApproveAll={() => void queryClient.invalidateQueries({ queryKey: ["rate-requests-pending"] })}
+                  onApproveAll={() =>
+                    void queryClient.invalidateQueries({ queryKey: ["rate-requests-pending"] })
+                  }
                 />
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                   <AnimatePresence>
-                    {rateList.map(item => (
-                      <RateCard
-                        key={item.id}
-                        item={item}
-                        onAction={handleRateAction}
-                      />
+                    {rateList.map((item) => (
+                      <RateCard key={item.id} item={item} onAction={handleRateAction} />
                     ))}
                   </AnimatePresence>
                 </div>
@@ -220,19 +242,36 @@ export function TabContent({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           style={{
-            background: "#FFF", borderRadius: 16,
+            background: "#FFF",
+            borderRadius: 16,
             border: "1px solid " + T.borderDef,
             boxShadow: "0 2px 12px rgba(44,24,16,0.07)",
-            padding: "48px 24px", marginTop: 24,
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 16,
+            padding: "48px 24px",
+            marginTop: 24,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 16,
           }}
         >
           <Check size={64} color={T.green} strokeWidth={1.5} />
-          <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 600, color: T.luxuryBrown }}>
+          <span
+            style={{ fontFamily: F.display, fontSize: 24, fontWeight: 600, color: T.luxuryBrown }}
+          >
             All caught up!
           </span>
-          <span className="max-w-[400px]" style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, textAlign: "center", lineHeight: 1.6 }}>
-            There are no pending approvals right now. All purchase orders, warp requests, and rate changes have been actioned.
+          <span
+            className="max-w-[400px]"
+            style={{
+              fontFamily: F.ui,
+              fontSize: 14,
+              color: T.taupe,
+              textAlign: "center",
+              lineHeight: 1.6,
+            }}
+          >
+            There are no pending approvals right now. All purchase orders, warp requests, and rate
+            changes have been actioned.
           </span>
         </motion.div>
       )}

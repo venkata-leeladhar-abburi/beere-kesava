@@ -4,10 +4,16 @@ import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { usePrintSareeTags } from "@/features/weavers";
 
 export function PrinterConfigCard({
-  printer, setPrinter, connectionType, setConnectionType, printerConnected,
+  printer,
+  setPrinter,
+  connectionType,
+  setConnectionType,
+  printerConnected,
 }: {
-  printer: string; setPrinter: (v: string) => void;
-  connectionType: string; setConnectionType: (v: string) => void;
+  printer: string;
+  setPrinter: (v: string) => void;
+  connectionType: string;
+  setConnectionType: (v: string) => void;
   printerConnected: boolean;
 }) {
   const printSareeTags = usePrintSareeTags();
@@ -65,7 +71,9 @@ export function PrinterConfigCard({
           size="sm"
           iconLeft={Printer}
           disabled={!printerConnected}
-          onClick={() => printSareeTags([{ sareeId: "TEST-PRINT-001", sareeTypeName: "Test Label" }])}
+          onClick={() =>
+            printSareeTags([{ sareeId: "TEST-PRINT-001", sareeTypeName: "Test Label" }])
+          }
         >
           Send Test Print
         </Button>

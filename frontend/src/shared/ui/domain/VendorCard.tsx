@@ -20,7 +20,19 @@ export interface VendorCardProps {
   className?: string;
 }
 
-export function VendorCard({ code, name, service, notes, jobs, outstanding, status, paymentStatus, density, onClick, className }: VendorCardProps) {
+export function VendorCard({
+  code,
+  name,
+  service,
+  notes,
+  jobs,
+  outstanding,
+  status,
+  paymentStatus,
+  density,
+  onClick,
+  className,
+}: VendorCardProps) {
   return (
     <DomainCard
       avatarName={name}

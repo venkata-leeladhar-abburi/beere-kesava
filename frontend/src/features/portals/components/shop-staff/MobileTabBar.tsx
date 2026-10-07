@@ -9,7 +9,10 @@ import { Home, ShoppingBag, Package, Users, RotateCcw } from "lucide-react";
 type MobileTabId = TabId | "return";
 
 export function MobileTabBar({
-  active, showReturn, setActive, setShowReturn,
+  active,
+  showReturn,
+  setActive,
+  setShowReturn,
 }: {
   active: string;
   showReturn: boolean;
@@ -30,10 +33,11 @@ export function MobileTabBar({
 
   const activeKey = showReturn ? "return" : active;
 
-  const items: MobileNavItem[] = MOBILE_TABS.map(tab => ({
+  const items: MobileNavItem[] = MOBILE_TABS.map((tab) => ({
     key: tab.id,
     label: tab.label,
-    icon: (props: React.ComponentProps<"svg">) => React.cloneElement(tab.icon as React.ReactElement<React.ComponentProps<"svg">>, props),
+    icon: (props: React.ComponentProps<"svg">) =>
+      React.cloneElement(tab.icon as React.ReactElement<React.ComponentProps<"svg">>, props),
     onClick: () => {
       if (tab.id === "return") {
         setShowReturn(true);

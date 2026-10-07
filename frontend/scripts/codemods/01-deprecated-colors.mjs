@@ -99,13 +99,19 @@ for (const file of files) {
   const goldMatches = [...content.matchAll(GOLD_COLOR_RE)];
   if (goldMatches.length) {
     goldReplacements += goldMatches.length;
-    content = content.replace(GOLD_COLOR_RE, (_, prefix, quote) => `${prefix}${quote}#845E04${quote}`);
+    content = content.replace(
+      GOLD_COLOR_RE,
+      (_, prefix, quote) => `${prefix}${quote}#845E04${quote}`
+    );
   }
 
   const goldAttrMatches = [...content.matchAll(GOLD_COLOR_ATTR_RE)];
   if (goldAttrMatches.length) {
     goldReplacements += goldAttrMatches.length;
-    content = content.replace(GOLD_COLOR_ATTR_RE, (_, prefix, quote) => `${prefix}${quote}#845E04${quote}`);
+    content = content.replace(
+      GOLD_COLOR_ATTR_RE,
+      (_, prefix, quote) => `${prefix}${quote}#845E04${quote}`
+    );
   }
 
   // Flag any remaining gold hex on a line containing the `color` word that
@@ -145,9 +151,12 @@ console.log(`  gold color: → #845E04 : ${goldReplacements} replacement(s)`);
 console.log(`  files changed         : ${filesChanged}`);
 
 if (ambiguousGoldSites.length) {
-  console.log(`\n  ⚠ ${ambiguousGoldSites.length} site(s) mention gold near "color" but weren't auto-matched — review manually:`);
+  console.log(
+    `\n  ⚠ ${ambiguousGoldSites.length} site(s) mention gold near "color" but weren't auto-matched — review manually:`
+  );
   for (const s of ambiguousGoldSites.slice(0, 20)) console.log(`    ${s}`);
-  if (ambiguousGoldSites.length > 20) console.log(`    … and ${ambiguousGoldSites.length - 20} more`);
+  if (ambiguousGoldSites.length > 20)
+    console.log(`    … and ${ambiguousGoldSites.length - 20} more`);
 }
 
 if (dryRun) {

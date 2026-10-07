@@ -3,7 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity } from "lucide-react";
 import { F, T, SectionCard } from "../labelSettings/primitives";
 import { StatusPill } from "./primitives";
-import { geofenceApi, type GeofenceDecision, type GeofenceReadings } from "../../../../shared/api/geofence";
+import {
+  geofenceApi,
+  type GeofenceDecision,
+  type GeofenceReadings,
+} from "../../../../shared/api/geofence";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { DataTable } from "../../../../shared/ui/data";
 import type { ColumnDef } from "../../../../shared/ui/data/columns";
@@ -17,7 +21,10 @@ const ROLE_FILTERS = [
   { value: "ACCOUNTANT", label: "Accountants" },
 ];
 
-const DECISION_COPY: Record<GeofenceDecision, { label: string; tone: "good" | "warn" | "bad" | "muted" }> = {
+const DECISION_COPY: Record<
+  GeofenceDecision,
+  { label: string; tone: "good" | "warn" | "bad" | "muted" }
+> = {
   ALLOWED: { label: "At the premises", tone: "good" },
   OUTSIDE: { label: "Too far away", tone: "bad" },
   INACCURATE: { label: "Position too vague", tone: "warn" },
@@ -61,8 +68,9 @@ function Headline({ data }: { data: GeofenceReadings }) {
       {data.siteLabel ? ` for ${data.siteLabel}` : ""} at the current {data.radiusMeters} m limit.
       {summary.medianDistanceMeters != null && (
         <>
-          {" "}The typical sign-in was <strong>{metres(summary.medianDistanceMeters)}</strong> from
-          the pin, with the phone able to place itself to about{" "}
+          {" "}
+          The typical sign-in was <strong>{metres(summary.medianDistanceMeters)}</strong> from the
+          pin, with the phone able to place itself to about{" "}
           <strong>{metres(summary.medianAccuracyMeters)}</strong>.
         </>
       )}
@@ -88,17 +96,40 @@ function Distribution({ data }: { data: GeofenceReadings }) {
         // shading it makes the limit readable straight off the chart.
         const insideRadius = bucket.toMeters != null && bucket.toMeters <= data.radiusMeters;
         return (
-          <div key={bucket.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "5px 0" }}>
-            <div style={{ width: 110, fontFamily: F.ui, fontSize: 12.5, color: T.taupe, flexShrink: 0 }}>
+          <div
+            key={bucket.label}
+            style={{ display: "flex", alignItems: "center", gap: 12, padding: "5px 0" }}
+          >
+            <div
+              style={{
+                width: 110,
+                fontFamily: F.ui,
+                fontSize: 12.5,
+                color: T.taupe,
+                flexShrink: 0,
+              }}
+            >
               {bucket.label}
             </div>
-            <div style={{ flex: 1, minWidth: 0, height: 20, background: "rgba(110,15,45,0.06)", borderRadius: 6 }}>
+            <div
+              style={{
+                flex: 1,
+                minWidth: 0,
+                height: 20,
+                background: "rgba(110,15,45,0.06)",
+                borderRadius: 6,
+              }}
+            >
               <div
                 style={{
                   width: `${(bucket.count / max) * 100}%`,
                   height: "100%",
                   borderRadius: 6,
-                  background: insideRadius ? T.green : bucket.fromMeters === null ? T.taupe : T.royalBurgundy,
+                  background: insideRadius
+                    ? T.green
+                    : bucket.fromMeters === null
+                      ? T.taupe
+                      : T.royalBurgundy,
                   minWidth: bucket.count > 0 ? 3 : 0,
                 }}
               />
@@ -247,7 +278,6 @@ const headlineStyle: React.CSSProperties = {
   fontSize: 14,
   lineHeight: 1.6,
 };
-
 
 const filterStyle: React.CSSProperties = {
   padding: "8px 12px",

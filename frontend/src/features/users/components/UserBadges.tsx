@@ -22,32 +22,98 @@ export function SectionCard({
   id?: string;
 }) {
   return (
-    <div id={id} style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
-      <div className="p-4 sm:p-7" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
+    <div
+      id={id}
+      style={{
+        background: "#FFFFFF",
+        borderRadius: 20,
+        border: `1px solid ${T.borderDef}`,
+        boxShadow: "0 6px 32px rgba(74,6,27,0.08)",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        className="p-4 sm:p-7"
+        style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}
+      >
         <div className="flex items-start gap-3.5 sm:gap-4 w-full">
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "rgba(255,255,255,0.12)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              marginTop: 2,
+            }}
+          >
             <Icon size={24} color="#FFFDF9" />
           </div>
           <div className="flex flex-col items-start gap-3 flex-1 min-w-0">
             <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px", lineHeight: 1.2 }}>{title}</div>
-              {subtitle && <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.70)", marginTop: 4, lineHeight: 1.5 }}>{subtitle}</div>}
+              <div
+                style={{
+                  fontFamily: F.display,
+                  fontWeight: 700,
+                  fontSize: 20,
+                  color: "#FFFDF9",
+                  letterSpacing: "-0.2px",
+                  lineHeight: 1.2,
+                }}
+              >
+                {title}
+              </div>
+              {subtitle && (
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 14,
+                    color: "rgba(255,253,249,0.70)",
+                    marginTop: 4,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {subtitle}
+                </div>
+              )}
             </div>
-            {actions && <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto pt-1">{actions}</div>}
+            {actions && (
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto pt-1">
+                {actions}
+              </div>
+            )}
           </div>
         </div>
       </div>
-      <div style={{ padding: "24px 28px 28px" }}>
-        {children}
-      </div>
+      <div style={{ padding: "24px 28px 28px" }}>{children}</div>
     </div>
   );
 }
 
 export function RoleBadge({ role }: { role: string }) {
-  const c = ROLE_COLORS[role] ?? { bg: "rgba(139,112,96,0.10)", text: T.taupe, border: "rgba(139,112,96,0.15)" };
+  const c = ROLE_COLORS[role] ?? {
+    bg: "rgba(139,112,96,0.10)",
+    text: T.taupe,
+    border: "rgba(139,112,96,0.15)",
+  };
   return (
-    <span style={{ display: "inline-block", background: c.bg, color: c.text, border: `1px solid ${c.border}`, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, whiteSpace: "nowrap" as const }}>
+    <span
+      style={{
+        display: "inline-block",
+        background: c.bg,
+        color: c.text,
+        border: `1px solid ${c.border}`,
+        borderRadius: 999,
+        padding: "3px 10px",
+        fontFamily: F.ui,
+        fontSize: 12,
+        fontWeight: 600,
+        whiteSpace: "nowrap" as const,
+      }}
+    >
       {role}
     </span>
   );
@@ -57,7 +123,22 @@ export function AccessBadge({ level }: { level: AccessLevel }) {
   const m = ACCESS_LEVEL_META[level];
   const Icon = level === "Full Access" ? ShieldCheck : ShieldHalf;
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: m.bg, color: m.color, border: `1px solid ${m.border}`, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, whiteSpace: "nowrap" as const }}>
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 5,
+        background: m.bg,
+        color: m.color,
+        border: `1px solid ${m.border}`,
+        borderRadius: 999,
+        padding: "3px 10px",
+        fontFamily: F.ui,
+        fontSize: 12,
+        fontWeight: 600,
+        whiteSpace: "nowrap" as const,
+      }}
+    >
       <Icon size={11} /> {level}
     </span>
   );
@@ -66,8 +147,30 @@ export function AccessBadge({ level }: { level: AccessLevel }) {
 export function StatusBadge({ status }: { status: string }) {
   const active = status === "Active";
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: active ? T.greenBg : "rgba(139,112,96,0.09)", color: active ? T.green : T.taupe, border: `1px solid ${active ? "rgba(30,102,64,0.18)" : "rgba(139,112,96,0.15)"}`, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>
-      <div style={{ width: 6, height: 6, borderRadius: "50%", background: active ? T.green : T.taupe, flexShrink: 0 }} />
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 5,
+        background: active ? T.greenBg : "rgba(139,112,96,0.09)",
+        color: active ? T.green : T.taupe,
+        border: `1px solid ${active ? "rgba(30,102,64,0.18)" : "rgba(139,112,96,0.15)"}`,
+        borderRadius: 999,
+        padding: "3px 10px",
+        fontFamily: F.ui,
+        fontSize: 12,
+        fontWeight: 600,
+      }}
+    >
+      <div
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          background: active ? T.green : T.taupe,
+          flexShrink: 0,
+        }}
+      />
       {status}
     </span>
   );

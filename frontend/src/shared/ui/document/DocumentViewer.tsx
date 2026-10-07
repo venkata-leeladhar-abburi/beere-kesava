@@ -29,7 +29,13 @@ export interface DocumentViewerProps {
   className?: string;
 }
 
-export function DocumentViewer({ children, actions, fileName, documentTitle, className }: DocumentViewerProps) {
+export function DocumentViewer({
+  children,
+  actions,
+  fileName,
+  documentTitle,
+  className,
+}: DocumentViewerProps) {
   const { print, download } = useDocument();
 
   // Download writes a real PDF from this exact tree (see exportPdf.ts) — no
@@ -38,13 +44,21 @@ export function DocumentViewer({ children, actions, fileName, documentTitle, cla
   const handleDownload = () => download(children, { fileName, title: documentTitle });
 
   return (
-    <div className={className} style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
+    <div
+      className={className}
+      style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}
+    >
       <div
         data-print="hide"
         style={{
-          display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8,
-          padding: "10px 16px", borderBottom: "1px solid var(--border-subtle)",
-          background: "var(--surface-raised)", flexShrink: 0,
+          display: "flex",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          gap: 8,
+          padding: "10px 16px",
+          borderBottom: "1px solid var(--border-subtle)",
+          background: "var(--surface-raised)",
+          flexShrink: 0,
         }}
       >
         {actions}

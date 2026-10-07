@@ -16,7 +16,7 @@ describe("ErrorBoundary", () => {
     render(
       <ErrorBoundary>
         <div>All good</div>
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
     expect(screen.getByText("All good")).toBeInTheDocument();
   });
@@ -25,7 +25,7 @@ describe("ErrorBoundary", () => {
     render(
       <ErrorBoundary>
         <Boom />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
     expect(screen.getByText("Render Error")).toBeInTheDocument();
     expect(screen.getByText(/kaboom/)).toBeInTheDocument();
@@ -36,7 +36,7 @@ describe("ErrorBoundary", () => {
     render(
       <ErrorBoundary fallback={<div>Custom fallback</div>}>
         <Boom />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
     expect(screen.getByText("Custom fallback")).toBeInTheDocument();
     expect(screen.queryByText("Render Error")).not.toBeInTheDocument();
@@ -51,7 +51,7 @@ describe("ErrorBoundary", () => {
     render(
       <ErrorBoundary>
         <Flaky />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
     expect(screen.getByText("Render Error")).toBeInTheDocument();
 
@@ -71,7 +71,7 @@ describe("ErrorBoundary", () => {
     render(
       <ErrorBoundary resetTo="/admin">
         <Boom />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
     fireEvent.click(screen.getByText("Go to Home"));
     expect(window.location.href).toBe("/admin");
@@ -90,7 +90,7 @@ describe("ErrorBoundary", () => {
     render(
       <ErrorBoundary>
         <Boom />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
     fireEvent.click(screen.getByText("Go to Home"));
     expect(window.location.href).toBe("/");

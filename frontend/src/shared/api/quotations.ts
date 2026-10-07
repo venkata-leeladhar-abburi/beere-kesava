@@ -1,11 +1,7 @@
 import { apiClient } from "./client";
 
 export type BackendQuotationStatus =
-  | "RAISED"
-  | "IN_FINISHING"
-  | "PARTIALLY_RECEIVED"
-  | "RECEIVED"
-  | "DISPATCHED";
+  "RAISED" | "IN_FINISHING" | "PARTIALLY_RECEIVED" | "RECEIVED" | "DISPATCHED";
 export type BackendQuotationSareeStatus = "PENDING" | "IN_FINISHING" | "RECEIVED";
 
 export interface BackendQuotationSaree {
@@ -31,9 +27,19 @@ export interface BackendQuotation {
   raisedBy?: { id: string; firstName: string; lastName: string } | null;
   createdAt: string;
   sarees: BackendQuotationSaree[];
-  customer: { id: string; name: string; city: string | null; phone: string | null; address: string | null; gstCode: string | null } | null;
+  customer: {
+    id: string;
+    name: string;
+    city: string | null;
+    phone: string | null;
+    address: string | null;
+    gstCode: string | null;
+  } | null;
   bulkOrder: { ref: string } | null;
-  finishingAssignments?: { sareeId: string; finishingStaff: { id: string; firstName: string; lastName: string } }[];
+  finishingAssignments?: {
+    sareeId: string;
+    finishingStaff: { id: string; firstName: string; lastName: string };
+  }[];
 }
 
 interface PaginatedResponse<T> {
@@ -59,10 +65,13 @@ export const quotationsApi = {
 
   findOne: (id: string) => apiClient.get<BackendQuotation>(`/quotations/${id}`),
 
-  create: (payload: CreateQuotationPayload) => apiClient.post<BackendQuotation>("/quotations", payload),
+  create: (payload: CreateQuotationPayload) =>
+    apiClient.post<BackendQuotation>("/quotations", payload),
 
-  assignFinishing: (id: string, payload: { sareeIds: string[]; staffId: string; assignedById: string }) => 
-    apiClient.post<BackendQuotation>(`/quotations/${id}/assign-finishing`, payload),
+  assignFinishing: (
+    id: string,
+    payload: { sareeIds: string[]; staffId: string; assignedById: string }
+  ) => apiClient.post<BackendQuotation>(`/quotations/${id}/assign-finishing`, payload),
 
   receiveSarees: (id: string, sareeIds: string[]) =>
     apiClient.post<BackendQuotation>(`/quotations/${id}/receive`, { sareeIds }),

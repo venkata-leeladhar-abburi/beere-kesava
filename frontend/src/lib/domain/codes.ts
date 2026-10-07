@@ -77,151 +77,255 @@ export const ENTITY_CODES = {
   // `nextNamed(counter, segment)` — the visible prefix is the record's own
   // name, so two suppliers never share a segment+serial.
   weaver: {
-    shape: "named", counterKey: "WEAVER", example: "Padma-001",
-    label: "Weaver", icon: Icons.weaver, route: "/weavers/:code",
+    shape: "named",
+    counterKey: "WEAVER",
+    example: "Padma-001",
+    label: "Weaver",
+    icon: Icons.weaver,
+    route: "/weavers/:code",
   },
   supplier: {
-    shape: "named", counterKey: "SUPPLIER", example: "SreeDurga-001",
-    label: "Supplier", icon: Icons.supplier,
+    shape: "named",
+    counterKey: "SUPPLIER",
+    example: "SreeDurga-001",
+    label: "Supplier",
+    icon: Icons.supplier,
   },
   vendor: {
-    shape: "named", counterKey: "VENDOR", example: "ShivaTraders-001",
-    label: "Vendor", icon: Icons.vendor,
+    shape: "named",
+    counterKey: "VENDOR",
+    example: "ShivaTraders-001",
+    label: "Vendor",
+    icon: Icons.vendor,
   },
   // Retail customers carry a first name ("CUST" counter), wholesale customers
   // the whole business name ("WHL") — one type, two counters.
   customer: {
-    shape: "named", counterKey: ["CUST", "WHL"], example: "Kamala-002",
-    label: "Customer", icon: Icons.customer,
+    shape: "named",
+    counterKey: ["CUST", "WHL"],
+    example: "Kamala-002",
+    label: "Customer",
+    icon: Icons.customer,
   },
   // Segment is the literal word "Loom", so these read `Loom-001`.
   loom: {
-    shape: "named", counterKey: "LOOM", example: "Loom-001",
-    label: "Loom", icon: Icons.loom,
+    shape: "named",
+    counterKey: "LOOM",
+    example: "Loom-001",
+    label: "Loom",
+    icon: Icons.loom,
   },
 
   // `nextFormatted(prefix)` — fixed prefix, global counter.
   batch: {
-    shape: "prefixed", prefix: "BATCH", counterKey: "BATCH", example: "BATCH-086",
-    label: "Batch", icon: Icons.batch, route: "/batches/:code",
+    shape: "prefixed",
+    prefix: "BATCH",
+    counterKey: "BATCH",
+    example: "BATCH-086",
+    label: "Batch",
+    icon: Icons.batch,
+    route: "/batches/:code",
   },
   // Gap-filling (sequence-id.util), not an IdCounter row: deleting a user frees
   // their number. Prefix follows the role — weaver-role users reuse their
   // weaver code instead, which is `named`.
   employee: {
-    shape: "prefixed", prefix: ["SUPER", "ADMIN", "STAFF", "SHOP", "ACCT", "FIN"],
-    example: "ACCT-003", label: "Employee", icon: Icons.employee,
+    shape: "prefixed",
+    prefix: ["SUPER", "ADMIN", "STAFF", "SHOP", "ACCT", "FIN"],
+    example: "ACCT-003",
+    label: "Employee",
+    icon: Icons.employee,
   },
 
   // ── Documents ─────────────────────────────────────────────────────────────
   // `nextScoped(prefix, parentCode)` — the parent's own code is embedded, and
   // the counter is per-parent, so each customer's invoices start at -001.
   invoice: {
-    shape: "scoped", prefix: "INV", counterKey: "INV", example: "INV-Kamala-002-014",
-    label: "Invoice", icon: Icons.invoice,
+    shape: "scoped",
+    prefix: "INV",
+    counterKey: "INV",
+    example: "INV-Kamala-002-014",
+    label: "Invoice",
+    icon: Icons.invoice,
   },
   quotation: {
-    shape: "scoped", prefix: "QUO", counterKey: "QUO", example: "QUO-Kamala-002-003",
-    label: "Quotation", icon: Icons.quotation,
+    shape: "scoped",
+    prefix: "QUO",
+    counterKey: "QUO",
+    example: "QUO-Kamala-002-003",
+    label: "Quotation",
+    icon: Icons.quotation,
   },
   purchaseOrder: {
-    shape: "scoped", prefix: "PO", counterKey: "PO", example: "PO-ShivaTraders-001-007",
-    label: "Purchase Order", icon: Icons.purchaseOrder,
+    shape: "scoped",
+    prefix: "PO",
+    counterKey: "PO",
+    example: "PO-ShivaTraders-001-007",
+    label: "Purchase Order",
+    icon: Icons.purchaseOrder,
   },
   goodsReceipt: {
-    shape: "scoped", prefix: "GRN", counterKey: "GRN", example: "GRN-ShivaTraders-001-007",
-    label: "Goods Receipt", icon: Icons.goodsReceipt,
+    shape: "scoped",
+    prefix: "GRN",
+    counterKey: "GRN",
+    example: "GRN-ShivaTraders-001-007",
+    label: "Goods Receipt",
+    icon: Icons.goodsReceipt,
   },
   // The two types whose scope parent is the financial year rather than a
   // record: `nextScoped("DC", financialYearCode())` and its counterpart at the
   // receiving end. A challan leaves the factory; a shop receipt acknowledges
   // it at the counter.
   challan: {
-    shape: "scoped", prefix: "DC", counterKey: "DC", parentIsFinancialYear: true,
+    shape: "scoped",
+    prefix: "DC",
+    counterKey: "DC",
+    parentIsFinancialYear: true,
     example: "DC-2627-042",
-    label: "Delivery Challan", icon: Icons.challan,
+    label: "Delivery Challan",
+    icon: Icons.challan,
   },
   // Deliberately NOT the GRN prefix above: that one is the vendor goods
   // receipt raised against a purchase order and is scoped to the vendor, so
   // one prefix would carry two incompatible shapes.
   shopReceipt: {
-    shape: "scoped", prefix: "SGR", counterKey: "SGR", parentIsFinancialYear: true,
+    shape: "scoped",
+    prefix: "SGR",
+    counterKey: "SGR",
+    parentIsFinancialYear: true,
     example: "SGR-2627-014",
-    label: "Shop Goods Receipt", icon: Icons.goodsReceipt,
+    label: "Shop Goods Receipt",
+    icon: Icons.goodsReceipt,
   },
   order: {
-    shape: "scoped", prefix: "ORD", counterKey: "ORD", example: "ORD-Kamala-002-005",
-    label: "Order", icon: Icons.order,
+    shape: "scoped",
+    prefix: "ORD",
+    counterKey: "ORD",
+    example: "ORD-Kamala-002-005",
+    label: "Order",
+    icon: Icons.order,
   },
   // Generic payment references are `nextFormatted("REFERENCE")`. Supplier and
   // vendor payments use scoped SP-/VP- ids and are not this type.
   payment: {
-    shape: "prefixed", prefix: "REFERENCE", counterKey: "REFERENCE",
-    example: "REFERENCE-118", label: "Payment", icon: Icons.payment,
+    shape: "prefixed",
+    prefix: "REFERENCE",
+    counterKey: "REFERENCE",
+    example: "REFERENCE-118",
+    label: "Payment",
+    icon: Icons.payment,
   },
 
   // Payments against a specific party are scoped on that party's code; only
   // the generic `payment` reference above is a flat counter.
   supplierPayment: {
-    shape: "scoped", prefix: "SP", counterKey: "SP", example: "SP-SreeDurga-001-004",
-    label: "Supplier Payment", icon: Icons.supplierPayment,
+    shape: "scoped",
+    prefix: "SP",
+    counterKey: "SP",
+    example: "SP-SreeDurga-001-004",
+    label: "Supplier Payment",
+    icon: Icons.supplierPayment,
   },
   vendorPayment: {
-    shape: "scoped", prefix: "VP", counterKey: "VP", example: "VP-ShivaTraders-001-002",
-    label: "Vendor Payment", icon: Icons.vendorPayment,
+    shape: "scoped",
+    prefix: "VP",
+    counterKey: "VP",
+    example: "VP-ShivaTraders-001-002",
+    label: "Vendor Payment",
+    icon: Icons.vendorPayment,
   },
   // An unregistered ("Other, enter manually") supplier still gets its own
   // sequence, keyed off its free-text name rather than a real supplier code.
   purchase: {
-    shape: "scoped", prefix: "EXT", counterKey: "EXT", example: "EXT-SreeDurga-001-009",
-    label: "External Purchase", icon: Icons.purchase,
+    shape: "scoped",
+    prefix: "EXT",
+    counterKey: "EXT",
+    example: "EXT-SreeDurga-001-009",
+    label: "External Purchase",
+    icon: Icons.purchase,
   },
   // Mints `RR-<SupplierCode>-NNN` like every other scoped type. Rows created
   // before the fallback was fixed carry a UUID parent instead — see
   // `parentMayBeUuid`.
   supplierReturn: {
-    shape: "scoped", prefix: "RR", counterKey: "RR", parentMayBeUuid: true,
-    example: "RR-SreeDurga-001-002", label: "Supplier Return", icon: Icons.supplierReturn,
+    shape: "scoped",
+    prefix: "RR",
+    counterKey: "RR",
+    parentMayBeUuid: true,
+    example: "RR-SreeDurga-001-002",
+    label: "Supplier Return",
+    icon: Icons.supplierReturn,
   },
   // Material movements scope on whoever holds the material — a weaver or a
   // factory loom — so both `MIR-Padma-001-003` and `MIR-Loom-001-003` are real.
   materialIssue: {
-    shape: "scoped", prefix: "MIR", counterKey: "MIR", example: "MIR-Padma-001-003",
-    label: "Material Issue", icon: Icons.materialIssue,
+    shape: "scoped",
+    prefix: "MIR",
+    counterKey: "MIR",
+    example: "MIR-Padma-001-003",
+    label: "Material Issue",
+    icon: Icons.materialIssue,
   },
   materialReturn: {
-    shape: "scoped", prefix: "MRR", counterKey: "MRR", example: "MRR-Loom-001-003",
-    label: "Material Return", icon: Icons.materialReturn,
+    shape: "scoped",
+    prefix: "MRR",
+    counterKey: "MRR",
+    example: "MRR-Loom-001-003",
+    label: "Material Return",
+    icon: Icons.materialReturn,
   },
   warpRequest: {
-    shape: "scoped", prefix: "WR", counterKey: "WR", example: "WR-Padma-001-006",
-    label: "Warp Request", icon: Icons.warpRequest,
+    shape: "scoped",
+    prefix: "WR",
+    counterKey: "WR",
+    example: "WR-Padma-001-006",
+    label: "Warp Request",
+    icon: Icons.warpRequest,
   },
   // Scoped on the requesting user's empId, so the parent is an employee code.
   rateRequest: {
-    shape: "scoped", prefix: "RCR", counterKey: "RCR", example: "RCR-ACCT-003-002",
-    label: "Rate Change Request", icon: Icons.rateRequest,
+    shape: "scoped",
+    prefix: "RCR",
+    counterKey: "RCR",
+    example: "RCR-ACCT-003-002",
+    label: "Rate Change Request",
+    icon: Icons.rateRequest,
   },
   designDispatch: {
-    shape: "scoped", prefix: "DISP", counterKey: "DISP", example: "DISP-Padma-001-004",
-    label: "Design Dispatch", icon: Icons.designDispatch,
+    shape: "scoped",
+    prefix: "DISP",
+    counterKey: "DISP",
+    example: "DISP-Padma-001-004",
+    label: "Design Dispatch",
+    icon: Icons.designDispatch,
   },
   // One type, two prefixes: the sales channel picks which, and with it whether
   // the customer segment reads as a business or a first name.
   sale: {
-    shape: "scoped", prefix: ["RETAIL", "WHOLESALE"], counterKey: ["RETAIL", "WHOLESALE"],
-    example: "RETAIL-Kamala-002-011", label: "Sale", icon: Icons.sale,
+    shape: "scoped",
+    prefix: ["RETAIL", "WHOLESALE"],
+    counterKey: ["RETAIL", "WHOLESALE"],
+    example: "RETAIL-Kamala-002-011",
+    label: "Sale",
+    icon: Icons.sale,
   },
   // Named, not scoped — the RET counter is global, so a sale return's code is
   // shaped exactly like a supplier's. Nothing but context tells them apart,
   // which is why `parseAnyCode` refuses to guess at named codes.
   saleReturn: {
-    shape: "named", counterKey: "RET", example: "SreeDurga-004",
-    label: "Sale Return", icon: Icons.saleReturn,
+    shape: "named",
+    counterKey: "RET",
+    example: "SreeDurga-004",
+    label: "Sale Return",
+    icon: Icons.saleReturn,
   },
   firm: {
-    shape: "prefixed", prefix: "FIRM", counterKey: "FIRM", example: "FIRM-002",
-    label: "Firm", icon: Icons.firm,
+    shape: "prefixed",
+    prefix: "FIRM",
+    counterKey: "FIRM",
+    example: "FIRM-002",
+    label: "Firm",
+    icon: Icons.firm,
   },
 
   // ── Not counter-generated ─────────────────────────────────────────────────
@@ -229,13 +333,18 @@ export const ENTITY_CODES = {
   // and row serial: `PADMA-L3-B12-007` or `Loom-001-B12-007`. No single serial
   // to parse, so it is only ever validated as non-empty.
   saree: {
-    shape: "freeform", example: "PADMA-L3-B12-007",
-    label: "Saree", icon: Icons.saree, route: "/inventory/:code",
+    shape: "freeform",
+    example: "PADMA-L3-B12-007",
+    label: "Saree",
+    icon: Icons.saree,
+    route: "/inventory/:code",
   },
   // DesignLibrary.code is the primary key and is typed in by the operator.
   design: {
-    shape: "freeform", example: "DS-FLORAL-01",
-    label: "Design", icon: Icons.design,
+    shape: "freeform",
+    example: "DS-FLORAL-01",
+    label: "Design",
+    icon: Icons.design,
   },
 } as const satisfies Record<string, EntityCodeSpec>;
 
@@ -308,7 +417,7 @@ export function parseCode(type: EntityCodeType, code: string): ParsedCode {
       : { type, serial: NaN, valid: false };
   }
 
-  const prefix = prefixesOf(spec).find(p => value.startsWith(`${p}-`));
+  const prefix = prefixesOf(spec).find((p) => value.startsWith(`${p}-`));
   if (!prefix) return { type, serial: NaN, valid: false };
   const rest = value.slice(prefix.length + 1);
 
@@ -326,8 +435,7 @@ export function parseCode(type: EntityCodeType, code: string): ParsedCode {
   if (spec.parentIsFinancialYear) {
     return { type, segment: parent, serial: Number(m[2]), valid: /^\d{4}$/.test(parent) };
   }
-  const parentOk =
-    PARENT.test(parent) || (spec.parentMayBeUuid === true && UUID.test(parent));
+  const parentOk = PARENT.test(parent) || (spec.parentMayBeUuid === true && UUID.test(parent));
   return { type, segment: parent, serial: Number(m[2]), valid: parentOk };
 }
 
@@ -340,14 +448,20 @@ export function parseCode(type: EntityCodeType, code: string): ParsedCode {
 export function parseAnyCode(code: string): ParsedCode | null {
   const value = code.trim();
   const matches = (Object.keys(ENTITY_CODES) as EntityCodeType[])
-    .filter(type => {
+    .filter((type) => {
       const spec = getEntitySpec(type);
-      return spec.shape !== "named" && spec.shape !== "freeform"
-        && prefixesOf(spec).some(p => value.startsWith(`${p}-`));
+      return (
+        spec.shape !== "named" &&
+        spec.shape !== "freeform" &&
+        prefixesOf(spec).some((p) => value.startsWith(`${p}-`))
+      );
     })
     // Longest prefix first so `PO-` never shadows a longer prefix starting the same way.
-    .sort((a, b) => Math.max(...prefixesOf(getEntitySpec(b)).map(p => p.length))
-                  - Math.max(...prefixesOf(getEntitySpec(a)).map(p => p.length)));
+    .sort(
+      (a, b) =>
+        Math.max(...prefixesOf(getEntitySpec(b)).map((p) => p.length)) -
+        Math.max(...prefixesOf(getEntitySpec(a)).map((p) => p.length))
+    );
 
   for (const type of matches) {
     const parsed = parseCode(type, value);

@@ -64,11 +64,25 @@ export function MobileFormActionBar({
       }}
     >
       {secondary && (
-        <Button variant="secondary" size="md" onClick={secondary.onClick} disabled={secondary.disabled} iconLeft={secondary.icon} className="w-full justify-center">
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={secondary.onClick}
+          disabled={secondary.disabled}
+          iconLeft={secondary.icon}
+          className="w-full justify-center"
+        >
           {secondary.label}
         </Button>
       )}
-      <Button variant="primary" size="md" onClick={primary.onClick} disabled={primary.disabled} iconLeft={primary.icon} className="w-full justify-center">
+      <Button
+        variant="primary"
+        size="md"
+        onClick={primary.onClick}
+        disabled={primary.disabled}
+        iconLeft={primary.icon}
+        className="w-full justify-center"
+      >
         {primary.label}
       </Button>
     </div>

@@ -19,7 +19,7 @@ import type { BackendPurchaseOrder } from "@/shared/api/purchase-orders";
  */
 export function matchGrnItemCodes(
   poItems: NonNullable<BackendPurchaseOrder["items"]>,
-  grnItems: NonNullable<NonNullable<BackendPurchaseOrder["grnReceipt"]>["items"]>,
+  grnItems: NonNullable<NonNullable<BackendPurchaseOrder["grnReceipt"]>["items"]>
 ): (string | undefined)[] {
   const taken = new Set<number>();
   const norm = (v: string | null | undefined) => (v ?? "").trim().toLowerCase();
@@ -34,12 +34,13 @@ export function matchGrnItemCodes(
   // Exact links are resolved for every ordered line before any guessing
   // starts, so a heuristic match can never consume a line that a later
   // ordered line owns outright.
-  const exact = poItems.map(item => (item.id ? claim(g => g.poItemId === item.id) : -1));
+  const exact = poItems.map((item) => (item.id ? claim((g) => g.poItemId === item.id) : -1));
 
   return poItems.map((item, n) => {
     let i = exact[n]!;
-    if (i < 0) i = claim(g => g.materialType === item.materialType && norm(g.name) === norm(item.name));
-    if (i < 0) i = claim(g => g.materialType === item.materialType);
+    if (i < 0)
+      i = claim((g) => g.materialType === item.materialType && norm(g.name) === norm(item.name));
+    if (i < 0) i = claim((g) => g.materialType === item.materialType);
     // Claiming is separate from reading the code: a legacy receipt line with a
     // null itemCode is still *matched* and must stay consumed, or the fallback
     // above would hand a second, unrelated line's code to this material.

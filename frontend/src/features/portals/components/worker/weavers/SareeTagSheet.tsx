@@ -12,7 +12,13 @@
  * so a vertical layout left no room for anything else.
  */
 import { ScannableCode } from "@/shared/ui/domain";
-import { LabelSheet, useTileStock, monoFitEm, innerWidthEm, type LabelStock } from "@/shared/ui/document";
+import {
+  LabelSheet,
+  useTileStock,
+  monoFitEm,
+  innerWidthEm,
+  type LabelStock,
+} from "@/shared/ui/document";
 
 export interface SareeTag {
   sareeId: string;
@@ -41,23 +47,50 @@ function TagTile({ tag }: { tag: SareeTag }) {
   return (
     <div
       style={{
-        width: "100%", height: "100%", boxSizing: "border-box",
-        border: "0.25mm solid #000", borderRadius: "0.8em",
+        width: "100%",
+        height: "100%",
+        boxSizing: "border-box",
+        border: "0.25mm solid #000",
+        borderRadius: "0.8em",
         padding: "1em 1.2em",
-        display: "flex", alignItems: "center", gap: "1.2em",
-        background: "#FFFFFF", color: "#000000",
-        overflow: "hidden", lineHeight: 1.2,
+        display: "flex",
+        alignItems: "center",
+        gap: "1.2em",
+        background: "#FFFFFF",
+        color: "#000000",
+        overflow: "hidden",
+        lineHeight: 1.2,
       }}
     >
-      <div style={{ width: `${QR_EM}em`, height: `${QR_EM}em`, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div
+        style={{
+          width: `${QR_EM}em`,
+          height: `${QR_EM}em`,
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <ScannableCode value={tag.sareeId} size={76} className="bk-label-qr" />
       </div>
 
-      <div style={{ minWidth: 0, flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.4em" }}>
+      <div
+        style={{
+          minWidth: 0,
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          gap: "0.4em",
+        }}
+      >
         <div style={{ fontFamily: ui, fontSize: "1.8em", ...ellipsis }}>
           Beere Kesava &amp; Brothers Silks
         </div>
-        <div style={{ fontFamily: mono, fontSize: `${idSize}em`, fontWeight: 700, ...ellipsis }}>{tag.sareeId}</div>
+        <div style={{ fontFamily: mono, fontSize: `${idSize}em`, fontWeight: 700, ...ellipsis }}>
+          {tag.sareeId}
+        </div>
         <div style={{ fontFamily: ui, fontSize: "1.7em", ...ellipsis }}>
           {tag.entityLabel}: {tag.entityValue}
         </div>

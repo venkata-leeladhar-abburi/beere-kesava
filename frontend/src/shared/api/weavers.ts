@@ -130,12 +130,16 @@ export const weaversApi = {
   // name/code) purely because their record fell on a later page. Walk every
   // page and merge.
   list: async (pageSize = 500): Promise<PaginatedResponse<BackendWeaver>> => {
-    const first = await apiClient.get<PaginatedResponse<BackendWeaver>>(`/weavers?page=1&pageSize=${pageSize}`);
+    const first = await apiClient.get<PaginatedResponse<BackendWeaver>>(
+      `/weavers?page=1&pageSize=${pageSize}`
+    );
     const items = [...first.items];
     let page = 1;
     while (items.length < first.total) {
       page += 1;
-      const next = await apiClient.get<PaginatedResponse<BackendWeaver>>(`/weavers?page=${page}&pageSize=${pageSize}`);
+      const next = await apiClient.get<PaginatedResponse<BackendWeaver>>(
+        `/weavers?page=${page}&pageSize=${pageSize}`
+      );
       if (next.items.length === 0) break;
       items.push(...next.items);
     }
@@ -167,16 +171,15 @@ export const weaversApi = {
   /** Firm-wide monthly output for the trailing window (default 12 months). */
   getProductionSeries: (months?: number) =>
     apiClient.get<BackendWeaverProductionSeriesPoint[]>(
-      `/weavers/production-series${months ? `?months=${months}` : ""}`,
+      `/weavers/production-series${months ? `?months=${months}` : ""}`
     ),
 
   /** Top-10 leaderboard of active weavers ranked by QC pass rate. */
-  getLeaderboard: () =>
-    apiClient.get<BackendWeaverLeaderboardEntry[]>(`/weavers/leaderboard`),
+  getLeaderboard: () => apiClient.get<BackendWeaverLeaderboardEntry[]>(`/weavers/leaderboard`),
 
   /** Top-5 leaderboard of weavers ranked by production volume within a trailing window (default 6 months). */
   getProductionLeaderboard: (months?: number) =>
     apiClient.get<BackendWeaverProductionLeaderboardEntry[]>(
-      `/weavers/production-leaderboard${months ? `?months=${months}` : ""}`,
+      `/weavers/production-leaderboard${months ? `?months=${months}` : ""}`
     ),
 };

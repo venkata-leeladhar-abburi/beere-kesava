@@ -53,7 +53,7 @@ export function getCurrentFix(): Promise<LocationFix | null> {
         // someone who was at the factory this morning would pass the check
         // from home this evening, on a fix taken hours ago and miles away.
         maximumAge: 0,
-      },
+      }
     );
   });
 }

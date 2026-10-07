@@ -16,9 +16,20 @@ describe("sale GST read-back", () => {
 
   it("totals a bill's GST on paise and keeps both GSTINs", () => {
     const bill = billGstFromSales([
-      { amount: "1050.10", gstRate: "5.00", gstAmount: "50.10", customerGstin: "36AAACR5055K1Z5", sellerGstin: "37AABCB1234C1Z5" },
+      {
+        amount: "1050.10",
+        gstRate: "5.00",
+        gstAmount: "50.10",
+        customerGstin: "36AAACR5055K1Z5",
+        sellerGstin: "37AABCB1234C1Z5",
+      },
       { amount: "735.20", gstRate: "5.00", gstAmount: "35.20" },
     ]);
-    expect(bill).toEqual({ rate: 5, amount: 85.3, customerGstin: "36AAACR5055K1Z5", sellerGstin: "37AABCB1234C1Z5" });
+    expect(bill).toEqual({
+      rate: 5,
+      amount: 85.3,
+      customerGstin: "36AAACR5055K1Z5",
+      sellerGstin: "37AABCB1234C1Z5",
+    });
   });
 });

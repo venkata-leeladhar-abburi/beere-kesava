@@ -3,34 +3,34 @@
 // Path: src/app/pages/index.ts  →  ../components/ = src/app/components/
 
 // Admin pages
-export { MaterialsPage }          from "../../features/materials/components/MaterialsPage";
-export { WeaversPage }            from "../../features/weavers/components/WeaversPage";
-export { ProductionPage }         from "../../features/production/components/ProductionPage";
-export { PaymentsPage }           from "../../features/payments/components/PaymentsPage";
-export { ReportsPage }            from "../../features/reports/components/ReportsPage";
-export { OutstandingPage }        from "../../features/payments/components/OutstandingPage";
-export { CustomersPage }          from "../../features/customers/components/CustomersPage";
-export { InventoryPage }          from "../../features/inventory/components/InventoryPage";
-export { NotificationsPage }      from "../../features/notifications/components/NotificationsPage";
-export { FirmsPage }              from "../../features/firms/components/FirmsPage";
-export { ExternalPurchasesPage }  from "../../features/inventory/components/ExternalPurchasesPage";
-export { DesignLibraryPage }      from "../../features/design-library/components/DesignLibraryPage";
-export { BatchCreationPage }      from "../../features/production/components/BatchCreationPage";
-export { IssueMaterialPage }      from "../../features/materials/components/IssueMaterialPage";
-export { AllWeaversPage }         from "../../features/weavers/components/AllWeaversPage";
-export { AllStockPage }           from "../../features/inventory/components/AllStockPage";
-export { AllOrdersPage }          from "../../features/bulk-orders/components/AllOrdersPage";
-export { QcHistoryPage }          from "../../features/qc/components/QcHistoryPage";
-export { ProductionHistoryPage }  from "../../features/production/components/ProductionHistoryPage";
-export { AddUserPage }            from "../../features/users/components/AddUserPage";
-export { RatesPricingPage }       from "../../features/pricing/components/RatesPricingPage";
-export { ApprovalsPage }          from "../../features/purchasing/components/ApprovalsPage";
-export { AuditLogPage }           from "../../features/audit/components/AuditLogPage";
-export { LabelSettingsPage }      from "../../features/settings/components/LabelSettingsPage";
-export { GeofenceSettingsPage }   from "../../features/settings/components/GeofenceSettingsPage";
+export { MaterialsPage } from "../../features/materials/components/MaterialsPage";
+export { WeaversPage } from "../../features/weavers/components/WeaversPage";
+export { ProductionPage } from "../../features/production/components/ProductionPage";
+export { PaymentsPage } from "../../features/payments/components/PaymentsPage";
+export { ReportsPage } from "../../features/reports/components/ReportsPage";
+export { OutstandingPage } from "../../features/payments/components/OutstandingPage";
+export { CustomersPage } from "../../features/customers/components/CustomersPage";
+export { InventoryPage } from "../../features/inventory/components/InventoryPage";
+export { NotificationsPage } from "../../features/notifications/components/NotificationsPage";
+export { FirmsPage } from "../../features/firms/components/FirmsPage";
+export { ExternalPurchasesPage } from "../../features/inventory/components/ExternalPurchasesPage";
+export { DesignLibraryPage } from "../../features/design-library/components/DesignLibraryPage";
+export { BatchCreationPage } from "../../features/production/components/BatchCreationPage";
+export { IssueMaterialPage } from "../../features/materials/components/IssueMaterialPage";
+export { AllWeaversPage } from "../../features/weavers/components/AllWeaversPage";
+export { AllStockPage } from "../../features/inventory/components/AllStockPage";
+export { AllOrdersPage } from "../../features/bulk-orders/components/AllOrdersPage";
+export { QcHistoryPage } from "../../features/qc/components/QcHistoryPage";
+export { ProductionHistoryPage } from "../../features/production/components/ProductionHistoryPage";
+export { AddUserPage } from "../../features/users/components/AddUserPage";
+export { RatesPricingPage } from "../../features/pricing/components/RatesPricingPage";
+export { ApprovalsPage } from "../../features/purchasing/components/ApprovalsPage";
+export { AuditLogPage } from "../../features/audit/components/AuditLogPage";
+export { LabelSettingsPage } from "../../features/settings/components/LabelSettingsPage";
+export { GeofenceSettingsPage } from "../../features/settings/components/GeofenceSettingsPage";
 
 // Worker pages
-export { WorkerGRN as WorkerGRNPage }             from "../../features/portals/components/worker/WorkerGRN";
-export { WorkerQC as WorkerQCPage }               from "../../features/portals/components/worker/WorkerQC";
-export { WorkerWeavers as WorkerWeaversPage }      from "../../features/portals/components/worker/WorkerWeavers";
-export { WorkerFinishing as WorkerFinishingPage }  from "../../features/portals/components/worker/WorkerFinishing";
+export { WorkerGRN as WorkerGRNPage } from "../../features/portals/components/worker/WorkerGRN";
+export { WorkerQC as WorkerQCPage } from "../../features/portals/components/worker/WorkerQC";
+export { WorkerWeavers as WorkerWeaversPage } from "../../features/portals/components/worker/WorkerWeavers";
+export { WorkerFinishing as WorkerFinishingPage } from "../../features/portals/components/worker/WorkerFinishing";

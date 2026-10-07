@@ -41,16 +41,22 @@ export type FlowAccent = {
 };
 
 export const ACCENT_SALE: FlowAccent = {
-  base: "#6E0F2D", deep: "#4A061B",
-  soft: "rgba(110,15,45,0.06)", softBorder: "rgba(110,15,45,0.20)",
+  base: "#6E0F2D",
+  deep: "#4A061B",
+  soft: "rgba(110,15,45,0.06)",
+  softBorder: "rgba(110,15,45,0.20)",
 };
 export const ACCENT_RETURN: FlowAccent = {
-  base: "#6E0F2D", deep: "#4A061B",
-  soft: "rgba(110,15,45,0.06)", softBorder: "rgba(110,15,45,0.20)",
+  base: "#6E0F2D",
+  deep: "#4A061B",
+  soft: "rgba(110,15,45,0.06)",
+  softBorder: "rgba(110,15,45,0.20)",
 };
 export const ACCENT_WHOLESALE: FlowAccent = {
-  base: "#6E0F2D", deep: "#4A061B",
-  soft: "rgba(110,15,45,0.06)", softBorder: "rgba(110,15,45,0.20)",
+  base: "#6E0F2D",
+  deep: "#4A061B",
+  soft: "rgba(110,15,45,0.06)",
+  softBorder: "rgba(110,15,45,0.20)",
 };
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -79,10 +85,16 @@ export function Stepper({
   return (
     <ol
       style={{
-        display: "flex", alignItems: "flex-start", justifyContent: "space-between", listStyle: "none",
-        width: "100%", boxSizing: "border-box",
-        margin: 0, padding: "20px 20px 18px",
-        borderBottom: `1px solid ${C.bdr}`, background: C.cream,
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "space-between",
+        listStyle: "none",
+        width: "100%",
+        boxSizing: "border-box",
+        margin: 0,
+        padding: "20px 20px 18px",
+        borderBottom: `1px solid ${C.bdr}`,
+        background: C.cream,
       }}
     >
       {steps.map((s, i) => {
@@ -96,17 +108,33 @@ export function Stepper({
           <span
             aria-hidden
             style={{
-              width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               background: done || active ? accent.base : "#FFFFFF",
               border: done || active ? `1px solid ${accent.base}` : `1.5px solid ${C.bdrMed}`,
               boxShadow: active ? `0 0 0 4px ${accent.soft}` : "none",
               transition: "background 0.18s, box-shadow 0.18s",
             }}
           >
-            {done
-              ? <Check size={16} color="#FFFFFF" strokeWidth={3} />
-              : <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: active ? "#FFFFFF" : C.muted }}>{n}</span>}
+            {done ? (
+              <Check size={16} color="#FFFFFF" strokeWidth={3} />
+            ) : (
+              <span
+                style={{
+                  fontFamily: F.u,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: active ? "#FFFFFF" : C.muted,
+                }}
+              >
+                {n}
+              </span>
+            )}
           </span>
         );
 
@@ -119,7 +147,15 @@ export function Stepper({
               alignItems: "flex-start",
             }}
           >
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 6,
+                flexShrink: 0,
+              }}
+            >
               {clickable ? (
                 <Button
                   variant="tertiary"
@@ -129,13 +165,16 @@ export function Stepper({
                 >
                   {circle}
                 </Button>
-              ) : circle}
+              ) : (
+                circle
+              )}
 
               <div style={{ textAlign: "center" }}>
                 <div
                   aria-current={active ? "step" : undefined}
                   style={{
-                    fontFamily: F.u, fontSize: 12,
+                    fontFamily: F.u,
+                    fontSize: 12,
                     fontWeight: active ? 700 : 500,
                     color: active ? C.wine : done ? C.text : C.muted,
                     whiteSpace: "nowrap",
@@ -144,7 +183,15 @@ export function Stepper({
                   {s.label}
                 </div>
                 {done && s.summary && (
-                  <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 1, whiteSpace: "nowrap" }}>
+                  <div
+                    style={{
+                      fontFamily: F.u,
+                      fontSize: 11,
+                      color: C.muted,
+                      marginTop: 1,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {s.summary}
                   </div>
                 )}
@@ -156,7 +203,9 @@ export function Stepper({
               <span
                 aria-hidden
                 style={{
-                  flex: 1, height: 2, margin: "15px 8px 0",
+                  flex: 1,
+                  height: 2,
+                  margin: "15px 8px 0",
                   borderRadius: 999,
                   background: done ? accent.base : C.bdrMed,
                   transition: "background 0.18s",
@@ -175,12 +224,51 @@ export function Stepper({
    ══════════════════════════════════════════════════════════════════════════ */
 
 /** Title + one-line explanation at the top of a step. */
-export function StepHeader({ title, subtitle, aside }: { title: string; subtitle?: string; aside?: React.ReactNode }) {
+export function StepHeader({
+  title,
+  subtitle,
+  aside,
+}: {
+  title: string;
+  subtitle?: string;
+  aside?: React.ReactNode;
+}) {
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 20 }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "space-between",
+        gap: 16,
+        marginBottom: 20,
+      }}
+    >
       <div>
-        <h3 style={{ fontFamily: F.u, fontSize: 18, fontWeight: 600, color: C.wine, margin: 0, letterSpacing: "-0.01em" }}>{title}</h3>
-        {subtitle && <p style={{ fontFamily: F.u, fontSize: 14, color: C.muted, margin: "5px 0 0", lineHeight: 1.5 }}>{subtitle}</p>}
+        <h3
+          style={{
+            fontFamily: F.u,
+            fontSize: 18,
+            fontWeight: 600,
+            color: C.wine,
+            margin: 0,
+            letterSpacing: "-0.01em",
+          }}
+        >
+          {title}
+        </h3>
+        {subtitle && (
+          <p
+            style={{
+              fontFamily: F.u,
+              fontSize: 14,
+              color: C.muted,
+              margin: "5px 0 0",
+              lineHeight: 1.5,
+            }}
+          >
+            {subtitle}
+          </p>
+        )}
       </div>
       {aside && <div style={{ flexShrink: 0 }}>{aside}</div>}
     </div>
@@ -228,13 +316,27 @@ export function FlowActions({
   return (
     <div
       style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16,
-        marginTop: 28, padding: "20px 20px",
-        borderTop: `1px solid ${C.bdr}`, background: C.cream,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 16,
+        marginTop: 28,
+        padding: "20px 20px",
+        borderTop: `1px solid ${C.bdr}`,
+        background: C.cream,
         flexWrap: "wrap",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", minWidth: 0, flex: "1 1 auto" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+          minWidth: 0,
+          flex: "1 1 auto",
+        }}
+      >
         {onBack && (
           <Button
             variant="secondary"
@@ -246,14 +348,33 @@ export function FlowActions({
           </Button>
         )}
         {hint && disabled && !primaryBusy && (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: F.u, fontSize: 13, color: C.muted, minWidth: 0, flex: "1 1 100%" }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 7,
+              fontFamily: F.u,
+              fontSize: 13,
+              color: C.muted,
+              minWidth: 0,
+              flex: "1 1 100%",
+            }}
+          >
             <AlertCircle size={15} color={C.muted} style={{ flexShrink: 0 }} />
             {hint}
           </span>
         )}
       </div>
 
-      <div style={{ ["--cta-bg" as string]: bg, ["--cta-bg-hover" as string]: bgHover } as React.CSSProperties} className="w-full sm:w-auto">
+      <div
+        style={
+          {
+            ["--cta-bg" as string]: bg,
+            ["--cta-bg-hover" as string]: bgHover,
+          } as React.CSSProperties
+        }
+        className="w-full sm:w-auto"
+      >
         <Button
           variant="primary"
           onClick={onPrimary}
@@ -333,54 +454,150 @@ export function ScanPanel({
 
   return (
     <div>
-      <BarcodeScannerModal open={scannerOpen} onClose={() => setScannerOpen(false)} onDetected={handleDetected} accent={accent} />
+      <BarcodeScannerModal
+        open={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onDetected={handleDetected}
+        accent={accent}
+      />
       <div
         style={{
           background: `linear-gradient(135deg, ${accent.deep} 0%, ${accent.base} 100%)`,
-          borderRadius: 20, padding: "36px 28px", marginBottom: 24,
-          display: "flex", flexDirection: "column", alignItems: "center", gap: 16,
-          position: "relative", overflow: "hidden",
+          borderRadius: 20,
+          padding: "36px 28px",
+          marginBottom: 24,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 16,
+          position: "relative",
+          overflow: "hidden",
           boxShadow: "0 12px 36px rgba(74,6,27,0.24)",
         }}
       >
-        <div aria-hidden style={{ position: "absolute", top: -28, right: -28, width: 130, height: 130, borderRadius: "50%", background: "rgba(200,155,71,0.14)" }} />
-        <div aria-hidden style={{ position: "absolute", bottom: -36, left: -20, width: 110, height: 110, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: -28,
+            right: -28,
+            width: 130,
+            height: 130,
+            borderRadius: "50%",
+            background: "rgba(200,155,71,0.14)",
+          }}
+        />
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            bottom: -36,
+            left: -20,
+            width: 110,
+            height: 110,
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.05)",
+          }}
+        />
 
-        <div style={{ width: 72, height: 72, borderRadius: 18, position: "relative", zIndex: 1, background: "rgba(255,255,255,0.13)", border: "1.5px solid rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: 18,
+            position: "relative",
+            zIndex: 1,
+            background: "rgba(255,255,255,0.13)",
+            border: "1.5px solid rgba(255,255,255,0.22)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <Camera size={34} color="#FFFDF9" />
         </div>
         <div style={{ textAlign: "center", position: "relative", zIndex: 1 }}>
-          <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 24, color: "#FFFDF9", marginBottom: 6 }}>{title}</div>
-          <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,253,249,0.72)", lineHeight: 1.55, maxWidth: "min(380px, 100%)" }}>{hint}</div>
+          <div
+            style={{
+              fontFamily: F.d,
+              fontWeight: 400,
+              fontSize: 24,
+              color: "#FFFDF9",
+              marginBottom: 6,
+            }}
+          >
+            {title}
+          </div>
+          <div
+            style={{
+              fontFamily: F.u,
+              fontSize: 14,
+              color: "rgba(255,253,249,0.72)",
+              lineHeight: 1.55,
+              maxWidth: "min(380px, 100%)",
+            }}
+          >
+            {hint}
+          </div>
         </div>
       </div>
 
-      <label htmlFor="flow-scan-id" style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, display: "block", marginBottom: 8 }}>
+      <label
+        htmlFor="flow-scan-id"
+        style={{
+          fontFamily: F.u,
+          fontWeight: 500,
+          fontSize: 14,
+          color: C.text,
+          display: "block",
+          marginBottom: 8,
+        }}
+      >
         {inputLabel}
       </label>
-      <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 8, lineHeight: 1.5 }}>
+      <div
+        style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 8, lineHeight: 1.5 }}
+      >
         Type or scan the ID and press Find — or leave it empty and press Scan to use the camera.
       </div>
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
         <Input
           id="flow-scan-id"
           value={value}
-          onChange={e => onValueChange(e.target.value)}
+          onChange={(e) => onValueChange(e.target.value)}
           // Enter only ever looks up typed text — it must not fire the camera,
           // which `canSubmit` now also allows through the button.
-          onKeyDown={e => { if (e.key === "Enter" && !cameraMode && canSubmit) { e.preventDefault(); void submit(value); } }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !cameraMode && canSubmit) {
+              e.preventDefault();
+              void submit(value);
+            }
+          }}
           placeholder={placeholder}
           size="lg"
           className="flex-1 font-mono"
           aria-invalid={!!error}
           aria-describedby={error ? "flow-scan-error" : undefined}
         />
-        <div style={{ ["--cta-bg" as string]: accent.base, ["--cta-bg-hover" as string]: accent.deep } as React.CSSProperties}>
+        <div
+          style={
+            {
+              ["--cta-bg" as string]: accent.base,
+              ["--cta-bg-hover" as string]: accent.deep,
+            } as React.CSSProperties
+          }
+        >
           <Button
             variant="primary"
             size="lg"
             iconLeft={cameraMode ? Camera : undefined}
-            onClick={() => { if (cameraMode) { setScannerOpen(true); return; } void submit(value); }}
+            onClick={() => {
+              if (cameraMode) {
+                setScannerOpen(true);
+                return;
+              }
+              void submit(value);
+            }}
             disabled={!canSubmit}
             className="h-12 rounded-xl bg-[var(--cta-bg)] px-6 hover:bg-[var(--cta-bg-hover)] disabled:cursor-not-allowed disabled:opacity-45"
           >
@@ -389,7 +606,19 @@ export function ScanPanel({
         </div>
       </div>
       {error && (
-        <div id="flow-scan-error" role="alert" style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 7, fontFamily: F.u, fontSize: 13, color: "#AB3832" }}>
+        <div
+          id="flow-scan-error"
+          role="alert"
+          style={{
+            marginTop: 10,
+            display: "flex",
+            alignItems: "center",
+            gap: 7,
+            fontFamily: F.u,
+            fontSize: 13,
+            color: "#AB3832",
+          }}
+        >
           <AlertCircle size={15} /> {error}
         </div>
       )}
@@ -401,21 +630,49 @@ export function ScanPanel({
 export function FoundBanner({ title, detail }: { title: string; detail: string }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-      style={{ background: "rgba(31,119,78,0.08)", border: "1px solid rgba(31,119,78,0.28)", borderRadius: 14, padding: "14px 18px", display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      style={{
+        background: "rgba(31,119,78,0.08)",
+        border: "1px solid rgba(31,119,78,0.28)",
+        borderRadius: 14,
+        padding: "14px 18px",
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        marginBottom: 20,
+      }}
     >
-      <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#1F774E", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: "50%",
+          background: "#1F774E",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
         <Check size={18} color="#FFF" strokeWidth={3} />
       </div>
       <div>
-        <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: "#1F774E" }}>{title}</div>
+        <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: "#1F774E" }}>
+          {title}
+        </div>
         <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 2 }}>{detail}</div>
       </div>
     </motion.div>
   );
 }
 
-export type SummaryRow = { label: string; value: React.ReactNode; mono?: boolean; emphasis?: boolean };
+export type SummaryRow = {
+  label: string;
+  value: React.ReactNode;
+  mono?: boolean;
+  emphasis?: boolean;
+};
 
 /**
  * Read-back panel used on every confirm step. A two-column definition list
@@ -434,9 +691,30 @@ export function SummaryPanel({
   footer?: React.ReactNode;
 }) {
   return (
-    <div style={{ borderRadius: 16, border: `1px solid ${C.bdr}`, overflow: "hidden", background: "#FFFFFF", boxShadow: "0 2px 12px rgba(74,6,27,0.06)" }}>
-      <div style={{ padding: "14px 20px", background: C.cream, borderBottom: `1px solid ${C.bdr}` }}>
-        <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: C.muted }}>{title}</span>
+    <div
+      style={{
+        borderRadius: 16,
+        border: `1px solid ${C.bdr}`,
+        overflow: "hidden",
+        background: "#FFFFFF",
+        boxShadow: "0 2px 12px rgba(74,6,27,0.06)",
+      }}
+    >
+      <div
+        style={{ padding: "14px 20px", background: C.cream, borderBottom: `1px solid ${C.bdr}` }}
+      >
+        <span
+          style={{
+            fontFamily: F.u,
+            fontSize: 12,
+            fontWeight: 600,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: C.muted,
+          }}
+        >
+          {title}
+        </span>
       </div>
       <dl style={{ margin: 0, padding: "6px 20px" }}>
         {rows.map((r, i) => (
@@ -444,15 +722,18 @@ export function SummaryPanel({
             key={r.label}
             className="grid-cols-1 md:grid-cols-[minmax(120px,34%)_1fr]"
             style={{
-              display: "grid", gap: 20,
-              alignItems: "baseline", padding: "13px 0",
+              display: "grid",
+              gap: 20,
+              alignItems: "baseline",
+              padding: "13px 0",
               borderBottom: i < rows.length - 1 ? `1px solid ${C.bdr}` : "none",
             }}
           >
             <dt style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{r.label}</dt>
             <dd
               style={{
-                margin: 0, textAlign: "right",
+                margin: 0,
+                textAlign: "right",
                 fontFamily: F.u,
                 fontVariantNumeric: r.mono ? "tabular-nums" : undefined,
                 fontSize: r.emphasis ? 16 : 14,
@@ -466,7 +747,11 @@ export function SummaryPanel({
           </div>
         ))}
       </dl>
-      {footer && <div style={{ borderTop: `1px solid ${C.bdr}`, padding: "18px 20px", background: C.cream }}>{footer}</div>}
+      {footer && (
+        <div style={{ borderTop: `1px solid ${C.bdr}`, padding: "18px 20px", background: C.cream }}>
+          {footer}
+        </div>
+      )}
     </div>
   );
 }
@@ -494,7 +779,14 @@ export function OptionCard({
   name: string;
 }) {
   return (
-    <div style={{ ["--opt" as string]: accent.base, ["--opt-soft" as string]: accent.soft } as React.CSSProperties}>
+    <div
+      style={
+        {
+          ["--opt" as string]: accent.base,
+          ["--opt-soft" as string]: accent.soft,
+        } as React.CSSProperties
+      }
+    >
       <Button
         variant="tertiary"
         fullWidth
@@ -510,20 +802,62 @@ export function OptionCard({
       >
         <span
           style={{
-            width: 44, height: 44, borderRadius: 10, flexShrink: 0,
+            width: 44,
+            height: 44,
+            borderRadius: 10,
+            flexShrink: 0,
             background: selected ? "rgba(255,255,255,1)" : "#F8F4F0",
             border: selected ? `1px solid ${accent.softBorder}` : "1px solid transparent",
-            display: "flex", alignItems: "center", justifyContent: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <Icon size={20} color={selected ? accent.base : C.muted} />
         </span>
         <span style={{ display: "block", minWidth: 0 }}>
-          <span style={{ display: "block", fontFamily: F.u, fontWeight: 600, fontSize: 15, color: selected ? accent.base : C.text }}>{label}</span>
-          {sub && <span style={{ display: "block", fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 3, lineHeight: 1.45 }}>{sub}</span>}
+          <span
+            style={{
+              display: "block",
+              fontFamily: F.u,
+              fontWeight: 600,
+              fontSize: 15,
+              color: selected ? accent.base : C.text,
+            }}
+          >
+            {label}
+          </span>
+          {sub && (
+            <span
+              style={{
+                display: "block",
+                fontFamily: F.u,
+                fontSize: 13,
+                color: C.muted,
+                marginTop: 3,
+                lineHeight: 1.45,
+              }}
+            >
+              {sub}
+            </span>
+          )}
         </span>
         {selected && (
-          <span aria-hidden style={{ position: "absolute", top: 12, right: 12, width: 20, height: 20, borderRadius: "50%", background: accent.base, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              width: 20,
+              height: 20,
+              borderRadius: "50%",
+              background: accent.base,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <Check size={12} color="#FFF" strokeWidth={3} />
           </span>
         )}
@@ -533,14 +867,33 @@ export function OptionCard({
 }
 
 /** Cautionary strip for the irreversible confirm steps. */
-export function ConsequenceNote({ children, tone = "warn" }: { children: React.ReactNode; tone?: "warn" | "info" }) {
+export function ConsequenceNote({
+  children,
+  tone = "warn",
+}: {
+  children: React.ReactNode;
+  tone?: "warn" | "info";
+}) {
   const col = tone === "warn" ? "#AB3832" : "#0A6AA7";
   const bg = tone === "warn" ? "rgba(171,56,50,0.06)" : "rgba(10,106,167,0.06)";
   const bd = tone === "warn" ? "rgba(171,56,50,0.22)" : "rgba(10,106,167,0.22)";
   return (
-    <div style={{ background: bg, border: `1px solid ${bd}`, borderRadius: 14, padding: "14px 18px", display: "flex", alignItems: "flex-start", gap: 12, marginTop: 20 }}>
+    <div
+      style={{
+        background: bg,
+        border: `1px solid ${bd}`,
+        borderRadius: 14,
+        padding: "14px 18px",
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 12,
+        marginTop: 20,
+      }}
+    >
       <AlertCircle size={17} color={col} style={{ flexShrink: 0, marginTop: 1 }} />
-      <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, lineHeight: 1.6 }}>{children}</div>
+      <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, lineHeight: 1.6 }}>
+        {children}
+      </div>
     </div>
   );
 }

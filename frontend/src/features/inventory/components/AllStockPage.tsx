@@ -11,39 +11,64 @@ import { useExternalPurchaseRows, type WeaverSareeRow } from "@/features/weavers
 import { ErrorState, EmptyState, FilteredEmptyState } from "../../../shared/ui/state";
 
 const T = {
-  silkCream:     "#F7F2EA",
+  silkCream: "#F7F2EA",
   royalBurgundy: "#6E0F2D",
-  antiqueGold:   "#C89B47",
-  luxuryBrown:   "#3B2314",
-  warmCream:     "#F5E8D0",
-  taupe:         "#69635E",
-  borderDef:     "rgba(110,15,45,0.10)",
+  antiqueGold: "#C89B47",
+  luxuryBrown: "#3B2314",
+  warmCream: "#F5E8D0",
+  taupe: "#69635E",
+  borderDef: "rgba(110,15,45,0.10)",
 };
 const F = {
   display: "'Plus Jakarta Sans', sans-serif",
-  ui:      "'Inter', sans-serif",
-  mono:    "'JetBrains Mono', monospace",
+  ui: "'Inter', sans-serif",
+  mono: "'JetBrains Mono', monospace",
 };
 const G = {
   card: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
 };
 
-function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
+function FadeUp({
+  children,
+  delay = 0,
+  style,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  style?: React.CSSProperties;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px 0px" });
   return (
-    <motion.div ref={ref}
+    <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 28, scale: 0.98 }}
       animate={inView ? { opacity: 1, y: 0, scale: 1 } : undefined}
-      transition={{ type: "spring", stiffness: 260, damping: 26, delay, opacity: { duration: 0.45 } }}
-      style={style}>
+      transition={{
+        type: "spring",
+        stiffness: 260,
+        damping: 26,
+        delay,
+        opacity: { duration: 0.45 },
+      }}
+      style={style}
+    >
       {children}
     </motion.div>
   );
 }
 
 // ── Avatar palette for initials cards ────────────────────────────────────
-const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040"];
+const AVATAR_PALETTE = [
+  "#5A3E6B",
+  "#6E0F2D",
+  "#2D6B6B",
+  "#4A6B4A",
+  "#9B6B8A",
+  "#2D7D6B",
+  "#4A5E7A",
+  "#7A2040",
+];
 
 function formatQcDate(iso: string): string {
   const d = new Date(iso);
@@ -90,8 +115,15 @@ function externalToStockSaree(r: WeaverSareeRow, index: number): StockSaree {
 
 function toStockSaree(item: BackendStockItem, index: number): StockSaree {
   const initials = item.weaverName
-    ? item.weaverName.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase()
-    : item.source === "factory" ? "BK" : "EX";
+    ? item.weaverName
+        .split(" ")
+        .map((p) => p[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : item.source === "factory"
+      ? "BK"
+      : "EX";
   return {
     id: item.sareeId,
     source: item.source,
@@ -99,8 +131,12 @@ function toStockSaree(item: BackendStockItem, index: number): StockSaree {
     weaverCode: item.weaverCode ?? "—",
     // Already a label from the backend: the factory loom's code ("Loom-002")
     // or, for an outsourced saree, the weaver's own loom digit.
-    loom: item.loomNumber ? (/^\d+$/.test(item.loomNumber) ? `Loom ${item.loomNumber}` : item.loomNumber) : "—",
-    weight: "—",                          // not in DB yet
+    loom: item.loomNumber
+      ? /^\d+$/.test(item.loomNumber)
+        ? `Loom ${item.loomNumber}`
+        : item.loomNumber
+      : "—",
+    weight: "—", // not in DB yet
     qcDate: formatQcDate(item.qcDate),
     design: item.designCode ?? "—",
     sareeType: item.sareeTypeLabel ?? item.sareeTypeCode ?? "—",
@@ -114,14 +150,18 @@ function toStockSaree(item: BackendStockItem, index: number): StockSaree {
   };
 }
 
-
 export function AllStockPage({ onBack }: { onBack?: () => void }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | StockStatus>("all");
   const [sourceFilter, setSourceFilter] = useState<"all" | StockSource>("all");
   const [viewSaree, setViewSaree] = useState<StockSaree | null>(null);
 
-  const { data: raw, isLoading, isError, refetch } = useQuery({
+  const {
+    data: raw,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["stock-list"],
     queryFn: () => inventoryApi.list(),
   });
@@ -131,10 +171,10 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
     // The ledger has no external sarees of its own; drop any a legacy row
     // still claims so a piece can't be listed twice once the purchases are
     // merged in below.
-    const ledger = (raw ?? []).filter(item => item.source !== "external").map(toStockSaree);
+    const ledger = (raw ?? []).filter((item) => item.source !== "external").map(toStockSaree);
     const external = externalRows
       // A piece sent back to the supplier is no longer stock we hold.
-      .filter(r => !r.external?.returned)
+      .filter((r) => !r.external?.returned)
       .map((r, i) => externalToStockSaree(r, ledger.length + i));
     return [...ledger, ...external];
   }, [raw, externalRows]);
@@ -147,8 +187,14 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
   const deferredSearch = useDeferredValue(search);
   const filtered = useMemo(() => {
     const q = deferredSearch.trim().toLowerCase();
-    return ALL_STOCK.filter(s => {
-      const matchSearch = q === "" || s.id.toLowerCase().includes(q) || (s.weaver || "").toLowerCase().includes(q) || s.design.toLowerCase().includes(q) || (s.supplier || "").toLowerCase().includes(q) || (s.invoiceNumber || "").toLowerCase().includes(q);
+    return ALL_STOCK.filter((s) => {
+      const matchSearch =
+        q === "" ||
+        s.id.toLowerCase().includes(q) ||
+        (s.weaver || "").toLowerCase().includes(q) ||
+        s.design.toLowerCase().includes(q) ||
+        (s.supplier || "").toLowerCase().includes(q) ||
+        (s.invoiceNumber || "").toLowerCase().includes(q);
       const matchStatus = statusFilter === "all" || s.status === statusFilter;
       const matchSource = sourceFilter === "all" || s.source === sourceFilter;
       return matchSearch && matchStatus && matchSource;
@@ -159,28 +205,58 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
   // Narrowing the list while on a later page would otherwise strand the user
   // on a page that has nothing to do with what they just filtered for. Only
   // setPage is stable across renders, so `pag` itself can't be a dep.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { pag.setPage(1); }, [search, statusFilter, sourceFilter]);
+  useEffect(() => {
+    pag.setPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, statusFilter, sourceFilter]);
 
   // One pass instead of four full scans on every render.
   const { availableCount, soldCount, wholesaleCount, externalCount } = useMemo(() => {
-    let available = 0, sold = 0, wholesale = 0, external = 0;
+    let available = 0,
+      sold = 0,
+      wholesale = 0,
+      external = 0;
     for (const s of ALL_STOCK) {
       if (s.status === "available") available++;
       else if (s.status === "sold") sold++;
       else if (s.status === "wholesale") wholesale++;
       if (s.source === "external") external++;
     }
-    return { availableCount: available, soldCount: sold, wholesaleCount: wholesale, externalCount: external };
+    return {
+      availableCount: available,
+      soldCount: sold,
+      wholesaleCount: wholesale,
+      externalCount: external,
+    };
   }, [ALL_STOCK]);
 
   return (
     <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
-
       {/* ── HERO ── */}
-      <section className="px-4 md:px-7 xl:px-14" style={{ background: G.card, paddingTop: 52, position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(135deg, rgba(200,155,71,0.04) 0px, rgba(200,155,71,0.04) 1px, transparent 1px, transparent 60px)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 80, background: "linear-gradient(to top, rgba(247,242,234,0.08), transparent)", pointerEvents: "none" }} />
+      <section
+        className="px-4 md:px-7 xl:px-14"
+        style={{ background: G.card, paddingTop: 52, position: "relative", overflow: "hidden" }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage:
+              "repeating-linear-gradient(135deg, rgba(200,155,71,0.04) 0px, rgba(200,155,71,0.04) 1px, transparent 1px, transparent 60px)",
+            pointerEvents: "none",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 80,
+            background: "linear-gradient(to top, rgba(247,242,234,0.08), transparent)",
+            pointerEvents: "none",
+          }}
+        />
 
         <div style={{ position: "relative", zIndex: 2 }}>
           {onBack && (
@@ -195,32 +271,127 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
             </Button>
           )}
 
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 32 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              marginBottom: 32,
+            }}
+          >
             <div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 10 }}>
+              <div
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 12,
+                  color: "rgba(200,155,71,0.80)",
+                  letterSpacing: "2.5px",
+                  textTransform: "uppercase",
+                  marginBottom: 10,
+                }}
+              >
                 PRODUCTION · INVENTORY
               </div>
-              <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 48, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
+              <h1
+                style={{
+                  fontFamily: F.display,
+                  fontWeight: 700,
+                  fontSize: 48,
+                  color: "#FFFDF9",
+                  margin: 0,
+                  lineHeight: 1.1,
+                }}
+              >
                 Sarees In Stock
               </h1>
-              <p className="max-w-[560px]" style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", margin: "10px 0 0", lineHeight: 1.6 }}>
-                All sarees ready for sale or assignment to finishing staff — produced on our factory looms,
-                woven by our weavers, or bought in from external suppliers.
+              <p
+                className="max-w-[560px]"
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: 14,
+                  color: "rgba(255,253,249,0.65)",
+                  margin: "10px 0 0",
+                  lineHeight: 1.6,
+                }}
+              >
+                All sarees ready for sale or assignment to finishing staff — produced on our factory
+                looms, woven by our weavers, or bought in from external suppliers.
               </p>
             </div>
           </div>
 
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", paddingBottom: 36 }}>
             {[
-              { label: "Total In Stock",    value: String(ALL_STOCK.length), gold: false, greenAccent: false },
-              { label: "Available for Sale", value: String(availableCount),   gold: false, greenAccent: true  },
-              { label: "Sold — Pending Finishing", value: String(soldCount), gold: true,  greenAccent: false },
-              { label: "Assigned Wholesale", value: String(wholesaleCount),  gold: false, greenAccent: false },
-              { label: "External Purchases", value: String(externalCount),  gold: true,  greenAccent: false },
-            ].map(c => (
-              <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 10, background: c.gold ? "rgba(200,155,71,0.20)" : c.greenAccent ? "rgba(30,102,64,0.18)" : "rgba(255,253,249,0.10)", border: `1px solid ${c.gold ? "rgba(200,155,71,0.40)" : c.greenAccent ? "rgba(30,102,64,0.35)" : "rgba(255,253,249,0.15)"}`, borderRadius: 99, padding: "9px 18px" }}>
-                <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: c.gold ? T.antiqueGold : c.greenAccent ? "#6DCE9A" : "#FFFDF9" }}>{c.value}</span>
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: c.gold ? T.antiqueGold : c.greenAccent ? "rgba(109,206,154,0.85)" : "rgba(255,253,249,0.68)" }}>{c.label}</span>
+              {
+                label: "Total In Stock",
+                value: String(ALL_STOCK.length),
+                gold: false,
+                greenAccent: false,
+              },
+              {
+                label: "Available for Sale",
+                value: String(availableCount),
+                gold: false,
+                greenAccent: true,
+              },
+              {
+                label: "Sold — Pending Finishing",
+                value: String(soldCount),
+                gold: true,
+                greenAccent: false,
+              },
+              {
+                label: "Assigned Wholesale",
+                value: String(wholesaleCount),
+                gold: false,
+                greenAccent: false,
+              },
+              {
+                label: "External Purchases",
+                value: String(externalCount),
+                gold: true,
+                greenAccent: false,
+              },
+            ].map((c) => (
+              <div
+                key={c.label}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  background: c.gold
+                    ? "rgba(200,155,71,0.20)"
+                    : c.greenAccent
+                      ? "rgba(30,102,64,0.18)"
+                      : "rgba(255,253,249,0.10)",
+                  border: `1px solid ${c.gold ? "rgba(200,155,71,0.40)" : c.greenAccent ? "rgba(30,102,64,0.35)" : "rgba(255,253,249,0.15)"}`,
+                  borderRadius: 99,
+                  padding: "9px 18px",
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: F.display,
+                    fontSize: 20,
+                    fontWeight: 700,
+                    color: c.gold ? T.antiqueGold : c.greenAccent ? "#6DCE9A" : "#FFFDF9",
+                  }}
+                >
+                  {c.value}
+                </span>
+                <span
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 13,
+                    color: c.gold
+                      ? T.antiqueGold
+                      : c.greenAccent
+                        ? "rgba(109,206,154,0.85)"
+                        : "rgba(255,253,249,0.68)",
+                  }}
+                >
+                  {c.label}
+                </span>
               </div>
             ))}
           </div>
@@ -230,12 +401,24 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
       {/* ── SEARCH + FILTER BAR ── */}
       <section className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 28 }}>
         <FadeUp>
-          <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "18px 22px", boxShadow: "0 4px 20px rgba(74,6,27,0.07)", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+          <div
+            style={{
+              background: "#FFFFFF",
+              borderRadius: 18,
+              border: `1px solid ${T.borderDef}`,
+              padding: "18px 22px",
+              boxShadow: "0 4px 20px rgba(74,6,27,0.07)",
+              display: "flex",
+              gap: 14,
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
             <div style={{ flex: "1 1 280px" }}>
               <SearchInput
                 aria-label="Search by saree ID, weaver, supplier, invoice, or design code"
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by saree ID, weaver, supplier, invoice, or design code..."
                 size="lg"
                 containerClassName="w-full bg-[#F7F2EA]"
@@ -243,11 +426,11 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               {[
-                { key: "all",       label: "All Stock"       },
-                { key: "available", label: "Available"       },
-                { key: "sold",      label: "Sold"            },
-                { key: "wholesale", label: "Wholesale"       },
-              ].map(f => (
+                { key: "all", label: "All Stock" },
+                { key: "available", label: "Available" },
+                { key: "sold", label: "Sold" },
+                { key: "wholesale", label: "Wholesale" },
+              ].map((f) => (
                 <Button
                   key={f.key}
                   onClick={() => setStatusFilter(f.key as "all" | StockStatus)}
@@ -263,13 +446,24 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
               ))}
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", fontWeight: 700 }}>Source</span>
+              <span
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: 12,
+                  color: T.taupe,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.8px",
+                  fontWeight: 700,
+                }}
+              >
+                Source
+              </span>
               {[
-                { key: "all",        label: "All Sources"   },
-                { key: "factory",    label: "🏭 Factory"     },
-                { key: "outsourced", label: "🪡 Weavers"     },
-                { key: "external",   label: "🚚 External"    },
-              ].map(f => (
+                { key: "all", label: "All Sources" },
+                { key: "factory", label: "🏭 Factory" },
+                { key: "outsourced", label: "🪡 Weavers" },
+                { key: "external", label: "🚚 External" },
+              ].map((f) => (
                 <Button
                   key={f.key}
                   onClick={() => setSourceFilter(f.key as "all" | StockSource)}
@@ -284,9 +478,28 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
                 </Button>
               ))}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", background: T.warmCream, borderRadius: 10, padding: "8px 14px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginLeft: "auto",
+                background: T.warmCream,
+                borderRadius: 10,
+                padding: "8px 14px",
+              }}
+            >
               <Package size={15} color={T.taupe} />
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.taupe, fontWeight: 600 }}>{filtered.length} saree{filtered.length !== 1 ? "s" : ""}</span>
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 13,
+                  color: T.taupe,
+                  fontWeight: 600,
+                }}
+              >
+                {filtered.length} saree{filtered.length !== 1 ? "s" : ""}
+              </span>
             </div>
           </div>
         </FadeUp>
@@ -296,36 +509,65 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
       <section className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 24, paddingBottom: 56 }}>
         {isLoading || externalLoading ? (
           <FadeUp>
-            <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "64px 32px", textAlign: "center" }}>
+            <div
+              style={{
+                background: "#FFFFFF",
+                borderRadius: 18,
+                border: `1px solid ${T.borderDef}`,
+                padding: "64px 32px",
+                textAlign: "center",
+              }}
+            >
               <Package size={48} color={T.taupe} style={{ marginBottom: 16, opacity: 0.3 }} />
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading inventory…</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+                Loading inventory…
+              </div>
             </div>
           </FadeUp>
         ) : isError ? (
           <ErrorState error={undefined} onRetry={() => void refetch()} />
         ) : filtered.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3" style={{ gap: 20, alignItems: "stretch" }}>
+            <div
+              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+              style={{ gap: 20, alignItems: "stretch" }}
+            >
               {pag.pageItems.map((s, i) => (
                 <FadeUp key={s.id} delay={i * 0.05} style={{ height: "100%" }}>
                   <StockCard s={s} onView={setViewSaree} />
                 </FadeUp>
               ))}
             </div>
-            <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
-              onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="sarees" />
+            <Pagination
+              page={pag.page}
+              pageCount={pag.pageCount}
+              total={pag.total}
+              pageSize={pag.pageSize}
+              start={pag.start}
+              onPageChange={pag.setPage}
+              onPageSizeChange={pag.setPageSize}
+              itemLabel="sarees"
+            />
           </>
         ) : (
           <FadeUp>
             {search.trim() || statusFilter !== "all" || sourceFilter !== "all" ? (
-              <FilteredEmptyState onClearFilters={() => { setSearch(""); setStatusFilter("all"); setSourceFilter("all"); }} />
+              <FilteredEmptyState
+                onClearFilters={() => {
+                  setSearch("");
+                  setStatusFilter("all");
+                  setSourceFilter("all");
+                }}
+              />
             ) : (
-              <EmptyState title="No stock recorded yet" description="Sarees received from weavers or purchases will show up here." />
+              <EmptyState
+                title="No stock recorded yet"
+                description="Sarees received from weavers or purchases will show up here."
+              />
             )}
           </FadeUp>
         )}
       </section>
-
 
       {/* ── DIALOG ── */}
       <AnimatePresence>

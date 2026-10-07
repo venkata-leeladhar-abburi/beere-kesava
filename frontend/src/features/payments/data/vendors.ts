@@ -9,5 +9,11 @@ import { VendorPayment } from "../types";
 // adding those fields to VendorPayment — flagged as a gap, left mock.
 // See payments feature audit.
 export const VENDOR_PAYMENTS: VendorPayment[] = [];
-export const VENDOR_CONTACTS: Record<string, { phone: string; email: string; city: string; contactPerson: string }> = {};
-export const VENDOR_STATIC_PAYMENT_HISTORY: Record<string, { amount: number; date: string; utr: string; method: string; firm: string }[]> = {};
+export const VENDOR_CONTACTS: Record<
+  string,
+  { phone: string; email: string; city: string; contactPerson: string }
+> = {};
+export const VENDOR_STATIC_PAYMENT_HISTORY: Record<
+  string,
+  { amount: number; date: string; utr: string; method: string; firm: string }[]
+> = {};

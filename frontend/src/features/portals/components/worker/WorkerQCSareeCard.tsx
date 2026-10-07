@@ -137,8 +137,6 @@ export function WorkerQCSareeCard({
         </div>
       </div>
 
-
-
       {/* Details Box: Weaver, Saree Type/Code, Weight, Color */}
       <div className="rounded-2xl border border-[#F0E5D8] bg-[#FAF8F5] p-3.5 sm:p-4 space-y-2">
         {/* Weaver Info Block */}
@@ -172,11 +170,10 @@ export function WorkerQCSareeCard({
           {typeName && (
             <div className="flex items-center gap-1.5 text-[12px]">
               <Tag size={13} className="text-[#1F774E] flex-shrink-0" />
-              <span style={{ fontFamily: F.u }} className="text-[#69635E] text-[11px]">Saree Type:</span>
-              <span
-                style={{ fontFamily: F.u }}
-                className="font-semibold text-[#1D1814] truncate"
-              >
+              <span style={{ fontFamily: F.u }} className="text-[#69635E] text-[11px]">
+                Saree Type:
+              </span>
+              <span style={{ fontFamily: F.u }} className="font-semibold text-[#1D1814] truncate">
                 {typeName}
               </span>
             </div>
@@ -184,7 +181,9 @@ export function WorkerQCSareeCard({
 
           <div className="flex items-center gap-1.5 text-[12px] pt-1.5 border-t border-[#EAE5E1]/70">
             <Package size={13} className="text-[#845E04] flex-shrink-0" />
-            <span style={{ fontFamily: F.u }} className="text-[#69635E] text-[11px]">Saree Code:</span>
+            <span style={{ fontFamily: F.u }} className="text-[#69635E] text-[11px]">
+              Saree Code:
+            </span>
             {sareeCode !== "—" ? (
               <button
                 type="button"
@@ -209,15 +208,28 @@ export function WorkerQCSareeCard({
         <div className="p-2.5 rounded-xl bg-white border border-[#EAE5E1] flex items-center justify-between gap-3">
           <div className="flex items-center gap-1.5">
             <Scale size={13} className="text-[#845E04] flex-shrink-0" />
-            <span style={{ fontFamily: F.u }} className="text-[10px] font-semibold text-[#69635E] uppercase tracking-wider">Weight</span>
+            <span
+              style={{ fontFamily: F.u }}
+              className="text-[10px] font-semibold text-[#69635E] uppercase tracking-wider"
+            >
+              Weight
+            </span>
             <span style={{ fontFamily: F.m }} className="text-[13px] font-bold text-[#1D1814]">
               {s.weight > 0 ? `${s.weight}g` : "—"}
             </span>
           </div>
           <div className="flex items-center gap-1.5 min-w-0">
             <Palette size={13} className="text-[#845E04] flex-shrink-0" />
-            <span style={{ fontFamily: F.u }} className="text-[10px] font-semibold text-[#69635E] uppercase tracking-wider">Color</span>
-            <span style={{ fontFamily: F.u }} className="text-[12.5px] font-semibold text-[#1D1814] truncate">
+            <span
+              style={{ fontFamily: F.u }}
+              className="text-[10px] font-semibold text-[#69635E] uppercase tracking-wider"
+            >
+              Color
+            </span>
+            <span
+              style={{ fontFamily: F.u }}
+              className="text-[12.5px] font-semibold text-[#1D1814] truncate"
+            >
               {s.color || "—"}
             </span>
           </div>
@@ -253,6 +265,3 @@ export function WorkerQCSareeCard({
     </div>
   );
 }
-
-
-

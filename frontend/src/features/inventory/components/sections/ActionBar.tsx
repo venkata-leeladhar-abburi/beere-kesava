@@ -41,10 +41,19 @@ function ScanDetailCard({ r }: { r: WeaverSareeRow }) {
         { label: "Colour", value: r.color || "—" },
         { label: "Weight", value: r.stock?.weight || "—" },
         { label: "Cost Price", value: r.stock?.costPrice != null ? inr(r.stock.costPrice) : "—" },
-        { label: "Selling Price", value: r.stock?.finalAmount != null ? inr(r.stock.finalAmount) : "—" },
+        {
+          label: "Selling Price",
+          value: r.stock?.finalAmount != null ? inr(r.stock.finalAmount) : "—",
+        },
       ]
     : [
-        { label: "Weaver / Loom", value: [r.ownerLabel, r.loomNumber != null ? `Loom ${r.loomNumber}` : null].filter(Boolean).join(" · ") || "—" },
+        {
+          label: "Weaver / Loom",
+          value:
+            [r.ownerLabel, r.loomNumber != null ? `Loom ${r.loomNumber}` : null]
+              .filter(Boolean)
+              .join(" · ") || "—",
+        },
         { label: "Saree Type", value: r.sareeTypeName || "—" },
         { label: "Colour", value: r.color || "—" },
         { label: "Weight", value: r.weight != null ? `${r.weight}g` : "—" },
@@ -62,21 +71,64 @@ function ScanDetailCard({ r }: { r: WeaverSareeRow }) {
         padding: "12px 14px",
       }}
     >
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8, gap: 8 }}>
-        <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 13, color: T.royalBurgundy }}>{r.sareeId}</span>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+          marginBottom: 8,
+          gap: 8,
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontWeight: 700,
+            fontSize: 13,
+            color: T.royalBurgundy,
+          }}
+        >
+          {r.sareeId}
+        </span>
         {isExternal && (
-          <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.antiqueGold, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>
+          <span
+            style={{
+              fontFamily: F.ui,
+              fontSize: 10,
+              fontWeight: 700,
+              color: T.antiqueGold,
+              textTransform: "uppercase" as const,
+              letterSpacing: "0.5px",
+            }}
+          >
             External Purchase
           </span>
         )}
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 10 }}>
-        {fields.map(f => (
+        {fields.map((f) => (
           <div key={f.label}>
-            <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px", marginBottom: 2 }}>
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontSize: 10,
+                color: T.taupe,
+                textTransform: "uppercase" as const,
+                letterSpacing: "0.4px",
+                marginBottom: 2,
+              }}
+            >
               {f.label}
             </div>
-            <div style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown, wordBreak: "break-word" as const }}>
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontSize: 12.5,
+                fontWeight: 600,
+                color: T.luxuryBrown,
+                wordBreak: "break-word" as const,
+              }}
+            >
               {f.value}
             </div>
           </div>
@@ -111,16 +163,21 @@ export function ActionBar({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Toolbar */}
-      <div style={{ ...card, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div
+        style={{ ...card, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}
+      >
         {/* Barcode scanners type the code and press Enter, so the same input
             serves both a physical scanner and manual entry. One Scan button
             covers both routes: with an ID in the field it looks that up, and
             with the field empty it opens the camera for devices that have no
             hardware scanner attached. */}
         <form
-          onSubmit={e => {
+          onSubmit={(e) => {
             e.preventDefault();
-            if (!scanValue.trim()) { setCameraOpen(true); return; }
+            if (!scanValue.trim()) {
+              setCameraOpen(true);
+              return;
+            }
             void resolveSareeCode(scanValue).then(onScan);
             setScanValue("");
           }}
@@ -128,7 +185,7 @@ export function ActionBar({
         >
           <Input
             value={scanValue}
-            onChange={e => setScanValue(e.target.value)}
+            onChange={(e) => setScanValue(e.target.value)}
             placeholder="Scan barcode or type saree ID"
             aria-label="Saree ID to scan"
             className="w-[260px] font-mono"
@@ -137,7 +194,8 @@ export function ActionBar({
             Scan
           </Button>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-            Selects the scanned saree in the table below — press Scan with the box empty to use the camera.
+            Selects the scanned saree in the table below — press Scan with the box empty to use the
+            camera.
           </span>
         </form>
         <CameraScannerModal
@@ -187,11 +245,19 @@ export function ActionBar({
             boxShadow: "0 4px 20px rgba(61,14,26,0.20)",
           }}
         >
-          <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.80)", flex: "1 1 200px" }}>
+          <span
+            style={{
+              fontFamily: F.ui,
+              fontSize: 13,
+              color: "rgba(255,255,255,0.80)",
+              flex: "1 1 200px",
+            }}
+          >
             {selectedCount > 0 ? (
               <>
                 <strong style={{ color: "#FFF" }}>{selectedCount}</strong> selected
-                {dispatchableSelectedCount !== selectedCount && ` (${dispatchableSelectedCount} ready for dispatch)`}
+                {dispatchableSelectedCount !== selectedCount &&
+                  ` (${dispatchableSelectedCount} ready for dispatch)`}
               </>
             ) : (
               <>

@@ -16,7 +16,8 @@ export function LoginPage() {
   // A role that doesn't map to a known portal (backend returned something
   // unexpected, or genuinely has none) falls through to /select-role, which
   // now only ever shows an access-denied message — never a picker.
-  if (isAuthenticated) return <Navigate to={returnTo ?? (role ? ROLE_ROUTES[role] : "/select-role")} replace />;
+  if (isAuthenticated)
+    return <Navigate to={returnTo ?? (role ? ROLE_ROUTES[role] : "/select-role")} replace />;
 
   return (
     <LoginPageComponent

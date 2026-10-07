@@ -2,12 +2,26 @@ import React, { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Users, Activity, Clock, CheckCircle2,
-  Layers, Layers3, Star, MapPin, Phone, Eye, Edit3, AlertTriangle,
+  Users,
+  Activity,
+  Clock,
+  CheckCircle2,
+  Layers,
+  Layers3,
+  Star,
+  MapPin,
+  Phone,
+  Eye,
+  Edit3,
+  AlertTriangle,
 } from "lucide-react";
 import { Rows3 as Rows } from "lucide-react";
 import { BackendWeaver, BackendWeaverStats } from "../../../shared/api/weavers";
-import { useWeaverRosterStats, weaverStatusFromStats, formatLastActive } from "../hooks/useWeaverRosterStats";
+import {
+  useWeaverRosterStats,
+  weaverStatusFromStats,
+  formatLastActive,
+} from "../hooks/useWeaverRosterStats";
 import { warpRequestsApi } from "../../../shared/api/warpRequests";
 import { paymentsApi } from "../../../shared/api/payments";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -22,35 +36,46 @@ import { imgPadmaVeni } from "../../../shared/constants/weaverImages";
 
 // ── Design tokens ─────────────────────────────────────────────────────────
 const T = {
-  silkCream:     "#F7F2EA",
-  warmIvory:     "#FFFDF9",
+  silkCream: "#F7F2EA",
+  warmIvory: "#FFFDF9",
   royalBurgundy: "#6E0F2D",
-  deepWine:      "#4A061B",
-  antiqueGold:   "#C89B47",
-  goldLight:     "#E7C983",
-  luxuryBrown:   "#3B2314",
-  taupe:         "#69635E",
-  warmCream:     "#F5E8D0",
-  green:         "#1E6640",
-  borderDef:     "rgba(110,15,45,0.10)",
-  borderGold:    "rgba(200,155,71,0.22)",
+  deepWine: "#4A061B",
+  antiqueGold: "#C89B47",
+  goldLight: "#E7C983",
+  luxuryBrown: "#3B2314",
+  taupe: "#69635E",
+  warmCream: "#F5E8D0",
+  green: "#1E6640",
+  borderDef: "rgba(110,15,45,0.10)",
+  borderGold: "rgba(200,155,71,0.22)",
 };
 const F = {
   display: "'Plus Jakarta Sans', sans-serif",
-  ui:      "'Inter', sans-serif",
-  mono:    "'JetBrains Mono', monospace",
+  ui: "'Inter', sans-serif",
+  mono: "'JetBrains Mono', monospace",
 };
 
 // ── Data ──────────────────────────────────────────────────────────────────
 type Status = "active" | "qc" | "idle";
 
-
 interface Weaver {
-  id: string; code: string; name: string; village: string; mobile: string;
-  photo: string | null; initials: string; avatarBg: string;
-  status: Status; accentColor: string;
-  thisMonth: number; passRate: number; totalSarees: number; qcPassed: number;
-  looms: number; batch: string | null; totalPaid: string;
+  id: string;
+  code: string;
+  name: string;
+  village: string;
+  mobile: string;
+  photo: string | null;
+  initials: string;
+  avatarBg: string;
+  status: Status;
+  accentColor: string;
+  thisMonth: number;
+  passRate: number;
+  totalSarees: number;
+  qcPassed: number;
+  looms: number;
+  batch: string | null;
+  totalPaid: string;
   lastActive: string;
 }
 
@@ -61,9 +86,22 @@ interface Weaver {
 // paid, or a last-active timestamp — those live in the batch/payments
 // modules and are not wired here. Those specific fields are shown as
 // unavailable ("—" / 0) rather than invented, per the design note below.
-const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040"];
+const AVATAR_PALETTE = [
+  "#5A3E6B",
+  "#6E0F2D",
+  "#2D6B6B",
+  "#4A6B4A",
+  "#9B6B8A",
+  "#2D7D6B",
+  "#4A5E7A",
+  "#7A2040",
+];
 
-function toDisplayWeaver(w: BackendWeaver, index: number, stats: BackendWeaverStats | undefined): Weaver {
+function toDisplayWeaver(
+  w: BackendWeaver,
+  index: number,
+  stats: BackendWeaverStats | undefined
+): Weaver {
   return {
     id: w.id,
     code: w.code,
@@ -88,27 +126,50 @@ function toDisplayWeaver(w: BackendWeaver, index: number, stats: BackendWeaverSt
   };
 }
 
-function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
+function FadeUp({
+  children,
+  delay = 0,
+  style,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  style?: React.CSSProperties;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });
   return (
-    <motion.div ref={ref}
+    <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 32, scale: 0.98 }}
       animate={inView ? { opacity: 1, y: 0, scale: 1 } : undefined}
-      transition={{ type: "spring", stiffness: 260, damping: 26, delay, opacity: { duration: 0.45 } }}
-      style={style}>
+      transition={{
+        type: "spring",
+        stiffness: 260,
+        damping: 26,
+        delay,
+        opacity: { duration: 0.45 },
+      }}
+      style={style}
+    >
       {children}
     </motion.div>
   );
 }
 
 // ── Main component ────────────────────────────────────────────────────────
-export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: unknown) => void } = {}) {
+export function AllWeaversPage({
+  onNavigate,
+}: { onNavigate?: (tab: string, ctx?: unknown) => void } = {}) {
   // Filter/search state lives in the URL (?weaverSearch=&weaverStatus=&...)
   // via useUrlFilters — see design-system/05-OVERLAYS.md Part J. Local
   // variable names below are unchanged so the rest of this component (and
   // its JSX) needs no further edits.
-  const weaverFilters = useUrlFilters({ weaverSearch: "", weaverStatus: "all", weaverVillage: "all", weaverSort: "name" });
+  const weaverFilters = useUrlFilters({
+    weaverSearch: "",
+    weaverStatus: "all",
+    weaverVillage: "all",
+    weaverSort: "name",
+  });
   const search = weaverFilters.filters.weaverSearch;
   const setSearch = (s: string) => weaverFilters.setFilter("weaverSearch", s);
   const statusFilter = weaverFilters.filters.weaverStatus as "all" | Status;
@@ -123,10 +184,14 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
 
   const ALL_WEAVERS: Weaver[] = roster.map((w, i) => toDisplayWeaver(w, i, statsById.get(w.id)));
 
-  const villages = Array.from(new Set(ALL_WEAVERS.map(w => w.village))).sort();
+  const villages = Array.from(new Set(ALL_WEAVERS.map((w) => w.village))).sort();
 
-  const filtered = ALL_WEAVERS.filter(w => {
-    const matchSearch = search === "" || w.name.toLowerCase().includes(search.toLowerCase()) || w.village.toLowerCase().includes(search.toLowerCase()) || w.id.toLowerCase().includes(search.toLowerCase());
+  const filtered = ALL_WEAVERS.filter((w) => {
+    const matchSearch =
+      search === "" ||
+      w.name.toLowerCase().includes(search.toLowerCase()) ||
+      w.village.toLowerCase().includes(search.toLowerCase()) ||
+      w.id.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "all" || w.status === statusFilter;
     const matchVillage = villageFilter === "all" || w.village === villageFilter;
     return matchSearch && matchStatus && matchVillage;
@@ -140,10 +205,10 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
   // on the roster (an admin flag) and on the floor (has batch rows open).
   // This tile's own subtitle — "all currently with the firm" — is the roster
   // sense, which is also what WeaversPage's matching tile shows.
-  const rosterActiveCount = roster.filter(w => w.status === "ACTIVE").length;
-  const activeCount = ALL_WEAVERS.filter(w => w.status === "active").length;
-  const qcCount     = ALL_WEAVERS.filter(w => w.status === "qc").length;
-  const idleCount   = ALL_WEAVERS.filter(w => w.status === "idle").length;
+  const rosterActiveCount = roster.filter((w) => w.status === "ACTIVE").length;
+  const activeCount = ALL_WEAVERS.filter((w) => w.status === "active").length;
+  const qcCount = ALL_WEAVERS.filter((w) => w.status === "qc").length;
+  const idleCount = ALL_WEAVERS.filter((w) => w.status === "idle").length;
   const totalSarees = ALL_WEAVERS.reduce((s, w) => s + w.totalSarees, 0);
   // Weighted by sarees rather than a mean of per-weaver percentages, which
   // counted every not-yet-producing weaver as a flat 0%.
@@ -165,35 +230,142 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
 
   return (
     <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
-
       {/* ── HERO ── */}
-      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
-        <div className="pl-4 md:pl-7 xl:pl-12 w-full xl:w-auto xl:basis-[65%] xl:max-w-[65%]" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 90 }}>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>SINCE 1999 · WEAVER MANAGEMENT</div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 8vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Weavers</h1>
-            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 6vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Production Overview</span>
+      <header
+        style={{
+          background: "#0D0207",
+          position: "relative",
+          overflow: "hidden",
+          minHeight: 380,
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        <div
+          className="pl-4 md:pl-7 xl:pl-12 w-full xl:w-auto xl:basis-[65%] xl:max-w-[65%]"
+          style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 90 }}
+        >
+          <div
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 13,
+              color: "rgba(255,253,249,0.50)",
+              letterSpacing: "1.8px",
+              textTransform: "uppercase",
+              marginBottom: 12,
+            }}
+          >
+            SINCE 1999 · WEAVER MANAGEMENT
           </div>
-          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: "0 0 20px", lineHeight: 1.6 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: 12,
+              flexWrap: "wrap",
+              marginBottom: 10,
+            }}
+          >
+            <h1
+              style={{
+                fontFamily: "'DM Serif Display', serif",
+                fontSize: "clamp(32px, 8vw, 56px)",
+                fontWeight: 400,
+                color: "#FFFDF9",
+                margin: 0,
+                lineHeight: 1.1,
+              }}
+            >
+              Weavers
+            </h1>
+            <span
+              style={{
+                fontFamily: "'DM Serif Display', serif",
+                fontSize: "clamp(22px, 6vw, 36px)",
+                fontStyle: "italic",
+                color: T.antiqueGold,
+                fontWeight: 400,
+              }}
+            >
+              &amp; Production Overview
+            </span>
+          </div>
+          <p
+            className="max-w-[600px]"
+            style={{
+              fontFamily: F.ui,
+              fontSize: "clamp(15px, 3.5vw, 18px)",
+              color: "rgba(255,253,249,0.70)",
+              margin: "0 0 20px",
+              lineHeight: 1.6,
+            }}
+          >
             See all weavers, their current work, how they are performing, and manage their details.
           </p>
 
           {/* Status pills */}
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             {[
-              { label: `${ALL_WEAVERS.length} Total Weavers`, color: T.antiqueGold, bg: "rgba(200,155,71,0.15)", border: "rgba(200,155,71,0.30)" },
-              { label: `${activeCount} Currently Working`,     color: T.warmCream,   bg: "rgba(30,102,64,0.18)",  border: "rgba(30,102,64,0.35)" },
-              { label: `${qcCount} Submitted — Waiting for Quality Check`, color: T.warmCream, bg: "rgba(139,112,96,0.18)", border: "rgba(200,155,71,0.20)" },
-            ].map(p => (
-              <span key={p.label} style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 13, color: p.color, background: p.bg, border: `1px solid ${p.border}`, borderRadius: 999, padding: "6px 16px" }}>
+              {
+                label: `${ALL_WEAVERS.length} Total Weavers`,
+                color: T.antiqueGold,
+                bg: "rgba(200,155,71,0.15)",
+                border: "rgba(200,155,71,0.30)",
+              },
+              {
+                label: `${activeCount} Currently Working`,
+                color: T.warmCream,
+                bg: "rgba(30,102,64,0.18)",
+                border: "rgba(30,102,64,0.35)",
+              },
+              {
+                label: `${qcCount} Submitted — Waiting for Quality Check`,
+                color: T.warmCream,
+                bg: "rgba(139,112,96,0.18)",
+                border: "rgba(200,155,71,0.20)",
+              },
+            ].map((p) => (
+              <span
+                key={p.label}
+                style={{
+                  fontFamily: F.ui,
+                  fontWeight: 500,
+                  fontSize: 13,
+                  color: p.color,
+                  background: p.bg,
+                  border: `1px solid ${p.border}`,
+                  borderRadius: 999,
+                  padding: "6px 16px",
+                }}
+              >
                 {p.label}
               </span>
             ))}
           </div>
         </div>
-        <div className="hidden xl:block" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
-          <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, #0D0207 0%, rgba(13,2,7,0.7) 38%, rgba(13,2,7,0.1) 100%)` }} />
-          <img src={imgPadmaVeni} alt="Padma Veni — Master Weaver" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", filter: "brightness(0.75) saturate(0.90)" }} />
+        <div
+          className="hidden xl:block"
+          style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 2,
+              background: `linear-gradient(to right, #0D0207 0%, rgba(13,2,7,0.7) 38%, rgba(13,2,7,0.1) 100%)`,
+            }}
+          />
+          <img
+            src={imgPadmaVeni}
+            alt="Padma Veni — Master Weaver"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "top center",
+              filter: "brightness(0.75) saturate(0.90)",
+            }}
+          />
         </div>
       </header>
 
@@ -205,17 +377,55 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
         className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-12 xl:-mt-[72px]"
         style={{ position: "relative", zIndex: 20 }}
       >
-        <LuxuryStatsCard stats={[
-          { label: "Total Active Weavers", value: `${rosterActiveCount}`, sub: "All currently with the firm", icon: <Users size={22} color={T.warmCream} /> },
-          { label: "Total Sarees Woven", value: `${totalSarees}`, sub: "All-time, across all weavers", icon: <Layers size={22} color={T.warmCream} /> },
-          { label: "Quality Check Pass Rate", value: `${overallPassRate}%`, sub: "Across all sarees woven", icon: <CheckCircle2 size={22} color={T.warmCream} />, highlight: true, goldVal: true },
-          { label: "Warp Requests Pending", value: `${warpRequestsPending}`, sub: "Awaiting admin approval", icon: <Clock size={22} color={T.warmCream} /> },
-          { label: "Total Paid to Weavers", value: formatMoney(rupees(totalPaidToWeavers)), sub: "All-time payments recorded", icon: <Star size={22} color={T.warmCream} /> },
-        ]} />
+        <LuxuryStatsCard
+          stats={[
+            {
+              label: "Total Active Weavers",
+              value: `${rosterActiveCount}`,
+              sub: "All currently with the firm",
+              icon: <Users size={22} color={T.warmCream} />,
+            },
+            {
+              label: "Total Sarees Woven",
+              value: `${totalSarees}`,
+              sub: "All-time, across all weavers",
+              icon: <Layers size={22} color={T.warmCream} />,
+            },
+            {
+              label: "Quality Check Pass Rate",
+              value: `${overallPassRate}%`,
+              sub: "Across all sarees woven",
+              icon: <CheckCircle2 size={22} color={T.warmCream} />,
+              highlight: true,
+              goldVal: true,
+            },
+            {
+              label: "Warp Requests Pending",
+              value: `${warpRequestsPending}`,
+              sub: "Awaiting admin approval",
+              icon: <Clock size={22} color={T.warmCream} />,
+            },
+            {
+              label: "Total Paid to Weavers",
+              value: formatMoney(rupees(totalPaidToWeavers)),
+              sub: "All-time payments recorded",
+              icon: <Star size={22} color={T.warmCream} />,
+            },
+          ]}
+        />
       </motion.div>
 
       {/* ── FILTER + SEARCH BAR ── */}
-      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "relative", zIndex: 10, marginTop: 32 }}>
+      <div
+        className="px-4 md:px-7 xl:px-14"
+        style={{
+          background: T.warmIvory,
+          borderBottom: `1px solid ${T.borderDef}`,
+          position: "relative",
+          zIndex: 10,
+          marginTop: 32,
+        }}
+      >
         {/* Mobile Flipkart-style Collapsible Filter Bar */}
         <div className="md:hidden py-3">
           <MobileFilterBar
@@ -243,7 +453,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                 defaultValue: "all",
                 options: [
                   { value: "all", label: "All Villages" },
-                  ...villages.map(v => ({ value: v, label: v })),
+                  ...villages.map((v) => ({ value: v, label: v })),
                 ],
                 onChange: setVillageFilter,
               },
@@ -272,17 +482,51 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
         {/* Desktop Filter Bar */}
         <div className="hidden md:flex items-center gap-3 h-[60px] min-w-max">
           {/* Status filters */}
-          {([
-            { key: "all",    label: "All Weavers",       count: ALL_WEAVERS.length },
-            { key: "active", label: "Currently Weaving", count: activeCount },
-            { key: "qc",     label: "Pending QC",        count: qcCount },
-            { key: "idle",   label: "No Active Batch",   count: idleCount },
-          ] as const).map(f => (
-            <Button key={f.key} onClick={() => setStatusFilter(f.key)} variant="ghost" size="sm"
+          {(
+            [
+              { key: "all", label: "All Weavers", count: ALL_WEAVERS.length },
+              { key: "active", label: "Currently Weaving", count: activeCount },
+              { key: "qc", label: "Pending QC", count: qcCount },
+              { key: "idle", label: "No Active Batch", count: idleCount },
+            ] as const
+          ).map((f) => (
+            <Button
+              key={f.key}
+              onClick={() => setStatusFilter(f.key)}
+              variant="ghost"
+              size="sm"
               className="h-full rounded-none"
             >
-              <span style={{ fontFamily: F.ui, fontWeight: statusFilter === f.key ? 600 : 400, fontSize: 13, color: statusFilter === f.key ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap", borderBottom: statusFilter === f.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", paddingBottom: 2 }}>{f.label}</span>
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: statusFilter === f.key ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: statusFilter === f.key ? T.royalBurgundy : T.taupe }}>{f.count}</span>
+              <span
+                style={{
+                  fontFamily: F.ui,
+                  fontWeight: statusFilter === f.key ? 600 : 400,
+                  fontSize: 13,
+                  color: statusFilter === f.key ? T.royalBurgundy : T.taupe,
+                  whiteSpace: "nowrap",
+                  borderBottom:
+                    statusFilter === f.key
+                      ? `2px solid ${T.royalBurgundy}`
+                      : "2px solid transparent",
+                  paddingBottom: 2,
+                }}
+              >
+                {f.label}
+              </span>
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  padding: "2px 7px",
+                  borderRadius: 999,
+                  background:
+                    statusFilter === f.key ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)",
+                  color: statusFilter === f.key ? T.royalBurgundy : T.taupe,
+                }}
+              >
+                {f.count}
+              </span>
             </Button>
           ))}
 
@@ -290,13 +534,21 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
           <div style={{ width: 170 }}>
             <Select value={villageFilter} onValueChange={setVillageFilter} size="sm">
               <SelectItem value="all">All Villages</SelectItem>
-              {villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+              {villages.map((v) => (
+                <SelectItem key={v} value={v}>
+                  {v}
+                </SelectItem>
+              ))}
             </Select>
           </div>
 
           {/* Sort */}
           <div style={{ width: 220 }}>
-            <Select value={sortBy} onValueChange={v => setSortBy(v as "name" | "output" | "looms")} size="sm">
+            <Select
+              value={sortBy}
+              onValueChange={(v) => setSortBy(v as "name" | "output" | "looms")}
+              size="sm"
+            >
               <SelectItem value="name">Sort: Name</SelectItem>
               <SelectItem value="output">Sort: Total Sarees Woven</SelectItem>
               <SelectItem value="looms">Sort: Looms</SelectItem>
@@ -308,45 +560,103 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
             <SearchInput
               aria-label="Search by name, village, ID"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, village, ID…"
             />
           </div>
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{filtered.length} weaver{filtered.length !== 1 ? "s" : ""}</span>
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              color: T.taupe,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {filtered.length} weaver{filtered.length !== 1 ? "s" : ""}
+          </span>
         </div>
       </div>
 
       {/* ── WEAVERS GRID ── */}
       <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80 }}>
         {isLoading ? (
-          <div style={{ textAlign: "center", padding: "80px 40px", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+          <div
+            style={{
+              textAlign: "center",
+              padding: "80px 40px",
+              fontFamily: F.ui,
+              fontSize: 14,
+              color: T.taupe,
+            }}
+          >
             Loading weavers…
           </div>
         ) : isError ? (
           <ErrorState error={undefined} onRetry={refetchAll} />
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "80px 40px" }}>
-            <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+            <div
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: 22,
+                background: "rgba(110,15,45,0.06)",
+                border: `1px solid ${T.borderDef}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 20px",
+              }}
+            >
               <Users size={28} color={T.taupe} />
             </div>
-            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, marginBottom: 8 }}>
+            <div
+              style={{
+                fontFamily: F.display,
+                fontWeight: 400,
+                fontSize: 20,
+                color: T.luxuryBrown,
+                marginBottom: 8,
+              }}
+            >
               {ALL_WEAVERS.length === 0 ? "No weavers yet" : "No weavers found"}
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-              {ALL_WEAVERS.length === 0 ? "Register a weaver to see them here." : "Try adjusting your search or filter."}
+              {ALL_WEAVERS.length === 0
+                ? "Register a weaver to see them here."
+                : "Try adjusting your search or filter."}
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4" style={{ gap: 24, alignItems: "stretch" }}>
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4"
+            style={{ gap: 24, alignItems: "stretch" }}
+          >
             {filtered.map((w, i) => (
               <FadeUp key={w.id} delay={i * 0.04} style={{ height: "100%" }}>
                 <motion.div
                   whileHover={{ y: -6, boxShadow: "0 30px 70px rgba(74,6,27,0.12)" }}
                   transition={{ type: "spring", stiffness: 240, damping: 22 }}
-                  style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}
+                  style={{
+                    background: "#FFFFFF",
+                    borderRadius: 24,
+                    border: `1px solid ${T.borderDef}`,
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                  }}
                 >
                   {/* Header Banner */}
-                  <div style={{ height: 170, position: "relative", overflow: "hidden", background: T.silkCream, flexShrink: 0 }}>
+                  <div
+                    style={{
+                      height: 170,
+                      position: "relative",
+                      overflow: "hidden",
+                      background: T.silkCream,
+                      flexShrink: 0,
+                    }}
+                  >
                     {w.photo ? (
                       <motion.img
                         whileHover={{ scale: 1.05 }}
@@ -356,18 +666,71 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       />
                     ) : (
-                      <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${w.avatarBg} 0%, ${T.luxuryBrown} 100%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <span style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{toInitials(w.initials)}</span>
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          background: `linear-gradient(135deg, ${w.avatarBg} 0%, ${T.luxuryBrown} 100%)`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: F.display,
+                            fontSize: 48,
+                            fontWeight: 700,
+                            color: "#FFFDF9",
+                            letterSpacing: "1px",
+                          }}
+                        >
+                          {toInitials(w.initials)}
+                        </span>
                       </div>
                     )}
 
-                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        background:
+                          "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)",
+                        pointerEvents: "none",
+                      }}
+                    />
 
-                    <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 12,
+                        left: 12,
+                        background: "rgba(26,10,15,0.65)",
+                        backdropFilter: "blur(6px)",
+                        color: "#FFFDF9",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        letterSpacing: "0.5px",
+                        padding: "4px 10px",
+                        borderRadius: 6,
+                        border: "1px solid rgba(255,255,255,0.15)",
+                      }}
+                    >
                       {w.code}
                     </div>
 
-                    <div style={{ position: "absolute", bottom: 12, left: 12, display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 8px" }}>
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 12,
+                        left: 12,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "4px 8px",
+                      }}
+                    >
                       {w.status === "active" ? (
                         <Activity size={13} color="#2ECC71" style={{ flexShrink: 0 }} />
                       ) : w.status === "qc" ? (
@@ -375,46 +738,157 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                       ) : (
                         <AlertTriangle size={13} color="#BDC3C7" style={{ flexShrink: 0 }} />
                       )}
-                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase" as const, letterSpacing: "0.5px", textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
-                        {w.status === "active" ? "Currently Weaving" : w.status === "qc" ? "Pending QC" : "Idle"}
+                      <span
+                        style={{
+                          fontFamily: F.ui,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color: "#FFFFFF",
+                          textTransform: "uppercase" as const,
+                          letterSpacing: "0.5px",
+                          textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+                        }}
+                      >
+                        {w.status === "active"
+                          ? "Currently Weaving"
+                          : w.status === "qc"
+                            ? "Pending QC"
+                            : "Idle"}
                       </span>
                     </div>
                   </div>
 
                   {/* Content */}
-                  <div style={{ padding: "20px", display: "flex", flexDirection: "column", flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const, marginBottom: 8 }}>
-                      <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 800, lineHeight: 1.25 }}>
+                  <div
+                    style={{ padding: "20px", display: "flex", flexDirection: "column", flex: 1 }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        flexWrap: "wrap" as const,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontFamily: F.display,
+                          fontSize: 20,
+                          color: T.luxuryBrown,
+                          fontWeight: 800,
+                          lineHeight: 1.25,
+                        }}
+                      >
                         {w.name}
                       </div>
                       {w.batch && (
-                        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
+                        <span
+                          style={{
+                            fontFamily: "var(--font-mono)",
+                            fontSize: 12,
+                            fontWeight: 700,
+                            color: T.royalBurgundy,
+                            background: T.warmCream,
+                            border: `1px solid ${T.borderGold}`,
+                            borderRadius: 6,
+                            padding: "3px 8px",
+                            textTransform: "uppercase",
+                          }}
+                        >
                           {w.batch}
                         </span>
                       )}
                     </div>
 
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                    <div
+                      style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          fontFamily: F.ui,
+                          fontSize: 13,
+                          color: T.taupe,
+                        }}
+                      >
                         <MapPin size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
                         <span>{w.village}</span>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          fontFamily: F.ui,
+                          fontSize: 13,
+                          color: T.taupe,
+                        }}
+                      >
                         <Phone size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
                         <span>{w.mobile}</span>
                       </div>
                     </div>
 
-                    <div style={{ height: 1, background: "rgba(110,15,45,0.06)", margin: "4px 0 12px 0" }} />
+                    <div
+                      style={{
+                        height: 1,
+                        background: "rgba(110,15,45,0.06)",
+                        margin: "4px 0 12px 0",
+                      }}
+                    />
 
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <div
+                        style={{
+                          background: "rgba(110,15,45,0.03)",
+                          border: `1px solid ${T.borderDef}`,
+                          borderRadius: 12,
+                          padding: "10px 12px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 26,
+                            height: 26,
+                            borderRadius: 6,
+                            background: "rgba(110,15,45,0.06)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
                           <Rows size={14} color={T.royalBurgundy} />
                         </div>
                         <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>
-                          <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{w.looms} Looms</span>
+                          <span
+                            style={{
+                              fontFamily: F.ui,
+                              fontSize: 12,
+                              fontWeight: 700,
+                              color: T.taupe,
+                              letterSpacing: "0.5px",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            Looms
+                          </span>
+                          <span
+                            style={{
+                              fontFamily: F.display,
+                              fontSize: 14,
+                              fontWeight: 700,
+                              color: T.luxuryBrown,
+                            }}
+                          >
+                            {w.looms} Looms
+                          </span>
                         </div>
                       </div>
                     </div>

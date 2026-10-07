@@ -21,23 +21,54 @@ export function TotalsBlock({ rows }: { rows: TotalsRow[] }) {
             <div
               key={r.label}
               className="bk-doc__totals-grand"
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "3.2mm 4mm" }}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "3.2mm 4mm",
+              }}
             >
-              <span style={{ fontSize: "var(--doc-body)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.10em" }}>
+              <span
+                style={{
+                  fontSize: "var(--doc-body)",
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.10em",
+                }}
+              >
                 {r.label}
               </span>
-              <span style={{ fontSize: "var(--doc-total)", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{r.amount}</span>
+              <span
+                style={{
+                  fontSize: "var(--doc-total)",
+                  fontWeight: 700,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {r.amount}
+              </span>
             </div>
           ) : (
             <div
               key={r.label}
               style={{
-                display: "flex", justifyContent: "space-between", padding: "2.2mm 4mm",
+                display: "flex",
+                justifyContent: "space-between",
+                padding: "2.2mm 4mm",
                 borderBottom: "0.25mm solid var(--doc-rule-soft)",
               }}
             >
-              <span style={{ fontSize: "var(--doc-body)", color: "var(--doc-muted)" }}>{r.label}</span>
-              <span style={{ fontSize: "var(--doc-body)", color: "var(--doc-ink)", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
+              <span style={{ fontSize: "var(--doc-body)", color: "var(--doc-muted)" }}>
+                {r.label}
+              </span>
+              <span
+                style={{
+                  fontSize: "var(--doc-body)",
+                  color: "var(--doc-ink)",
+                  fontWeight: 600,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
                 {r.amount}
               </span>
             </div>

@@ -28,7 +28,7 @@ export interface ReturnedMaterialItem {
 }
 
 export interface MaterialReturnRecord {
-  id: string;               // auto-generated e.g. "MRR-2026-001"
+  id: string; // auto-generated e.g. "MRR-2026-001"
   weaverId?: string;
   weaverName?: string;
   loomNumber?: number;
@@ -79,7 +79,9 @@ export interface OutstandingScope {
   batchId?: string;
 }
 
-function backendItemToFrontend(item: BackendMaterialReturnRecord["items"][number]): ReturnedMaterialItem {
+function backendItemToFrontend(
+  item: BackendMaterialReturnRecord["items"][number]
+): ReturnedMaterialItem {
   return {
     materialType: MATERIAL_TYPE_FROM_BACKEND[item.materialType],
     quantity: Number(item.quantity),
@@ -90,7 +92,7 @@ function backendItemToFrontend(item: BackendMaterialReturnRecord["items"][number
 function backendRecordToFrontend(
   r: BackendMaterialReturnRecord,
   weaverLookup: Map<string, string>,
-  loomLookup: Map<string, string>,
+  loomLookup: Map<string, string>
 ): MaterialReturnRecord {
   return {
     id: r.id,
@@ -100,7 +102,9 @@ function backendRecordToFrontend(
     batchId: r.batchId ?? undefined,
     factoryLoomId: r.factoryLoomId ?? undefined,
     factoryLoomNumber: r.factoryLoomId ? loomLookup.get(r.factoryLoomId) : undefined,
-    receivedBy: r.receivedBy ? `${r.receivedBy.firstName} ${r.receivedBy.lastName}`.trim() : "Unknown",
+    receivedBy: r.receivedBy
+      ? `${r.receivedBy.firstName} ${r.receivedBy.lastName}`.trim()
+      : "Unknown",
     receivedAt: r.receivedAt,
     materials: r.items.map(backendItemToFrontend),
     signatureMethod: r.signatureMethod === "REMOTE" ? "remote" : "here",
@@ -110,12 +114,19 @@ function backendRecordToFrontend(
     deductionAmount: r.deductionAmount ? Number(r.deductionAmount) : undefined,
     deductionReason: r.deductionReason ?? undefined,
     notes: r.notes ?? undefined,
-    status: r.status === "PENDING_SIGNATURE" ? "pending-signature" : r.status === "APPROVED" ? "approved" : "cancelled",
+    status:
+      r.status === "PENDING_SIGNATURE"
+        ? "pending-signature"
+        : r.status === "APPROVED"
+          ? "approved"
+          : "cancelled",
     isAutoRecorded: r.isAutoRecorded,
   };
 }
 
-function frontendItemToPayload(m: ReturnedMaterialItem): CreateMaterialReturnPayload["items"][number] {
+function frontendItemToPayload(
+  m: ReturnedMaterialItem
+): CreateMaterialReturnPayload["items"][number] {
   return {
     materialType: MATERIAL_TYPE_TO_BACKEND[m.materialType],
     quantity: m.quantity,
@@ -162,7 +173,11 @@ interface MaterialReturnContextValue {
   addReturnRecord: (input: AddReturnRecordInput) => Promise<MaterialReturnRecord>;
   deleteReturnRecord: (id: string) => Promise<void>;
   getRecordsForWeaver: (weaverId: string) => MaterialReturnRecord[];
-  getOutstandingForRecipient: (weaverId?: string, factoryLoomId?: string, scope?: OutstandingScope) => Promise<WeaverOutstandingLine[]>;
+  getOutstandingForRecipient: (
+    weaverId?: string,
+    factoryLoomId?: string,
+    scope?: OutstandingScope
+  ) => Promise<WeaverOutstandingLine[]>;
   isError: boolean;
   error: unknown;
   isLoading: boolean;
@@ -183,11 +198,15 @@ const RETURN_RECORDS_KEY = ["materialReturn", "returnRecords"] as const;
  */
 function toRecordUsingInputNames(
   created: Parameters<typeof backendRecordToFrontend>[0],
-  input: AddReturnRecordInput,
+  input: AddReturnRecordInput
 ): MaterialReturnRecord {
-  const weaverLookup = new Map(input.weaverId && input.weaverName ? [[input.weaverId, input.weaverName]] : []);
+  const weaverLookup = new Map(
+    input.weaverId && input.weaverName ? [[input.weaverId, input.weaverName]] : []
+  );
   const loomLookup = new Map(
-    input.factoryLoomId && input.factoryLoomNumber ? [[input.factoryLoomId, input.factoryLoomNumber]] : [],
+    input.factoryLoomId && input.factoryLoomNumber
+      ? [[input.factoryLoomId, input.factoryLoomNumber]]
+      : []
   );
   return backendRecordToFrontend(created, weaverLookup, loomLookup);
 }
@@ -203,7 +222,13 @@ export function MaterialReturnProvider({ children }: { children: React.ReactNode
   // too and they got back nothing but a "your role is not permitted" 403.
   const enabled = useAuthGate("admin", "superadmin");
 
-  const { data: returnRecords = [], isError, error, isLoading, refetch } = useQuery({
+  const {
+    data: returnRecords = [],
+    isError,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: RETURN_RECORDS_KEY,
     enabled,
     queryFn: async () => {
@@ -213,8 +238,10 @@ export function MaterialReturnProvider({ children }: { children: React.ReactNode
         factoryLoomsApi.list().catch(() => ({ items: [] as BackendFactoryLoom[] })),
       ]);
       const weaverLookup = new Map(weaversRes.items.map((w: BackendWeaver) => [w.id, w.name]));
-      const loomLookup = new Map(loomsRes.items.map((l: BackendFactoryLoom) => [l.id, l.code || l.loomNumber]));
-      return returnsRes.items.map(r => backendRecordToFrontend(r, weaverLookup, loomLookup));
+      const loomLookup = new Map(
+        loomsRes.items.map((l: BackendFactoryLoom) => [l.id, l.code || l.loomNumber])
+      );
+      return returnsRes.items.map((r) => backendRecordToFrontend(r, weaverLookup, loomLookup));
     },
   });
 
@@ -267,23 +294,44 @@ export function MaterialReturnProvider({ children }: { children: React.ReactNode
   const deleteReturnRecord = (id: string): Promise<void> =>
     deleteReturnRecordMutation.mutateAsync(id).then(() => undefined);
 
-  const getRecordsForWeaver = useCallback((weaverId: string) => {
-    return returnRecords.filter(r => r.weaverId === weaverId);
-  }, [returnRecords]);
+  const getRecordsForWeaver = useCallback(
+    (weaverId: string) => {
+      return returnRecords.filter((r) => r.weaverId === weaverId);
+    },
+    [returnRecords]
+  );
 
-  const getOutstandingForRecipient = useCallback(async (weaverId?: string, factoryLoomId?: string, scope?: OutstandingScope) => {
-    if (!weaverId && !factoryLoomId) return [];
-    const groups = await materialReturnsApi.getOutstanding({
-      weaverId,
-      factoryLoomId,
-      loomNumber: scope?.loomNumber !== undefined && scope.loomNumber !== "" ? String(scope.loomNumber) : undefined,
-      batchId: scope?.batchId || undefined,
-    });
-    return groups.map(outstandingGroupToLine);
-  }, []);
+  const getOutstandingForRecipient = useCallback(
+    async (weaverId?: string, factoryLoomId?: string, scope?: OutstandingScope) => {
+      if (!weaverId && !factoryLoomId) return [];
+      const groups = await materialReturnsApi.getOutstanding({
+        weaverId,
+        factoryLoomId,
+        loomNumber:
+          scope?.loomNumber !== undefined && scope.loomNumber !== ""
+            ? String(scope.loomNumber)
+            : undefined,
+        batchId: scope?.batchId || undefined,
+      });
+      return groups.map(outstandingGroupToLine);
+    },
+    []
+  );
 
   return (
-    <MaterialReturnContext.Provider value={{ returnRecords, addReturnRecord, deleteReturnRecord, getRecordsForWeaver, getOutstandingForRecipient, isError, error, isLoading, refetch: () => void refetch() }}>
+    <MaterialReturnContext.Provider
+      value={{
+        returnRecords,
+        addReturnRecord,
+        deleteReturnRecord,
+        getRecordsForWeaver,
+        getOutstandingForRecipient,
+        isError,
+        error,
+        isLoading,
+        refetch: () => void refetch(),
+      }}
+    >
       {children}
     </MaterialReturnContext.Provider>
   );

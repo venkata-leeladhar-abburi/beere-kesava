@@ -16,7 +16,11 @@ export const HSN_REGISTRY: Record<string, HsnEntry> = {
   "5005": { code: "5005", description: "Yarn spun from silk waste", ratePct: 5 },
   "5006": { code: "5006", description: "Silk yarn / thread, put up for retail", ratePct: 5 },
   "5605": { code: "5605", description: "Metallised yarn — jari / zari", ratePct: 12 },
-  "9988": { code: "9988", description: "Job work — manufacturing services on inputs owned by others", ratePct: 5 },
+  "9988": {
+    code: "9988",
+    description: "Job work — manufacturing services on inputs owned by others",
+    ratePct: 5,
+  },
   "9965": { code: "9965", description: "Goods transport agency services", ratePct: 5 },
 };
 

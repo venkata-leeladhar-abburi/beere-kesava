@@ -1,31 +1,52 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { customersApi } from '../../../../shared/api/customers';
-import { 
-  IndianRupee, Plus, Wallet, CreditCard, Check,
-} from 'lucide-react';
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useLocation } from "react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { customersApi } from "../../../../shared/api/customers";
+import { IndianRupee, Plus, Wallet, CreditCard, Check } from "lucide-react";
 import { useRatesPricing } from "@/features/pricing";
 import { useResponsive } from "../../../../hooks/useResponsive";
-import { C, F, Card, Chip, ShopDesktopHero, SILK_BG } from './theme';
+import { C, F, Card, Chip, ShopDesktopHero, SILK_BG } from "./theme";
 import {
-  Stepper, StepHeader, StepBody, FlowActions, SummaryPanel, OptionCard,
-  ConsequenceNote, ACCENT_SALE, type FlowStep, type SummaryRow,
-} from './flow-kit';
-import { NewSaleBillModal } from './NewSaleBillModal';
-import { NewSaleSuccessView } from './NewSaleSuccessView';
-import { CustomerSelectStep, Customer, isPhoneEntryComplete } from './CustomerSelectStep';
-import { ScanSareeStep } from './ScanSareeStep';
+  Stepper,
+  StepHeader,
+  StepBody,
+  FlowActions,
+  SummaryPanel,
+  OptionCard,
+  ConsequenceNote,
+  ACCENT_SALE,
+  type FlowStep,
+  type SummaryRow,
+} from "./flow-kit";
+import { NewSaleBillModal } from "./NewSaleBillModal";
+import { NewSaleSuccessView } from "./NewSaleSuccessView";
+import { CustomerSelectStep, Customer, isPhoneEntryComplete } from "./CustomerSelectStep";
+import { ScanSareeStep } from "./ScanSareeStep";
 import {
-  cartTotal, cartOriginalTotal, applyDiscount, discountLabel, billDiscountAmount, billDiscountLabel,
-  allocateBillDiscount, allocateByWeight, gstBreakdown, gstIssue, normalizeGstin, toBillGst,
-  NO_BILL_DISCOUNT, NO_GST,
-  type SaleLine, type DiscountMode, type BillDiscount, type BillGst, type GstBreakdown,
-} from './sale-cart';
+  cartTotal,
+  cartOriginalTotal,
+  applyDiscount,
+  discountLabel,
+  billDiscountAmount,
+  billDiscountLabel,
+  allocateBillDiscount,
+  allocateByWeight,
+  gstBreakdown,
+  gstIssue,
+  normalizeGstin,
+  toBillGst,
+  NO_BILL_DISCOUNT,
+  NO_GST,
+  type SaleLine,
+  type DiscountMode,
+  type BillDiscount,
+  type BillGst,
+  type GstBreakdown,
+} from "./sale-cart";
 import { ApiError } from "../../../../shared/api/client";
 import { scanApi } from "../../../../shared/api/scan";
 import { salesApi } from "../../../../shared/api/sales";
-import { Button, Input } from '../../../../shared/ui/primitives';
+import { Button, Input } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function NewSaleFlow() {
@@ -88,27 +109,35 @@ export function NewSaleFlow() {
   });
 
   const prevCustomers: Customer[] = useMemo(() => {
-    return (customersRes?.items ?? []).map(c => {
+    return (customersRes?.items ?? []).map((c) => {
       const parts = c.name.split(" ").filter(Boolean);
-      const initials = parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}`.toUpperCase() : c.name.slice(0, 2).toUpperCase();
+      const initials =
+        parts.length >= 2
+          ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+          : c.name.slice(0, 2).toUpperCase();
       return {
         id: c.id,
         name: c.name,
         phone: c.phone ?? "",
         purchases: c.totalPurchases,
         total: formatMoney(rupees(c.totalSpend)),
-        lastPurchase: new Date(c.lastPurchaseDate ?? c.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
+        lastPurchase: new Date(c.lastPurchaseDate ?? c.createdAt).toLocaleDateString("en-IN", {
+          month: "short",
+          day: "numeric",
+        }),
         initials,
       };
     });
   }, [customersRes]);
 
-  const filteredCustomers = custSearch.length >= 2
-    ? prevCustomers.filter(c =>
-      c.phone.replace(/\s/g, "").includes(custSearch.replace(/\s/g, "")) ||
-      c.name.toLowerCase().includes(custSearch.toLowerCase())
-    )
-    : prevCustomers;
+  const filteredCustomers =
+    custSearch.length >= 2
+      ? prevCustomers.filter(
+          (c) =>
+            c.phone.replace(/\s/g, "").includes(custSearch.replace(/\s/g, "")) ||
+            c.name.toLowerCase().includes(custSearch.toLowerCase())
+        )
+      : prevCustomers;
 
   // The stock picker is the admin All Sarees table (see ScanSareeStep), fed
   // by the SalesContext / FinishingContext queries plus the money-free
@@ -117,8 +146,12 @@ export function NewSaleFlow() {
   // with the bill that was just raised.
   const refreshStock = () => {
     for (const queryKey of [
-      ["shop-stock"], ["inventory", "production-catalog"], ["backend-inventory-list"], ["backend-sales-list"],
-    ]) void queryClient.invalidateQueries({ queryKey });
+      ["shop-stock"],
+      ["inventory", "production-catalog"],
+      ["backend-inventory-list"],
+      ["backend-sales-list"],
+    ])
+      void queryClient.invalidateQueries({ queryKey });
   };
 
   /**
@@ -129,7 +162,7 @@ export function NewSaleFlow() {
   const resolveLine = async (rawId: string, existing: SaleLine[]): Promise<SaleLine | string> => {
     const id = rawId.trim();
     if (!id) return "Enter a saree ID to look it up, or scan its barcode with the camera.";
-    if (existing.some(l => l.id.toLowerCase() === id.toLowerCase())) {
+    if (existing.some((l) => l.id.toLowerCase() === id.toLowerCase())) {
       return `${id} is already on this sale.`;
     }
     try {
@@ -140,10 +173,14 @@ export function NewSaleFlow() {
       // staff proceed to sell it again. Not gated on finishing — a saree
       // counts as in-stock the moment QC passes.
       if (result.saleEligibility !== "PASSED") {
-        const reason = result.saleEligibility === "WHOLESALE_DISPATCHED" ? "already dispatched to a wholesale customer"
-          : result.saleEligibility === "SOLD" ? "already sold"
-          : result.saleEligibility === "DAMAGED_REVIEW_NEEDED" ? "flagged for damage review"
-          : "has not passed QC yet";
+        const reason =
+          result.saleEligibility === "WHOLESALE_DISPATCHED"
+            ? "already dispatched to a wholesale customer"
+            : result.saleEligibility === "SOLD"
+              ? "already sold"
+              : result.saleEligibility === "DAMAGED_REVIEW_NEEDED"
+                ? "flagged for damage review"
+                : "has not passed QC yet";
         return `Saree ${id} is ${reason} — it can't be sold from the counter.`;
       }
       const typeCode = result.sareeType?.code ?? "";
@@ -164,20 +201,37 @@ export function NewSaleFlow() {
         weight: result.weight != null ? `${result.weight}g` : "—",
         weaver: result.weaver
           ? `${result.weaver.name}${result.weaver.loomNumber != null ? ` · Loom ${result.weaver.loomNumber}` : ""}`
-          : result.factoryLoom ? `Factory Loom ${result.factoryLoom.code ?? result.factoryLoom.loomNumber}` : "—",
+          : result.factoryLoom
+            ? `Factory Loom ${result.factoryLoom.code ?? result.factoryLoom.loomNumber}`
+            : "—",
         originalPrice: price,
         discountMode: "amount",
         discountValue: 0,
         soldPrice: price,
-        source: result.origin === "external"
-          ? result.supplier
-            ? { kind: "external", name: result.supplier.name, detail: result.invoiceNumber ? `Invoice ${result.invoiceNumber}` : undefined }
-            : undefined
-          : result.weaver
-            ? { kind: "weaver", name: result.weaver.name, detail: result.weaver.loomNumber != null ? `Loom ${result.weaver.loomNumber}` : undefined }
-            : result.factoryLoom
-              ? { kind: "factory", name: `Factory Loom ${result.factoryLoom.code ?? result.factoryLoom.loomNumber}` }
-              : undefined,
+        source:
+          result.origin === "external"
+            ? result.supplier
+              ? {
+                  kind: "external",
+                  name: result.supplier.name,
+                  detail: result.invoiceNumber ? `Invoice ${result.invoiceNumber}` : undefined,
+                }
+              : undefined
+            : result.weaver
+              ? {
+                  kind: "weaver",
+                  name: result.weaver.name,
+                  detail:
+                    result.weaver.loomNumber != null
+                      ? `Loom ${result.weaver.loomNumber}`
+                      : undefined,
+                }
+              : result.factoryLoom
+                ? {
+                    kind: "factory",
+                    name: `Factory Loom ${result.factoryLoom.code ?? result.factoryLoom.loomNumber}`,
+                  }
+                : undefined,
       };
     } catch (err) {
       return err instanceof ApiError ? err.message : `Could not find saree ${id}.`;
@@ -188,8 +242,11 @@ export function NewSaleFlow() {
   const handleScan = async (overrideId?: string) => {
     setScanError(null);
     const line = await resolveLine(overrideId ?? manualId, cart);
-    if (typeof line === "string") { setScanError(line); return; }
-    setCart(prev => [...prev, line]);
+    if (typeof line === "string") {
+      setScanError(line);
+      return;
+    }
+    setCart((prev) => [...prev, line]);
     setManualId("");
   };
 
@@ -200,16 +257,17 @@ export function NewSaleFlow() {
     const errors: string[] = [];
     for (const id of ids) {
       const line = await resolveLine(id, [...cart, ...added]);
-      if (typeof line === "string") errors.push(line); else added.push(line);
+      if (typeof line === "string") errors.push(line);
+      else added.push(line);
     }
-    if (added.length > 0) setCart(prev => [...prev, ...added]);
+    if (added.length > 0) setCart((prev) => [...prev, ...added]);
     if (errors.length > 0) setScanError(errors.join(" "));
   };
 
-  const removeLine = (id: string) => setCart(prev => prev.filter(l => l.id !== id));
+  const removeLine = (id: string) => setCart((prev) => prev.filter((l) => l.id !== id));
 
   const setLineDiscount = (id: string, mode: DiscountMode, value: number) =>
-    setCart(prev => prev.map(l => (l.id === id ? applyDiscount(l, mode, value) : l)));
+    setCart((prev) => prev.map((l) => (l.id === id ? applyDiscount(l, mode, value) : l)));
 
   const handleSelectCustomer = (cust: Customer) => {
     setSelectedCustomer(cust);
@@ -243,8 +301,9 @@ export function NewSaleFlow() {
       phone: preselectCustomer.phone ?? "",
       purchases: preselectCustomer.totalPurchases ?? 0,
       total: formatMoney(rupees(Number(preselectCustomer.totalSpend ?? 0))),
-      lastPurchase: new Date(preselectCustomer.lastPurchaseDate ?? preselectCustomer.createdAt)
-        .toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
+      lastPurchase: new Date(
+        preselectCustomer.lastPurchaseDate ?? preselectCustomer.createdAt
+      ).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
       initials: preselectCustomer.name,
     });
     setCustAddress(preselectCustomer.address ?? "");
@@ -256,7 +315,10 @@ export function NewSaleFlow() {
     setIsEditingCustomer(false);
     setIsNewCustomer(true);
     setShowCustomerList(false);
-    setCustName(""); setPhone(""); setCustAddress(""); setCustSearch("");
+    setCustName("");
+    setPhone("");
+    setCustAddress("");
+    setCustSearch("");
   };
 
   // One id per bill, sent with every saree on it so the admin feed gets a
@@ -266,16 +328,31 @@ export function NewSaleFlow() {
 
   const resetSale = () => {
     billId.current = null;
-    setStep(1); setCart([]); setBillDiscount(NO_BILL_DISCOUNT); setGst(NO_GST); setSellerGstin(undefined);
-    setManualId(""); setPayment(null); setPayRef("");
-    setPhone(""); setCustName(""); setCustAddress("");
-    setCustSearch(""); setSelectedCustomer(null); setIsEditingCustomer(false);
-    setIsNewCustomer(false); setShowCustomerList(false);
-    setShowSareeList(false); setScanError(null); setSubmitError(null);
+    setStep(1);
+    setCart([]);
+    setBillDiscount(NO_BILL_DISCOUNT);
+    setGst(NO_GST);
+    setSellerGstin(undefined);
+    setManualId("");
+    setPayment(null);
+    setPayRef("");
+    setPhone("");
+    setCustName("");
+    setCustAddress("");
+    setCustSearch("");
+    setSelectedCustomer(null);
+    setIsEditingCustomer(false);
+    setIsNewCustomer(false);
+    setShowCustomerList(false);
+    setShowSareeList(false);
+    setScanError(null);
+    setSubmitError(null);
     setSaleRefs([]);
   };
 
-  const canProceedStep1 = isPhoneEntryComplete(phone) && (selectedCustomer !== null || (isNewCustomer && custName.trim() !== ""));
+  const canProceedStep1 =
+    isPhoneEntryComplete(phone) &&
+    (selectedCustomer !== null || (isNewCustomer && custName.trim() !== ""));
 
   if (showBill) {
     return (
@@ -287,7 +364,9 @@ export function NewSaleFlow() {
         payment={payment}
         payRef={payRef}
         total={total}
-        billDiscount={billOff ? { amount: billOff, note: billDiscountLabel(billDiscount) } : undefined}
+        billDiscount={
+          billOff ? { amount: billOff, note: billDiscountLabel(billDiscount) } : undefined
+        }
         gst={billGst}
         billRef={saleRefs[0]}
         saleRefs={saleRefs}
@@ -308,7 +387,9 @@ export function NewSaleFlow() {
         payment={payment}
         payRef={payRef}
         total={total}
-        billDiscount={billOff ? { amount: billOff, note: billDiscountLabel(billDiscount) } : undefined}
+        billDiscount={
+          billOff ? { amount: billOff, note: billDiscountLabel(billDiscount) } : undefined
+        }
         gst={billGst}
         saleRefs={saleRefs}
         fmtPrice={fmtPrice}
@@ -321,9 +402,16 @@ export function NewSaleFlow() {
   // Each completed step reads back what was chosen, so the operator never has
   // to step backwards just to remember who the customer was.
   const steps: FlowStep[] = [
-    { label: "Customer",   summary: selectedCustomer?.name ?? (custName.trim() || undefined) },
-    { label: "Sarees & price", summary: cart.length === 1 ? cart[0].id : cart.length > 1 ? `${cart.length} sarees` : undefined },
-    { label: "Payment",    summary: payment ? `${payment.toUpperCase()} · ${fmtPrice(total)}` : undefined },
+    { label: "Customer", summary: selectedCustomer?.name ?? (custName.trim() || undefined) },
+    {
+      label: "Sarees & price",
+      summary:
+        cart.length === 1 ? cart[0].id : cart.length > 1 ? `${cart.length} sarees` : undefined,
+    },
+    {
+      label: "Payment",
+      summary: payment ? `${payment.toUpperCase()} · ${fmtPrice(total)}` : undefined,
+    },
     { label: "Confirm" },
   ];
 
@@ -340,7 +428,11 @@ export function NewSaleFlow() {
           titleMain="New Retail Sale"
           titleSub="& Record at Counter"
           description="Scan the saree barcode, record the payment method, enter customer details, and generate a bill — all in one flow."
-          pills={[{ text: "4-Step Process" }, { text: "Auto Bill Generation" }, { text: "Customer Auto-Fill" }]}
+          pills={[
+            { text: "4-Step Process" },
+            { text: "Auto Bill Generation" },
+            { text: "Customer Auto-Fill" },
+          ]}
           bgUrl={SILK_BG}
         />
       )}
@@ -349,7 +441,7 @@ export function NewSaleFlow() {
         steps={steps}
         current={step as number}
         accent={ACCENT_SALE}
-        onJump={n => setStep(n as 1 | 2 | 3 | 4)}
+        onJump={(n) => setStep(n as 1 | 2 | 3 | 4)}
       />
 
       {/* ── Step 1 — Customer Details ── */}
@@ -418,11 +510,35 @@ export function NewSaleFlow() {
                 two places to change one number. "Edit prices" jumps back. */}
             <Card style={{ marginBottom: 22, overflow: "hidden" }}>
               <div style={{ height: 4, background: C.burg }} />
-              <div style={{ padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" as const }}>
-                <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
+              <div
+                style={{
+                  padding: "10px 16px",
+                  borderBottom: `1px solid ${C.bdr}`,
+                  background: "rgba(110,15,45,0.03)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 12,
+                  flexWrap: "wrap" as const,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: F.m,
+                    fontSize: 12,
+                    letterSpacing: 1.5,
+                    color: C.muted,
+                    textTransform: "uppercase" as const,
+                  }}
+                >
                   {cart.length} saree{cart.length !== 1 ? "s" : ""} · amount due
                 </span>
-                <Button variant="link" size="sm" onClick={() => setStep(2)} className="p-0 text-xs underline text-[#69635E]">
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={() => setStep(2)}
+                  className="p-0 text-xs underline text-[#69635E]"
+                >
                   Edit prices
                 </Button>
               </div>
@@ -431,23 +547,44 @@ export function NewSaleFlow() {
                 <div
                   key={l.id}
                   style={{
-                    display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12,
+                    display: "flex",
+                    alignItems: "baseline",
+                    justifyContent: "space-between",
+                    gap: 12,
                     padding: "12px 16px",
                     borderBottom: i < cart.length - 1 ? `1px solid ${C.bdr}` : "none",
                   }}
                 >
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{l.id}</div>
+                    <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>
+                      {l.id}
+                    </div>
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>
                       {l.type !== "—" ? l.type : l.name}
                     </div>
                   </div>
                   <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, fontVariantNumeric: "tabular-nums" }}>
+                    <div
+                      style={{
+                        fontFamily: F.u,
+                        fontWeight: 600,
+                        fontSize: 15,
+                        color: C.text,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
                       {fmtPrice(l.soldPrice)}
                     </div>
                     {l.soldPrice !== l.originalPrice && (
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textDecoration: "line-through", marginTop: 2 }}>
+                      <div
+                        style={{
+                          fontFamily: F.u,
+                          fontSize: 12,
+                          color: C.muted,
+                          textDecoration: "line-through",
+                          marginTop: 2,
+                        }}
+                      >
                         {fmtPrice(l.originalPrice)}
                       </div>
                     )}
@@ -455,28 +592,75 @@ export function NewSaleFlow() {
                 </div>
               ))}
 
-              <div style={{ padding: "14px 16px", borderTop: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)" }}>
+              <div
+                style={{
+                  padding: "14px 16px",
+                  borderTop: `1px solid ${C.bdr}`,
+                  background: "rgba(110,15,45,0.03)",
+                }}
+              >
                 <BillBreakdown
-                  originalTotal={originalTotal} lineDiscount={lineDiscount} subtotal={subtotal}
-                  billOff={billOff} billNote={billDiscountLabel(billDiscount)} tax={tax} fmtPrice={fmtPrice}
+                  originalTotal={originalTotal}
+                  lineDiscount={lineDiscount}
+                  subtotal={subtotal}
+                  billOff={billOff}
+                  billNote={billDiscountLabel(billDiscount)}
+                  tax={tax}
+                  fmtPrice={fmtPrice}
                 />
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                  <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total payable</span>
-                  <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 28, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtPrice(total)}</span>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
+                  }}
+                >
+                  <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>
+                    Total payable
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: F.u,
+                      fontWeight: 600,
+                      fontSize: 28,
+                      color: C.burg,
+                      letterSpacing: "-0.02em",
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    {fmtPrice(total)}
+                  </span>
                 </div>
               </div>
             </Card>
 
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginBottom: 12 }}>
+            <div
+              style={{
+                fontFamily: F.u,
+                fontWeight: 600,
+                fontSize: 15,
+                color: C.text,
+                marginBottom: 12,
+              }}
+            >
               How is the customer paying?
             </div>
-            <div role="radiogroup" aria-label="Payment method" style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 14, marginBottom: 20 }}>
+            <div
+              role="radiogroup"
+              aria-label="Payment method"
+              style={{
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)",
+                gap: 14,
+                marginBottom: 20,
+              }}
+            >
               {[
                 { id: "cash" as const, label: "Cash", sub: "Physical currency", icon: IndianRupee },
                 { id: "upi" as const, label: "UPI", sub: "GPay, PhonePe, etc.", icon: Wallet },
                 { id: "card" as const, label: "Card", sub: "Debit or credit", icon: CreditCard },
                 { id: "other" as const, label: "Other", sub: "Cheque / transfer", icon: Plus },
-              ].map(p => (
+              ].map((p) => (
                 <OptionCard
                   key={p.id}
                   name="payment-method"
@@ -494,14 +678,24 @@ export function NewSaleFlow() {
                 showing it always would be four fields of dead space. */}
             {(payment === "upi" || payment === "card") && (
               <div className="max-w-[340px]">
-                <label htmlFor="pay-ref" style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, display: "block", marginBottom: 8 }}>
+                <label
+                  htmlFor="pay-ref"
+                  style={{
+                    fontFamily: F.u,
+                    fontWeight: 500,
+                    fontSize: 14,
+                    color: C.text,
+                    display: "block",
+                    marginBottom: 8,
+                  }}
+                >
                   {payment === "upi" ? "UPI reference" : "Card last 4 digits"}
                   <span style={{ color: C.muted, fontWeight: 400 }}> (optional)</span>
                 </label>
                 <Input
                   id="pay-ref"
                   value={payRef}
-                  onChange={e => setPayRef(e.target.value)}
+                  onChange={(e) => setPayRef(e.target.value)}
                   maxLength={payment === "card" ? 4 : undefined}
                   placeholder={payment === "upi" ? "Transaction ID" : "e.g. 4872"}
                   size="lg"
@@ -533,33 +727,82 @@ export function NewSaleFlow() {
             <SummaryPanel
               title="Sale summary"
               accent={ACCENT_SALE}
-              rows={([
-                { label: "Customer", value: custName || selectedCustomer?.name || "—" },
-                { label: "Phone", value: phone ? `+91 ${phone}` : "—", mono: true },
-                ...(custAddress.trim() ? [{ label: "Address", value: custAddress.trim() }] : []),
-                { label: "Sarees", value: `${cart.length} piece${cart.length !== 1 ? "s" : ""}` },
-                { label: "Payment method", value: payment ? payment.toUpperCase() : "—", mono: true },
-                ...(payRef ? [{ label: payment === "upi" ? "UPI reference" : "Card ending", value: payRef, mono: true }] : []),
-                { label: "GST", value: tax ? `${tax.rate}% · ${fmtPrice(tax.gst)}` : "Not applied", mono: !!tax },
-                ...(tax && gst.gstin.trim() ? [{ label: "Customer GSTIN", value: normalizeGstin(gst.gstin), mono: true }] : []),
-                { label: "Amount payable", value: fmtPrice(total), mono: true },
-              ] as SummaryRow[])}
+              rows={
+                [
+                  { label: "Customer", value: custName || selectedCustomer?.name || "—" },
+                  { label: "Phone", value: phone ? `+91 ${phone}` : "—", mono: true },
+                  ...(custAddress.trim() ? [{ label: "Address", value: custAddress.trim() }] : []),
+                  { label: "Sarees", value: `${cart.length} piece${cart.length !== 1 ? "s" : ""}` },
+                  {
+                    label: "Payment method",
+                    value: payment ? payment.toUpperCase() : "—",
+                    mono: true,
+                  },
+                  ...(payRef
+                    ? [
+                        {
+                          label: payment === "upi" ? "UPI reference" : "Card ending",
+                          value: payRef,
+                          mono: true,
+                        },
+                      ]
+                    : []),
+                  {
+                    label: "GST",
+                    value: tax ? `${tax.rate}% · ${fmtPrice(tax.gst)}` : "Not applied",
+                    mono: !!tax,
+                  },
+                  ...(tax && gst.gstin.trim()
+                    ? [{ label: "Customer GSTIN", value: normalizeGstin(gst.gstin), mono: true }]
+                    : []),
+                  { label: "Amount payable", value: fmtPrice(total), mono: true },
+                ] as SummaryRow[]
+              }
               footer={
                 <div>
                   {/* Every piece on the bill, itemised with its saree type and
                       its retail price alongside what it is actually selling
                       for — on a multi-saree sale a single total is not enough
                       to check the bill against. */}
-                  {cart.map(l => (
-                    <div key={l.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, marginBottom: 10 }}>
+                  {cart.map((l) => (
+                    <div
+                      key={l.id}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "baseline",
+                        gap: 12,
+                        marginBottom: 10,
+                      }}
+                    >
                       <span style={{ fontFamily: F.u, fontSize: 13, color: C.text, minWidth: 0 }}>
                         <span style={{ fontFamily: F.m, color: C.burg }}>{l.id}</span>
-                        <span style={{ color: C.muted }}> · {l.type !== "—" ? l.type : l.name}</span>
+                        <span style={{ color: C.muted }}>
+                          {" "}
+                          · {l.type !== "—" ? l.type : l.name}
+                        </span>
                       </span>
                       <span style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                        <span style={{ fontFamily: F.u, fontSize: 13, color: C.text, fontVariantNumeric: "tabular-nums" }}>{fmtPrice(l.soldPrice)}</span>
+                        <span
+                          style={{
+                            fontFamily: F.u,
+                            fontSize: 13,
+                            color: C.text,
+                            fontVariantNumeric: "tabular-nums",
+                          }}
+                        >
+                          {fmtPrice(l.soldPrice)}
+                        </span>
                         {l.soldPrice !== l.originalPrice && (
-                          <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textDecoration: "line-through", marginLeft: 8 }}>
+                          <span
+                            style={{
+                              fontFamily: F.u,
+                              fontSize: 12,
+                              color: C.muted,
+                              textDecoration: "line-through",
+                              marginLeft: 8,
+                            }}
+                          >
                             {fmtPrice(l.originalPrice)}
                           </span>
                         )}
@@ -568,19 +811,58 @@ export function NewSaleFlow() {
                   ))}
                   <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, marginTop: 6 }}>
                     <BillBreakdown
-                      originalTotal={originalTotal} lineDiscount={lineDiscount} subtotal={subtotal}
-                      billOff={billOff} billNote={billDiscountLabel(billDiscount)} tax={tax} fmtPrice={fmtPrice}
+                      originalTotal={originalTotal}
+                      lineDiscount={lineDiscount}
+                      subtotal={subtotal}
+                      billOff={billOff}
+                      billNote={billDiscountLabel(billDiscount)}
+                      tax={tax}
+                      fmtPrice={fmtPrice}
                     />
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                      <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total payable</span>
-                      <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 30, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtPrice(total)}</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "baseline",
+                      }}
+                    >
+                      <span
+                        style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}
+                      >
+                        Total payable
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: F.u,
+                          fontWeight: 600,
+                          fontSize: 30,
+                          color: C.burg,
+                          letterSpacing: "-0.02em",
+                          fontVariantNumeric: "tabular-nums",
+                        }}
+                      >
+                        {fmtPrice(total)}
+                      </span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginTop: 10, flexWrap: "wrap" as const }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: 10,
+                        marginTop: 10,
+                        flexWrap: "wrap" as const,
+                      }}
+                    >
                       <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
                         Paying by {payment ? payment.toUpperCase() : "—"}
                       </span>
                       {priceDiscount > 0 && (
-                        <Chip label={`Total discount · ${fmtPrice(priceDiscount)}`} color="#845E04" bg="rgba(200,155,71,0.15)" />
+                        <Chip
+                          label={`Total discount · ${fmtPrice(priceDiscount)}`}
+                          color="#845E04"
+                          bg="rgba(200,155,71,0.15)"
+                        />
                       )}
                     </div>
                   </div>
@@ -589,11 +871,18 @@ export function NewSaleFlow() {
             />
 
             <ConsequenceNote tone="info">
-              Confirming records the sale, removes {cart.length === 1 ? "this saree" : `these ${cart.length} sarees`} from shop inventory, and generates a bill you can print or send on WhatsApp.
+              Confirming records the sale, removes{" "}
+              {cart.length === 1 ? "this saree" : `these ${cart.length} sarees`} from shop
+              inventory, and generates a bill you can print or send on WhatsApp.
             </ConsequenceNote>
 
             {submitError && (
-              <div role="alert" style={{ marginTop: 16, fontFamily: F.u, fontSize: 14, color: "#AB3832" }}>{submitError}</div>
+              <div
+                role="alert"
+                style={{ marginTop: 16, fontFamily: F.u, fontSize: 14, color: "#AB3832" }}
+              >
+                {submitError}
+              </div>
             )}
           </StepBody>
 
@@ -603,14 +892,21 @@ export function NewSaleFlow() {
             backLabel="Edit details"
             onBack={() => setStep(3)}
             primaryIcon={Check}
-            primaryLabel={cart.length > 1 ? `Confirm sale — ${cart.length} sarees` : "Confirm sale — generate bill"}
+            primaryLabel={
+              cart.length > 1
+                ? `Confirm sale — ${cart.length} sarees`
+                : "Confirm sale — generate bill"
+            }
             primaryBusy={isSubmitting}
             onPrimary={async () => {
               if (isSubmitting) return;
               // The stepper can jump here past the saree step, so the GST
               // entry is checked again rather than trusted.
               const gstProblem = gstIssue(gst);
-              if (gstProblem) { setSubmitError(gstProblem); return; }
+              if (gstProblem) {
+                setSubmitError(gstProblem);
+                return;
+              }
               setIsSubmitting(true);
               setSubmitError(null);
               try {
@@ -620,12 +916,14 @@ export function NewSaleFlow() {
                 // an existing one is reused as-is.
                 const customerId = selectedCustomer
                   ? selectedCustomer.id
-                  : (await customersApi.create({
-                      name: custName.trim(),
-                      phone: phone.trim() || undefined,
-                      address: custAddress.trim() || undefined,
-                      type: "RETAIL",
-                    })).id;
+                  : (
+                      await customersApi.create({
+                        name: custName.trim(),
+                        phone: phone.trim() || undefined,
+                        address: custAddress.trim() || undefined,
+                        type: "RETAIL",
+                      })
+                    ).id;
                 // The backend records one SaleRecord per saree, so a basket
                 // is submitted line by line. Sequential, not parallel: each
                 // call mutates that saree's inventory status, and a partial
@@ -645,7 +943,8 @@ export function NewSaleFlow() {
                 // GST adds up to exactly what the bill prints.
                 const lineTaxable = cart.map((l, i) => l.soldPrice - billShares[i]);
                 const gstShares = tax ? allocateByWeight(lineTaxable, tax.gst) : [];
-                const customerGstin = tax && gst.gstin.trim() ? normalizeGstin(gst.gstin) : undefined;
+                const customerGstin =
+                  tax && gst.gstin.trim() ? normalizeGstin(gst.gstin) : undefined;
                 let recordedSellerGstin: string | undefined;
                 try {
                   for (const [i, line] of cart.entries()) {
@@ -659,7 +958,10 @@ export function NewSaleFlow() {
                       paymentMethod: payment ?? undefined,
                       paymentRef: payRef.trim() || undefined,
                       originalPrice: line.originalPrice,
-                      discountNote: [discountLabel(line), billShares[i] ? billNote : undefined].filter(Boolean).join(" + ") || undefined,
+                      discountNote:
+                        [discountLabel(line), billShares[i] ? billNote : undefined]
+                          .filter(Boolean)
+                          .join(" + ") || undefined,
                       billId: billId.current,
                       ...(tax ? { gstRate: tax.rate, gstAmount: lineGst, customerGstin } : {}),
                     });
@@ -677,10 +979,10 @@ export function NewSaleFlow() {
                       const used = billShares.slice(0, recorded.length).reduce((a, b) => a + b, 0);
                       setBillDiscount({ mode: "amount", value: Math.max(0, billOff - used) });
                     }
-                    setCart(prev => prev.filter(l => !recorded.includes(l.id)));
+                    setCart((prev) => prev.filter((l) => !recorded.includes(l.id)));
                     throw new Error(
                       `Recorded ${recorded.length} of ${cart.length} sarees (${recorded.join(", ")}). ` +
-                      `The rest are still on this sale — try confirming again.`,
+                        `The rest are still on this sale — try confirming again.`
                     );
                   }
                   throw err;
@@ -694,9 +996,11 @@ export function NewSaleFlow() {
                 setStep("success");
               } catch (err) {
                 setSubmitError(
-                  err instanceof ApiError ? err.message
-                    : err instanceof Error ? err.message
-                    : "Failed to record sale — please try again.",
+                  err instanceof ApiError
+                    ? err.message
+                    : err instanceof Error
+                      ? err.message
+                      : "Failed to record sale — please try again."
                 );
               } finally {
                 setIsSubmitting(false);
@@ -705,7 +1009,6 @@ export function NewSaleFlow() {
           />
         </>
       )}
-
     </div>
   );
 }
@@ -713,7 +1016,15 @@ export function NewSaleFlow() {
 /** Retail total → per-saree discounts → subtotal → bill discount, as the
  *  payment and confirm steps show it above the amount payable. Rows that are
  *  zero are left out; nothing renders when no discount was given at all. */
-function BillBreakdown({ originalTotal, lineDiscount, subtotal, billOff, billNote, tax, fmtPrice }: {
+function BillBreakdown({
+  originalTotal,
+  lineDiscount,
+  subtotal,
+  billOff,
+  billNote,
+  tax,
+  fmtPrice,
+}: {
   originalTotal: number;
   lineDiscount: number;
   subtotal: number;
@@ -725,17 +1036,33 @@ function BillBreakdown({ originalTotal, lineDiscount, subtotal, billOff, billNot
 }) {
   if (!lineDiscount && !billOff && !tax) return null;
   const row = (label: string, value: string, color: string = C.muted) => (
-    <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+    <div
+      key={label}
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        marginBottom: 6,
+      }}
+    >
       <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{label}</span>
-      <span style={{ fontFamily: F.u, fontSize: 14, color, fontVariantNumeric: "tabular-nums" }}>{value}</span>
+      <span style={{ fontFamily: F.u, fontSize: 14, color, fontVariantNumeric: "tabular-nums" }}>
+        {value}
+      </span>
     </div>
   );
   return (
     <div style={{ marginBottom: 4 }}>
       {row("Retail total", fmtPrice(originalTotal))}
-      {lineDiscount !== 0 && row(lineDiscount > 0 ? "Saree discounts" : "Saree mark-ups", `${lineDiscount > 0 ? "−" : "+"} ${fmtPrice(Math.abs(lineDiscount))}`, C.gold)}
+      {lineDiscount !== 0 &&
+        row(
+          lineDiscount > 0 ? "Saree discounts" : "Saree mark-ups",
+          `${lineDiscount > 0 ? "−" : "+"} ${fmtPrice(Math.abs(lineDiscount))}`,
+          C.gold
+        )}
       {billOff > 0 && lineDiscount !== 0 && row("Subtotal", fmtPrice(subtotal))}
-      {billOff > 0 && row(`Bill discount${billNote ? ` (${billNote})` : ""}`, `− ${fmtPrice(billOff)}`, C.gold)}
+      {billOff > 0 &&
+        row(`Bill discount${billNote ? ` (${billNote})` : ""}`, `− ${fmtPrice(billOff)}`, C.gold)}
       {tax && row("Taxable value", fmtPrice(tax.taxable))}
       {tax && row(`CGST @ ${tax.rate / 2}%`, `+ ${fmtPrice(tax.cgst)}`, C.text)}
       {tax && row(`SGST @ ${tax.rate / 2}%`, `+ ${fmtPrice(tax.sgst)}`, C.text)}

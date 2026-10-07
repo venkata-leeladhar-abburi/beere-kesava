@@ -27,16 +27,15 @@ export function externalSerialOf(sareeId: string): string | null {
  *  rule the table's checkboxes use: what you can tick is exactly what the
  *  dispatch/quotation modals receive, and exactly what the server accepts. */
 export const isSareePickable = (r: WeaverSareeRow): boolean =>
-  !r.dispatched
-  && !r.sold
-  && r.finishingStatus !== "rejected";
+  !r.dispatched && !r.sold && r.finishingStatus !== "rejected";
 
 /** Why a saree cannot be ticked — shown on the disabled checkbox so the row
  *  explains itself instead of just being unclickable. */
 export function pickBlockedReason(r: WeaverSareeRow): string | undefined {
   if (r.sold) return "Already sold — it is no longer in stock";
   if (r.dispatched) return "Already dispatched";
-  if (r.finishingStatus === "rejected") return "Came back damaged from finishing — needs review before it can be dispatched";
+  if (r.finishingStatus === "rejected")
+    return "Came back damaged from finishing — needs review before it can be dispatched";
   return undefined;
 }
 
@@ -53,7 +52,7 @@ export interface PickRule {
 export const DISPATCH_PICK_RULE: PickRule = {
   canPick: isSareePickable,
   blockedReason: pickBlockedReason,
-  hides: r => r.dispatched,
+  hides: (r) => r.dispatched,
 };
 
 /** Counter-sale rule. Mirrors SalesService.createSale: sold, gone to a
@@ -66,23 +65,28 @@ export function salePickRule(inSale: ReadonlySet<string>): PickRule {
     if (inSale.has(r.sareeId)) return "Already on this sale";
     if (r.sold) return "Already sold — it is no longer in stock";
     if (r.wholesaleDispatched) return "Sent to a wholesale customer";
-    if (r.finishingStatus === "rejected") return "Came back damaged from finishing — needs review before it can be sold";
+    if (r.finishingStatus === "rejected")
+      return "Came back damaged from finishing — needs review before it can be sold";
     if (r.stock?.origin === "external") {
       return r.external?.returned ? "Returned to the supplier" : undefined;
     }
     if (r.qcStatus === "pending") return "Hasn't been through QC yet";
-    if (r.qcStatus !== "passed") return `${QC_CFG[r.qcStatus].label} — only QC-passed sarees can be sold`;
+    if (r.qcStatus !== "passed")
+      return `${QC_CFG[r.qcStatus].label} — only QC-passed sarees can be sold`;
     return undefined;
   };
   return {
-    canPick: r => blockedReason(r) === undefined,
+    canPick: (r) => blockedReason(r) === undefined,
     blockedReason,
-    hides: r => r.wholesaleDispatched,
+    hides: (r) => r.wholesaleDispatched,
   };
 }
 
 export const AGE_COLOR: Record<string, string> = {
-  "0-30": T.green, "31-60": T.antiqueGold, "61-90": T.orange, "90+": T.crimson,
+  "0-30": T.green,
+  "31-60": T.antiqueGold,
+  "61-90": T.orange,
+  "90+": T.crimson,
 };
 
 /** Renders a date string in a compact, consistent form. */

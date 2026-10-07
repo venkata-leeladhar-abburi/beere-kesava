@@ -1,39 +1,43 @@
-import React from 'react';
-import { brand, fonts, semantic } from '@/design-system/tokens';
-import { imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJari as _imgJariLocal } from "../../../../shared/constants/imageData";
+import React from "react";
+import { brand, fonts, semantic } from "@/design-system/tokens";
+import {
+  imgWarp as _imgWarpLocal,
+  imgResham as _imgReshamLocal,
+  imgJari as _imgJariLocal,
+} from "../../../../shared/constants/imageData";
 
 const T = {
-  silkCream:      semantic.surface.canvas,
-  warmIvory:      semantic.surface.raised,
-  royalBurgundy:  brand.burgundy[900],
-  darkBurgundy:   "#3D0E1A",
-  deepWine:       brand.burgundy[950],
-  antiqueGold:    brand.gold[500],
-  goldLight:      "#E7C983",
-  luxuryBrown:    "#3B2314",
-  ivoryCream:     "#F7F2EA",
-  pureWhite:      "#FFFDF9",
-  crimson:        semantic.text.danger,
-  mahogany:       "#4A061B",
-  gold:           "#C89B47",
-  deepBlack:      "#3B2314",
-  burgundy:       "#3D2030",
-  taupe:          semantic.text.tertiary,
-  warmCream:      "#F5E8D0",
-  green:          semantic.text.success,
-  borderDef:      "rgba(110,15,45,0.10)",
-  borderMed:      "rgba(110,15,45,0.20)",
-  borderGold:     "rgba(200,155,71,0.22)",
-  bgSuccess:      "rgba(30,102,64,0.10)",
-  bgWarning:      "rgba(110,15,45,0.10)",
-  bgAlert:        "rgba(110,15,45,0.18)",
-  bgGold:         "rgba(200,155,71,0.15)",
+  silkCream: semantic.surface.canvas,
+  warmIvory: semantic.surface.raised,
+  royalBurgundy: brand.burgundy[900],
+  darkBurgundy: "#3D0E1A",
+  deepWine: brand.burgundy[950],
+  antiqueGold: brand.gold[500],
+  goldLight: "#E7C983",
+  luxuryBrown: "#3B2314",
+  ivoryCream: "#F7F2EA",
+  pureWhite: "#FFFDF9",
+  crimson: semantic.text.danger,
+  mahogany: "#4A061B",
+  gold: "#C89B47",
+  deepBlack: "#3B2314",
+  burgundy: "#3D2030",
+  taupe: semantic.text.tertiary,
+  warmCream: "#F5E8D0",
+  green: semantic.text.success,
+  borderDef: "rgba(110,15,45,0.10)",
+  borderMed: "rgba(110,15,45,0.20)",
+  borderGold: "rgba(200,155,71,0.22)",
+  bgSuccess: "rgba(30,102,64,0.10)",
+  bgWarning: "rgba(110,15,45,0.10)",
+  bgAlert: "rgba(110,15,45,0.18)",
+  bgGold: "rgba(200,155,71,0.15)",
 };
 
 const F = {
   display: fonts.display,
-  ui:      fonts.ui,
-  mono:    fonts.code,
+  ui: fonts.ui,
+  mono: fonts.code,
 };
 
 const NUM: React.CSSProperties = {
@@ -42,10 +46,10 @@ const NUM: React.CSSProperties = {
 };
 
 const G = {
-  hero   : "linear-gradient(135deg, #4A061B 0%, #6E0F2D 45%, #C89B47 100%)",
-  card   : "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
-  gold   : "linear-gradient(135deg, #C89B47 0%, #E7C983 100%)",
-  button : "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
+  hero: "linear-gradient(135deg, #4A061B 0%, #6E0F2D 45%, #C89B47 100%)",
+  card: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
+  gold: "linear-gradient(135deg, #C89B47 0%, #E7C983 100%)",
+  button: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
 };
 
 const DARK_MAROON = "#3D1020";
@@ -54,7 +58,6 @@ const DARK_MAROON = "#3D1020";
 // ANIMATION SYSTEM
 // ═══════════════════════════════════════════════════════════════════════════════
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
-
 
 import { LayoutDashboard, Factory, Package, IndianRupee, Users, Settings2 } from "lucide-react";
 
@@ -65,58 +68,85 @@ export type NavGroup = { key: string; label: string; icon: React.ElementType; pa
 // SHARED UI ATOMS
 // ═══════════════════════════════════════════════════════════════════════════════
 const NAV_GROUPS: NavGroup[] = [
-  { key: "overview", label: "Overview", icon: LayoutDashboard, pages: [
-      { key: "Overview", label: "Overview" },
-  ]},
-  { key: "production", label: "Production", icon: Factory, pages: [
+  {
+    key: "overview",
+    label: "Overview",
+    icon: LayoutDashboard,
+    pages: [{ key: "Overview", label: "Overview" }],
+  },
+  {
+    key: "production",
+    label: "Production",
+    icon: Factory,
+    pages: [
       { key: "Production", label: "Production" },
-      { key: "Batches",    label: "Batches" },
-      { key: "Designs",    label: "Designs" },
-      { key: "Finishing",  label: "Finishing" },
-  ]},
-  { key: "materials", label: "Materials", icon: Package, pages: [
-      { key: "Materials",         label: "Materials" },
-      { key: "ReceiveStock",      label: "Receive Stock" },
-      { key: "IssueMaterial",     label: "Issue Material" },
-      { key: "ReturnMaterial",    label: "Return Materials" },
+      { key: "Batches", label: "Batches" },
+      { key: "Designs", label: "Designs" },
+      { key: "Finishing", label: "Finishing" },
+    ],
+  },
+  {
+    key: "materials",
+    label: "Materials",
+    icon: Package,
+    pages: [
+      { key: "Materials", label: "Materials" },
+      { key: "ReceiveStock", label: "Receive Stock" },
+      { key: "IssueMaterial", label: "Issue Material" },
+      { key: "ReturnMaterial", label: "Return Materials" },
       { key: "ExternalPurchases", label: "External Purchases" },
-      { key: "SupplierReturns",   label: "Supplier Returns" },
-  ]},
-  { key: "finance", label: "Finance", icon: IndianRupee, pages: [
+      { key: "SupplierReturns", label: "Supplier Returns" },
+    ],
+  },
+  {
+    key: "finance",
+    label: "Finance",
+    icon: IndianRupee,
+    pages: [
       { key: "Payments", label: "Payments" },
-      { key: "Firms",    label: "Firms" },
-      { key: "Reports",  label: "Reports" },
-  ]},
-  { key: "people", label: "People", icon: Users, pages: [
-      { key: "Weavers",       label: "Weavers" },
-      { key: "Customers",     label: "Customers" },
-      { key: "Vendors",       label: "Vendors" },
-      { key: "Suppliers",     label: "Suppliers" },
-      { key: "FactoryLooms",  label: "Factory Looms" },
-      { key: "AddUser",       label: "Add New User" },
-  ]},
-  { key: "operations", label: "Operations", icon: Settings2, pages: [
-      { key: "Inventory",     label: "Inventory" },
-      { key: "Rates",         label: "Rates & Pricing" },
+      { key: "Firms", label: "Firms" },
+      { key: "Reports", label: "Reports" },
+    ],
+  },
+  {
+    key: "people",
+    label: "People",
+    icon: Users,
+    pages: [
+      { key: "Weavers", label: "Weavers" },
+      { key: "Customers", label: "Customers" },
+      { key: "Vendors", label: "Vendors" },
+      { key: "Suppliers", label: "Suppliers" },
+      { key: "FactoryLooms", label: "Factory Looms" },
+      { key: "AddUser", label: "Add New User" },
+    ],
+  },
+  {
+    key: "operations",
+    label: "Operations",
+    icon: Settings2,
+    pages: [
+      { key: "Inventory", label: "Inventory" },
+      { key: "Rates", label: "Rates & Pricing" },
       { key: "Notifications", label: "Notifications" },
-  ]},
+    ],
+  },
 ];
 
 // Drill-down pages reachable from within a page but not shown as their own nav pill —
 // mapped to the group whose bar should stay highlighted while viewing them.
 const NAV_GROUP_FALLBACK: Record<string, string> = {
   AllWeavers: "people",
-  AllStock:   "materials",
-  AllOrders:  "production",
+  AllStock: "materials",
+  AllOrders: "production",
 };
 
 function findNavGroup(pageKey: string): NavGroup {
-  const direct = NAV_GROUPS.find(g => g.pages.some(p => p.key === pageKey));
+  const direct = NAV_GROUPS.find((g) => g.pages.some((p) => p.key === pageKey));
   if (direct) return direct;
   const fallback = NAV_GROUP_FALLBACK[pageKey];
-  return NAV_GROUPS.find(g => g.key === fallback) ?? NAV_GROUPS[0];
+  return NAV_GROUPS.find((g) => g.key === fallback) ?? NAV_GROUPS[0];
 }
-
 
 const GLOBAL_STYLE = `
   /* Override ALL Tailwind v4 oklch CSS variables with hex/rgb equivalents
@@ -184,5 +214,15 @@ const GLOBAL_STYLE = `
 
 `;
 
-
-export { T, F, NUM, G, DARK_MAROON, EASE, NAV_GROUPS, NAV_GROUP_FALLBACK, GLOBAL_STYLE, findNavGroup };
+export {
+  T,
+  F,
+  NUM,
+  G,
+  DARK_MAROON,
+  EASE,
+  NAV_GROUPS,
+  NAV_GROUP_FALLBACK,
+  GLOBAL_STYLE,
+  findNavGroup,
+};

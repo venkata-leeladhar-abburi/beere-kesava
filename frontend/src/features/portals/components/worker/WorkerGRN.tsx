@@ -9,7 +9,11 @@ import { GRNPODropdown } from "./GRNPODropdown";
 import { Button, Input, CheckboxField } from "../../../../shared/ui/primitives";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { rawMaterialsApi, CreateGrnPayload, GrnReceiptItem } from "../../../../shared/api/rawMaterials";
+import {
+  rawMaterialsApi,
+  CreateGrnPayload,
+  GrnReceiptItem,
+} from "../../../../shared/api/rawMaterials";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { BlockedActionHint } from "../../../../shared/ui/state";
@@ -17,7 +21,7 @@ import { BlockedActionHint } from "../../../../shared/ui/state";
 type GRNStep = "form" | "success" | "print";
 
 const STEPS = ["Select PO", "Batch ID", "Quantities"];
-const MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
 function generateGrnId(seq: number): string {
   const now = new Date();
@@ -34,20 +38,56 @@ function StepBar({ current }: { current: number }) {
       {STEPS.map((s, i) => (
         <React.Fragment key={s}>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
-            <div style={{
-              width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-              background: i < current ? C.green : i === current ? C.burg : "rgba(110,15,45,0.12)",
-              marginBottom: 4,
-            }}>
-              {i < current
-                ? <CheckCircle2 size={13} color="#FFF" />
-                : <span style={{ fontFamily: F.m, fontSize: 12, color: i === current ? "#FFF" : C.muted, fontWeight: 700 }}>{i + 1}</span>
-              }
+            <div
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: i < current ? C.green : i === current ? C.burg : "rgba(110,15,45,0.12)",
+                marginBottom: 4,
+              }}
+            >
+              {i < current ? (
+                <CheckCircle2 size={13} color="#FFF" />
+              ) : (
+                <span
+                  style={{
+                    fontFamily: F.m,
+                    fontSize: 12,
+                    color: i === current ? "#FFF" : C.muted,
+                    fontWeight: 700,
+                  }}
+                >
+                  {i + 1}
+                </span>
+              )}
             </div>
-            <span style={{ fontFamily: F.u, fontSize: 12, color: i <= current ? C.burg : C.muted, fontWeight: i === current ? 600 : 400, textAlign: "center", lineHeight: 1.2 }}>{s}</span>
+            <span
+              style={{
+                fontFamily: F.u,
+                fontSize: 12,
+                color: i <= current ? C.burg : C.muted,
+                fontWeight: i === current ? 600 : 400,
+                textAlign: "center",
+                lineHeight: 1.2,
+              }}
+            >
+              {s}
+            </span>
           </div>
           {i < STEPS.length - 1 && (
-            <div style={{ height: 2, flex: 0.5, background: i < current ? C.green : C.bdr, marginBottom: 16, borderRadius: 1 }} />
+            <div
+              style={{
+                height: 2,
+                flex: 0.5,
+                background: i < current ? C.green : C.bdr,
+                marginBottom: 16,
+                borderRadius: 1,
+              }}
+            />
           )}
         </React.Fragment>
       ))}
@@ -58,26 +98,39 @@ function StepBar({ current }: { current: number }) {
 function SectionLabel({ step, title }: { step: number; title: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "16px 0 10px" }}>
-      <div style={{ width: 22, height: 22, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: "#FFF" }}>{step}</span>
+      <div
+        style={{
+          width: 22,
+          height: 22,
+          borderRadius: "50%",
+          background: C.burg,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: "#FFF" }}>
+          {step}
+        </span>
       </div>
       <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.burg }}>{title}</span>
     </div>
   );
 }
 
-export function WorkerGRN({ 
-  mode = "all", 
+export function WorkerGRN({
+  mode = "all",
   history: externalHistory,
-  initialPOId
-}: { 
-  mode?: "form" | "history" | "all"; 
-  history?: ReceiptRecord[]; 
+  initialPOId,
+}: {
+  mode?: "form" | "history" | "all";
+  history?: ReceiptRecord[];
   setHistory?: React.Dispatch<React.SetStateAction<ReceiptRecord[]>>;
   initialPOId?: string | null;
 } = {}) {
   const { pos } = usePO();
-  const approvedPOs = pos.filter(p => p.status === "approved");
+  const approvedPOs = pos.filter((p) => p.status === "approved");
   const { user } = useAuth();
 
   const [step, setStep] = useState<GRNStep>("form");
@@ -109,7 +162,10 @@ export function WorkerGRN({
       // and nothing (including the superadmin notification) ever fires.
       if (selectedPO) {
         try {
-          await purchaseOrdersApi.receiveGrn(selectedPO.id, { grnReceiptId: data.id, actorId: user?.id });
+          await purchaseOrdersApi.receiveGrn(selectedPO.id, {
+            grnReceiptId: data.id,
+            actorId: user?.id,
+          });
           queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] });
         } catch (err) {
           // The material receipt itself already succeeded and stock is
@@ -123,44 +179,51 @@ export function WorkerGRN({
     },
     onError: (err) => {
       console.error("Failed to create GRN:", err);
-      toast.error(err instanceof Error ? err.message : "Failed to record goods receipt. Please try again.");
-    }
+      toast.error(
+        err instanceof Error ? err.message : "Failed to record goods receipt. Please try again."
+      );
+    },
   });
 
   const receiptHistory = externalHistory ?? localHistory;
 
   const [grnBatchId, setGrnBatchId] = useState(() => generateGrnId(receiptHistory.length + 1));
   const [receivedQty, setReceivedQty] = useState<Record<number, string>>({});
-  const [receivedUnit, setReceivedUnit] = useState<Record<number, "kg" | "g" | "Reels" | "Buns">>({});
+  const [receivedUnit, setReceivedUnit] = useState<Record<number, "kg" | "g" | "Reels" | "Buns">>(
+    {}
+  );
   const [itemApproval, setItemApproval] = useState<Record<number, "approved" | "rejected">>({});
   const [itemRejectReason, setItemRejectReason] = useState<Record<number, string>>({});
   const [notifySuperadmin, setNotifySuperadmin] = useState<Record<number, boolean>>({});
   const [confirmedReceived, setConfirmedReceived] = useState(false);
 
-  const handleSelectPO = useCallback((po: PurchaseOrder) => {
-    setSelectedPO(po);
-    setShowPODrop(false);
-    setReceivedQty({});
-    setItemApproval({});
-    setItemRejectReason({});
-    setNotifySuperadmin({});
-    setConfirmedReceived(false);
+  const handleSelectPO = useCallback(
+    (po: PurchaseOrder) => {
+      setSelectedPO(po);
+      setShowPODrop(false);
+      setReceivedQty({});
+      setItemApproval({});
+      setItemRejectReason({});
+      setNotifySuperadmin({});
+      setConfirmedReceived(false);
 
-    const initialUnits: Record<number, "kg" | "g" | "Reels" | "Buns"> = {};
-    po.materials.forEach((m, idx) => {
-      if (m.materialType === "Jari") {
-        initialUnits[idx] = (m.unit === "Reels" || m.unit === "Buns") ? m.unit : "Buns";
-      } else {
-        initialUnits[idx] = "kg";
-      }
-    });
-    setReceivedUnit(initialUnits);
-    setGrnBatchId(generateGrnId(receiptHistory.length + 1));
-  }, [receiptHistory.length]);
+      const initialUnits: Record<number, "kg" | "g" | "Reels" | "Buns"> = {};
+      po.materials.forEach((m, idx) => {
+        if (m.materialType === "Jari") {
+          initialUnits[idx] = m.unit === "Reels" || m.unit === "Buns" ? m.unit : "Buns";
+        } else {
+          initialUnits[idx] = "kg";
+        }
+      });
+      setReceivedUnit(initialUnits);
+      setGrnBatchId(generateGrnId(receiptHistory.length + 1));
+    },
+    [receiptHistory.length]
+  );
 
   React.useEffect(() => {
     if (initialPOId) {
-      const po = approvedPOs.find(p => p.id === initialPOId || p.poNumber === initialPOId);
+      const po = approvedPOs.find((p) => p.id === initialPOId || p.poNumber === initialPOId);
       if (po && po.id !== selectedPO?.id) {
         handleSelectPO(po);
       }
@@ -193,18 +256,24 @@ export function WorkerGRN({
     return !!receivedQty[idx];
   };
 
-  const comparisons = selectedPO ? selectedPO.materials.map((m, i) => {
-    const qtyStr = receivedQty[i] || "";
-    if (!qtyStr) return null;
-    const rq = getQtyInOrderedUnit(i, m);
-    const diff = rq - m.quantity;
-    return { diff, unit: m.unit };
-  }) : [];
+  const comparisons = selectedPO
+    ? selectedPO.materials.map((m, i) => {
+        const qtyStr = receivedQty[i] || "";
+        if (!qtyStr) return null;
+        const rq = getQtyInOrderedUnit(i, m);
+        const diff = rq - m.quantity;
+        return { diff, unit: m.unit };
+      })
+    : [];
 
   const allFilled = selectedPO ? selectedPO.materials.every((m, i) => getHasQty(i, m)) : false;
-  const allApproved = selectedPO ? selectedPO.materials.every((_m, i) =>
-    itemApproval[i] === "approved" || (itemApproval[i] === "rejected" && !!itemRejectReason[i]?.trim())
-  ) : false;
+  const allApproved = selectedPO
+    ? selectedPO.materials.every(
+        (_m, i) =>
+          itemApproval[i] === "approved" ||
+          (itemApproval[i] === "rejected" && !!itemRejectReason[i]?.trim())
+      )
+    : false;
 
   const currentFormStep = !selectedPO ? 0 : !grnBatchId ? 1 : 2;
 
@@ -215,15 +284,23 @@ export function WorkerGRN({
   if (selectedPO) {
     const unfilled = selectedPO.materials.filter((m, i) => !getHasQty(i, m)).length;
     if (unfilled > 0) {
-      grnBlockers.push(`enter a received quantity for ${unfilled} material${unfilled === 1 ? "" : "s"}`);
+      grnBlockers.push(
+        `enter a received quantity for ${unfilled} material${unfilled === 1 ? "" : "s"}`
+      );
     }
     if (!allApproved) {
       const undecided = selectedPO.materials.filter(
-        (_m, i) => !(itemApproval[i] === "approved" || (itemApproval[i] === "rejected" && !!itemRejectReason[i]?.trim())),
+        (_m, i) =>
+          !(
+            itemApproval[i] === "approved" ||
+            (itemApproval[i] === "rejected" && !!itemRejectReason[i]?.trim())
+          )
       ).length;
       // A rejected line without a reason counts as undecided — the reason is
       // what makes the rejection actionable.
-      grnBlockers.push(`approve or reject ${undecided} material${undecided === 1 ? "" : "s"} (a rejection needs a reason)`);
+      grnBlockers.push(
+        `approve or reject ${undecided} material${undecided === 1 ? "" : "s"} (a rejection needs a reason)`
+      );
     }
     if (!confirmedReceived) grnBlockers.push("tick the verification checkbox");
   }
@@ -249,7 +326,8 @@ export function WorkerGRN({
           // only place the pairing is unambiguous — `name` below is rewritten
           // to the subtype, so nothing downstream could recover it afterwards.
           poItemId: m.id,
-          materialType: m.materialType === "Warp" ? "WARP" : m.materialType === "Resham" ? "RESHAM" : "JARI",
+          materialType:
+            m.materialType === "Warp" ? "WARP" : m.materialType === "Resham" ? "RESHAM" : "JARI",
           name: m.subtype || "General",
           description: m.description || undefined,
           quantity: inputtedQty,
@@ -257,7 +335,7 @@ export function WorkerGRN({
           unitPrice: m.pricePerUnit,
           rejectedQuantity: isRejected ? inputtedQty : 0,
         };
-      })
+      }),
     };
 
     createGrnMutation.mutate(payload);
@@ -279,7 +357,13 @@ export function WorkerGRN({
   }
 
   if (step === "success") {
-    return <GRNSuccessView grnBatchId={grnBatchId} onPrint={() => setStep("print")} onReset={resetForm} />;
+    return (
+      <GRNSuccessView
+        grnBatchId={grnBatchId}
+        onPrint={() => setStep("print")}
+        onReset={resetForm}
+      />
+    );
   }
 
   if (step === "print") {
@@ -290,7 +374,15 @@ export function WorkerGRN({
     <div style={{ paddingBottom: 32 }}>
       <StepBar current={currentFormStep} />
 
-      <div style={{ margin: "0 0 4px", background: "rgba(110,15,45,0.04)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 14px" }}>
+      <div
+        style={{
+          margin: "0 0 4px",
+          background: "rgba(110,15,45,0.04)",
+          border: `1px solid ${C.bdr}`,
+          borderRadius: 10,
+          padding: "10px 14px",
+        }}
+      >
         <p style={{ fontFamily: F.u, fontSize: 13, color: C.muted, lineHeight: 1.5, margin: 0 }}>
           Receive raw material from a vendor against a purchase order.
         </p>
@@ -311,9 +403,16 @@ export function WorkerGRN({
         <>
           <SectionLabel step={2} title="GRN Batch ID" />
           <div style={{ margin: "0" }}>
-            <Input value={grnBatchId} onChange={e => setGrnBatchId(e.target.value)}
-              className="font-mono text-sm font-semibold text-[#6E0F2D]" containerClassName="h-[46px]" disabled />
-            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Auto-generated by system upon confirmation.</div>
+            <Input
+              value={grnBatchId}
+              onChange={(e) => setGrnBatchId(e.target.value)}
+              className="font-mono text-sm font-semibold text-[#6E0F2D]"
+              containerClassName="h-[46px]"
+              disabled
+            />
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>
+              Auto-generated by system upon confirmation.
+            </div>
           </div>
 
           {/* Step 3 — Received Quantities (cross-check) */}
@@ -343,12 +442,27 @@ export function WorkerGRN({
 
           {/* Confirm Block */}
           <div style={{ margin: "16px 0 0", display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px" }}>
+            <div
+              style={{
+                background: C.inp,
+                border: `1px solid ${C.bdr}`,
+                borderRadius: 10,
+                padding: "12px 14px",
+              }}
+            >
               <CheckboxField
                 checked={confirmedReceived}
-                onCheckedChange={v => setConfirmedReceived(v === true)}
+                onCheckedChange={(v) => setConfirmedReceived(v === true)}
                 label={
-                  <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, lineHeight: 1.4 }}>
+                  <span
+                    style={{
+                      fontFamily: F.u,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: C.text,
+                      lineHeight: 1.4,
+                    }}
+                  >
                     I confirm that the materials have been verified and received perfectly.
                   </span>
                 }
@@ -357,16 +471,23 @@ export function WorkerGRN({
 
             <BlockedActionHint
               blockers={grnBlockers}
-              hint={grnBlockers.some(b => b.includes("material")) ? "check the material list above" : undefined}
+              hint={
+                grnBlockers.some((b) => b.includes("material"))
+                  ? "check the material list above"
+                  : undefined
+              }
             />
 
             <Button
               onClick={handleConfirm}
-              disabled={!allFilled || !allApproved || !confirmedReceived || createGrnMutation.isPending}
+              disabled={
+                !allFilled || !allApproved || !confirmedReceived || createGrnMutation.isPending
+              }
               fullWidth
               className="h-[52px] mt-1.5 gap-2 bg-[#6E0F2D] hover:bg-[#6E0F2D] active:bg-[#6E0F2D] border-none rounded-full font-semibold text-white"
             >
-              <CheckCircle2 size={17} /> {createGrnMutation.isPending ? "Generating GRN..." : "Confirm Receipt — Generate GRN"}
+              <CheckCircle2 size={17} />{" "}
+              {createGrnMutation.isPending ? "Generating GRN..." : "Confirm Receipt — Generate GRN"}
             </Button>
           </div>
         </>

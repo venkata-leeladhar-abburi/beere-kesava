@@ -42,8 +42,9 @@ function readEntries(): RecentlyViewedEntry[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((e): e is RecentlyViewedEntry =>
-      e && typeof e.key === "string" && typeof e.label === "string" && typeof e.path === "string"
+    return parsed.filter(
+      (e): e is RecentlyViewedEntry =>
+        e && typeof e.key === "string" && typeof e.label === "string" && typeof e.path === "string"
     );
   } catch {
     // Corrupt/unavailable storage (private browsing, quota, hand-edited
@@ -69,10 +70,10 @@ function writeEntries(entries: RecentlyViewedEntry[]) {
 export function recordView(entry: RecordViewInput) {
   if (!entry.key || !entry.path) return;
   const existing = readEntries().filter((e) => e.key !== entry.key);
-  const next: RecentlyViewedEntry[] = [
-    { ...entry, viewedAt: Date.now() },
-    ...existing,
-  ].slice(0, MAX_ENTRIES);
+  const next: RecentlyViewedEntry[] = [{ ...entry, viewedAt: Date.now() }, ...existing].slice(
+    0,
+    MAX_ENTRIES
+  );
   writeEntries(next);
 }
 

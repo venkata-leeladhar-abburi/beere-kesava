@@ -71,11 +71,19 @@ export class ErrorBoundary extends React.Component<Props, State> {
             borderRadius: inline ? 12 : undefined,
           }}
         >
-          <h2 style={{ color: "#ff6b6b", marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: inline ? 16 : undefined }}>
+          <h2
+            style={{
+              color: "#ff6b6b",
+              marginBottom: 8,
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: inline ? 16 : undefined,
+            }}
+          >
             {inline ? "This section couldn't load" : "Render Error"}
           </h2>
           <p style={{ color: "rgba(255,107,107,0.7)", marginBottom: 24, fontSize: 13 }}>
-            An unexpected error occurred. {inline ? "Try again, or switch tabs." : "Please reload or return to the home screen."}
+            An unexpected error occurred.{" "}
+            {inline ? "Try again, or switch tabs." : "Please reload or return to the home screen."}
           </p>
           {!inline && (
             <pre

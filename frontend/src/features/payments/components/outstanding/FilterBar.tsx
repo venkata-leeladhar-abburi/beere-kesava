@@ -7,10 +7,16 @@ import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 // ── Filter bar ───────────────────────────────────────────────────────────────
 export function FilterBar({
-  search, setSearch, ageFilter, setAgeFilter, count,
+  search,
+  setSearch,
+  ageFilter,
+  setAgeFilter,
+  count,
 }: {
-  search: string; setSearch: (v: string) => void;
-  ageFilter: AgeKey; setAgeFilter: (v: AgeKey) => void;
+  search: string;
+  setSearch: (v: string) => void;
+  ageFilter: AgeKey;
+  setAgeFilter: (v: AgeKey) => void;
   count: number;
 }) {
   return (
@@ -27,11 +33,11 @@ export function FilterBar({
               label: "Ageing",
               value: ageFilter,
               defaultValue: "all",
-              options: (["all", ...AGE_BUCKETS] as AgeKey[]).map(k => ({
+              options: (["all", ...AGE_BUCKETS] as AgeKey[]).map((k) => ({
                 value: k,
                 label: k === "all" ? "All ages" : `${k} days+`,
               })),
-              onChange: v => setAgeFilter(v as AgeKey),
+              onChange: (v) => setAgeFilter(v as AgeKey),
             },
           ]}
           onResetAll={() => {
@@ -46,23 +52,59 @@ export function FilterBar({
         <Card pad={16}>
           <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
             <div className="flex-1 min-w-[260px]">
-              <SearchInput aria-label="Search saree code, weaver, loom, supplier, invoice, saree type" value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Search saree code, weaver, loom, supplier, invoice, saree type…" />
+              <SearchInput
+                aria-label="Search saree code, weaver, loom, supplier, invoice, saree type"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search saree code, weaver, loom, supplier, invoice, saree type…"
+              />
             </div>
 
             <div style={{ display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", fontWeight: 700 }}>Ageing</span>
-              {(["all", ...AGE_BUCKETS] as AgeKey[]).map(k => (
-                <Button key={k} onClick={() => setAgeFilter(k)} size="sm" variant={ageFilter === k ? "primary" : "tertiary"}
-                  className={ageFilter === k ? "rounded-full bg-[#6E0F2D] text-[#FFFDF9] border-none" : "rounded-full bg-transparent text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.18)]"}>
+              <span
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: 12,
+                  color: T.taupe,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.8px",
+                  fontWeight: 700,
+                }}
+              >
+                Ageing
+              </span>
+              {(["all", ...AGE_BUCKETS] as AgeKey[]).map((k) => (
+                <Button
+                  key={k}
+                  onClick={() => setAgeFilter(k)}
+                  size="sm"
+                  variant={ageFilter === k ? "primary" : "tertiary"}
+                  className={
+                    ageFilter === k
+                      ? "rounded-full bg-[#6E0F2D] text-[#FFFDF9] border-none"
+                      : "rounded-full bg-transparent text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.18)]"
+                  }
+                >
                   {k === "all" ? "All ages" : `${k} d`}
                 </Button>
               ))}
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", background: T.warmCream, borderRadius: 10, padding: "8px 14px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginLeft: "auto",
+                background: T.warmCream,
+                borderRadius: 10,
+                padding: "8px 14px",
+              }}
+            >
               <Package size={15} color={T.taupe} />
-              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 600 }}>{count} outstanding</span>
+              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 600 }}>
+                {count} outstanding
+              </span>
             </div>
           </div>
         </Card>

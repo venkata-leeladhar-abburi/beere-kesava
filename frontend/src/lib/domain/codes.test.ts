@@ -4,13 +4,23 @@
  * and generator shows up as a failing test rather than a wrong badge.
  */
 import { describe, it, expect } from "vitest";
-import { ENTITY_CODES, getEntitySpec, parseCode, parseAnyCode, isValidCode, financialYearCode } from "./codes";
+import {
+  ENTITY_CODES,
+  getEntitySpec,
+  parseCode,
+  parseAnyCode,
+  isValidCode,
+  financialYearCode,
+} from "./codes";
 
 describe("named entity codes", () => {
   // suppliers.service.ts:22 — nextNamed("SUPPLIER", businessSegment(name))
   it("parses a supplier code as segment + serial", () => {
     expect(parseCode("supplier", "SreeDurga-001")).toEqual({
-      type: "supplier", segment: "SreeDurga", serial: 1, valid: true,
+      type: "supplier",
+      segment: "SreeDurga",
+      serial: 1,
+      valid: true,
     });
   });
 
@@ -76,7 +86,10 @@ describe("scoped document codes", () => {
   // invoices.service.ts:44 — nextScoped("INV", customer.code)
   it("splits an invoice into parent code and per-parent serial", () => {
     expect(parseCode("invoice", "INV-Kamala-002-014")).toEqual({
-      type: "invoice", segment: "Kamala-002", serial: 14, valid: true,
+      type: "invoice",
+      segment: "Kamala-002",
+      serial: 14,
+      valid: true,
     });
   });
 
@@ -89,7 +102,10 @@ describe("scoped document codes", () => {
   // dispatch.service.ts:127 — the one type scoped on the financial year
   it("accepts a financial year as the challan's scope parent", () => {
     expect(parseCode("challan", "DC-2627-042")).toEqual({
-      type: "challan", segment: "2627", serial: 42, valid: true,
+      type: "challan",
+      segment: "2627",
+      serial: 42,
+      valid: true,
     });
   });
 
@@ -97,7 +113,10 @@ describe("scoped document codes", () => {
   // so a customer predating codes scopes on a bare segment.
   it("accepts a bare name segment as the scope parent", () => {
     expect(parseCode("invoice", "INV-Kamala-014")).toEqual({
-      type: "invoice", segment: "Kamala", serial: 14, valid: true,
+      type: "invoice",
+      segment: "Kamala",
+      serial: 14,
+      valid: true,
     });
   });
 
@@ -191,16 +210,20 @@ describe("parseAnyCode", () => {
 describe("registry integrity", () => {
   it("every spec's own example parses as valid", () => {
     for (const type of Object.keys(ENTITY_CODES) as (keyof typeof ENTITY_CODES)[]) {
-      expect({ type, valid: isValidCode(type, getEntitySpec(type).example) })
-        .toEqual({ type, valid: true });
+      expect({ type, valid: isValidCode(type, getEntitySpec(type).example) }).toEqual({
+        type,
+        valid: true,
+      });
     }
   });
 
   it("only prefixed and scoped types declare a prefix", () => {
     for (const type of Object.keys(ENTITY_CODES) as (keyof typeof ENTITY_CODES)[]) {
       const spec = getEntitySpec(type);
-      expect({ type, hasPrefix: Boolean(spec.prefix) })
-        .toEqual({ type, hasPrefix: spec.shape === "prefixed" || spec.shape === "scoped" });
+      expect({ type, hasPrefix: Boolean(spec.prefix) }).toEqual({
+        type,
+        hasPrefix: spec.shape === "prefixed" || spec.shape === "scoped",
+      });
     }
   });
 });

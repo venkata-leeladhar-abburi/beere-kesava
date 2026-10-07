@@ -6,30 +6,33 @@ import { cn } from "../../../shared/ui/utils";
 import { Flourish } from "./LoginBrandPanel";
 
 const C = {
-  burgundy:      "#6B1A2A",
-  burgundyDeep:  "#4A0A16",
+  burgundy: "#6B1A2A",
+  burgundyDeep: "#4A0A16",
   burgundyHover: "#8B1A2E",
-  gold:          "#C4923A",
-  textPrimary:   "#1A0A0F",
-  textMuted:     "#69635E",
-  green:         "#1E6640",
-  crimson:       "#C0392B",
-  inputBg:       "#FFF8E7",
-  borderStrong:  "rgba(139,26,46,0.20)",
+  gold: "#C4923A",
+  textPrimary: "#1A0A0F",
+  textMuted: "#69635E",
+  green: "#1E6640",
+  crimson: "#C0392B",
+  inputBg: "#FFF8E7",
+  borderStrong: "rgba(139,26,46,0.20)",
 };
 
 const F = {
   display: "'Plus Jakarta Sans', sans-serif",
-  ui:      "'Inter', sans-serif",
-  mono:    "'JetBrains Mono', monospace",
+  ui: "'Inter', sans-serif",
+  mono: "'JetBrains Mono', monospace",
 };
 
 function useTimer(initial: number, active: boolean) {
   const [seconds, setSeconds] = useState(initial);
-  useEffect(() => { if (!active) return; setSeconds(initial); }, [active, initial]);
+  useEffect(() => {
+    if (!active) return;
+    setSeconds(initial);
+  }, [active, initial]);
   useEffect(() => {
     if (!active || seconds <= 0) return;
-    const id = setInterval(() => setSeconds(s => s - 1), 1000);
+    const id = setInterval(() => setSeconds((s) => s - 1), 1000);
     return () => clearInterval(id);
   }, [active, seconds]);
   const mm = String(Math.floor(seconds / 60)).padStart(1, "0");
@@ -39,11 +42,21 @@ function useTimer(initial: number, active: boolean) {
 
 import { authApi, VerifyOtpResponse } from "../../../shared/api/auth";
 
-export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: (res?: VerifyOtpResponse) => void; onBack: () => void }) {
+export function StepOTP({
+  phone,
+  onVerify,
+  onBack,
+}: {
+  phone: string;
+  onVerify: (res?: VerifyOtpResponse) => void;
+  onBack: () => void;
+}) {
   const [digits, setDigits] = useState<string[]>(Array(6).fill(""));
   const [focused, setFocused] = useState<number | null>(0);
   const [error, setError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("Incorrect code. Please check and try again. You have 2 more attempts.");
+  const [errorMessage, setErrorMessage] = useState(
+    "Incorrect code. Please check and try again. You have 2 more attempts."
+  );
   const [shake, setShake] = useState(false);
   const [loading, setLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -58,65 +71,94 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
   const handleInput = (i: number, val: string) => {
     const ch = val.replace(/\D/g, "").slice(-1);
     if (!ch) return;
-    const next = [...digits]; next[i] = ch;
+    const next = [...digits];
+    next[i] = ch;
     digitsRef.current = next;
-    setDigits(next); setError(false);
-    if (i < 5) { inputRefs.current[i + 1]?.focus(); setFocused(i + 1); }
+    setDigits(next);
+    setError(false);
+    if (i < 5) {
+      inputRefs.current[i + 1]?.focus();
+      setFocused(i + 1);
+    }
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
     const text = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
     if (text.length) {
-      const next = Array(6).fill("").map((_, i) => text[i] || "");
+      const next = Array(6)
+        .fill("")
+        .map((_, i) => text[i] || "");
       digitsRef.current = next;
       setDigits(next);
       const last = Math.min(text.length, 5);
-      inputRefs.current[last]?.focus(); setFocused(last);
+      inputRefs.current[last]?.focus();
+      setFocused(last);
     }
     e.preventDefault();
   };
 
-  const handleVerify = useCallback(async (otp: string) => {
-    // The code is validated server-side only. This used to short-circuit on a
-    // hardcoded "123456" from the fixed-OTP demo era, which rejected every
-    // real WhatsApp OTP before the request was ever made — and, worse, would
-    // have let anyone in with 123456 had the backend check ever been relaxed.
-    setLoading(true);
-    try {
-      const res = await authApi.verifyOtp(phone, otp);
-      onVerify(res);
-    } catch (err) {
-      // Do NOT fall back to a fake session here — a synthetic token that the
-      // backend never issued gets rejected with 401 on every subsequent
-      // request, which looks like "logged in but everything is broken"
-      // instead of a clear failed-login state.
-      digitsRef.current = Array(6).fill("");
-      setErrorMessage(err instanceof Error ? err.message : "Could not verify the code. Please try again.");
-      setShake(true); setError(true); setDigits(Array(6).fill(""));
-      setTimeout(() => { setShake(false); inputRefs.current[0]?.focus(); setFocused(0); }, 600);
-    } finally {
-      setLoading(false);
-    }
-  }, [phone, onVerify]);
-
-  const handleKey = useCallback((i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace") {
-      if (digits[i] === "") {
-        if (i > 0) { inputRefs.current[i - 1]?.focus(); setFocused(i - 1); }
-      } else {
-        const next = [...digits]; next[i] = "";
-        digitsRef.current = next;
-        setDigits(next); setError(false);
+  const handleVerify = useCallback(
+    async (otp: string) => {
+      // The code is validated server-side only. This used to short-circuit on a
+      // hardcoded "123456" from the fixed-OTP demo era, which rejected every
+      // real WhatsApp OTP before the request was ever made — and, worse, would
+      // have let anyone in with 123456 had the backend check ever been relaxed.
+      setLoading(true);
+      try {
+        const res = await authApi.verifyOtp(phone, otp);
+        onVerify(res);
+      } catch (err) {
+        // Do NOT fall back to a fake session here — a synthetic token that the
+        // backend never issued gets rejected with 401 on every subsequent
+        // request, which looks like "logged in but everything is broken"
+        // instead of a clear failed-login state.
+        digitsRef.current = Array(6).fill("");
+        setErrorMessage(
+          err instanceof Error ? err.message : "Could not verify the code. Please try again."
+        );
+        setShake(true);
+        setError(true);
+        setDigits(Array(6).fill(""));
+        setTimeout(() => {
+          setShake(false);
+          inputRefs.current[0]?.focus();
+          setFocused(0);
+        }, 600);
+      } finally {
+        setLoading(false);
       }
-    } else if (e.key === "ArrowLeft" && i > 0) {
-      inputRefs.current[i - 1]?.focus(); setFocused(i - 1);
-    } else if (e.key === "ArrowRight" && i < 5) {
-      inputRefs.current[i + 1]?.focus(); setFocused(i + 1);
-    } else if (e.key === "Enter") {
-      const otp = digits.join("");
-      if (otp.length === 6) handleVerify(otp);
-    }
-  }, [digits, handleVerify]);
+    },
+    [phone, onVerify]
+  );
+
+  const handleKey = useCallback(
+    (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Backspace") {
+        if (digits[i] === "") {
+          if (i > 0) {
+            inputRefs.current[i - 1]?.focus();
+            setFocused(i - 1);
+          }
+        } else {
+          const next = [...digits];
+          next[i] = "";
+          digitsRef.current = next;
+          setDigits(next);
+          setError(false);
+        }
+      } else if (e.key === "ArrowLeft" && i > 0) {
+        inputRefs.current[i - 1]?.focus();
+        setFocused(i - 1);
+      } else if (e.key === "ArrowRight" && i < 5) {
+        inputRefs.current[i + 1]?.focus();
+        setFocused(i + 1);
+      } else if (e.key === "Enter") {
+        const otp = digits.join("");
+        if (otp.length === 6) handleVerify(otp);
+      }
+    },
+    [digits, handleVerify]
+  );
 
   const otp = digits.join("");
 
@@ -129,22 +171,64 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
       transition={{ duration: 0.4 }}
     >
       <div style={{ textAlign: "center" as const, marginBottom: 28 }}>
-        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: "clamp(30px, 4.4vh, 38px)", color: C.burgundyDeep, lineHeight: 1.1, marginBottom: 8 }}>Check Your Phone</div>
-        <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: C.textMuted, marginBottom: 6 }}>We sent a 6-digit code to</div>
-        <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 16, color: C.burgundy, marginBottom: 6 }}>{formatted}</div>
+        <div
+          style={{
+            fontFamily: F.display,
+            fontWeight: 700,
+            fontSize: "clamp(30px, 4.4vh, 38px)",
+            color: C.burgundyDeep,
+            lineHeight: 1.1,
+            marginBottom: 8,
+          }}
+        >
+          Check Your Phone
+        </div>
+        <div
+          style={{
+            fontFamily: F.ui,
+            fontWeight: 400,
+            fontSize: 14,
+            color: C.textMuted,
+            marginBottom: 6,
+          }}
+        >
+          We sent a 6-digit code to
+        </div>
+        <div
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontWeight: 700,
+            fontSize: 16,
+            color: C.burgundy,
+            marginBottom: 6,
+          }}
+        >
+          {formatted}
+        </div>
         <Button variant="link" size="sm" onClick={onBack} className="underline">
           Change Number
         </Button>
       </div>
 
-      <div style={{ display: "flex", justifyContent: "center", margin: "clamp(10px,2vh,18px) 0 clamp(16px,2.8vh,26px)" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          margin: "clamp(10px,2vh,18px) 0 clamp(16px,2.8vh,26px)",
+        }}
+      >
         <Flourish width={220} />
       </div>
 
       <motion.div
         animate={shake ? { x: [-8, 8, -6, 6, -4, 4, 0] } : { x: 0 }}
         transition={{ duration: 0.5 }}
-        style={{ display: "flex", gap: "clamp(6px, 2%, 12px)", justifyContent: "center", marginBottom: 16 }}
+        style={{
+          display: "flex",
+          gap: "clamp(6px, 2%, 12px)",
+          justifyContent: "center",
+          marginBottom: 16,
+        }}
       >
         {digits.map((d, i) => (
           <CodeInput
@@ -152,7 +236,9 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
             // its index is a stable, semantically-meaningful identifier here.
             // eslint-disable-next-line react/no-array-index-key
             key={i}
-            ref={el => { inputRefs.current[i] = el; }}
+            ref={(el) => {
+              inputRefs.current[i] = el;
+            }}
             inputMode="numeric"
             // eslint-disable-next-line jsx-a11y/no-autofocus -- first OTP box should receive focus immediately so users can start typing the code
             autoFocus={i === 0}
@@ -162,7 +248,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
             // Clicking a later box jumps back to the first gap, so the caret is
             // always where the next digit actually belongs.
             onFocus={() => {
-              const firstEmpty = digitsRef.current.findIndex(x => x === "");
+              const firstEmpty = digitsRef.current.findIndex((x) => x === "");
               if (firstEmpty !== -1 && firstEmpty < i) {
                 inputRefs.current[firstEmpty]?.focus();
                 setFocused(firstEmpty);
@@ -171,8 +257,8 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
               }
             }}
             onBlur={() => setFocused(null)}
-            onChange={e => handleInput(i, e.target.value)}
-            onKeyDown={e => handleKey(i, e)}
+            onChange={(e) => handleInput(i, e.target.value)}
+            onKeyDown={(e) => handleKey(i, e)}
             onPaste={handlePaste}
             invalid={error}
             size="lg"
@@ -192,8 +278,19 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
       <AnimatePresence>
         {error && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.22)", borderRadius: 10, padding: "12px 16px", marginBottom: 14, display: "flex", gap: 10, alignItems: "center" }}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            style={{
+              background: "rgba(192,57,43,0.08)",
+              border: "1px solid rgba(192,57,43,0.22)",
+              borderRadius: 10,
+              padding: "12px 16px",
+              marginBottom: 14,
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+            }}
           >
             <X size={16} color={C.crimson} style={{ flexShrink: 0 }} />
             <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: C.crimson }}>
@@ -204,9 +301,24 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
       </AnimatePresence>
 
       <div style={{ textAlign: "center" as const, marginBottom: 20 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, marginBottom: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 7,
+            marginBottom: 8,
+          }}
+        >
           <Clock size={15} color={C.textMuted} />
-          <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 14, color: C.textMuted }}>
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontWeight: 600,
+              fontSize: 14,
+              color: C.textMuted,
+            }}
+          >
             Code expires in: {timer.display}
           </span>
         </div>
@@ -235,9 +347,20 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
         {loading ? "Verifying…" : "Verify and Login"}
       </Button>
 
-      <div style={{ textAlign: "center" as const, marginTop: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+      <div
+        style={{
+          textAlign: "center" as const,
+          marginTop: 16,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+        }}
+      >
         <MessageSquare size={15} color={C.green} />
-        <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: C.textMuted }}>Not receiving SMS?{" "}</span>
+        <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: C.textMuted }}>
+          Not receiving SMS?{" "}
+        </span>
         <Button variant="link" size="sm">
           Send via WhatsApp
         </Button>

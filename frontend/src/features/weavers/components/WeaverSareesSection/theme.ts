@@ -1,7 +1,6 @@
 import React from "react";
-import { brand, fonts, semantic } from '@/design-system/tokens';
+import { brand, fonts, semantic } from "@/design-system/tokens";
 // ─── WeaverSareesSection — shared design tokens ───────────────────────────────
-
 
 export const T = {
   warmIvory: semantic.surface.raised,
@@ -27,12 +26,30 @@ export const F = {
 };
 
 export const th: React.CSSProperties = {
-  fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase",
-  letterSpacing: "0.8px", textAlign: "left", padding: "10px 12px",
-  borderBottom: `1.5px solid ${T.borderDef}`, whiteSpace: "nowrap",
+  fontFamily: F.ui,
+  fontSize: 12,
+  fontWeight: 700,
+  color: T.taupe,
+  textTransform: "uppercase",
+  letterSpacing: "0.8px",
+  textAlign: "left",
+  padding: "10px 12px",
+  borderBottom: `1.5px solid ${T.borderDef}`,
+  whiteSpace: "nowrap",
 };
 export const td: React.CSSProperties = {
-  fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, padding: "10px 12px",
-  borderBottom: `1px solid rgba(110,15,45,0.06)`, verticalAlign: "middle", whiteSpace: "nowrap",
+  fontFamily: F.ui,
+  fontSize: 12,
+  color: T.luxuryBrown,
+  padding: "10px 12px",
+  borderBottom: `1px solid rgba(110,15,45,0.06)`,
+  verticalAlign: "middle",
+  whiteSpace: "nowrap",
 };
-export const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
+export const tdMono: React.CSSProperties = {
+  ...td,
+  fontFamily: F.mono,
+  fontSize: 12,
+  fontWeight: 600,
+  color: T.royalBurgundy,
+};

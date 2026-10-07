@@ -19,9 +19,21 @@ export interface MonthPickerProps {
   className?: string;
 }
 
-export function MonthPicker({ year, selectedMonth, selectedYear, minDate, maxDate, onSelect, className }: MonthPickerProps) {
+export function MonthPicker({
+  year,
+  selectedMonth,
+  selectedYear,
+  minDate,
+  maxDate,
+  onSelect,
+  className,
+}: MonthPickerProps) {
   return (
-    <div className={cn("grid grid-cols-3 gap-1 p-2", className)} role="grid" aria-label={`Months in ${year}`}>
+    <div
+      className={cn("grid grid-cols-3 gap-1 p-2", className)}
+      role="grid"
+      aria-label={`Months in ${year}`}
+    >
       {MONTHS.map((label, idx) => {
         const monthStart = new Date(year, idx, 1);
         const monthEnd = new Date(year, idx + 1, 0);

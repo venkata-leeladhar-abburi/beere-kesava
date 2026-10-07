@@ -6,9 +6,13 @@ import { Button } from "../../../../shared/ui/primitives";
 import { Purchase, purchaseTotals, purchasePieces, parseINR } from "../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import {
+  DateFilterBar,
+  DateFilterState,
+  DEFAULT_DATE_FILTER,
+  matchesDateFilter,
+} from "../../../../shared/ui/DateFilterBar";
 import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
-
 
 /** What the supplier billed: the lines' buying total when they exist, else
  * the stored bill amount. */
@@ -20,131 +24,251 @@ function billOf(p: Purchase): number {
 export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purchase[] }) {
   const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
-  const filtered = useMemo(() => purchases.filter(p => matchesDateFilter(p.date, filter)), [purchases, filter]);
+  const filtered = useMemo(
+    () => purchases.filter((p) => matchesDateFilter(p.date, filter)),
+    [purchases, filter]
+  );
 
   const columns: ColumnDef<Purchase>[] = [
     {
-      id: "id", header: "Purchase Ref", accessor: p => p.id, priority: 1,
-      cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{p.id}</span>,
+      id: "id",
+      header: "Purchase Ref",
+      accessor: (p) => p.id,
+      priority: 1,
+      cell: (_v, p) => (
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            fontWeight: 700,
+            color: T.royalBurgundy,
+          }}
+        >
+          {p.id}
+        </span>
+      ),
     },
     {
-      id: "supplier", header: "Supplier", accessor: p => p.supplier,
-      cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{p.supplier}</span>,
+      id: "supplier",
+      header: "Supplier",
+      accessor: (p) => p.supplier,
+      cell: (_v, p) => (
+        <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>
+          {p.supplier}
+        </span>
+      ),
     },
     {
-      id: "invoice", header: "Invoice", accessor: p => p.invoiceNumber, priority: 3,
-      cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.invoiceNumber || "—"}</span>,
+      id: "invoice",
+      header: "Invoice",
+      accessor: (p) => p.invoiceNumber,
+      priority: 3,
+      cell: (_v, p) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+          {p.invoiceNumber || "—"}
+        </span>
+      ),
     },
     // Counts and money come from the purchase's own saree lines — the same
     // source the External Purchases inventory table uses — so this table and
     // that one never disagree. The stored aggregates (sareeCount/billAmount)
     // are only a fallback for rows whose lines aren't loaded.
     {
-      id: "sarees", header: "Sarees", accessor: p => purchasePieces(p),
-      cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{purchasePieces(p)} pcs</span>,
+      id: "sarees",
+      header: "Sarees",
+      accessor: (p) => purchasePieces(p),
+      cell: (_v, p) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+          {purchasePieces(p)} pcs
+        </span>
+      ),
     },
     {
-      id: "buying", header: "Buying Price", accessor: p => purchaseTotals(p.sarees).buying, priority: 3,
-      cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown }}>{formatMoney(rupees(purchaseTotals(p.sarees).buying))}</span>,
+      id: "buying",
+      header: "Buying Price",
+      accessor: (p) => purchaseTotals(p.sarees).buying,
+      priority: 3,
+      cell: (_v, p) => (
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown }}>
+          {formatMoney(rupees(purchaseTotals(p.sarees).buying))}
+        </span>
+      ),
     },
     {
-      id: "selling", header: "Selling Price", accessor: p => purchaseTotals(p.sarees).selling, priority: 3,
-      cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{formatMoney(rupees(purchaseTotals(p.sarees).selling))}</span>,
+      id: "selling",
+      header: "Selling Price",
+      accessor: (p) => purchaseTotals(p.sarees).selling,
+      priority: 3,
+      cell: (_v, p) => (
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            fontWeight: 700,
+            color: "#8B6018",
+          }}
+        >
+          {formatMoney(rupees(purchaseTotals(p.sarees).selling))}
+        </span>
+      ),
     },
     {
-      id: "profit", header: "Profit", accessor: p => purchaseTotals(p.sarees).profit, priority: 3,
-      cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.greenMid }}>{formatMoney(rupees(purchaseTotals(p.sarees).profit))}</span>,
+      id: "profit",
+      header: "Profit",
+      accessor: (p) => purchaseTotals(p.sarees).profit,
+      priority: 3,
+      cell: (_v, p) => (
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            fontWeight: 700,
+            color: T.greenMid,
+          }}
+        >
+          {formatMoney(rupees(purchaseTotals(p.sarees).profit))}
+        </span>
+      ),
     },
     {
-      id: "bill", header: "Bill Amount", accessor: p => billOf(p),
-      cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{formatMoney(rupees(billOf(p)))}</span>,
+      id: "bill",
+      header: "Bill Amount",
+      accessor: (p) => billOf(p),
+      cell: (_v, p) => (
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            fontWeight: 700,
+            color: "#8B6018",
+          }}
+        >
+          {formatMoney(rupees(billOf(p)))}
+        </span>
+      ),
     },
     {
-      id: "date", header: "Date", accessor: p => p.date, priority: 3,
-      cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</span>,
+      id: "date",
+      header: "Date",
+      accessor: (p) => p.date,
+      priority: 3,
+      cell: (_v, p) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</span>
+      ),
     },
   ];
 
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 48, paddingBottom: 80 }}>
       <FadeUp>
-      <SectionCard
-        icon={History}
-        title="External Purchase History"
-        subtitle="Every external purchase recorded from every supplier, with bill amount and invoice reference."
-      >
-        {/* Mobile Flipkart-style Filter Bar */}
-        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
-          <MobileFilterBar
-            search=""
-            onSearchChange={() => {}}
-            searchPlaceholder="Search external purchases..."
-            filterGroups={[
-              {
-                id: "time",
-                label: "Time Period",
-                value: filter.mode,
-                defaultValue: "all",
-                options: [
-                  { value: "all", label: "All Time" },
-                  { value: "day", label: "Specific Date" },
-                  { value: "range", label: "Date Range" },
-                  { value: "month", label: "Monthly" },
-                  { value: "year", label: "Yearly" },
-                ],
-                onChange: (m: string) => {
-                  const mode = m as DateFilterState["mode"];
-                  if (mode === "day") setFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
-                  else if (mode === "month") setFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
-                  else if (mode === "year") setFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
-                  else setFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+        <SectionCard
+          icon={History}
+          title="External Purchase History"
+          subtitle="Every external purchase recorded from every supplier, with bill amount and invoice reference."
+        >
+          {/* Mobile Flipkart-style Filter Bar */}
+          <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+            <MobileFilterBar
+              search=""
+              onSearchChange={() => {}}
+              searchPlaceholder="Search external purchases..."
+              filterGroups={[
+                {
+                  id: "time",
+                  label: "Time Period",
+                  value: filter.mode,
+                  defaultValue: "all",
+                  options: [
+                    { value: "all", label: "All Time" },
+                    { value: "day", label: "Specific Date" },
+                    { value: "range", label: "Date Range" },
+                    { value: "month", label: "Monthly" },
+                    { value: "year", label: "Yearly" },
+                  ],
+                  onChange: (m: string) => {
+                    const mode = m as DateFilterState["mode"];
+                    if (mode === "day")
+                      setFilter({
+                        mode,
+                        day: new Date().toISOString().slice(0, 10),
+                        from: "",
+                        to: "",
+                        month: "",
+                        year: "",
+                      });
+                    else if (mode === "month")
+                      setFilter({
+                        mode,
+                        day: "",
+                        from: "",
+                        to: "",
+                        month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`,
+                        year: "",
+                      });
+                    else if (mode === "year")
+                      setFilter({
+                        mode,
+                        day: "",
+                        from: "",
+                        to: "",
+                        month: "",
+                        year: String(new Date().getFullYear()),
+                      });
+                    else setFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                  },
                 },
-              },
-            ]}
-            onResetAll={() => setFilter(DEFAULT_DATE_FILTER)}
-          />
-        </div>
+              ]}
+              onResetAll={() => setFilter(DEFAULT_DATE_FILTER)}
+            />
+          </div>
 
-        {/* Desktop Filter Bar */}
-        <div className="hidden md:block mb-4">
-          <DateFilterBar filter={filter} onChange={setFilter} />
-        </div>
+          {/* Desktop Filter Bar */}
+          <div className="hidden md:block mb-4">
+            <DateFilterBar filter={filter} onChange={setFilter} />
+          </div>
 
-        <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 mb-4 w-fit">
-          <Button
-            onClick={() => setViewMode("card")}
-            variant="ghost"
-            className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-              viewMode === "card"
-                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
-                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
-            }`}
+          <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 mb-4 w-fit">
+            <Button
+              onClick={() => setViewMode("card")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                viewMode === "card"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
+              }`}
+            >
+              <LayoutGrid size={14} /> Card View
+            </Button>
+            <Button
+              onClick={() => setViewMode("table")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                viewMode === "table"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
+              }`}
+            >
+              <List size={14} /> Table View
+            </Button>
+          </div>
+          <div
+            style={{
+              background: "#FFF",
+              borderRadius: 16,
+              border: `1.5px solid ${T.borderDef}`,
+              overflow: "hidden",
+            }}
           >
-            <LayoutGrid size={14} /> Card View
-          </Button>
-          <Button
-            onClick={() => setViewMode("table")}
-            variant="ghost"
-            className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-              viewMode === "table"
-                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
-                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
-            }`}
-          >
-            <List size={14} /> Table View
-          </Button>
-        </div>
-        <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
-          <DataTable
-            responsive={viewMode === "card"}
-            columns={columns}
-            data={filtered}
-            getRowId={p => p.id}
-            pagination
-            emptyTitle="No external purchases recorded in this period"
-          />
-        </div>
-      </SectionCard>
+            <DataTable
+              responsive={viewMode === "card"}
+              columns={columns}
+              data={filtered}
+              getRowId={(p) => p.id}
+              pagination
+              emptyTitle="No external purchases recorded in this period"
+            />
+          </div>
+        </SectionCard>
       </FadeUp>
     </div>
   );

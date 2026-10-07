@@ -1,7 +1,15 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 export * from "./finishing-types";
-import { ReadySaree, FinishingAssignment, FinishingReturn, DispatchRecord, Quotation, QuotationSaree, FinishingContextValue } from "./finishing-types";
+import {
+  ReadySaree,
+  FinishingAssignment,
+  FinishingReturn,
+  DispatchRecord,
+  Quotation,
+  QuotationSaree,
+  FinishingContextValue,
+} from "./finishing-types";
 import { useRatesPricing } from "@/features/pricing";
 import { type SareeTypeRecord } from "@/features/pricing";
 import {
@@ -11,7 +19,11 @@ import {
   finishingAssignmentsApi,
 } from "../../../shared/api/finishing";
 import { qcApi } from "../../../shared/api/qc";
-import { BackendDispatchRecord, BackendDispatchType, dispatchApi } from "../../../shared/api/dispatch";
+import {
+  BackendDispatchRecord,
+  BackendDispatchType,
+  dispatchApi,
+} from "../../../shared/api/dispatch";
 import { BackendQuotation, quotationsApi } from "../../../shared/api/quotations";
 import { batchesApi, BackendBatchSareeRow } from "../../../shared/api/batches";
 import { weaversApi } from "../../../shared/api/weavers";
@@ -34,7 +46,9 @@ const STOCK_LIST_KEY = ["stock-list"] as const;
 const QUOTATIONS_KEY = ["finishing", "quotations"] as const;
 
 const DAMAGE_SEVERITY_TO_BACKEND: Record<"Minor" | "Moderate" | "Severe", BackendDamageSeverity> = {
-  Minor: "MINOR", Moderate: "MODERATE", Severe: "SEVERE",
+  Minor: "MINOR",
+  Moderate: "MODERATE",
+  Severe: "SEVERE",
 };
 
 /** A saree type is stored as a rate-card code; the readable name comes from the
@@ -95,10 +109,19 @@ function assignmentToReturn(
     batchId: a.batchSareeRow.batchId,
     condition: a.condition === "DAMAGED" ? "damaged" : "perfect",
     damageType: a.damageType ?? undefined,
-    damageSeverity: a.damageSeverity === "MINOR" ? "Minor" : a.damageSeverity === "MODERATE" ? "Moderate" : a.damageSeverity === "SEVERE" ? "Severe" : undefined,
+    damageSeverity:
+      a.damageSeverity === "MINOR"
+        ? "Minor"
+        : a.damageSeverity === "MODERATE"
+          ? "Moderate"
+          : a.damageSeverity === "SEVERE"
+            ? "Severe"
+            : undefined,
     damageNotes: a.damageNotes ?? undefined,
     damagePhotoUrl: a.damagePhotoUrl ?? undefined,
-    receivedBy: a.finishingStaff ? `${a.finishingStaff.firstName} ${a.finishingStaff.lastName}`.trim() : "Worker Staff",
+    receivedBy: a.finishingStaff
+      ? `${a.finishingStaff.firstName} ${a.finishingStaff.lastName}`.trim()
+      : "Worker Staff",
     // Backend doesn't store a separate returned-at timestamp — the row's last
     // write is the closest available, and for a RETURNED assignment that write
     // *is* the receipt. assignedDate was used before, so every finished saree
@@ -113,7 +136,7 @@ function backendDispatchToFrontend(d: BackendDispatchRecord): DispatchRecord {
   return {
     id: d.id,
     type: d.type === "WHOLESALE" ? "wholesale" : "shop",
-    sareeIds: d.sarees.map(s => s.sareeId),
+    sareeIds: d.sarees.map((s) => s.sareeId),
     dispatchDate: d.dispatchDate,
     lrNumber: d.lrNumber ?? "",
     transportCompany: d.transportCompany ?? "",
@@ -141,7 +164,9 @@ function backendDispatchToFrontend(d: BackendDispatchRecord): DispatchRecord {
     expectedDelivery: d.expectedDelivery ?? undefined,
     specialInstructions: d.specialInstructions ?? undefined,
     receiptStatus: d.receiptStatus,
-    dispatchedByName: d.dispatchedBy ? `${d.dispatchedBy.firstName} ${d.dispatchedBy.lastName}`.trim() : undefined,
+    dispatchedByName: d.dispatchedBy
+      ? `${d.dispatchedBy.firstName} ${d.dispatchedBy.lastName}`.trim()
+      : undefined,
   };
 }
 
@@ -163,15 +188,24 @@ function backendQuotationToFrontend(
     const row = rowLookup.get(s.sareeId);
     // Find the latest finishing assignment for this saree, if any.
     // If the saree is in multiple states, we pick the first match (typically there's only one per quotation)
-    const assignment = q.finishingAssignments?.find(a => a.sareeId === s.sareeId);
+    const assignment = q.finishingAssignments?.find((a) => a.sareeId === s.sareeId);
     return {
       sareeId: s.sareeId,
       designCode: row?.designCode ?? "—",
       sareeTypeCode: row?.sareeTypeCode ?? undefined,
-      sareeType: row?.sareeTypeCode ? (getSareeTypeByCode(row.sareeTypeCode)?.type ?? row.sareeTypeCode) : "—",
+      sareeType: row?.sareeTypeCode
+        ? (getSareeTypeByCode(row.sareeTypeCode)?.type ?? row.sareeTypeCode)
+        : "—",
       weaverName: (row?.weaverId ? weaverLookup.get(row.weaverId) : undefined) ?? "—",
-      finishingStatus: s.finishingStatus === "PENDING" ? "pending" : s.finishingStatus === "IN_FINISHING" ? "in-finishing" : "received",
-      finishingStaffName: assignment ? `${assignment.finishingStaff.firstName} ${assignment.finishingStaff.lastName}` : undefined,
+      finishingStatus:
+        s.finishingStatus === "PENDING"
+          ? "pending"
+          : s.finishingStatus === "IN_FINISHING"
+            ? "in-finishing"
+            : "received",
+      finishingStaffName: assignment
+        ? `${assignment.finishingStaff.firstName} ${assignment.finishingStaff.lastName}`
+        : undefined,
     };
   });
   return {
@@ -186,7 +220,7 @@ function backendQuotationToFrontend(
     customerGst: q.customer?.gstCode ?? undefined,
     bulkOrderRef: q.bulkOrderRef ?? undefined,
     sarees,
-    prices: Object.fromEntries(q.sarees.map(s => [s.sareeId, s.price])),
+    prices: Object.fromEntries(q.sarees.map((s) => [s.sareeId, s.price])),
     applyGst: q.applyGst,
     gstPct: q.gstPct ?? "0",
     firmId: q.firmId ?? undefined,
@@ -195,7 +229,7 @@ function backendQuotationToFrontend(
     grandTotal: Number(q.grandTotal),
     raisedBy: q.raisedBy ? `${q.raisedBy.firstName} ${q.raisedBy.lastName}` : "—",
     status: QUOTATION_STATUS_FROM_BACKEND[q.status],
-    finishingStaffName: sarees.find(s => s.finishingStaffName)?.finishingStaffName,
+    finishingStaffName: sarees.find((s) => s.finishingStaffName)?.finishingStaffName,
     createdAt: new Date(q.createdAt).getTime(),
   };
 }
@@ -216,7 +250,13 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
   const { getSareeTypeByCode } = useRatesPricing();
 
-  const { data: readySarees = [], isError: isReadyError, error: readyError, isLoading: isReadyLoading, refetch: refetchReady } = useQuery({
+  const {
+    data: readySarees = [],
+    isError: isReadyError,
+    error: readyError,
+    isLoading: isReadyLoading,
+    refetch: refetchReady,
+  } = useQuery({
     queryKey: READY_KEY,
     enabled: readScoped,
     queryFn: async () => {
@@ -235,17 +275,35 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       }));
     },
   });
-  const { data: backendAssignments = [], isError: isAssignmentsError, error: assignmentsError, isLoading: isAssignmentsLoading, refetch: refetchAssignments } = useQuery({
+  const {
+    data: backendAssignments = [],
+    isError: isAssignmentsError,
+    error: assignmentsError,
+    isLoading: isAssignmentsLoading,
+    refetch: refetchAssignments,
+  } = useQuery({
     queryKey: ASSIGNMENTS_KEY,
     enabled: readScoped,
     queryFn: async () => (await finishingAssignmentsApi.list()).items,
   });
-  const { data: dispatches = [], isError: isDispatchesError, error: dispatchesError, isLoading: isDispatchesLoading, refetch: refetchDispatches } = useQuery({
+  const {
+    data: dispatches = [],
+    isError: isDispatchesError,
+    error: dispatchesError,
+    isLoading: isDispatchesLoading,
+    refetch: refetchDispatches,
+  } = useQuery({
     queryKey: DISPATCHES_KEY,
     enabled: dispatchEnabled,
     queryFn: async () => (await dispatchApi.list()).items.map(backendDispatchToFrontend),
   });
-  const { data: quotations = [], isError: isQuotationsError, error: quotationsError, isLoading: isQuotationsLoading, refetch: refetchQuotations } = useQuery({
+  const {
+    data: quotations = [],
+    isError: isQuotationsError,
+    error: quotationsError,
+    isLoading: isQuotationsLoading,
+    refetch: refetchQuotations,
+  } = useQuery({
     queryKey: QUOTATIONS_KEY,
     enabled: workerScoped,
     queryFn: async () => {
@@ -255,15 +313,20 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         weaversApi.list(),
       ]);
       const rowLookup = new Map(
-        batchesRes.items.flatMap(b => b.rows.filter(r => r.sareeId).map(r => [r.sareeId as string, r] as const)),
+        batchesRes.items.flatMap((b) =>
+          b.rows.filter((r) => r.sareeId).map((r) => [r.sareeId as string, r] as const)
+        )
       );
-      const weaverLookup = new Map(weaversRes.items.map(w => [w.id, w.name]));
-      return quotationsRes.items.map(q => backendQuotationToFrontend(q, rowLookup, weaverLookup, getSareeTypeByCode));
+      const weaverLookup = new Map(weaversRes.items.map((w) => [w.id, w.name]));
+      return quotationsRes.items.map((q) =>
+        backendQuotationToFrontend(q, rowLookup, weaverLookup, getSareeTypeByCode)
+      );
     },
   });
   const isError = isReadyError || isAssignmentsError || isDispatchesError || isQuotationsError;
   const error = readyError ?? assignmentsError ?? dispatchesError ?? quotationsError ?? null;
-  const isLoading = isReadyLoading || isAssignmentsLoading || isDispatchesLoading || isQuotationsLoading;
+  const isLoading =
+    isReadyLoading || isAssignmentsLoading || isDispatchesLoading || isQuotationsLoading;
   const refetch = () => {
     void refetchReady();
     void refetchAssignments();
@@ -272,30 +335,41 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   };
 
   const assignments = useMemo(
-    () => backendAssignments
-      // A saree that's SEMI or DEFECTIVE should never have reached finishing
-      // in the first place — hide any such legacy/bad assignment from the
-      // queue rather than surface it as something to receive back.
-      .filter(a => a.batchSareeRow.qcRecords.length === 0 || a.batchSareeRow.qcRecords[0].result === "PASSED")
-      .map(a => backendAssignmentToFrontend(a, getSareeTypeByCode)),
-    [backendAssignments, getSareeTypeByCode],
+    () =>
+      backendAssignments
+        // A saree that's SEMI or DEFECTIVE should never have reached finishing
+        // in the first place — hide any such legacy/bad assignment from the
+        // queue rather than surface it as something to receive back.
+        .filter(
+          (a) =>
+            a.batchSareeRow.qcRecords.length === 0 ||
+            a.batchSareeRow.qcRecords[0].result === "PASSED"
+        )
+        .map((a) => backendAssignmentToFrontend(a, getSareeTypeByCode)),
+    [backendAssignments, getSareeTypeByCode]
   );
   const returns = useMemo(() => {
-    const dispatchedSareeIds = new Set(dispatches.flatMap(d => d.sareeIds));
+    const dispatchedSareeIds = new Set(dispatches.flatMap((d) => d.sareeIds));
     return backendAssignments
-      .filter(a => a.status === "RETURNED")
-      .map(a => assignmentToReturn(a, getSareeTypeByCode))
-      .map(r => dispatchedSareeIds.has(r.sareeId) ? { ...r, inventoryStatus: "Dispatched" as const } : r);
+      .filter((a) => a.status === "RETURNED")
+      .map((a) => assignmentToReturn(a, getSareeTypeByCode))
+      .map((r) =>
+        dispatchedSareeIds.has(r.sareeId) ? { ...r, inventoryStatus: "Dispatched" as const } : r
+      );
   }, [backendAssignments, dispatches, getSareeTypeByCode]);
 
-    const setQuotations = (updater: (prev: Quotation[]) => Quotation[]) =>
-    qc.setQueryData<Quotation[]>(QUOTATIONS_KEY, prev => (prev ? updater(prev) : prev));
+  const setQuotations = (updater: (prev: Quotation[]) => Quotation[]) =>
+    qc.setQueryData<Quotation[]>(QUOTATIONS_KEY, (prev) => (prev ? updater(prev) : prev));
 
   const setDispatches = (updater: (prev: DispatchRecord[]) => DispatchRecord[]) =>
-    qc.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, prev => updater(prev ?? []));
+    qc.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, (prev) => updater(prev ?? []));
 
   const assignSareesMutation = useMutation({
-    mutationFn: (args: { sareeIds: string[]; staff: { id: string; name: string }; assignedBy: string }) =>
+    mutationFn: (args: {
+      sareeIds: string[];
+      staff: { id: string; name: string };
+      assignedBy: string;
+    }) =>
       finishingAssignmentsApi.create({
         sareeIds: args.sareeIds,
         finishingStaffId: args.staff.id,
@@ -308,7 +382,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       // otherwise they linger, and a second assign against the same rows looks
       // like a valid action right up until it fails.
       const assigned = new Set(args.sareeIds);
-      qc.setQueryData<ReadySaree[]>(READY_KEY, prev => prev?.filter(s => !assigned.has(s.id)));
+      qc.setQueryData<ReadySaree[]>(READY_KEY, (prev) => prev?.filter((s) => !assigned.has(s.id)));
       void qc.invalidateQueries({ queryKey: ASSIGNMENTS_KEY });
       void qc.invalidateQueries({ queryKey: READY_KEY });
     },
@@ -329,15 +403,24 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
 
   const receiveReturnMutation = useMutation({
     mutationFn: (params: {
-      assignmentId: string; sareeId: string; condition: "perfect" | "damaged";
-      damageType?: string; damageSeverity?: "Minor" | "Moderate" | "Severe";
-      damageNotes?: string; damagePhotoUrl?: string; receivedBy: string; receivedDate: string;
+      assignmentId: string;
+      sareeId: string;
+      condition: "perfect" | "damaged";
+      damageType?: string;
+      damageSeverity?: "Minor" | "Moderate" | "Severe";
+      damageNotes?: string;
+      damagePhotoUrl?: string;
+      receivedBy: string;
+      receivedDate: string;
     }) => {
-      const condition: BackendFinishingCondition = params.condition === "damaged" ? "DAMAGED" : "PERFECT";
+      const condition: BackendFinishingCondition =
+        params.condition === "damaged" ? "DAMAGED" : "PERFECT";
       return finishingAssignmentsApi.receiveReturn(params.assignmentId, {
         condition,
         damageType: params.damageType,
-        damageSeverity: params.damageSeverity ? DAMAGE_SEVERITY_TO_BACKEND[params.damageSeverity] : undefined,
+        damageSeverity: params.damageSeverity
+          ? DAMAGE_SEVERITY_TO_BACKEND[params.damageSeverity]
+          : undefined,
         damageNotes: params.damageNotes,
         damagePhotoUrl: params.damagePhotoUrl,
       });
@@ -362,7 +445,11 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   // this UI's "skip finishing" shortcut and the backend's business rule,
   // not something to paper over here.
   const dispatchSareesMutation = useMutation({
-    mutationFn: (args: { sareeIds: string[]; record: Omit<DispatchRecord, "id">; optimisticId: string }) => {
+    mutationFn: (args: {
+      sareeIds: string[];
+      record: Omit<DispatchRecord, "id">;
+      optimisticId: string;
+    }) => {
       const type: BackendDispatchType = args.record.type === "wholesale" ? "WHOLESALE" : "SHOP";
       return dispatchApi.create({
         type,
@@ -402,7 +489,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         id: args.optimisticId,
         sareeIds: args.sareeIds,
       };
-      qc.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, old => [newDispatch, ...(old || [])]);
+      qc.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, (old) => [newDispatch, ...(old || [])]);
       return { previous };
     },
     onError: (err, _args, context) => {
@@ -425,23 +512,25 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
 
   const updateDispatchMutation = useMutation({
     mutationFn: (args: { id: string; patch: Partial<DispatchRecord> }) =>
-      dispatchApi.update(args.id, {
-        lrNumber: args.patch.lrNumber,
-        transportCompany: args.patch.transportCompany,
-        vehicleNumber: args.patch.vehicleNumber,
-        driverName: args.patch.driverName,
-        dispatchDate: args.patch.dispatchDate,
-        notes: args.patch.notes,
-        expectedDelivery: args.patch.expectedDelivery,
-        specialInstructions: args.patch.specialInstructions,
-        pendingTransport: args.patch.pendingTransport,
-        pendingReceipt: args.patch.pendingReceipt,
-        receiptUrl: args.patch.receiptUrl ?? undefined,
-      }).then(() => args),
+      dispatchApi
+        .update(args.id, {
+          lrNumber: args.patch.lrNumber,
+          transportCompany: args.patch.transportCompany,
+          vehicleNumber: args.patch.vehicleNumber,
+          driverName: args.patch.driverName,
+          dispatchDate: args.patch.dispatchDate,
+          notes: args.patch.notes,
+          expectedDelivery: args.patch.expectedDelivery,
+          specialInstructions: args.patch.specialInstructions,
+          pendingTransport: args.patch.pendingTransport,
+          pendingReceipt: args.patch.pendingReceipt,
+          receiptUrl: args.patch.receiptUrl ?? undefined,
+        })
+        .then(() => args),
     onMutate: async ({ id, patch }) => {
       await qc.cancelQueries({ queryKey: DISPATCHES_KEY });
       const previous = qc.getQueryData<DispatchRecord[]>(DISPATCHES_KEY);
-      setDispatches(prev => prev.map(d => d.id === id ? { ...d, ...patch } : d));
+      setDispatches((prev) => prev.map((d) => (d.id === id ? { ...d, ...patch } : d)));
       return { previous };
     },
     onError: (err, _args, context) => {
@@ -464,7 +553,10 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         gstPct: q.applyGst ? Number(q.gstPct) : undefined,
         firmId: q.firmId,
         raisedById: actingUserId,
-        sarees: q.sarees.map(s => ({ sareeId: s.sareeId, price: Number(q.prices[s.sareeId] ?? 0) })),
+        sarees: q.sarees.map((s) => ({
+          sareeId: s.sareeId,
+          price: Number(q.prices[s.sareeId] ?? 0),
+        })),
       }),
     onSuccess: (created, q) => {
       // Built from the submitted quotation rather than the response: the cached
@@ -472,13 +564,16 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       // /quotations doesn't return, and the form that raised this already holds
       // every one of those display fields. Only the server-assigned identity
       // comes off the response.
-      setQuotations(prev => [{
-        ...q,
-        id: created.id,
-        quotationNumber: created.quotationNumber,
-        createdAt: new Date(created.createdAt).getTime(),
-        status: "raised",
-      }, ...prev]);
+      setQuotations((prev) => [
+        {
+          ...q,
+          id: created.id,
+          quotationNumber: created.quotationNumber,
+          createdAt: new Date(created.createdAt).getTime(),
+          status: "raised",
+        },
+        ...prev,
+      ]);
       void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
     },
     onError: (err) => {
@@ -487,7 +582,12 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   });
 
   const assignQuotationFinishingMutation = useMutation({
-    mutationFn: (args: { quotationId: string; sareeIds: string[]; staff: { id: string; name: string }; assignedBy: string }) =>
+    mutationFn: (args: {
+      quotationId: string;
+      sareeIds: string[];
+      staff: { id: string; name: string };
+      assignedBy: string;
+    }) =>
       quotationsApi.assignFinishing(args.quotationId, {
         sareeIds: args.sareeIds,
         staffId: args.staff.id,
@@ -498,15 +598,27 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       // queryFn) that this endpoint doesn't return, so patch the fields the
       // assignment actually moves rather than reseeding the row.
       const assigned = new Set(args.sareeIds);
-      setQuotations(prev => prev.map(q => q.id !== args.quotationId ? q : {
-        ...q,
-        status: "in-finishing",
-        finishingStaffId: args.staff.id,
-        finishingStaffName: args.staff.name,
-        sarees: q.sarees.map(s => assigned.has(s.sareeId)
-          ? { ...s, finishingStatus: "in-finishing" as const, finishingStaffName: args.staff.name }
-          : s),
-      }));
+      setQuotations((prev) =>
+        prev.map((q) =>
+          q.id !== args.quotationId
+            ? q
+            : {
+                ...q,
+                status: "in-finishing",
+                finishingStaffId: args.staff.id,
+                finishingStaffName: args.staff.name,
+                sarees: q.sarees.map((s) =>
+                  assigned.has(s.sareeId)
+                    ? {
+                        ...s,
+                        finishingStatus: "in-finishing" as const,
+                        finishingStaffName: args.staff.name,
+                      }
+                    : s
+                ),
+              }
+        )
+      );
       void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
     },
     onError: (err) => {
@@ -519,18 +631,23 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       quotationsApi.receiveSarees(args.quotationId, args.sareeIds),
     onSuccess: (_result, args) => {
       const received = new Set(args.sareeIds);
-      setQuotations(prev => prev.map(q => {
-        if (q.id !== args.quotationId) return q;
-        const sarees = q.sarees.map(s =>
-          received.has(s.sareeId) ? { ...s, finishingStatus: "received" as const } : s);
-        // Mirrors the backend's own roll-up (QuotationsService.receiveSarees):
-        // the quotation is only "received" once every saree on it is.
-        return {
-          ...q,
-          sarees,
-          status: sarees.every(s => s.finishingStatus === "received") ? "received" : "partially-received",
-        };
-      }));
+      setQuotations((prev) =>
+        prev.map((q) => {
+          if (q.id !== args.quotationId) return q;
+          const sarees = q.sarees.map((s) =>
+            received.has(s.sareeId) ? { ...s, finishingStatus: "received" as const } : s
+          );
+          // Mirrors the backend's own roll-up (QuotationsService.receiveSarees):
+          // the quotation is only "received" once every saree on it is.
+          return {
+            ...q,
+            sarees,
+            status: sarees.every((s) => s.finishingStatus === "received")
+              ? "received"
+              : "partially-received",
+          };
+        })
+      );
       void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
     },
     onError: (err) => {
@@ -541,7 +658,9 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const markQuotationDispatchedMutation = useMutation({
     mutationFn: (quotationId: string) => quotationsApi.dispatch(quotationId),
     onSuccess: (_result, quotationId) => {
-      setQuotations(prev => prev.map(q => q.id === quotationId ? { ...q, status: "dispatched" } : q));
+      setQuotations((prev) =>
+        prev.map((q) => (q.id === quotationId ? { ...q, status: "dispatched" } : q))
+      );
       void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
     },
     onError: (err) => {
@@ -550,11 +669,14 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   });
 
   const deleteDispatchMutation = useMutation({
-    mutationFn: (args: { id: string; actorId: string }) => dispatchApi.delete(args.id, args.actorId),
+    mutationFn: (args: { id: string; actorId: string }) =>
+      dispatchApi.delete(args.id, args.actorId),
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: DISPATCHES_KEY });
       const previous = qc.getQueryData<DispatchRecord[]>(DISPATCHES_KEY);
-      qc.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, old => (old || []).filter(d => d.id !== id));
+      qc.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, (old) =>
+        (old || []).filter((d) => d.id !== id)
+      );
       return { previous };
     },
     onError: (err, _variables, context) => {
@@ -577,10 +699,14 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  const assignSarees = (sareeIds: string[], staff: { id: string; name: string }, assignedBy: string) =>
-    assignSareesMutation.mutate({ sareeIds, staff, assignedBy });
+  const assignSarees = (
+    sareeIds: string[],
+    staff: { id: string; name: string },
+    assignedBy: string
+  ) => assignSareesMutation.mutate({ sareeIds, staff, assignedBy });
   const addReadySaree = (saree: ReadySaree) => addReadySareeMutation.mutate(saree);
-  const receiveReturn = (params: Parameters<FinishingContextValue["receiveReturn"]>[0]) => receiveReturnMutation.mutate(params);
+  const receiveReturn = (params: Parameters<FinishingContextValue["receiveReturn"]>[0]) =>
+    receiveReturnMutation.mutate(params);
 
   // Awaits the real record so callers surface the backend's own id and invoice
   // number. The optimistic cache entry uses a throwaway key (not a business id)
@@ -593,21 +719,50 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
     });
     return { id: created.id, invoiceNumber: created.invoiceNumber ?? undefined };
   };
-  const updateDispatch = (id: string, patch: Partial<DispatchRecord>) => updateDispatchMutation.mutate({ id, patch });
+  const updateDispatch = (id: string, patch: Partial<DispatchRecord>) =>
+    updateDispatchMutation.mutate({ id, patch });
 
   const raiseQuotation = async (q: Omit<Quotation, "id" | "createdAt">) => {
     const created = await raiseQuotationMutation.mutateAsync(q);
     return { id: created.id, quotationNumber: created.quotationNumber };
   };
-  const assignQuotationFinishing = (quotationId: string, sareeIds: string[], staff: { id: string; name: string }, assignedBy: string) =>
-    assignQuotationFinishingMutation.mutate({ quotationId, sareeIds, staff, assignedBy });
+  const assignQuotationFinishing = (
+    quotationId: string,
+    sareeIds: string[],
+    staff: { id: string; name: string },
+    assignedBy: string
+  ) => assignQuotationFinishingMutation.mutate({ quotationId, sareeIds, staff, assignedBy });
   const receiveQuotationSarees = (quotationId: string, sareeIds: string[], receivedBy: string) =>
     receiveQuotationSareesMutation.mutate({ quotationId, sareeIds, receivedBy });
-  const markQuotationDispatched = (quotationId: string) => markQuotationDispatchedMutation.mutate(quotationId);
-  const deleteDispatch = (id: string, actorId: string) => deleteDispatchMutation.mutate({ id, actorId });
+  const markQuotationDispatched = (quotationId: string) =>
+    markQuotationDispatchedMutation.mutate(quotationId);
+  const deleteDispatch = (id: string, actorId: string) =>
+    deleteDispatchMutation.mutate({ id, actorId });
 
   return (
-    <FinishingContext.Provider value={{ readySarees, assignments, returns, dispatches, assignSarees, addReadySaree, receiveReturn, dispatchSarees, updateDispatch, deleteDispatch, quotations, raiseQuotation, assignQuotationFinishing, receiveQuotationSarees, markQuotationDispatched, isError, error, isLoading, refetch }}>
+    <FinishingContext.Provider
+      value={{
+        readySarees,
+        assignments,
+        returns,
+        dispatches,
+        assignSarees,
+        addReadySaree,
+        receiveReturn,
+        dispatchSarees,
+        updateDispatch,
+        deleteDispatch,
+        quotations,
+        raiseQuotation,
+        assignQuotationFinishing,
+        receiveQuotationSarees,
+        markQuotationDispatched,
+        isError,
+        error,
+        isLoading,
+        refetch,
+      }}
+    >
       {children}
     </FinishingContext.Provider>
   );

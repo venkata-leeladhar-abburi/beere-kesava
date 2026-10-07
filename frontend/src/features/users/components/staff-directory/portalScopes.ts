@@ -24,7 +24,8 @@ export const WORKER_SCOPE: PortalScope = {
   role: "WORKER",
   label: "Worker Staff",
   singular: "Worker",
-  blurb: "Everyone with Worker Staff access, and everything each of them has recorded in the Worker portal.",
+  blurb:
+    "Everyone with Worker Staff access, and everything each of them has recorded in the Worker portal.",
   modules: ["BATCHES", "QC", "FINISHING", "DISPATCH", "MATERIALS"],
 };
 
@@ -32,10 +33,21 @@ export const ACCOUNTANT_SCOPE: PortalScope = {
   role: "ACCOUNTANT",
   label: "Accountant Staff",
   singular: "Accountant",
-  blurb: "Everyone with Accountant access, the money each of them has moved, and everything they have recorded in the Accountant portal.",
+  blurb:
+    "Everyone with Accountant access, the money each of them has moved, and everything they have recorded in the Accountant portal.",
   modules: [
-    "PAYMENTS", "WEAVERS", "VENDORS", "SUPPLIERS", "CUSTOMERS", "SALES",
-    "PURCHASE", "PURCHASE_REQUESTS", "RATES", "RATE_REQUESTS", "APPROVALS", "REPORTS",
+    "PAYMENTS",
+    "WEAVERS",
+    "VENDORS",
+    "SUPPLIERS",
+    "CUSTOMERS",
+    "SALES",
+    "PURCHASE",
+    "PURCHASE_REQUESTS",
+    "RATES",
+    "RATE_REQUESTS",
+    "APPROVALS",
+    "REPORTS",
   ],
 };
 
@@ -43,7 +55,8 @@ export const SHOP_SCOPE: PortalScope = {
   role: "SHOP",
   label: "Shop Staff",
   singular: "Shop Staff",
-  blurb: "Everyone with Shop Staff access, and everything each of them has recorded in the Shop portal.",
+  blurb:
+    "Everyone with Shop Staff access, and everything each of them has recorded in the Shop portal.",
   modules: ["SALES", "CUSTOMERS", "PAYMENTS", "REPORTS"],
 };
 

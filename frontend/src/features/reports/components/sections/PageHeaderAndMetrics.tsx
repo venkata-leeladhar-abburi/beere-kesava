@@ -7,27 +7,97 @@ import { REPORT_TABS } from "./ReportTabNav";
 
 export function ReportsHeader() {
   return (
-    <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
-      <div className="pl-4 md:pl-7 xl:pl-12" style={{ position: "relative", zIndex: 3, paddingTop: 48, paddingBottom: 110, flex: "0 0 100%", maxWidth: "100%" }}>
+    <header
+      style={{
+        background: "#0D0207",
+        position: "relative",
+        overflow: "hidden",
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      <div
+        className="pl-4 md:pl-7 xl:pl-12"
+        style={{
+          position: "relative",
+          zIndex: 3,
+          paddingTop: 48,
+          paddingBottom: 110,
+          flex: "0 0 100%",
+          maxWidth: "100%",
+        }}
+      >
         {/* Eyebrow */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-          <div style={{ width: 36, height: 2, background: `linear-gradient(90deg, ${T.antiqueGold}, rgba(200,155,71,0))` }} />
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(200,155,71,0.85)", letterSpacing: "1.5px", textTransform: "uppercase" as const, fontWeight: 600 }}>
+          <div
+            style={{
+              width: 36,
+              height: 2,
+              background: `linear-gradient(90deg, ${T.antiqueGold}, rgba(200,155,71,0))`,
+            }}
+          />
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 13,
+              color: "rgba(200,155,71,0.85)",
+              letterSpacing: "1.5px",
+              textTransform: "uppercase" as const,
+              fontWeight: 600,
+            }}
+          >
             BEERE KANCHI SILKS · REPORTS &amp; ANALYTICS
           </span>
         </div>
         {/* Headline */}
-        <div style={{ marginBottom: 10, display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const }}>
-          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 8vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
+        <div
+          style={{
+            marginBottom: 10,
+            display: "flex",
+            alignItems: "baseline",
+            gap: 12,
+            flexWrap: "wrap" as const,
+          }}
+        >
+          <h1
+            style={{
+              fontFamily: "'DM Serif Display', serif",
+              fontSize: "clamp(32px, 8vw, 56px)",
+              fontWeight: 400,
+              color: "#FFFDF9",
+              margin: 0,
+              lineHeight: 1.1,
+            }}
+          >
             Reports
           </h1>
-          <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 6vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400, lineHeight: 1.1 }}>
+          <div
+            style={{
+              fontFamily: "'DM Serif Display', serif",
+              fontSize: "clamp(22px, 6vw, 36px)",
+              fontStyle: "italic",
+              color: T.antiqueGold,
+              fontWeight: 400,
+              lineHeight: 1.1,
+            }}
+          >
             &amp; Business Analytics
           </div>
         </div>
         {/* Body */}
-        <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", fontWeight: 400, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", lineHeight: 1.6 }}>
-          View detailed reports for every part of the business — production, payments, weavers, sales, and customers. Compare periods, download as Excel, and schedule automatic delivery.
+        <p
+          className="max-w-[600px]"
+          style={{
+            fontFamily: F.ui,
+            fontSize: "clamp(15px, 3.5vw, 18px)",
+            fontWeight: 400,
+            color: "rgba(255,253,249,0.70)",
+            margin: "0 0 20px",
+            lineHeight: 1.6,
+          }}
+        >
+          View detailed reports for every part of the business — production, payments, weavers,
+          sales, and customers. Compare periods, download as Excel, and schedule automatic delivery.
         </p>
       </div>
     </header>
@@ -117,4 +187,3 @@ export function ReportsStatsStrip() {
     </motion.div>
   );
 }
-

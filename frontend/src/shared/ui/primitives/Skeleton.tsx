@@ -44,7 +44,12 @@ export function Spinner({ size = "md", className, ...props }: SpinnerProps) {
       {...props}
     >
       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.2" strokeWidth="3" />
-      <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      <path
+        d="M22 12a10 10 0 0 0-10-10"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -65,7 +70,15 @@ const INTENT_COLOR: Record<NonNullable<ProgressProps["intent"]>, string> = {
   danger: "var(--text-danger)",
 };
 
-export function Progress({ value, size = "md", intent = "brand", label, indeterminate, className, ...props }: ProgressProps) {
+export function Progress({
+  value,
+  size = "md",
+  intent = "brand",
+  label,
+  indeterminate,
+  className,
+  ...props
+}: ProgressProps) {
   const clamped = Math.max(0, Math.min(100, value));
   const height = PROGRESS_HEIGHT[size];
   const generatedLabelId = React.useId();
@@ -75,8 +88,12 @@ export function Progress({ value, size = "md", intent = "brand", label, indeterm
     <div className={cn("flex flex-col gap-1", className)} {...props}>
       {label && (
         <div className="flex items-center justify-between">
-          <span id={labelId} className="bk-label-md" style={{ color: "var(--text-secondary)" }}>{label}</span>
-          <span className="bk-label-md tabular-nums" style={{ color: "var(--text-primary)" }}>{clamped}%</span>
+          <span id={labelId} className="bk-label-md" style={{ color: "var(--text-secondary)" }}>
+            {label}
+          </span>
+          <span className="bk-label-md tabular-nums" style={{ color: "var(--text-primary)" }}>
+            {clamped}%
+          </span>
         </div>
       )}
       <div

@@ -10,7 +10,12 @@ import { Pagination, usePagination } from "../../../../shared/ui/DataPagination"
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { VendorCard, type VendorCardProps } from "@/shared/ui/domain";
 import { rupees } from "@/lib/domain/money";
-import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
+import {
+  LoadingState,
+  ErrorState,
+  EmptyState,
+  FilteredEmptyState,
+} from "../../../../shared/ui/state";
 import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 
 // Vendor.status (types.ts) is the overloaded-field pattern the design
@@ -24,7 +29,14 @@ const VENDOR_STATUS: Record<Vendor["status"], Pick<VendorCardProps, "status" | "
   overdue: { status: "active", paymentStatus: "overdue" },
 };
 
-export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick, loading = false, error = null, onRetry }: {
+export function VendorDirectorySection({
+  vendors,
+  onSelectVendor,
+  onAddClick,
+  loading = false,
+  error = null,
+  onRetry,
+}: {
   vendors: Vendor[];
   onSelectVendor: (v: Vendor) => void;
   onAddClick: () => void;
@@ -37,9 +49,14 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick, lo
   const [statusFilter, setStatusFilter] = useState("All");
   const [ratingFilter, setRatingFilter] = useState("All Ratings");
 
-  const filtered = vendors.filter(v => {
+  const filtered = vendors.filter((v) => {
     const q = search.toLowerCase();
-    const mSearch = !q || v.name.toLowerCase().includes(q) || v.city.toLowerCase().includes(q) || (v.code || v.id).toLowerCase().includes(q) || v.contactName.toLowerCase().includes(q);
+    const mSearch =
+      !q ||
+      v.name.toLowerCase().includes(q) ||
+      v.city.toLowerCase().includes(q) ||
+      (v.code || v.id).toLowerCase().includes(q) ||
+      v.contactName.toLowerCase().includes(q);
     const mType = typeFilter === "All Types" || v.type.includes(typeFilter);
     const mStatus = statusFilter === "All" || v.status === statusFilter.toLowerCase();
     const mRating = ratingFilter === "All Ratings" || v.rating === parseInt(ratingFilter, 10);
@@ -51,145 +68,186 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick, lo
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80 }}>
       <FadeUp>
-      <SectionCard
-        icon={Building2}
-        title="Vendor Directory"
-        subtitle="Browse all raw material vendors, track their orders, ratings, and outstanding balances."
-        actions={
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ display: "inline-block" }}>
-            <Button
-              onClick={onAddClick}
-              variant="secondary"
-              iconLeft="add"
-              className="rounded-[10px] bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white"
+        <SectionCard
+          icon={Building2}
+          title="Vendor Directory"
+          subtitle="Browse all raw material vendors, track their orders, ratings, and outstanding balances."
+          actions={
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              style={{ display: "inline-block" }}
             >
-              Add New Vendor
-            </Button>
-          </motion.div>
-        }
-      >
-        {/* Mobile Flipkart-style Filter Bar */}
-        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
-          <MobileFilterBar
-            search={search}
-            onSearchChange={setSearch}
-            searchPlaceholder="Search vendor name, city, contact..."
-            filterGroups={[
-              {
-                id: "status",
-                label: "Status",
-                value: statusFilter,
-                defaultValue: "All",
-                options: ["All", "Active", "Overdue", "Inactive"].map(s => ({ value: s, label: s })),
-                onChange: setStatusFilter,
-              },
-              {
-                id: "type",
-                label: "Material Type",
-                value: typeFilter,
-                defaultValue: "All Types",
-                options: MATERIAL_TYPES.map(t => ({ value: t, label: t })),
-                onChange: setTypeFilter,
-              },
-              {
-                id: "rating",
-                label: "Rating",
-                value: ratingFilter,
-                defaultValue: "All Ratings",
-                options: [
-                  { value: "All Ratings", label: "All Ratings" },
-                  { value: "5", label: "5 Stars" },
-                  { value: "4", label: "4 Stars" },
-                  { value: "3", label: "3 Stars" },
-                  { value: "2", label: "2 Stars" },
-                  { value: "1", label: "1 Star" },
-                ],
-                onChange: setRatingFilter,
-              },
-            ]}
-            onResetAll={() => {
-              setSearch("");
-              setStatusFilter("All");
-              setTypeFilter("All Types");
-              setRatingFilter("All Ratings");
-            }}
-          />
-        </div>
-
-        {/* Desktop Filter Bar */}
-        <div className="hidden md:flex items-center gap-3.5 mb-6 flex-wrap" style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px", boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
-          <div style={{ flex: "1 1 280px" }}>
-            <SearchInput
-              aria-label="Search by vendor name, city, or contact"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search by vendor name, city, or contact…"
+              <Button
+                onClick={onAddClick}
+                variant="secondary"
+                iconLeft="add"
+                className="rounded-[10px] bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white"
+              >
+                Add New Vendor
+              </Button>
+            </motion.div>
+          }
+        >
+          {/* Mobile Flipkart-style Filter Bar */}
+          <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+            <MobileFilterBar
+              search={search}
+              onSearchChange={setSearch}
+              searchPlaceholder="Search vendor name, city, contact..."
+              filterGroups={[
+                {
+                  id: "status",
+                  label: "Status",
+                  value: statusFilter,
+                  defaultValue: "All",
+                  options: ["All", "Active", "Overdue", "Inactive"].map((s) => ({
+                    value: s,
+                    label: s,
+                  })),
+                  onChange: setStatusFilter,
+                },
+                {
+                  id: "type",
+                  label: "Material Type",
+                  value: typeFilter,
+                  defaultValue: "All Types",
+                  options: MATERIAL_TYPES.map((t) => ({ value: t, label: t })),
+                  onChange: setTypeFilter,
+                },
+                {
+                  id: "rating",
+                  label: "Rating",
+                  value: ratingFilter,
+                  defaultValue: "All Ratings",
+                  options: [
+                    { value: "All Ratings", label: "All Ratings" },
+                    { value: "5", label: "5 Stars" },
+                    { value: "4", label: "4 Stars" },
+                    { value: "3", label: "3 Stars" },
+                    { value: "2", label: "2 Stars" },
+                    { value: "1", label: "1 Star" },
+                  ],
+                  onChange: setRatingFilter,
+                },
+              ]}
+              onResetAll={() => {
+                setSearch("");
+                setStatusFilter("All");
+                setTypeFilter("All Types");
+                setRatingFilter("All Ratings");
+              }}
             />
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            {["All", "Active", "Overdue", "Inactive"].map(s => (
-              <Button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                variant={statusFilter === s ? "primary" : "secondary"}
-                size="sm"
-                className={
-                  statusFilter === s
-                    ? "rounded-full bg-[#6E0F2D] border-none"
-                    : "rounded-full bg-transparent text-[#9C8672] border-[1.5px] border-[rgba(110,15,45,0.18)]"
-                }
-              >
-                {s}
-              </Button>
-            ))}
-          </div>
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            {MATERIAL_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-          </Select>
-          <Select value={ratingFilter} onValueChange={setRatingFilter}>
-            <SelectItem value="All Ratings">All Ratings</SelectItem>
-            <SelectItem value="5">5 Stars</SelectItem>
-            <SelectItem value="4">4 Stars</SelectItem>
-            <SelectItem value="3">3 Stars</SelectItem>
-            <SelectItem value="2">2 Stars</SelectItem>
-            <SelectItem value="1">1 Star</SelectItem>
-          </Select>
-        </div>
 
-        {loading ? (
-          <LoadingState variant="skeleton" rows={4} />
-        ) : error ? (
-          <ErrorState error={error} onRetry={onRetry} />
-        ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {pag.pageItems.map((v, i) => (
-            <FadeUp key={v.id} delay={i * 0.06}>
-              <VendorCard
-                code={v.code || v.id}
-                name={v.name}
-                service={v.type}
-                notes={v.notes || undefined}
-                jobs={v.totalOrders}
-                outstanding={rupees(Number(v.outstanding) || 0)}
-                {...VENDOR_STATUS[v.status]}
-                onClick={() => onSelectVendor(v)}
+          {/* Desktop Filter Bar */}
+          <div
+            className="hidden md:flex items-center gap-3.5 mb-6 flex-wrap"
+            style={{
+              background: "#FFF",
+              borderRadius: 16,
+              border: `1.5px solid ${T.borderDef}`,
+              padding: "16px 20px",
+              boxShadow: "0 2px 10px rgba(74,6,27,0.05)",
+            }}
+          >
+            <div style={{ flex: "1 1 280px" }}>
+              <SearchInput
+                aria-label="Search by vendor name, city, or contact"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by vendor name, city, or contact…"
               />
-            </FadeUp>
-          ))}
-          {filtered.length === 0 && (
-            <div style={{ gridColumn: "1 / -1" }}>
-              {search.trim() || typeFilter !== "All Types" || statusFilter !== "All" || ratingFilter !== "All Ratings" ? (
-                <FilteredEmptyState onClearFilters={() => { setSearch(""); setTypeFilter("All Types"); setStatusFilter("All"); setRatingFilter("All Ratings"); }} />
-              ) : (
-                <EmptyState title="No vendors yet" description="Vendors added here will show up in purchases and payments." />
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {["All", "Active", "Overdue", "Inactive"].map((s) => (
+                <Button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  variant={statusFilter === s ? "primary" : "secondary"}
+                  size="sm"
+                  className={
+                    statusFilter === s
+                      ? "rounded-full bg-[#6E0F2D] border-none"
+                      : "rounded-full bg-transparent text-[#9C8672] border-[1.5px] border-[rgba(110,15,45,0.18)]"
+                  }
+                >
+                  {s}
+                </Button>
+              ))}
+            </div>
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              {MATERIAL_TYPES.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t}
+                </SelectItem>
+              ))}
+            </Select>
+            <Select value={ratingFilter} onValueChange={setRatingFilter}>
+              <SelectItem value="All Ratings">All Ratings</SelectItem>
+              <SelectItem value="5">5 Stars</SelectItem>
+              <SelectItem value="4">4 Stars</SelectItem>
+              <SelectItem value="3">3 Stars</SelectItem>
+              <SelectItem value="2">2 Stars</SelectItem>
+              <SelectItem value="1">1 Star</SelectItem>
+            </Select>
+          </div>
+
+          {loading ? (
+            <LoadingState variant="skeleton" rows={4} />
+          ) : error ? (
+            <ErrorState error={error} onRetry={onRetry} />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              {pag.pageItems.map((v, i) => (
+                <FadeUp key={v.id} delay={i * 0.06}>
+                  <VendorCard
+                    code={v.code || v.id}
+                    name={v.name}
+                    service={v.type}
+                    notes={v.notes || undefined}
+                    jobs={v.totalOrders}
+                    outstanding={rupees(Number(v.outstanding) || 0)}
+                    {...VENDOR_STATUS[v.status]}
+                    onClick={() => onSelectVendor(v)}
+                  />
+                </FadeUp>
+              ))}
+              {filtered.length === 0 && (
+                <div style={{ gridColumn: "1 / -1" }}>
+                  {search.trim() ||
+                  typeFilter !== "All Types" ||
+                  statusFilter !== "All" ||
+                  ratingFilter !== "All Ratings" ? (
+                    <FilteredEmptyState
+                      onClearFilters={() => {
+                        setSearch("");
+                        setTypeFilter("All Types");
+                        setStatusFilter("All");
+                        setRatingFilter("All Ratings");
+                      }}
+                    />
+                  ) : (
+                    <EmptyState
+                      title="No vendors yet"
+                      description="Vendors added here will show up in purchases and payments."
+                    />
+                  )}
+                </div>
               )}
             </div>
           )}
-        </div>
-        )}
-        <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
-          onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="vendors" />
-      </SectionCard>
+          <Pagination
+            page={pag.page}
+            pageCount={pag.pageCount}
+            total={pag.total}
+            pageSize={pag.pageSize}
+            start={pag.start}
+            onPageChange={pag.setPage}
+            onPageSizeChange={pag.setPageSize}
+            itemLabel="vendors"
+          />
+        </SectionCard>
       </FadeUp>
     </div>
   );

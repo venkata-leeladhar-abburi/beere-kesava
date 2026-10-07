@@ -1,7 +1,11 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { BackendWeaverPayment, weaverPaymentsApi, WeaverEarnings } from "../../../shared/api/payments";
+import {
+  BackendWeaverPayment,
+  weaverPaymentsApi,
+  WeaverEarnings,
+} from "../../../shared/api/payments";
 import { weaversApi, WEAVERS_LIST_QUERY_KEY } from "../../../shared/api/weavers";
 import { firmsApi, BackendFirm } from "../../../shared/api/firms";
 import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
@@ -49,7 +53,7 @@ const EARNINGS_QUERY_KEY = ["weaverEarnings"] as const;
 function backendPaymentToFrontend(
   p: BackendWeaverPayment,
   weaverLookup: Map<string, string>,
-  firmLookup: Map<string, string>,
+  firmLookup: Map<string, string>
 ): WeaverPaymentRecord {
   return {
     id: p.id,
@@ -58,7 +62,11 @@ function backendPaymentToFrontend(
     amountPaid: Number(p.amountPaid),
     utrNumber: p.utrNumber ?? "",
     firmName: (p.firmId ? firmLookup.get(p.firmId) : undefined) ?? "",
-    paymentDate: new Date(p.paymentDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+    paymentDate: new Date(p.paymentDate).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
     uploadedAt: p.uploadedAt,
     batchNo: p.batchNo ?? undefined,
     loomNumber: p.loomNumber ?? undefined,
@@ -83,7 +91,13 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
   // they got back nothing but a "your role is not permitted" 403.
   const enabled = useAuthGate("accountant", "weaver", "admin", "superadmin");
 
-  const { data: payments = [], isError, error, isLoading, refetch } = useQuery({
+  const {
+    data: payments = [],
+    isError,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: QUERY_KEY,
     enabled,
     queryFn: async () => {
@@ -92,12 +106,18 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
         // Shared cache — see WEAVERS_LIST_QUERY_KEY — instead of a second
         // independent GET /weavers alongside BatchContext's and
         // useCurrentWeaver's, all three of which need this same roster.
-        queryClient.fetchQuery({ queryKey: WEAVERS_LIST_QUERY_KEY, queryFn: () => weaversApi.list(), staleTime: 60_000 }),
-        canReadFirms ? firmsApi.list().catch(() => ({ items: [] as BackendFirm[] })) : Promise.resolve({ items: [] as BackendFirm[] }),
+        queryClient.fetchQuery({
+          queryKey: WEAVERS_LIST_QUERY_KEY,
+          queryFn: () => weaversApi.list(),
+          staleTime: 60_000,
+        }),
+        canReadFirms
+          ? firmsApi.list().catch(() => ({ items: [] as BackendFirm[] }))
+          : Promise.resolve({ items: [] as BackendFirm[] }),
       ]);
-      const weaverLookup = new Map(weaversRes.items.map(w => [w.id, w.name]));
-      const firmLookup = new Map(firmsRes.items.map(f => [f.id, f.firmName]));
-      return paymentsRes.items.map(p => backendPaymentToFrontend(p, weaverLookup, firmLookup));
+      const weaverLookup = new Map(weaversRes.items.map((w) => [w.id, w.name]));
+      const firmLookup = new Map(firmsRes.items.map((f) => [f.id, f.firmName]));
+      return paymentsRes.items.map((p) => backendPaymentToFrontend(p, weaverLookup, firmLookup));
     },
   });
 
@@ -110,7 +130,7 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
   const addPaymentsMutation = useMutation({
     mutationFn: async (records: WeaverPaymentRecord[]) => {
       return Promise.all(
-        records.map(r =>
+        records.map((r) =>
           weaverPaymentsApi.create({
             weaverId: r.weaverId,
             amountPaid: r.amountPaid,
@@ -120,8 +140,8 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
             loomNumber: r.loomNumber,
             noOfSarees: r.noOfSarees,
             deduction: r.deduction,
-          }),
-        ),
+          })
+        )
       );
     },
     onSuccess: (created, records) => {
@@ -136,7 +156,7 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
         created.map((p, i) => ({
           ...backendPaymentToFrontend(p, new Map([[p.weaverId, records[i].weaverName]]), new Map()),
           firmName: records[i].firmName,
-        })),
+        }))
       );
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       // Payments change what each weaver is still owed, which the earnings
@@ -169,12 +189,24 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
   });
 
   const getEarningsForWeaver = useMemo(() => {
-    const byWeaver = new Map(earnings.map(e => [e.weaverId, e]));
+    const byWeaver = new Map(earnings.map((e) => [e.weaverId, e]));
     return (weaverId: string) => byWeaver.get(weaverId);
   }, [earnings]);
 
   return (
-    <WeaverPaymentsContext.Provider value={{ payments, addPayments, getPaymentsForWeaver, earnings, getEarningsForWeaver, isError, error, isLoading, refetch: () => void refetch() }}>
+    <WeaverPaymentsContext.Provider
+      value={{
+        payments,
+        addPayments,
+        getPaymentsForWeaver,
+        earnings,
+        getEarningsForWeaver,
+        isError,
+        error,
+        isLoading,
+        refetch: () => void refetch(),
+      }}
+    >
       {children}
     </WeaverPaymentsContext.Provider>
   );

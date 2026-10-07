@@ -33,11 +33,13 @@ export async function fetchOtp(page: Page, apiURL: string, phone: string): Promi
     throw new Error(
       "GET /auth/testing/otp returned 404. Either no OTP has been recorded for " +
         `${phone} yet, or the backend was not started with E2E_TEST_MODE=true ` +
-        "(see backend/src/auth/testing/e2e-test-mode.ts and playwright.config.ts).",
+        "(see backend/src/auth/testing/e2e-test-mode.ts and playwright.config.ts)."
     );
   }
   if (!codeResponse.ok()) {
-    throw new Error(`GET /auth/testing/otp returned ${codeResponse.status()}: ${await codeResponse.text()}`);
+    throw new Error(
+      `GET /auth/testing/otp returned ${codeResponse.status()}: ${await codeResponse.text()}`
+    );
   }
 
   // Every response is wrapped by the backend's global ResponseInterceptor as

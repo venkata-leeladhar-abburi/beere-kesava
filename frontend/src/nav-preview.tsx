@@ -14,9 +14,26 @@ import { TopNav } from "./features/dashboards/components/beere-dashboard/compone
 import { SATopNav } from "./features/dashboards/components/superadmin-dashboard/SATopNav";
 
 const fakeAuth = {
-  isAuthenticated: true, role: "admin" as const, phone: "8888888888", token: "dev",
-  user: { id: "dev", name: "Preview Admin", email: "", mobile: "", role: "admin", accessLevel: undefined },
-  login: () => {}, selectRole: () => {}, logout: () => {}, adminViewingAs: null, clearAdminView: () => {}, enterStaffView: () => {}, availableRoles: [], switchPortal: async () => {},
+  isAuthenticated: true,
+  role: "admin" as const,
+  phone: "8888888888",
+  token: "dev",
+  user: {
+    id: "dev",
+    name: "Preview Admin",
+    email: "",
+    mobile: "",
+    role: "admin",
+    accessLevel: undefined,
+  },
+  login: () => {},
+  selectRole: () => {},
+  logout: () => {},
+  adminViewingAs: null,
+  clearAdminView: () => {},
+  enterStaffView: () => {},
+  availableRoles: [],
+  switchPortal: async () => {},
 };
 
 const WHICH = new URLSearchParams(location.search).get("which") ?? "admin";
@@ -34,7 +51,8 @@ function App() {
           )}
           <div style={{ padding: 48 }}>
             <p style={{ fontFamily: "sans-serif", color: "#999" }}>
-              Preview harness — nav only. Try ?which=sa for superadmin, ?active=Finance to open a different group.
+              Preview harness — nav only. Try ?which=sa for superadmin, ?active=Finance to open a
+              different group.
             </p>
           </div>
         </div>
@@ -43,6 +61,8 @@ function App() {
   );
 }
 
-const container = document.getElementById("root")! as HTMLElement & { _root?: ReturnType<typeof createRoot> };
+const container = document.getElementById("root")! as HTMLElement & {
+  _root?: ReturnType<typeof createRoot>;
+};
 container._root ??= createRoot(container);
 container._root.render(<App />);

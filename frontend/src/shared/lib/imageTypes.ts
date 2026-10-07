@@ -24,4 +24,5 @@ export function isAcceptedImageFile(file: File): boolean {
 }
 
 /** Shown when isAcceptedImageFile rejects a file. */
-export const IMAGE_REJECTION_MESSAGE = "That file isn't an image we can display (SVG isn't supported).";
+export const IMAGE_REJECTION_MESSAGE =
+  "That file isn't an image we can display (SVG isn't supported).";

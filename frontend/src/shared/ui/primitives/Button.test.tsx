@@ -17,7 +17,12 @@ describe("Button", () => {
     // The Raise Quotation bug: the modal only closes once the POST resolves,
     // so every extra click in the meantime raised another quotation.
     let release!: () => void;
-    const onClick = vi.fn(() => new Promise<void>(resolve => { release = resolve; }));
+    const onClick = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          release = resolve;
+        })
+    );
     render(<Button onClick={onClick}>Raise Quotation</Button>);
     const btn = screen.getByRole("button", { name: /Raise Quotation/ });
 
@@ -64,7 +69,11 @@ describe("Button", () => {
   });
 
   it("keeps the visible label and sets aria-busy while loading, and disables interaction", () => {
-    render(<Button loading loadingLabel="Saving">Save</Button>);
+    render(
+      <Button loading loadingLabel="Saving">
+        Save
+      </Button>
+    );
     const btn = screen.getByRole("button");
     expect(btn).toHaveAttribute("aria-busy", "true");
     expect(btn).toBeDisabled();
@@ -74,7 +83,11 @@ describe("Button", () => {
 
   it("disabled prevents the click handler from firing", () => {
     const onClick = vi.fn();
-    render(<Button disabled onClick={onClick}>Add</Button>);
+    render(
+      <Button disabled onClick={onClick}>
+        Add
+      </Button>
+    );
     fireEvent.click(screen.getByRole("button"));
     expect(onClick).not.toHaveBeenCalled();
   });

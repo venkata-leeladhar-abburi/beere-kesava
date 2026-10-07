@@ -40,7 +40,9 @@ export function useUrlFilters<T extends Record<string, string>>(defaults: T) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, setSearchParams]);
 
-  const activeKeys = (Object.keys(defaults) as (keyof T)[]).filter(k => filters[k] !== defaults[k]);
+  const activeKeys = (Object.keys(defaults) as (keyof T)[]).filter(
+    (k) => filters[k] !== defaults[k]
+  );
 
   return { filters, setFilter, clearAll, activeKeys, activeCount: activeKeys.length };
 }

@@ -17,7 +17,13 @@ export interface BackendDispatchRecord {
   vehicleNumber: string | null;
   driverName: string | null;
   customerId: string | null;
-  customer: { id: string; name: string; phone: string | null; address: string | null; city: string | null } | null;
+  customer: {
+    id: string;
+    name: string;
+    phone: string | null;
+    address: string | null;
+    city: string | null;
+  } | null;
   invoiceNumber: string | null;
   invoiceDate: string | null;
   /** Delivery challan number for SHOP dispatches (DC-<FY>-NNN). Null for
@@ -112,7 +118,8 @@ export const dispatchApi = {
 
   findOne: (id: string) => apiClient.get<BackendDispatchRecord>(`/dispatch/${id}`),
 
-  create: (payload: CreateDispatchPayload) => apiClient.post<BackendDispatchRecord>("/dispatch", payload),
+  create: (payload: CreateDispatchPayload) =>
+    apiClient.post<BackendDispatchRecord>("/dispatch", payload),
 
   update: (id: string, payload: UpdateDispatchPayload) =>
     apiClient.patch<BackendDispatchRecord>(`/dispatch/${id}`, payload),

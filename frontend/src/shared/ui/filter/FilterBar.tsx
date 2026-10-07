@@ -46,7 +46,7 @@ export function FilterBarActive({ filters, onClearAll, className }: FilterBarAct
   if (filters.length === 0) return null;
   return (
     <div className={cn("flex items-center gap-2 flex-wrap", className)}>
-      {filters.map(f => (
+      {filters.map((f) => (
         <Chip key={f.key} label={f.label} onRemove={f.onRemove} />
       ))}
       {onClearAll && (

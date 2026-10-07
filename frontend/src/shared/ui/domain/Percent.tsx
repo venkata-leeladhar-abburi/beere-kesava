@@ -27,7 +27,11 @@ export interface PercentProps {
 export function Percent({ value, delta, invert, decimals = 1, className }: PercentProps) {
   if (value == null) {
     return (
-      <span className={cn("text-[var(--text-tertiary)]", className)} style={tabular} aria-label="Not available">
+      <span
+        className={cn("text-[var(--text-tertiary)]", className)}
+        style={tabular}
+        aria-label="Not available"
+      >
         —
       </span>
     );
@@ -46,7 +50,12 @@ export function Percent({ value, delta, invert, decimals = 1, className }: Perce
   const isUp = value > 0;
   const isDown = value < 0;
   const isGood = value === 0 ? null : invert ? isDown : isUp;
-  const colorClass = isGood == null ? "text-[var(--text-tertiary)]" : isGood ? "text-[var(--text-success)]" : "text-[var(--text-danger)]";
+  const colorClass =
+    isGood == null
+      ? "text-[var(--text-tertiary)]"
+      : isGood
+        ? "text-[var(--text-success)]"
+        : "text-[var(--text-danger)]";
   const arrow = isUp ? "↑" : isDown ? "↓" : "–";
 
   return (

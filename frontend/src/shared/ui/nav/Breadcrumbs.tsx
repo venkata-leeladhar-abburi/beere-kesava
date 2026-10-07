@@ -38,7 +38,11 @@ function Crumb({ item, current }: { item: BreadcrumbItem; current: boolean }) {
     );
   }
   const shared = "bk-body-sm";
-  const style: React.CSSProperties = { color: "var(--text-secondary)", textDecoration: "none", cursor: "pointer" };
+  const style: React.CSSProperties = {
+    color: "var(--text-secondary)",
+    textDecoration: "none",
+    cursor: "pointer",
+  };
   if (item.href) {
     return (
       <a href={item.href} onClick={item.onClick} className={shared} style={style}>
@@ -47,13 +51,20 @@ function Crumb({ item, current }: { item: BreadcrumbItem; current: boolean }) {
     );
   }
   return (
-    <button type="button" onClick={item.onClick} className={shared} style={{ ...style, background: "none", border: "none", padding: 0 }}>
+    <button
+      type="button"
+      onClick={item.onClick}
+      className={shared}
+      style={{ ...style, background: "none", border: "none", padding: 0 }}
+    >
       {content}
     </button>
   );
 }
 
-const Separator = () => <ChevronRight size={14} aria-hidden style={{ color: "var(--text-tertiary)", flexShrink: 0 }} />;
+const Separator = () => (
+  <ChevronRight size={14} aria-hidden style={{ color: "var(--text-tertiary)", flexShrink: 0 }} />
+);
 
 export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
   if (items.length === 0) return null;
@@ -63,12 +74,22 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
 
   // Mobile: only "‹ Parent" (falls back to nothing if there's no parent level).
   const mobile = parent ? (
-    <nav aria-label="Breadcrumb" className={cn("bk-breadcrumbs-mobile", className)} style={{ display: "none" }}>
+    <nav
+      aria-label="Breadcrumb"
+      className={cn("bk-breadcrumbs-mobile", className)}
+      style={{ display: "none" }}
+    >
       <a
         href={parent.href}
         onClick={parent.onClick}
         className="bk-body-sm"
-        style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "var(--text-secondary)", textDecoration: "none" }}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+          color: "var(--text-secondary)",
+          textDecoration: "none",
+        }}
       >
         <ChevronRight size={14} aria-hidden style={{ transform: "rotate(180deg)" }} />
         {parent.label}
@@ -83,19 +104,35 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
   return (
     <>
       <nav aria-label="Breadcrumb" className={cn("bk-breadcrumbs-desktop", className)}>
-        <ol style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", listStyle: "none", margin: 0, padding: 0, flexWrap: "wrap" }}>
+        <ol
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "var(--space-2)",
+            listStyle: "none",
+            margin: 0,
+            padding: 0,
+            flexWrap: "wrap",
+          }}
+        >
           {visible.map((item, i) => {
             const isFirst = i === 0;
             const isLast = item.key === last.key;
             return (
               <React.Fragment key={item.key}>
-                {!isFirst && <li style={{ display: "flex" }}><Separator /></li>}
+                {!isFirst && (
+                  <li style={{ display: "flex" }}>
+                    <Separator />
+                  </li>
+                )}
                 {collapse && isFirst && hidden.length > 0 && (
                   <>
                     <li style={{ display: "flex" }}>
                       <Crumb item={item} current={false} />
                     </li>
-                    <li style={{ display: "flex" }}><Separator /></li>
+                    <li style={{ display: "flex" }}>
+                      <Separator />
+                    </li>
                     <li style={{ display: "flex" }}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -103,7 +140,13 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                             type="button"
                             aria-label={`Show ${hidden.length} more breadcrumb levels`}
                             className="bk-body-sm"
-                            style={{ background: "none", border: "none", padding: 0, color: "var(--text-secondary)", cursor: "pointer" }}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              padding: 0,
+                              color: "var(--text-secondary)",
+                              cursor: "pointer",
+                            }}
                           >
                             …
                           </button>

@@ -33,18 +33,20 @@ interface ConfirmState extends ConfirmOptions {
   resolve: (confirmed: boolean) => void;
 }
 
-const ConfirmContext = React.createContext<((opts: ConfirmOptions) => Promise<boolean>) | null>(null);
+const ConfirmContext = React.createContext<((opts: ConfirmOptions) => Promise<boolean>) | null>(
+  null
+);
 
 export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = React.useState<ConfirmState | null>(null);
   const [typedValue, setTypedValue] = React.useState("");
 
   const confirm = React.useCallback((opts: ConfirmOptions) => {
-    return new Promise<boolean>(resolve => {
+    return new Promise<boolean>((resolve) => {
       // A call arriving while a previous one is still pending (e.g. a
       // double-clicked trigger) would otherwise overwrite `state` and leave
       // the first promise unresolved forever — settle it as cancelled first.
-      setState(prev => {
+      setState((prev) => {
         prev?.resolve(false);
         return null;
       });
@@ -64,7 +66,12 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   return (
     <ConfirmContext.Provider value={confirm}>
       {children}
-      <AlertDialog.Root open={!!state} onOpenChange={open => { if (!open) close(false); }}>
+      <AlertDialog.Root
+        open={!!state}
+        onOpenChange={(open) => {
+          if (!open) close(false);
+        }}
+      >
         <AlertDialog.Portal>
           <AlertDialog.Overlay
             className="fixed inset-0 bg-[var(--surface-scrim)] backdrop-blur-[2px]"
@@ -85,7 +92,10 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
                   {state.title}
                 </AlertDialog.Title>
                 {state.description && (
-                  <AlertDialog.Description className="mt-2 bk-body-md" style={{ color: "var(--text-secondary)" }}>
+                  <AlertDialog.Description
+                    className="mt-2 bk-body-md"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     {state.description}
                   </AlertDialog.Description>
                 )}
@@ -93,7 +103,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
                   <div className="mt-4">
                     <Input
                       value={typedValue}
-                      onChange={e => setTypedValue(e.target.value)}
+                      onChange={(e) => setTypedValue(e.target.value)}
                       placeholder={state.typeToConfirm}
                       aria-label={`Type ${state.typeToConfirm} to confirm`}
                     />
@@ -102,7 +112,9 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
                 <div className="mt-5 flex items-center justify-end gap-2">
                   <AlertDialog.Cancel asChild>
                     {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
-                    <Button variant="tertiary" autoFocus>{state.cancelLabel ?? "Cancel"}</Button>
+                    <Button variant="tertiary" autoFocus>
+                      {state.cancelLabel ?? "Cancel"}
+                    </Button>
                   </AlertDialog.Cancel>
                   <Button
                     variant={state.tone === "primary" ? "primary" : "danger"}

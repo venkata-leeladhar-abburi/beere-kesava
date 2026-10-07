@@ -9,16 +9,16 @@ import { Modal, type ModalSize } from "../../../shared/ui/overlay";
 // this modal) doesn't have to import from BatchCreationPage.tsx, which in turn
 // imports from FactoryLoomPage.tsx — that mutual import was a circular dependency.
 const T = {
-  warmIvory:     "#FFFDF9",
+  warmIvory: "#FFFDF9",
   royalBurgundy: "#6E0F2D",
-  luxuryBrown:   "#3B2314",
-  taupe:         "#69635E",
-  borderDef:     "rgba(110,15,45,0.10)",
+  luxuryBrown: "#3B2314",
+  taupe: "#69635E",
+  borderDef: "rgba(110,15,45,0.10)",
 };
 const F = {
   display: "'Plus Jakarta Sans', sans-serif",
-  ui:      "'Inter', sans-serif",
-  mono:    "'JetBrains Mono', monospace",
+  ui: "'Inter', sans-serif",
+  mono: "'JetBrains Mono', monospace",
 };
 
 function sizeForWidth(width: number): ModalSize {
@@ -28,13 +28,36 @@ function sizeForWidth(width: number): ModalSize {
   return "lg";
 }
 
-// eslint-disable-next-line no-restricted-syntax -- `width` here is a bucketing input to sizeForWidth(), never applied as CSS; Modal's own size enum handles responsive sizing
-function PickerShell({ title, onClose, children, width = 480 }: { title: string; onClose: () => void; children: React.ReactNode; width?: number }) {
+function PickerShell({
+  title,
+  onClose,
+  children,
+  // eslint-disable-next-line no-restricted-syntax -- `width` here is a bucketing input to sizeForWidth(), never applied as CSS; Modal's own size enum handles responsive sizing
+  width = 480,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+  width?: number;
+}) {
   return (
-    <Modal open onOpenChange={o => !o && onClose()} size={sizeForWidth(width)}>
-      <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+    <Modal open onOpenChange={(o) => !o && onClose()} size={sizeForWidth(width)}>
+      <div
+        style={{
+          padding: "20px 24px 16px",
+          borderBottom: `1px solid ${T.borderDef}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
+      >
         <Dialog.Title asChild>
-          <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
+          <div
+            style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}
+          >
+            {title}
+          </div>
         </Dialog.Title>
         <Dialog.Description className="sr-only">{title}</Dialog.Description>
         <Dialog.Close asChild>
@@ -46,22 +69,99 @@ function PickerShell({ title, onClose, children, width = 480 }: { title: string;
   );
 }
 
-export function DispatchDetailsModal({ weaverName, records, onClose }: { weaverName: string; records: DispatchRecord[]; onClose: () => void }) {
+export function DispatchDetailsModal({
+  weaverName,
+  records,
+  onClose,
+}: {
+  weaverName: string;
+  records: DispatchRecord[];
+  onClose: () => void;
+}) {
   return (
     <PickerShell title={`Design Dispatch — ${weaverName}`} onClose={onClose} width={460}>
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {records.map(d => (
-          <div key={d.id} style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{d.id}</span>
+        {records.map((d) => (
+          <div
+            key={d.id}
+            style={{
+              background: T.warmIvory,
+              border: `1px solid ${T.borderDef}`,
+              borderRadius: 12,
+              padding: "14px 16px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 8,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: F.ui,
+                  fontVariantNumeric: "tabular-nums",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: T.royalBurgundy,
+                }}
+              >
+                {d.id}
+              </span>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.sentAt}</span>
             </div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 4 }}>Instructions</div>
-            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.55, marginBottom: d.colorSlipImage ? 12 : 0 }}>{d.instructions}</div>
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontSize: 12,
+                color: T.taupe,
+                fontWeight: 700,
+                textTransform: "uppercase" as const,
+                letterSpacing: "0.5px",
+                marginBottom: 4,
+              }}
+            >
+              Instructions
+            </div>
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontSize: 13,
+                color: T.luxuryBrown,
+                lineHeight: 1.55,
+                marginBottom: d.colorSlipImage ? 12 : 0,
+              }}
+            >
+              {d.instructions}
+            </div>
             {d.colorSlipImage && (
               <div>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 6 }}>Color Slip</div>
-                <img src={d.colorSlipImage} alt="Color slip" style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 8, border: `1px solid ${T.borderDef}` }} />
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 12,
+                    color: T.taupe,
+                    fontWeight: 700,
+                    textTransform: "uppercase" as const,
+                    letterSpacing: "0.5px",
+                    marginBottom: 6,
+                  }}
+                >
+                  Color Slip
+                </div>
+                <img
+                  src={d.colorSlipImage}
+                  alt="Color slip"
+                  style={{
+                    width: 72,
+                    height: 72,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                    border: `1px solid ${T.borderDef}`,
+                  }}
+                />
               </div>
             )}
           </div>

@@ -37,16 +37,21 @@ export function Toggle({
 }) {
   return (
     <div
-      onClick={disabled ? undefined : onChange} role="button" tabIndex={0} aria-label="Toggle setting" onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (disabled ? undefined : onChange)?.(); } }}
+      onClick={disabled ? undefined : onChange}
+      role="button"
+      tabIndex={0}
+      aria-label="Toggle setting"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          (disabled ? undefined : onChange)?.();
+        }
+      }}
       style={{
         width: 44,
         height: 24,
         borderRadius: 999,
-        background: disabled
-          ? "rgba(110,15,45,0.10)"
-          : value
-          ? T.green
-          : "rgba(110,15,45,0.20)",
+        background: disabled ? "rgba(110,15,45,0.10)" : value ? T.green : "rgba(110,15,45,0.20)",
         cursor: disabled ? "not-allowed" : "pointer",
         transition: "all 0.2s",
         position: "relative",
@@ -90,7 +95,10 @@ export function SectionCard({
   id?: string;
 }) {
   return (
-    <div id={id} className="bg-white rounded-2xl md:rounded-[20px] border border-[#EBE3D5] shadow-[0_6px_32px_rgba(74,6,27,0.08)] overflow-hidden">
+    <div
+      id={id}
+      className="bg-white rounded-2xl md:rounded-[20px] border border-[#EBE3D5] shadow-[0_6px_32px_rgba(74,6,27,0.08)] overflow-hidden"
+    >
       <div
         className="p-4 sm:p-6 md:p-7"
         style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}
@@ -101,11 +109,28 @@ export function SectionCard({
           </div>
           <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
             <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: "clamp(16px, 2.5vw, 20px)", color: "#FFFDF9", letterSpacing: "-0.2px", lineHeight: 1.25 }}>
+              <div
+                style={{
+                  fontFamily: F.display,
+                  fontWeight: 700,
+                  fontSize: "clamp(16px, 2.5vw, 20px)",
+                  color: "#FFFDF9",
+                  letterSpacing: "-0.2px",
+                  lineHeight: 1.25,
+                }}
+              >
                 {title}
               </div>
               {subtitle && (
-                <div style={{ fontFamily: F.ui, fontSize: "clamp(12px, 1.8vw, 14px)", color: "rgba(255,253,249,0.70)", marginTop: 4, lineHeight: 1.4 }}>
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: "clamp(12px, 1.8vw, 14px)",
+                    color: "rgba(255,253,249,0.70)",
+                    marginTop: 4,
+                    lineHeight: 1.4,
+                  }}
+                >
                   {subtitle}
                 </div>
               )}
@@ -123,20 +148,12 @@ export function SectionCard({
           </div>
         </div>
       </div>
-      <div className="p-3.5 sm:p-5 md:p-6">
-        {children}
-      </div>
+      <div className="p-3.5 sm:p-5 md:p-6">{children}</div>
     </div>
   );
 }
 
-export function CardSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+export function CardSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div
       style={{

@@ -40,7 +40,7 @@ export function encodeCode128(value: string): Code128Drawing | null {
   try {
     svg = code128(
       { bcid: "code128", text: value, scale: 6, height: 8, paddingwidth: 10, includetext: false },
-      drawingSVG(),
+      drawingSVG()
     );
   } catch {
     return null;
@@ -50,7 +50,7 @@ export function encodeCode128(value: string): Code128Drawing | null {
 
   const paths: Code128Drawing["paths"] = [];
   for (const [, attrs] of svg.matchAll(/<path\s([^>]*?)\/?>/g)) {
-    const a = Object.fromEntries([...attrs.matchAll(ATTR)].map(m => [m[1], m[2]]));
+    const a = Object.fromEntries([...attrs.matchAll(ATTR)].map((m) => [m[1], m[2]]));
     if (!a.d) continue;
     paths.push({ d: a.d, stroke: a.stroke, strokeWidth: a["stroke-width"], fill: a.fill });
   }
@@ -82,7 +82,7 @@ export function Code128Bars({ value, className, style, fallback = null }: Code12
       {/* Explicit white ground: the quiet zone needs real contrast on paper,
           and a transparent SVG would inherit whatever sits behind it. */}
       <rect width="100%" height="100%" fill="#FFFFFF" />
-      {drawing.paths.map(p => (
+      {drawing.paths.map((p) => (
         <path key={p.d} d={p.d} stroke={p.stroke} strokeWidth={p.strokeWidth} fill={p.fill} />
       ))}
     </svg>

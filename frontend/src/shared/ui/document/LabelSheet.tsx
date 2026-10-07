@@ -104,7 +104,7 @@ export function monoFitEm(
   availableEm: number,
   max: number,
   min: number,
-  letterSpacingEm = 0,
+  letterSpacingEm = 0
 ): number {
   if (len <= 0) return max;
   return Math.max(min, Math.min(max, availableEm / ((MONO_ADVANCE_EM + letterSpacingEm) * len)));
@@ -113,7 +113,7 @@ export function monoFitEm(
 /** A tile's usable inner width in `em`, i.e. the stock width less the 1.2em
  *  padding on each side that TileFrame applies. */
 export function innerWidthEm(stock: LabelStock): number {
-  return (stock.widthMm / unitMm(stock)) - 2.4;
+  return stock.widthMm / unitMm(stock) - 2.4;
 }
 
 /** The em-unit a tile's type is sized against: 1/25th of the label height, so
@@ -155,7 +155,9 @@ export function LabelSheet({ stock = DEFAULT_LABEL_STOCK, children }: LabelSheet
       <LabelStockContext.Provider value={stock}>
         {tiles.map((tile, i) => (
           // eslint-disable-next-line react/no-array-index-key -- copies of one label are intentionally identical
-          <div key={i} className="bk-label-tile">{tile}</div>
+          <div key={i} className="bk-label-tile">
+            {tile}
+          </div>
         ))}
       </LabelStockContext.Provider>
     </div>

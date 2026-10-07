@@ -49,7 +49,9 @@ interface PaginatedResponse<T> {
 
 export const purchaseRequestsApi = {
   list: (pageSize = 100) =>
-    apiClient.get<PaginatedResponse<BackendPurchaseRequest>>(`/purchase-requests?pageSize=${pageSize}`),
+    apiClient.get<PaginatedResponse<BackendPurchaseRequest>>(
+      `/purchase-requests?pageSize=${pageSize}`
+    ),
   create: (payload: CreatePurchaseRequestPayload) =>
     apiClient.post<BackendPurchaseRequest>("/purchase-requests", {
       ...payload,

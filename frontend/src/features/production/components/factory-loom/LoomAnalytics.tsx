@@ -1,13 +1,22 @@
 import React, { useState } from "react";
+import { Trophy, Timer, BarChart3 as ChartBar } from "lucide-react";
 import {
-  Trophy, Timer, BarChart3 as ChartBar,
-} from "lucide-react";
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-  ResponsiveContainer, Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  Cell,
 } from "recharts";
 import { FactoryLoom, loomLabel } from "../../data/factoryLooms";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import {
+  DateFilterBar,
+  DateFilterState,
+  DEFAULT_DATE_FILTER,
+  matchesDateFilter,
+} from "../../../../shared/ui/DateFilterBar";
 import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { T, F, FadeUp } from "./theme";
 import { SectionCard } from "../common/primitives";
@@ -18,62 +27,128 @@ import { StatusPill, EntityCode } from "../../../../shared/ui/domain";
 
 function CardBloom() {
   return (
-    <span aria-hidden style={{
-      position: "absolute", top: -70, right: -70, width: 200, height: 200, borderRadius: "50%",
-      background: "radial-gradient(circle, rgba(110,15,45,0.05) 0%, rgba(110,15,45,0) 70%)",
-      pointerEvents: "none",
-    }} />
+    <span
+      aria-hidden
+      style={{
+        position: "absolute",
+        top: -70,
+        right: -70,
+        width: 200,
+        height: 200,
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(110,15,45,0.05) 0%, rgba(110,15,45,0) 70%)",
+        pointerEvents: "none",
+      }}
+    />
   );
 }
 
-const LA_MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const LA_MONTH_ABBR = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 const UTIL_META: Record<string, { label: string; color: string }> = {
-  active:      { label: "Active",      color: T.royalBurgundy },
-  idle:        { label: "Idle",        color: T.antiqueGold },
+  active: { label: "Active", color: T.royalBurgundy },
+  idle: { label: "Idle", color: T.antiqueGold },
   maintenance: { label: "Maintenance", color: T.crimson },
 };
 const FLOOR_FILLS = [T.royalBurgundy, T.antiqueGold, T.green, "#5A3E6B", "#2D6B6B"];
 const laQcColor = (r: number) => (r >= 95 ? T.green : r >= 85 ? "#8B6018" : T.crimson);
 
-export function LoomAnalytics({ looms, batches, materials, sarees }: {
-  looms: FactoryLoom[]; batches: LoomBatch[]; materials: LoomMaterial[]; sarees: LoomSaree[];
+export function LoomAnalytics({
+  looms,
+  batches,
+  materials,
+  sarees,
+}: {
+  looms: FactoryLoom[];
+  batches: LoomBatch[];
+  materials: LoomMaterial[];
+  sarees: LoomSaree[];
 }) {
   const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [search, setSearch] = useState("");
 
   const doneSarees = React.useMemo(
-    () => sarees.filter(s => s.status === "complete" && matchesDateFilter(s.completedDate, filter) && (!search || s.sareeId.toLowerCase().includes(search.toLowerCase()) || s.sareeType.toLowerCase().includes(search.toLowerCase()) || s.loomId.toLowerCase().includes(search.toLowerCase()))),
+    () =>
+      sarees.filter(
+        (s) =>
+          s.status === "complete" &&
+          matchesDateFilter(s.completedDate, filter) &&
+          (!search ||
+            s.sareeId.toLowerCase().includes(search.toLowerCase()) ||
+            s.sareeType.toLowerCase().includes(search.toLowerCase()) ||
+            s.loomId.toLowerCase().includes(search.toLowerCase()))
+      ),
     [sarees, filter, search]
   );
   const periodMaterials = React.useMemo(
-    () => materials.filter(m => matchesDateFilter(m.date, filter) && (!search || m.materialType.toLowerCase().includes(search.toLowerCase()) || m.description.toLowerCase().includes(search.toLowerCase()) || m.loomId.toLowerCase().includes(search.toLowerCase()))),
+    () =>
+      materials.filter(
+        (m) =>
+          matchesDateFilter(m.date, filter) &&
+          (!search ||
+            m.materialType.toLowerCase().includes(search.toLowerCase()) ||
+            m.description.toLowerCase().includes(search.toLowerCase()) ||
+            m.loomId.toLowerCase().includes(search.toLowerCase()))
+      ),
     [materials, filter, search]
   );
 
   const periodLabel = React.useMemo(() => {
-    if (filter.mode === "day" && filter.day) return new Date(filter.day).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    if (filter.mode === "day" && filter.day)
+      return new Date(filter.day).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
     if (filter.mode === "range") return `${filter.from || "start"} → ${filter.to || "today"}`;
-    if (filter.mode === "month" && filter.month) { const [y, m] = filter.month.split("-"); return `${LA_MONTH_ABBR[+m - 1]} ${y}`; }
+    if (filter.mode === "month" && filter.month) {
+      const [y, m] = filter.month.split("-");
+      return `${LA_MONTH_ABBR[+m - 1]} ${y}`;
+    }
     if (filter.mode === "year" && filter.year) return filter.year;
     return "All time";
   }, [filter]);
 
   const produced = doneSarees.length;
-  const passed = doneSarees.filter(s => s.qualityStatus === "pass").length;
-  const failed = doneSarees.filter(s => s.qualityStatus === "fail").length;
+  const passed = doneSarees.filter((s) => s.qualityStatus === "pass").length;
+  const failed = doneSarees.filter((s) => s.qualityStatus === "fail").length;
   const passRate = produced ? Math.round((passed / produced) * 100) : 0;
 
-  const utilisation = React.useMemo(() => (["active", "idle", "maintenance"] as const)
-    .map(k => ({ key: k, name: UTIL_META[k].label, value: looms.filter(l => l.status === k).length, color: UTIL_META[k].color }))
-    .filter(d => d.value > 0), [looms]);
-  const activeLooms = looms.filter(l => l.status === "active").length;
+  const utilisation = React.useMemo(
+    () =>
+      (["active", "idle", "maintenance"] as const)
+        .map((k) => ({
+          key: k,
+          name: UTIL_META[k].label,
+          value: looms.filter((l) => l.status === k).length,
+          color: UTIL_META[k].color,
+        }))
+        .filter((d) => d.value > 0),
+    [looms]
+  );
+  const activeLooms = looms.filter((l) => l.status === "active").length;
   const utilRate = looms.length ? Math.round((activeLooms / looms.length) * 100) : 0;
 
-  const allDoneSarees = React.useMemo(() => sarees.filter(s => s.status === "complete"), [sarees]);
+  const allDoneSarees = React.useMemo(
+    () => sarees.filter((s) => s.status === "complete"),
+    [sarees]
+  );
 
   const monthly = React.useMemo(() => {
     const m = new Map<string, { produced: number; passed: number }>();
-    allDoneSarees.forEach(s => {
+    allDoneSarees.forEach((s) => {
       const d = new Date(s.completedDate!);
       if (isNaN(d.getTime())) return;
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -82,31 +157,39 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
       if (s.qualityStatus === "pass") e.passed += 1;
       m.set(key, e);
     });
-    return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([key, v]) => ({
-      month: `${LA_MONTH_ABBR[+key.slice(5) - 1]} ${key.slice(2, 4)}`,
-      ...v,
-      rate: v.produced ? Math.round((v.passed / v.produced) * 100) : 0,
-    }));
+    return [...m.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([key, v]) => ({
+        month: `${LA_MONTH_ABBR[+key.slice(5) - 1]} ${key.slice(2, 4)}`,
+        ...v,
+        rate: v.produced ? Math.round((v.passed / v.produced) * 100) : 0,
+      }));
   }, [allDoneSarees]);
 
-  const perLoom = React.useMemo(() => looms.map(l => {
-    const mine = doneSarees.filter(s => s.loomId === l.id);
-    const ok = mine.filter(s => s.qualityStatus === "pass").length;
-    const loomBatches = batches.filter(b => b.loomId === l.id);
-    const assigned = loomBatches.filter(b => b.status === "active").reduce((a, b) => a + b.sareeCount, 0);
-    return {
-      ...l,
-      label: loomLabel(l),
-      short: loomLabel(l).replace("Loom ", ""),
-      produced: mine.length,
-      passed: ok,
-      rejects: mine.length - ok,
-      passRate: mine.length ? Math.round((ok / mine.length) * 100) : 0,
-      activeBatches: loomBatches.filter(b => b.status === "active").length,
-      assigned,
-      wip: sarees.filter(s => s.loomId === l.id && s.status === "in-progress").length,
-    };
-  }), [looms, doneSarees, batches, sarees]);
+  const perLoom = React.useMemo(
+    () =>
+      looms.map((l) => {
+        const mine = doneSarees.filter((s) => s.loomId === l.id);
+        const ok = mine.filter((s) => s.qualityStatus === "pass").length;
+        const loomBatches = batches.filter((b) => b.loomId === l.id);
+        const assigned = loomBatches
+          .filter((b) => b.status === "active")
+          .reduce((a, b) => a + b.sareeCount, 0);
+        return {
+          ...l,
+          label: loomLabel(l),
+          short: loomLabel(l).replace("Loom ", ""),
+          produced: mine.length,
+          passed: ok,
+          rejects: mine.length - ok,
+          passRate: mine.length ? Math.round((ok / mine.length) * 100) : 0,
+          activeBatches: loomBatches.filter((b) => b.status === "active").length,
+          assigned,
+          wip: sarees.filter((s) => s.loomId === l.id && s.status === "in-progress").length,
+        };
+      }),
+    [looms, doneSarees, batches, sarees]
+  );
 
   const rankedLooms = React.useMemo(
     () => [...perLoom].sort((a, b) => b.produced - a.produced),
@@ -116,274 +199,625 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
   const batchProgress = React.useMemo(() => {
     const today = new Date();
     return batches
-    .filter(b => b.status === "active")
-    .map(b => {
-      const due = new Date(b.dueDate);
-      const daysLeft = isNaN(due.getTime()) ? null : Math.ceil((due.getTime() - today.getTime()) / 86400000);
-      const loom = looms.find(l => l.id === b.loomId);
-      return {
-        ...b,
-        loomName: loom ? loomLabel(loom) : b.loomId,
-        pct: b.sareeCount ? Math.round((b.completedCount / b.sareeCount) * 100) : 0,
-        daysLeft,
-        overdue: daysLeft !== null && daysLeft < 0,
-      };
-    })
-    .sort((a, b) => (a.daysLeft ?? 999) - (b.daysLeft ?? 999));
+      .filter((b) => b.status === "active")
+      .map((b) => {
+        const due = new Date(b.dueDate);
+        const daysLeft = isNaN(due.getTime())
+          ? null
+          : Math.ceil((due.getTime() - today.getTime()) / 86400000);
+        const loom = looms.find((l) => l.id === b.loomId);
+        return {
+          ...b,
+          loomName: loom ? loomLabel(loom) : b.loomId,
+          pct: b.sareeCount ? Math.round((b.completedCount / b.sareeCount) * 100) : 0,
+          daysLeft,
+          overdue: daysLeft !== null && daysLeft < 0,
+        };
+      })
+      .sort((a, b) => (a.daysLeft ?? 999) - (b.daysLeft ?? 999));
   }, [batches, looms]);
-  const overdueCount = batchProgress.filter(b => b.overdue).length;
-  const pipeline = batches.filter(b => b.status === "active").reduce((a, b) => a + (b.sareeCount - b.completedCount), 0);
+  const overdueCount = batchProgress.filter((b) => b.overdue).length;
+  const pipeline = batches
+    .filter((b) => b.status === "active")
+    .reduce((a, b) => a + (b.sareeCount - b.completedCount), 0);
 
   const byMaterial = React.useMemo(() => {
     const m = new Map<string, { qty: number; type: string; unit: string }>();
-    periodMaterials.forEach(x => {
+    periodMaterials.forEach((x) => {
       const key = `${x.materialType}|${x.unit}`;
       const e = m.get(key) || { qty: 0, type: x.materialType, unit: x.unit };
       e.qty += x.quantity;
       m.set(key, e);
     });
     return [...m.values()]
-      .map(v => ({ ...v, label: `${v.type} (${v.unit})`, fill: MAT_TAG[v.type]?.col ?? T.taupe }))
+      .map((v) => ({ ...v, label: `${v.type} (${v.unit})`, fill: MAT_TAG[v.type]?.col ?? T.taupe }))
       .sort((a, b) => b.qty - a.qty);
   }, [periodMaterials]);
-  const warpKg = periodMaterials.filter(m => m.materialType === "Warp" && m.unit === "kg").reduce((a, m) => a + m.quantity, 0);
+  const warpKg = periodMaterials
+    .filter((m) => m.materialType === "Warp" && m.unit === "kg")
+    .reduce((a, m) => a + m.quantity, 0);
 
   const byDesign = React.useMemo(() => {
     const m = new Map<string, { produced: number; looms: number; active: number }>();
-    doneSarees.forEach(s => {
+    doneSarees.forEach((s) => {
       const e = m.get(s.sareeType) || { produced: 0, looms: 1, active: 1 };
       e.produced += 1;
       m.set(s.sareeType, e);
     });
     return [...m.entries()]
-      .map(([type, v], i) => ({ type, short: type, ...v, fill: FLOOR_FILLS[i % FLOOR_FILLS.length] }))
+      .map(([type, v], i) => ({
+        type,
+        short: type,
+        ...v,
+        fill: FLOOR_FILLS[i % FLOOR_FILLS.length],
+      }))
       .sort((a, b) => b.produced - a.produced)
       .slice(0, 5);
   }, [doneSarees]);
 
-  const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };
+  const tip = {
+    fontFamily: F.ui,
+    fontSize: 12,
+    borderRadius: 10,
+    border: `1px solid ${T.borderDef}`,
+    boxShadow: "0 8px 24px rgba(74,6,27,0.12)",
+  };
 
   return (
     <div className="px-3 sm:px-4 md:px-7 xl:px-14" style={{ paddingTop: 24, paddingBottom: 80 }}>
       <FadeUp>
-      <SectionCard
-        icon={ChartBar}
-        title="Loom Analytics"
-        subtitle="Throughput, QC pass rate, and loom utilisation across the factory floor."
-        actions={
-          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "#FFFDF9", background: "rgba(255,255,255,0.14)", padding: "6px 14px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
-        }
-      >
-        {/* Mobile Flipkart-style Filter Bar */}
-        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
-          <MobileFilterBar
-            search={search}
-            onSearchChange={setSearch}
-            searchPlaceholder="Search loom analytics..."
-            filterGroups={[
-              {
-                id: "time",
-                label: "Time Period",
-                value: filter.mode,
-                defaultValue: "all",
-                options: [
-                  { value: "all", label: "All Time" },
-                  { value: "day", label: "Specific Date" },
-                  { value: "range", label: "Date Range" },
-                  { value: "month", label: "Monthly" },
-                  { value: "year", label: "Yearly" },
-                ],
-                onChange: (m: string) => {
-                  const mode = m as DateFilterState["mode"];
-                  if (mode === "day") setFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
-                  else if (mode === "month") setFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
-                  else if (mode === "year") setFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
-                  else setFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+        <SectionCard
+          icon={ChartBar}
+          title="Loom Analytics"
+          subtitle="Throughput, QC pass rate, and loom utilisation across the factory floor."
+          actions={
+            <span
+              style={{
+                fontFamily: F.ui,
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "1px",
+                color: "#FFFDF9",
+                background: "rgba(255,255,255,0.14)",
+                padding: "6px 14px",
+                borderRadius: 20,
+                textTransform: "uppercase" as const,
+              }}
+            >
+              {periodLabel}
+            </span>
+          }
+        >
+          {/* Mobile Flipkart-style Filter Bar */}
+          <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+            <MobileFilterBar
+              search={search}
+              onSearchChange={setSearch}
+              searchPlaceholder="Search loom analytics..."
+              filterGroups={[
+                {
+                  id: "time",
+                  label: "Time Period",
+                  value: filter.mode,
+                  defaultValue: "all",
+                  options: [
+                    { value: "all", label: "All Time" },
+                    { value: "day", label: "Specific Date" },
+                    { value: "range", label: "Date Range" },
+                    { value: "month", label: "Monthly" },
+                    { value: "year", label: "Yearly" },
+                  ],
+                  onChange: (m: string) => {
+                    const mode = m as DateFilterState["mode"];
+                    if (mode === "day")
+                      setFilter({
+                        mode,
+                        day: new Date().toISOString().slice(0, 10),
+                        from: "",
+                        to: "",
+                        month: "",
+                        year: "",
+                      });
+                    else if (mode === "month")
+                      setFilter({
+                        mode,
+                        day: "",
+                        from: "",
+                        to: "",
+                        month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`,
+                        year: "",
+                      });
+                    else if (mode === "year")
+                      setFilter({
+                        mode,
+                        day: "",
+                        from: "",
+                        to: "",
+                        month: "",
+                        year: String(new Date().getFullYear()),
+                      });
+                    else setFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                  },
                 },
-              },
-            ]}
-            onResetAll={() => {
-              setSearch("");
-              setFilter(DEFAULT_DATE_FILTER);
-            }}
-          />
-        </div>
-
-        {/* Desktop Filter Bar */}
-        <div className="hidden md:flex items-center justify-between gap-4 mb-4 flex-wrap">
-          <DateFilterBar filter={filter} onChange={setFilter} />
-          <div style={{ display: "flex", gap: 20, flexWrap: "wrap" as const, marginBottom: 16 }}>
-            {[
-              { label: "TOTAL OUTPUT", value: `${produced} sarees`, color: T.royalBurgundy },
-              { label: "QC PASS RATE", value: `${passRate}%`, color: laQcColor(passRate) },
-              { label: "LOOM UTILISATION", value: `${utilRate}%`, color: T.royalBurgundy },
-            ].map(k => (
-              <div key={k.label}>
-                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
-                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.color }}>{k.value}</div>
-              </div>
-            ))}
+              ]}
+              onResetAll={() => {
+                setSearch("");
+                setFilter(DEFAULT_DATE_FILTER);
+              }}
+            />
           </div>
-        </div>
 
-      {/* Row 1: Throughput + Loom Availability */}
-      <FadeUp delay={0.04}>
-        <LoomThroughputAndAvailability
-          produced={produced}
-          passRate={passRate}
-          failed={failed}
-          pipeline={pipeline}
-          monthly={monthly}
-          utilisation={utilisation}
-          utilRate={utilRate}
-          perLoom={perLoom}
-        />
-      </FadeUp>
-
-      {/* Row 2: Output by Loom + Batch Delivery Risk */}
-      <FadeUp delay={0.08}>
-        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 22, marginBottom: 22 }}>
-          <div style={{
-            background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.royalBurgundy}`,
-            padding: "24px", boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)",
-            position: "relative", overflow: "hidden", display: "flex", flexDirection: "column",
-          }}>
-            <CardBloom />
-            <div style={{
-              display: "flex", alignItems: "flex-start", justifyContent: "space-between",
-              margin: "-24px -24px 18px -24px", padding: "16px 20px",
-              background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`,
-              borderRadius: "14px 14px 0 0",
-            }}>
-              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <div style={{
-                  width: 36, height: 36, minWidth: 36, borderRadius: 10, flexShrink: 0,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  background: "rgba(255,255,255,0.12)",
-                }}>
-                  <Trophy size={18} color="#FFFDF9" />
-                </div>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 15, color: "#FFFDF9", letterSpacing: "-0.1px", lineHeight: 1.25 }}>
-                    Output by Loom
+          {/* Desktop Filter Bar */}
+          <div className="hidden md:flex items-center justify-between gap-4 mb-4 flex-wrap">
+            <DateFilterBar filter={filter} onChange={setFilter} />
+            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" as const, marginBottom: 16 }}>
+              {[
+                { label: "TOTAL OUTPUT", value: `${produced} sarees`, color: T.royalBurgundy },
+                { label: "QC PASS RATE", value: `${passRate}%`, color: laQcColor(passRate) },
+                { label: "LOOM UTILISATION", value: `${utilRate}%`, color: T.royalBurgundy },
+              ].map((k) => (
+                <div key={k.label}>
+                  <div
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      letterSpacing: "1px",
+                      color: T.taupe,
+                    }}
+                  >
+                    {k.label}
                   </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", marginTop: 3, lineHeight: 1.4 }}>
-                    Sarees completed · bar colour shows QC pass rate
+                  <div
+                    style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.color }}
+                  >
+                    {k.value}
                   </div>
-                </div>
-              </div>
-              <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" as const }}>
-                {[{ c: "#27AE60", t: "≥95%" }, { c: "#E67E22", t: "85–94%" }, { c: T.crimson, t: "<85%" }].map(g => (
-                  <div key={g.t} style={{ display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" as const }}>
-                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: g.c, flexShrink: 0 }} />
-                    <span style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,253,249,0.85)", whiteSpace: "nowrap" as const }}>{g.t}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <ChartFigure title="Output by Loom" summary={`${produced} sarees completed across ${rankedLooms.length} looms, ${passRate}% overall QC pass rate.`}>
-              <ResponsiveContainer width="100%" height={215}>
-                <BarChart data={rankedLooms} layout="vertical" barSize={22} margin={{ left: 4, right: 54 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(200,155,71,0.15)" horizontal={false} />
-                  <XAxis type="number" hide allowDecimals={false} />
-                  <YAxis type="category" dataKey="short" width={68} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
-                  <RechartsTooltip cursor={{ fill: "rgba(200,155,71,0.06)" }} contentStyle={tip}
-                    formatter={(v: number, _n: string, p: { payload: (typeof rankedLooms)[number] }) => [`${v} completed · ${p.payload.passRate}% pass · ${p.payload.wip} in progress`, `${p.payload.label} — ${p.payload.operatorName}`]} />
-                  <Bar dataKey="produced" radius={[10, 10, 10, 10]}
-                    label={{ position: "right", formatter: (v: number) => `${v}`, fontFamily: F.ui, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
-                    {rankedLooms.map(l => <Cell key={l.id} fill={l.produced === 0 ? "#E3D2AC" : laQcColor(l.passRate)} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartFigure>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 border-t border-[rgba(200,155,71,0.18)] pt-3.5 mt-1.5">
-              {rankedLooms.slice(0, 4).map((l) => (
-                <div key={l.id} style={{ background: "rgba(255,255,255,0.80)", border: `1px solid rgba(200,155,71,0.18)`, borderRadius: 12, padding: "8px 10px", minWidth: 0 }}>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{l.short}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>{l.operatorName}</div>
-                  <div style={{ marginTop: 4 }}><StatusPill taxonomy="condition" status={LOOM_STATUS_TO_CONDITION[l.status]} size="sm" /></div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div style={{
-            background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.royalBurgundy}`,
-            padding: "24px", boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)",
-            position: "relative", overflow: "hidden", display: "flex", flexDirection: "column",
-          }}>
-            <CardBloom />
-            <div style={{
-              display: "flex", alignItems: "flex-start", justifyContent: "space-between",
-              margin: "-24px -24px 18px -24px", padding: "16px 20px",
-              background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`,
-              borderRadius: "14px 14px 0 0",
-            }}>
-              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <div style={{
-                  width: 36, height: 36, minWidth: 36, borderRadius: 10, flexShrink: 0,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  background: "rgba(255,255,255,0.12)",
-                }}>
-                  <Timer size={18} color="#FFFDF9" />
-                </div>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 15, color: "#FFFDF9", letterSpacing: "-0.1px", lineHeight: 1.25 }}>
-                    Batch Delivery Risk
-                  </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", marginTop: 3, lineHeight: 1.4 }}>
-                    Active batches by nearest due date
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div style={{ background: overdueCount ? "rgba(192,57,43,0.08)" : "rgba(110,15,45,0.05)", borderRadius: 14, padding: "14px 16px", marginBottom: 16, border: `1px solid ${overdueCount ? "rgba(192,57,43,0.18)" : "rgba(110,15,45,0.15)"}` }}>
-              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 4 }}>PAST DUE</div>
-              <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: overdueCount ? T.crimson : T.royalBurgundy, lineHeight: 1 }}>{overdueCount}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 4 }}>of {batchProgress.length} active batches</div>
-            </div>
-            {batchProgress.length === 0 ? (
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>No active batches on the floor.</div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {batchProgress.map(b => (
-                  <div key={b.batchId}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                      <EntityCode type="batch" value={b.batchId} size="sm" />
-                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: b.overdue ? T.crimson : b.daysLeft !== null && b.daysLeft <= 5 ? "#E67E22" : T.taupe }}>
-                        {b.daysLeft === null ? b.dueDate : b.overdue ? `${Math.abs(b.daysLeft)}d overdue` : `${b.daysLeft}d left`}
-                      </span>
-                    </div>
-                    <div style={{ height: 6, borderRadius: 3, background: "rgba(110,15,45,0.06)", overflow: "hidden" }}>
-                      <div style={{ width: `${b.pct}%`, height: "100%", borderRadius: 3, background: b.overdue ? "linear-gradient(90deg,#C0392B,#E74C3C)" : `linear-gradient(90deg,${T.royalBurgundy},${T.antiqueGold})` }} />
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 3 }}>
-                      <span>{b.loomName} · {b.designCode}</span>
-                      <span>{b.completedCount}/{b.sareeCount} · {b.pct}%</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </FadeUp>
+          {/* Row 1: Throughput + Loom Availability */}
+          <FadeUp delay={0.04}>
+            <LoomThroughputAndAvailability
+              produced={produced}
+              passRate={passRate}
+              failed={failed}
+              pipeline={pipeline}
+              monthly={monthly}
+              utilisation={utilisation}
+              utilRate={utilRate}
+              perLoom={perLoom}
+            />
+          </FadeUp>
 
-      {/* Row 3: Material draw, floor comparison, factory health */}
-      <FadeUp delay={0.12}>
-        <LoomMaterialDesignRow
-          byMaterial={byMaterial}
-          warpKg={warpKg}
-          produced={produced}
-          byDesign={byDesign}
-          passRate={passRate}
-          failed={failed}
-          activeLooms={activeLooms}
-          pipeline={pipeline}
-          looms={looms}
-        />
-      </FadeUp>
-      </SectionCard>
+          {/* Row 2: Output by Loom + Batch Delivery Risk */}
+          <FadeUp delay={0.08}>
+            <div
+              className="grid grid-cols-1 md:grid-cols-[2fr_1fr]"
+              style={{ gap: 22, marginBottom: 22 }}
+            >
+              <div
+                style={{
+                  background: "#FFFFFF",
+                  borderRadius: 16,
+                  border: `1.5px solid ${T.royalBurgundy}`,
+                  padding: "24px",
+                  boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)",
+                  position: "relative",
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <CardBloom />
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    margin: "-24px -24px 18px -24px",
+                    padding: "16px 20px",
+                    background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`,
+                    borderRadius: "14px 14px 0 0",
+                  }}
+                >
+                  <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        minWidth: 36,
+                        borderRadius: 10,
+                        flexShrink: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "rgba(255,255,255,0.12)",
+                      }}
+                    >
+                      <Trophy size={18} color="#FFFDF9" />
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontFamily: F.display,
+                          fontWeight: 700,
+                          fontSize: 15,
+                          color: "#FFFDF9",
+                          letterSpacing: "-0.1px",
+                          lineHeight: 1.25,
+                        }}
+                      >
+                        Output by Loom
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: F.ui,
+                          fontSize: 12,
+                          color: "rgba(255,253,249,0.65)",
+                          marginTop: 3,
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        Sarees completed · bar colour shows QC pass rate
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 12,
+                      alignItems: "center",
+                      flexWrap: "wrap" as const,
+                    }}
+                  >
+                    {[
+                      { c: "#27AE60", t: "≥95%" },
+                      { c: "#E67E22", t: "85–94%" },
+                      { c: T.crimson, t: "<85%" },
+                    ].map((g) => (
+                      <div
+                        key={g.t}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                          whiteSpace: "nowrap" as const,
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: "50%",
+                            background: g.c,
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontFamily: F.ui,
+                            fontSize: 11,
+                            color: "rgba(255,253,249,0.85)",
+                            whiteSpace: "nowrap" as const,
+                          }}
+                        >
+                          {g.t}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <ChartFigure
+                  title="Output by Loom"
+                  summary={`${produced} sarees completed across ${rankedLooms.length} looms, ${passRate}% overall QC pass rate.`}
+                >
+                  <ResponsiveContainer width="100%" height={215}>
+                    <BarChart
+                      data={rankedLooms}
+                      layout="vertical"
+                      barSize={22}
+                      margin={{ left: 4, right: 54 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="rgba(200,155,71,0.15)"
+                        horizontal={false}
+                      />
+                      <XAxis type="number" hide allowDecimals={false} />
+                      <YAxis
+                        type="category"
+                        dataKey="short"
+                        width={68}
+                        tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <RechartsTooltip
+                        cursor={{ fill: "rgba(200,155,71,0.06)" }}
+                        contentStyle={tip}
+                        formatter={(
+                          v: number,
+                          _n: string,
+                          p: { payload: (typeof rankedLooms)[number] }
+                        ) => [
+                          `${v} completed · ${p.payload.passRate}% pass · ${p.payload.wip} in progress`,
+                          `${p.payload.label} — ${p.payload.operatorName}`,
+                        ]}
+                      />
+                      <Bar
+                        dataKey="produced"
+                        radius={[10, 10, 10, 10]}
+                        label={{
+                          position: "right",
+                          formatter: (v: number) => `${v}`,
+                          fontFamily: F.ui,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          fill: T.luxuryBrown,
+                        }}
+                      >
+                        {rankedLooms.map((l) => (
+                          <Cell
+                            key={l.id}
+                            fill={l.produced === 0 ? "#E3D2AC" : laQcColor(l.passRate)}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartFigure>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 border-t border-[rgba(200,155,71,0.18)] pt-3.5 mt-1.5">
+                  {rankedLooms.slice(0, 4).map((l) => (
+                    <div
+                      key={l.id}
+                      style={{
+                        background: "rgba(255,255,255,0.80)",
+                        border: `1px solid rgba(200,155,71,0.18)`,
+                        borderRadius: 12,
+                        padding: "8px 10px",
+                        minWidth: 0,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontFamily: F.ui,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color: T.luxuryBrown,
+                          whiteSpace: "nowrap" as const,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {l.short}
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: F.ui,
+                          fontSize: 11,
+                          color: T.taupe,
+                          whiteSpace: "nowrap" as const,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          marginTop: 2,
+                        }}
+                      >
+                        {l.operatorName}
+                      </div>
+                      <div style={{ marginTop: 4 }}>
+                        <StatusPill
+                          taxonomy="condition"
+                          status={LOOM_STATUS_TO_CONDITION[l.status]}
+                          size="sm"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "#FFFFFF",
+                  borderRadius: 16,
+                  border: `1.5px solid ${T.royalBurgundy}`,
+                  padding: "24px",
+                  boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)",
+                  position: "relative",
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <CardBloom />
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    margin: "-24px -24px 18px -24px",
+                    padding: "16px 20px",
+                    background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`,
+                    borderRadius: "14px 14px 0 0",
+                  }}
+                >
+                  <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        minWidth: 36,
+                        borderRadius: 10,
+                        flexShrink: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "rgba(255,255,255,0.12)",
+                      }}
+                    >
+                      <Timer size={18} color="#FFFDF9" />
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontFamily: F.display,
+                          fontWeight: 700,
+                          fontSize: 15,
+                          color: "#FFFDF9",
+                          letterSpacing: "-0.1px",
+                          lineHeight: 1.25,
+                        }}
+                      >
+                        Batch Delivery Risk
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: F.ui,
+                          fontSize: 12,
+                          color: "rgba(255,253,249,0.65)",
+                          marginTop: 3,
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        Active batches by nearest due date
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    background: overdueCount ? "rgba(192,57,43,0.08)" : "rgba(110,15,45,0.05)",
+                    borderRadius: 14,
+                    padding: "14px 16px",
+                    marginBottom: 16,
+                    border: `1px solid ${overdueCount ? "rgba(192,57,43,0.18)" : "rgba(110,15,45,0.15)"}`,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "1.1px",
+                      color: T.taupe,
+                      marginBottom: 4,
+                    }}
+                  >
+                    PAST DUE
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: F.display,
+                      fontSize: 28,
+                      fontWeight: 700,
+                      color: overdueCount ? T.crimson : T.royalBurgundy,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {overdueCount}
+                  </div>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 4 }}>
+                    of {batchProgress.length} active batches
+                  </div>
+                </div>
+                {batchProgress.length === 0 ? (
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                    No active batches on the floor.
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {batchProgress.map((b) => (
+                      <div key={b.batchId}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: 4,
+                          }}
+                        >
+                          <EntityCode type="batch" value={b.batchId} size="sm" />
+                          <span
+                            style={{
+                              fontFamily: F.ui,
+                              fontSize: 12,
+                              fontWeight: 700,
+                              color: b.overdue
+                                ? T.crimson
+                                : b.daysLeft !== null && b.daysLeft <= 5
+                                  ? "#E67E22"
+                                  : T.taupe,
+                            }}
+                          >
+                            {b.daysLeft === null
+                              ? b.dueDate
+                              : b.overdue
+                                ? `${Math.abs(b.daysLeft)}d overdue`
+                                : `${b.daysLeft}d left`}
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            height: 6,
+                            borderRadius: 3,
+                            background: "rgba(110,15,45,0.06)",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: `${b.pct}%`,
+                              height: "100%",
+                              borderRadius: 3,
+                              background: b.overdue
+                                ? "linear-gradient(90deg,#C0392B,#E74C3C)"
+                                : `linear-gradient(90deg,${T.royalBurgundy},${T.antiqueGold})`,
+                            }}
+                          />
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            fontFamily: F.ui,
+                            fontSize: 11,
+                            color: T.taupe,
+                            marginTop: 3,
+                          }}
+                        >
+                          <span>
+                            {b.loomName} · {b.designCode}
+                          </span>
+                          <span>
+                            {b.completedCount}/{b.sareeCount} · {b.pct}%
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </FadeUp>
+
+          {/* Row 3: Material draw, floor comparison, factory health */}
+          <FadeUp delay={0.12}>
+            <LoomMaterialDesignRow
+              byMaterial={byMaterial}
+              warpKg={warpKg}
+              produced={produced}
+              byDesign={byDesign}
+              passRate={passRate}
+              failed={failed}
+              activeLooms={activeLooms}
+              pipeline={pipeline}
+              looms={looms}
+            />
+          </FadeUp>
+        </SectionCard>
       </FadeUp>
     </div>
   );

@@ -20,7 +20,11 @@ import { FrameScanner } from "./scanFrame";
 // distance. A camera that tops out lower just delivers its best. Phones stay
 // at 1080p — their lenses already resolve the bars, and a 4K stream only
 // costs them heat and decode time.
-const RESOLUTION_DESKTOP = { width: { ideal: 3840 }, height: { ideal: 2160 }, frameRate: { ideal: 30 } } as const;
+const RESOLUTION_DESKTOP = {
+  width: { ideal: 3840 },
+  height: { ideal: 2160 },
+  frameRate: { ideal: 30 },
+} as const;
 const RESOLUTION_PHONE = { width: { ideal: 1920 }, height: { ideal: 1080 } } as const;
 
 function isDesktopPointer(): boolean {
@@ -77,7 +81,7 @@ async function createNativeDetector(): Promise<NativeDetector | null> {
   if (!Ctor) return null;
   try {
     const supported = (await Ctor.getSupportedFormats?.()) ?? NATIVE_FORMATS;
-    const formats = NATIVE_FORMATS.filter(f => supported.includes(f));
+    const formats = NATIVE_FORMATS.filter((f) => supported.includes(f));
     if (formats.length === 0) return null;
     return new Ctor({ formats });
   } catch {
@@ -86,7 +90,11 @@ async function createNativeDetector(): Promise<NativeDetector | null> {
 }
 
 function readStoredCamera(): string | null {
-  try { return window.localStorage.getItem(CAMERA_STORAGE_KEY); } catch { return null; }
+  try {
+    return window.localStorage.getItem(CAMERA_STORAGE_KEY);
+  } catch {
+    return null;
+  }
 }
 function writeStoredCamera(id: string | null) {
   try {
@@ -97,7 +105,12 @@ function writeStoredCamera(id: string | null) {
   }
 }
 
-type TrackCaps = MediaTrackCapabilities & { focusMode?: string[]; exposureMode?: string[]; whiteBalanceMode?: string[]; torch?: boolean };
+type TrackCaps = MediaTrackCapabilities & {
+  focusMode?: string[];
+  exposureMode?: string[];
+  whiteBalanceMode?: string[];
+  torch?: boolean;
+};
 
 /**
  * Turns on continuous autofocus / exposure where the camera supports it — a
@@ -109,11 +122,16 @@ type TrackCaps = MediaTrackCapabilities & { focusMode?: string[]; exposureMode?:
  */
 function tuneTrack(track: MediaStreamTrack): boolean {
   let caps: TrackCaps = {};
-  try { caps = (track.getCapabilities?.() ?? {}) as TrackCaps; } catch { /* not supported */ }
+  try {
+    caps = (track.getCapabilities?.() ?? {}) as TrackCaps;
+  } catch {
+    /* not supported */
+  }
   const advanced: Record<string, string>[] = [];
   if (caps.focusMode?.includes("continuous")) advanced.push({ focusMode: "continuous" });
   if (caps.exposureMode?.includes("continuous")) advanced.push({ exposureMode: "continuous" });
-  if (caps.whiteBalanceMode?.includes("continuous")) advanced.push({ whiteBalanceMode: "continuous" });
+  if (caps.whiteBalanceMode?.includes("continuous"))
+    advanced.push({ whiteBalanceMode: "continuous" });
   if (advanced.length > 0) {
     track.applyConstraints({ advanced } as MediaTrackConstraints).catch(() => {});
   }
@@ -122,9 +140,15 @@ function tuneTrack(track: MediaStreamTrack): boolean {
 
 /** A short beep and buzz on a successful read — what a counter scanner does. */
 function successFeedback() {
-  try { navigator.vibrate?.(80); } catch { /* unsupported */ }
   try {
-    const AudioCtx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    navigator.vibrate?.(80);
+  } catch {
+    /* unsupported */
+  }
+  try {
+    const AudioCtx =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtx) return;
     const audio = new AudioCtx();
     const osc = audio.createOscillator();
@@ -136,7 +160,9 @@ function successFeedback() {
     osc.connect(gain).connect(audio.destination);
     osc.start();
     osc.stop(audio.currentTime + 0.13);
-    osc.onended = () => { void audio.close().catch(() => {}); };
+    osc.onended = () => {
+      void audio.close().catch(() => {});
+    };
   } catch {
     // Audio blocked or unavailable — the vibration (or nothing) is fine.
   }
@@ -233,7 +259,9 @@ export function CameraScannerModal({
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
+    return () => {
+      document.body.style.overflow = prev;
+    };
   }, [open]);
 
   useEffect(() => {
@@ -257,8 +285,11 @@ export function CameraScannerModal({
     const videoEl = videoRef.current;
 
     const stopStream = () => {
-      if (timerRef.current != null) { clearTimeout(timerRef.current); timerRef.current = null; }
-      streamRef.current?.getTracks().forEach(t => t.stop());
+      if (timerRef.current != null) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      streamRef.current?.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     };
 
@@ -297,7 +328,11 @@ export function CameraScannerModal({
       // wide and every whole-frame decode misses them.
       const readLocated = async (): Promise<string | null> => {
         let candidates;
-        try { candidates = frameScanner.locate(video); } catch { return null; }
+        try {
+          candidates = frameScanner.locate(video);
+        } catch {
+          return null;
+        }
         for (const found of candidates) {
           if (cancelled) return null;
           try {
@@ -307,10 +342,14 @@ export function CameraScannerModal({
             const big = frameScanner.enlarged(video, c);
             if (!big) continue;
             if (native) {
-              const hit = (await native.detect(big)).find(f => f.rawValue && f.rawValue.trim());
+              const hit = (await native.detect(big)).find((f) => f.rawValue && f.rawValue.trim());
               if (hit) return hit.rawValue;
             } else {
-              try { return barReader.decodeFromCanvas(big).getText(); } catch { /* not this one */ }
+              try {
+                return barReader.decodeFromCanvas(big).getText();
+              } catch {
+                /* not this one */
+              }
             }
           } catch {
             // A failed read of one candidate is just "try the next".
@@ -338,7 +377,9 @@ export function CameraScannerModal({
             // The upright whole frame was just read by the QR pass, which
             // asks the native detector for both formats at once.
             if (!isFullFrame && draw(video, region)) {
-              const hit = (await native.detect(canvas)).find(f => f.rawValue && f.rawValue.trim());
+              const hit = (await native.detect(canvas)).find(
+                (f) => f.rawValue && f.rawValue.trim()
+              );
               if (hit) return hit.rawValue;
             }
           } else if (draw(video, region)) {
@@ -363,7 +404,7 @@ export function CameraScannerModal({
             if (native) {
               // The video element itself is the full-resolution frame — no
               // canvas copy needed, and the detector reads a QR at any angle.
-              const hit = (await native.detect(video)).find(f => f.rawValue && f.rawValue.trim());
+              const hit = (await native.detect(video)).find((f) => f.rawValue && f.rawValue.trim());
               if (hit) text = hit.rawValue;
             } else if (draw(video, qrRegion(n, video.videoWidth, video.videoHeight))) {
               text = qrReader.decodeFromCanvas(canvas).getText();
@@ -390,27 +431,44 @@ export function CameraScannerModal({
           return;
         }
         if (Date.now() - startedAt > UNREADABLE_AFTER_MS) setUnreadable(true);
-        const pause = !ranLegacy ? QR_ONLY_INTERVAL_MS : native ? NATIVE_INTERVAL_MS : ZXING_INTERVAL_MS;
-        timerRef.current = setTimeout(() => { void tick(); }, pause);
+        const pause = !ranLegacy
+          ? QR_ONLY_INTERVAL_MS
+          : native
+            ? NATIVE_INTERVAL_MS
+            : ZXING_INTERVAL_MS;
+        timerRef.current = setTimeout(() => {
+          void tick();
+        }, pause);
       };
       void tick();
     };
 
     const attachStream = (stream: MediaStream) => {
-      if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
+      if (cancelled) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
       streamRef.current = stream;
       const track = stream.getVideoTracks()[0];
       let settings: MediaTrackSettings = {};
-      try { settings = track?.getSettings?.() ?? {}; } catch { /* not supported */ }
+      try {
+        settings = track?.getSettings?.() ?? {};
+      } catch {
+        /* not supported */
+      }
       activeDeviceRef.current = settings.deviceId ?? null;
-      const finePointer = typeof window.matchMedia === "function" && window.matchMedia("(pointer: fine)").matches;
+      const finePointer =
+        typeof window.matchMedia === "function" && window.matchMedia("(pointer: fine)").matches;
       setMirrored(shouldMirror(settings.facingMode, finePointer));
       if (track) setTorchSupported(tuneTrack(track));
 
       // Device labels (and so a meaningful list) are only available once
       // permission is granted — i.e. now.
-      navigator.mediaDevices.enumerateDevices?.()
-        .then(list => { if (!cancelled) setCameras(list.filter(d => d.kind === "videoinput" && d.deviceId)); })
+      navigator.mediaDevices
+        .enumerateDevices?.()
+        .then((list) => {
+          if (!cancelled) setCameras(list.filter((d) => d.kind === "videoinput" && d.deviceId));
+        })
         .catch(() => {});
 
       const video = videoEl;
@@ -430,7 +488,8 @@ export function CameraScannerModal({
 
     const resolution = desktop ? { ...RESOLUTION_DESKTOP } : { ...RESOLUTION_PHONE };
     const attempts: MediaStreamConstraints[] = [];
-    if (deviceId) attempts.push({ audio: false, video: { deviceId: { exact: deviceId }, ...resolution } });
+    if (deviceId)
+      attempts.push({ audio: false, video: { deviceId: { exact: deviceId }, ...resolution } });
     attempts.push({ audio: false, video: { facingMode: { ideal: "environment" }, ...resolution } });
     // Some hardware rejects specific resolutions outright even though `ideal`
     // should degrade gracefully — fall back to whatever camera the browser
@@ -439,9 +498,11 @@ export function CameraScannerModal({
 
     const tryOpen = async () => {
       if (!navigator.mediaDevices?.getUserMedia) {
-        setError(window.isSecureContext
-          ? "This browser can't open the camera. Type the code printed on the tag instead."
-          : "The camera only works over a secure (https) connection. Type the code printed on the tag instead.");
+        setError(
+          window.isSecureContext
+            ? "This browser can't open the camera. Type the code printed on the tag instead."
+            : "The camera only works over a secure (https) connection. Type the code printed on the tag instead."
+        );
         setStarting(false);
         return;
       }
@@ -457,7 +518,8 @@ export function CameraScannerModal({
           return;
         } catch (e) {
           lastErr = e;
-          if (e instanceof Error && (e.name === "NotAllowedError" || e.name === "SecurityError")) break;
+          if (e instanceof Error && (e.name === "NotAllowedError" || e.name === "SecurityError"))
+            break;
         }
       }
       if (cancelled) return;
@@ -470,7 +532,7 @@ export function CameraScannerModal({
             ? "The camera is being used by another app. Close it there and try again."
             : name === "NotFoundError"
               ? "No camera was found on this device."
-              : "Couldn't access the camera on this device.",
+              : "Couldn't access the camera on this device."
       );
     };
     void tryOpen();
@@ -478,7 +540,10 @@ export function CameraScannerModal({
     return () => {
       cancelled = true;
       stopStream();
-      if (videoEl) { videoEl.onloadedmetadata = null; videoEl.srcObject = null; }
+      if (videoEl) {
+        videoEl.onloadedmetadata = null;
+        videoEl.srcObject = null;
+      }
     };
     // restartKey forces a reopen even when the chosen id equals the stale one
     // in state (a remembered camera that failed and was fallen back from).
@@ -488,18 +553,19 @@ export function CameraScannerModal({
     const track = streamRef.current?.getVideoTracks()[0];
     if (!track) return;
     const next = !torchOn;
-    track.applyConstraints({ advanced: [{ torch: next } as MediaTrackConstraintSet] })
+    track
+      .applyConstraints({ advanced: [{ torch: next } as MediaTrackConstraintSet] })
       .then(() => setTorchOn(next))
       .catch(() => setTorchSupported(false));
   }, [torchOn]);
 
   const switchCamera = useCallback(() => {
     if (cameras.length < 2) return;
-    const current = cameras.findIndex(c => c.deviceId === activeDeviceRef.current);
+    const current = cameras.findIndex((c) => c.deviceId === activeDeviceRef.current);
     const next = cameras[(current + 1) % cameras.length];
     writeStoredCamera(next.deviceId);
     setDeviceId(next.deviceId);
-    setRestartKey(k => k + 1);
+    setRestartKey((k) => k + 1);
   }, [cameras]);
 
   if (!open) return null;
@@ -521,18 +587,39 @@ export function CameraScannerModal({
       >
         <div
           style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
             padding: "12px 14px 12px 18px",
             paddingTop: "max(12px, env(safe-area-inset-top))",
-            borderBottom: "1px solid rgba(255,255,255,0.08)", flexShrink: 0,
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+            flexShrink: 0,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
             <ScanLine size={20} color="#FFDFA0" style={{ flexShrink: 0 }} />
-            <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 16, color: "#FFFDF9", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</span>
+            <span
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600,
+                fontSize: 16,
+                color: "#FFFDF9",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {title}
+            </span>
           </div>
-          <Button variant="tertiary" size="sm" onClick={onClose} aria-label="Close camera"
-            className="h-11 w-11 shrink-0 rounded-full border-0 bg-[rgba(255,255,255,0.12)] p-0 text-white hover:bg-[rgba(255,255,255,0.2)]">
+          <Button
+            variant="tertiary"
+            size="sm"
+            onClick={onClose}
+            aria-label="Close camera"
+            className="h-11 w-11 shrink-0 rounded-full border-0 bg-[rgba(255,255,255,0.12)] p-0 text-white hover:bg-[rgba(255,255,255,0.2)]"
+          >
             <X size={20} />
           </Button>
         </div>
@@ -541,7 +628,12 @@ export function CameraScannerModal({
           <video
             ref={videoRef}
             aria-label="Live camera feed for tag scanning"
-            style={{ width: "100%", height: "100%", objectFit: "cover", transform: mirrored ? "scaleX(-1)" : undefined }}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              transform: mirrored ? "scaleX(-1)" : undefined,
+            }}
             muted
             autoPlay
             playsInline
@@ -550,25 +642,36 @@ export function CameraScannerModal({
             <div
               aria-hidden
               style={{
-                position: "absolute", inset: "7% 6%",
+                position: "absolute",
+                inset: "7% 6%",
                 borderRadius: 18,
                 boxShadow: "0 0 0 4000px rgba(0,0,0,0.18)",
                 pointerEvents: "none",
               }}
             >
               {/* Corner brackets: a loose target, not a box the tag must fit. */}
-              {(["tl", "tr", "bl", "br"] as const).map(c => (
+              {(["tl", "tr", "bl", "br"] as const).map((c) => (
                 <span
                   key={c}
                   style={{
-                    position: "absolute", width: 44, height: 44,
-                    top: c[0] === "t" ? -2 : undefined, bottom: c[0] === "b" ? -2 : undefined,
-                    left: c[1] === "l" ? -2 : undefined, right: c[1] === "r" ? -2 : undefined,
-                    borderColor: frameColor, borderStyle: "solid", borderWidth: 0,
-                    borderTopWidth: c[0] === "t" ? 4 : 0, borderBottomWidth: c[0] === "b" ? 4 : 0,
-                    borderLeftWidth: c[1] === "l" ? 4 : 0, borderRightWidth: c[1] === "r" ? 4 : 0,
-                    borderTopLeftRadius: c === "tl" ? 18 : 0, borderTopRightRadius: c === "tr" ? 18 : 0,
-                    borderBottomLeftRadius: c === "bl" ? 18 : 0, borderBottomRightRadius: c === "br" ? 18 : 0,
+                    position: "absolute",
+                    width: 44,
+                    height: 44,
+                    top: c[0] === "t" ? -2 : undefined,
+                    bottom: c[0] === "b" ? -2 : undefined,
+                    left: c[1] === "l" ? -2 : undefined,
+                    right: c[1] === "r" ? -2 : undefined,
+                    borderColor: frameColor,
+                    borderStyle: "solid",
+                    borderWidth: 0,
+                    borderTopWidth: c[0] === "t" ? 4 : 0,
+                    borderBottomWidth: c[0] === "b" ? 4 : 0,
+                    borderLeftWidth: c[1] === "l" ? 4 : 0,
+                    borderRightWidth: c[1] === "r" ? 4 : 0,
+                    borderTopLeftRadius: c === "tl" ? 18 : 0,
+                    borderTopRightRadius: c === "tr" ? 18 : 0,
+                    borderBottomLeftRadius: c === "bl" ? 18 : 0,
+                    borderBottomRightRadius: c === "br" ? 18 : 0,
                     filter: `drop-shadow(0 0 3px ${accentColor})`,
                     transition: "border-color 150ms",
                   }}
@@ -578,7 +681,11 @@ export function CameraScannerModal({
                 <span
                   className="bk-scanner-line"
                   style={{
-                    position: "absolute", left: "4%", right: "4%", height: 2, borderRadius: 2,
+                    position: "absolute",
+                    left: "4%",
+                    right: "4%",
+                    height: 2,
+                    borderRadius: 2,
                     background: "linear-gradient(90deg, transparent, #FFDFA0, transparent)",
                     boxShadow: "0 0 12px rgba(255,255,255,0.35)",
                   }}
@@ -592,40 +699,87 @@ export function CameraScannerModal({
               role="status"
               aria-live="polite"
               style={{
-                position: "absolute", top: 14, left: "50%", transform: "translateX(-50%)",
-                display: "flex", alignItems: "center", gap: 8,
-                padding: "6px 12px", borderRadius: 999,
-                background: "rgba(0,0,0,0.6)", color: "#FFFDF9",
-                fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, whiteSpace: "nowrap",
+                position: "absolute",
+                top: 14,
+                left: "50%",
+                transform: "translateX(-50%)",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "6px 12px",
+                borderRadius: 999,
+                background: "rgba(0,0,0,0.6)",
+                color: "#FFFDF9",
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 13,
+                fontWeight: 500,
+                whiteSpace: "nowrap",
               }}
             >
               <span
                 className={starting || detected ? undefined : "bk-scanner-dot"}
-                style={{ width: 8, height: 8, borderRadius: 999, background: detected ? "#3FB37F" : starting ? "#FFDFA0" : "#E05A7A" }}
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 999,
+                  background: detected ? "#3FB37F" : starting ? "#FFDFA0" : "#E05A7A",
+                }}
               />
               {detected ? "Got it" : starting ? "Starting camera…" : "Scanning — show the tag"}
             </div>
           )}
 
           {error && (
-            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: 24, textAlign: "center" }}>
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                padding: 24,
+                textAlign: "center",
+              }}
+            >
               <AlertCircle size={32} color="#E8A0A0" />
-              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, lineHeight: 1.5, color: "#F0DEDE", maxWidth: 360 }}>{error}</span>
+              <span
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 14,
+                  lineHeight: 1.5,
+                  color: "#F0DEDE",
+                  maxWidth: 360,
+                }}
+              >
+                {error}
+              </span>
             </div>
           )}
 
           {!error && (torchSupported || cameras.length > 1) && (
             <div style={{ position: "absolute", bottom: 14, right: 14, display: "flex", gap: 10 }}>
               {torchSupported && (
-                <Button variant="tertiary" size="sm" onClick={toggleTorch}
-                  aria-label={torchOn ? "Turn torch off" : "Turn torch on"} aria-pressed={torchOn}
-                  className="h-12 w-12 rounded-full border-0 bg-[rgba(0,0,0,0.6)] p-0 text-white hover:bg-[rgba(0,0,0,0.75)]">
+                <Button
+                  variant="tertiary"
+                  size="sm"
+                  onClick={toggleTorch}
+                  aria-label={torchOn ? "Turn torch off" : "Turn torch on"}
+                  aria-pressed={torchOn}
+                  className="h-12 w-12 rounded-full border-0 bg-[rgba(0,0,0,0.6)] p-0 text-white hover:bg-[rgba(0,0,0,0.75)]"
+                >
                   {torchOn ? <FlashlightOff size={20} /> : <Flashlight size={20} />}
                 </Button>
               )}
               {cameras.length > 1 && (
-                <Button variant="tertiary" size="sm" onClick={switchCamera} aria-label="Switch camera"
-                  className="h-12 w-12 rounded-full border-0 bg-[rgba(0,0,0,0.6)] p-0 text-white hover:bg-[rgba(0,0,0,0.75)]">
+                <Button
+                  variant="tertiary"
+                  size="sm"
+                  onClick={switchCamera}
+                  aria-label="Switch camera"
+                  className="h-12 w-12 rounded-full border-0 bg-[rgba(0,0,0,0.6)] p-0 text-white hover:bg-[rgba(0,0,0,0.75)]"
+                >
                   <SwitchCamera size={20} />
                 </Button>
               )}
@@ -637,10 +791,20 @@ export function CameraScannerModal({
           style={{
             padding: "12px 18px 14px",
             paddingBottom: "max(14px, env(safe-area-inset-bottom))",
-            display: "flex", flexDirection: "column", gap: 8, flexShrink: 0,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            flexShrink: 0,
           }}
         >
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, lineHeight: 1.45, color: "rgba(255,253,249,0.72)" }}>
+          <span
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 13,
+              lineHeight: 1.45,
+              color: "rgba(255,253,249,0.72)",
+            }}
+          >
             {hint}
           </span>
           {/* Nothing has decoded for a while. The camera keeps running — this
@@ -649,8 +813,12 @@ export function CameraScannerModal({
           {unreadable && !error && !detected && (
             <span
               style={{
-                display: "flex", alignItems: "flex-start", gap: 8,
-                fontFamily: "'Inter', sans-serif", fontSize: 12.5, lineHeight: 1.45,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 8,
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 12.5,
+                lineHeight: 1.45,
                 color: "#FFDFA0",
               }}
             >

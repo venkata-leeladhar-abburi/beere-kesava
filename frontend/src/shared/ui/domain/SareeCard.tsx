@@ -22,7 +22,20 @@ export interface SareeCardProps {
   className?: string;
 }
 
-export function SareeCard({ code, designName, imageSrc, type, weightGrams, price, weaverName, inventoryStatus, productionStatus, density, onClick, className }: SareeCardProps) {
+export function SareeCard({
+  code,
+  designName,
+  imageSrc,
+  type,
+  weightGrams,
+  price,
+  weaverName,
+  inventoryStatus,
+  productionStatus,
+  density,
+  onClick,
+  className,
+}: SareeCardProps) {
   return (
     <DomainCard
       avatarName={designName}
@@ -33,11 +46,15 @@ export function SareeCard({ code, designName, imageSrc, type, weightGrams, price
       status={
         <span className="flex items-center gap-1.5">
           <StatusPill taxonomy="inventory" status={inventoryStatus} size="sm" />
-          {productionStatus && <StatusPill taxonomy="production" status={productionStatus} size="sm" />}
+          {productionStatus && (
+            <StatusPill taxonomy="production" status={productionStatus} size="sm" />
+          )}
         </span>
       }
       stats={[
-        ...(weightGrams != null ? [{ label: "Weight", value: <Quantity value={weightGrams} unit="g" /> }] : []),
+        ...(weightGrams != null
+          ? [{ label: "Weight", value: <Quantity value={weightGrams} unit="g" /> }]
+          : []),
         ...(price != null ? [{ label: "Price", value: <Money value={price} /> }] : []),
         ...(weaverName ? [{ label: "Weaver", value: weaverName }] : []),
       ]}

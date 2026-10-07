@@ -120,10 +120,7 @@ const METRICS = [
     baseline: 10,
     target: 0,
     measure: () =>
-      countMatchesIn(
-        featureTs,
-        'color:\\s*"#C89B47"|color:\\s*"#C4923A"|color:\\s*"#E8A84A"'
-      ),
+      countMatchesIn(featureTs, 'color:\\s*"#C89B47"|color:\\s*"#C4923A"|color:\\s*"#E8A84A"'),
   },
   {
     id: "fontsize-below-12",
@@ -381,7 +378,11 @@ const METRICS = [
     baseline: 0,
     target: 70,
     higherIsBetter: true,
-    measure: () => countFilesIn(featureTsx, "<DataTable\\s+responsive\\b|<DataTable\\b[^>]*\\n\\s*responsive\\b"),
+    measure: () =>
+      countFilesIn(
+        featureTsx,
+        "<DataTable\\s+responsive\\b|<DataTable\\b[^>]*\\n\\s*responsive\\b"
+      ),
   },
   {
     id: "column-priority",
@@ -565,16 +566,13 @@ for (const phase of Object.keys(byPhase).sort((a, b) => a - b)) {
   console.log(`PHASE ${phase}`);
   for (const r of byPhase[phase]) {
     const arrow = r.higherIsBetter ? "↑" : "→";
-    const status =
-      r.current === null
-        ? "manual"
-        : r.done
-          ? "✓ done"
-          : `${Math.round(r.pct)}%`;
+    const status = r.current === null ? "manual" : r.done ? "✓ done" : `${Math.round(r.pct)}%`;
     const currentStr = r.current === null ? "n/a" : r.current;
     const line = `  ${r.label.padEnd(28)} ${String(r.baseline).padStart(6)} ${arrow} ${String(
       r.target
-    ).padStart(6)}   ${r.current === null ? " ".repeat(10) : bar(r.pct)}  ${status.padEnd(7)} (now: ${currentStr})`;
+    ).padStart(
+      6
+    )}   ${r.current === null ? " ".repeat(10) : bar(r.pct)}  ${status.padEnd(7)} (now: ${currentStr})`;
     console.log(line);
   }
   console.log("");

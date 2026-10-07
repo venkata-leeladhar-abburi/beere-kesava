@@ -1,11 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 import { Download, Lock, History } from "lucide-react";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import {
+  DateFilterBar,
+  DateFilterState,
+  DEFAULT_DATE_FILTER,
+  matchesDateFilter,
+} from "../../../../shared/ui/DateFilterBar";
 import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F, cardStyle } from "./theme";
 import { SectionCard, GoldLink } from "./sharedUI";
-import { rateRequestsApi, type BackendRateChangeRequest } from "../../../../shared/api/rateRequests";
+import {
+  rateRequestsApi,
+  type BackendRateChangeRequest,
+} from "../../../../shared/api/rateRequests";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
@@ -23,10 +31,19 @@ interface HistoryRow {
 
 function toHistoryRow(req: BackendRateChangeRequest, canSeeCost: boolean): HistoryRow {
   const dateSrc = req.decidedAt ?? req.createdAt;
-  const date = new Date(dateSrc).toLocaleString("en-IN", {
-    day: "2-digit", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
-  }).replace(",", " ·");
-  const by = req.decidedBy ? `${req.decidedBy.firstName} ${req.decidedBy.lastName}` : `${req.requestedBy.firstName} ${req.requestedBy.lastName}`;
+  const date = new Date(dateSrc)
+    .toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .replace(",", " ·");
+  const by = req.decidedBy
+    ? `${req.decidedBy.firstName} ${req.decidedBy.lastName}`
+    : `${req.requestedBy.firstName} ${req.requestedBy.lastName}`;
   const status = req.status === "REJECTED" ? " (Rejected)" : "";
   return {
     date,
@@ -52,9 +69,11 @@ export function RateHistorySection() {
     Promise.all([rateRequestsApi.list("APPROVED"), rateRequestsApi.list("REJECTED")])
       .then(([approved, rejected]) => {
         const all = [...approved.items, ...rejected.items].sort(
-          (a, b) => new Date(b.decidedAt ?? b.createdAt).getTime() - new Date(a.decidedAt ?? a.createdAt).getTime(),
+          (a, b) =>
+            new Date(b.decidedAt ?? b.createdAt).getTime() -
+            new Date(a.decidedAt ?? a.createdAt).getTime()
         );
-        setHistory(all.map(req => toHistoryRow(req, canSeeCost)));
+        setHistory(all.map((req) => toHistoryRow(req, canSeeCost)));
       })
       .catch((err: unknown) => {
         console.error("Failed to load rate change history", err);
@@ -67,134 +86,255 @@ export function RateHistorySection() {
     loadHistory();
   }, [loadHistory]);
 
-  const filteredHistory = history.filter(row => {
+  const filteredHistory = history.filter((row) => {
     const matchDate = matchesDateFilter(row.date.split(" · ")[0], histDateFilter);
-    const matchSearch = !search.trim() || row.what.toLowerCase().includes(search.toLowerCase()) || row.by.toLowerCase().includes(search.toLowerCase()) || row.reason.toLowerCase().includes(search.toLowerCase());
+    const matchSearch =
+      !search.trim() ||
+      row.what.toLowerCase().includes(search.toLowerCase()) ||
+      row.by.toLowerCase().includes(search.toLowerCase()) ||
+      row.reason.toLowerCase().includes(search.toLowerCase());
     return matchDate && matchSearch;
   });
   const pag = usePagination(filteredHistory, 10);
 
   const historyColumns: ColumnDef<HistoryRow>[] = [
     {
-      id: "date", header: "Date & Time", accessor: r => r.date,
-      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{r.date}</span>,
+      id: "date",
+      header: "Date & Time",
+      accessor: (r) => r.date,
+      cell: (_v, r) => (
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            color: T.taupe,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {r.date}
+        </span>
+      ),
     },
     {
-      id: "by", header: "Changed By", accessor: r => r.by, priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 500, whiteSpace: "nowrap" }}>{r.by}</span>,
+      id: "by",
+      header: "Changed By",
+      accessor: (r) => r.by,
+      priority: 3,
+      cell: (_v, r) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 500, whiteSpace: "nowrap" }}>
+          {r.by}
+        </span>
+      ),
     },
     {
-      id: "what", header: "What Was Changed", accessor: r => r.what, priority: 1,
-      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 500, whiteSpace: "nowrap" }}>{r.what}</span>,
+      id: "what",
+      header: "What Was Changed",
+      accessor: (r) => r.what,
+      priority: 1,
+      cell: (_v, r) => (
+        <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 500, whiteSpace: "nowrap" }}>
+          {r.what}
+        </span>
+      ),
     },
     {
-      id: "old", header: "Old Value", accessor: r => r.old,
-      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.crimson, whiteSpace: "nowrap" }}>{r.old}</span>,
+      id: "old",
+      header: "Old Value",
+      accessor: (r) => r.old,
+      cell: (_v, r) => (
+        <span
+          style={{
+            fontFamily: F.ui,
+            fontSize: 13,
+            fontWeight: 600,
+            color: T.crimson,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {r.old}
+        </span>
+      ),
     },
     {
-      id: "next", header: "New Value", accessor: r => r.next,
-      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.green, whiteSpace: "nowrap" }}>{r.next}</span>,
+      id: "next",
+      header: "New Value",
+      accessor: (r) => r.next,
+      cell: (_v, r) => (
+        <span
+          style={{
+            fontFamily: F.ui,
+            fontSize: 13,
+            fontWeight: 600,
+            color: T.green,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {r.next}
+        </span>
+      ),
     },
     {
-      id: "reason", header: "Reason", accessor: r => r.reason, priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontStyle: "italic", color: T.taupe, whiteSpace: "nowrap" }}>{r.reason}</span>,
+      id: "reason",
+      header: "Reason",
+      accessor: (r) => r.reason,
+      priority: 3,
+      cell: (_v, r) => (
+        <span
+          style={{
+            fontFamily: F.ui,
+            fontSize: 12,
+            fontStyle: "italic",
+            color: T.taupe,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {r.reason}
+        </span>
+      ),
     },
   ];
 
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
-    <SectionCard
-      icon={History}
-      title="Rate Change History"
-      subtitle="A permanent, immutable log of all rate changes made in the system. This record cannot be edited or deleted and serves as the official audit trail."
-      actions={<DownloadGate><GoldLink><Download size={13} /> Download History →</GoldLink></DownloadGate>}
-    >
-      {/* Mobile Flipkart-style Filter Bar */}
-      <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
-        <MobileFilterBar
-          search={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search history by saree type, user, reason..."
-          filterGroups={[
-            {
-              id: "time",
-              label: "Time Period",
-              value: histDateFilter.mode,
-              defaultValue: "all",
-              options: [
-                { value: "all", label: "All Time" },
-                { value: "day", label: "Specific Date" },
-                { value: "range", label: "Date Range" },
-                { value: "month", label: "Monthly" },
-                { value: "year", label: "Yearly" },
-              ],
-              onChange: (m: string) => {
-                const mode = m as DateFilterState["mode"];
-                if (mode === "day") setHistDateFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
-                else if (mode === "month") setHistDateFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
-                else if (mode === "year") setHistDateFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
-                else setHistDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
-                pag.setPage(1);
+      <SectionCard
+        icon={History}
+        title="Rate Change History"
+        subtitle="A permanent, immutable log of all rate changes made in the system. This record cannot be edited or deleted and serves as the official audit trail."
+        actions={
+          <DownloadGate>
+            <GoldLink>
+              <Download size={13} /> Download History →
+            </GoldLink>
+          </DownloadGate>
+        }
+      >
+        {/* Mobile Flipkart-style Filter Bar */}
+        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+          <MobileFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search history by saree type, user, reason..."
+            filterGroups={[
+              {
+                id: "time",
+                label: "Time Period",
+                value: histDateFilter.mode,
+                defaultValue: "all",
+                options: [
+                  { value: "all", label: "All Time" },
+                  { value: "day", label: "Specific Date" },
+                  { value: "range", label: "Date Range" },
+                  { value: "month", label: "Monthly" },
+                  { value: "year", label: "Yearly" },
+                ],
+                onChange: (m: string) => {
+                  const mode = m as DateFilterState["mode"];
+                  if (mode === "day")
+                    setHistDateFilter({
+                      mode,
+                      day: new Date().toISOString().slice(0, 10),
+                      from: "",
+                      to: "",
+                      month: "",
+                      year: "",
+                    });
+                  else if (mode === "month")
+                    setHistDateFilter({
+                      mode,
+                      day: "",
+                      from: "",
+                      to: "",
+                      month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`,
+                      year: "",
+                    });
+                  else if (mode === "year")
+                    setHistDateFilter({
+                      mode,
+                      day: "",
+                      from: "",
+                      to: "",
+                      month: "",
+                      year: String(new Date().getFullYear()),
+                    });
+                  else setHistDateFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                  pag.setPage(1);
+                },
               },
-            },
-          ]}
-          onResetAll={() => {
-            setSearch("");
-            setHistDateFilter(DEFAULT_DATE_FILTER);
-            pag.setPage(1);
-          }}
-        />
-      </div>
-
-      {/* Desktop Filter Bar */}
-      <div className="hidden md:block mb-4">
-        <DateFilterBar filter={histDateFilter} onChange={f => { setHistDateFilter(f); pag.setPage(1); }} />
-      </div>
-
-      {isLoading ? (
-        <div style={cardStyle}><LoadingState variant="skeleton" rows={4} /></div>
-      ) : isError ? (
-        <div style={cardStyle}><ErrorState error={undefined} onRetry={loadHistory} /></div>
-      ) : (
-      <div id="rate-change-history-table" style={cardStyle}>
-        <div className="w-full overflow-x-auto">
-          <DataTable
-            responsive={false}
-            columns={historyColumns}
-            data={pag.pageItems}
-            getRowId={r => String(pag.pageItems.indexOf(r))}
-            emptyTitle="No rate changes recorded yet."
-            pagination={false}
+            ]}
+            onResetAll={() => {
+              setSearch("");
+              setHistDateFilter(DEFAULT_DATE_FILTER);
+              pag.setPage(1);
+            }}
           />
         </div>
 
-        {/* Table footer */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12,
-          padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`,
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <Lock size={12} color={T.taupe} />
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
-              This history is permanent and cannot be edited or deleted.
-            </span>
+        {/* Desktop Filter Bar */}
+        <div className="hidden md:block mb-4">
+          <DateFilterBar
+            filter={histDateFilter}
+            onChange={(f) => {
+              setHistDateFilter(f);
+              pag.setPage(1);
+            }}
+          />
+        </div>
+
+        {isLoading ? (
+          <div style={cardStyle}>
+            <LoadingState variant="skeleton" rows={4} />
           </div>
+        ) : isError ? (
+          <div style={cardStyle}>
+            <ErrorState error={undefined} onRetry={loadHistory} />
+          </div>
+        ) : (
+          <div id="rate-change-history-table" style={cardStyle}>
+            <div className="w-full overflow-x-auto">
+              <DataTable
+                responsive={false}
+                columns={historyColumns}
+                data={pag.pageItems}
+                getRowId={(r) => String(pag.pageItems.indexOf(r))}
+                emptyTitle="No rate changes recorded yet."
+                pagination={false}
+              />
+            </div>
 
-          <Pagination
-            targetId="rate-change-history-table"
-            page={pag.page}
-            pageCount={pag.pageCount}
-            total={pag.total}
-            pageSize={pag.pageSize}
-            start={pag.start}
-            onPageChange={pag.setPage}
-            onPageSizeChange={pag.setPageSize}
-            itemLabel="rate changes"
-          />
-        </div>
-      </div>
-      )}
-    </SectionCard>
+            {/* Table footer */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 12,
+                padding: "14px 20px",
+                borderTop: `1px solid ${T.borderDef}`,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <Lock size={12} color={T.taupe} />
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
+                  This history is permanent and cannot be edited or deleted.
+                </span>
+              </div>
+
+              <Pagination
+                targetId="rate-change-history-table"
+                page={pag.page}
+                pageCount={pag.pageCount}
+                total={pag.total}
+                pageSize={pag.pageSize}
+                start={pag.start}
+                onPageChange={pag.setPage}
+                onPageSizeChange={pag.setPageSize}
+                itemLabel="rate changes"
+              />
+            </div>
+          </div>
+        )}
+      </SectionCard>
     </div>
   );
 }

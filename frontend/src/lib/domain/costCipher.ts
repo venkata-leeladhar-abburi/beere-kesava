@@ -9,12 +9,20 @@
  *   L  O  R  D  G  A  N  E  S  H
  */
 const DIGIT_TO_LETTER: Record<string, string> = {
-  "1": "L", "2": "O", "3": "R", "4": "D", "5": "G",
-  "6": "A", "7": "N", "8": "E", "9": "S", "0": "H",
+  "1": "L",
+  "2": "O",
+  "3": "R",
+  "4": "D",
+  "5": "G",
+  "6": "A",
+  "7": "N",
+  "8": "E",
+  "9": "S",
+  "0": "H",
 };
 
 const LETTER_TO_DIGIT: Record<string, string> = Object.fromEntries(
-  Object.entries(DIGIT_TO_LETTER).map(([digit, letter]) => [letter, digit]),
+  Object.entries(DIGIT_TO_LETTER).map(([digit, letter]) => [letter, digit])
 );
 
 /** Encodes a whole-rupee cost price into its cipher letters, e.g. 1234 -> "LORD". */
@@ -22,7 +30,7 @@ export function encodeCostCipher(amountInRupees: number): string {
   const digits = String(Math.round(Math.max(0, amountInRupees)));
   return digits
     .split("")
-    .map(d => DIGIT_TO_LETTER[d] ?? d)
+    .map((d) => DIGIT_TO_LETTER[d] ?? d)
     .join("");
 }
 

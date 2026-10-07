@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import {
-  Factory, ShoppingBag, AlertCircle as WarningCircle, Package, X,
-} from "lucide-react";
+import { Factory, ShoppingBag, AlertCircle as WarningCircle, Package, X } from "lucide-react";
 import { useBulkOrders } from "@/features/bulk-orders";
 import { useDesignLibrary, DesignEntry } from "@/features/design-library";
 import { T, F, lbl } from "./constants";
@@ -16,7 +14,16 @@ import { Modal, type ModalSize } from "../../../../shared/ui/overlay";
 // Deterministic pip colour from a stable palette, keyed by id, so real
 // weavers (fetched from the backend) still get a consistent avatar colour
 // without needing a "bg" field the backend doesn't have.
-const PIP_PALETTE = ["#6E0F2D", "#C4923A", "#69635E", "#4A061B", "#A05080", "#1E6640", "#3D0E1A", "#2C4A8B"];
+const PIP_PALETTE = [
+  "#6E0F2D",
+  "#C4923A",
+  "#69635E",
+  "#4A061B",
+  "#A05080",
+  "#1E6640",
+  "#3D0E1A",
+  "#2C4A8B",
+];
 export function pipColor(id: string): string {
   let hash = 0;
   for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
@@ -33,13 +40,36 @@ function sizeForWidth(width: number): ModalSize {
   return "lg";
 }
 
-// eslint-disable-next-line no-restricted-syntax -- `width` here is a bucketing input to sizeForWidth(), never applied as CSS; Modal's own size enum handles responsive sizing
-export function PickerShell({ title, onClose, children, width = 480 }: { title: string; onClose: () => void; children: React.ReactNode; width?: number }) {
+export function PickerShell({
+  title,
+  onClose,
+  children,
+  // eslint-disable-next-line no-restricted-syntax -- `width` here is a bucketing input to sizeForWidth(), never applied as CSS; Modal's own size enum handles responsive sizing
+  width = 480,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+  width?: number;
+}) {
   return (
-    <Modal open onOpenChange={o => !o && onClose()} size={sizeForWidth(width)}>
-      <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+    <Modal open onOpenChange={(o) => !o && onClose()} size={sizeForWidth(width)}>
+      <div
+        style={{
+          padding: "20px 24px 16px",
+          borderBottom: `1px solid ${T.borderDef}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
+      >
         <Dialog.Title asChild>
-          <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
+          <div
+            style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}
+          >
+            {title}
+          </div>
         </Dialog.Title>
         <Dialog.Description className="sr-only">{title}</Dialog.Description>
         <Dialog.Close asChild>
@@ -52,81 +82,213 @@ export function PickerShell({ title, onClose, children, width = 480 }: { title: 
 }
 
 // ── Weaver Picker ─────────────────────────────────────────────────────────────
-export function WeaverPickerModal({ weavers, onClose, onSelect }: { weavers: WeaverOption[]; onClose: () => void; onSelect: (w: WeaverOption) => void }) {
+export function WeaverPickerModal({
+  weavers,
+  onClose,
+  onSelect,
+}: {
+  weavers: WeaverOption[];
+  onClose: () => void;
+  onSelect: (w: WeaverOption) => void;
+}) {
   const [sel, setSel] = useState<string | null>(null);
   return (
     <PickerShell title="Assign Weaver" onClose={onClose}>
-      <div className="grid grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 10, padding: "0 24px" }}>
-        {weavers.map(w => (
-          <Button key={w.id} onClick={() => setSel(w.id)} variant="ghost" fullWidth
-            className={`h-auto justify-start gap-2.5 p-[12px_14px] rounded-xl border-2 ${sel === w.id ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
+      <div
+        className="grid grid-cols-1 md:grid-cols-2"
+        style={{ display: "grid", gap: 10, padding: "0 24px" }}
+      >
+        {weavers.map((w) => (
+          <Button
+            key={w.id}
+            onClick={() => setSel(w.id)}
+            variant="ghost"
+            fullWidth
+            className={`h-auto justify-start gap-2.5 p-[12px_14px] rounded-xl border-2 ${sel === w.id ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}
+          >
             <Pip initials={w.initials} bg={pipColor(w.id)} size={34} />
             <div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{w.name}</div>
-              <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.taupe }}>{w.looms} loom{w.looms !== 1 ? "s" : ""}</div>
+              <div
+                style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}
+              >
+                {w.name}
+              </div>
+              <div
+                style={{
+                  fontFamily: F.ui,
+                  fontVariantNumeric: "tabular-nums",
+                  fontSize: 12,
+                  color: T.taupe,
+                }}
+              >
+                {w.looms} loom{w.looms !== 1 ? "s" : ""}
+              </div>
             </div>
           </Button>
         ))}
       </div>
       <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <Button onClick={() => { const w = weavers.find(x => x.id === sel); if (w) onSelect(w); }} disabled={!sel}
-          variant="primary" size="lg" className="flex-[2] h-[46px]">
+        <Button
+          onClick={() => {
+            const w = weavers.find((x) => x.id === sel);
+            if (w) onSelect(w);
+          }}
+          disabled={!sel}
+          variant="primary"
+          size="lg"
+          className="flex-[2] h-[46px]"
+        >
           Assign Weaver
         </Button>
-        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">
+          Cancel
+        </Button>
       </div>
     </PickerShell>
   );
 }
 
 // ── Bulk Order Picker ─────────────────────────────────────────────────────────
-export function BulkOrderPickerModal({ onClose, onSelect }: { onClose: () => void; onSelect: (ref: string | null, label: string) => void }) {
+export function BulkOrderPickerModal({
+  onClose,
+  onSelect,
+}: {
+  onClose: () => void;
+  onSelect: (ref: string | null, label: string) => void;
+}) {
   const { bulkOrders } = useBulkOrders();
   const [sel, setSel] = useState<string | "general" | null>(null);
   return (
     <PickerShell title="Assign Bulk Order" onClose={onClose}>
-      <div style={{ padding: "0 24px", display: "flex", flexDirection: "column", gap: 8, maxHeight: 340, overflowY: "auto" }}>
+      <div
+        style={{
+          padding: "0 24px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+          maxHeight: 340,
+          overflowY: "auto",
+        }}
+      >
         {/* General Stock */}
-        <Button onClick={() => setSel("general")} variant="ghost" fullWidth
-          className={`h-auto justify-start gap-3 p-[13px_16px] rounded-xl border-2 ${sel === "general" ? "border-[#1E6640] bg-[rgba(30,102,64,0.06)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(30,102,64,0.06)]`}>
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: T.green, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <Button
+          onClick={() => setSel("general")}
+          variant="ghost"
+          fullWidth
+          className={`h-auto justify-start gap-3 p-[13px_16px] rounded-xl border-2 ${sel === "general" ? "border-[#1E6640] bg-[rgba(30,102,64,0.06)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(30,102,64,0.06)]`}
+        >
+          <div
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 10,
+              background: T.green,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
             <Package size={18} color="#fff" />
           </div>
           <div>
-            <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green }}>General Stock</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Not linked to any bulk order</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green }}>
+              General Stock
+            </div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+              Not linked to any bulk order
+            </div>
           </div>
         </Button>
-        <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", margin: "4px 0 2px" }}>Active Bulk Orders</div>
-        {bulkOrders.map(o => (
-          <Button key={o.ref} onClick={() => setSel(o.ref)} variant="ghost" fullWidth
-            className={`h-auto justify-start gap-3 p-[12px_16px] rounded-xl border-2 ${sel === o.ref ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(110,15,45,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <div
+          style={{
+            fontFamily: F.ui,
+            fontSize: 12,
+            fontWeight: 700,
+            color: T.taupe,
+            textTransform: "uppercase",
+            letterSpacing: "1px",
+            margin: "4px 0 2px",
+          }}
+        >
+          Active Bulk Orders
+        </div>
+        {bulkOrders.map((o) => (
+          <Button
+            key={o.ref}
+            onClick={() => setSel(o.ref)}
+            variant="ghost"
+            fullWidth
+            className={`h-auto justify-start gap-3 p-[12px_16px] rounded-xl border-2 ${sel === o.ref ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}
+          >
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 10,
+                background: "rgba(110,15,45,0.10)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
               <ShoppingBag size={16} color={T.royalBurgundy} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <EntityCode type="order" value={o.ref} size="sm" />
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{o.customer} · {o.sareeType}</div>
+              <div
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: 12,
+                  color: T.luxuryBrown,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {o.customer} · {o.sareeType}
+              </div>
             </div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, flexShrink: 0 }}>{o.done}/{o.total}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, flexShrink: 0 }}>
+              {o.done}/{o.total}
+            </div>
           </Button>
         ))}
       </div>
       <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <Button onClick={() => {
-          if (sel === "general") { onSelect(null, "General Stock"); }
-          else if (sel) { const o = bulkOrders.find(x => x.ref === sel); if (o) onSelect(o.ref, `${o.ref} · ${o.customer}`); }
-        }} disabled={!sel} variant="primary" size="lg" className="flex-[2] h-[46px]">
+        <Button
+          onClick={() => {
+            if (sel === "general") {
+              onSelect(null, "General Stock");
+            } else if (sel) {
+              const o = bulkOrders.find((x) => x.ref === sel);
+              if (o) onSelect(o.ref, `${o.ref} · ${o.customer}`);
+            }
+          }}
+          disabled={!sel}
+          variant="primary"
+          size="lg"
+          className="flex-[2] h-[46px]"
+        >
           Assign
         </Button>
-        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">
+          Cancel
+        </Button>
       </div>
     </PickerShell>
   );
 }
 
 // ── Design Code Picker ────────────────────────────────────────────────────────
-export function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => void; onSelect: (code: string) => void }) {
+export function DesignCodePickerModal({
+  onClose,
+  onSelect,
+}: {
+  onClose: () => void;
+  onSelect: (code: string) => void;
+}) {
   const { designs, addDesign } = useDesignLibrary();
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<string | null>(null);
@@ -135,18 +297,29 @@ export function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => vo
   const [newWeaver, setNewWeaver] = useState("");
   const [newNotes, setNewNotes] = useState("");
 
-  const filtered = designs.filter(d =>
-    d.code.toLowerCase().includes(q.toLowerCase()) ||
-    (d.name && d.name.toLowerCase().includes(q.toLowerCase()))
+  const filtered = designs.filter(
+    (d) =>
+      d.code.toLowerCase().includes(q.toLowerCase()) ||
+      (d.name && d.name.toLowerCase().includes(q.toLowerCase()))
   );
 
   function handleSaveNew() {
     if (!newCode.trim()) return;
     const entry: DesignEntry = {
-      code: newCode.trim(), name: "", typeCode: "", typeName: "",
-      desc: "", color: "", weaverName: newWeaver.trim(), notesForWeaver: newNotes.trim(),
-      colorSlipPhoto: null, designGraph: null,
-      batches: 0, total: 0, hasColorSlip: false, hasGraph: false,
+      code: newCode.trim(),
+      name: "",
+      typeCode: "",
+      typeName: "",
+      desc: "",
+      color: "",
+      weaverName: newWeaver.trim(),
+      notesForWeaver: newNotes.trim(),
+      colorSlipPhoto: null,
+      designGraph: null,
+      batches: 0,
+      total: 0,
+      hasColorSlip: false,
+      hasGraph: false,
     };
     addDesign(entry);
     onSelect(newCode.trim());
@@ -156,8 +329,14 @@ export function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => vo
     <PickerShell title="Assign Design Code" onClose={onClose} width={540}>
       {/* Mode toggle */}
       <div style={{ padding: "0 24px 16px", display: "flex", gap: 8 }}>
-        {(["search", "new"] as const).map(m => (
-          <Button key={m} onClick={() => setMode(m)} variant={mode === m ? "primary" : "secondary"} size="md" className="flex-1 h-[38px]">
+        {(["search", "new"] as const).map((m) => (
+          <Button
+            key={m}
+            onClick={() => setMode(m)}
+            variant={mode === m ? "primary" : "secondary"}
+            size="md"
+            className="flex-1 h-[38px]"
+          >
             {m === "search" ? "Select Existing" : "+ Create New"}
           </Button>
         ))}
@@ -166,66 +345,209 @@ export function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => vo
       {mode === "search" ? (
         <>
           <div style={{ padding: "0 24px 12px" }}>
-            <SearchInput aria-label="Search design code or name" value={q} onChange={e => setQ(e.target.value)} placeholder="Search design code or name…" />
+            <SearchInput
+              aria-label="Search design code or name"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search design code or name…"
+            />
           </div>
-          <div style={{ padding: "0 24px", maxHeight: 280, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
-            {filtered.map(d => (
-              <Button key={d.code} onClick={() => setSel(d.code)} variant="ghost" fullWidth
-                className={`h-auto justify-start gap-3 p-[11px_14px] rounded-[11px] border-2 ${sel === d.code ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
-                <span style={{ flexShrink: 0 }}><EntityCode type="design" value={d.code} /></span>
+          <div
+            style={{
+              padding: "0 24px",
+              maxHeight: 280,
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: 6,
+            }}
+          >
+            {filtered.map((d) => (
+              <Button
+                key={d.code}
+                onClick={() => setSel(d.code)}
+                variant="ghost"
+                fullWidth
+                className={`h-auto justify-start gap-3 p-[11px_14px] rounded-[11px] border-2 ${sel === d.code ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}
+              >
+                <span style={{ flexShrink: 0 }}>
+                  <EntityCode type="design" value={d.code} />
+                </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  {d.name && <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.name}</div>}
-                  {d.weaverName && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Weaver: {d.weaverName}</div>}
+                  {d.name && (
+                    <div
+                      style={{
+                        fontFamily: F.ui,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: T.luxuryBrown,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {d.name}
+                    </div>
+                  )}
+                  {d.weaverName && (
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                      Weaver: {d.weaverName}
+                    </div>
+                  )}
                 </div>
                 {(d.hasGraph || d.hasColorSlip) && (
                   <div style={{ display: "flex", gap: 4 }}>
-                    {d.hasColorSlip && <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(30,102,64,0.10)", color: T.green, borderRadius: 5, padding: "2px 7px", fontWeight: 600 }}>Slip</span>}
-                    {d.hasGraph && <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(30,102,64,0.10)", color: T.green, borderRadius: 5, padding: "2px 7px", fontWeight: 600 }}>Graph</span>}
+                    {d.hasColorSlip && (
+                      <span
+                        style={{
+                          fontFamily: F.ui,
+                          fontSize: 12,
+                          background: "rgba(30,102,64,0.10)",
+                          color: T.green,
+                          borderRadius: 5,
+                          padding: "2px 7px",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Slip
+                      </span>
+                    )}
+                    {d.hasGraph && (
+                      <span
+                        style={{
+                          fontFamily: F.ui,
+                          fontSize: 12,
+                          background: "rgba(30,102,64,0.10)",
+                          color: T.green,
+                          borderRadius: 5,
+                          padding: "2px 7px",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Graph
+                      </span>
+                    )}
                   </div>
                 )}
               </Button>
             ))}
             {filtered.length === 0 && (
-              <div style={{ textAlign: "center", padding: "24px 0", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-                No designs match "{q}".<br />
-                <Button onClick={() => { setMode("new"); setNewCode(q); }} variant="link" className="mt-2.5 text-[13px] font-bold text-[#6E0F2D]">
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "24px 0",
+                  fontFamily: F.ui,
+                  fontSize: 14,
+                  color: T.taupe,
+                }}
+              >
+                No designs match "{q}".
+                <br />
+                <Button
+                  onClick={() => {
+                    setMode("new");
+                    setNewCode(q);
+                  }}
+                  variant="link"
+                  className="mt-2.5 text-[13px] font-bold text-[#6E0F2D]"
+                >
                   Create "{q}" as new design code →
                 </Button>
               </div>
             )}
           </div>
           <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-            <Button onClick={() => { if (sel) onSelect(sel); }} disabled={!sel} variant="primary" size="lg" className="flex-[2] h-[46px]">
+            <Button
+              onClick={() => {
+                if (sel) onSelect(sel);
+              }}
+              disabled={!sel}
+              variant="primary"
+              size="lg"
+              className="flex-[2] h-[46px]"
+            >
               Assign Design Code
             </Button>
-            <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
+            <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">
+              Cancel
+            </Button>
           </div>
         </>
       ) : (
         <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
-            <label htmlFor="new-design-code" style={lbl}>Design Code <span style={{ color: T.royalBurgundy }}>*</span></label>
-            <Input id="new-design-code" value={newCode} onChange={e => setNewCode(e.target.value)} placeholder="e.g. BKB-099" />
+            <label htmlFor="new-design-code" style={lbl}>
+              Design Code <span style={{ color: T.royalBurgundy }}>*</span>
+            </label>
+            <Input
+              id="new-design-code"
+              value={newCode}
+              onChange={(e) => setNewCode(e.target.value)}
+              placeholder="e.g. BKB-099"
+            />
           </div>
           <div>
-            <label htmlFor="new-design-weaver" style={lbl}>Weaver Name <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
-            <Input id="new-design-weaver" value={newWeaver} onChange={e => setNewWeaver(e.target.value)} placeholder="Assign a weaver later if needed" />
+            <label htmlFor="new-design-weaver" style={lbl}>
+              Weaver Name <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span>
+            </label>
+            <Input
+              id="new-design-weaver"
+              value={newWeaver}
+              onChange={(e) => setNewWeaver(e.target.value)}
+              placeholder="Assign a weaver later if needed"
+            />
           </div>
           <div>
-            <label htmlFor="new-design-notes" style={lbl}>Notes for Weaver <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
-            <Textarea id="new-design-notes" value={newNotes} onChange={e => setNewNotes(e.target.value)} rows={2} placeholder="Instructions to appear in the Design Library…" />
+            <label htmlFor="new-design-notes" style={lbl}>
+              Notes for Weaver <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span>
+            </label>
+            <Textarea
+              id="new-design-notes"
+              value={newNotes}
+              onChange={(e) => setNewNotes(e.target.value)}
+              rows={2}
+              placeholder="Instructions to appear in the Design Library…"
+            />
           </div>
-          <div style={{ background: "rgba(200,155,71,0.09)", border: "1px solid rgba(200,155,71,0.28)", borderRadius: 10, padding: "11px 14px", display: "flex", alignItems: "flex-start", gap: 8 }}>
-            <WarningCircle size={15} color={T.antiqueGold} style={{ flexShrink: 0, marginTop: 1 }} />
+          <div
+            style={{
+              background: "rgba(200,155,71,0.09)",
+              border: "1px solid rgba(200,155,71,0.28)",
+              borderRadius: 10,
+              padding: "11px 14px",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 8,
+            }}
+          >
+            <WarningCircle
+              size={15}
+              color={T.antiqueGold}
+              style={{ flexShrink: 0, marginTop: 1 }}
+            />
             <span style={{ fontFamily: F.ui, fontSize: 12, color: "#8B6018", lineHeight: 1.5 }}>
-              This design code will be saved to the master Design Library immediately and will appear there with full detail.
+              This design code will be saved to the master Design Library immediately and will
+              appear there with full detail.
             </span>
           </div>
           <div style={{ display: "flex", gap: 10 }}>
-            <Button onClick={handleSaveNew} disabled={!newCode.trim()} variant="primary" size="lg" className="flex-[2] h-[46px] bg-[#1E6640] hover:bg-[#1E6640]/90">
+            <Button
+              onClick={handleSaveNew}
+              disabled={!newCode.trim()}
+              variant="primary"
+              size="lg"
+              className="flex-[2] h-[46px] bg-[#1E6640] hover:bg-[#1E6640]/90"
+            >
               Save to Library & Assign
             </Button>
-            <Button onClick={() => setMode("search")} variant="secondary" size="lg" className="flex-1 h-[46px]">Back</Button>
+            <Button
+              onClick={() => setMode("search")}
+              variant="secondary"
+              size="lg"
+              className="flex-1 h-[46px]"
+            >
+              Back
+            </Button>
           </div>
         </div>
       )}
@@ -236,14 +558,25 @@ export function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => vo
 // ── Saree Type Picker ─────────────────────────────────────────────────────────
 // `sareeTypes` comes from the real backend rate catalog (ratesApi) — never a
 // hardcoded list, so the making charge shown here always matches Rates & Pricing.
-export interface SareeTypeBrief { code: string; name: string; charge: number }
+export interface SareeTypeBrief {
+  code: string;
+  name: string;
+  charge: number;
+}
 
 // `isLoading` / `isError` matter here: the rate catalog is fetched once by
 // RatesProvider, so opening this picker before that request settles used to
 // render the "no saree types configured" empty state — telling the user to go
 // add types that in fact already exist, and then filling in behind the message
 // a moment later. A pending or failed load is now shown as itself.
-export function SareeTypePickerModal({ sareeTypes, isLoading = false, isError = false, onRetry, onClose, onSelect }: {
+export function SareeTypePickerModal({
+  sareeTypes,
+  isLoading = false,
+  isError = false,
+  onRetry,
+  onClose,
+  onSelect,
+}: {
   sareeTypes: SareeTypeBrief[];
   isLoading?: boolean;
   isError?: boolean;
@@ -261,10 +594,28 @@ export function SareeTypePickerModal({ sareeTypes, isLoading = false, isError = 
           </div>
         )}
         {!isLoading && isError && (
-          <div style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 13, color: T.red, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+          <div
+            style={{
+              padding: "13px 16px",
+              fontFamily: F.ui,
+              fontSize: 13,
+              color: T.red,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 10,
+            }}
+          >
             <span>Could not load saree types.</span>
             {onRetry && (
-              <Button onClick={onRetry} variant="ghost" size="sm" className="border border-[var(--text-danger)] text-[var(--text-danger)] hover:bg-[var(--surface-danger-subtle)]">Retry</Button>
+              <Button
+                onClick={onRetry}
+                variant="ghost"
+                size="sm"
+                className="border border-[var(--text-danger)] text-[var(--text-danger)] hover:bg-[var(--surface-danger-subtle)]"
+              >
+                Retry
+              </Button>
             )}
           </div>
         )}
@@ -273,33 +624,94 @@ export function SareeTypePickerModal({ sareeTypes, isLoading = false, isError = 
             No saree types configured yet — add one in Rates &amp; Pricing first.
           </div>
         )}
-        {!isLoading && sareeTypes.map(t => (
-          <Button key={t.code} onClick={() => setSel(t.code)} variant="ghost" fullWidth
-            className={`h-auto justify-start gap-3.5 p-[13px_16px] rounded-xl border-2 ${sel === t.code ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
-            <div style={{ width: 42, height: 42, borderRadius: 11, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{t.code}</span>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{t.name}</div>
-              <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.taupe }}>{t.code}</div>
-            </div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.green }}><Money value={rupees(t.charge)} /></div>
-          </Button>
-        ))}
+        {!isLoading &&
+          sareeTypes.map((t) => (
+            <Button
+              key={t.code}
+              onClick={() => setSel(t.code)}
+              variant="ghost"
+              fullWidth
+              className={`h-auto justify-start gap-3.5 p-[13px_16px] rounded-xl border-2 ${sel === t.code ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}
+            >
+              <div
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 11,
+                  background: "rgba(110,15,45,0.08)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: F.ui,
+                    fontVariantNumeric: "tabular-nums",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: T.royalBurgundy,
+                  }}
+                >
+                  {t.code}
+                </span>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}
+                >
+                  {t.name}
+                </div>
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontVariantNumeric: "tabular-nums",
+                    fontSize: 12,
+                    color: T.taupe,
+                  }}
+                >
+                  {t.code}
+                </div>
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: T.green }}>
+                <Money value={rupees(t.charge)} />
+              </div>
+            </Button>
+          ))}
       </div>
       <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <Button onClick={() => { const t = sareeTypes.find(x => x.code === sel); if (t) onSelect(t.code, t.name); }} disabled={!sel} variant="primary" size="lg" className="flex-[2] h-[46px]">
+        <Button
+          onClick={() => {
+            const t = sareeTypes.find((x) => x.code === sel);
+            if (t) onSelect(t.code, t.name);
+          }}
+          disabled={!sel}
+          variant="primary"
+          size="lg"
+          className="flex-[2] h-[46px]"
+        >
           Assign Saree Type
         </Button>
-        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">
+          Cancel
+        </Button>
       </div>
     </PickerShell>
   );
 }
 
 // ── Per-weaver Loom Picker (capped to that weaver's own loom count) ──────────
-export function WeaverLoomPickerModal({ weaver, current, onClose, onSelect }: {
-  weaver: WeaverOption; current: number | null; onClose: () => void; onSelect: (loomNum: number) => void;
+export function WeaverLoomPickerModal({
+  weaver,
+  current,
+  onClose,
+  onSelect,
+}: {
+  weaver: WeaverOption;
+  current: number | null;
+  onClose: () => void;
+  onSelect: (loomNum: number) => void;
 }) {
   const [sel, setSel] = useState<number | null>(current);
   const LOOMS = Array.from({ length: weaver.looms }, (_, i) => i + 1);
@@ -308,11 +720,26 @@ export function WeaverLoomPickerModal({ weaver, current, onClose, onSelect }: {
       <div style={{ padding: "0 24px 8px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
         {weaver.name} operates {weaver.looms} loom{weaver.looms !== 1 ? "s" : ""}.
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3" style={{ padding: "8px 24px 0", display: "grid", gap: 12 }}>
-        {LOOMS.map(loom => (
-          <Button key={loom} onClick={() => setSel(loom)} variant="ghost"
-            className={`h-auto flex-col gap-1.5 p-[16px_12px] rounded-xl border-2 ${sel === loom ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
-            <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 18, fontWeight: 800, color: sel === loom ? T.royalBurgundy : T.luxuryBrown }}>
+      <div
+        className="grid grid-cols-1 md:grid-cols-3"
+        style={{ padding: "8px 24px 0", display: "grid", gap: 12 }}
+      >
+        {LOOMS.map((loom) => (
+          <Button
+            key={loom}
+            onClick={() => setSel(loom)}
+            variant="ghost"
+            className={`h-auto flex-col gap-1.5 p-[16px_12px] rounded-xl border-2 ${sel === loom ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}
+          >
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontVariantNumeric: "tabular-nums",
+                fontSize: 18,
+                fontWeight: 800,
+                color: sel === loom ? T.royalBurgundy : T.luxuryBrown,
+              }}
+            >
               L{loom}
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>
@@ -322,42 +749,101 @@ export function WeaverLoomPickerModal({ weaver, current, onClose, onSelect }: {
         ))}
       </div>
       <div style={{ padding: "20px 24px 24px", display: "flex", gap: 10 }}>
-        <Button onClick={() => { if (sel !== null) onSelect(sel); }} disabled={sel === null} variant="primary" size="lg" className="flex-[2] h-[46px]">
+        <Button
+          onClick={() => {
+            if (sel !== null) onSelect(sel);
+          }}
+          disabled={sel === null}
+          variant="primary"
+          size="lg"
+          className="flex-[2] h-[46px]"
+        >
           Assign Loom
         </Button>
-        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">
+          Cancel
+        </Button>
       </div>
     </PickerShell>
   );
 }
 
 // ── Factory Loom Picker (assigns a factory loom instead of a weaver) ─────────
-export function FactoryLoomPickerModal({ looms, onClose, onSelect }: { looms: LoomOption[]; onClose: () => void; onSelect: (loom: LoomOption) => void }) {
+export function FactoryLoomPickerModal({
+  looms,
+  onClose,
+  onSelect,
+}: {
+  looms: LoomOption[];
+  onClose: () => void;
+  onSelect: (loom: LoomOption) => void;
+}) {
   const [sel, setSel] = useState<string | null>(null);
-  const statusColor = (s: string) => s.toLowerCase() === "active" ? T.green : s.toLowerCase() === "maintenance" ? T.red : T.taupe;
+  const statusColor = (s: string) =>
+    s.toLowerCase() === "active" ? T.green : s.toLowerCase() === "maintenance" ? T.red : T.taupe;
   return (
     <PickerShell title="Assign Factory Loom" onClose={onClose}>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 24px" }}>
-        {looms.map(l => (
-          <Button key={l.id} onClick={() => setSel(l.id)} variant="ghost" fullWidth
-            className={`h-auto justify-start gap-3 p-[12px_14px] rounded-xl border-2 ${sel === l.id ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        {looms.map((l) => (
+          <Button
+            key={l.id}
+            onClick={() => setSel(l.id)}
+            variant="ghost"
+            fullWidth
+            className={`h-auto justify-start gap-3 p-[12px_14px] rounded-xl border-2 ${sel === l.id ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}
+          >
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 10,
+                background: "rgba(110,15,45,0.08)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
               <Factory size={17} color={T.royalBurgundy} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{l.loomNumber}</div>
+              <div
+                style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}
+              >
+                {l.loomNumber}
+              </div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{l.location}</div>
             </div>
-            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: statusColor(l.status), textTransform: "capitalize" }}>{l.status.toLowerCase()}</span>
+            <span
+              style={{
+                fontFamily: F.ui,
+                fontSize: 12,
+                fontWeight: 700,
+                color: statusColor(l.status),
+                textTransform: "capitalize",
+              }}
+            >
+              {l.status.toLowerCase()}
+            </span>
           </Button>
         ))}
       </div>
       <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <Button onClick={() => { const l = looms.find(x => x.id === sel); if (l) onSelect(l); }} disabled={!sel}
-          variant="primary" size="lg" className="flex-[2] h-[46px]">
+        <Button
+          onClick={() => {
+            const l = looms.find((x) => x.id === sel);
+            if (l) onSelect(l);
+          }}
+          disabled={!sel}
+          variant="primary"
+          size="lg"
+          className="flex-[2] h-[46px]"
+        >
           Assign Factory Loom
         </Button>
-        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">
+          Cancel
+        </Button>
       </div>
     </PickerShell>
   );
@@ -371,38 +857,57 @@ export function FactoryLoomPickerModal({ looms, onClose, onSelect }: { looms: Lo
 // for a loom that doesn't exist. Rows with no weaver yet are reported rather
 // than silently skipped, since "Assign Loom No." would otherwise look like it
 // did nothing to them.
-export function BulkWeaverLoomPickerModal({ weavers, rowsWithoutWeaver, onClose, onSelect }: {
+export function BulkWeaverLoomPickerModal({
+  weavers,
+  rowsWithoutWeaver,
+  onClose,
+  onSelect,
+}: {
   weavers: WeaverOption[];
   rowsWithoutWeaver: number;
   onClose: () => void;
   onSelect: (loomNum: number) => void;
 }) {
   const [sel, setSel] = useState<number | null>(null);
-  const maxLoom = weavers.length > 0 ? Math.min(...weavers.map(w => w.looms)) : 0;
+  const maxLoom = weavers.length > 0 ? Math.min(...weavers.map((w) => w.looms)) : 0;
   const LOOMS = Array.from({ length: maxLoom }, (_, i) => i + 1);
-  const limitedBy = weavers.filter(w => w.looms === maxLoom);
+  const limitedBy = weavers.filter((w) => w.looms === maxLoom);
 
   return (
     <PickerShell title="Assign Loom No." onClose={onClose} width={400}>
       <div style={{ padding: "0 24px 8px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-        {weavers.length === 0 ? (
-          "Assign a weaver to these rows first — a loom number belongs to a weaver."
-        ) : weavers.length === 1 ? (
-          `${weavers[0].name} operates ${maxLoom} loom${maxLoom !== 1 ? "s" : ""}.`
-        ) : (
-          `${weavers.length} weavers selected — showing looms 1–${maxLoom}, the most ${limitedBy.map(w => w.name).join(", ")} operate${limitedBy.length === 1 ? "s" : ""}.`
-        )}
+        {weavers.length === 0
+          ? "Assign a weaver to these rows first — a loom number belongs to a weaver."
+          : weavers.length === 1
+            ? `${weavers[0].name} operates ${maxLoom} loom${maxLoom !== 1 ? "s" : ""}.`
+            : `${weavers.length} weavers selected — showing looms 1–${maxLoom}, the most ${limitedBy.map((w) => w.name).join(", ")} operate${limitedBy.length === 1 ? "s" : ""}.`}
       </div>
       {rowsWithoutWeaver > 0 && weavers.length > 0 && (
         <div style={{ padding: "0 24px 8px", fontFamily: F.ui, fontSize: 12, color: T.amber }}>
-          {rowsWithoutWeaver} selected row{rowsWithoutWeaver !== 1 ? "s have" : " has"} no weaver yet and will be skipped.
+          {rowsWithoutWeaver} selected row{rowsWithoutWeaver !== 1 ? "s have" : " has"} no weaver
+          yet and will be skipped.
         </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-3" style={{ padding: "8px 24px 0", display: "grid", gap: 12 }}>
-        {LOOMS.map(loom => (
-          <Button key={loom} onClick={() => setSel(loom)} variant="ghost"
-            className={`h-auto flex-col gap-1.5 p-[16px_12px] rounded-xl border-2 ${sel === loom ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
-            <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 18, fontWeight: 800, color: sel === loom ? T.royalBurgundy : T.luxuryBrown }}>
+      <div
+        className="grid grid-cols-1 md:grid-cols-3"
+        style={{ padding: "8px 24px 0", display: "grid", gap: 12 }}
+      >
+        {LOOMS.map((loom) => (
+          <Button
+            key={loom}
+            onClick={() => setSel(loom)}
+            variant="ghost"
+            className={`h-auto flex-col gap-1.5 p-[16px_12px] rounded-xl border-2 ${sel === loom ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}
+          >
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontVariantNumeric: "tabular-nums",
+                fontSize: 18,
+                fontWeight: 800,
+                color: sel === loom ? T.royalBurgundy : T.luxuryBrown,
+              }}
+            >
               L{loom}
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>
@@ -412,10 +917,20 @@ export function BulkWeaverLoomPickerModal({ weavers, rowsWithoutWeaver, onClose,
         ))}
       </div>
       <div style={{ padding: "20px 24px 24px", display: "flex", gap: 10 }}>
-        <Button onClick={() => { if (sel !== null) onSelect(sel); }} disabled={sel === null} variant="primary" size="lg" className="flex-[2] h-[46px]">
+        <Button
+          onClick={() => {
+            if (sel !== null) onSelect(sel);
+          }}
+          disabled={sel === null}
+          variant="primary"
+          size="lg"
+          className="flex-[2] h-[46px]"
+        >
           Assign Loom
         </Button>
-        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">
+          Cancel
+        </Button>
       </div>
     </PickerShell>
   );

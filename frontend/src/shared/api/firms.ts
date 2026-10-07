@@ -72,10 +72,7 @@ export interface CreateFinancialEntryPayload {
 
 export type FirmActivityDirection = "INCOME" | "EXPENSE";
 export type FirmActivityStatus = "PENDING" | "PARTIAL" | "PAID";
-export type FirmDocumentType =
-  | "PURCHASE_ORDER"
-  | "GOODS_RECEIPT"
-  | "DISPATCH_INVOICE";
+export type FirmDocumentType = "PURCHASE_ORDER" | "GOODS_RECEIPT" | "DISPATCH_INVOICE";
 export type FirmPaymentType = "WEAVER" | "VENDOR" | "SUPPLIER" | "INVOICE" | "RETAIL_SALE";
 
 export interface FirmDocument {
@@ -115,7 +112,6 @@ export interface FirmActivity {
     pendingExpense: number;
   };
 }
-
 
 // ── Retail sales connected to a firm ─────────────────────────────────────────
 // A counter sale is rung up by shop staff with no idea which firm's books it
@@ -234,7 +230,7 @@ export const firmsApi = {
   remove: (id: string) => apiClient.delete<void>(`/firms/${id}`),
   listEntries: (firmId: string, pageSize = 200) =>
     apiClient.get<PaginatedResponse<BackendFinancialEntry>>(
-      `/firms/${firmId}/entries?pageSize=${pageSize}`,
+      `/firms/${firmId}/entries?pageSize=${pageSize}`
     ),
   addEntry: (firmId: string, payload: CreateFinancialEntryPayload) =>
     apiClient.post<BackendFinancialEntry>(`/firms/${firmId}/entries`, payload),
@@ -247,19 +243,24 @@ export const firmsApi = {
   activity: (firmId: string) => apiClient.get<FirmActivity>(`/firms/${firmId}/activity`),
 
   /** Retail sales already booked to this firm. */
-  listRetailSales: async (firmId: string, query?: RetailSaleQuery): Promise<FirmRetailSalesResponse> => {
-    const res = await apiClient.get<Omit<FirmRetailSalesResponse, "items"> & { items: RawFirmRetailSale[] }>(
-      `/firms/${firmId}/retail-sales?${retailSaleParams(query)}`,
-    );
+  listRetailSales: async (
+    firmId: string,
+    query?: RetailSaleQuery
+  ): Promise<FirmRetailSalesResponse> => {
+    const res = await apiClient.get<
+      Omit<FirmRetailSalesResponse, "items"> & { items: RawFirmRetailSale[] }
+    >(`/firms/${firmId}/retail-sales?${retailSaleParams(query)}`);
     return { ...res, items: res.items.map(normalizeRetailSale) };
   },
 
   /** The pool to pick from — unlinked retail sales, optionally including
    *  sales already sitting on another firm (linking those moves them). */
-  listConnectableRetailSales: async (query?: RetailSaleQuery): Promise<ConnectableRetailSalesResponse> => {
-    const res = await apiClient.get<Omit<ConnectableRetailSalesResponse, "items"> & { items: RawFirmRetailSale[] }>(
-      `/firms/retail-sales/connectable?${retailSaleParams(query)}`,
-    );
+  listConnectableRetailSales: async (
+    query?: RetailSaleQuery
+  ): Promise<ConnectableRetailSalesResponse> => {
+    const res = await apiClient.get<
+      Omit<ConnectableRetailSalesResponse, "items"> & { items: RawFirmRetailSale[] }
+    >(`/firms/retail-sales/connectable?${retailSaleParams(query)}`);
     return { ...res, items: res.items.map(normalizeRetailSale) };
   },
 

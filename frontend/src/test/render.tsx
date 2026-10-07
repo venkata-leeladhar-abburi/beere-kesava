@@ -28,7 +28,10 @@ const TEST_AUTH_VALUE = {
   selectRole: () => {},
   logout: () => {},
   adminViewingAs: null,
-  clearAdminView: () => {}, enterStaffView: () => {}, availableRoles: [], switchPortal: async () => {},
+  clearAdminView: () => {},
+  enterStaffView: () => {},
+  availableRoles: [],
+  switchPortal: async () => {},
 };
 
 /** Fresh QueryClient per test so cache state never leaks between tests. */
@@ -46,10 +49,7 @@ export function createTestQueryClient() {
  * that reads a TanStack Query-backed context (all the domain contexts in
  * src/features/*\/contexts).
  */
-export function renderWithQueryClient(
-  ui: React.ReactElement,
-  options?: RenderOptions,
-) {
+export function renderWithQueryClient(ui: React.ReactElement, options?: RenderOptions) {
   const queryClient = createTestQueryClient();
   return {
     queryClient,
@@ -63,7 +63,7 @@ export function renderWithQueryClient(
           <RatesProvider>{ui}</RatesProvider>
         </AuthContext.Provider>
       </QueryClientProvider>,
-      options,
+      options
     ),
   };
 }

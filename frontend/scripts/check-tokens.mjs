@@ -41,7 +41,7 @@ function parseTsRamps(ts) {
   let bm;
   while ((bm = blockRe.exec(ts))) {
     const [, ramp, body] = bm;
-    const pairRe = /(\d+):\s*'(#[0-9A-Fa-f]{6})'/g;
+    const pairRe = /(\d+):\s*['"](#[0-9A-Fa-f]{6})['"]/g;
     let pm;
     while ((pm = pairRe.exec(body))) {
       const [, step, hex] = pm;

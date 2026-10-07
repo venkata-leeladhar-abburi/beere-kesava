@@ -1,7 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { motion } from "motion/react";
-import { ChevronRight, Menu, UserRound, ChevronLeft, LogOut, X, Bell, Users, Store, Eye, IndianRupee } from "lucide-react";
+import {
+  ChevronRight,
+  Menu,
+  UserRound,
+  ChevronLeft,
+  LogOut,
+  X,
+  Bell,
+  Users,
+  Store,
+  Eye,
+  IndianRupee,
+} from "lucide-react";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import { T, F, G, EASE } from "./theme";
 import { NAV_GROUPS, findNavGroup } from "./data";
@@ -11,115 +23,261 @@ import { Drawer } from "../../../../shared/ui/overlay";
 // ═══════════════════════════════════════════════════════════════════════════════
 // SA MOBILE — MENU DRAWER + TOP NAV
 // ═══════════════════════════════════════════════════════════════════════════════
-export function SAMobileMenuDrawer({ open, onClose, activeTab, setTab }: {
-  open: boolean; onClose: () => void; activeTab: string; setTab: (v: string) => void;
+export function SAMobileMenuDrawer({
+  open,
+  onClose,
+  activeTab,
+  setTab,
+}: {
+  open: boolean;
+  onClose: () => void;
+  activeTab: string;
+  setTab: (v: string) => void;
 }) {
   return (
-    <Drawer open={open} onOpenChange={next => { if (!next) onClose(); }} side="left" size="sm">
+    <Drawer
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+      side="left"
+      size="sm"
+    >
       <div style={{ display: "flex", flexDirection: "column", height: "100%", overflowY: "auto" }}>
-            <div style={{ padding: "20px 20px 16px", borderBottom: `2px solid ${T.antiqueGold}`, display: "flex", alignItems: "center", justifyContent: "space-between", background: G.button, flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 11, overflow: "hidden", border: "1.5px solid rgba(200,155,71,0.40)" }}>
-                  <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                </div>
-                <div>
-                  <Dialog.Title asChild>
-                    <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.warmCream, lineHeight: 1.1 }}>Beere Kesava</div>
-                  </Dialog.Title>
-                  <Dialog.Description className="sr-only">Superadmin dashboard navigation menu</Dialog.Description>
-                  <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>Superadmin</div>
-                </div>
-              </div>
-              <Dialog.Close asChild>
-                <IconButton
-                  icon={X}
-                  label="Close menu"
-                  onClick={onClose}
-                  variant="ghost"
-                  className="!size-8 !rounded-[9px] border border-[rgba(245,232,208,0.20)] bg-[rgba(245,232,208,0.10)] text-[rgba(245,232,208,0.85)] hover:bg-[rgba(245,232,208,0.16)] hover:text-[rgba(245,232,208,0.85)]"
-                />
-              </Dialog.Close>
+        <div
+          style={{
+            padding: "20px 20px 16px",
+            borderBottom: `2px solid ${T.antiqueGold}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            background: G.button,
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 11,
+                overflow: "hidden",
+                border: "1.5px solid rgba(200,155,71,0.40)",
+              }}
+            >
+              <img
+                src={imgBKLogo}
+                alt="BK"
+                style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              />
             </div>
+            <div>
+              <Dialog.Title asChild>
+                <div
+                  style={{
+                    fontFamily: F.display,
+                    fontWeight: 400,
+                    fontSize: 14,
+                    color: T.warmCream,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  Beere Kesava
+                </div>
+              </Dialog.Title>
+              <Dialog.Description className="sr-only">
+                Superadmin dashboard navigation menu
+              </Dialog.Description>
+              <div
+                style={{
+                  fontFamily: F.ui,
+                  fontWeight: 500,
+                  fontSize: 12,
+                  color: "rgba(231,201,131,0.85)",
+                  letterSpacing: "2px",
+                  textTransform: "uppercase",
+                }}
+              >
+                Superadmin
+              </div>
+            </div>
+          </div>
+          <Dialog.Close asChild>
+            <IconButton
+              icon={X}
+              label="Close menu"
+              onClick={onClose}
+              variant="ghost"
+              className="!size-8 !rounded-[9px] border border-[rgba(245,232,208,0.20)] bg-[rgba(245,232,208,0.10)] text-[rgba(245,232,208,0.85)] hover:bg-[rgba(245,232,208,0.16)] hover:text-[rgba(245,232,208,0.85)]"
+            />
+          </Dialog.Close>
+        </div>
 
-            <div style={{ flex: 1, padding: "10px 12px" }}>
-              {NAV_GROUPS.map((group, gi) => {
-                const GroupIcon = group.icon;
-                const isGroupActive = findNavGroup(activeTab).key === group.key;
-                return (
-                  <div key={group.key} style={{ marginBottom: 14 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 10px 6px" }}>
-                      <GroupIcon size={16} color={isGroupActive ? T.royalBurgundy : T.taupe} />
-                      <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: isGroupActive ? T.royalBurgundy : T.luxuryBrown, letterSpacing: "0.4px", textTransform: "uppercase" as const }}>
-                        {group.label}
-                      </span>
-                    </div>
+        <div style={{ flex: 1, padding: "10px 12px" }}>
+          {NAV_GROUPS.map((group, gi) => {
+            const GroupIcon = group.icon;
+            const isGroupActive = findNavGroup(activeTab).key === group.key;
+            return (
+              <div key={group.key} style={{ marginBottom: 14 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "10px 10px 6px",
+                  }}
+                >
+                  <GroupIcon size={16} color={isGroupActive ? T.royalBurgundy : T.taupe} />
+                  <span
+                    style={{
+                      fontFamily: F.ui,
+                      fontWeight: 700,
+                      fontSize: 13,
+                      color: isGroupActive ? T.royalBurgundy : T.luxuryBrown,
+                      letterSpacing: "0.4px",
+                      textTransform: "uppercase" as const,
+                    }}
+                  >
+                    {group.label}
+                  </span>
+                </div>
 
-                    {/* Sub-items tree container with left indentation & guide line */}
-                    <div style={{
-                      marginLeft: 18,
-                      paddingLeft: 14,
-                      borderLeft: `2px solid ${isGroupActive ? "rgba(110,15,45,0.18)" : "rgba(110,15,45,0.08)"}`,
-                      marginTop: 3,
-                    }}>
-                      {group.pages.map((page, i) => {
-                        const isActive = activeTab === page.key;
-                        return (
-                          <motion.div
-                            key={page.key}
-                            initial={{ opacity: 0, x: -18 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.32, delay: 0.04 + (gi * 3 + i) * 0.03, ease: EASE }}
+                {/* Sub-items tree container with left indentation & guide line */}
+                <div
+                  style={{
+                    marginLeft: 18,
+                    paddingLeft: 14,
+                    borderLeft: `2px solid ${isGroupActive ? "rgba(110,15,45,0.18)" : "rgba(110,15,45,0.08)"}`,
+                    marginTop: 3,
+                  }}
+                >
+                  {group.pages.map((page, i) => {
+                    const isActive = activeTab === page.key;
+                    return (
+                      <motion.div
+                        key={page.key}
+                        initial={{ opacity: 0, x: -18 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{
+                          duration: 0.32,
+                          delay: 0.04 + (gi * 3 + i) * 0.03,
+                          ease: EASE,
+                        }}
+                        style={{
+                          borderRadius: 10,
+                          marginBottom: 3,
+                          border: isActive ? `1px solid ${T.borderMed}` : "1px solid transparent",
+                          background: isActive
+                            ? `linear-gradient(135deg, rgba(110,15,45,0.08) 0%, rgba(200,155,71,0.06) 100%)`
+                            : "transparent",
+                        }}
+                      >
+                        <Button
+                          variant="tertiary"
+                          fullWidth
+                          onClick={() => {
+                            setTab(page.key);
+                            onClose();
+                          }}
+                          className="!justify-between !gap-2.5 !py-[9px] !px-3 !bg-transparent !border-none"
+                        >
+                          <span
                             style={{
-                              borderRadius: 10, marginBottom: 3,
-                              border: isActive ? `1px solid ${T.borderMed}` : "1px solid transparent",
-                              background: isActive ? `linear-gradient(135deg, rgba(110,15,45,0.08) 0%, rgba(200,155,71,0.06) 100%)` : "transparent",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              fontFamily: F.ui,
+                              fontWeight: isActive ? 600 : 400,
+                              fontSize: 13.5,
+                              color: isActive ? T.royalBurgundy : T.luxuryBrown,
+                              letterSpacing: "0.05px",
                             }}
                           >
-                            <Button
-                              variant="tertiary"
-                              fullWidth
-                              onClick={() => { setTab(page.key); onClose(); }}
-                              className="!justify-between !gap-2.5 !py-[9px] !px-3 !bg-transparent !border-none"
-                            >
-                              <span style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13.5, color: isActive ? T.royalBurgundy : T.luxuryBrown, letterSpacing: "0.05px" }}>
-                                <span style={{
-                                  width: 5,
-                                  height: 5,
+                            <span
+                              style={{
+                                width: 5,
+                                height: 5,
+                                borderRadius: "50%",
+                                background: isActive ? T.royalBurgundy : "rgba(105,99,94,0.40)",
+                                flexShrink: 0,
+                              }}
+                            />
+                            {page.label}
+                            {page.sa && (
+                              <span
+                                style={{
+                                  width: 6,
+                                  height: 6,
                                   borderRadius: "50%",
-                                  background: isActive ? T.royalBurgundy : "rgba(105,99,94,0.40)",
+                                  background: T.antiqueGold,
                                   flexShrink: 0,
-                                }} />
-                                {page.label}
-                                {page.sa && <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.antiqueGold, flexShrink: 0 }} />}
-                              </span>
-                              {isActive && <ChevronRight size={13} color={T.royalBurgundy} />}
-                            </Button>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div style={{ padding: "16px 20px 28px", borderTop: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 30, height: 30, borderRadius: 9, background: "#C4923A", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(196,146,58,0.35)" }}>
-                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>SA</span>
-                </div>
-                <div>
-                  <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.luxuryBrown }}>Superadmin</div>
-                  <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe }}>Full Access · All Portals</div>
+                                }}
+                              />
+                            )}
+                          </span>
+                          {isActive && <ChevronRight size={13} color={T.royalBurgundy} />}
+                        </Button>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </div>
+            );
+          })}
+        </div>
+
+        <div
+          style={{
+            padding: "16px 20px 28px",
+            borderTop: `1px solid ${T.borderDef}`,
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 9,
+                background: "#C4923A",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 3px 10px rgba(196,146,58,0.35)",
+              }}
+            >
+              <span
+                style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}
+              >
+                SA
+              </span>
             </div>
+            <div>
+              <div
+                style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.luxuryBrown }}
+              >
+                Superadmin
+              </div>
+              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe }}>
+                Full Access · All Portals
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </Drawer>
   );
 }
 
-export function SAMobileTopNav({ onMenuOpen, onBack, onProfile, onNotifications, set, onViewAs, onLogout }: {
+export function SAMobileTopNav({
+  onMenuOpen,
+  onBack,
+  onProfile,
+  onNotifications,
+  set,
+  onViewAs,
+  onLogout,
+}: {
   onMenuOpen: () => void;
   onBack?: () => void;
   onProfile?: () => void;
@@ -186,12 +344,46 @@ export function SAMobileTopNav({ onMenuOpen, onBack, onProfile, onNotifications,
         className="!size-9 !rounded-[10px] border border-[rgba(110,15,45,0.10)] bg-transparent hover:bg-[rgba(0,0,0,0.04)]"
       />
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 9, overflow: "hidden", flexShrink: 0, border: `1px solid rgba(200,155,71,0.25)` }}>
-          <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 9,
+            overflow: "hidden",
+            flexShrink: 0,
+            border: `1px solid rgba(200,155,71,0.25)`,
+          }}
+        >
+          <img
+            src={imgBKLogo}
+            alt="BK"
+            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+          />
         </div>
         <div>
-          <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.1, letterSpacing: "0.1px" }}>Beere Kesava</div>
-          <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, letterSpacing: "0.2px" }}>Superadmin · Est. 1999</div>
+          <div
+            style={{
+              fontFamily: F.display,
+              fontWeight: 400,
+              fontSize: 14,
+              color: T.luxuryBrown,
+              lineHeight: 1.1,
+              letterSpacing: "0.1px",
+            }}
+          >
+            Beere Kesava
+          </div>
+          <div
+            style={{
+              fontFamily: F.ui,
+              fontWeight: 400,
+              fontSize: 12,
+              color: T.taupe,
+              letterSpacing: "0.2px",
+            }}
+          >
+            Superadmin · Est. 1999
+          </div>
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -200,32 +392,113 @@ export function SAMobileTopNav({ onMenuOpen, onBack, onProfile, onNotifications,
           <IconButton
             icon={Bell}
             label="Notifications"
-            onClick={() => { setShowNotif(n => !n); setShowProfile(false); }}
+            onClick={() => {
+              setShowNotif((n) => !n);
+              setShowProfile(false);
+            }}
             variant="ghost"
             className={`!size-9 !rounded-[10px] border border-[rgba(110,15,45,0.10)] bg-transparent hover:bg-[rgba(0,0,0,0.04)] ${showNotif ? "text-[#C4923A] bg-rgba(110,15,45,0.06)" : "text-[#6E0F2D]"}`}
           />
-          <div style={{ position: "absolute", top: 4, right: 4, width: 7, height: 7, borderRadius: "50%", background: "#C4923A", border: "1.5px solid #FFFDF9", pointerEvents: "none" }} />
+          <div
+            style={{
+              position: "absolute",
+              top: 4,
+              right: 4,
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              background: "#C4923A",
+              border: "1.5px solid #FFFDF9",
+              pointerEvents: "none",
+            }}
+          />
           {showNotif && (
-            <div style={{
-              position: "absolute", top: "calc(100% + 10px)", right: -42,
-              zIndex: "var(--z-tooltip)", background: "#FFFDF9",
-              borderRadius: 16, border: `1px solid ${T.borderDef}`,
-              boxShadow: "0 10px 36px rgba(44,24,16,0.18)",
-              width: "calc(100vw - 32px)", maxWidth: 310, overflow: "hidden"
-            }}>
-              <div style={{ padding: "14px 18px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(196,146,58,0.06)" }}>
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 10px)",
+                right: -42,
+                zIndex: "var(--z-tooltip)",
+                background: "#FFFDF9",
+                borderRadius: 16,
+                border: `1px solid ${T.borderDef}`,
+                boxShadow: "0 10px 36px rgba(44,24,16,0.18)",
+                width: "calc(100vw - 32px)",
+                maxWidth: 310,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  padding: "14px 18px",
+                  borderBottom: `1px solid ${T.borderDef}`,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  background: "rgba(196,146,58,0.06)",
+                }}
+              >
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Notifications</span>
-                  <span style={{ background: T.royalBurgundy, color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, borderRadius: 999, padding: "2px 7px" }}>0</span>
+                  <span
+                    style={{
+                      fontFamily: F.display,
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: T.luxuryBrown,
+                    }}
+                  >
+                    Notifications
+                  </span>
+                  <span
+                    style={{
+                      background: T.royalBurgundy,
+                      color: "#FFFDF9",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      borderRadius: 999,
+                      padding: "2px 7px",
+                    }}
+                  >
+                    0
+                  </span>
                 </div>
-                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.antiqueGold, cursor: "pointer" }}>Mark all read</span>
+                <span
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: T.antiqueGold,
+                    cursor: "pointer",
+                  }}
+                >
+                  Mark all read
+                </span>
               </div>
-              <div style={{ padding: "22px 18px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+              <div
+                style={{
+                  padding: "22px 18px",
+                  textAlign: "center",
+                  fontFamily: F.ui,
+                  fontSize: 13,
+                  color: T.taupe,
+                }}
+              >
                 No new notifications.
               </div>
-              <div style={{ padding: "10px 14px", borderTop: `1px solid ${T.borderDef}`, background: "#F7F2EA", textAlign: "center" }}>
+              <div
+                style={{
+                  padding: "10px 14px",
+                  borderTop: `1px solid ${T.borderDef}`,
+                  background: "#F7F2EA",
+                  textAlign: "center",
+                }}
+              >
                 <Button
-                  onClick={() => { setShowNotif(false); onNotifications?.(); }}
+                  onClick={() => {
+                    setShowNotif(false);
+                    onNotifications?.();
+                  }}
                   variant="tertiary"
                   fullWidth
                   className="!text-xs !font-semibold !text-[#6E0F2D] !py-1.5"
@@ -239,69 +512,171 @@ export function SAMobileTopNav({ onMenuOpen, onBack, onProfile, onNotifications,
 
         {/* Profile Avatar */}
         <div style={{ position: "relative" }}>
-          <div style={{ borderRadius: 10, border: `1px solid ${showProfile ? T.antiqueGold : T.borderDef}`, boxShadow: "0 3px 10px rgba(196,146,58,0.35)", display: "inline-block" }}>
+          <div
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${showProfile ? T.antiqueGold : T.borderDef}`,
+              boxShadow: "0 3px 10px rgba(196,146,58,0.35)",
+              display: "inline-block",
+            }}
+          >
             <Button
-              onClick={() => setShowProfile(p => !p)}
+              onClick={() => setShowProfile((p) => !p)}
               variant="tertiary"
               className="!size-9 !rounded-[10px] !p-0 !border-none !bg-[#C4923A] hover:!bg-[#C4923A]"
             >
-              <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>SA</span>
+              <span
+                style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}
+              >
+                SA
+              </span>
             </Button>
           </div>
-        {showProfile && (
-          <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: "var(--z-tooltip)", background: "#FFFDF9", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 226, maxHeight: "calc(100dvh - 84px)", overflowY: "auto", overflowX: "hidden" }}>
-            <div style={{ padding: "14px 16px", background: "rgba(196,146,58,0.06)", borderBottom: `1px solid ${T.borderDef}` }}>
-              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Superadmin</div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>Full Access · All Portals</div>
-            </div>
-            <div style={{ padding: "6px 0" }}>
-              <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <UserRound size={14} color={T.taupe} /> View Profile
-              </Button>
-              <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-              {/* Staff oversight — who works in each portal, and what each of
+          {showProfile && (
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 8px)",
+                right: 0,
+                zIndex: "var(--z-tooltip)",
+                background: "#FFFDF9",
+                borderRadius: 14,
+                border: `1px solid ${T.borderDef}`,
+                boxShadow: "0 8px 32px rgba(44,24,16,0.14)",
+                minWidth: 226,
+                maxHeight: "calc(100dvh - 84px)",
+                overflowY: "auto",
+                overflowX: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  padding: "14px 16px",
+                  background: "rgba(196,146,58,0.06)",
+                  borderBottom: `1px solid ${T.borderDef}`,
+                }}
+              >
+                <div
+                  style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}
+                >
+                  Superadmin
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 12,
+                    color: T.taupe,
+                    marginTop: 2,
+                  }}
+                >
+                  Full Access · All Portals
+                </div>
+              </div>
+              <div style={{ padding: "6px 0" }}>
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    onProfile?.();
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+                >
+                  <UserRound size={14} color={T.taupe} /> View Profile
+                </Button>
+                <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
+                {/* Staff oversight — who works in each portal, and what each of
                   them has recorded there. Mirrors SATopNav's profile menu;
                   these rows existed only on desktop before, so the same
                   account could reach them from a laptop and not from a phone. */}
-              <Button onClick={() => { setShowProfile(false); set?.("WorkerStaff"); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <Users size={14} color={T.taupe} /> Worker Staff
-              </Button>
-              <Button onClick={() => { setShowProfile(false); set?.("ShopStaff"); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <Store size={14} color={T.taupe} /> Shop Staff
-              </Button>
-              <Button onClick={() => { setShowProfile(false); set?.("AccountantStaff"); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <IndianRupee size={14} color={T.taupe} /> Accountant Staff
-              </Button>
-              <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-              {/* Opens the staff portal as yourself — not impersonation.
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    set?.("WorkerStaff");
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+                >
+                  <Users size={14} color={T.taupe} /> Worker Staff
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    set?.("ShopStaff");
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+                >
+                  <Store size={14} color={T.taupe} /> Shop Staff
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    set?.("AccountantStaff");
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+                >
+                  <IndianRupee size={14} color={T.taupe} /> Accountant Staff
+                </Button>
+                <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
+                {/* Opens the staff portal as yourself — not impersonation.
                   Anything recorded in there is attributed to this admin. */}
-              <Button onClick={() => { setShowProfile(false); onViewAs?.("worker"); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <Eye size={14} color={T.taupe} /> View as Worker Staff
-              </Button>
-              <Button onClick={() => { setShowProfile(false); onViewAs?.("shop"); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <Eye size={14} color={T.taupe} /> View as Shop Staff
-              </Button>
-              <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-              <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <ChevronLeft size={14} color={T.taupe} /> Switch Portal
-              </Button>
-              {/* Was calling onBack — so "Logout" merely returned to the portal
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    onViewAs?.("worker");
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+                >
+                  <Eye size={14} color={T.taupe} /> View as Worker Staff
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    onViewAs?.("shop");
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+                >
+                  <Eye size={14} color={T.taupe} /> View as Shop Staff
+                </Button>
+                <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    onBack?.();
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+                >
+                  <ChevronLeft size={14} color={T.taupe} /> Switch Portal
+                </Button>
+                {/* Was calling onBack — so "Logout" merely returned to the portal
                   picker and left the session open. Falls back to onBack only
                   when no logout handler is supplied, as SATopNav does. */}
-              <Button onClick={() => { setShowProfile(false); if (onLogout) onLogout(); else onBack?.(); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]">
-                <LogOut size={14} color="#C0392B" /> Logout
-              </Button>
+                <Button
+                  onClick={() => {
+                    setShowProfile(false);
+                    if (onLogout) onLogout();
+                    else onBack?.();
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]"
+                >
+                  <LogOut size={14} color="#C0392B" /> Logout
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
         </div>
       </div>
     </motion.nav>

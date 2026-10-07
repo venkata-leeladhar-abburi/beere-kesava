@@ -1,6 +1,15 @@
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { ChevronDown, ChevronUp, Factory, Truck, Users, LayoutGrid, List, type LucideIcon } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Factory,
+  Truck,
+  Users,
+  LayoutGrid,
+  List,
+  type LucideIcon,
+} from "lucide-react";
 import { T, F } from "../../theme";
 import { UnifiedSaree, SareeOrigin, SellerRank, rankSellers } from "@/features/customers";
 import { Card, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
@@ -13,9 +22,14 @@ const ALL = "__all__";
 
 // Same seller key rankSellers uses, so a dropdown choice maps to exactly one row.
 const sellerKey = (s: UnifiedSaree, origin: SareeOrigin) =>
-  origin === "weaver" ? (s.weaverId || "?") : origin === "factoryLoom" ? (s.factoryLoomId || "?") : (s.supplier || "?");
+  origin === "weaver"
+    ? s.weaverId || "?"
+    : origin === "factoryLoom"
+      ? s.factoryLoomId || "?"
+      : s.supplier || "?";
 // In-house output is grouped by batch; external stock by the purchase it came in on.
-const lotOf = (s: UnifiedSaree, origin: SareeOrigin) => (origin === "external" ? s.purchaseId : s.batchId) || "";
+const lotOf = (s: UnifiedSaree, origin: SareeOrigin) =>
+  (origin === "external" ? s.purchaseId : s.batchId) || "";
 
 // Filter state lives with the page, so a table and its highlight card always agree.
 function useRankFilter(sarees: UnifiedSaree[], origin: SareeOrigin) {
@@ -26,7 +40,7 @@ function useRankFilter(sarees: UnifiedSaree[], origin: SareeOrigin) {
   const allRanks = useMemo(() => rankSellers(sarees, origin), [sarees, origin]);
   const lotOptions = useMemo(() => {
     const set = new Set<string>();
-    sarees.forEach(s => {
+    sarees.forEach((s) => {
       if (s.origin !== origin) return;
       if (sellerFilter !== ALL && sellerKey(s, origin) !== sellerFilter) return;
       const l = lotOf(s, origin);
@@ -35,47 +49,112 @@ function useRankFilter(sarees: UnifiedSaree[], origin: SareeOrigin) {
     return [...set].sort();
   }, [sarees, origin, sellerFilter]);
   const ranks = useMemo(() => {
-    const scoped = lotFilter === ALL ? sarees : sarees.filter(s => lotOf(s, origin) === lotFilter);
+    const scoped =
+      lotFilter === ALL ? sarees : sarees.filter((s) => lotOf(s, origin) === lotFilter);
     const r = lotFilter === ALL ? allRanks : rankSellers(scoped, origin);
-    return sellerFilter === ALL ? r : r.filter(x => x.key === sellerFilter);
+    return sellerFilter === ALL ? r : r.filter((x) => x.key === sellerFilter);
   }, [sarees, origin, allRanks, sellerFilter, lotFilter]);
 
-  return { sellerFilter, setSellerFilter, lotFilter, setLotFilter, lotLabel, allRanks, lotOptions, ranks };
+  return {
+    sellerFilter,
+    setSellerFilter,
+    lotFilter,
+    setLotFilter,
+    lotLabel,
+    allRanks,
+    lotOptions,
+    ranks,
+  };
 }
 type RankFilter = ReturnType<typeof useRankFilter>;
 
-function RankFilterControls({ filter, unitLabel, compact, onChange }: { filter: RankFilter; unitLabel: string; compact?: boolean; onChange?: () => void }) {
-  const { sellerFilter, setSellerFilter, lotFilter, setLotFilter, lotLabel, allRanks, lotOptions } = filter;
+function RankFilterControls({
+  filter,
+  unitLabel,
+  compact,
+  onChange,
+}: {
+  filter: RankFilter;
+  unitLabel: string;
+  compact?: boolean;
+  onChange?: () => void;
+}) {
+  const { sellerFilter, setSellerFilter, lotFilter, setLotFilter, lotLabel, allRanks, lotOptions } =
+    filter;
   const w = compact ? "w-full" : "w-full sm:w-auto";
   return (
     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
       <Select
         value={sellerFilter}
-        onValueChange={v => { setSellerFilter(v); setLotFilter(ALL); onChange?.(); }}
-        size="sm" containerClassName={compact ? "flex-1 min-w-[120px]" : w} className={compact ? "w-full font-semibold" : "w-full sm:w-[220px] font-semibold"}
+        onValueChange={(v) => {
+          setSellerFilter(v);
+          setLotFilter(ALL);
+          onChange?.();
+        }}
+        size="sm"
+        containerClassName={compact ? "flex-1 min-w-[120px]" : w}
+        className={compact ? "w-full font-semibold" : "w-full sm:w-[220px] font-semibold"}
       >
         <SelectItem value={ALL}>All {unitLabel.toLowerCase()}s</SelectItem>
-        {allRanks.map(x => <SelectItem key={x.key} value={x.key}>{x.name}</SelectItem>)}
+        {allRanks.map((x) => (
+          <SelectItem key={x.key} value={x.key}>
+            {x.name}
+          </SelectItem>
+        ))}
       </Select>
       <Select
         value={lotFilter}
-        onValueChange={v => { setLotFilter(v); onChange?.(); }}
-        size="sm" containerClassName={compact ? "flex-1 min-w-[120px]" : w} className={compact ? "w-full font-semibold" : "w-full sm:w-[260px] font-semibold"}
+        onValueChange={(v) => {
+          setLotFilter(v);
+          onChange?.();
+        }}
+        size="sm"
+        containerClassName={compact ? "flex-1 min-w-[120px]" : w}
+        className={compact ? "w-full font-semibold" : "w-full sm:w-[260px] font-semibold"}
       >
-        <SelectItem value={ALL}>All {lotLabel === "batch" ? "batches" : "purchases"}{sellerFilter !== ALL ? ` (${lotOptions.length})` : ""}</SelectItem>
-        {lotOptions.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+        <SelectItem value={ALL}>
+          All {lotLabel === "batch" ? "batches" : "purchases"}
+          {sellerFilter !== ALL ? ` (${lotOptions.length})` : ""}
+        </SelectItem>
+        {lotOptions.map((l) => (
+          <SelectItem key={l} value={l}>
+            {l}
+          </SelectItem>
+        ))}
       </Select>
       {(sellerFilter !== ALL || lotFilter !== ALL) && (
-        <Button variant="tertiary" size="sm" onClick={() => { setSellerFilter(ALL); setLotFilter(ALL); onChange?.(); }}>Clear</Button>
+        <Button
+          variant="tertiary"
+          size="sm"
+          onClick={() => {
+            setSellerFilter(ALL);
+            setLotFilter(ALL);
+            onChange?.();
+          }}
+        >
+          Clear
+        </Button>
       )}
     </div>
   );
 }
 
-function RankTable({ title, sub, filter, unitLabel, icon }: { title: string; sub: string; filter: RankFilter; unitLabel: string; icon: LucideIcon }) {
+function RankTable({
+  title,
+  sub,
+  filter,
+  unitLabel,
+  icon,
+}: {
+  title: string;
+  sub: string;
+  filter: RankFilter;
+  unitLabel: string;
+  icon: LucideIcon;
+}) {
   const { ranks } = filter;
 
-  const max = Math.max(1, ...ranks.map(r => r.sold));
+  const max = Math.max(1, ...ranks.map((r) => r.sold));
   const [shown, setShown] = useState(RANK_PAGE);
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
 
@@ -84,15 +163,30 @@ function RankTable({ title, sub, filter, unitLabel, icon }: { title: string; sub
 
   const columns: ColumnDef<SellerRank>[] = [
     {
-      id: "rank", header: "#", width: 44,
+      id: "rank",
+      header: "#",
+      width: 44,
       accessor: () => 0,
       cell: (_v, r) => {
         const i = visible.indexOf(r);
-        return <span style={{ fontFamily: F.display, fontWeight: 700, color: i < 3 ? T.antiqueGold : T.taupe }}>{i + 1}</span>;
+        return (
+          <span
+            style={{
+              fontFamily: F.display,
+              fontWeight: 700,
+              color: i < 3 ? T.antiqueGold : T.taupe,
+            }}
+          >
+            {i + 1}
+          </span>
+        );
       },
     },
     {
-      id: "name", header: unitLabel, priority: 1, accessor: r => r.name,
+      id: "name",
+      header: unitLabel,
+      priority: 1,
+      accessor: (r) => r.name,
       cell: (_v, r) => (
         <>
           <div style={{ fontWeight: 700, color: T.luxuryBrown }}>{r.name}</div>
@@ -101,24 +195,144 @@ function RankTable({ title, sub, filter, unitLabel, icon }: { title: string; sub
       ),
     },
     {
-      id: "sold", header: "Sold", accessor: r => r.sold, width: 150,
+      id: "sold",
+      header: "Sold",
+      accessor: (r) => r.sold,
+      width: 150,
       cell: (_v, r) => (
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-          <div style={{ flex: 1, height: 7, borderRadius: 99, background: "rgba(110,15,45,0.08)", overflow: "hidden", minWidth: 70 }}>
-            <motion.div initial={{ width: 0 }} animate={{ width: `${(r.sold / max) * 100}%` }} transition={{ duration: 0.6 }}
-              style={{ height: "100%", borderRadius: 99, background: `linear-gradient(90deg, ${T.royalBurgundy}, ${T.antiqueGold})` }} />
+          <div
+            style={{
+              flex: 1,
+              height: 7,
+              borderRadius: 99,
+              background: "rgba(110,15,45,0.08)",
+              overflow: "hidden",
+              minWidth: 70,
+            }}
+          >
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${(r.sold / max) * 100}%` }}
+              transition={{ duration: 0.6 }}
+              style={{
+                height: "100%",
+                borderRadius: 99,
+                background: `linear-gradient(90deg, ${T.royalBurgundy}, ${T.antiqueGold})`,
+              }}
+            />
           </div>
-          <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, minWidth: 22 }}>{r.sold}</span>
+          <span
+            style={{
+              fontFamily: F.ui,
+              fontSize: 13,
+              fontWeight: 700,
+              color: T.royalBurgundy,
+              minWidth: 22,
+            }}
+          >
+            {r.sold}
+          </span>
         </div>
       ),
     },
-    { id: "produced", header: "Produced", priority: 3, accessor: r => r.produced, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{r.produced}</span> },
-    { id: "retail", header: "Retail", priority: 3, accessor: r => r.retail, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: "#4A7FB5" }}>{r.retail}</span> },
-    { id: "wholesale", header: "Wholesale", priority: 3, accessor: r => r.wholesale, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: "#9B4DCA" }}>{r.wholesale}</span> },
-    { id: "returned", header: "Returned", priority: 3, accessor: r => r.returned, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: r.returned ? T.crimson : T.taupe }}>{r.returned}</span> },
-    { id: "outstanding", header: "Outstanding", accessor: r => r.outstanding, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.orange }}>{r.outstanding}</span> },
-    { id: "sellThrough", header: "Sell-through", priority: 3, accessor: r => r.sellThroughPct, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: r.sellThroughPct >= 60 ? T.green : r.sellThroughPct >= 35 ? T.antiqueGold : T.crimson }}>{r.sellThroughPct}%</span> },
-    { id: "revenue", header: "Net Revenue", accessor: r => r.revenue, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{inr(r.revenue)}</span> },
+    {
+      id: "produced",
+      header: "Produced",
+      priority: 3,
+      accessor: (r) => r.produced,
+      align: "end",
+      cell: (_v, r) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>
+          {r.produced}
+        </span>
+      ),
+    },
+    {
+      id: "retail",
+      header: "Retail",
+      priority: 3,
+      accessor: (r) => r.retail,
+      align: "end",
+      cell: (_v, r) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: "#4A7FB5" }}>
+          {r.retail}
+        </span>
+      ),
+    },
+    {
+      id: "wholesale",
+      header: "Wholesale",
+      priority: 3,
+      accessor: (r) => r.wholesale,
+      align: "end",
+      cell: (_v, r) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: "#9B4DCA" }}>
+          {r.wholesale}
+        </span>
+      ),
+    },
+    {
+      id: "returned",
+      header: "Returned",
+      priority: 3,
+      accessor: (r) => r.returned,
+      align: "end",
+      cell: (_v, r) => (
+        <span
+          style={{
+            fontFamily: F.ui,
+            fontSize: 12,
+            fontWeight: 600,
+            color: r.returned ? T.crimson : T.taupe,
+          }}
+        >
+          {r.returned}
+        </span>
+      ),
+    },
+    {
+      id: "outstanding",
+      header: "Outstanding",
+      accessor: (r) => r.outstanding,
+      align: "end",
+      cell: (_v, r) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.orange }}>
+          {r.outstanding}
+        </span>
+      ),
+    },
+    {
+      id: "sellThrough",
+      header: "Sell-through",
+      priority: 3,
+      accessor: (r) => r.sellThroughPct,
+      align: "end",
+      cell: (_v, r) => (
+        <span
+          style={{
+            fontFamily: F.ui,
+            fontSize: 12,
+            fontWeight: 600,
+            color:
+              r.sellThroughPct >= 60 ? T.green : r.sellThroughPct >= 35 ? T.antiqueGold : T.crimson,
+          }}
+        >
+          {r.sellThroughPct}%
+        </span>
+      ),
+    },
+    {
+      id: "revenue",
+      header: "Net Revenue",
+      accessor: (r) => r.revenue,
+      align: "end",
+      cell: (_v, r) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>
+          {inr(r.revenue)}
+        </span>
+      ),
+    },
   ];
 
   return (
@@ -127,13 +341,44 @@ function RankTable({ title, sub, filter, unitLabel, icon }: { title: string; sub
       title={title}
       subtitle={sub}
       actions={
-        <ExportBtn onClick={() => exportCsv(`${title.toLowerCase().replace(/[^a-z]+/g, "-")}.csv`,
-          [[unitLabel, "Reference", "Produced", "Sold", "Retail", "Wholesale", "Returned", "Outstanding", "Sell-through %", "Net Revenue"],
-           ...ranks.map(r => [r.name, r.sub, r.produced, r.sold, r.retail, r.wholesale, r.returned, r.outstanding, r.sellThroughPct, r.revenue])])} />
+        <ExportBtn
+          onClick={() =>
+            exportCsv(`${title.toLowerCase().replace(/[^a-z]+/g, "-")}.csv`, [
+              [
+                unitLabel,
+                "Reference",
+                "Produced",
+                "Sold",
+                "Retail",
+                "Wholesale",
+                "Returned",
+                "Outstanding",
+                "Sell-through %",
+                "Net Revenue",
+              ],
+              ...ranks.map((r) => [
+                r.name,
+                r.sub,
+                r.produced,
+                r.sold,
+                r.retail,
+                r.wholesale,
+                r.returned,
+                r.outstanding,
+                r.sellThroughPct,
+                r.revenue,
+              ]),
+            ])
+          }
+        />
       }
     >
       <div style={{ marginBottom: 14 }}>
-        <RankFilterControls filter={filter} unitLabel={unitLabel} onChange={() => setShown(RANK_PAGE)} />
+        <RankFilterControls
+          filter={filter}
+          unitLabel={unitLabel}
+          onChange={() => setShown(RANK_PAGE)}
+        />
       </div>
 
       {/* Mobile View Toggle (placed just below the header section) */}
@@ -165,59 +410,252 @@ function RankTable({ title, sub, filter, unitLabel, icon }: { title: string; sub
       </div>
 
       {/* Mobile Card View */}
-      <div className={`grid grid-cols-1 gap-3.5 ${viewMode === "card" ? "block md:hidden" : "hidden"}`}>
+      <div
+        className={`grid grid-cols-1 gap-3.5 ${viewMode === "card" ? "block md:hidden" : "hidden"}`}
+      >
         {visible.map((r, idx) => (
-          <div key={r.key} style={{ background: "#FFFFFF", border: "1px solid rgba(110,15,45,0.12)", borderRadius: 16, padding: "16px", display: "flex", flexDirection: "column", gap: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
+          <div
+            key={r.key}
+            style={{
+              background: "#FFFFFF",
+              border: "1px solid rgba(110,15,45,0.12)",
+              borderRadius: 16,
+              padding: "16px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
+            }}
+          >
             {/* Header: Rank + Name + Reference */}
             <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: "50%",
-                background: idx < 3 ? "rgba(200,155,71,0.15)" : "rgba(110,15,45,0.06)",
-                color: idx < 3 ? T.antiqueGold : T.taupe,
-                fontFamily: F.display, fontSize: 14, fontWeight: 700,
-                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              }}>
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: idx < 3 ? "rgba(200,155,71,0.15)" : "rgba(110,15,45,0.06)",
+                  color: idx < 3 ? T.antiqueGold : T.taupe,
+                  fontFamily: F.display,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
                 #{idx + 1}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{r.name}</div>
+                <div
+                  style={{
+                    fontFamily: F.display,
+                    fontSize: 16,
+                    fontWeight: 700,
+                    color: T.luxuryBrown,
+                  }}
+                >
+                  {r.name}
+                </div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{r.sub}</div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase" }}>Net Revenue</div>
-                <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.royalBurgundy }}>{inr(r.revenue)}</div>
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 11,
+                    color: T.taupe,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Net Revenue
+                </div>
+                <div
+                  style={{
+                    fontFamily: F.display,
+                    fontSize: 16,
+                    fontWeight: 700,
+                    color: T.royalBurgundy,
+                  }}
+                >
+                  {inr(r.revenue)}
+                </div>
               </div>
             </div>
 
             {/* Sold Progress Bar */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase", width: 36 }}>Sold</span>
-              <div style={{ flex: 1, height: 7, borderRadius: 99, background: "rgba(110,15,45,0.08)", overflow: "hidden" }}>
-                <motion.div initial={{ width: 0 }} animate={{ width: `${(r.sold / max) * 100}%` }} transition={{ duration: 0.6 }}
-                  style={{ height: "100%", borderRadius: 99, background: `linear-gradient(90deg, ${T.royalBurgundy}, ${T.antiqueGold})` }} />
+              <span
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: 11,
+                  color: T.taupe,
+                  textTransform: "uppercase",
+                  width: 36,
+                }}
+              >
+                Sold
+              </span>
+              <div
+                style={{
+                  flex: 1,
+                  height: 7,
+                  borderRadius: 99,
+                  background: "rgba(110,15,45,0.08)",
+                  overflow: "hidden",
+                }}
+              >
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(r.sold / max) * 100}%` }}
+                  transition={{ duration: 0.6 }}
+                  style={{
+                    height: "100%",
+                    borderRadius: 99,
+                    background: `linear-gradient(90deg, ${T.royalBurgundy}, ${T.antiqueGold})`,
+                  }}
+                />
               </div>
-              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, minWidth: 22 }}>{r.sold}</span>
+              <span
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: T.royalBurgundy,
+                  minWidth: 22,
+                }}
+              >
+                {r.sold}
+              </span>
             </div>
 
             <div style={{ width: "100%", height: 1, background: "rgba(110,15,45,0.08)" }} />
 
             {/* Metrics Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              <div style={{ background: "#F6F4EF", borderRadius: 12, padding: "8px 10px", textAlign: "center" }}>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, color: T.taupe, letterSpacing: "0.7px", textTransform: "uppercase", marginBottom: 2 }}>PRODUCED</div>
-                <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{r.produced}</div>
+              <div
+                style={{
+                  background: "#F6F4EF",
+                  borderRadius: 12,
+                  padding: "8px 10px",
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: T.taupe,
+                    letterSpacing: "0.7px",
+                    textTransform: "uppercase",
+                    marginBottom: 2,
+                  }}
+                >
+                  PRODUCED
+                </div>
+                <div
+                  style={{
+                    fontFamily: F.display,
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: T.luxuryBrown,
+                  }}
+                >
+                  {r.produced}
+                </div>
               </div>
-              <div style={{ background: "rgba(30,102,64,0.08)", borderRadius: 12, padding: "8px 10px", textAlign: "center" }}>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, color: T.green, letterSpacing: "0.7px", textTransform: "uppercase", marginBottom: 2 }}>SOLD</div>
-                <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.green }}>{r.sold}</div>
+              <div
+                style={{
+                  background: "rgba(30,102,64,0.08)",
+                  borderRadius: 12,
+                  padding: "8px 10px",
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: T.green,
+                    letterSpacing: "0.7px",
+                    textTransform: "uppercase",
+                    marginBottom: 2,
+                  }}
+                >
+                  SOLD
+                </div>
+                <div
+                  style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.green }}
+                >
+                  {r.sold}
+                </div>
               </div>
-              <div style={{ background: "rgba(192,57,43,0.06)", borderRadius: 12, padding: "8px 10px", textAlign: "center" }}>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, color: T.crimson, letterSpacing: "0.7px", textTransform: "uppercase", marginBottom: 2 }}>OUTSTANDING</div>
-                <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.orange }}>{r.outstanding}</div>
+              <div
+                style={{
+                  background: "rgba(192,57,43,0.06)",
+                  borderRadius: 12,
+                  padding: "8px 10px",
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: T.crimson,
+                    letterSpacing: "0.7px",
+                    textTransform: "uppercase",
+                    marginBottom: 2,
+                  }}
+                >
+                  OUTSTANDING
+                </div>
+                <div
+                  style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.orange }}
+                >
+                  {r.outstanding}
+                </div>
               </div>
-              <div style={{ background: "rgba(110,15,45,0.06)", borderRadius: 12, padding: "8px 10px", textAlign: "center" }}>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.7px", textTransform: "uppercase", marginBottom: 2 }}>SELL-THROUGH</div>
-                <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: r.sellThroughPct >= 60 ? T.green : r.sellThroughPct >= 35 ? T.antiqueGold : T.crimson }}>{r.sellThroughPct}%</div>
+              <div
+                style={{
+                  background: "rgba(110,15,45,0.06)",
+                  borderRadius: 12,
+                  padding: "8px 10px",
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: T.royalBurgundy,
+                    letterSpacing: "0.7px",
+                    textTransform: "uppercase",
+                    marginBottom: 2,
+                  }}
+                >
+                  SELL-THROUGH
+                </div>
+                <div
+                  style={{
+                    fontFamily: F.display,
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color:
+                      r.sellThroughPct >= 60
+                        ? T.green
+                        : r.sellThroughPct >= 35
+                          ? T.antiqueGold
+                          : T.crimson,
+                  }}
+                >
+                  {r.sellThroughPct}%
+                </div>
               </div>
             </div>
           </div>
@@ -225,13 +663,15 @@ function RankTable({ title, sub, filter, unitLabel, icon }: { title: string; sub
       </div>
 
       {/* Desktop Table View & Mobile Table Mode */}
-      <div className={`w-full overflow-x-auto section-nav-scroll border border-[#E8DCC4] rounded-xl bg-white p-2 ${viewMode === "table" ? "block" : "hidden md:block"}`}>
+      <div
+        className={`w-full overflow-x-auto section-nav-scroll border border-[#E8DCC4] rounded-xl bg-white p-2 ${viewMode === "table" ? "block" : "hidden md:block"}`}
+      >
         <div className="min-w-[750px]">
           <DataTable
             responsive={false}
             columns={columns}
             data={visible}
-            getRowId={r => r.key}
+            getRowId={(r) => r.key}
             caption={`${title} table`}
             emptyTitle={`No ${unitLabel.toLowerCase()} data yet`}
             pagination
@@ -241,18 +681,36 @@ function RankTable({ title, sub, filter, unitLabel, icon }: { title: string; sub
 
       {/* Load more / show less */}
       {ranks.length > RANK_PAGE && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, paddingTop: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12,
+            paddingTop: 16,
+          }}
+        >
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
             Showing {visible.length} of {ranks.length}
           </span>
           {remaining > 0 ? (
-            <Button variant="secondary" size="sm" iconLeft={ChevronDown} onClick={() => setShown(s => s + RANK_PAGE)}
-              className="rounded-[10px] border-[1.5px] border-[rgba(110,15,45,0.20)] bg-[rgba(110,15,45,0.06)] text-[#6E0F2D]">
+            <Button
+              variant="secondary"
+              size="sm"
+              iconLeft={ChevronDown}
+              onClick={() => setShown((s) => s + RANK_PAGE)}
+              className="rounded-[10px] border-[1.5px] border-[rgba(110,15,45,0.20)] bg-[rgba(110,15,45,0.06)] text-[#6E0F2D]"
+            >
               Load more ({Math.min(RANK_PAGE, remaining)} more)
             </Button>
           ) : (
-            <Button variant="tertiary" size="sm" iconLeft={ChevronUp} onClick={() => setShown(RANK_PAGE)}
-              className="rounded-[10px] border-[1.5px] border-[rgba(110,15,45,0.16)] bg-transparent text-[var(--text-tertiary)]">
+            <Button
+              variant="tertiary"
+              size="sm"
+              iconLeft={ChevronUp}
+              onClick={() => setShown(RANK_PAGE)}
+              className="rounded-[10px] border-[1.5px] border-[rgba(110,15,45,0.16)] bg-transparent text-[var(--text-tertiary)]"
+            >
               Show less
             </Button>
           )}
@@ -263,48 +721,142 @@ function RankTable({ title, sub, filter, unitLabel, icon }: { title: string; sub
 }
 
 export function TopSellers({ sarees }: { sarees: UnifiedSaree[] }) {
-  const weaverF   = useRankFilter(sarees, "weaver");
-  const loomF     = useRankFilter(sarees, "factoryLoom");
+  const weaverF = useRankFilter(sarees, "weaver");
+  const loomF = useRankFilter(sarees, "factoryLoom");
   const supplierF = useRankFilter(sarees, "external");
-  const weavers = weaverF.ranks, looms = loomF.ranks, suppliers = supplierF.ranks;
+  const weavers = weaverF.ranks,
+    looms = loomF.ranks,
+    suppliers = supplierF.ranks;
 
   const best = [
-    { l: "Top Weaver",         r: weavers[0],   f: weaverF,   unit: "Weaver",       icon: <Users size={16} color={T.antiqueGold} /> },
-    { l: "Top Factory Loom",   r: looms[0],     f: loomF,     unit: "Factory Loom", icon: <Factory size={16} color={T.antiqueGold} /> },
-    { l: "Top Supplier",       r: suppliers[0], f: supplierF, unit: "Supplier",     icon: <Truck size={16} color={T.antiqueGold} /> },
+    {
+      l: "Top Weaver",
+      r: weavers[0],
+      f: weaverF,
+      unit: "Weaver",
+      icon: <Users size={16} color={T.antiqueGold} />,
+    },
+    {
+      l: "Top Factory Loom",
+      r: looms[0],
+      f: loomF,
+      unit: "Factory Loom",
+      icon: <Factory size={16} color={T.antiqueGold} />,
+    },
+    {
+      l: "Top Supplier",
+      r: suppliers[0],
+      f: supplierF,
+      unit: "Supplier",
+      icon: <Truck size={16} color={T.antiqueGold} />,
+    },
   ];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
-        {best.map(b => (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+          gap: 16,
+        }}
+      >
+        {best.map((b) => (
           <Card key={b.l} pad={18}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
               {b.icon}
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700 }}>{b.l}</span>
+              <span
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: 12,
+                  color: T.taupe,
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                  fontWeight: 700,
+                }}
+              >
+                {b.l}
+              </span>
             </div>
             <div style={{ marginBottom: 12 }}>
               <RankFilterControls filter={b.f} unitLabel={b.unit} compact />
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{b.r?.name || "—"}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 10 }}>{b.r?.sub || ""}</div>
+            <div
+              style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}
+            >
+              {b.r?.name || "—"}
+            </div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 10 }}>
+              {b.r?.sub || ""}
+            </div>
             <div style={{ display: "flex", gap: 18 }}>
               <div>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px" }}>Sold</div>
-                <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.royalBurgundy }}>{b.r?.sold ?? 0}</div>
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 12,
+                    color: T.taupe,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.8px",
+                  }}
+                >
+                  Sold
+                </div>
+                <div
+                  style={{
+                    fontFamily: F.display,
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: T.royalBurgundy,
+                  }}
+                >
+                  {b.r?.sold ?? 0}
+                </div>
               </div>
               <div>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px" }}>Net Revenue</div>
-                <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.green }}>{inr(b.r?.revenue ?? 0)}</div>
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 12,
+                    color: T.taupe,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.8px",
+                  }}
+                >
+                  Net Revenue
+                </div>
+                <div
+                  style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.green }}
+                >
+                  {inr(b.r?.revenue ?? 0)}
+                </div>
               </div>
             </div>
           </Card>
         ))}
       </div>
 
-      <RankTable title="Weavers — Selling Performance"       sub="Which weaver's sarees are actually moving out of stock." filter={weaverF} unitLabel="Weaver" icon={Users} />
-      <RankTable title="Factory Looms — Selling Performance"  sub="Which in-house loom's output sells fastest."             filter={loomF} unitLabel="Factory Loom" icon={Factory} />
-      <RankTable title="Suppliers — Selling Performance"      sub="Which external supplier's sarees sell best. Net revenue is after deducting customer refunds." filter={supplierF} unitLabel="Supplier" icon={Truck} />
+      <RankTable
+        title="Weavers — Selling Performance"
+        sub="Which weaver's sarees are actually moving out of stock."
+        filter={weaverF}
+        unitLabel="Weaver"
+        icon={Users}
+      />
+      <RankTable
+        title="Factory Looms — Selling Performance"
+        sub="Which in-house loom's output sells fastest."
+        filter={loomF}
+        unitLabel="Factory Loom"
+        icon={Factory}
+      />
+      <RankTable
+        title="Suppliers — Selling Performance"
+        sub="Which external supplier's sarees sell best. Net revenue is after deducting customer refunds."
+        filter={supplierF}
+        unitLabel="Supplier"
+        icon={Truck}
+      />
     </div>
   );
 }

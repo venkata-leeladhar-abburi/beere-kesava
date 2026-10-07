@@ -109,7 +109,7 @@ describe("notification routing", () => {
 describe("notification content", () => {
   it("reads the overdue payload the backend actually sends", () => {
     const unified = toUnifiedNotif(
-      notif("invoice_overdue", { invoiceNumber: "INV-Ravi-004", outstanding: 12500 }),
+      notif("invoice_overdue", { invoiceNumber: "INV-Ravi-004", outstanding: 12500 })
     );
     expect(unified.title).toContain("INV-Ravi-004");
     expect(unified.body).toContain("12,500");
@@ -118,7 +118,12 @@ describe("notification content", () => {
 
   it("marks a consignment shortage critical, not informational", () => {
     const unified = toUnifiedNotif(
-      notif("SHOP_RECEIPT_DISCREPANCY_ALERT", { received: 8, damaged: 1, missing: 2, code: "SGR-2627-001" }),
+      notif("SHOP_RECEIPT_DISCREPANCY_ALERT", {
+        received: 8,
+        damaged: 1,
+        missing: 2,
+        code: "SGR-2627-001",
+      })
     );
     expect(unified.priority).toBe("critical");
     expect(unified.body).toContain("2 missing");
@@ -127,23 +132,27 @@ describe("notification content", () => {
 
 describe("sale notifications", () => {
   it("files an older wholesale-channel SHOP_SALE_RECORDED under Wholesale Sales", () => {
-    expect(toUnifiedNotif(notif("SHOP_SALE_RECORDED", { channel: "WHOLESALE" })).category).toBe("wholesale");
+    expect(toUnifiedNotif(notif("SHOP_SALE_RECORDED", { channel: "WHOLESALE" })).category).toBe(
+      "wholesale"
+    );
   });
 
   it("carries what the admin bill prints for a retail sale", () => {
-    const n = toUnifiedNotif(notif("RETAIL_SALE_RECORDED", {
-      saleRef: "RETAIL-Chetan-001-001",
-      sareeId: "RAMOJI RAO-L1-B001-008",
-      customerName: "Chetan",
-      sareeType: "KJ-001 · KANJIVARAM",
-      source: { kind: "weaver", name: "Ramoji Rao", detail: "Loom 1" },
-      rate: 1500,
-      discount: 150,
-      discountNote: "10%",
-      amount: 1350,
-      paymentMethod: "cash",
-    }));
-    const byLabel = Object.fromEntries((n.details ?? []).map(d => [d.label, d.value]));
+    const n = toUnifiedNotif(
+      notif("RETAIL_SALE_RECORDED", {
+        saleRef: "RETAIL-Chetan-001-001",
+        sareeId: "RAMOJI RAO-L1-B001-008",
+        customerName: "Chetan",
+        sareeType: "KJ-001 · KANJIVARAM",
+        source: { kind: "weaver", name: "Ramoji Rao", detail: "Loom 1" },
+        rate: 1500,
+        discount: 150,
+        discountNote: "10%",
+        amount: 1350,
+        paymentMethod: "cash",
+      })
+    );
+    const byLabel = Object.fromEntries((n.details ?? []).map((d) => [d.label, d.value]));
     expect(byLabel["Saree type"]).toBe("KJ-001 · KANJIVARAM");
     expect(byLabel["Source"]).toBe("Weaver · Ramoji Rao · Loom 1");
     expect(byLabel["Discount"]).toContain("(10%)");
@@ -154,70 +163,110 @@ describe("sale notifications", () => {
   });
 
   it("lists every saree of a wholesale dispatch with its type and source", () => {
-    const n = toUnifiedNotif(notif("WHOLESALE_DISPATCH_RECORDED", {
-      customerName: "Sree Kesava",
-      sareeCount: 2,
-      totalAmount: 4000,
-      grandTotal: 4200,
-      gstPct: 5,
-      sarees: [
-        { sareeId: "A-01", sareeType: "UP-002 · UPPADA", source: { kind: "external", name: "Sree Lakshmi Silk House", detail: "Invoice INV-9" } },
-        { sareeId: "B-02", sareeType: null, source: null },
-      ],
-    }));
+    const n = toUnifiedNotif(
+      notif("WHOLESALE_DISPATCH_RECORDED", {
+        customerName: "Sree Kesava",
+        sareeCount: 2,
+        totalAmount: 4000,
+        grandTotal: 4200,
+        gstPct: 5,
+        sarees: [
+          {
+            sareeId: "A-01",
+            sareeType: "UP-002 · UPPADA",
+            source: { kind: "external", name: "Sree Lakshmi Silk House", detail: "Invoice INV-9" },
+          },
+          { sareeId: "B-02", sareeType: null, source: null },
+        ],
+      })
+    );
     expect(n.sarees).toEqual([
-      { sareeId: "A-01", sareeType: "UP-002 · UPPADA", source: "External purchase · Sree Lakshmi Silk House · Invoice INV-9" },
+      {
+        sareeId: "A-01",
+        sareeType: "UP-002 · UPPADA",
+        source: "External purchase · Sree Lakshmi Silk House · Invoice INV-9",
+      },
       { sareeId: "B-02", sareeType: null, source: null },
     ]);
   });
 
   it("shows a whole counter bill as one notification with every saree priced", () => {
-    const n = toUnifiedNotif(notif("RETAIL_BILL_RECORDED", {
-      billRef: "RETAIL-Chetan-001-001",
-      customerName: "Chetan",
-      sareeCount: 2,
-      retailTotal: 3000,
-      discount: 150,
-      total: 2850,
-      lines: [
-        { sareeId: "A-01", sareeType: "KJ-001 · KANJIVARAM", source: { kind: "factory", name: "Factory Loom FL-03" }, rate: 1500, discount: 150, discountNote: "10%", amount: 1350 },
-        { sareeId: "B-02", sareeType: null, source: null, rate: 1500, discount: 0, amount: 1500 },
-      ],
-    }));
+    const n = toUnifiedNotif(
+      notif("RETAIL_BILL_RECORDED", {
+        billRef: "RETAIL-Chetan-001-001",
+        customerName: "Chetan",
+        sareeCount: 2,
+        retailTotal: 3000,
+        discount: 150,
+        total: 2850,
+        lines: [
+          {
+            sareeId: "A-01",
+            sareeType: "KJ-001 · KANJIVARAM",
+            source: { kind: "factory", name: "Factory Loom FL-03" },
+            rate: 1500,
+            discount: 150,
+            discountNote: "10%",
+            amount: 1350,
+          },
+          { sareeId: "B-02", sareeType: null, source: null, rate: 1500, discount: 0, amount: 1500 },
+        ],
+      })
+    );
     expect(n.title).toBe("Retail Sale — RETAIL-Chetan-001-001");
     expect(n.body).toBe("2 sarees sold to Chetan for ₹2,850 after ₹150 off.");
-    const byLabel = Object.fromEntries((n.details ?? []).map(d => [d.label, d.value]));
+    const byLabel = Object.fromEntries((n.details ?? []).map((d) => [d.label, d.value]));
     expect(byLabel["Final amount"]).toBe("₹2,850");
-    expect(n.sarees?.map(x => x.price)).toEqual(["₹1,500 − ₹150 (10%) = ₹1,350", "₹1,500"]);
+    expect(n.sarees?.map((x) => x.price)).toEqual(["₹1,500 − ₹150 (10%) = ₹1,350", "₹1,500"]);
     expect(n.sarees?.[0].source).toBe("Factory loom · Factory Loom FL-03");
   });
 
   it("shows a GST bill's tax as its own rows and prices lines before GST", () => {
-    const n = toUnifiedNotif(notif("RETAIL_BILL_RECORDED", {
-      billRef: "RETAIL-Chetan-001-001",
-      customerName: "Chetan",
-      sareeCount: 1,
-      retailTotal: 1500,
-      discount: 150,
-      taxable: 1350,
-      gst: 68,
-      gstRate: 5,
-      customerGstin: "36AAACR5055K1Z5",
-      total: 1418,
-      lines: [{ sareeId: "A-01", rate: 1500, discount: 150, discountNote: "10%", amount: 1418, gstAmount: 68 }],
-    }));
+    const n = toUnifiedNotif(
+      notif("RETAIL_BILL_RECORDED", {
+        billRef: "RETAIL-Chetan-001-001",
+        customerName: "Chetan",
+        sareeCount: 1,
+        retailTotal: 1500,
+        discount: 150,
+        taxable: 1350,
+        gst: 68,
+        gstRate: 5,
+        customerGstin: "36AAACR5055K1Z5",
+        total: 1418,
+        lines: [
+          {
+            sareeId: "A-01",
+            rate: 1500,
+            discount: 150,
+            discountNote: "10%",
+            amount: 1418,
+            gstAmount: 68,
+          },
+        ],
+      })
+    );
     expect(n.body).toBe("1 saree sold to Chetan for ₹1,418 incl. 5% GST after ₹150 off.");
-    const byLabel = Object.fromEntries((n.details ?? []).map(d => [d.label, d.value]));
+    const byLabel = Object.fromEntries((n.details ?? []).map((d) => [d.label, d.value]));
     expect(byLabel["Taxable value"]).toBe("₹1,350");
     expect(byLabel["GST"]).toBe("5% · ₹68");
     expect(byLabel["Customer GSTIN"]).toBe("36AAACR5055K1Z5");
-    expect(n.sarees?.map(x => x.price)).toEqual(["₹1,500 − ₹150 (10%) = ₹1,350"]);
+    expect(n.sarees?.map((x) => x.price)).toEqual(["₹1,500 − ₹150 (10%) = ₹1,350"]);
   });
 
   it("says when a past bill's rate is the listed price rather than a recorded discount", () => {
-    const base = { billRef: "RETAIL-Ruchitha-004-001", sareeCount: 2, retailTotal: 56000, discount: 10000, total: 46000, lines: [] };
+    const base = {
+      billRef: "RETAIL-Ruchitha-004-001",
+      sareeCount: 2,
+      retailTotal: 56000,
+      discount: 10000,
+      total: 46000,
+      lines: [],
+    };
     const note = (payload: Record<string, unknown>) =>
-      toUnifiedNotif(notif("RETAIL_BILL_RECORDED", payload)).details?.find(d => d.label === "Note");
+      toUnifiedNotif(notif("RETAIL_BILL_RECORDED", payload)).details?.find(
+        (d) => d.label === "Note"
+      );
 
     expect(note({ ...base, rateFromListedPrice: true })?.value).toContain("listed price");
     expect(note(base)).toBeUndefined();

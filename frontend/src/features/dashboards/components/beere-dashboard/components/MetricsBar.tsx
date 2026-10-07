@@ -1,17 +1,17 @@
-import { motion } from 'motion/react';
-import { T, EASE } from '../theme';
-import { IcoResourceMgmt, IcoFabricRoll, IcoInvoice, IcoQualityCheck, IcoTruck } from '../ui';
-import { AnimatedNumber } from '../ui';
-import { useDashboardMetrics } from '../hooks/useDashboardMetrics';
-import { LuxuryStatsCard, StatItem } from '@/shared/ui/LuxuryStatsCard';
+import { motion } from "motion/react";
+import { T, EASE } from "../theme";
+import { IcoResourceMgmt, IcoFabricRoll, IcoInvoice, IcoQualityCheck, IcoTruck } from "../ui";
+import { AnimatedNumber } from "../ui";
+import { useDashboardMetrics } from "../hooks/useDashboardMetrics";
+import { LuxuryStatsCard, StatItem } from "@/shared/ui/LuxuryStatsCard";
 
 /** Icon set in the same order as the metrics array from useDashboardMetrics */
 const ICONS = [
   <IcoResourceMgmt key="resource-mgmt" sz={22} col={T.warmCream} />,
-  <IcoFabricRoll   key="fabric-roll"   sz={22} col={T.warmCream} />,
-  <IcoInvoice      key="invoice"       sz={22} col={T.warmCream} />,
+  <IcoFabricRoll key="fabric-roll" sz={22} col={T.warmCream} />,
+  <IcoInvoice key="invoice" sz={22} col={T.warmCream} />,
   <IcoQualityCheck key="quality-check" sz={22} col={T.warmCream} />,
-  <IcoTruck        key="truck"         sz={22} col={T.warmCream} />,
+  <IcoTruck key="truck" sz={22} col={T.warmCream} />,
 ];
 
 export function MetricsBar() {

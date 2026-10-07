@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { useBatches } from "@/features/production";
 import { rupees } from "@/lib/domain/money";
@@ -6,12 +5,7 @@ import { Money } from "@/shared/ui/domain";
 import { isBatchDoneForWeaver } from "./batchCompletion";
 import { useCurrentWeaver } from "./useCurrentWeaver";
 import { GeneralDispatchInstructionsBlock } from "./desktop/batchCardHelpers";
-import {
-  Package, RotateCcw,
-  Layers,
-  CheckCircle2,
-  AlertTriangle,
-} from "lucide-react";
+import { Package, RotateCcw, Layers, CheckCircle2, AlertTriangle } from "lucide-react";
 
 import { useAuth } from "../../../../contexts/AuthContext";
 import { MobileWeaverHeroSection } from "./MobileWeaverHeroSection";
@@ -19,24 +13,29 @@ import { BatchHistoryPage } from "./BatchHistoryPage";
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { LoadingState, ErrorState } from "@/shared/ui/state";
 import { AlertCircle, History, ListChecks } from "lucide-react";
-import {
-  C, F, HeroHeader, MobileBatchCard, CompletedBatchCard, MyBatchEntry } from './theme';
+import { C, F, HeroHeader, MobileBatchCard, CompletedBatchCard, MyBatchEntry } from "./theme";
 import { isRowProduced, formatDueDate } from "./batchCompletion";
 import { DataTable, ViewToggle, type ColumnDef, type ViewMode } from "@/shared/ui/data";
 
 export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void } = {}) {
   const { user } = useAuth();
-  const { batches, isLoading: batchesLoading, isError: batchesError, error: batchesErrorObj, refetch: refetchBatches } = useBatches();
+  const {
+    batches,
+    isLoading: batchesLoading,
+    isError: batchesError,
+    error: batchesErrorObj,
+    refetch: refetchBatches,
+  } = useBatches();
   const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
   const [batchesSubPage, setBatchesSubPage] = useState<"main" | "history" | "completed">("main");
   const [activeView, setActiveView] = useState<ViewMode>("table");
   const [completedView, setCompletedView] = useState<ViewMode>("table");
 
   const myDefectiveSarees = useMemo(() => {
-    return batches.flatMap(b =>
+    return batches.flatMap((b) =>
       b.rows
-        .filter(r => r.weaverId === weaverId && r.qcResult === "defective")
-        .map(r => ({
+        .filter((r) => r.weaverId === weaverId && r.qcResult === "defective")
+        .map((r) => ({
           sareeId: r.sareeId,
           batchId: b.batchId,
           designCode: r.designCode,
@@ -50,10 +49,12 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
   }, [batches, weaverId]);
 
   const myReworkSarees = useMemo(() => {
-    return batches.flatMap(b =>
+    return batches.flatMap((b) =>
       b.rows
-        .filter(r => r.weaverId === weaverId && r.awaitingRework === true && r.qcResult === "semi")
-        .map(r => ({ sareeId: r.sareeId, batchId: b.batchId, sareeTypeName: r.sareeTypeName }))
+        .filter(
+          (r) => r.weaverId === weaverId && r.awaitingRework === true && r.qcResult === "semi"
+        )
+        .map((r) => ({ sareeId: r.sareeId, batchId: b.batchId, sareeTypeName: r.sareeTypeName }))
     );
   }, [batches, weaverId]);
 
@@ -63,8 +64,6 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
   if (batchesSubPage === "completed") {
     return <BatchHistoryPage onBack={() => setBatchesSubPage("main")} defaultFilter="completed" />;
   }
-
-
 
   const isMyRow = (r: { weaverId?: string | null }) => {
     if (!r.weaverId) return false;
@@ -77,81 +76,177 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
   };
 
   const myWeaverBatches: MyBatchEntry[] = batches
-    .map(b => ({ ...b, myRows: b.rows.filter(isMyRow) }))
-    .filter(b => b.myRows.length > 0);
-
+    .map((b) => ({ ...b, myRows: b.rows.filter(isMyRow) }))
+    .filter((b) => b.myRows.length > 0);
 
   const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(isBatchDoneForWeaver);
-  const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !isBatchDoneForWeaver(b));
+  const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter((b) => !isBatchDoneForWeaver(b));
   const totalMyActive = myActiveBatches.length;
-
-
 
   const activeBatchColumns: ColumnDef<MyBatchEntry>[] = [
     {
-      id: "batchId", header: "Batch ID", priority: 1, accessor: b => b.batchId,
-      cell: (_v, b) => <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 15, color: C.burg }}>{b.batchId}</span>,
+      id: "batchId",
+      header: "Batch ID",
+      priority: 1,
+      accessor: (b) => b.batchId,
+      cell: (_v, b) => (
+        <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 15, color: C.burg }}>
+          {b.batchId}
+        </span>
+      ),
     },
     {
-      id: "status", header: "Status", priority: 2, type: "badge", accessor: b => b.status,
+      id: "status",
+      header: "Status",
+      priority: 2,
+      type: "badge",
+      accessor: (b) => b.status,
       cell: (_v, b) => (
-        <span style={{ fontFamily: F.u, fontSize: 12, color: b.status === "active" ? C.green : C.gold, background: b.status === "active" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.15)", borderRadius: 999, padding: "4px 12px", fontWeight: 600 }}>
+        <span
+          style={{
+            fontFamily: F.u,
+            fontSize: 12,
+            color: b.status === "active" ? C.green : C.gold,
+            background: b.status === "active" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.15)",
+            borderRadius: 999,
+            padding: "4px 12px",
+            fontWeight: 600,
+          }}
+        >
           {b.status === "active" ? "Open — Weaving" : "Draft"}
         </span>
       ),
     },
-    { id: "sarees", header: "Sarees Assigned", priority: 2, type: "number", accessor: b => b.myRows.length },
     {
-      id: "produced", header: "Produced", priority: 2, accessor: b => b.myRows.filter(isRowProduced).length,
+      id: "sarees",
+      header: "Sarees Assigned",
+      priority: 2,
+      type: "number",
+      accessor: (b) => b.myRows.length,
+    },
+    {
+      id: "produced",
+      header: "Produced",
+      priority: 2,
+      accessor: (b) => b.myRows.filter(isRowProduced).length,
       cell: (_v, b) => {
         const total = b.myRows.length || 1;
         const produced = b.myRows.filter(isRowProduced).length;
-        return <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{produced} of {b.myRows.length} ({Math.round((produced / total) * 100)}%)</span>;
+        return (
+          <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>
+            {produced} of {b.myRows.length} ({Math.round((produced / total) * 100)}%)
+          </span>
+        );
       },
     },
     {
-      id: "qc", header: "QC Passed", priority: 2, accessor: b => b.myRows.filter(r => r.qcPassed === true).length,
+      id: "qc",
+      header: "QC Passed",
+      priority: 2,
+      accessor: (b) => b.myRows.filter((r) => r.qcPassed === true).length,
       cell: (_v, b) => {
         const total = b.myRows.length || 1;
-        const passed = b.myRows.filter(r => r.qcPassed === true).length;
-        return <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{passed} of {b.myRows.length} ({Math.round((passed / total) * 100)}%)</span>;
+        const passed = b.myRows.filter((r) => r.qcPassed === true).length;
+        return (
+          <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>
+            {passed} of {b.myRows.length} ({Math.round((passed / total) * 100)}%)
+          </span>
+        );
       },
     },
-    { id: "rework", header: "Rework", priority: 2, type: "number", accessor: b => b.myRows.filter(r => r.awaitingRework === true).length },
     {
-      id: "due", header: "Due Date", priority: 2, accessor: b => b.dueDate,
-      cell: (_v, b) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{formatDueDate(b.dueDate) || "—"}</span>,
+      id: "rework",
+      header: "Rework",
+      priority: 2,
+      type: "number",
+      accessor: (b) => b.myRows.filter((r) => r.awaitingRework === true).length,
+    },
+    {
+      id: "due",
+      header: "Due Date",
+      priority: 2,
+      accessor: (b) => b.dueDate,
+      cell: (_v, b) => (
+        <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>
+          {formatDueDate(b.dueDate) || "—"}
+        </span>
+      ),
     },
   ];
 
   const completedBatchColumns: ColumnDef<MyBatchEntry>[] = [
     {
-      id: "batchId", header: "Batch ID", priority: 1, accessor: b => b.batchId,
-      cell: (_v, b) => <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 15, color: C.burg }}>{b.batchId}</span>,
+      id: "batchId",
+      header: "Batch ID",
+      priority: 1,
+      accessor: (b) => b.batchId,
+      cell: (_v, b) => (
+        <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 15, color: C.burg }}>
+          {b.batchId}
+        </span>
+      ),
     },
     {
-      id: "status", header: "Status", priority: 2, type: "badge", accessor: () => "completed",
+      id: "status",
+      header: "Status",
+      priority: 2,
+      type: "badge",
+      accessor: () => "completed",
       cell: () => (
-        <span style={{ fontFamily: F.u, fontSize: 12, color: "#1D4ED8", background: "rgba(29,78,216,0.10)", borderRadius: 999, padding: "4px 12px", fontWeight: 600 }}>
+        <span
+          style={{
+            fontFamily: F.u,
+            fontSize: 12,
+            color: "#1D4ED8",
+            background: "rgba(29,78,216,0.10)",
+            borderRadius: 999,
+            padding: "4px 12px",
+            fontWeight: 600,
+          }}
+        >
           Completed
         </span>
       ),
     },
-    { id: "sarees", header: "Sarees Assigned", priority: 2, type: "number", accessor: b => b.myRows.length },
     {
-      id: "qc", header: "QC Passed", priority: 2, accessor: b => b.myRows.length,
-      cell: (_v, b) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.green }}>{b.myRows.length} of {b.myRows.length} (100%)</span>,
+      id: "sarees",
+      header: "Sarees Assigned",
+      priority: 2,
+      type: "number",
+      accessor: (b) => b.myRows.length,
     },
     {
-      id: "due", header: "Due Date", priority: 2, accessor: b => b.dueDate,
-      cell: (_v, b) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{formatDueDate(b.dueDate) || "—"}</span>,
+      id: "qc",
+      header: "QC Passed",
+      priority: 2,
+      accessor: (b) => b.myRows.length,
+      cell: (_v, b) => (
+        <span style={{ fontFamily: F.u, fontSize: 13, color: C.green }}>
+          {b.myRows.length} of {b.myRows.length} (100%)
+        </span>
+      ),
+    },
+    {
+      id: "due",
+      header: "Due Date",
+      priority: 2,
+      accessor: (b) => b.dueDate,
+      cell: (_v, b) => (
+        <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>
+          {formatDueDate(b.dueDate) || "—"}
+        </span>
+      ),
     },
   ];
 
   if (weaverLoading || batchesLoading) {
     return (
       <div style={{ paddingBottom: 32 }}>
-        <HeroHeader eyebrow="SINCE 1999 · MY WORK" title="My Batches" sub="Active and completed work" />
+        <HeroHeader
+          eyebrow="SINCE 1999 · MY WORK"
+          title="My Batches"
+          sub="Active and completed work"
+        />
         <div style={{ margin: "20px" }}>
           <LoadingState variant="skeleton" rows={4} />
         </div>
@@ -162,7 +257,11 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
   if (batchesError) {
     return (
       <div style={{ paddingBottom: 32 }}>
-        <HeroHeader eyebrow="SINCE 1999 · MY WORK" title="My Batches" sub="Active and completed work" />
+        <HeroHeader
+          eyebrow="SINCE 1999 · MY WORK"
+          title="My Batches"
+          sub="Active and completed work"
+        />
         <div style={{ margin: "20px" }}>
           <ErrorState error={batchesErrorObj} onRetry={refetchBatches} />
         </div>
@@ -173,38 +272,83 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
   if (weaverError || !weaverId) {
     return (
       <div style={{ paddingBottom: 32 }}>
-        <HeroHeader eyebrow="SINCE 1999 · MY WORK" title="My Batches" sub="Active and completed work" />
-        <div style={{ margin: "40px 20px", background: C.cream, borderRadius: 14, padding: "28px 20px", textAlign: "center" as const }}>
+        <HeroHeader
+          eyebrow="SINCE 1999 · MY WORK"
+          title="My Batches"
+          sub="Active and completed work"
+        />
+        <div
+          style={{
+            margin: "40px 20px",
+            background: C.cream,
+            borderRadius: 14,
+            padding: "28px 20px",
+            textAlign: "center" as const,
+          }}
+        >
           <AlertTriangle size={28} color={C.crim} style={{ margin: "0 auto 10px" }} />
-          <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, fontWeight: 600 }}>Couldn't find your weaver profile</div>
-          <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 4 }}>Your login isn't linked to a weaver record yet. Contact your supervisor.</div>
+          <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, fontWeight: 600 }}>
+            Couldn't find your weaver profile
+          </div>
+          <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 4 }}>
+            Your login isn't linked to a weaver record yet. Contact your supervisor.
+          </div>
         </div>
       </div>
     );
   }
-
 
   return (
     <div style={{ paddingBottom: 32 }}>
       {/* Hero Header + 5 Metrics Card Strip */}
       <MobileWeaverHeroSection
         weaverName={user?.name ?? "Weaver"}
-        onExploreBatches={() => document.getElementById("weaver-mobile-active-batches")?.scrollIntoView({ behavior: "smooth" })}
+        onExploreBatches={() =>
+          document
+            .getElementById("weaver-mobile-active-batches")
+            ?.scrollIntoView({ behavior: "smooth" })
+        }
         onGoToPayments={() => onGoToPayments?.()}
       />
 
       <div style={{ padding: "0 16px", marginTop: 24 }} id="weaver-mobile-active-batches">
         {/* Defective Saree Warning Alerts */}
-        {myDefectiveSarees.map(ds => (
-          <div key={ds.sareeId} style={{ marginBottom: 16, background: "rgba(192,57,43,0.06)", border: `1.5px solid ${C.crim}`, borderRadius: 16, padding: "16px 20px" }}>
+        {myDefectiveSarees.map((ds) => (
+          <div
+            key={ds.sareeId}
+            style={{
+              marginBottom: 16,
+              background: "rgba(192,57,43,0.06)",
+              border: `1.5px solid ${C.crim}`,
+              borderRadius: 16,
+              padding: "16px 20px",
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
               <AlertTriangle size={18} color={C.crim} />
-              <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.crim }}>QC Failed — Defective Saree Alert</span>
+              <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.crim }}>
+                QC Failed — Defective Saree Alert
+              </span>
             </div>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5 }}>
-              Saree <strong>{ds.sareeId}</strong> in batch <strong>{ds.batchId}</strong> ({ds.sareeTypeName || "Self Brocade"}) failed quality check due to a <strong>{ds.defect}</strong> defect. A deduction of <strong><Money value={rupees(ds.deduction)} /></strong> has been registered.
+              Saree <strong>{ds.sareeId}</strong> in batch <strong>{ds.batchId}</strong> (
+              {ds.sareeTypeName || "Self Brocade"}) failed quality check due to a{" "}
+              <strong>{ds.defect}</strong> defect. A deduction of{" "}
+              <strong>
+                <Money value={rupees(ds.deduction)} />
+              </strong>{" "}
+              has been registered.
             </div>
-            <div style={{ display: "flex", gap: 12, marginTop: 10, fontFamily: F.u, fontSize: 12, color: C.muted }}>
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                marginTop: 10,
+                fontFamily: F.u,
+                fontSize: 12,
+                color: C.muted,
+              }}
+            >
               <span>QC Date: {ds.date}</span>
               <span>•</span>
               <span style={{ fontStyle: "italic" }}>Defect photo sent via WhatsApp</span>
@@ -213,14 +357,28 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
         ))}
 
         {/* Semi-Approved — Rework Alerts */}
-        {myReworkSarees.map(rs => (
-          <div key={rs.sareeId} style={{ marginBottom: 16, background: "rgba(200,155,71,0.08)", border: `1.5px solid ${C.gold}`, borderRadius: 16, padding: "16px 20px" }}>
+        {myReworkSarees.map((rs) => (
+          <div
+            key={rs.sareeId}
+            style={{
+              marginBottom: 16,
+              background: "rgba(200,155,71,0.08)",
+              border: `1.5px solid ${C.gold}`,
+              borderRadius: 16,
+              padding: "16px 20px",
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
               <RotateCcw size={18} color={C.gold} />
-              <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.gold }}>Semi-Approved — Rework Needed</span>
+              <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.gold }}>
+                Semi-Approved — Rework Needed
+              </span>
             </div>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5 }}>
-              Saree <strong>{rs.sareeId}</strong> in batch <strong>{rs.batchId}</strong> ({rs.sareeTypeName || "Self Brocade"}) was semi-approved at quality check and sent back to you. It does <strong>not</strong> count as produced yet — rework it and hand it in again.
+              Saree <strong>{rs.sareeId}</strong> in batch <strong>{rs.batchId}</strong> (
+              {rs.sareeTypeName || "Self Brocade"}) was semi-approved at quality check and sent back
+              to you. It does <strong>not</strong> count as produced yet — rework it and hand it in
+              again.
             </div>
           </div>
         ))}
@@ -253,8 +411,14 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
                     cursor: "pointer",
                     transition: "all 0.2s ease",
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(110,15,45,0.14)"; e.currentTarget.style.color = "#6E0F2D"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(110,15,45,0.06)"; e.currentTarget.style.color = "#6E0F2D"; }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(110,15,45,0.14)";
+                    e.currentTarget.style.color = "#6E0F2D";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(110,15,45,0.06)";
+                    e.currentTarget.style.color = "#6E0F2D";
+                  }}
                 >
                   <History size={14} color={C.burg} /> View All History
                 </button>
@@ -264,22 +428,56 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
           <div style={{ height: 12 }} />
 
           {myActiveBatches.length === 0 ? (
-            <div style={{ background: C.cream, borderRadius: 14, padding: "28px 20px", textAlign: "center" as const }}>
+            <div
+              style={{
+                background: C.cream,
+                borderRadius: 14,
+                padding: "28px 20px",
+                textAlign: "center" as const,
+              }}
+            >
               <Package size={28} color={C.muted} style={{ margin: "0 auto 10px" }} />
-              <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No active batches assigned to you yet.</div>
+              <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>
+                No active batches assigned to you yet.
+              </div>
             </div>
           ) : activeView === "table" ? (
-            <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, overflow: "auto" }}>
-              <DataTable columns={activeBatchColumns} data={myActiveBatches} getRowId={b => b.batchId} view="table" />
+            <div
+              style={{
+                background: "#FFF",
+                border: `1px solid ${C.bdr}`,
+                borderRadius: 16,
+                overflow: "auto",
+              }}
+            >
+              <DataTable
+                columns={activeBatchColumns}
+                data={myActiveBatches}
+                getRowId={(b) => b.batchId}
+                view="table"
+              />
             </div>
           ) : (
             myActiveBatches.map((b, idx) => <MobileBatchCard key={b.batchId} b={b} idx={idx} />)
           )}
 
           {totalMyActive >= 2 && (
-            <div style={{ marginTop: 16, background: "#FFF8E8", border: `1px solid rgba(200,155,71,0.30)`, borderRadius: 14, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+            <div
+              style={{
+                marginTop: 16,
+                background: "#FFF8E8",
+                border: `1px solid rgba(200,155,71,0.30)`,
+                borderRadius: 14,
+                padding: "16px 20px",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
               <AlertCircle size={20} color={C.gold} style={{ flexShrink: 0 }} />
-              <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted, lineHeight: 1.4 }}>Maximum 2 active batches reached. Complete one before a new batch can be assigned.</span>
+              <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted, lineHeight: 1.4 }}>
+                Maximum 2 active batches reached. Complete one before a new batch can be assigned.
+              </span>
             </div>
           )}
         </div>
@@ -310,8 +508,14 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
                     cursor: "pointer",
                     transition: "all 0.2s ease",
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(31,119,78,0.14)"; e.currentTarget.style.color = "#1F774E"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(31,119,78,0.06)"; e.currentTarget.style.color = "#1F774E"; }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(31,119,78,0.14)";
+                    e.currentTarget.style.color = "#1F774E";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(31,119,78,0.06)";
+                    e.currentTarget.style.color = "#1F774E";
+                  }}
                 >
                   <ListChecks size={14} color="#1F774E" /> See All Completed
                 </button>
@@ -321,19 +525,41 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
           <div style={{ height: 12 }} />
 
           {completedBatches.length === 0 ? (
-            <div style={{ padding: "36px 20px", textAlign: "center" as const, background: C.cream, borderRadius: 20, border: `1px solid ${C.bdr}` }}>
+            <div
+              style={{
+                padding: "36px 20px",
+                textAlign: "center" as const,
+                background: C.cream,
+                borderRadius: 20,
+                border: `1px solid ${C.bdr}`,
+              }}
+            >
               <CheckCircle2 size={32} color={C.muted} style={{ margin: "0 auto 12px" }} />
-              <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, fontWeight: 600 }}>No completed batches yet.</div>
-              <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 4 }}>A batch moves here once QC has passed on every saree you wove.</div>
+              <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, fontWeight: 600 }}>
+                No completed batches yet.
+              </div>
+              <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 4 }}>
+                A batch moves here once QC has passed on every saree you wove.
+              </div>
             </div>
           ) : completedView === "table" ? (
-            <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, overflow: "auto" }}>
-              <DataTable columns={completedBatchColumns} data={completedBatches.slice(0, 3)} getRowId={b => b.batchId} view="table" />
+            <div
+              style={{
+                background: "#FFF",
+                border: `1px solid ${C.bdr}`,
+                borderRadius: 16,
+                overflow: "auto",
+              }}
+            >
+              <DataTable
+                columns={completedBatchColumns}
+                data={completedBatches.slice(0, 3)}
+                getRowId={(b) => b.batchId}
+                view="table"
+              />
             </div>
           ) : (
-            completedBatches.slice(0, 3).map(b => (
-              <CompletedBatchCard key={b.batchId} b={b} />
-            ))
+            completedBatches.slice(0, 3).map((b) => <CompletedBatchCard key={b.batchId} b={b} />)
           )}
         </div>
       </div>
@@ -347,4 +573,3 @@ export function materialTypeIcon(type: string) {
   if (type === "Resham") return <Layers size={18} color={C.burg} />;
   return <span style={{ fontSize: 18 }}>✨</span>;
 }
-

@@ -46,11 +46,26 @@ function StatusPill({ status }: { status: LinkedSaree["status"] }) {
   const cfg: Record<string, { bg: string; color: string }> = {
     "QC Passed": { bg: "rgba(200,155,71,0.14)", color: "#8B6018" },
     "Finishing complete": { bg: T.greenBg, color: T.greenMid },
-    "Dispatched": { bg: "rgba(110,15,45,0.08)", color: T.royalBurgundy },
+    Dispatched: { bg: "rgba(110,15,45,0.08)", color: T.royalBurgundy },
     "Damaged — Review Needed": { bg: T.crimsonBg, color: T.crimson },
   };
   const c = cfg[status] ?? cfg["QC Passed"];
-  return <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: c.bg, color: c.color, padding: "3px 9px", borderRadius: 20, whiteSpace: "nowrap" as const }}>{status}</span>;
+  return (
+    <span
+      style={{
+        fontFamily: F.ui,
+        fontSize: 12,
+        fontWeight: 700,
+        background: c.bg,
+        color: c.color,
+        padding: "3px 9px",
+        borderRadius: 20,
+        whiteSpace: "nowrap" as const,
+      }}
+    >
+      {status}
+    </span>
+  );
 }
 
 interface BulkOrderSareesTabProps {
@@ -94,36 +109,98 @@ export function BulkOrderSareesTab({
 }: BulkOrderSareesTabProps) {
   const columns: ColumnDef<LinkedSaree>[] = [
     {
-      id: "id", header: "Saree ID", accessor: s => s.id, priority: 1,
-      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{s.id}</span>,
+      id: "id",
+      header: "Saree ID",
+      accessor: (s) => s.id,
+      priority: 1,
+      cell: (_v, s) => (
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            fontWeight: 700,
+            color: T.royalBurgundy,
+          }}
+        >
+          {s.id}
+        </span>
+      ),
     },
     {
-      id: "design", header: "Design / Type", accessor: s => s.designCode,
-      cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</span>,
+      id: "design",
+      header: "Design / Type",
+      accessor: (s) => s.designCode,
+      cell: (_v, s) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+          {s.sareeTypeCode || s.designCode} · {s.sareeType}
+        </span>
+      ),
     },
     {
-      id: "weaver", header: "Weaver", accessor: s => s.weaverName,
-      cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.weaverName}</span>,
+      id: "weaver",
+      header: "Weaver",
+      accessor: (s) => s.weaverName,
+      cell: (_v, s) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.weaverName}</span>
+      ),
     },
     {
-      id: "batch", header: "Batch", accessor: s => s.batchId, priority: 3,
-      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown }}>{s.batchId || "—"}</span>,
+      id: "batch",
+      header: "Batch",
+      accessor: (s) => s.batchId,
+      priority: 3,
+      cell: (_v, s) => (
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown }}>
+          {s.batchId || "—"}
+        </span>
+      ),
     },
     {
-      id: "status", header: "Status", accessor: s => s.status, type: "status",
+      id: "status",
+      header: "Status",
+      accessor: (s) => s.status,
+      type: "status",
       cell: (_v, s) => <StatusPill status={s.status} />,
     },
     {
-      id: "quotation", header: "Quotation", accessor: s => s.quotationRef, priority: 3,
-      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: s.quotationRef ? T.royalBurgundy : T.taupe }}>{s.quotationRef || "—"}</span>,
+      id: "quotation",
+      header: "Quotation",
+      accessor: (s) => s.quotationRef,
+      priority: 3,
+      cell: (_v, s) => (
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            color: s.quotationRef ? T.royalBurgundy : T.taupe,
+          }}
+        >
+          {s.quotationRef || "—"}
+        </span>
+      ),
     },
     {
-      id: "dispatch", header: "Dispatch", accessor: s => s.dispatch,
-      cell: (_v, s) => (
+      id: "dispatch",
+      header: "Dispatch",
+      accessor: (s) => s.dispatch,
+      cell: (_v, s) =>
         s.dispatch ? (
           <div className="flex flex-col gap-1.5">
-            <span style={{ display: "inline-block", background: T.greenBg, color: T.greenMid, borderRadius: 8, width: "max-content" }}>
-              <Button onClick={() => setDispatchPanel(s.dispatch!)} variant="tertiary" size="sm" iconLeft={Truck}>
+            <span
+              style={{
+                display: "inline-block",
+                background: T.greenBg,
+                color: T.greenMid,
+                borderRadius: 8,
+                width: "max-content",
+              }}
+            >
+              <Button
+                onClick={() => setDispatchPanel(s.dispatch!)}
+                variant="tertiary"
+                size="sm"
+                iconLeft={Truck}
+              >
                 {s.dispatch.lrNumber || "View"}
               </Button>
             </span>
@@ -135,8 +212,7 @@ export function BulkOrderSareesTab({
           </div>
         ) : (
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Not dispatched</span>
-        )
-      ),
+        ),
     },
   ];
 
@@ -153,7 +229,13 @@ export function BulkOrderSareesTab({
       id: "status",
       label: "Status",
       value: statusFilter,
-      options: ["All", "QC Passed", "Finishing complete", "Dispatched", "Damaged — Review Needed"].map(s => ({
+      options: [
+        "All",
+        "QC Passed",
+        "Finishing complete",
+        "Dispatched",
+        "Damaged — Review Needed",
+      ].map((s) => ({
         value: s,
         label: s === "All" ? "All Statuses" : s,
       })),
@@ -163,14 +245,14 @@ export function BulkOrderSareesTab({
       id: "batch",
       label: "Batch",
       value: batchFilter,
-      options: batchOptions.map(b => ({ value: b, label: b === "All" ? "All Batches" : b })),
+      options: batchOptions.map((b) => ({ value: b, label: b === "All" ? "All Batches" : b })),
       onChange: setBatchFilter,
     },
     {
       id: "dispatch",
       label: "Dispatch Status",
       value: dispatchFilter,
-      options: ["All", "Dispatched", "Not Dispatched"].map(s => ({
+      options: ["All", "Dispatched", "Not Dispatched"].map((s) => ({
         value: s,
         label: s === "All" ? "All Dispatch" : s,
       })),
@@ -180,14 +262,17 @@ export function BulkOrderSareesTab({
       id: "weaver",
       label: "Weaver",
       value: weaverFilter,
-      options: weaverOptions.map(w => ({ value: w, label: w === "All" ? "All Weavers" : w })),
+      options: weaverOptions.map((w) => ({ value: w, label: w === "All" ? "All Weavers" : w })),
       onChange: setWeaverFilter,
     },
     {
       id: "sareeType",
       label: "Saree Type",
       value: sareeTypeFilter,
-      options: sareeTypeOptions.map(t => ({ value: t, label: t === "All" ? "All Saree Types" : t })),
+      options: sareeTypeOptions.map((t) => ({
+        value: t,
+        label: t === "All" ? "All Saree Types" : t,
+      })),
       onChange: setSareeTypeFilter,
     },
   ];
@@ -208,23 +293,84 @@ export function BulkOrderSareesTab({
       {/* Desktop Filter Bar */}
       <div className="hidden md:flex flex-row items-center gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-[var(--border-default)] shadow-sm mb-5 flex-wrap">
         <div className="flex-1 min-w-[220px]">
-          <SearchInput aria-label="Search saree ID, design, or weaver" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, design, or weaver…" />
+          <SearchInput
+            aria-label="Search saree ID, design, or weaver"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search saree ID, design, or weaver…"
+          />
         </div>
         <div className="flex items-center gap-2.5 flex-wrap">
-          <Select size="sm" containerClassName="w-auto shrink-0" className="w-auto font-medium" value={statusFilter} onValueChange={setStatusFilter}>
-            {["All", "QC Passed", "Finishing complete", "Dispatched", "Damaged — Review Needed"].map(s => <SelectItem key={s} value={s}>{s === "All" ? "All Statuses" : s}</SelectItem>)}
+          <Select
+            size="sm"
+            containerClassName="w-auto shrink-0"
+            className="w-auto font-medium"
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+          >
+            {[
+              "All",
+              "QC Passed",
+              "Finishing complete",
+              "Dispatched",
+              "Damaged — Review Needed",
+            ].map((s) => (
+              <SelectItem key={s} value={s}>
+                {s === "All" ? "All Statuses" : s}
+              </SelectItem>
+            ))}
           </Select>
-          <Select size="sm" containerClassName="w-auto shrink-0" className="w-auto font-medium" value={batchFilter} onValueChange={setBatchFilter}>
-            {batchOptions.map(b => <SelectItem key={b} value={b}>{b === "All" ? "All Batches" : b}</SelectItem>)}
+          <Select
+            size="sm"
+            containerClassName="w-auto shrink-0"
+            className="w-auto font-medium"
+            value={batchFilter}
+            onValueChange={setBatchFilter}
+          >
+            {batchOptions.map((b) => (
+              <SelectItem key={b} value={b}>
+                {b === "All" ? "All Batches" : b}
+              </SelectItem>
+            ))}
           </Select>
-          <Select size="sm" containerClassName="w-auto shrink-0" className="w-auto font-medium" value={dispatchFilter} onValueChange={setDispatchFilter}>
-            {["All", "Dispatched", "Not Dispatched"].map(s => <SelectItem key={s} value={s}>{s === "All" ? "All Dispatch" : s}</SelectItem>)}
+          <Select
+            size="sm"
+            containerClassName="w-auto shrink-0"
+            className="w-auto font-medium"
+            value={dispatchFilter}
+            onValueChange={setDispatchFilter}
+          >
+            {["All", "Dispatched", "Not Dispatched"].map((s) => (
+              <SelectItem key={s} value={s}>
+                {s === "All" ? "All Dispatch" : s}
+              </SelectItem>
+            ))}
           </Select>
-          <Select size="sm" containerClassName="w-auto shrink-0" className="w-auto font-medium" value={weaverFilter} onValueChange={setWeaverFilter}>
-            {weaverOptions.map(w => <SelectItem key={w} value={w}>{w === "All" ? "All Weavers" : w}</SelectItem>)}
+          <Select
+            size="sm"
+            containerClassName="w-auto shrink-0"
+            className="w-auto font-medium"
+            value={weaverFilter}
+            onValueChange={setWeaverFilter}
+          >
+            {weaverOptions.map((w) => (
+              <SelectItem key={w} value={w}>
+                {w === "All" ? "All Weavers" : w}
+              </SelectItem>
+            ))}
           </Select>
-          <Select size="sm" containerClassName="w-auto shrink-0" className="w-auto font-medium" value={sareeTypeFilter} onValueChange={setSareeTypeFilter}>
-            {sareeTypeOptions.map(t => <SelectItem key={t} value={t}>{t === "All" ? "All Saree Types" : t}</SelectItem>)}
+          <Select
+            size="sm"
+            containerClassName="w-auto shrink-0"
+            className="w-auto font-medium"
+            value={sareeTypeFilter}
+            onValueChange={setSareeTypeFilter}
+          >
+            {sareeTypeOptions.map((t) => (
+              <SelectItem key={t} value={t}>
+                {t === "All" ? "All Saree Types" : t}
+              </SelectItem>
+            ))}
           </Select>
         </div>
       </div>
@@ -236,7 +382,7 @@ export function BulkOrderSareesTab({
             responsive={false}
             columns={columns}
             data={filteredSarees}
-            getRowId={s => s.id}
+            getRowId={(s) => s.id}
             emptyTitle="No sarees match this filter"
           />
         </div>

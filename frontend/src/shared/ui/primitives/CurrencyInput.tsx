@@ -22,47 +22,48 @@ function formatGrouped(n: number): string {
   return new Intl.NumberFormat("en-IN", { maximumFractionDigits: 2 }).format(n);
 }
 
-export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(function CurrencyInput(
-  { value, onValueChange, className, onBlur, ...props },
-  ref
-) {
-  const [display, setDisplay] = React.useState(value === "" || value === undefined ? "" : String(value));
+export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
+  function CurrencyInput({ value, onValueChange, className, onBlur, ...props }, ref) {
+    const [display, setDisplay] = React.useState(
+      value === "" || value === undefined ? "" : String(value)
+    );
 
-  React.useEffect(() => {
-    if (value !== undefined && value !== "") setDisplay(String(value));
-  }, [value]);
+    React.useEffect(() => {
+      if (value !== undefined && value !== "") setDisplay(String(value));
+    }, [value]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/[^0-9.]/g, "");
-    setDisplay(raw);
-    onValueChange?.(raw === "" ? "" : Number(raw));
-  };
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value.replace(/[^0-9.]/g, "");
+      setDisplay(raw);
+      onValueChange?.(raw === "" ? "" : Number(raw));
+    };
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (display !== "") {
-      const num = Number(display);
-      if (!Number.isNaN(num)) setDisplay(formatGrouped(num));
-    }
-    onBlur?.(e);
-  };
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+      if (display !== "") {
+        const num = Number(display);
+        if (!Number.isNaN(num)) setDisplay(formatGrouped(num));
+      }
+      onBlur?.(e);
+    };
 
-  const handleFocus = () => {
-    // Drop grouping separators while editing so the caret math stays simple.
-    setDisplay((d) => d.replace(/,/g, ""));
-  };
+    const handleFocus = () => {
+      // Drop grouping separators while editing so the caret math stays simple.
+      setDisplay((d) => d.replace(/,/g, ""));
+    };
 
-  return (
-    <Input
-      ref={ref}
-      type="text"
-      inputMode="decimal"
-      addonLeft="₹"
-      value={display}
-      onChange={handleChange}
-      onBlur={handleBlur}
-      onFocus={handleFocus}
-      className={cn("text-right tabular-nums", className)}
-      {...props}
-    />
-  );
-});
+    return (
+      <Input
+        ref={ref}
+        type="text"
+        inputMode="decimal"
+        addonLeft="₹"
+        value={display}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        onFocus={handleFocus}
+        className={cn("text-right tabular-nums", className)}
+        {...props}
+      />
+    );
+  }
+);

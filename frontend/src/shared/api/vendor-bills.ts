@@ -57,7 +57,7 @@ export const vendorBillsApi = {
     if (vendorId) params.set("vendorId", vendorId);
     if (status) params.set("status", status);
     return apiClient.get<PaginatedResponse<BackendVendorBill>>(
-      `/vendor-bills?${params.toString()}`,
+      `/vendor-bills?${params.toString()}`
     );
   },
   getOne: (id: string) => apiClient.get<BackendVendorBill>(`/vendor-bills/${id}`),

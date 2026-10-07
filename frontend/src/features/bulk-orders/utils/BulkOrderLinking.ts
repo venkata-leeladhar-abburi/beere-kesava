@@ -9,7 +9,10 @@ import type { ReadySaree, FinishingReturn, Quotation } from "@/features/finishin
 
 /** Invoice shape this module needs — kept structural so PaymentsPage stays uncoupled. */
 interface InvoiceLike {
-  id: string; customer: string; total: number; paid: number;
+  id: string;
+  customer: string;
+  total: number;
+  paid: number;
   payments?: { amount: number; date: string; utr: string; method: string; firmName?: string }[];
 }
 
@@ -33,8 +36,10 @@ export function resolveOrderMoney(
 ): OrderMoney {
   const refNum = order.ref.match(/ORD-\d{4}-(\d+)/)?.[1] ?? "";
   const matched =
-    (refNum ? invoices.find(inv => inv.id.match(/INV-\d{4}-(\d+)/)?.[1] === refNum) : undefined) ??
-    invoices.find(inv => inv.customer.toLowerCase() === order.customer.toLowerCase());
+    (refNum
+      ? invoices.find((inv) => inv.id.match(/INV-\d{4}-(\d+)/)?.[1] === refNum)
+      : undefined) ??
+    invoices.find((inv) => inv.customer.toLowerCase() === order.customer.toLowerCase());
 
   const amountDue = matched ? matched.total : (order.amountDue ?? 0);
   const amountPaid = matched ? matched.paid : (order.amountPaid ?? 0);
@@ -60,26 +65,35 @@ export function computeBulkOrderProducedSareeIds(
   bulkOrders: BulkOrder[],
   readySarees: ReadySaree[],
   returns: FinishingReturn[],
-  quotations: Quotation[],
+  quotations: Quotation[]
 ): Set<string> {
-  const linkedQuotations = quotations.filter(q => q.bulkOrderRef === orderRef);
+  const linkedQuotations = quotations.filter((q) => q.bulkOrderRef === orderRef);
   const quotationRefBySaree = new Map<string, string>();
-  linkedQuotations.forEach(q => q.sarees.forEach(s => quotationRefBySaree.set(s.sareeId, q.quotationNumber)));
+  linkedQuotations.forEach((q) =>
+    q.sarees.forEach((s) => quotationRefBySaree.set(s.sareeId, q.quotationNumber))
+  );
 
   const ids = new Set<string>();
 
-  readySarees.forEach(s => {
-    const boRef = resolveBulkOrderRef((s as { bulkOrderRef?: string }).bulkOrderRef, s.designCode, s.sareeType, bulkOrders);
+  readySarees.forEach((s) => {
+    const boRef = resolveBulkOrderRef(
+      (s as { bulkOrderRef?: string }).bulkOrderRef,
+      s.designCode,
+      s.sareeType,
+      bulkOrders
+    );
     if (boRef === orderRef || quotationRefBySaree.has(s.id)) ids.add(s.id);
   });
 
-  returns.forEach(r => {
+  returns.forEach((r) => {
     const boRef = resolveBulkOrderRef(undefined, r.designCode, r.sareeType, bulkOrders);
-    const isQuotationLinked = !!r.quotationRef && linkedQuotations.some(q => q.quotationNumber === r.quotationRef);
-    if (boRef === orderRef || isQuotationLinked || quotationRefBySaree.has(r.sareeId)) ids.add(r.sareeId);
+    const isQuotationLinked =
+      !!r.quotationRef && linkedQuotations.some((q) => q.quotationNumber === r.quotationRef);
+    if (boRef === orderRef || isQuotationLinked || quotationRefBySaree.has(r.sareeId))
+      ids.add(r.sareeId);
   });
 
-  linkedQuotations.forEach(q => q.sarees.forEach(s => ids.add(s.sareeId)));
+  linkedQuotations.forEach((q) => q.sarees.forEach((s) => ids.add(s.sareeId)));
 
   return ids;
 }
@@ -91,10 +105,11 @@ export function resolveBulkOrderRef(
   bulkOrders: BulkOrder[]
 ): string | undefined {
   if (explicitRef) return explicitRef;
-  const match = bulkOrders.find(bo =>
-    bo.design === designCode &&
-    (bo.sareeType.toLowerCase().includes(sareeType.toLowerCase()) ||
-     sareeType.toLowerCase().includes(bo.sareeType.split(" · ")[0].toLowerCase()))
+  const match = bulkOrders.find(
+    (bo) =>
+      bo.design === designCode &&
+      (bo.sareeType.toLowerCase().includes(sareeType.toLowerCase()) ||
+        sareeType.toLowerCase().includes(bo.sareeType.split(" · ")[0].toLowerCase()))
   );
   return match?.ref;
 }

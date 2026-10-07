@@ -1,17 +1,35 @@
 import { useCallback, useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { MapPin, Phone, Package,
-  CheckCircle2, FileText, ClipboardCheck,
-  Send, ArrowRight, Truck, Scale, AlertTriangle, Trash2,
-  ChevronLeft, Boxes, Layers, CreditCard } from "lucide-react";
+import {
+  MapPin,
+  Phone,
+  Package,
+  CheckCircle2,
+  FileText,
+  ClipboardCheck,
+  Send,
+  ArrowRight,
+  Truck,
+  Scale,
+  AlertTriangle,
+  Trash2,
+  ChevronLeft,
+  Boxes,
+  Layers,
+  CreditCard,
+} from "lucide-react";
 import { scrollToTop } from "@/shared/ui/ScrollToTop";
 import type { BulkOrder } from "../contexts/BulkOrderContext";
 import { useBulkOrders } from "../contexts/BulkOrderContext";
 import { useFinishing, DispatchRecord, Quotation } from "@/features/finishing";
 import { useBatches } from "@/features/production";
 import { useQc } from "@/features/qc";
-import { SareeWeightTallyList, type TallyRowItem, type TallyCorrection } from "@/features/production";
+import {
+  SareeWeightTallyList,
+  type TallyRowItem,
+  type TallyCorrection,
+} from "@/features/production";
 import { useRatesPricing } from "@/features/pricing";
 import { autoMaterialSplit } from "@/features/portals";
 import { trimNum } from "@/features/pricing";
@@ -30,12 +48,21 @@ import { SectionCard } from "@/shared/ui/SectionCard";
 import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 
 const T = {
-  silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D",
-  deepWine: "#4A061B", darkBurgundy: "#3D0E1A", antiqueGold: "#C89B47",
-  goldLight: "#E7C983", luxuryBrown: "#3B2314",
-  taupe: "#69635E", green: "#1E6640", greenBg: "rgba(30,102,64,0.09)",
-  greenMid: "#2D9158", crimson: "#C0392B", crimsonBg: "rgba(192,57,43,0.08)",
-  borderDef: "rgba(110,15,45,0.10)", borderGold: "rgba(200,155,71,0.22)",
+  silkCream: "#F7F2EA",
+  royalBurgundy: "#6E0F2D",
+  deepWine: "#4A061B",
+  darkBurgundy: "#3D0E1A",
+  antiqueGold: "#C89B47",
+  goldLight: "#E7C983",
+  luxuryBrown: "#3B2314",
+  taupe: "#69635E",
+  green: "#1E6640",
+  greenBg: "rgba(30,102,64,0.09)",
+  greenMid: "#2D9158",
+  crimson: "#C0392B",
+  crimsonBg: "rgba(192,57,43,0.08)",
+  borderDef: "rgba(110,15,45,0.10)",
+  borderGold: "rgba(200,155,71,0.22)",
 };
 const F = {
   display: "'Plus Jakarta Sans', sans-serif",
@@ -43,11 +70,12 @@ const F = {
   mono: "'JetBrains Mono', monospace",
 };
 
-const ORDER_STATUS_CFG: Record<BulkOrder["status"], { color: string; bg: string; label: string }> = {
-  "on-track": { color: T.green, bg: T.greenBg, label: "On Track" },
-  "at-risk": { color: "#8B6018", bg: "rgba(200,155,71,0.14)", label: "At Risk" },
-  "overdue": { color: T.crimson, bg: T.crimsonBg, label: "Overdue" },
-};
+const ORDER_STATUS_CFG: Record<BulkOrder["status"], { color: string; bg: string; label: string }> =
+  {
+    "on-track": { color: T.green, bg: T.greenBg, label: "On Track" },
+    "at-risk": { color: "#8B6018", bg: "rgba(200,155,71,0.14)", label: "At Risk" },
+    overdue: { color: T.crimson, bg: T.crimsonBg, label: "Overdue" },
+  };
 
 const QUOTE_STATUS_CFG: Record<Quotation["status"], { bg: string; color: string }> = {
   raised: { bg: "rgba(200,155,71,0.14)", color: "#8B6018" },
@@ -57,15 +85,21 @@ const QUOTE_STATUS_CFG: Record<Quotation["status"], { bg: string; color: string 
   dispatched: { bg: T.greenBg, color: T.greenMid },
 };
 
-export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: {
-  order: BulkOrder; onBack: () => void; initialTab?: "overview" | "sarees" | "payments" | "quotations";
+export function BulkOrderDetailPage({
+  order,
+  onBack,
+  initialTab = "overview",
+}: {
+  order: BulkOrder;
+  onBack: () => void;
+  initialTab?: "overview" | "sarees" | "payments" | "quotations";
 }) {
   useEffect(() => {
     scrollToTop();
   }, []);
 
   const { bulkOrders, tallyOrder, deleteBulkOrder } = useBulkOrders();
-  const live = bulkOrders.find(o => o.ref === order.ref) ?? order;
+  const live = bulkOrders.find((o) => o.ref === order.ref) ?? order;
   const { readySarees, returns, dispatches, quotations } = useFinishing();
   const { batches, tallyRow } = useBatches();
   const [tallyBusyKey, setTallyBusyKey] = useState<string | null>(null);
@@ -86,72 +120,126 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
 
   // Quotations raised against this order
   const linkedQuotations = useMemo(
-    () => quotations.filter(q => q.bulkOrderRef === live.ref),
+    () => quotations.filter((q) => q.bulkOrderRef === live.ref),
     [quotations, live.ref]
   );
 
-  const findDispatchFor = useCallback((sareeId: string) => dispatches.find(d => d.sareeIds.includes(sareeId)), [dispatches]);
+  const findDispatchFor = useCallback(
+    (sareeId: string) => dispatches.find((d) => d.sareeIds.includes(sareeId)),
+    [dispatches]
+  );
 
   // Every saree tied to this order
   const linkedSarees = useMemo<LinkedSaree[]>(() => {
     const byId = new Map<string, LinkedSaree>();
     const quotationRefBySaree = new Map<string, string>();
-    linkedQuotations.forEach(q => q.sarees.forEach(s => quotationRefBySaree.set(s.sareeId, q.quotationNumber)));
+    linkedQuotations.forEach((q) =>
+      q.sarees.forEach((s) => quotationRefBySaree.set(s.sareeId, q.quotationNumber))
+    );
 
-    readySarees.forEach(s => {
+    readySarees.forEach((s) => {
       const boRef = resolveBulkOrderRef(s.bulkOrderRef, s.designCode, s.sareeType, bulkOrders);
       if (boRef !== live.ref && !quotationRefBySaree.has(s.id)) return;
-      const bRow = batches.flatMap(b => b.rows.map(row => ({ b, row }))).find(({ row }) => row.sareeId === s.id);
+      const bRow = batches
+        .flatMap((b) => b.rows.map((row) => ({ b, row })))
+        .find(({ row }) => row.sareeId === s.id);
       byId.set(s.id, {
-        id: s.id, designCode: s.designCode, sareeType: s.sareeType, sareeTypeCode: s.sareeTypeCode,
-        weaverName: s.weaverName, batchId: bRow?.b.batchId, serial: bRow?.row.serial, status: "QC Passed", date: s.qcPassDate,
+        id: s.id,
+        designCode: s.designCode,
+        sareeType: s.sareeType,
+        sareeTypeCode: s.sareeTypeCode,
+        weaverName: s.weaverName,
+        batchId: bRow?.b.batchId,
+        serial: bRow?.row.serial,
+        status: "QC Passed",
+        date: s.qcPassDate,
         quotationRef: quotationRefBySaree.get(s.id),
       });
     });
 
-    returns.forEach(r => {
+    returns.forEach((r) => {
       const boRef = resolveBulkOrderRef(undefined, r.designCode, r.sareeType, bulkOrders);
-      const isQuotationLinked = r.quotationRef && linkedQuotations.some(q => q.quotationNumber === r.quotationRef);
+      const isQuotationLinked =
+        r.quotationRef && linkedQuotations.some((q) => q.quotationNumber === r.quotationRef);
       if (boRef !== live.ref && !isQuotationLinked && !quotationRefBySaree.has(r.sareeId)) return;
-      const bRow = batches.flatMap(b => b.rows.map(row => ({ b, row }))).find(({ row }) => row.sareeId === r.sareeId);
+      const bRow = batches
+        .flatMap((b) => b.rows.map((row) => ({ b, row })))
+        .find(({ row }) => row.sareeId === r.sareeId);
       byId.set(r.sareeId, {
-        id: r.sareeId, designCode: r.designCode, sareeType: r.sareeType, sareeTypeCode: r.sareeTypeCode,
-        weaverName: r.weaverName, batchId: bRow?.b.batchId, serial: bRow?.row.serial,
-        status: r.inventoryStatus === "Ready for Dispatch" ? "Finishing complete" : (r.inventoryStatus.includes("Damaged") ? "Damaged — Review Needed" : r.inventoryStatus) as LinkedSaree["status"],
+        id: r.sareeId,
+        designCode: r.designCode,
+        sareeType: r.sareeType,
+        sareeTypeCode: r.sareeTypeCode,
+        weaverName: r.weaverName,
+        batchId: bRow?.b.batchId,
+        serial: bRow?.row.serial,
+        status:
+          r.inventoryStatus === "Ready for Dispatch"
+            ? "Finishing complete"
+            : ((r.inventoryStatus.includes("Damaged")
+                ? "Damaged — Review Needed"
+                : r.inventoryStatus) as LinkedSaree["status"]),
         date: r.receivedDate,
         quotationRef: r.quotationRef ?? quotationRefBySaree.get(r.sareeId),
         dispatch: findDispatchFor(r.sareeId),
       });
     });
 
-    linkedQuotations.forEach(q => q.sarees.forEach(s => {
-      if (byId.has(s.sareeId)) return;
-      byId.set(s.sareeId, {
-        id: s.sareeId, designCode: s.designCode, sareeType: s.sareeType, sareeTypeCode: s.sareeTypeCode,
-        weaverName: s.weaverName, status: "QC Passed", date: q.quotationDate, quotationRef: q.quotationNumber,
-      });
-    }));
+    linkedQuotations.forEach((q) =>
+      q.sarees.forEach((s) => {
+        if (byId.has(s.sareeId)) return;
+        byId.set(s.sareeId, {
+          id: s.sareeId,
+          designCode: s.designCode,
+          sareeType: s.sareeType,
+          sareeTypeCode: s.sareeTypeCode,
+          weaverName: s.weaverName,
+          status: "QC Passed",
+          date: q.quotationDate,
+          quotationRef: q.quotationNumber,
+        });
+      })
+    );
 
     return [...byId.values()];
   }, [readySarees, returns, bulkOrders, live.ref, batches, linkedQuotations, findDispatchFor]);
 
-  const batchOptions = useMemo(() => ["All", ...Array.from(new Set(linkedSarees.map(s => s.batchId).filter(Boolean) as string[]))], [linkedSarees]);
-  const weaverOptions = useMemo(() => ["All", ...Array.from(new Set(linkedSarees.map(s => s.weaverName).filter(Boolean)))].sort(), [linkedSarees]);
-  const sareeTypeOptions = useMemo(() => ["All", ...Array.from(new Set(linkedSarees.map(s => s.sareeType).filter(Boolean)))].sort(), [linkedSarees]);
+  const batchOptions = useMemo(
+    () => [
+      "All",
+      ...Array.from(new Set(linkedSarees.map((s) => s.batchId).filter(Boolean) as string[])),
+    ],
+    [linkedSarees]
+  );
+  const weaverOptions = useMemo(
+    () =>
+      ["All", ...Array.from(new Set(linkedSarees.map((s) => s.weaverName).filter(Boolean)))].sort(),
+    [linkedSarees]
+  );
+  const sareeTypeOptions = useMemo(
+    () =>
+      ["All", ...Array.from(new Set(linkedSarees.map((s) => s.sareeType).filter(Boolean)))].sort(),
+    [linkedSarees]
+  );
 
-  const filteredSarees = linkedSarees.filter(s => {
+  const filteredSarees = linkedSarees.filter((s) => {
     const q = search.toLowerCase();
-    const mSearch = !q || s.id.toLowerCase().includes(q) || s.designCode.toLowerCase().includes(q) || s.weaverName.toLowerCase().includes(q);
+    const mSearch =
+      !q ||
+      s.id.toLowerCase().includes(q) ||
+      s.designCode.toLowerCase().includes(q) ||
+      s.weaverName.toLowerCase().includes(q);
     const mStatus = statusFilter === "All" || s.status === statusFilter;
     const mBatch = batchFilter === "All" || s.batchId === batchFilter;
-    const mDispatch = dispatchFilter === "All" || (dispatchFilter === "Dispatched" ? !!s.dispatch : !s.dispatch);
+    const mDispatch =
+      dispatchFilter === "All" || (dispatchFilter === "Dispatched" ? !!s.dispatch : !s.dispatch);
     const mWeaver = weaverFilter === "All" || s.weaverName === weaverFilter;
     const mSareeType = sareeTypeFilter === "All" || s.sareeType === sareeTypeFilter;
     return mSearch && mStatus && mBatch && mDispatch && mWeaver && mSareeType;
   });
 
-  const dispatchedCount = linkedSarees.filter(s => s.dispatch).length;
-  const damagedCount = linkedSarees.filter(s => s.status === "Damaged — Review Needed").length;
+  const dispatchedCount = linkedSarees.filter((s) => s.dispatch).length;
+  const damagedCount = linkedSarees.filter((s) => s.status === "Damaged — Review Needed").length;
   // "Completed" — every saree actually linked to this order has at least
   // passed QC (that's the earliest stage linkedSarees tracks), so its count
   // is the real produced total. live.done is a separate, manually-set DB
@@ -169,17 +257,22 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   // per-saree list alone doesn't make obvious.
   const { getSareeTypeByCode } = useRatesPricing();
   const sareeReceiptById = useMemo(() => {
-    const m = new Map<string, { weight: number; warpG?: number; reshamG?: number; jariReels?: number }>();
-    batches.forEach(b => b.rows.forEach(r => {
-      if (r.sareeId && r.receivedWeight) {
-        m.set(r.sareeId, {
-          weight: Number(r.receivedWeight) || 0,
-          warpG: r.receivedWarpG ? Number(r.receivedWarpG) : undefined,
-          reshamG: r.receivedReshamG ? Number(r.receivedReshamG) : undefined,
-          jariReels: r.receivedJariReels ? Number(r.receivedJariReels) : undefined,
-        });
-      }
-    }));
+    const m = new Map<
+      string,
+      { weight: number; warpG?: number; reshamG?: number; jariReels?: number }
+    >();
+    batches.forEach((b) =>
+      b.rows.forEach((r) => {
+        if (r.sareeId && r.receivedWeight) {
+          m.set(r.sareeId, {
+            weight: Number(r.receivedWeight) || 0,
+            warpG: r.receivedWarpG ? Number(r.receivedWarpG) : undefined,
+            reshamG: r.receivedReshamG ? Number(r.receivedReshamG) : undefined,
+            jariReels: r.receivedJariReels ? Number(r.receivedJariReels) : undefined,
+          });
+        }
+      })
+    );
     return m;
   }, [batches]);
 
@@ -187,8 +280,13 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   // Worker Staff entered them, plus this saree's own tally state), scoped to
   // only the sarees actually linked to this order (not the whole batch).
   const rowBySareeId = useMemo(
-    () => new Map(batches.flatMap(b => b.rows.filter(r => r.sareeId).map(r => [r.sareeId as string, r] as const))),
-    [batches],
+    () =>
+      new Map(
+        batches.flatMap((b) =>
+          b.rows.filter((r) => r.sareeId).map((r) => [r.sareeId as string, r] as const)
+        )
+      ),
+    [batches]
   );
 
   const { qcRecords } = useQc();
@@ -201,27 +299,28 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   }, [qcRecords]);
 
   const tallyItems: TallyRowItem[] = useMemo(
-    () => linkedSarees
-      .filter(s => s.batchId && s.serial !== undefined)
-      .map(s => {
-        const row = rowBySareeId.get(s.id);
-        return {
-          sareeId: s.id,
-          serial: s.serial as number,
-          batchId: s.batchId as string,
-          weaverName: s.weaverName,
-          sareeTypeCode: s.sareeTypeCode ?? null,
-          receivedPhotoUrl: row?.receivedPhotoUrl ?? qcPhotoBySareeId.get(s.id) ?? null,
-          actualWeight: row?.receivedWeight ? Number(row.receivedWeight) : null,
-          actualWarpG: row?.receivedWarpG ? Number(row.receivedWarpG) : null,
-          actualReshamG: row?.receivedReshamG ? Number(row.receivedReshamG) : null,
-          actualJariReels: row?.receivedJariReels ? Number(row.receivedJariReels) : null,
-          tallied: row?.tallied ?? false,
-          talliedBy: row?.talliedBy ?? null,
-          talliedAt: row?.talliedAt ?? null,
-        };
-      }),
-    [linkedSarees, rowBySareeId, qcPhotoBySareeId],
+    () =>
+      linkedSarees
+        .filter((s) => s.batchId && s.serial !== undefined)
+        .map((s) => {
+          const row = rowBySareeId.get(s.id);
+          return {
+            sareeId: s.id,
+            serial: s.serial as number,
+            batchId: s.batchId as string,
+            weaverName: s.weaverName,
+            sareeTypeCode: s.sareeTypeCode ?? null,
+            receivedPhotoUrl: row?.receivedPhotoUrl ?? qcPhotoBySareeId.get(s.id) ?? null,
+            actualWeight: row?.receivedWeight ? Number(row.receivedWeight) : null,
+            actualWarpG: row?.receivedWarpG ? Number(row.receivedWarpG) : null,
+            actualReshamG: row?.receivedReshamG ? Number(row.receivedReshamG) : null,
+            actualJariReels: row?.receivedJariReels ? Number(row.receivedJariReels) : null,
+            tallied: row?.tallied ?? false,
+            talliedBy: row?.talliedBy ?? null,
+            talliedAt: row?.talliedAt ?? null,
+          };
+        }),
+    [linkedSarees, rowBySareeId, qcPhotoBySareeId]
   );
 
   const handleToggleSareeTally = async (item: TallyRowItem, tallied: boolean) => {
@@ -247,8 +346,12 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   };
 
   const weightTally = useMemo(() => {
-    let actualWeight = 0, warpG = 0, reshamG = 0, jariReels = 0, weighedCount = 0;
-    linkedSarees.forEach(s => {
+    let actualWeight = 0,
+      warpG = 0,
+      reshamG = 0,
+      jariReels = 0,
+      weighedCount = 0;
+    linkedSarees.forEach((s) => {
       const receipt = sareeReceiptById.get(s.id);
       if (!receipt) return;
       weighedCount += 1;
@@ -256,12 +359,20 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
       // Actual entry wins wherever Worker Staff recorded one; only a saree
       // received before this was tracked (or where the entry was somehow
       // blank) falls back to the standard-rate estimate for its weight.
-      if (receipt.warpG !== undefined || receipt.reshamG !== undefined || receipt.jariReels !== undefined) {
+      if (
+        receipt.warpG !== undefined ||
+        receipt.reshamG !== undefined ||
+        receipt.jariReels !== undefined
+      ) {
         warpG += receipt.warpG ?? 0;
         reshamG += receipt.reshamG ?? 0;
         jariReels += receipt.jariReels ?? 0;
       } else {
-        const split = autoMaterialSplit(s.sareeTypeCode, String(receipt.weight), getSareeTypeByCode);
+        const split = autoMaterialSplit(
+          s.sareeTypeCode,
+          String(receipt.weight),
+          getSareeTypeByCode
+        );
         if (split) {
           warpG += Number(split.warp) || 0;
           reshamG += Number(split.resham) || 0;
@@ -282,8 +393,16 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     const expectedJariReels = rate ? (Number(rate.jariWeight) || 0) * live.total : 0;
 
     return {
-      weighedCount, actualWeight, warpG, reshamG, jariReels,
-      rate, expectedWeight, expectedWarpG, expectedReshamG, expectedJariReels,
+      weighedCount,
+      actualWeight,
+      warpG,
+      reshamG,
+      jariReels,
+      rate,
+      expectedWeight,
+      expectedWarpG,
+      expectedReshamG,
+      expectedJariReels,
     };
   }, [linkedSarees, sareeReceiptById, getSareeTypeByCode, live.sareeType, live.total]);
 
@@ -295,13 +414,24 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
 
   const tabs = [
     { key: "overview" as const, label: "Overview", icon: <Boxes size={18} /> },
-    { key: "sarees" as const, label: `Sarees (${linkedSarees.length})`, icon: <Package size={18} /> },
+    {
+      key: "sarees" as const,
+      label: `Sarees (${linkedSarees.length})`,
+      icon: <Package size={18} />,
+    },
     { key: "payments" as const, label: "Payments", icon: <CreditCard size={18} /> },
-    { key: "quotations" as const, label: `Quotations (${linkedQuotations.length})`, icon: <FileText size={18} /> },
+    {
+      key: "quotations" as const,
+      label: `Quotations (${linkedQuotations.length})`,
+      icon: <FileText size={18} />,
+    },
   ];
 
   return (
-    <div className="px-3 sm:px-7 xl:px-14 py-4 sm:py-8" style={{ background: T.silkCream, minHeight: "100dvh" }}>
+    <div
+      className="px-3 sm:px-7 xl:px-14 py-4 sm:py-8"
+      style={{ background: T.silkCream, minHeight: "100dvh" }}
+    >
       <div className="hidden sm:block mb-4">
         <Breadcrumbs
           items={[
@@ -338,11 +468,19 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
             <span>Bulk Order</span>
           </div>
 
-          <span className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] flex items-center justify-center font-bold text-xs uppercase tracking-wider whitespace-nowrap shrink-0" style={{ background: cfg.bg, color: cfg.color }}>
+          <span
+            className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] flex items-center justify-center font-bold text-xs uppercase tracking-wider whitespace-nowrap shrink-0"
+            style={{ background: cfg.bg, color: cfg.color }}
+          >
             {cfg.label}
           </span>
 
-          <EntityCode type="order" value={live.ref} size="md" className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] bg-[#FFFDF9] border border-[#E8DCC4] text-[#3B2314] font-mono font-bold text-xs flex items-center whitespace-nowrap shrink-0" />
+          <EntityCode
+            type="order"
+            value={live.ref}
+            size="md"
+            className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] bg-[#FFFDF9] border border-[#E8DCC4] text-[#3B2314] font-mono font-bold text-xs flex items-center whitespace-nowrap shrink-0"
+          />
 
           <Button
             onClick={() => setDeletePrompt(true)}
@@ -357,24 +495,64 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
       {/* Hero Banner Card */}
       <div className="mb-6">
         <div className="relative bg-[#0D0207] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-[rgba(200,155,71,0.25)]">
-          <div style={{
-            position: "absolute", inset: 0,
-            backgroundImage: `url(${BG_IMAGE})`,
-            backgroundSize: "cover", backgroundPosition: "center",
-            opacity: 0.24, pointerEvents: "none"
-          }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(74,6,27,0.92) 0%, rgba(13,2,7,0.95) 100%)", pointerEvents: "none" }} />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `url(${BG_IMAGE})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              opacity: 0.24,
+              pointerEvents: "none",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(135deg, rgba(74,6,27,0.92) 0%, rgba(13,2,7,0.95) 100%)",
+              pointerEvents: "none",
+            }}
+          />
 
           <div className="relative z-10 p-5 sm:p-8 flex flex-col xl:flex-row gap-6 items-start xl:items-center justify-between">
             <div className="flex items-center gap-4 sm:gap-6 flex-wrap sm:flex-nowrap min-w-0 flex-1">
               <div className="relative shrink-0">
-                <div style={{ width: 76, height: 76, borderRadius: "50%", background: `linear-gradient(135deg, ${T.antiqueGold}, ${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 24, fontWeight: 700, border: "2px solid rgba(200,155,71,0.45)" }}>
+                <div
+                  style={{
+                    width: 76,
+                    height: 76,
+                    borderRadius: "50%",
+                    background: `linear-gradient(135deg, ${T.antiqueGold}, ${T.goldLight})`,
+                    color: T.darkBurgundy,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontFamily: F.display,
+                    fontSize: 24,
+                    fontWeight: 700,
+                    border: "2px solid rgba(200,155,71,0.45)",
+                  }}
+                >
                   {live.customer.slice(0, 2).toUpperCase()}
                 </div>
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                  <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.4px", textTransform: "uppercase", background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 99, padding: "2px 10px" }}>
+                  <span
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: T.antiqueGold,
+                      letterSpacing: "1.4px",
+                      textTransform: "uppercase",
+                      background: "rgba(200,155,71,0.14)",
+                      border: "1px solid rgba(200,155,71,0.30)",
+                      borderRadius: 99,
+                      padding: "2px 10px",
+                    }}
+                  >
                     BULK ORDER DETAILS
                   </span>
                 </div>
@@ -411,8 +589,13 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                   <Boxes size={20} color={T.antiqueGold} />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Progress</div>
-                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{producedCount}/{live.total} <span className="text-white/60 text-xs font-normal">({pct}%)</span></div>
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">
+                    Progress
+                  </div>
+                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">
+                    {producedCount}/{live.total}{" "}
+                    <span className="text-white/60 text-xs font-normal">({pct}%)</span>
+                  </div>
                 </div>
               </div>
 
@@ -421,8 +604,12 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                   <Truck size={20} color={T.antiqueGold} />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Deadline</div>
-                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{live.due}</div>
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">
+                    Deadline
+                  </div>
+                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">
+                    {live.due}
+                  </div>
                 </div>
               </div>
 
@@ -431,8 +618,12 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                   <CreditCard size={20} color={T.antiqueGold} />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Outstanding</div>
-                  <div className={`text-sm sm:text-base font-bold mt-0.5 whitespace-nowrap ${balance > 0 ? "text-rose-400" : "text-emerald-400"}`}>
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">
+                    Outstanding
+                  </div>
+                  <div
+                    className={`text-sm sm:text-base font-bold mt-0.5 whitespace-nowrap ${balance > 0 ? "text-rose-400" : "text-emerald-400"}`}
+                  >
                     {balance > 0 ? inr(balance) : <Money value={rupees(0)} />}
                   </div>
                 </div>
@@ -444,8 +635,12 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                     <Boxes size={20} color={T.antiqueGold} />
                   </div>
                   <div>
-                    <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Created By</div>
-                    <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{live.createdBy.name}</div>
+                    <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">
+                      Created By
+                    </div>
+                    <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">
+                      {live.createdBy.name}
+                    </div>
                   </div>
                 </div>
               )}
@@ -466,15 +661,26 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           }
           actions={
             !live.tallied && (
-              <Button onClick={() => setTallyPrompt(true)} variant="primary" size="sm" iconLeft={CheckCircle2} className="bg-[#C89B47] hover:bg-[#E7C983] text-[#3B2314] font-bold">
+              <Button
+                onClick={() => setTallyPrompt(true)}
+                variant="primary"
+                size="sm"
+                iconLeft={CheckCircle2}
+                className="bg-[#C89B47] hover:bg-[#E7C983] text-[#3B2314] font-bold"
+              >
                 Mark as Tallied
               </Button>
             )
           }
         >
           {/* Tally status alert banner */}
-          <div className={`mb-5 p-3.5 sm:p-4 rounded-xl border flex items-center gap-3 ${live.tallied ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-amber-50 border-amber-200 text-amber-900"}`}>
-            <ClipboardCheck size={20} className={live.tallied ? "text-emerald-600" : "text-amber-700"} />
+          <div
+            className={`mb-5 p-3.5 sm:p-4 rounded-xl border flex items-center gap-3 ${live.tallied ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-amber-50 border-amber-200 text-amber-900"}`}
+          >
+            <ClipboardCheck
+              size={20}
+              className={live.tallied ? "text-emerald-600" : "text-amber-700"}
+            />
             <div>
               <div className="text-xs sm:text-sm font-bold">
                 {live.tallied ? "Sarees Tallied" : "Sarees Not Yet Tallied"}
@@ -489,23 +695,88 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
             {[
-              { label: "Total Weight", actual: weightTally.actualWeight, expected: weightTally.expectedWeight, unit: "g" },
-              { label: "Warp", actual: weightTally.warpG, expected: weightTally.expectedWarpG, unit: "g" },
-              { label: "Resham", actual: weightTally.reshamG, expected: weightTally.expectedReshamG, unit: "g" },
-              { label: "Jari", actual: weightTally.jariReels, expected: weightTally.expectedJariReels, unit: "reels" },
-            ].map(m => {
+              {
+                label: "Total Weight",
+                actual: weightTally.actualWeight,
+                expected: weightTally.expectedWeight,
+                unit: "g",
+              },
+              {
+                label: "Warp",
+                actual: weightTally.warpG,
+                expected: weightTally.expectedWarpG,
+                unit: "g",
+              },
+              {
+                label: "Resham",
+                actual: weightTally.reshamG,
+                expected: weightTally.expectedReshamG,
+                unit: "g",
+              },
+              {
+                label: "Jari",
+                actual: weightTally.jariReels,
+                expected: weightTally.expectedJariReels,
+                unit: "reels",
+              },
+            ].map((m) => {
               const complete = weightTally.weighedCount >= live.total && live.total > 0;
               const short = complete && m.expected > 0 && m.actual < m.expected * 0.95;
               return (
-                <div key={m.label} style={{ background: short ? "rgba(192,57,43,0.05)" : T.silkCream, border: `1px solid ${short ? "rgba(192,57,43,0.20)" : T.borderDef}`, borderRadius: 12, padding: "12px 14px" }}>
-                  <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 6 }}>{m.label}</div>
-                  <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: short ? T.crimson : T.luxuryBrown, display: "flex", alignItems: "baseline", gap: 4 }}>
+                <div
+                  key={m.label}
+                  style={{
+                    background: short ? "rgba(192,57,43,0.05)" : T.silkCream,
+                    border: `1px solid ${short ? "rgba(192,57,43,0.20)" : T.borderDef}`,
+                    borderRadius: 12,
+                    padding: "12px 14px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: T.taupe,
+                      textTransform: "uppercase" as const,
+                      letterSpacing: "0.06em",
+                      marginBottom: 6,
+                    }}
+                  >
+                    {m.label}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: F.display,
+                      fontSize: 20,
+                      fontWeight: 700,
+                      color: short ? T.crimson : T.luxuryBrown,
+                      display: "flex",
+                      alignItems: "baseline",
+                      gap: 4,
+                    }}
+                  >
                     {trimNum(m.actual, m.unit === "reels" ? 2 : 0)}
-                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400, color: T.taupe }}>{m.unit}</span>
+                    <span
+                      style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400, color: T.taupe }}
+                    >
+                      {m.unit}
+                    </span>
                   </div>
                   {weightTally.rate && (
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3, display: "flex", alignItems: "center", gap: 4 }}>
-                      of {trimNum(m.expected, m.unit === "reels" ? 2 : 0)}{m.unit} expected
+                    <div
+                      style={{
+                        fontFamily: F.ui,
+                        fontSize: 12,
+                        color: T.taupe,
+                        marginTop: 3,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      of {trimNum(m.expected, m.unit === "reels" ? 2 : 0)}
+                      {m.unit} expected
                       {short && <AlertTriangle size={12} color={T.crimson} />}
                     </div>
                   )}
@@ -515,7 +786,8 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           </div>
 
           <div className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-4">
-            Per-Saree Tally ({tallyItems.filter(i => i.tallied).length} / {tallyItems.length} tallied)
+            Per-Saree Tally ({tallyItems.filter((i) => i.tallied).length} / {tallyItems.length}{" "}
+            tallied)
           </div>
           <SareeWeightTallyList
             items={tallyItems}
@@ -528,15 +800,16 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
       </div>
 
       {/* Royal Sub-tab strip */}
-      <RoyalSubTabStrip
-        tabs={tabs}
-        activeTab={tab}
-        onTabChange={setTab}
-      />
+      <RoyalSubTabStrip tabs={tabs} activeTab={tab} onTabChange={setTab} />
 
       <AnimatePresence mode="wait">
-        <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2 }}
+        >
           {tab === "overview" && (
             <SectionCard
               icon={Boxes}
@@ -591,53 +864,182 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
               subtitle={`Linked quotations raised against bulk order ${live.ref}`}
             >
               {linkedQuotations.length === 0 ? (
-                <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "40px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                <div
+                  style={{
+                    border: `1px solid ${T.borderDef}`,
+                    borderRadius: 12,
+                    padding: "40px 20px",
+                    textAlign: "center",
+                    fontFamily: F.ui,
+                    fontSize: 13,
+                    color: T.taupe,
+                  }}
+                >
                   No quotations linked to this bulk order yet.
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  {linkedQuotations.map(q => {
+                  {linkedQuotations.map((q) => {
                     const qCfg = QUOTE_STATUS_CFG[q.status];
-                    const qDispatch = dispatches.find(d => d.quotationRef === q.quotationNumber);
+                    const qDispatch = dispatches.find((d) => d.quotationRef === q.quotationNumber);
                     return (
-                      <div key={q.id} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "18px 20px", background: T.silkCream }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+                      <div
+                        key={q.id}
+                        style={{
+                          border: `1px solid ${T.borderDef}`,
+                          borderRadius: 14,
+                          padding: "18px 20px",
+                          background: T.silkCream,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                            marginBottom: 14,
+                            flexWrap: "wrap",
+                            gap: 10,
+                          }}
+                        >
                           <div>
                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                              <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</span>
-                              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "capitalize", background: qCfg.bg, color: qCfg.color, padding: "3px 9px", borderRadius: 20 }}>{q.status.replace(/-/g, " ")}</span>
+                              <span
+                                style={{
+                                  fontFamily: "var(--font-mono)",
+                                  fontSize: 14,
+                                  fontWeight: 700,
+                                  color: T.royalBurgundy,
+                                }}
+                              >
+                                {q.quotationNumber}
+                              </span>
+                              <span
+                                style={{
+                                  fontFamily: F.ui,
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  textTransform: "capitalize",
+                                  background: qCfg.bg,
+                                  color: qCfg.color,
+                                  padding: "3px 9px",
+                                  borderRadius: 20,
+                                }}
+                              >
+                                {q.status.replace(/-/g, " ")}
+                              </span>
                             </div>
-                            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{q.quotationDate} · {q.sarees.length} saree{q.sarees.length === 1 ? "" : "s"} · {q.firmName || "—"}</div>
+                            <div
+                              style={{
+                                fontFamily: F.ui,
+                                fontSize: 12,
+                                color: T.taupe,
+                                marginTop: 4,
+                              }}
+                            >
+                              {q.quotationDate} · {q.sarees.length} saree
+                              {q.sarees.length === 1 ? "" : "s"} · {q.firmName || "—"}
+                            </div>
                           </div>
                           <div style={{ textAlign: "right" }}>
-                            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{inr(q.grandTotal)}</div>
-                            {q.applyGst && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>incl. {q.gstPct}% GST</div>}
+                            <div
+                              style={{
+                                fontFamily: F.display,
+                                fontSize: 20,
+                                fontWeight: 700,
+                                color: T.luxuryBrown,
+                              }}
+                            >
+                              {inr(q.grandTotal)}
+                            </div>
+                            {q.applyGst && (
+                              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                                incl. {q.gstPct}% GST
+                              </div>
+                            )}
                           </div>
                         </div>
 
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: qDispatch ? 14 : 0 }}>
-                          {q.sarees.map(s => (
-                            <span key={s.sareeId} style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 8px", borderRadius: 6 }}>{s.sareeId}</span>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 6,
+                            marginBottom: qDispatch ? 14 : 0,
+                          }}
+                        >
+                          {q.sarees.map((s) => (
+                            <span
+                              key={s.sareeId}
+                              style={{
+                                fontFamily: "var(--font-mono)",
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: T.royalBurgundy,
+                                background: "rgba(110,15,45,0.06)",
+                                padding: "3px 8px",
+                                borderRadius: 6,
+                              }}
+                            >
+                              {s.sareeId}
+                            </span>
                           ))}
                         </div>
 
                         {qDispatch ? (
-                          <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                          <div
+                            style={{
+                              borderTop: `1px solid ${T.borderDef}`,
+                              paddingTop: 14,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              flexWrap: "wrap",
+                              gap: 10,
+                            }}
+                          >
                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                               <Truck size={16} color={T.greenMid} />
-                              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
-                                Dispatched {qDispatch.dispatchDate} · LR <strong>{qDispatch.lrNumber || "—"}</strong> · {qDispatch.transportCompany || "—"}
+                              <span
+                                style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}
+                              >
+                                Dispatched {qDispatch.dispatchDate} · LR{" "}
+                                <strong>{qDispatch.lrNumber || "—"}</strong> ·{" "}
+                                {qDispatch.transportCompany || "—"}
                               </span>
                             </div>
-                            <span style={{ display: "inline-block", background: T.greenBg, color: T.greenMid, borderRadius: 8 }}>
-                              <Button onClick={() => setDispatchPanel(qDispatch)} variant="tertiary" size="sm">
+                            <span
+                              style={{
+                                display: "inline-block",
+                                background: T.greenBg,
+                                color: T.greenMid,
+                                borderRadius: 8,
+                              }}
+                            >
+                              <Button
+                                onClick={() => setDispatchPanel(qDispatch)}
+                                variant="tertiary"
+                                size="sm"
+                              >
                                 View Full Dispatch Details
                               </Button>
                             </span>
                           </div>
                         ) : (
-                          <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, fontFamily: F.ui, fontSize: 12, color: T.taupe, display: "flex", alignItems: "center", gap: 8 }}>
-                            <Send size={13} /> Not dispatched yet — send from Inventory once the sarees are received from finishing.
+                          <div
+                            style={{
+                              borderTop: `1px solid ${T.borderDef}`,
+                              paddingTop: 14,
+                              fontFamily: F.ui,
+                              fontSize: 12,
+                              color: T.taupe,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                            }}
+                          >
+                            <Send size={13} /> Not dispatched yet — send from Inventory once the
+                            sarees are received from finishing.
                           </div>
                         )}
                       </div>
@@ -647,29 +1049,61 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
               )}
             </SectionCard>
           )}
-
         </motion.div>
       </AnimatePresence>
 
       <AnimatePresence>
-        {dispatchPanel && <DispatchDetailPanel dispatch={dispatchPanel} onClose={() => setDispatchPanel(null)} />}
+        {dispatchPanel && (
+          <DispatchDetailPanel dispatch={dispatchPanel} onClose={() => setDispatchPanel(null)} />
+        )}
       </AnimatePresence>
 
       {tallyPrompt && (
-        <Modal open onOpenChange={o => !o && setTallyPrompt(false)} size="xs">
+        <Modal open onOpenChange={(o) => !o && setTallyPrompt(false)} size="xs">
           <div style={{ padding: 26 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
               <ClipboardCheck size={20} color={T.royalBurgundy} />
               <Dialog.Title asChild>
-                <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>Tally this order</div>
+                <div
+                  style={{
+                    fontFamily: F.display,
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: T.luxuryBrown,
+                  }}
+                >
+                  Tally this order
+                </div>
               </Dialog.Title>
             </div>
             <Dialog.Description asChild>
-            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: "0 0 16px" }}>
-              Confirms the physical saree count for {live.ref} matches the {linkedSarees.length} saree{linkedSarees.length === 1 ? "" : "s"} listed against it.
-            </p>
+              <p
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: 13,
+                  color: T.taupe,
+                  lineHeight: 1.6,
+                  margin: "0 0 16px",
+                }}
+              >
+                Confirms the physical saree count for {live.ref} matches the {linkedSarees.length}{" "}
+                saree{linkedSarees.length === 1 ? "" : "s"} listed against it.
+              </p>
             </Dialog.Description>
-            <div style={{ position: "relative", width: "100%", height: 50, background: "rgba(110,15,45,0.06)", borderRadius: 12, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 20 }}>
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                height: 50,
+                background: "rgba(110,15,45,0.06)",
+                borderRadius: 12,
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginTop: 20,
+              }}
+            >
               <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe }}>
                 Swipe to confirm tally
               </span>
@@ -684,8 +1118,17 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                   }
                 }}
                 style={{
-                  position: "absolute", left: 0, top: 0, bottom: 0, width: 50, background: T.royalBurgundy, borderRadius: 12,
-                  display: "flex", alignItems: "center", justifyContent: "center", cursor: "grab"
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 50,
+                  background: T.royalBurgundy,
+                  borderRadius: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "grab",
                 }}
                 whileTap={{ cursor: "grabbing" }}
               >
@@ -697,19 +1140,43 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
       )}
 
       {deletePrompt && (
-        <Modal open onOpenChange={o => !o && setDeletePrompt(false)} size="xs">
+        <Modal open onOpenChange={(o) => !o && setDeletePrompt(false)} size="xs">
           <div style={{ padding: 26 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
               <AlertTriangle size={20} color={T.crimson} />
               <Dialog.Title asChild>
-                <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>Delete this order?</div>
+                <div
+                  style={{
+                    fontFamily: F.display,
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: T.luxuryBrown,
+                  }}
+                >
+                  Delete this order?
+                </div>
               </Dialog.Title>
             </div>
-            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: "0 0 20px" }}>
-              This permanently removes {live.ref} ({live.customer}). Batches, quotations, and dispatches already linked to it are kept, just unlinked from this order — this can&apos;t be undone.
+            <p
+              style={{
+                fontFamily: F.ui,
+                fontSize: 13,
+                color: T.taupe,
+                lineHeight: 1.6,
+                margin: "0 0 20px",
+              }}
+            >
+              This permanently removes {live.ref} ({live.customer}). Batches, quotations, and
+              dispatches already linked to it are kept, just unlinked from this order — this
+              can&apos;t be undone.
             </p>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <Button onClick={() => setDeletePrompt(false)} variant="secondary" size="md" disabled={deleting}>
+              <Button
+                onClick={() => setDeletePrompt(false)}
+                variant="secondary"
+                size="md"
+                disabled={deleting}
+              >
                 Cancel
               </Button>
               <Button

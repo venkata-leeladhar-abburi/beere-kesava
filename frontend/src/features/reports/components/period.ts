@@ -34,7 +34,8 @@ export interface CustomDates {
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 
-const fmtDay = (d: Date) => d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+const fmtDay = (d: Date) =>
+  d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 const fmtMonth = (d: Date) => d.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 
 /**
@@ -45,7 +46,7 @@ const fmtMonth = (d: Date) => d.toLocaleDateString("en-IN", { month: "long", yea
 export function resolvePeriod(
   period: PeriodKey,
   custom: CustomDates = {},
-  now: Date = new Date(),
+  now: Date = new Date()
 ): { current: DateRange | null; prior: DateRange | null } {
   const today = startOfDay(now);
 
@@ -81,7 +82,11 @@ export function resolvePeriod(
       const priorFrom = new Date(now.getFullYear(), q * 3 - 3, 1);
       return {
         current: { from, to, label: `Q${q + 1} ${from.getFullYear()}` },
-        prior: { from: priorFrom, to: from, label: `Q${((q + 3) % 4) + 1} ${priorFrom.getFullYear()}` },
+        prior: {
+          from: priorFrom,
+          to: from,
+          label: `Q${((q + 3) % 4) + 1} ${priorFrom.getFullYear()}`,
+        },
       };
     }
     case "This Year": {
@@ -105,7 +110,11 @@ export function resolvePeriod(
       const priorFrom = new Date(from.getTime() - span);
       return {
         current: { from, to, label: `${fmtDay(from)} – ${fmtDay(addDays(to, -1))}` },
-        prior: { from: priorFrom, to: from, label: `${fmtDay(priorFrom)} – ${fmtDay(addDays(from, -1))}` },
+        prior: {
+          from: priorFrom,
+          to: from,
+          label: `${fmtDay(priorFrom)} – ${fmtDay(addDays(from, -1))}`,
+        },
       };
     }
     case "All Time":

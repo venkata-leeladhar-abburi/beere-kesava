@@ -4,17 +4,37 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { MapPin, Package, Send, Trash2, Wallet, ChevronLeft, UserRound, Boxes, ShoppingBag, CreditCard, UserCheck, Edit3 } from "lucide-react";
+import {
+  MapPin,
+  Package,
+  Send,
+  Trash2,
+  Wallet,
+  ChevronLeft,
+  UserRound,
+  Boxes,
+  ShoppingBag,
+  CreditCard,
+  UserCheck,
+  Edit3,
+} from "lucide-react";
 import { toast } from "sonner";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
 import { useScrollTopOnView } from "@/shared/ui/ScrollToTop";
 import { SectionCard } from "@/shared/ui/SectionCard";
 import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 import { SupplierPayNowModal } from "@/features/payments";
-import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
+import {
+  DateFilterState,
+  DEFAULT_DATE_FILTER,
+  matchesDateFilter,
+} from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
 import {
-  useSuppliers, usePurchasePhotos, Supplier, parseINR,
+  useSuppliers,
+  usePurchasePhotos,
+  Supplier,
+  parseINR,
 } from "../../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { SupplierFormValues } from "../../types";
@@ -29,13 +49,20 @@ import { PaymentsTab } from "./PaymentsTab";
 import { ContactTab } from "./ContactTab";
 import { EditTab } from "./EditTab";
 
-export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
+export function SupplierProfile({
+  supplier,
+  onBack,
+  onRaiseRequest,
+}: {
   supplier: Supplier;
   onBack: () => void;
   onRaiseRequest: (supplierId: string) => void;
 }) {
-  const { statsFor, payments, requests, updateSupplier, deleteSupplier, addPayment } = useSuppliers();
-  const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
+  const { statsFor, payments, requests, updateSupplier, deleteSupplier, addPayment } =
+    useSuppliers();
+  const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">(
+    "overview"
+  );
   const confirm = useConfirm();
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [savingPayment, setSavingPayment] = useState(false);
@@ -43,25 +70,30 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   // Command palette RECENT group (design-system/05-OVERLAYS.md Part H) —
   // record this profile as viewed once per mount.
   useEffect(() => {
-    recordView({ key: `supplier:${supplier.id}`, label: supplier.name, path: "/admin/suppliers", kind: "Supplier" });
+    recordView({
+      key: `supplier:${supplier.id}`,
+      label: supplier.name,
+      path: "/admin/suppliers",
+      kind: "Supplier",
+    });
   }, [supplier.id, supplier.name]);
 
   useScrollTopOnView(supplier.id);
   const tabs = [
     { key: "overview", label: "Overview", icon: <Boxes size={18} /> },
-    { key: "orders",   label: "Order History", icon: <ShoppingBag size={18} /> },
+    { key: "orders", label: "Order History", icon: <ShoppingBag size={18} /> },
     { key: "payments", label: "Payment History", icon: <CreditCard size={18} /> },
-    { key: "contact",  label: "Contact Details", icon: <UserCheck size={18} /> },
-    { key: "edit",     label: "Edit Profile", icon: <Edit3 size={18} /> },
+    { key: "contact", label: "Contact Details", icon: <UserCheck size={18} /> },
+    { key: "edit", label: "Edit Profile", icon: <Edit3 size={18} /> },
   ] as const;
 
   // Independent date filters — the overview inventory and the order history each
   // carry their own time range so one doesn't disturb the other.
-  const [invFilter, setInvFilter]     = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [invFilter, setInvFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [orderFilter, setOrderFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
-  const [payFilter, setPayFilter]     = useState<DateFilterState>(DEFAULT_DATE_FILTER);
-  const [typeFilter, setTypeFilter]       = useState("All Types");
-  const [colorFilter, setColorFilter]     = useState("All Colours");
+  const [payFilter, setPayFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [typeFilter, setTypeFilter] = useState("All Types");
+  const [colorFilter, setColorFilter] = useState("All Colours");
   const [purchaseFilter, setPurchaseFilter] = useState("All Purchases");
   const [sareeSearch, setSareeSearch] = useState("");
 
@@ -72,41 +104,75 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
 
   // Every saree ever bought from this supplier, flattened for the inventory view.
   const allSarees = useMemo(
-    () => myPurchases.flatMap(p => p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier, supplierId: p.supplierId }))),
+    () =>
+      myPurchases.flatMap((p) =>
+        p.sarees.map((s) => ({
+          ...s,
+          purchaseId: p.id,
+          invoiceNumber: p.invoiceNumber,
+          supplier: p.supplier,
+          supplierId: p.supplierId,
+        }))
+      ),
     [myPurchases]
   );
 
-  const sareeTypes  = useMemo(() => ["All Types", ...Array.from(new Set(allSarees.map(s => s.sareeType).filter(Boolean)))], [allSarees]);
-  const sareeColors = useMemo(() => ["All Colours", ...Array.from(new Set(allSarees.map(s => s.color).filter(Boolean)))], [allSarees]);
+  const sareeTypes = useMemo(
+    () => ["All Types", ...Array.from(new Set(allSarees.map((s) => s.sareeType).filter(Boolean)))],
+    [allSarees]
+  );
+  const sareeColors = useMemo(
+    () => ["All Colours", ...Array.from(new Set(allSarees.map((s) => s.color).filter(Boolean)))],
+    [allSarees]
+  );
   // Purchase orders this supplier's sarees came from, newest first, for the PO filter dropdown.
   const purchaseOptions = useMemo(
     () => [...myPurchases].sort((a, b) => (b.date > a.date ? 1 : -1)),
     [myPurchases]
   );
 
-  const filteredSarees = useMemo(() => allSarees.filter(s => {
-    const q = sareeSearch.toLowerCase();
-    const mSearch = !q || s.id.toLowerCase().includes(q) || s.sareeType.toLowerCase().includes(q) || s.color.toLowerCase().includes(q);
-    const mType     = typeFilter === "All Types" || s.sareeType === typeFilter;
-    const mColor    = colorFilter === "All Colours" || s.color === colorFilter;
-    const mPurchase = purchaseFilter === "All Purchases" || s.purchaseId === purchaseFilter;
-    return mSearch && mType && mColor && mPurchase && matchesDateFilter(s.date, invFilter);
-  }), [allSarees, sareeSearch, typeFilter, colorFilter, purchaseFilter, invFilter]);
+  const filteredSarees = useMemo(
+    () =>
+      allSarees.filter((s) => {
+        const q = sareeSearch.toLowerCase();
+        const mSearch =
+          !q ||
+          s.id.toLowerCase().includes(q) ||
+          s.sareeType.toLowerCase().includes(q) ||
+          s.color.toLowerCase().includes(q);
+        const mType = typeFilter === "All Types" || s.sareeType === typeFilter;
+        const mColor = colorFilter === "All Colours" || s.color === colorFilter;
+        const mPurchase = purchaseFilter === "All Purchases" || s.purchaseId === purchaseFilter;
+        return mSearch && mType && mColor && mPurchase && matchesDateFilter(s.date, invFilter);
+      }),
+    [allSarees, sareeSearch, typeFilter, colorFilter, purchaseFilter, invFilter]
+  );
 
   // Money spent + paid within the overview's selected time range.
   const rangePurchases = useMemo(
-    () => myPurchases.filter(p => matchesDateFilter(p.date, invFilter)),
+    () => myPurchases.filter((p) => matchesDateFilter(p.date, invFilter)),
     [myPurchases, invFilter]
   );
   const rangeBilled = rangePurchases.reduce((sum, p) => sum + parseINR(p.billAmount), 0);
-  const myPayments  = useMemo(() => payments.filter(p => p.supplierId === supplier.id), [payments, supplier.id]);
-  const rangePaid   = myPayments.filter(p => matchesDateFilter(p.date, invFilter)).reduce((sum, p) => sum + p.amount, 0);
+  const myPayments = useMemo(
+    () => payments.filter((p) => p.supplierId === supplier.id),
+    [payments, supplier.id]
+  );
+  const rangePaid = myPayments
+    .filter((p) => matchesDateFilter(p.date, invFilter))
+    .reduce((sum, p) => sum + p.amount, 0);
 
-  const filteredOrders   = useMemo(() => myPurchases.filter(p => matchesDateFilter(p.date, orderFilter)), [myPurchases, orderFilter]);
-  const filteredPayments = useMemo(() => myPayments.filter(p => matchesDateFilter(p.date, payFilter)), [myPayments, payFilter]);
-  const filteredPaidSum  = filteredPayments.reduce((sum, p) => sum + p.amount, 0);
+  const filteredOrders = useMemo(
+    () => myPurchases.filter((p) => matchesDateFilter(p.date, orderFilter)),
+    [myPurchases, orderFilter]
+  );
+  const filteredPayments = useMemo(
+    () => myPayments.filter((p) => matchesDateFilter(p.date, payFilter)),
+    [myPayments, payFilter]
+  );
+  const filteredPaidSum = filteredPayments.reduce((sum, p) => sum + p.amount, 0);
 
-  const myRequests = requests.filter(r => r.supplierId === supplier.id);
+  const myRequests = requests.filter((r) => r.supplierId === supplier.id);
 
   // Spend trend by month, derived from this supplier's actual purchases.
   // `p.date` is an ISO "YYYY-MM-DD" string — bucket by the "YYYY-MM" prefix
@@ -114,13 +180,19 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   // occurs (which used to dump every purchase into one "—" bucket).
   const spendByMonth = useMemo(() => {
     const buckets = new Map<string, number>();
-    myPurchases.forEach(p => {
+    myPurchases.forEach((p) => {
       const key = (p.date || "").slice(0, 7) || "—";
       buckets.set(key, (buckets.get(key) || 0) + parseINR(p.billAmount));
     });
     return Array.from(buckets, ([key, spend]) => {
       const [y, m] = key.split("-");
-      const month = y && m ? new Date(Number(y), Number(m) - 1, 1).toLocaleDateString("en-IN", { month: "short", year: "numeric" }) : key;
+      const month =
+        y && m
+          ? new Date(Number(y), Number(m) - 1, 1).toLocaleDateString("en-IN", {
+              month: "short",
+              year: "numeric",
+            })
+          : key;
       return { key, month, spend };
     }).sort((a, b) => a.key.localeCompare(b.key));
   }, [myPurchases]);
@@ -129,22 +201,44 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
 
   // Edit-profile form state, reset whenever a different supplier is opened.
   const [form, setForm] = useState<SupplierFormValues>({
-    name: supplier.name, shortName: supplier.shortName || "", contactName: supplier.contactName, phone: supplier.phone,
-    whatsapp: supplier.whatsapp || "", city: supplier.city, state: supplier.state,
-    address: supplier.address, terms: supplier.terms, bankName: supplier.bankName || "",
-    accountNo: supplier.accountNo || "", ifscCode: supplier.ifscCode || "", gstCode: supplier.gstCode,
-    rating: supplier.rating || 3, notes: supplier.notes || "", firmId: supplier.firmId || "",
+    name: supplier.name,
+    shortName: supplier.shortName || "",
+    contactName: supplier.contactName,
+    phone: supplier.phone,
+    whatsapp: supplier.whatsapp || "",
+    city: supplier.city,
+    state: supplier.state,
+    address: supplier.address,
+    terms: supplier.terms,
+    bankName: supplier.bankName || "",
+    accountNo: supplier.accountNo || "",
+    ifscCode: supplier.ifscCode || "",
+    gstCode: supplier.gstCode,
+    rating: supplier.rating || 3,
+    notes: supplier.notes || "",
+    firmId: supplier.firmId || "",
   });
   const [cardPreview, setCardPreview] = useState<string | null>(supplier.visitingCard || null);
   const [savedFlash, setSavedFlash] = useState(false);
 
   React.useEffect(() => {
     setForm({
-      name: supplier.name, shortName: supplier.shortName || "", contactName: supplier.contactName, phone: supplier.phone,
-      whatsapp: supplier.whatsapp || "", city: supplier.city, state: supplier.state,
-      address: supplier.address, terms: supplier.terms, bankName: supplier.bankName || "",
-      accountNo: supplier.accountNo || "", ifscCode: supplier.ifscCode || "", gstCode: supplier.gstCode,
-      rating: supplier.rating || 3, notes: supplier.notes || "", firmId: supplier.firmId || "",
+      name: supplier.name,
+      shortName: supplier.shortName || "",
+      contactName: supplier.contactName,
+      phone: supplier.phone,
+      whatsapp: supplier.whatsapp || "",
+      city: supplier.city,
+      state: supplier.state,
+      address: supplier.address,
+      terms: supplier.terms,
+      bankName: supplier.bankName || "",
+      accountNo: supplier.accountNo || "",
+      ifscCode: supplier.ifscCode || "",
+      gstCode: supplier.gstCode,
+      rating: supplier.rating || 3,
+      notes: supplier.notes || "",
+      firmId: supplier.firmId || "",
     });
     setCardPreview(supplier.visitingCard || null);
   }, [supplier]);
@@ -155,7 +249,12 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
     setTimeout(() => setSavedFlash(false), 2200);
   };
 
-  const card: React.CSSProperties = { background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" };
+  const card: React.CSSProperties = {
+    background: "#FFF",
+    borderRadius: 14,
+    border: `1.5px solid ${T.borderDef}`,
+    overflow: "hidden",
+  };
 
   return (
     <div className="px-3 sm:px-7 xl:px-14 py-4 sm:py-8">
@@ -186,7 +285,8 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
             onClick={async () => {
               const ok = await confirm({
                 title: `Delete supplier "${supplier.name}"?`,
-                description: "This can't be undone. Suppliers with existing purchases or payments can't be deleted — deactivate them instead.",
+                description:
+                  "This can't be undone. Suppliers with existing purchases or payments can't be deleted — deactivate them instead.",
                 confirmLabel: "Delete Supplier",
                 tone: "danger",
               });
@@ -224,11 +324,18 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
             <span>Supplier Profile</span>
           </div>
 
-          <span className={`h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] flex items-center justify-center font-bold text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${supplier.status === "active" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+          <span
+            className={`h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] flex items-center justify-center font-bold text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${supplier.status === "active" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}
+          >
             {supplier.status}
           </span>
 
-          <EntityCode type="supplier" value={supplier.code || supplier.id} size="md" className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] bg-[#FFFDF9] border border-[#E8DCC4] text-[#3B2314] font-mono font-bold text-xs flex items-center whitespace-nowrap shrink-0" />
+          <EntityCode
+            type="supplier"
+            value={supplier.code || supplier.id}
+            size="md"
+            className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] bg-[#FFFDF9] border border-[#E8DCC4] text-[#3B2314] font-mono font-bold text-xs flex items-center whitespace-nowrap shrink-0"
+          />
 
           <Button
             variant="secondary"
@@ -236,7 +343,8 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
             onClick={async () => {
               const ok = await confirm({
                 title: `Delete supplier "${supplier.name}"?`,
-                description: "This can't be undone. Suppliers with existing purchases or payments can't be deleted — deactivate them instead.",
+                description:
+                  "This can't be undone. Suppliers with existing purchases or payments can't be deleted — deactivate them instead.",
                 confirmLabel: "Delete Supplier",
                 tone: "danger",
               });
@@ -251,24 +359,65 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
       {/* Profile Hero Banner */}
       <div className="mb-6">
         <div className="relative bg-[#0D0207] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-[rgba(200,155,71,0.25)]">
-          <div style={{
-            position: "absolute", inset: 0,
-            backgroundImage: `url(${BG_IMAGE})`,
-            backgroundSize: "cover", backgroundPosition: "center",
-            opacity: 0.24, pointerEvents: "none"
-          }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(74,6,27,0.92) 0%, rgba(13,2,7,0.95) 100%)", pointerEvents: "none" }} />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `url(${BG_IMAGE})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              opacity: 0.24,
+              pointerEvents: "none",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(135deg, rgba(74,6,27,0.92) 0%, rgba(13,2,7,0.95) 100%)",
+              pointerEvents: "none",
+            }}
+          />
 
           <div className="relative z-10 p-5 sm:p-8 flex flex-col lg:flex-row gap-5 lg:gap-7 items-start lg:items-center justify-between">
             <div className="flex items-center gap-4 sm:gap-6 flex-wrap sm:flex-nowrap w-full lg:w-auto">
               <div className="relative shrink-0">
-                <div style={{ width: 76, height: 76, borderRadius: "50%", background: `linear-gradient(135deg, ${T.antiqueGold}, ${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 24, fontWeight: 700, border: "2px solid rgba(200,155,71,0.45)", boxShadow: "0 6px 20px rgba(200,155,71,0.35)" }}>
+                <div
+                  style={{
+                    width: 76,
+                    height: 76,
+                    borderRadius: "50%",
+                    background: `linear-gradient(135deg, ${T.antiqueGold}, ${T.goldLight})`,
+                    color: T.darkBurgundy,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontFamily: F.display,
+                    fontSize: 24,
+                    fontWeight: 700,
+                    border: "2px solid rgba(200,155,71,0.45)",
+                    boxShadow: "0 6px 20px rgba(200,155,71,0.35)",
+                  }}
+                >
                   {supplier.initials}
                 </div>
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.4px", textTransform: "uppercase", background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 99, padding: "2px 10px" }}>
+                  <span
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: T.antiqueGold,
+                      letterSpacing: "1.4px",
+                      textTransform: "uppercase",
+                      background: "rgba(200,155,71,0.14)",
+                      border: "1px solid rgba(200,155,71,0.30)",
+                      borderRadius: 99,
+                      padding: "2px 10px",
+                    }}
+                  >
                     SILK SAREE SUPPLIER
                   </span>
                 </div>
@@ -276,8 +425,12 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
                   {supplier.name}
                 </h1>
                 <div className="mt-2 flex items-center gap-3 flex-wrap text-xs sm:text-sm text-white/70">
-                  <span className="flex items-center gap-1.5"><MapPin size={14} color={T.antiqueGold} /> {supplier.city}, {supplier.state}</span>
-                  <span className="flex items-center gap-1.5"><Package size={14} color={T.antiqueGold} /> {supplier.specialty}</span>
+                  <span className="flex items-center gap-1.5">
+                    <MapPin size={14} color={T.antiqueGold} /> {supplier.city}, {supplier.state}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Package size={14} color={T.antiqueGold} /> {supplier.specialty}
+                  </span>
                   <StarRating rating={supplier.rating} />
                 </div>
               </div>
@@ -290,8 +443,12 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
                   <CreditCard size={20} color={T.antiqueGold} />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Total Purchased</div>
-                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{formatMoney(rupees(stats.totalPurchased))}</div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">
+                    Total Purchased
+                  </div>
+                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">
+                    {formatMoney(rupees(stats.totalPurchased))}
+                  </div>
                 </div>
               </div>
 
@@ -300,8 +457,12 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
                   <Wallet size={20} className="text-emerald-400" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Total Paid</div>
-                  <div className="text-sm sm:text-base font-bold text-[#7EE2A8] mt-0.5 whitespace-nowrap">{formatMoney(rupees(stats.totalPaid))}</div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">
+                    Total Paid
+                  </div>
+                  <div className="text-sm sm:text-base font-bold text-[#7EE2A8] mt-0.5 whitespace-nowrap">
+                    {formatMoney(rupees(stats.totalPaid))}
+                  </div>
                 </div>
               </div>
 
@@ -310,8 +471,12 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
                   <CreditCard size={20} className="text-red-400" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Outstanding</div>
-                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{formatMoney(rupees(stats.outstanding))}</div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">
+                    Outstanding
+                  </div>
+                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">
+                    {formatMoney(rupees(stats.outstanding))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -320,15 +485,16 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
       </div>
 
       {/* Royal Sub-Tab Strip */}
-      <RoyalSubTabStrip
-        tabs={tabs}
-        activeTab={tab}
-        onTabChange={setTab}
-      />
+      <RoyalSubTabStrip tabs={tabs} activeTab={tab} onTabChange={setTab} />
 
       <AnimatePresence mode="wait">
-        <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22 }}>
-
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.22 }}
+        >
           {tab === "overview" && (
             <SectionCard
               icon={Boxes}
@@ -367,7 +533,12 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
               title="Purchase Orders & Requests History"
               subtitle={`Full history of all saree purchase orders and requests with ${supplier.name}`}
             >
-              <OrdersTab card={card} orderFilter={orderFilter} setOrderFilter={setOrderFilter} filteredOrders={filteredOrders} />
+              <OrdersTab
+                card={card}
+                orderFilter={orderFilter}
+                setOrderFilter={setOrderFilter}
+                filteredOrders={filteredOrders}
+              />
             </SectionCard>
           )}
 
@@ -416,7 +587,6 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
               />
             </SectionCard>
           )}
-
         </motion.div>
       </AnimatePresence>
 
@@ -424,11 +594,13 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
         <SupplierPayNowModal
           supplier={supplier}
           outstanding={stats.outstanding}
-          openPurchases={myPurchases.filter(p => p.status !== "Paid")}
-          paidFor={purchaseId => myPayments.reduce((sum, p) => sum + (p.purchaseId === purchaseId ? p.amount : 0), 0)}
+          openPurchases={myPurchases.filter((p) => p.status !== "Paid")}
+          paidFor={(purchaseId) =>
+            myPayments.reduce((sum, p) => sum + (p.purchaseId === purchaseId ? p.amount : 0), 0)
+          }
           saving={savingPayment}
           onClose={() => setPayModalOpen(false)}
-          onSave={payload => {
+          onSave={(payload) => {
             setSavingPayment(true);
             addPayment({
               supplierId: supplier.id,
@@ -439,7 +611,9 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
               purchaseId: payload.purchaseId,
               firmId: payload.firmId,
             });
-            toast.success(`Payment of ${formatMoney(rupees(payload.amount))} recorded for ${supplier.name}`);
+            toast.success(
+              `Payment of ${formatMoney(rupees(payload.amount))} recorded for ${supplier.name}`
+            );
             setSavingPayment(false);
             setPayModalOpen(false);
           }}

@@ -50,7 +50,11 @@ export const Slider = React.forwardRef<React.ElementRef<typeof SliderPrimitive.R
               "disabled:opacity-50 disabled:pointer-events-none"
             )}
           >
-            <span aria-hidden="true" className="absolute pointer-events-none" style={{ inset: -12 }} />
+            <span
+              aria-hidden="true"
+              className="absolute pointer-events-none"
+              style={{ inset: -12 }}
+            />
             {showValueLabel && dragging && (
               <span
                 className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-[var(--radius-sm)] px-2 py-1 text-[12px]"

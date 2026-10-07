@@ -98,8 +98,12 @@ export function useRetailSaleLinking() {
         (current) => {
           if (!current) return current;
           const items = current.items.filter((sale) => !linked.has(sale.saleRef));
-          return { ...current, items, total: Math.max(0, current.total - (current.items.length - items.length)) };
-        },
+          return {
+            ...current,
+            items,
+            total: Math.max(0, current.total - (current.items.length - items.length)),
+          };
+        }
       );
       invalidate(vars.firmId);
     },
@@ -125,7 +129,7 @@ export function useRetailSaleLinking() {
             // this row has just left.
             totalAmount: current.totalAmount - Number(removed.amount ?? 0),
           };
-        },
+        }
       );
       invalidate(vars.firmId);
     },
@@ -141,7 +145,6 @@ export function useRetailSaleLinking() {
     resetLinkError: () => link.reset(),
   };
 }
-
 
 export const retailSalesFirmKey = ["firms", "retail-sales", "active-firm"] as const;
 export const retailSaleOptionsKey = (firmId: string) =>

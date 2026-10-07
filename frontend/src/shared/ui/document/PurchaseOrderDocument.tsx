@@ -48,8 +48,21 @@ export interface PurchaseOrderDocumentProps {
 }
 
 export function PurchaseOrderDocument({
-  poNumber, submittedDate, deliveryDate, firm, supplier, materials, totalValue,
-  urgency, notesVendor, notesAdmin, raisedBy, approvedBy, approvedDate, statusLabel, pageInfo,
+  poNumber,
+  submittedDate,
+  deliveryDate,
+  firm,
+  supplier,
+  materials,
+  totalValue,
+  urgency,
+  notesVendor,
+  notesAdmin,
+  raisedBy,
+  approvedBy,
+  approvedDate,
+  statusLabel,
+  pageInfo,
 }: PurchaseOrderDocumentProps) {
   const meta: MetaField[] = [
     { label: "PO No", value: poNumber, code: true },
@@ -63,9 +76,12 @@ export function PurchaseOrderDocument({
   // ₹0.00 and a ₹0.00 grand total, which reads as a priced order worth
   // nothing. When nothing is priced, the money column is dropped entirely and
   // the sheet is a pure quantity order.
-  const hasAmounts = materials.some(m => (m.subtotal ?? 0) > 0 || (m.pricePerUnit ?? 0) > 0) || totalValue > 0;
+  const hasAmounts =
+    materials.some((m) => (m.subtotal ?? 0) > 0 || (m.pricePerUnit ?? 0) > 0) || totalValue > 0;
 
-  const totalsRows = [{ label: "Estimated Total", amount: formatPaise(toPaise(totalValue)), grand: true }];
+  const totalsRows = [
+    { label: "Estimated Total", amount: formatPaise(toPaise(totalValue)), grand: true },
+  ];
 
   const terms = [
     "Goods must match the specification and quantity stated above.",
@@ -98,10 +114,16 @@ export function PurchaseOrderDocument({
         <div style={{ marginTop: "4mm" }}>
           <span
             style={{
-              display: "inline-block", fontSize: "var(--doc-small)", fontWeight: 700,
-              letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--doc-gold-text)",
-              background: "rgba(200,155,71,0.14)", border: "0.3mm solid var(--doc-gold)",
-              borderRadius: "1.2mm", padding: "1.4mm 4mm",
+              display: "inline-block",
+              fontSize: "var(--doc-small)",
+              fontWeight: 700,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "var(--doc-gold-text)",
+              background: "rgba(200,155,71,0.14)",
+              border: "0.3mm solid var(--doc-gold)",
+              borderRadius: "1.2mm",
+              padding: "1.4mm 4mm",
             }}
           >
             {statusLabel}
@@ -113,23 +135,39 @@ export function PurchaseOrderDocument({
         columns={[
           { header: "#", align: "center", width: "9mm", cell: (_row, i) => i + 1 },
           {
-            header: "Material", width: "70mm",
-            cell: row => (
+            header: "Material",
+            width: "70mm",
+            cell: (row) => (
               <div>
                 <div style={{ fontWeight: 600, color: "var(--doc-ink)" }}>{row.materialType}</div>
                 {(row.subtype || row.description) && (
-                  <div style={{ color: "var(--doc-muted)", marginTop: "0.3mm" }}>{row.subtype || row.description}</div>
+                  <div style={{ color: "var(--doc-muted)", marginTop: "0.3mm" }}>
+                    {row.subtype || row.description}
+                  </div>
                 )}
               </div>
             ),
           },
-          { header: "Qty", align: "end", width: hasAmounts ? "20mm" : "26mm", cell: row => row.quantity },
-          { header: "Unit", width: hasAmounts ? "18mm" : "24mm", cell: row => row.unit },
+          {
+            header: "Qty",
+            align: "end",
+            width: hasAmounts ? "20mm" : "26mm",
+            cell: (row) => row.quantity,
+          },
+          { header: "Unit", width: hasAmounts ? "18mm" : "24mm", cell: (row) => row.unit },
           ...(hasAmounts
-            ? [{
-                header: "Est. Amount", align: "end" as const, width: "35mm",
-                cell: (row: PODocumentItem) => <strong>{formatPaise(toPaise(row.subtotal ?? (row.pricePerUnit ?? 0) * row.quantity))}</strong>,
-              }]
+            ? [
+                {
+                  header: "Est. Amount",
+                  align: "end" as const,
+                  width: "35mm",
+                  cell: (row: PODocumentItem) => (
+                    <strong>
+                      {formatPaise(toPaise(row.subtotal ?? (row.pricePerUnit ?? 0) * row.quantity))}
+                    </strong>
+                  ),
+                },
+              ]
             : []),
         ]}
         rows={materials}
@@ -138,17 +176,43 @@ export function PurchaseOrderDocument({
       {hasAmounts && <TotalsBlock rows={totalsRows} />}
 
       {(notesVendor || notesAdmin) && (
-        <div style={{ display: "grid", gridTemplateColumns: notesVendor && notesAdmin ? "1fr 1fr" : "1fr", gap: "4mm", marginTop: "5mm" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: notesVendor && notesAdmin ? "1fr 1fr" : "1fr",
+            gap: "4mm",
+            marginTop: "5mm",
+          }}
+        >
           {notesVendor && (
             <div className="bk-doc__card">
               <div className="bk-doc__eyebrow">Instructions for Supplier</div>
-              <div style={{ fontSize: "var(--doc-body)", color: "var(--doc-ink)", marginTop: "1.5mm", lineHeight: 1.5 }}>{notesVendor}</div>
+              <div
+                style={{
+                  fontSize: "var(--doc-body)",
+                  color: "var(--doc-ink)",
+                  marginTop: "1.5mm",
+                  lineHeight: 1.5,
+                }}
+              >
+                {notesVendor}
+              </div>
             </div>
           )}
           {notesAdmin && (
             <div className="bk-doc__card bk-doc__card--accent">
               <div className="bk-doc__eyebrow">Internal Note</div>
-              <div style={{ fontSize: "var(--doc-body)", color: "var(--doc-ink)", marginTop: "1.5mm", lineHeight: 1.5, fontStyle: "italic" }}>{notesAdmin}</div>
+              <div
+                style={{
+                  fontSize: "var(--doc-body)",
+                  color: "var(--doc-ink)",
+                  marginTop: "1.5mm",
+                  lineHeight: 1.5,
+                  fontStyle: "italic",
+                }}
+              >
+                {notesAdmin}
+              </div>
             </div>
           )}
         </div>
@@ -159,25 +223,47 @@ export function PurchaseOrderDocument({
       {/* Two signature roles, not Invoice's single block — Part H.3. */}
       <div
         style={{
-          display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10mm",
-          marginTop: "6mm", paddingTop: "3.5mm", borderTop: "0.3mm solid var(--doc-rule)",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "10mm",
+          marginTop: "6mm",
+          paddingTop: "3.5mm",
+          borderTop: "0.3mm solid var(--doc-rule)",
         }}
       >
         <div>
-          <div style={{ fontSize: "var(--doc-body)", fontWeight: 600, color: "var(--doc-burgundy)", marginBottom: "8mm" }}>
+          <div
+            style={{
+              fontSize: "var(--doc-body)",
+              fontWeight: 600,
+              color: "var(--doc-burgundy)",
+              marginBottom: "8mm",
+            }}
+          >
             Prepared by
           </div>
           <div style={{ borderTop: "0.4mm solid var(--doc-rule)", paddingTop: "1.5mm" }}>
-            <span style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)" }}>{raisedBy}</span>
+            <span style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)" }}>
+              {raisedBy}
+            </span>
           </div>
         </div>
         <div>
-          <div style={{ fontSize: "var(--doc-body)", fontWeight: 600, color: "var(--doc-burgundy)", marginBottom: "8mm" }}>
+          <div
+            style={{
+              fontSize: "var(--doc-body)",
+              fontWeight: 600,
+              color: "var(--doc-burgundy)",
+              marginBottom: "8mm",
+            }}
+          >
             Approved by
           </div>
           <div style={{ borderTop: "0.4mm solid var(--doc-rule)", paddingTop: "1.5mm" }}>
             <span style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)" }}>
-              {approvedBy ? `${approvedBy}${approvedDate ? ` · ${approvedDate}` : ""}` : "Pending approval"}
+              {approvedBy
+                ? `${approvedBy}${approvedDate ? ` · ${approvedDate}` : ""}`
+                : "Pending approval"}
             </span>
           </div>
         </div>

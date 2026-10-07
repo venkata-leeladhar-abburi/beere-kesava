@@ -5,8 +5,14 @@ describe("requestQueue", () => {
   it("runs at most 4 at once and lets scans jump the queue", async () => {
     const releases = await Promise.all([1, 2, 3, 4].map(() => acquireSlot(false)));
     const order: string[] = [];
-    const background = acquireSlot(false).then((r) => { order.push("background"); return r; });
-    const scan = acquireSlot(true).then((r) => { order.push("scan"); return r; });
+    const background = acquireSlot(false).then((r) => {
+      order.push("background");
+      return r;
+    });
+    const scan = acquireSlot(true).then((r) => {
+      order.push("scan");
+      return r;
+    });
 
     await Promise.resolve();
     expect(order).toEqual([]); // all 4 slots busy

@@ -59,7 +59,9 @@ describe("supplierPrefix / buildSareeCode", () => {
     expect(supplierPrefix("Saboo Seide", " Saboo Seide ")).toBe("SABOOSEIDE");
     expect(supplierPrefix("J.M. Silks", "J.M-2")).toBe("JM2");
     expect(buildSareeCode("Saboo Seide", 1, "3850", "SabooSeide")).toBe("SABOOSEIDE-3850-001");
-    expect(buildSareePieceCode("Saboo Seide", 2, 1, "3850", "SabooSeide")).toBe("SABOOSEIDE-3850-002-01");
+    expect(buildSareePieceCode("Saboo Seide", 2, 1, "3850", "SabooSeide")).toBe(
+      "SABOOSEIDE-3850-002-01"
+    );
   });
 
   it("falls back to the first 4 letters when the short name is blank", () => {
@@ -77,22 +79,36 @@ describe("supplierPrefix / buildSareeCode", () => {
 describe("assignLineCodes", () => {
   it("numbers new lines by position", () => {
     expect(assignLineCodes([{}, {}, {}], "Saboo Seide", "3850", "SabooSeide")).toEqual([
-      "SABOOSEIDE-3850-001", "SABOOSEIDE-3850-002", "SABOOSEIDE-3850-003",
+      "SABOOSEIDE-3850-001",
+      "SABOOSEIDE-3850-002",
+      "SABOOSEIDE-3850-003",
     ]);
   });
 
   it("previews a saved line under the current short name and invoice, keeping its serial", () => {
     // What the server re-codes it to on save (SareeCodesService).
     expect(
-      assignLineCodes([{ code: "SABO-3850-001" }, { code: "SABO-3850-002" }, {}], "Saboo Seide", "3850", "SabooSeide"),
+      assignLineCodes(
+        [{ code: "SABO-3850-001" }, { code: "SABO-3850-002" }, {}],
+        "Saboo Seide",
+        "3850",
+        "SabooSeide"
+      )
     ).toEqual(["SABOOSEIDE-3850-001", "SABOOSEIDE-3850-002", "SABOOSEIDE-3850-003"]);
-    expect(assignLineCodes([{ code: "SABO-EXCHNG-001" }], "Saboo Seide", "EXG", "SABO")).toEqual(["SABO-EXG-001"]);
+    expect(assignLineCodes([{ code: "SABO-EXCHNG-001" }], "Saboo Seide", "EXG", "SABO")).toEqual([
+      "SABO-EXG-001",
+    ]);
   });
 
   it("never reuses a code a kept line already holds", () => {
     // Line 2 of 3 was removed, then a line added: a naive idx+1 would give 003 twice.
     expect(
-      assignLineCodes([{ code: "RAVI-34-001" }, { code: "RAVI-34-003" }, {}, {}], "Ravi Silks", "34", "RAVI"),
+      assignLineCodes(
+        [{ code: "RAVI-34-001" }, { code: "RAVI-34-003" }, {}, {}],
+        "Ravi Silks",
+        "34",
+        "RAVI"
+      )
     ).toEqual(["RAVI-34-001", "RAVI-34-003", "RAVI-34-004", "RAVI-34-005"]);
   });
 });
@@ -146,7 +162,11 @@ describe("pricing math", () => {
   });
 
   it("a hand-typed selling price round-trips through the stored markup", () => {
-    for (const [price, typed] of [[13600, 26928.55], [500, 749.99], [99999, 123456.78]]) {
+    for (const [price, typed] of [
+      [13600, 26928.55],
+      [500, 749.99],
+      [99999, 123456.78],
+    ]) {
       const pct = sellPercentFromSelling(price, typed);
       expect(sellingPerPiece(price, pct)).toBe(typed);
     }
@@ -188,8 +208,8 @@ describe("pricing math", () => {
     ];
     const totals = purchaseTotals(lines);
     expect(totals.pieces).toBe(3);
-    expect(totals.buying).toBe(2000);   // 500*2 + 1000*1
-    expect(totals.selling).toBe(2300);  // (500+100)*2 + (1000+100)*1
+    expect(totals.buying).toBe(2000); // 500*2 + 1000*1
+    expect(totals.selling).toBe(2300); // (500+100)*2 + (1000+100)*1
     expect(totals.profit).toBe(300);
   });
 
@@ -237,7 +257,7 @@ describe("expandSareePieces", () => {
     expect(pieces[1].id).toBe("RAVI-34-001-02");
     expect(pieces[2].id).toBe("RAVI-34-001-03");
     // Each expanded piece is priced individually, not multiplied by quantity again.
-    pieces.forEach(p => {
+    pieces.forEach((p) => {
       expect(p.quantity).toBe(1);
       expect(p.finalAmount).toBe(600); // 500 + 20%
       expect(p.lineQuantity).toBe(3);
@@ -303,7 +323,13 @@ describe("computePurchaseBill", () => {
 
   it("with no discount or GST, the bill is the sarees' buying total", () => {
     const bill = computePurchaseBill(lines, "percent", 0, 0);
-    expect(bill).toMatchObject({ subtotal: 34000, discountAmount: 0, gstAmount: 0, billAmount: 34000, error: null });
+    expect(bill).toMatchObject({
+      subtotal: 34000,
+      discountAmount: 0,
+      gstAmount: 0,
+      billAmount: 34000,
+      error: null,
+    });
   });
 
   it("takes a percentage discount off the subtotal, then adds GST on what's left", () => {
@@ -327,7 +353,12 @@ describe("computePurchaseBill", () => {
   });
 
   it("counts every piece bought, even ones later returned — the invoice doesn't shrink", () => {
-    const bill = computePurchaseBill([{ price: 1000, quantity: 3, returnedQuantity: 2 } as never], "percent", 0, 0);
+    const bill = computePurchaseBill(
+      [{ price: 1000, quantity: 3, returnedQuantity: 2 } as never],
+      "percent",
+      0,
+      0
+    );
     expect(bill.subtotal).toBe(3000);
   });
 

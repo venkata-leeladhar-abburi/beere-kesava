@@ -1,14 +1,24 @@
 import * as React from "react";
 import { X, UploadCloud } from "lucide-react";
 import {
-  sellingPerPiece, sellPercentFromSelling,
-  lineBuying, lineSelling, lineProfit, pieceCodeFromLineCode,
+  sellingPerPiece,
+  sellPercentFromSelling,
+  lineBuying,
+  lineSelling,
+  lineProfit,
+  pieceCodeFromLineCode,
 } from "@/features/suppliers";
 import { formatMoneyExact, rupees } from "@/lib/domain/money";
 import { T, F } from "../../theme";
 import { SareeRow } from "../../types";
 import { inputStyle, labelStyle } from "../../common/primitives";
-import { Field, Input, NumberInput, Textarea, IconButton } from "../../../../../../shared/ui/primitives";
+import {
+  Field,
+  Input,
+  NumberInput,
+  Textarea,
+  IconButton,
+} from "../../../../../../shared/ui/primitives";
 import { resolveAssetUrl } from "@/shared/api/uploads";
 import { useImageUpload } from "@/shared/hooks/useImageUpload";
 
@@ -50,17 +60,41 @@ export function SareeRowCard({
         background: T.warmIvory,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 10,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span
             title="Serial number in this purchase"
-            style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 12, color: "#FFF", background: T.royalBurgundy, borderRadius: 6, padding: "3px 8px" }}
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontWeight: 700,
+              fontSize: 12,
+              color: "#FFF",
+              background: T.royalBurgundy,
+              borderRadius: 6,
+              padding: "3px 8px",
+            }}
           >
             #{idx + 1}
           </span>
           <span
             title="Auto-generated: supplier short name + invoice number + serial number"
-            style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 12, color: T.royalBurgundy, background: "rgba(200,155,71,0.13)", border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 9px" }}
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontWeight: 700,
+              fontSize: 12,
+              color: T.royalBurgundy,
+              background: "rgba(200,155,71,0.13)",
+              border: `1px solid ${T.borderGold}`,
+              borderRadius: 6,
+              padding: "3px 9px",
+            }}
           >
             {code}
           </span>
@@ -100,7 +134,10 @@ export function SareeRowCard({
         </Field>
       </div>
       {/* Price per quantity × quantity = buying price */}
-      <div className="grid grid-cols-1 sm:[grid-template-columns:1fr_0.75fr_1fr]" style={{ gap: 10, marginBottom: 10 }}>
+      <div
+        className="grid grid-cols-1 sm:[grid-template-columns:1fr_0.75fr_1fr]"
+        style={{ gap: 10, marginBottom: 10 }}
+      >
         {/* eslint-disable-next-line no-restricted-syntax -- input adornment / field label unit annotation, not a rendered money value */}
         <Field label="Price / Quantity (₹)">
           <NumberInput
@@ -123,17 +160,33 @@ export function SareeRowCard({
               // computeFinalAmount/purchaseTotals already fall back to 1 via
               // `Number(s.quantity) || 1` wherever an in-progress empty value
               // could otherwise reach a calculation.
-              updateSareeRow(s._uid, { quantity: v === "" ? undefined : Math.max(1, Number(v) || 1) });
+              updateSareeRow(s._uid, {
+                quantity: v === "" ? undefined : Math.max(1, Number(v) || 1),
+              });
             }}
             placeholder="1"
           />
         </Field>
         <div>
           <span style={labelStyle}>Buying Price</span>
-          <div style={{ ...inputStyle, height: 36, fontSize: 12, display: "flex", alignItems: "center", fontFamily: "var(--font-mono)", fontWeight: 700, color: T.luxuryBrown, background: T.silkCream }}>
+          <div
+            style={{
+              ...inputStyle,
+              height: 36,
+              fontSize: 12,
+              display: "flex",
+              alignItems: "center",
+              fontFamily: "var(--font-mono)",
+              fontWeight: 700,
+              color: T.luxuryBrown,
+              background: T.silkCream,
+            }}
+          >
             {formatMoneyExact(rupees(buying))}
           </div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 3 }}>
+          <div
+            style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 3 }}
+          >
             {formatMoneyExact(rupees(price))} × {quantity}
           </div>
         </div>
@@ -141,7 +194,10 @@ export function SareeRowCard({
 
       {/* Markup and selling price drive each other — editing either one
           rewrites the markup, which is what the line actually stores. */}
-      <div className="grid grid-cols-1 sm:[grid-template-columns:0.75fr_1fr_1fr]" style={{ gap: 10, marginBottom: 10 }}>
+      <div
+        className="grid grid-cols-1 sm:[grid-template-columns:0.75fr_1fr_1fr]"
+        style={{ gap: 10, marginBottom: 10 }}
+      >
         <Field label="Sell % (markup)">
           <NumberInput
             size="sm"
@@ -161,33 +217,81 @@ export function SareeRowCard({
             value={sellingDraft ?? (sellingPerPiece(price, sellPercent) || "")}
             onValueChange={(v) => {
               setSellingDraft(v);
-              updateSareeRow(s._uid, { sellPercent: sellPercentFromSelling(price, Number(v) || 0) });
+              updateSareeRow(s._uid, {
+                sellPercent: sellPercentFromSelling(price, Number(v) || 0),
+              });
             }}
             onBlur={() => setSellingDraft(null)}
             placeholder="e.g. 750"
           />
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 3 }}>
+          <div
+            style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 3 }}
+          >
             {formatMoneyExact(rupees(selling))} for {quantity} pc
           </div>
         </Field>
         <div>
           <span style={labelStyle}>Profit</span>
-          <div style={{ ...inputStyle, height: 36, fontSize: 12, display: "flex", alignItems: "center", fontFamily: "var(--font-mono)", fontWeight: 700, color: T.green, background: "rgba(30,102,64,0.07)", borderColor: "rgba(30,102,64,0.22)" }}>
+          <div
+            style={{
+              ...inputStyle,
+              height: 36,
+              fontSize: 12,
+              display: "flex",
+              alignItems: "center",
+              fontFamily: "var(--font-mono)",
+              fontWeight: 700,
+              color: T.green,
+              background: "rgba(30,102,64,0.07)",
+              borderColor: "rgba(30,102,64,0.22)",
+            }}
+          >
             {formatMoneyExact(rupees(profit))}
           </div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 3 }}>
+          <div
+            style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 3 }}
+          >
             selling − buying
           </div>
         </div>
       </div>
       {/* Every piece under this serial gets its own tag code */}
-      <div style={{ background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "9px 11px", marginBottom: 10 }}>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 6 }}>
+      <div
+        style={{
+          background: T.silkCream,
+          border: `1px solid ${T.borderDef}`,
+          borderRadius: 8,
+          padding: "9px 11px",
+          marginBottom: 10,
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            fontWeight: 700,
+            color: T.taupe,
+            textTransform: "uppercase" as const,
+            letterSpacing: 0.6,
+            marginBottom: 6,
+          }}
+        >
           Saree codes ({quantity})
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
           {Array.from({ length: Math.min(quantity, 24) }, (_, p) => (
-            <span key={p} style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, background: "#FFF", border: `1px solid ${T.borderGold}`, borderRadius: 5, padding: "2px 7px" }}>
+            <span
+              key={p}
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                color: T.royalBurgundy,
+                background: "#FFF",
+                border: `1px solid ${T.borderGold}`,
+                borderRadius: 5,
+                padding: "2px 7px",
+              }}
+            >
               {pieceCodeFromLineCode(code, p + 1)}
             </span>
           ))}
@@ -211,8 +315,19 @@ export function SareeRowCard({
         <div>
           <span style={labelStyle}>Saree Photo (optional)</span>
           {s.imageUrl ? (
-            <div style={{ position: "relative", borderRadius: 8, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
-              <img src={resolveAssetUrl(s.imageUrl) ?? undefined} alt="Saree" style={{ width: "100%", height: 68, objectFit: "cover", display: "block" }} />
+            <div
+              style={{
+                position: "relative",
+                borderRadius: 8,
+                overflow: "hidden",
+                border: `1px solid ${T.borderDef}`,
+              }}
+            >
+              <img
+                src={resolveAssetUrl(s.imageUrl) ?? undefined}
+                alt="Saree"
+                style={{ width: "100%", height: 68, objectFit: "cover", display: "block" }}
+              />
               <IconButton
                 icon={X}
                 label="Remove photo"
@@ -224,11 +339,29 @@ export function SareeRowCard({
           ) : (
             <label
               htmlFor={`saree-photo-${s._uid}`}
-              style={{ height: 68, border: `1.5px dashed ${T.borderGold}`, borderRadius: 8, background: T.silkCream, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, cursor: "pointer", color: T.taupe }}
+              style={{
+                height: 68,
+                border: `1.5px dashed ${T.borderGold}`,
+                borderRadius: 8,
+                background: T.silkCream,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 3,
+                cursor: "pointer",
+                color: T.taupe,
+              }}
             >
               <UploadCloud size={16} />
-              <span style={{ fontFamily: F.ui, fontSize: 12 }}>{uploading ? "Uploading…" : "Upload photo"}</span>
-              {uploadError && <span style={{ fontFamily: F.ui, fontSize: 11, color: "#C0392B" }}>{uploadError}</span>}
+              <span style={{ fontFamily: F.ui, fontSize: 12 }}>
+                {uploading ? "Uploading…" : "Upload photo"}
+              </span>
+              {uploadError && (
+                <span style={{ fontFamily: F.ui, fontSize: 11, color: "#C0392B" }}>
+                  {uploadError}
+                </span>
+              )}
               <Input
                 id={`saree-photo-${s._uid}`}
                 type="file"
@@ -238,7 +371,7 @@ export function SareeRowCard({
                   const file = e.target.files?.[0];
                   e.target.value = "";
                   if (!file) return;
-                  void upload(file).then(url => {
+                  void upload(file).then((url) => {
                     if (url) updateSareeRow(s._uid, { imageUrl: url });
                   });
                 }}

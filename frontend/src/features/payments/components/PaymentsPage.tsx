@@ -13,7 +13,9 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export function PaymentsPage() {
   return (
-    <div style={{ fontFamily: F.ui, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{ fontFamily: F.ui, minHeight: "100dvh", display: "flex", flexDirection: "column" }}
+    >
       <PaymentsHeader />
       <ErrorBoundary variant="inline">
         <StatsStrip />

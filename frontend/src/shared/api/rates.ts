@@ -68,9 +68,16 @@ function timeAgo(iso: string): string {
 // type's full card (charge, retail/wholesale, weights) needs to be shown
 // off real data instead of a hardcoded record.
 export interface SareeTypeDisplayRecord {
-  code: string; type: string; description: string;
-  charge: string; retail: string; wholesale: string;
-  stdWeight: string; warpWeight: string; reshamWeight: string; jariWeight: string;
+  code: string;
+  type: string;
+  description: string;
+  charge: string;
+  retail: string;
+  wholesale: string;
+  stdWeight: string;
+  warpWeight: string;
+  reshamWeight: string;
+  jariWeight: string;
   changed: string;
 }
 

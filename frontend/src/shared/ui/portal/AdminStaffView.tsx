@@ -36,13 +36,20 @@ export function useAdminStaffView() {
 /** Role label as staff-portal chrome should show it. */
 export function roleLabel(role: Role | null | undefined): string {
   switch (role) {
-    case "superadmin": return "Superadmin";
-    case "admin": return "Admin";
-    case "worker": return "Worker Staff";
-    case "shop": return "Shop Staff";
-    case "weaver": return "Weaver";
-    case "accountant": return "Accountant";
-    default: return "—";
+    case "superadmin":
+      return "Superadmin";
+    case "admin":
+      return "Admin";
+    case "worker":
+      return "Worker Staff";
+    case "shop":
+      return "Shop Staff";
+    case "weaver":
+      return "Weaver";
+    case "accountant":
+      return "Accountant";
+    default:
+      return "—";
   }
 }
 
@@ -77,7 +84,10 @@ export function AdminViewingBanner({ portalLabel }: { portalLabel: string }) {
     <div
       role="status"
       className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-2 md:px-7 xl:px-12"
-      style={{ background: semantic.surface.accentSubtle, borderBottom: `1px solid ${semantic.border.accent}` }}
+      style={{
+        background: semantic.surface.accentSubtle,
+        borderBottom: `1px solid ${semantic.border.accent}`,
+      }}
     >
       <ShieldCheck size={15} color={semantic.text.accent} className="shrink-0" />
       <span className="text-[12px] font-semibold" style={{ color: semantic.text.accent }}>
@@ -91,11 +101,14 @@ export function AdminViewingBanner({ portalLabel }: { portalLabel: string }) {
         type="button"
         onClick={returnToAdmin}
         className="ml-auto inline-flex items-center gap-1 px-3 py-1 text-[12px] font-bold"
-        style={{ color: semantic.text.onInverse, background: semantic.text.accent, borderRadius: radius.md }}
+        style={{
+          color: semantic.text.onInverse,
+          background: semantic.text.accent,
+          borderRadius: radius.md,
+        }}
       >
         <ChevronLeft size={13} /> Return to Admin
       </button>
     </div>
   );
 }
-

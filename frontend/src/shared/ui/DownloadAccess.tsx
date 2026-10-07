@@ -17,11 +17,15 @@ import { useAuth } from "../../contexts/AuthContext";
 // is not a real security boundary.
 const DownloadAccessContext = React.createContext<boolean>(true);
 
-export function DownloadAccessProvider({ allowed, children }: { allowed: boolean; children: React.ReactNode }) {
+export function DownloadAccessProvider({
+  allowed,
+  children,
+}: {
+  allowed: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <DownloadAccessContext.Provider value={allowed}>
-      {children}
-    </DownloadAccessContext.Provider>
+    <DownloadAccessContext.Provider value={allowed}>{children}</DownloadAccessContext.Provider>
   );
 }
 

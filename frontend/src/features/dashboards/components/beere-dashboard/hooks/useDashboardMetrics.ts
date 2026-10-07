@@ -64,7 +64,7 @@ export function useDashboardMetrics() {
   // All dispatched sarees, deduplicated by ID — used to size down "produced"
   // into what's actually still on the shelf below.
   const dispatchedSareeIds = new Set(
-    (dispatches.data?.items ?? []).flatMap((d) => d.sarees.map((s) => s.sareeId)),
+    (dispatches.data?.items ?? []).flatMap((d) => d.sarees.map((s) => s.sareeId))
   );
   // QC-passed sarees still on the shelf: a SEMI verdict sends a saree back to
   // the weaver for rework rather than to sale, so it no longer belongs here,

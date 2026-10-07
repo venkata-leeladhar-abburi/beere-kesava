@@ -12,21 +12,21 @@ import { brand, fonts, semantic } from "@/design-system/tokens";
  * had to move.
  */
 export const C = {
-  bg:    semantic.surface.canvas,     // #FAF8F6 — admin page canvas
-  burg:  brand.burgundy[900],         // #6E0F2D — brand primary (was #6B1A2A)
-  dark:  "#3D0E1A",                   // admin topnav / hero ground
-  wine:  brand.burgundy[950],         // #4A061B
-  gold:  brand.gold[500],             // #C89B47 — decoration only
+  bg: semantic.surface.canvas, // #FAF8F6 — admin page canvas
+  burg: brand.burgundy[900], // #6E0F2D — brand primary (was #6B1A2A)
+  dark: "#3D0E1A", // admin topnav / hero ground
+  wine: brand.burgundy[950], // #4A061B
+  gold: brand.gold[500], // #C89B47 — decoration only
   goldL: "#E7C983",
   green: semantic.text.success,
-  crim:  semantic.text.danger,
-  text:  semantic.text.primary,
-  muted: semantic.text.tertiary,      // #69635E — 5.92:1
-  bdr:   "rgba(110,15,45,0.10)",      // admin borderDef
-  bdrMed:"rgba(110,15,45,0.20)",      // admin borderMed
-  cream: "#F5E8D0",                   // admin warmCream
-  ivory: "#FFFDF9",                   // admin pureWhite
-  inp:   semantic.surface.raised,
+  crim: semantic.text.danger,
+  text: semantic.text.primary,
+  muted: semantic.text.tertiary, // #69635E — 5.92:1
+  bdr: "rgba(110,15,45,0.10)", // admin borderDef
+  bdrMed: "rgba(110,15,45,0.20)", // admin borderMed
+  cream: "#F5E8D0", // admin warmCream
+  ivory: "#FFFDF9", // admin pureWhite
+  inp: semantic.surface.raised,
 };
 
 /** Admin's three font roles: Fraunces display, Inter UI, IBM Plex Mono code. */
@@ -38,9 +38,9 @@ export const F = {
 
 /** Admin's gradient set (beere-dashboard/theme.tsx `G`), verbatim. */
 export const G = {
-  hero:   "linear-gradient(135deg, #4A061B 0%, #6E0F2D 45%, #C89B47 100%)",
-  card:   "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
-  gold:   "linear-gradient(135deg, #C89B47 0%, #E7C983 100%)",
+  hero: "linear-gradient(135deg, #4A061B 0%, #6E0F2D 45%, #C89B47 100%)",
+  card: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
+  gold: "linear-gradient(135deg, #C89B47 0%, #E7C983 100%)",
   button: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
   header: `linear-gradient(100deg, ${brand.burgundy[950]} 0%, ${brand.burgundy[900]} 100%)`,
 };

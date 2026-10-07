@@ -13,7 +13,7 @@ const T = {
 
 const F = {
   display: "'Plus Jakarta Sans', sans-serif",
-  mono:    "'JetBrains Mono', monospace",
+  mono: "'JetBrains Mono', monospace",
 };
 
 interface Props {
@@ -23,21 +23,21 @@ interface Props {
 
 export function SariTagPrintModal({ saree, onClose }: Props) {
   const isExternal = saree.source === "external";
-  const [showWeaver, setShowWeaver]     = useState(true);
-  const [showDate, setShowDate]         = useState(true);
-  const [copies, setCopies]             = useState(1);
-  const [printer, setPrinter]           = useState("TSC TE244");
+  const [showWeaver, setShowWeaver] = useState(true);
+  const [showDate, setShowDate] = useState(true);
+  const [copies, setCopies] = useState(1);
+  const [printer, setPrinter] = useState("TSC TE244");
   // Seeded from the configured stock (50mm × 25mm by default) and, unlike
   // before, actually applied to the print below.
   // Follows the configured stock until the operator picks something else in
   // this modal — a plain useState would freeze on whatever the settings query
   // had returned (the 50×25 default) at first render.
   const configuredStock = useLabelStock();
-  const [labelSizeChoice, setLabelSize]  = useState<string | null>(null);
-  const labelSize = labelSizeChoice
-    ?? `${configuredStock.widthMm}mm × ${configuredStock.heightMm}mm`;
-  const [printing, setPrinting]         = useState(false);
-  const [printed, setPrinted]           = useState(false);
+  const [labelSizeChoice, setLabelSize] = useState<string | null>(null);
+  const labelSize =
+    labelSizeChoice ?? `${configuredStock.widthMm}mm × ${configuredStock.heightMm}mm`;
+  const [printing, setPrinting] = useState(false);
+  const [printed, setPrinted] = useState(false);
   const printSareeTags = usePrintSareeTags();
 
   // One tag, built once, for both the preview and the print — the same
@@ -73,69 +73,90 @@ export function SariTagPrintModal({ saree, onClose }: Props) {
   const handlePrint = () => {
     printSareeTags(
       Array.from({ length: Math.max(1, copies) }, () => tag),
-      stock,
+      stock
     );
     setPrinting(true);
-    setTimeout(() => { setPrinting(false); setPrinted(true); }, 400);
+    setTimeout(() => {
+      setPrinting(false);
+      setPrinted(true);
+    }, 400);
   };
 
   return (
-    <Modal open onOpenChange={o => !o && onClose()} size="xl">
-          {/* Modal header */}
+    <Modal open onOpenChange={(o) => !o && onClose()} size="xl">
+      {/* Modal header */}
+      <div
+        style={{
+          background: T.darkBurgundy,
+          padding: "18px 28px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
+      >
+        <div>
+          <Dialog.Title asChild>
+            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>
+              Saree Tag Preview
+            </div>
+          </Dialog.Title>
+          <Dialog.Description className="sr-only">Preview and print saree tags</Dialog.Description>
           <div
             style={{
-              background: T.darkBurgundy,
-              padding: "18px 28px",
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              flexShrink: 0,
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              color: "rgba(200,155,71,0.80)",
+              marginTop: 2,
             }}
           >
-            <div>
-              <Dialog.Title asChild>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>
-                  Saree Tag Preview
-                </div>
-              </Dialog.Title>
-              <Dialog.Description className="sr-only">Preview and print saree tags</Dialog.Description>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(200,155,71,0.80)", marginTop: 2 }}>
-                {saree.id}
-              </div>
-            </div>
-            <Dialog.Close asChild>
-              <IconButton icon="close" label="Close" variant="ghost" size="sm" shape="circle" className="bg-white/12 text-white hover:bg-white/20" />
-            </Dialog.Close>
+            {saree.id}
           </div>
+        </div>
+        <Dialog.Close asChild>
+          <IconButton
+            icon="close"
+            label="Close"
+            variant="ghost"
+            size="sm"
+            shape="circle"
+            className="bg-white/12 text-white hover:bg-white/20"
+          />
+        </Dialog.Close>
+      </div>
 
-          {/* Body */}
-          <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-            <SariTagPhysicalLabel
-              tag={tag}
-              stock={stock}
-              caption={isExternal
-                ? `External Purchase · ${saree.supplierShortName || saree.supplier || "—"}`
-                : saree.source === "factory"
-                  ? `Own Factory · Loom ${saree.loom}`
-                  : `Outsourced · ${saree.weaver}`}
-            />
+      {/* Body */}
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        <SariTagPhysicalLabel
+          tag={tag}
+          stock={stock}
+          caption={
+            isExternal
+              ? `External Purchase · ${saree.supplierShortName || saree.supplier || "—"}`
+              : saree.source === "factory"
+                ? `Own Factory · Loom ${saree.loom}`
+                : `Outsourced · ${saree.weaver}`
+          }
+        />
 
-            <SariTagPrintSettings
-              printer={printer}
-              setPrinter={setPrinter}
-              labelSize={labelSize}
-              setLabelSize={setLabelSize}
-              copies={copies}
-              setCopies={setCopies}
-              isExternal={isExternal}
-              showWeaver={showWeaver}
-              setShowWeaver={setShowWeaver}
-              showDate={showDate}
-              setShowDate={setShowDate}
-              printed={printed}
-              printing={printing}
-              handlePrint={handlePrint}
-              onClose={onClose}
-            />
-          </div>
+        <SariTagPrintSettings
+          printer={printer}
+          setPrinter={setPrinter}
+          labelSize={labelSize}
+          setLabelSize={setLabelSize}
+          copies={copies}
+          setCopies={setCopies}
+          isExternal={isExternal}
+          showWeaver={showWeaver}
+          setShowWeaver={setShowWeaver}
+          showDate={showDate}
+          setShowDate={setShowDate}
+          printed={printed}
+          printing={printing}
+          handlePrint={handlePrint}
+          onClose={onClose}
+        />
+      </div>
     </Modal>
   );
 }

@@ -18,7 +18,18 @@ export interface BatchCardProps {
   className?: string;
 }
 
-export function BatchCard({ code, designName, weaverName, sarees, daysElapsed, status, progress, density, onClick, className }: BatchCardProps) {
+export function BatchCard({
+  code,
+  designName,
+  weaverName,
+  sarees,
+  daysElapsed,
+  status,
+  progress,
+  density,
+  onClick,
+  className,
+}: BatchCardProps) {
   return (
     <DomainCard
       avatarName={designName}

@@ -16,7 +16,11 @@ export function useReceiptUpload() {
 
   async function upload(file: File): Promise<string | null> {
     setError(null);
-    if (!isAcceptedImageFile(file) && file.type !== "application/pdf" && !/\.pdf$/i.test(file.name)) {
+    if (
+      !isAcceptedImageFile(file) &&
+      file.type !== "application/pdf" &&
+      !/\.pdf$/i.test(file.name)
+    ) {
       setError("File must be an image or a PDF.");
       return null;
     }

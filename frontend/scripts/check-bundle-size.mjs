@@ -45,7 +45,9 @@ try {
 
 // Entry script(s) plus every chunk the HTML eagerly modulepreloads.
 const entryHrefs = [...indexHtml.matchAll(/<script[^>]+src="([^"]+\.js)"/g)].map((m) => m[1]);
-const preloadHrefs = [...indexHtml.matchAll(/modulepreload"[^>]*href="([^"]+\.js)"/g)].map((m) => m[1]);
+const preloadHrefs = [...indexHtml.matchAll(/modulepreload"[^>]*href="([^"]+\.js)"/g)].map(
+  (m) => m[1]
+);
 const initialFiles = [...new Set([...entryHrefs, ...preloadHrefs])].map((href) =>
   path.join(DIST, href.replace(/^\//, ""))
 );
@@ -59,7 +61,9 @@ const allJsFiles = readdirSync(DIST_ASSETS)
 const totalKB = allJsFiles.reduce((sum, f) => sum + gzipKB(f), 0);
 
 console.log(`Initial JS (gzip): ${initialKB.toFixed(1)} KB — budget ${INITIAL_BUDGET_KB} KB`);
-console.log(`Total JS (gzip):   ${totalKB.toFixed(1)} KB across ${allJsFiles.length} file(s) — budget ${TOTAL_BUDGET_KB} KB`);
+console.log(
+  `Total JS (gzip):   ${totalKB.toFixed(1)} KB across ${allJsFiles.length} file(s) — budget ${TOTAL_BUDGET_KB} KB`
+);
 
 let failed = false;
 

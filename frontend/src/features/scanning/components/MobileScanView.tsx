@@ -13,43 +13,43 @@ import { formatMoney, rupees } from "@/lib/domain/money";
 // ═══════════════════════════════════════════════════════════════════════════════
 const T = {
   royalBurgundy: "#6E0F2D",
-  antiqueGold:   "#C89B47",
-  green:         "#1E6640",
-  crimson:       "#C0392B",
-  silkCream:     "#F7F2EA",
-  warmIvory:     "#FFFDF9",
-  luxuryBrown:   "#3B2314",
-  taupe:         "#69635E",
-  borderDef:     "rgba(110,15,45,0.10)",
+  antiqueGold: "#C89B47",
+  green: "#1E6640",
+  crimson: "#C0392B",
+  silkCream: "#F7F2EA",
+  warmIvory: "#FFFDF9",
+  luxuryBrown: "#3B2314",
+  taupe: "#69635E",
+  borderDef: "rgba(110,15,45,0.10)",
 };
 
 const F = {
   display: "'Plus Jakarta Sans', sans-serif",
-  ui:      "'Inter', sans-serif",
-  mono:    "'JetBrains Mono', monospace",
+  ui: "'Inter', sans-serif",
+  mono: "'JetBrains Mono', monospace",
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 interface SareeData {
-  id:               string;
-  origin:           "production" | "external";
-  batchId:          string;
-  weaver:           string;
-  fabricType:       string;
-  fabricCode:       string;
-  colour:           string;
-  weight:           string;
-  jariType:         string;
-  dispatchDate:     string;
-  productionStage:  string;
-  status:           string;
+  id: string;
+  origin: "production" | "external";
+  batchId: string;
+  weaver: string;
+  fabricType: string;
+  fabricCode: string;
+  colour: string;
+  weight: string;
+  jariType: string;
+  dispatchDate: string;
+  productionStage: string;
+  status: string;
   /** External-purchase-only, blank for a production saree. */
   supplierShortName: string;
-  invoiceNumber:     string;
-  serial:            string;
-  sellingPrice:      string;
+  invoiceNumber: string;
+  serial: string;
+  sellingPrice: string;
 }
 
 /** DDMMYY, e.g. 2026-09-02 -> "020926" — same format the printed tag uses. */
@@ -101,25 +101,25 @@ function resultToSareeData(r: ScanLookupResult): SareeData {
 function detailRows(saree: SareeData) {
   if (saree.origin === "external") {
     return [
-      { label: "Supplier",                 value: saree.supplierShortName },
-      { label: "Invoice Number",           value: saree.invoiceNumber },
-      { label: "Serial Number",            value: saree.serial },
-      { label: "Saree Type",               value: saree.fabricType },
-      { label: "Colour",                   value: saree.colour },
-      { label: "Weight",                   value: saree.weight },
-      { label: "Selling Price",            value: saree.sellingPrice },
-      { label: "Date",                     value: saree.dispatchDate },
+      { label: "Supplier", value: saree.supplierShortName },
+      { label: "Invoice Number", value: saree.invoiceNumber },
+      { label: "Serial Number", value: saree.serial },
+      { label: "Saree Type", value: saree.fabricType },
+      { label: "Colour", value: saree.colour },
+      { label: "Weight", value: saree.weight },
+      { label: "Selling Price", value: saree.sellingPrice },
+      { label: "Date", value: saree.dispatchDate },
     ];
   }
   return [
-    { label: "Batch Number",               value: saree.batchId },
-    { label: "Weaver / Loom",              value: saree.weaver },
-    { label: "Saree Type",                 value: saree.fabricType },
-    { label: "Saree Type Code",            value: saree.fabricCode },
-    { label: "Colour",                     value: saree.colour },
-    { label: "Weight",                     value: saree.weight },
-    { label: "Jari Type",                  value: saree.jariType },
-    { label: "Date",                       value: saree.dispatchDate },
+    { label: "Batch Number", value: saree.batchId },
+    { label: "Weaver / Loom", value: saree.weaver },
+    { label: "Saree Type", value: saree.fabricType },
+    { label: "Saree Type Code", value: saree.fabricCode },
+    { label: "Colour", value: saree.colour },
+    { label: "Weight", value: saree.weight },
+    { label: "Jari Type", value: saree.jariType },
+    { label: "Date", value: saree.dispatchDate },
     { label: "Production Stage Completed", value: saree.productionStage },
   ];
 }
@@ -165,7 +165,18 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
 
   if (!saree && !sareeId) {
     return (
-      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.ui, color: T.taupe, textAlign: "center", padding: 24 }}>
+      <div
+        style={{
+          minHeight: "100dvh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: F.ui,
+          color: T.taupe,
+          textAlign: "center",
+          padding: 24,
+        }}
+      >
         No saree code provided. Scan a saree's QR code to view its details.
       </div>
     );
@@ -173,7 +184,15 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
 
   if (!saree && isLoading) {
     return (
-      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div
+        style={{
+          minHeight: "100dvh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+        }}
+      >
         <LoadingState variant="spinner" label={`Looking up ${sareeId}…`} />
       </div>
     );
@@ -181,7 +200,15 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
 
   if (!saree && isError) {
     return (
-      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div
+        style={{
+          minHeight: "100dvh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+        }}
+      >
         <ErrorState error={undefined} onRetry={() => void refetch()} />
       </div>
     );
@@ -189,8 +216,19 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
 
   if (!saree && !resolved) {
     return (
-      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-        <EmptyState title="Saree not found" description={`Couldn't find a saree with code "${sareeId}".`} />
+      <div
+        style={{
+          minHeight: "100dvh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+        }}
+      >
+        <EmptyState
+          title="Saree not found"
+          description={`Couldn't find a saree with code "${sareeId}".`}
+        />
       </div>
     );
   }
@@ -207,13 +245,14 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
       }}
     >
       <div className="max-w-[375px]" style={{ margin: "0 auto" }}>
-
         {/* ── Top bar ── */}
         <div
           style={{
             height: 56,
             background: T.royalBurgundy,
-            display: "flex", alignItems: "center", justifyContent: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <span
@@ -237,7 +276,9 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
             borderRadius: 8,
             overflow: "hidden",
             background: "linear-gradient(135deg, #F5E8D0 0%, #E8DDD5 50%, #C89B47 100%)",
-            display: "flex", alignItems: "center", justifyContent: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             position: "relative",
           }}
         >
@@ -257,8 +298,12 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
         {/* ── Unique code + copy ── */}
         <div
           style={{
-            display: "flex", alignItems: "center", justifyContent: "center",
-            gap: 10, paddingTop: 20, paddingBottom: 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            paddingTop: 20,
+            paddingBottom: 10,
           }}
         >
           <span
@@ -287,14 +332,18 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
             style={{
               background: T.green,
               borderRadius: 999,
-              paddingLeft: 16, paddingRight: 16,
-              paddingTop: 6, paddingBottom: 6,
+              paddingLeft: 16,
+              paddingRight: 16,
+              paddingTop: 6,
+              paddingBottom: 6,
             }}
           >
             <span
               style={{
-                fontFamily: F.ui, fontWeight: 600,
-                fontSize: 12, color: "#FFFFFF",
+                fontFamily: F.ui,
+                fontWeight: 600,
+                fontSize: 12,
+                color: "#FFFFFF",
                 letterSpacing: "0.3px",
               }}
             >
@@ -320,7 +369,8 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
             <div
               key={row.label}
               style={{
-                paddingTop: 10, paddingBottom: 10,
+                paddingTop: 10,
+                paddingBottom: 10,
                 borderBottom: idx < rows.length - 1 ? "1px solid #F0EBE5" : "none",
               }}
             >
@@ -353,9 +403,12 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
         {/* ── Bottom branding ── */}
         <div
           style={{
-            paddingTop: 28, paddingBottom: 32,
-            display: "flex", flexDirection: "column",
-            alignItems: "center", gap: 4,
+            paddingTop: 28,
+            paddingBottom: 32,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 4,
           }}
         >
           <span
@@ -380,7 +433,6 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
             Authentic Handcrafted Silk Sarees
           </span>
         </div>
-
       </div>
     </div>
   );

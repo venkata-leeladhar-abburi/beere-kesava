@@ -6,5 +6,7 @@
 export function warmUpApi(): void {
   const base = import.meta.env.VITE_API_URL as string | undefined;
   if (!base || typeof fetch === "undefined") return;
-  void fetch(`${base.replace(/\/+$/, "")}/health`, { method: "GET", cache: "no-store" }).catch(() => undefined);
+  void fetch(`${base.replace(/\/+$/, "")}/health`, { method: "GET", cache: "no-store" }).catch(
+    () => undefined
+  );
 }

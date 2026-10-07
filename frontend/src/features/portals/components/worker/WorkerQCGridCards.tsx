@@ -48,10 +48,15 @@ function SourcePill({ source }: { source: string }) {
 function buildWeaverColumns(): ColumnDef<WeaverGroup>[] {
   return [
     {
-      id: "name", header: "Weaver", accessor: wg => wg.name, priority: 1, sortable: true,
+      id: "name",
+      header: "Weaver",
+      accessor: (wg) => wg.name,
+      priority: 1,
+      sortable: true,
       cell: (_v, wg) => {
         const isWeaverCodeUuid = isUuid(wg.code);
-        const displayCode = (!isWeaverCodeUuid && wg.code) ? wg.code : (wg.sarees[0]?.id || "PENDING-QC");
+        const displayCode =
+          !isWeaverCodeUuid && wg.code ? wg.code : wg.sarees[0]?.id || "PENDING-QC";
         return (
           <div className="flex items-center gap-3 min-w-0">
             <div
@@ -65,11 +70,17 @@ function buildWeaverColumns(): ColumnDef<WeaverGroup>[] {
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <Package size={12} className="text-[#6E0F2D] flex-shrink-0" />
-                <span style={{ fontFamily: F.m }} className="text-[11px] font-bold text-[#6E0F2D] tracking-wider uppercase truncate">
+                <span
+                  style={{ fontFamily: F.m }}
+                  className="text-[11px] font-bold text-[#6E0F2D] tracking-wider uppercase truncate"
+                >
                   {displayCode}
                 </span>
               </div>
-              <div style={{ fontFamily: F.d }} className="text-[15px] font-bold text-[#4A061B] truncate leading-tight">
+              <div
+                style={{ fontFamily: F.d }}
+                className="text-[15px] font-bold text-[#4A061B] truncate leading-tight"
+              >
                 {wg.name}
               </div>
             </div>
@@ -78,16 +89,27 @@ function buildWeaverColumns(): ColumnDef<WeaverGroup>[] {
       },
     },
     {
-      id: "source", header: "Source", accessor: wg => wg.source, priority: 2,
+      id: "source",
+      header: "Source",
+      accessor: (wg) => wg.source,
+      priority: 2,
       cell: (_v, wg) => <SourcePill source={wg.source} />,
     },
     {
-      id: "pending", header: "Pending", type: "number", priority: 2, sortable: true,
-      accessor: wg => wg.sarees.length,
+      id: "pending",
+      header: "Pending",
+      type: "number",
+      priority: 2,
+      sortable: true,
+      accessor: (wg) => wg.sarees.length,
       cell: (_v, wg) => <PendingBadge count={wg.sarees.length} />,
     },
     {
-      id: "actions", header: "", type: "actions", priority: 2, width: 40,
+      id: "actions",
+      header: "",
+      type: "actions",
+      priority: 2,
+      width: 40,
       accessor: () => null,
       cell: () => <ChevronRight size={16} className="text-[#4F4A45]" />,
     },
@@ -97,17 +119,27 @@ function buildWeaverColumns(): ColumnDef<WeaverGroup>[] {
 function buildBatchColumns(): ColumnDef<BatchGroup>[] {
   return [
     {
-      id: "id", header: "Batch Group", accessor: bg => bg.id, priority: 1, sortable: true,
+      id: "id",
+      header: "Batch Group",
+      accessor: (bg) => bg.id,
+      priority: 1,
+      sortable: true,
       cell: (_v, bg) => (
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-[14px] bg-[#FEF6EC] border border-[#F6D9BA] flex items-center justify-center text-[#8D5802] flex-shrink-0">
             <Package size={18} />
           </div>
           <div className="min-w-0">
-            <div style={{ fontFamily: F.m }} className="text-[11px] font-bold text-[#8D5802] tracking-wider uppercase">
+            <div
+              style={{ fontFamily: F.m }}
+              className="text-[11px] font-bold text-[#8D5802] tracking-wider uppercase"
+            >
               BATCH GROUP
             </div>
-            <div style={{ fontFamily: F.m }} className="text-[15px] font-bold text-[#6E0F2D] truncate leading-tight">
+            <div
+              style={{ fontFamily: F.m }}
+              className="text-[15px] font-bold text-[#6E0F2D] truncate leading-tight"
+            >
               {bg.id}
             </div>
           </div>
@@ -115,13 +147,15 @@ function buildBatchColumns(): ColumnDef<BatchGroup>[] {
       ),
     },
     {
-      id: "weavers", header: "Weavers", priority: 2,
-      accessor: bg => Array.from(new Set(bg.sarees.map(s => s.weaver))).join(", "),
+      id: "weavers",
+      header: "Weavers",
+      priority: 2,
+      accessor: (bg) => Array.from(new Set(bg.sarees.map((s) => s.weaver))).join(", "),
       cell: (_v, bg) => {
-        const bweavers = Array.from(new Set(bg.sarees.map(s => s.weaver)));
+        const bweavers = Array.from(new Set(bg.sarees.map((s) => s.weaver)));
         return (
           <div className="flex items-center gap-1.5 flex-wrap">
-            {bweavers.slice(0, 2).map(w => (
+            {bweavers.slice(0, 2).map((w) => (
               <span
                 key={w}
                 style={{ fontFamily: F.u }}
@@ -131,7 +165,10 @@ function buildBatchColumns(): ColumnDef<BatchGroup>[] {
               </span>
             ))}
             {bweavers.length > 2 && (
-              <span style={{ fontFamily: F.u }} className="text-[12px] font-semibold text-[#8D5802]">
+              <span
+                style={{ fontFamily: F.u }}
+                className="text-[12px] font-semibold text-[#8D5802]"
+              >
                 +{bweavers.length - 2}
               </span>
             )}
@@ -140,12 +177,20 @@ function buildBatchColumns(): ColumnDef<BatchGroup>[] {
       },
     },
     {
-      id: "pending", header: "Pending", type: "number", priority: 2, sortable: true,
-      accessor: bg => bg.sarees.length,
+      id: "pending",
+      header: "Pending",
+      type: "number",
+      priority: 2,
+      sortable: true,
+      accessor: (bg) => bg.sarees.length,
       cell: (_v, bg) => <PendingBadge count={bg.sarees.length} />,
     },
     {
-      id: "actions", header: "", type: "actions", priority: 2, width: 40,
+      id: "actions",
+      header: "",
+      type: "actions",
+      priority: 2,
+      width: 40,
       accessor: () => null,
       cell: () => <ChevronRight size={16} className="text-[#4F4A45]" />,
     },
@@ -175,9 +220,9 @@ export function WorkerQCWeaverGrid({
       <DataTable
         columns={columns}
         data={filteredWeavers}
-        getRowId={wg => wg.name}
+        getRowId={(wg) => wg.name}
         view={viewMode}
-        onRowClick={wg => setSelectedWeaverQC(wg.name)}
+        onRowClick={(wg) => setSelectedWeaverQC(wg.name)}
         emptyTitle="No weavers pending QC"
       />
     </div>
@@ -207,9 +252,9 @@ export function WorkerQCBatchGrid({
       <DataTable
         columns={columns}
         data={batchGroups}
-        getRowId={bg => bg.id}
+        getRowId={(bg) => bg.id}
         view={viewMode}
-        onRowClick={bg => setSelectedBatchQC(bg.id)}
+        onRowClick={(bg) => setSelectedBatchQC(bg.id)}
         emptyTitle="No batches pending QC"
       />
     </div>

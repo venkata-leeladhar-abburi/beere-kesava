@@ -22,7 +22,11 @@
  * low on coherence.
  */
 
-export type Gray = { data: Uint8ClampedArray | Uint8Array | Float32Array; width: number; height: number };
+export type Gray = {
+  data: Uint8ClampedArray | Uint8Array | Float32Array;
+  width: number;
+  height: number;
+};
 
 export type BarcodeCandidate = {
   /** Centre of the barcode, in the coordinates of the analysed image. */
@@ -112,7 +116,9 @@ export function locateBarcodes(img: Gray, max = 2): BarcodeCandidate[] {
   const floor = maxEnergy * 0.12;
   const visited = new Uint8Array(n);
   const found: BarcodeCandidate[] = [];
-  const order = Array.from({ length: n }, (_, b) => b).filter(b => energy[b] > floor).sort((a, b) => energy[b] - energy[a]);
+  const order = Array.from({ length: n }, (_, b) => b)
+    .filter((b) => energy[b] > floor)
+    .sort((a, b) => energy[b] - energy[a]);
 
   for (const seed of order) {
     if (visited[seed]) continue;
@@ -159,7 +165,10 @@ export function locateBarcodes(img: Gray, max = 2): BarcodeCandidate[] {
 
     // Extent along (u) and across (v) the gradient direction, in block
     // centres, then padded by a block on every side.
-    let minU = Infinity, maxU = -Infinity, minV = Infinity, maxV = -Infinity;
+    let minU = Infinity,
+      maxU = -Infinity,
+      minV = Infinity,
+      maxV = -Infinity;
     for (const b of members) {
       const x = ((b % bw) + 0.5) * BLOCK;
       const y = (Math.floor(b / bw) + 0.5) * BLOCK;
@@ -186,7 +195,7 @@ export function locateBarcodes(img: Gray, max = 2): BarcodeCandidate[] {
   // A real barcode is longer across the bars than along them (a saree tag's
   // is ~4–7x). Squarish blobs are usually stripes on clothing or shelving.
   return found
-    .filter(c => c.length >= c.thickness * 1.2)
+    .filter((c) => c.length >= c.thickness * 1.2)
     .sort((a, b) => b.score - a.score)
     .slice(0, max);
 }
@@ -202,7 +211,9 @@ export function locateBarcodes(img: Gray, max = 2): BarcodeCandidate[] {
  */
 export function dominantAngle(img: Gray): number {
   const { data, width: W, height: H } = img;
-  let xx = 0, yy = 0, xy = 0;
+  let xx = 0,
+    yy = 0,
+    xy = 0;
   for (let y = 1; y < H - 1; y++) {
     const row = y * W;
     for (let x = 1; x < W - 1; x++) {

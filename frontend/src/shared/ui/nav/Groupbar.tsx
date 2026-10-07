@@ -120,7 +120,9 @@ export const Groupbar = React.forwardRef<HTMLElement, GroupbarProps>(function Gr
               background: "transparent",
               border: "none",
               cursor: "pointer",
-              color: active ? activeItemColor ?? "var(--text-brand)" : itemColor ?? "var(--text-secondary)",
+              color: active
+                ? (activeItemColor ?? "var(--text-brand)")
+                : (itemColor ?? "var(--text-secondary)"),
               fontWeight: active ? 600 : 500,
               whiteSpace: "nowrap",
             }}
@@ -132,7 +134,10 @@ export const Groupbar = React.forwardRef<HTMLElement, GroupbarProps>(function Gr
                 <ChevronDown
                   size={12}
                   aria-hidden
-                  style={{ transform: isOpen ? "rotate(180deg)" : undefined, transition: "transform var(--duration-fast, 150ms)" }}
+                  style={{
+                    transform: isOpen ? "rotate(180deg)" : undefined,
+                    transition: "transform var(--duration-fast, 150ms)",
+                  }}
                 />
               )}
             </span>
@@ -141,7 +146,7 @@ export const Groupbar = React.forwardRef<HTMLElement, GroupbarProps>(function Gr
                 display: "block",
                 height: 2,
                 width: "100%",
-                background: active ? indicatorColor ?? "var(--surface-brand)" : "transparent",
+                background: active ? (indicatorColor ?? "var(--surface-brand)") : "transparent",
               }}
             />
           </button>

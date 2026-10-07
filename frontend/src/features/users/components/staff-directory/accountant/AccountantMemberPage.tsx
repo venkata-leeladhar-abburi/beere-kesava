@@ -195,7 +195,7 @@ export function AccountantMemberPage({
   // Overview tab silently filtered by a control the reader cannot see.
   const chartData = useMemo(
     () =>
-      dailySeries(allRows, 30, totals.lastActivity).map(d => ({
+      dailySeries(allRows, 30, totals.lastActivity).map((d) => ({
         day: new Date(d.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
         out: d.out,
         in: d.in,
@@ -222,7 +222,7 @@ export function AccountantMemberPage({
     {
       id: "date",
       header: "Date",
-      accessor: r => r.date,
+      accessor: (r) => r.date,
       priority: 1,
       sortable: true,
       cell: (_v, r) => (
@@ -237,20 +237,21 @@ export function AccountantMemberPage({
     {
       id: "kind",
       header: "Type",
-      accessor: r => KIND_CONFIG[r.kind].label,
+      accessor: (r) => KIND_CONFIG[r.kind].label,
       priority: 2,
       sortable: true,
       // SaleRecord is one row per saree with its own reference, and there is
       // no bill id in the schema to group them by — so a three-saree counter
       // sale is genuinely three entries here, and the header says so rather
       // than letting the count read as three separate customers.
-      headerTooltip: "Retail collections are recorded per saree, so one counter sale can be several entries.",
+      headerTooltip:
+        "Retail collections are recorded per saree, so one counter sale can be several entries.",
       cell: (_v, r) => <KindBadge kind={r.kind} />,
     },
     {
       id: "party",
       header: "Party",
-      accessor: r => r.partyName ?? "",
+      accessor: (r) => r.partyName ?? "",
       priority: 1,
       sortable: true,
       cell: (_v, r) => (
@@ -270,7 +271,7 @@ export function AccountantMemberPage({
     {
       id: "reference",
       header: "Reference",
-      accessor: r => r.reference ?? "",
+      accessor: (r) => r.reference ?? "",
       priority: 3,
       cell: (_v, r) => (
         <div className="min-w-0">
@@ -294,7 +295,7 @@ export function AccountantMemberPage({
     {
       id: "firm",
       header: "Firm",
-      accessor: r => r.firmName ?? "",
+      accessor: (r) => r.firmName ?? "",
       priority: 3,
       cell: (_v, r) => (
         <span
@@ -308,7 +309,7 @@ export function AccountantMemberPage({
     {
       id: "amount",
       header: "Amount",
-      accessor: r => r.amount,
+      accessor: (r) => r.amount,
       type: "currency",
       priority: 1,
       sortable: true,
@@ -321,7 +322,7 @@ export function AccountantMemberPage({
       <PageShell.Toolbar>
         <Input
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by party, UTR, method or firm…"
           iconLeft={Search}
           className="w-full md:max-w-[320px]"
@@ -331,10 +332,10 @@ export function AccountantMemberPage({
             size="sm"
             className="w-full"
             value={kindFilter}
-            onValueChange={v => setKindFilter(v as "all" | StaffLedgerKind)}
+            onValueChange={(v) => setKindFilter(v as "all" | StaffLedgerKind)}
           >
             <SelectItem value="all">All money types</SelectItem>
-            {KIND_ORDER.map(kind => (
+            {KIND_ORDER.map((kind) => (
               <SelectItem key={kind} value={kind}>
                 {KIND_CONFIG[kind].label}
               </SelectItem>
@@ -358,7 +359,7 @@ export function AccountantMemberPage({
         <DataTable
           columns={columns}
           data={rows}
-          getRowId={r => r.id}
+          getRowId={(r) => r.id}
           responsive
           density="compact"
           pagination
@@ -381,10 +382,10 @@ export function AccountantMemberPage({
             size="sm"
             className="w-full"
             value={kindFilter}
-            onValueChange={v => setKindFilter(v as "all" | StaffLedgerKind)}
+            onValueChange={(v) => setKindFilter(v as "all" | StaffLedgerKind)}
           >
             <SelectItem value="all">All money types</SelectItem>
-            {KIND_ORDER.map(kind => (
+            {KIND_ORDER.map((kind) => (
               <SelectItem key={kind} value={kind}>
                 {KIND_CONFIG[kind].label}
               </SelectItem>
@@ -449,71 +450,79 @@ export function AccountantMemberPage({
                   once figures are masked — unlike the breakdown below, whose
                   bars are proportions and counts rather than amounts. */}
               {!moneyVisible ? (
-                <div className="py-10 text-center text-[13px]" style={{ color: "var(--text-tertiary)" }}>
+                <div
+                  className="py-10 text-center text-[13px]"
+                  style={{ color: "var(--text-tertiary)" }}
+                >
                   Daily volume is hidden for this account.
                 </div>
               ) : (
-              <ChartFigure
-                title="Daily volume"
-                summary={`${fmtMoney(totals.paidOut)} paid out and ${fmtMoney(totals.collectedIn)} collected in across ${totals.txns} entries.`}
-              >
-                <div style={{ height: 240 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        vertical={false}
-                        stroke="rgba(200,155,71,0.18)"
-                      />
-                      <XAxis
-                        dataKey="day"
-                        axisLine={false}
-                        tickLine={false}
-                        interval="preserveStartEnd"
-                        tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
-                      />
-                      <YAxis
-                        axisLine={false}
-                        tickLine={false}
-                        width={58}
-                        tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
-                        tickFormatter={(v: number) => fmtMoney(v, { compact: true })}
-                      />
-                      <RechartsTooltip
-                        cursor={{ fill: "rgba(200,155,71,0.08)" }}
-                        formatter={(v: number, name) => [
-                          fmtMoney(v),
-                          name === "out" ? "Paid out" : "Collected in",
-                        ]}
-                        contentStyle={{
-                          fontSize: 12,
-                          borderRadius: 10,
-                          border: "1px solid rgba(200,155,71,0.25)",
-                        }}
-                      />
-                      <Legend
-                        iconType="circle"
-                        wrapperStyle={{ fontSize: 12 }}
-                        formatter={(name: string) => (name === "out" ? "Paid out" : "Collected in")}
-                      />
-                      <Bar
-                        dataKey="out"
-                        name="out"
-                        fill={OUT_COLOR}
-                        radius={[6, 6, 0, 0]}
-                        maxBarSize={18}
-                      />
-                      <Bar
-                        dataKey="in"
-                        name="in"
-                        fill={IN_COLOR}
-                        radius={[6, 6, 0, 0]}
-                        maxBarSize={18}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </ChartFigure>
+                <ChartFigure
+                  title="Daily volume"
+                  summary={`${fmtMoney(totals.paidOut)} paid out and ${fmtMoney(totals.collectedIn)} collected in across ${totals.txns} entries.`}
+                >
+                  <div style={{ height: 240 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={chartData}
+                        margin={{ top: 8, right: 8, left: -12, bottom: 0 }}
+                      >
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          vertical={false}
+                          stroke="rgba(200,155,71,0.18)"
+                        />
+                        <XAxis
+                          dataKey="day"
+                          axisLine={false}
+                          tickLine={false}
+                          interval="preserveStartEnd"
+                          tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
+                        />
+                        <YAxis
+                          axisLine={false}
+                          tickLine={false}
+                          width={58}
+                          tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
+                          tickFormatter={(v: number) => fmtMoney(v, { compact: true })}
+                        />
+                        <RechartsTooltip
+                          cursor={{ fill: "rgba(200,155,71,0.08)" }}
+                          formatter={(v: number, name) => [
+                            fmtMoney(v),
+                            name === "out" ? "Paid out" : "Collected in",
+                          ]}
+                          contentStyle={{
+                            fontSize: 12,
+                            borderRadius: 10,
+                            border: "1px solid rgba(200,155,71,0.25)",
+                          }}
+                        />
+                        <Legend
+                          iconType="circle"
+                          wrapperStyle={{ fontSize: 12 }}
+                          formatter={(name: string) =>
+                            name === "out" ? "Paid out" : "Collected in"
+                          }
+                        />
+                        <Bar
+                          dataKey="out"
+                          name="out"
+                          fill={OUT_COLOR}
+                          radius={[6, 6, 0, 0]}
+                          maxBarSize={18}
+                        />
+                        <Bar
+                          dataKey="in"
+                          name="in"
+                          fill={IN_COLOR}
+                          radius={[6, 6, 0, 0]}
+                          maxBarSize={18}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </ChartFigure>
               )}
             </div>
           </PanelCard>
@@ -524,7 +533,7 @@ export function AccountantMemberPage({
               sub="Split by entry type, within the current filters"
             />
             <div className="flex flex-col gap-3.5 p-4 md:p-5">
-              {KIND_ORDER.map(kind => {
+              {KIND_ORDER.map((kind) => {
                 const bucket = totals.byKind[kind];
                 const grandTotal = totals.paidOut + totals.collectedIn;
                 const share = grandTotal === 0 ? 0 : (bucket.amount / grandTotal) * 100;

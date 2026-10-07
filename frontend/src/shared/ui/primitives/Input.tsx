@@ -81,8 +81,16 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Inp
         containerClassName
       )}
     >
-      {addonLeft && <span className="shrink-0" style={{ color: "var(--text-tertiary)" }}>{addonLeft}</span>}
-      {iconLeft && <span className="shrink-0" style={{ color: "var(--text-tertiary)" }}>{renderIcon(iconLeft)}</span>}
+      {addonLeft && (
+        <span className="shrink-0" style={{ color: "var(--text-tertiary)" }}>
+          {addonLeft}
+        </span>
+      )}
+      {iconLeft && (
+        <span className="shrink-0" style={{ color: "var(--text-tertiary)" }}>
+          {renderIcon(iconLeft)}
+        </span>
+      )}
       <input
         ref={ref}
         id={resolvedId}
@@ -102,10 +110,25 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Inp
         {...props}
       />
       {clearable && hasValue && !disabled && !readOnly && (
-        <IconButton icon="close" label="Clear" size="sm" variant="ghost" onClick={onClear} className="shrink-0 -mr-1" />
+        <IconButton
+          icon="close"
+          label="Clear"
+          size="sm"
+          variant="ghost"
+          onClick={onClear}
+          className="shrink-0 -mr-1"
+        />
       )}
-      {iconRight && !clearable && <span className="shrink-0" style={{ color: "var(--text-tertiary)" }}>{renderIcon(iconRight)}</span>}
-      {addonRight && <span className="shrink-0" style={{ color: "var(--text-tertiary)" }}>{addonRight}</span>}
+      {iconRight && !clearable && (
+        <span className="shrink-0" style={{ color: "var(--text-tertiary)" }}>
+          {renderIcon(iconRight)}
+        </span>
+      )}
+      {addonRight && (
+        <span className="shrink-0" style={{ color: "var(--text-tertiary)" }}>
+          {addonRight}
+        </span>
+      )}
     </div>
   );
 });

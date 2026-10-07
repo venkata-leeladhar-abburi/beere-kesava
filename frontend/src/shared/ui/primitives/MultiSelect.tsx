@@ -90,9 +90,13 @@ export function MultiSelect({
         )}
       >
         {selected.length === 0 ? (
-          <span className="text-[14px]" style={{ color: "var(--text-placeholder)" }}>{placeholder}</span>
+          <span className="text-[14px]" style={{ color: "var(--text-placeholder)" }}>
+            {placeholder}
+          </span>
         ) : selected.length > 3 ? (
-          <span className="text-[14px]" style={{ color: "var(--text-primary)" }}>{selected.length} selected</span>
+          <span className="text-[14px]" style={{ color: "var(--text-primary)" }}>
+            {selected.length} selected
+          </span>
         ) : (
           <div className="flex flex-wrap gap-1.5">
             {selected.map((o) => (
@@ -100,7 +104,14 @@ export function MultiSelect({
             ))}
           </div>
         )}
-        <Icon name="expandDown" size="sm" className={cn("shrink-0 transition-transform duration-[var(--duration-fast)]", open && "rotate-180")} />
+        <Icon
+          name="expandDown"
+          size="sm"
+          className={cn(
+            "shrink-0 transition-transform duration-[var(--duration-fast)]",
+            open && "rotate-180"
+          )}
+        />
       </button>
 
       {open && (

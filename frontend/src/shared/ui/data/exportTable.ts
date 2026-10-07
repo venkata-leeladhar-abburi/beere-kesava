@@ -30,7 +30,7 @@ export interface ExportTableOptions<T> {
 }
 
 function exportableColumns<T>(columns: ColumnDef<T>[]): ColumnDef<T>[] {
-  return columns.filter(c => c.exportable ?? c.type !== "actions");
+  return columns.filter((c) => c.exportable ?? c.type !== "actions");
 }
 
 /** Column header text, stripped of JSX — exportTable needs a plain string even for the rare ReactNode header. */
@@ -89,8 +89,8 @@ function displayLength(value: string | number | Date | boolean | null): number {
 
 async function exportXlsx<T>(cols: ColumnDef<T>[], rows: T[], filename: string) {
   const XLSX = await import("xlsx");
-  const headers = cols.map(c => headerText(c.header));
-  const data = rows.map(row => cols.map(c => cellValue(c, row)));
+  const headers = cols.map((c) => headerText(c.header));
+  const data = rows.map((row) => cols.map((c) => cellValue(c, row)));
   const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
 
   // Excel's default column width (~8.43 chars) is too narrow for almost
@@ -100,7 +100,7 @@ async function exportXlsx<T>(cols: ColumnDef<T>[], rows: T[], filename: string) 
   ws["!cols"] = cols.map((c, ci) => {
     const widest = Math.max(
       headerText(c.header).length,
-      ...data.map(row => displayLength(row[ci])),
+      ...data.map((row) => displayLength(row[ci]))
     );
     return { wch: Math.min(40, Math.max(12, widest + 2)) };
   });
@@ -131,18 +131,26 @@ function csvCell(value: string | number | Date | boolean | null): string {
 }
 
 function exportCsv<T>(cols: ColumnDef<T>[], rows: T[], filename: string) {
-  const headers = cols.map(c => headerText(c.header));
-  const lines = [headers, ...rows.map(row => cols.map(c => csvCell(cellValue(c, row))))]
-    .map(line => line.join(","))
+  const headers = cols.map((c) => headerText(c.header));
+  const lines = [headers, ...rows.map((row) => cols.map((c) => csvCell(cellValue(c, row))))]
+    .map((line) => line.join(","))
     .join("\r\n");
 
   // UTF-8 BOM (Part M's own requirement) — without it, Excel on Windows
   // opens a UTF-8 CSV as Latin-1 and every ₹ renders as mojibake.
   const BOM = "﻿";
-  triggerDownload(new Blob([BOM + lines], { type: "text/csv;charset=utf-8;" }), timestampedFilename(filename, "csv"));
+  triggerDownload(
+    new Blob([BOM + lines], { type: "text/csv;charset=utf-8;" }),
+    timestampedFilename(filename, "csv")
+  );
 }
 
-export async function exportTable<T>({ columns, rows, filename, format = "xlsx" }: ExportTableOptions<T>) {
+export async function exportTable<T>({
+  columns,
+  rows,
+  filename,
+  format = "xlsx",
+}: ExportTableOptions<T>) {
   const cols = exportableColumns(columns);
   if (format === "csv") {
     exportCsv(cols, rows, filename);

@@ -45,7 +45,12 @@ export interface TabsTriggerProps extends React.ComponentProps<typeof RadixTabs.
   variant?: TabsVariant;
 }
 
-export function TabsTrigger({ variant = "underline", className, style, ...props }: TabsTriggerProps) {
+export function TabsTrigger({
+  variant = "underline",
+  className,
+  style,
+  ...props
+}: TabsTriggerProps) {
   const isPill = variant === "pill";
   return (
     <RadixTabs.Trigger
@@ -68,7 +73,10 @@ export function TabsTrigger({ variant = "underline", className, style, ...props 
  * Reads/writes the `tab` search param. Returns `[value, setValue]` shaped
  * like useState so it drops directly into `<Tabs value={...} onValueChange={...}>`.
  */
-export function useTabsUrlState(defaultValue: string, param = "tab"): [string, (value: string) => void] {
+export function useTabsUrlState(
+  defaultValue: string,
+  param = "tab"
+): [string, (value: string) => void] {
   const [searchParams, setSearchParams] = useSearchParams();
   const value = searchParams.get(param) ?? defaultValue;
 

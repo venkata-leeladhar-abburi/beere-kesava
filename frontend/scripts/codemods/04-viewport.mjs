@@ -92,7 +92,11 @@ for (const file of files) {
     if (!line.includes("100vh")) continue;
 
     if (CALC_VH_RE.test(line)) {
-      calcSites.push({ file: path.relative(SRC, file), line: li + 1, text: line.trim().slice(0, 100) });
+      calcSites.push({
+        file: path.relative(SRC, file),
+        line: li + 1,
+        text: line.trim().slice(0, 100),
+      });
     }
     CALC_VH_RE.lastIndex = 0;
 

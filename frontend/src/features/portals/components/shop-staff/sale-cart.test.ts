@@ -1,12 +1,29 @@
 import { describe, expect, it } from "vitest";
 import {
-  allocateBillDiscount, allocateByWeight, billDiscountAmount, billTotal, gstBreakdown, gstIssue, isValidGstin,
-  NO_GST, type SaleLine,
+  allocateBillDiscount,
+  allocateByWeight,
+  billDiscountAmount,
+  billTotal,
+  gstBreakdown,
+  gstIssue,
+  isValidGstin,
+  NO_GST,
+  type SaleLine,
 } from "./sale-cart";
 
 const line = (id: string, soldPrice: number): SaleLine => ({
-  id, batchId: "", design: "", name: "", type: "", typeCode: "", weight: "", weaver: "",
-  originalPrice: soldPrice, discountMode: "amount", discountValue: 0, soldPrice,
+  id,
+  batchId: "",
+  design: "",
+  name: "",
+  type: "",
+  typeCode: "",
+  weight: "",
+  weaver: "",
+  originalPrice: soldPrice,
+  discountMode: "amount",
+  discountValue: 0,
+  soldPrice,
 });
 
 describe("bill discount", () => {
@@ -50,7 +67,14 @@ describe("bill GST", () => {
   });
 
   it("adds CGST + SGST, half the rate each, on top of the discounted bill", () => {
-    expect(gstBreakdown(27000, on(5))).toEqual({ rate: 5, taxable: 27000, cgst: 675, sgst: 675, gst: 1350, total: 28350 });
+    expect(gstBreakdown(27000, on(5))).toEqual({
+      rate: 5,
+      taxable: 27000,
+      cgst: 675,
+      sgst: 675,
+      gst: 1350,
+      total: 28350,
+    });
   });
 
   it("rounds each half to the nearest whole rupee", () => {

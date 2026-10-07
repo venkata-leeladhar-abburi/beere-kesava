@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { NAV_GROUPS, PAGE_ROUTES, pageForTab, pathForPage } from "./data";
 
-const navKeys = NAV_GROUPS.flatMap(group => group.pages.map(page => page.key));
+const navKeys = NAV_GROUPS.flatMap((group) => group.pages.map((page) => page.key));
 
 describe("superadmin navigation routes", () => {
   // The regression this file exists for: "Sign-in Location" was added to
@@ -10,7 +10,7 @@ describe("superadmin navigation routes", () => {
   // error anywhere. A missing route is now a failing test, not a silent
   // redirect to an unrelated page.
   it("gives every nav entry a route of its own", () => {
-    const missing = navKeys.filter(key => !PAGE_ROUTES[key]);
+    const missing = navKeys.filter((key) => !PAGE_ROUTES[key]);
     expect(missing).toEqual([]);
   });
 

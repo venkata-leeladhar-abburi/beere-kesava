@@ -37,7 +37,16 @@ function truncateMiddle(value: string, tailLength = 4): string {
   return `${value.slice(0, value.length - tailLength - 5)}…${value.slice(-tailLength)}`;
 }
 
-export function EntityCode({ type, value, link, copyable, icon, truncate, size = "md", className }: EntityCodeProps) {
+export function EntityCode({
+  type,
+  value,
+  link,
+  copyable,
+  icon,
+  truncate,
+  size = "md",
+  className,
+}: EntityCodeProps) {
   const [copied, setCopied] = React.useState(false);
   const spec = getEntitySpec(type);
   const EntityIcon = spec.icon;
@@ -70,7 +79,9 @@ export function EntityCode({ type, value, link, copyable, icon, truncate, size =
         letterSpacing: 0,
       }}
     >
-      {icon && <EntityIcon size={12} className="shrink-0 text-[var(--text-tertiary)]" aria-hidden="true" />}
+      {icon && (
+        <EntityIcon size={12} className="shrink-0 text-[var(--text-tertiary)]" aria-hidden="true" />
+      )}
       {display}
       {copyable && (
         <button

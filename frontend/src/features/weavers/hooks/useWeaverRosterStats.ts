@@ -76,10 +76,13 @@ export function useWeaverRosterStats(range?: WeaverStatsRange): WeaverRosterStat
   return {
     roster,
     allStats,
-    statsById: new Map(allStats.map(s => [s.weaverId, s])),
+    statsById: new Map(allStats.map((s) => [s.weaverId, s])),
     isLoading: rosterLoading || statsLoading,
     isError: rosterError || statsError,
-    refetch: () => { void refetchRoster(); void refetchStats(); },
+    refetch: () => {
+      void refetchRoster();
+      void refetchStats();
+    },
   };
 }
 

@@ -66,17 +66,41 @@ interface NavigateItem {
 // top-level portal routes declared in app/App.tsx. Kept hardcoded per the
 // scoping note; not derived from a route registry because one doesn't exist.
 const NAVIGATE_ITEMS: NavigateItem[] = [
-  { key: "overview",   label: "Overview",   path: "/admin/overview",   icon: LayoutDashboard },
+  { key: "overview", label: "Overview", path: "/admin/overview", icon: LayoutDashboard },
   { key: "production", label: "Production", path: "/admin/production", icon: Factory },
-  { key: "batches",    label: "Batches",     path: "/admin/batches",    icon: Layers },
-  { key: "inventory",  label: "Inventory",  path: "/admin/inventory",  icon: Package, keywords: ["materials", "stock"] },
-  { key: "payments",   label: "Payments",   path: "/admin/payments",   icon: IndianRupee, keywords: ["finance"] },
-  { key: "reports",    label: "Reports",    path: "/admin/reports",    icon: BarChart3 },
-  { key: "weavers",    label: "Weavers",    path: "/admin/weavers",    icon: Users, keywords: ["partners"] },
-  { key: "customers",  label: "Customers",  path: "/admin/customers",  icon: UserCircle, keywords: ["partners"] },
-  { key: "vendors",    label: "Vendors",    path: "/admin/vendors",    icon: Truck, keywords: ["partners"] },
-  { key: "suppliers",  label: "Suppliers",  path: "/admin/suppliers",  icon: Warehouse, keywords: ["partners"] },
-  { key: "firms",      label: "Firms",      path: "/admin/firms",      icon: Building2 },
+  { key: "batches", label: "Batches", path: "/admin/batches", icon: Layers },
+  {
+    key: "inventory",
+    label: "Inventory",
+    path: "/admin/inventory",
+    icon: Package,
+    keywords: ["materials", "stock"],
+  },
+  {
+    key: "payments",
+    label: "Payments",
+    path: "/admin/payments",
+    icon: IndianRupee,
+    keywords: ["finance"],
+  },
+  { key: "reports", label: "Reports", path: "/admin/reports", icon: BarChart3 },
+  { key: "weavers", label: "Weavers", path: "/admin/weavers", icon: Users, keywords: ["partners"] },
+  {
+    key: "customers",
+    label: "Customers",
+    path: "/admin/customers",
+    icon: UserCircle,
+    keywords: ["partners"],
+  },
+  { key: "vendors", label: "Vendors", path: "/admin/vendors", icon: Truck, keywords: ["partners"] },
+  {
+    key: "suppliers",
+    label: "Suppliers",
+    path: "/admin/suppliers",
+    icon: Warehouse,
+    keywords: ["partners"],
+  },
+  { key: "firms", label: "Firms", path: "/admin/firms", icon: Building2 },
   { key: "notifications", label: "Notifications", path: "/admin/notifications", icon: Bell },
 ];
 
@@ -98,11 +122,41 @@ interface ActionItem {
 // default, and several add-forms are nested behind selection state that
 // isn't safe to force open from a cold deep link).
 const ACTION_ITEMS: ActionItem[] = [
-  { key: "new-vendor",   label: "New Vendor",   path: "/admin/vendors?new=1",   icon: PlusCircle, keywords: ["add", "create"] },
-  { key: "new-supplier", label: "New Supplier", path: "/admin/suppliers?new=1", icon: PlusCircle, keywords: ["add", "create"] },
-  { key: "new-weaver",   label: "New Weaver",   path: "/admin/weavers?new=1",   icon: UserPlus,   keywords: ["add", "create", "register"] },
-  { key: "new-firm",     label: "New Firm",     path: "/admin/firms?new=1",     icon: PlusCircle, keywords: ["add", "create"] },
-  { key: "new-customer", label: "New Customer", path: "/admin/customers?new=1", icon: UserPlus,   keywords: ["add", "create", "wholesale"] },
+  {
+    key: "new-vendor",
+    label: "New Vendor",
+    path: "/admin/vendors?new=1",
+    icon: PlusCircle,
+    keywords: ["add", "create"],
+  },
+  {
+    key: "new-supplier",
+    label: "New Supplier",
+    path: "/admin/suppliers?new=1",
+    icon: PlusCircle,
+    keywords: ["add", "create"],
+  },
+  {
+    key: "new-weaver",
+    label: "New Weaver",
+    path: "/admin/weavers?new=1",
+    icon: UserPlus,
+    keywords: ["add", "create", "register"],
+  },
+  {
+    key: "new-firm",
+    label: "New Firm",
+    path: "/admin/firms?new=1",
+    icon: PlusCircle,
+    keywords: ["add", "create"],
+  },
+  {
+    key: "new-customer",
+    label: "New Customer",
+    path: "/admin/customers?new=1",
+    icon: UserPlus,
+    keywords: ["add", "create", "wholesale"],
+  },
 ];
 
 export interface CommandPaletteProps {
@@ -155,10 +209,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         />
       </div>
 
-      <Command.List
-        className="flex-1 overflow-y-auto p-2"
-        aria-live="polite"
-      >
+      <Command.List className="flex-1 overflow-y-auto p-2" aria-live="polite">
         <Command.Empty
           className="py-8 text-center bk-caption"
           style={{ color: "var(--text-tertiary)" }}

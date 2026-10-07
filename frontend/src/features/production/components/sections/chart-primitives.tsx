@@ -13,16 +13,16 @@ import { T, F, EASE } from "../theme";
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const CHART = {
-  primary:      T.royalBurgundy,
-  primaryDeep:  "#3D1020",
-  secondary:    T.antiqueGold,
+  primary: T.royalBurgundy,
+  primaryDeep: "#3D1020",
+  secondary: T.antiqueGold,
   secondaryLite: T.goldLight,
   // Completion is the one place a non-house hue earns its keep: "done" is
   // universally read as green, and it ties the bulk-order bars to their band.
-  done:         brand.green[800],
-  doneLite:     brand.green[600],
-  track:        "rgba(110,15,45,0.07)",
-  grid:         "rgba(0,0,0,0.05)",
+  done: brand.green[800],
+  doneLite: brand.green[600],
+  track: "rgba(110,15,45,0.07)",
+  grid: "rgba(0,0,0,0.05)",
   // Sequential burgundy→gold ramp for ordered stages. Reading left→right along
   // the pipeline the colour warms, so the stage order is legible at a glance
   // instead of being encoded in four unrelated hues.
@@ -100,8 +100,14 @@ export function CountUp({ value, duration = 1200 }: { value: number; duration?: 
  * silk rather than a flat panel. Padding is deliberately tighter than the
  * Overview cards — these sit four-up, so every 8px of chrome costs a scroll.
  */
-export function ChartCard({ children, className = "", style }: {
-  children: React.ReactNode; className?: string; style?: React.CSSProperties;
+export function ChartCard({
+  children,
+  className = "",
+  style,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });
@@ -126,11 +132,19 @@ export function ChartCard({ children, className = "", style }: {
     >
       {/* Warm burgundy bloom in the top-right, kept under 4% so it never
           competes with the data ink. */}
-      <span aria-hidden style={{
-        position: "absolute", top: -70, right: -70, width: 200, height: 200, borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(110,15,45,0.05) 0%, rgba(110,15,45,0) 70%)",
-        pointerEvents: "none",
-      }} />
+      <span
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: -70,
+          right: -70,
+          width: 200,
+          height: 200,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(110,15,45,0.05) 0%, rgba(110,15,45,0) 70%)",
+          pointerEvents: "none",
+        }}
+      />
       {children}
     </motion.div>
   );
@@ -141,43 +155,98 @@ export function ChartCard({ children, className = "", style }: {
  * Batches" card, but in a light key so it sits *under* the section banner in the
  * visual hierarchy instead of fighting it.
  */
-export function ChartBand({ tone, icon, title, sub }: {
-  tone: BandTone; icon: React.ReactNode; title: string; sub: string;
+export function ChartBand({
+  tone,
+  icon,
+  title,
+  sub,
+}: {
+  tone: BandTone;
+  icon: React.ReactNode;
+  title: string;
+  sub: string;
 }) {
   const b = BAND[tone];
   return (
-    <div style={{
-      position: "relative", overflow: "hidden", padding: "14px 18px",
-      background: `linear-gradient(104deg, #FFFDF9 0%, #FCF7EF 100%)`,
-      borderBottom: `1px solid ${T.borderDef}`,
-    }}>
+    <div
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        padding: "14px 18px",
+        background: `linear-gradient(104deg, #FFFDF9 0%, #FCF7EF 100%)`,
+        borderBottom: `1px solid ${T.borderDef}`,
+      }}
+    >
       {/* Faintest accent wash, so each card is identifiable at a glance without
           carrying a slab of colour. */}
-      <span aria-hidden style={{
-        position: "absolute", inset: 0,
-        background: `linear-gradient(104deg, ${b.wash} 0%, rgba(255,255,255,0) 65%)`,
-        pointerEvents: "none",
-      }} />
+      <span
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: `linear-gradient(104deg, ${b.wash} 0%, rgba(255,255,255,0) 65%)`,
+          pointerEvents: "none",
+        }}
+      />
       {/* Accent hairline riding the bottom edge — the card's colour signature. */}
-      <span aria-hidden style={{
-        position: "absolute", bottom: 0, left: 0, right: 0, height: 2,
-        background: `linear-gradient(90deg, ${b.hairline} 0%, ${b.hairline} 28%, rgba(200,155,71,0) 100%)`,
-        opacity: 0.5,
-      }} />
-      <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative", minWidth: 0 }}>
-        <div style={{
-          width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          background: b.tile,
-          boxShadow: "0 2px 6px rgba(74,6,27,0.18), inset 0 1px 0 rgba(255,255,255,0.16)",
-        }}>
+      <span
+        aria-hidden
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 2,
+          background: `linear-gradient(90deg, ${b.hairline} 0%, ${b.hairline} 28%, rgba(200,155,71,0) 100%)`,
+          opacity: 0.5,
+        }}
+      />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          position: "relative",
+          minWidth: 0,
+        }}
+      >
+        <div
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 10,
+            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: b.tile,
+            boxShadow: "0 2px 6px rgba(74,6,27,0.18), inset 0 1px 0 rgba(255,255,255,0.16)",
+          }}
+        >
           {icon}
         </div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 17, color: T.luxuryBrown, letterSpacing: "-0.1px", lineHeight: 1.2 }}>
+          <div
+            style={{
+              fontFamily: F.display,
+              fontWeight: 400,
+              fontSize: 17,
+              color: T.luxuryBrown,
+              letterSpacing: "-0.1px",
+              lineHeight: 1.2,
+            }}
+          >
             {title}
           </div>
-          <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 2, lineHeight: 1.4 }}>
+          <div
+            style={{
+              fontFamily: F.ui,
+              fontSize: 11.5,
+              color: T.taupe,
+              marginTop: 2,
+              lineHeight: 1.4,
+            }}
+          >
             {sub}
           </div>
         </div>
@@ -189,32 +258,74 @@ export function ChartBand({ tone, icon, title, sub }: {
 /** One-line reading hint, sitting on the cream ground under the band. */
 export function ChartHint({ children, tone }: { children: React.ReactNode; tone: BandTone }) {
   return (
-    <div style={{
-      paddingLeft: 9, marginBottom: 14,
-      borderLeft: `2px solid ${BAND[tone].hairline}`,
-      opacity: 0.92,
-      fontFamily: F.ui, fontSize: 11.5, color: T.taupe, lineHeight: 1.45, fontStyle: "italic",
-    }}>
+    <div
+      style={{
+        paddingLeft: 9,
+        marginBottom: 14,
+        borderLeft: `2px solid ${BAND[tone].hairline}`,
+        opacity: 0.92,
+        fontFamily: F.ui,
+        fontSize: 11.5,
+        color: T.taupe,
+        lineHeight: 1.45,
+        fontStyle: "italic",
+      }}
+    >
       {children}
     </div>
   );
 }
 
 /** Big headline figure with a caption underneath, as on “Sarees Produced”. */
-export function HeroStat({ value, caption, icon, unit, secondary }: { value: number; caption: string; icon?: React.ReactNode; unit?: string; secondary?: { value: number; unit: string } }) {
+export function HeroStat({
+  value,
+  caption,
+  icon,
+  unit,
+  secondary,
+}: {
+  value: number;
+  caption: string;
+  icon?: React.ReactNode;
+  unit?: string;
+  secondary?: { value: number; unit: string };
+}) {
   return (
     <div style={{ marginBottom: 4 }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
-          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 40, color: T.luxuryBrown, lineHeight: 1.0, ...NUM }}>
+          <span
+            style={{
+              fontFamily: F.display,
+              fontWeight: 400,
+              fontSize: 40,
+              color: T.luxuryBrown,
+              lineHeight: 1.0,
+              ...NUM,
+            }}
+          >
             <CountUp value={value} />
           </span>
           {unit && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{unit}</span>}
         </div>
         {secondary && (
           <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
-            <span aria-hidden style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginRight: 2 }}>+</span>
-            <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 26, color: T.luxuryBrown, lineHeight: 1.0, ...NUM }}>
+            <span
+              aria-hidden
+              style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginRight: 2 }}
+            >
+              +
+            </span>
+            <span
+              style={{
+                fontFamily: F.display,
+                fontWeight: 400,
+                fontSize: 26,
+                color: T.luxuryBrown,
+                lineHeight: 1.0,
+                ...NUM,
+              }}
+            >
               <CountUp value={secondary.value} />
             </span>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{secondary.unit}</span>
@@ -223,7 +334,9 @@ export function HeroStat({ value, caption, icon, unit, secondary }: { value: num
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5 }}>
         {icon}
-        <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, letterSpacing: "0.1px" }}>{caption}</span>
+        <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, letterSpacing: "0.1px" }}>
+          {caption}
+        </span>
       </div>
     </div>
   );
@@ -232,9 +345,11 @@ export function HeroStat({ value, caption, icon, unit, secondary }: { value: num
 export function ChartLegend({ items }: { items: { color: string; label: string }[] }) {
   return (
     <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 8 }}>
-      {items.map(l => (
+      {items.map((l) => (
         <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: l.color, flexShrink: 0 }} />
+          <span
+            style={{ width: 8, height: 8, borderRadius: "50%", background: l.color, flexShrink: 0 }}
+          />
           <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{l.label}</span>
         </div>
       ))}
@@ -250,18 +365,51 @@ export function ChartLegend({ items }: { items: { color: string; label: string }
 export function StatFooter({ stats }: { stats: { num: React.ReactNode; label: string }[] }) {
   return (
     <div style={{ marginTop: "auto", paddingTop: 14 }}>
-      <div aria-hidden style={{
-        height: 1, marginBottom: 14,
-        background: "linear-gradient(90deg, rgba(200,155,71,0) 0%, rgba(200,155,71,0.30) 50%, rgba(200,155,71,0) 100%)",
-      }} />
+      <div
+        aria-hidden
+        style={{
+          height: 1,
+          marginBottom: 14,
+          background:
+            "linear-gradient(90deg, rgba(200,155,71,0) 0%, rgba(200,155,71,0.30) 50%, rgba(200,155,71,0) 100%)",
+        }}
+      />
       <div style={{ display: "flex" }}>
         {stats.map((s, i) => (
-          <div key={s.label} style={{
-            flex: 1, textAlign: "center", padding: "0 6px",
-            borderRight: i < stats.length - 1 ? `1px solid ${T.borderDef}` : "none",
-          }}>
-            <div style={{ fontFamily: F.display, fontWeight: 500, fontSize: 26, color: T.luxuryBrown, lineHeight: 1.1, ...NUM }}>{s.num}</div>
-            <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 11, color: T.taupe, marginTop: 4, textTransform: "uppercase", letterSpacing: "1.2px" }}>{s.label}</div>
+          <div
+            key={s.label}
+            style={{
+              flex: 1,
+              textAlign: "center",
+              padding: "0 6px",
+              borderRight: i < stats.length - 1 ? `1px solid ${T.borderDef}` : "none",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: F.display,
+                fontWeight: 500,
+                fontSize: 26,
+                color: T.luxuryBrown,
+                lineHeight: 1.1,
+                ...NUM,
+              }}
+            >
+              {s.num}
+            </div>
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontWeight: 600,
+                fontSize: 11,
+                color: T.taupe,
+                marginTop: 4,
+                textTransform: "uppercase",
+                letterSpacing: "1.2px",
+              }}
+            >
+              {s.label}
+            </div>
           </div>
         ))}
       </div>
@@ -272,7 +420,16 @@ export function StatFooter({ stats }: { stats: { num: React.ReactNode; label: st
 /** Uppercase micro-label used above grouped rows. */
 export function MicroLabel({ children, color }: { children: React.ReactNode; color?: string }) {
   return (
-    <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 10, color: color ?? T.taupe, textTransform: "uppercase", letterSpacing: "1.2px" }}>
+    <span
+      style={{
+        fontFamily: F.ui,
+        fontWeight: 500,
+        fontSize: 10,
+        color: color ?? T.taupe,
+        textTransform: "uppercase",
+        letterSpacing: "1.2px",
+      }}
+    >
       {children}
     </span>
   );
@@ -283,23 +440,39 @@ export function MicroLabel({ children, color }: { children: React.ReactNode; col
  * The track carries a faint inner shadow and the fill a top sheen, which is what
  * separates a "premium" bar from a flat rectangle at this size.
  */
-export function TrackBar({ pct, fill, height = 9, delay = 0 }: {
-  pct: number; fill: string; height?: number; delay?: number;
+export function TrackBar({
+  pct,
+  fill,
+  height = 9,
+  delay = 0,
+}: {
+  pct: number;
+  fill: string;
+  height?: number;
+  delay?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px 0px" });
   const clamped = Math.max(0, Math.min(100, pct));
   return (
-    <div ref={ref} style={{
-      height, background: CHART.track, borderRadius: 999, overflow: "hidden",
-      boxShadow: "inset 0 1px 2px rgba(74,6,27,0.06)",
-    }}>
+    <div
+      ref={ref}
+      style={{
+        height,
+        background: CHART.track,
+        borderRadius: 999,
+        overflow: "hidden",
+        boxShadow: "inset 0 1px 2px rgba(74,6,27,0.06)",
+      }}
+    >
       <motion.div
         initial={{ width: 0 }}
         animate={inView ? { width: `${clamped}%` } : undefined}
         transition={{ duration: 0.9, delay, ease: EASE }}
         style={{
-          height: "100%", borderRadius: 999, background: fill,
+          height: "100%",
+          borderRadius: 999,
+          background: fill,
           boxShadow: clamped > 0 ? "inset 0 1px 0 rgba(255,255,255,0.22)" : "none",
         }}
       />
@@ -307,17 +480,32 @@ export function TrackBar({ pct, fill, height = 9, delay = 0 }: {
   );
 }
 
-export interface GroupedBarPoint { label: string; a: number; b: number }
+export interface GroupedBarPoint {
+  label: string;
+  a: number;
+  b: number;
+}
 
 /**
  * Two-series grouped column chart with a real y-axis and baseline gridlines —
  * the same construction as the Overview chart, so a value can be read off the
  * axis instead of hunting for a number floating above each bar.
  */
-export function GroupedBarChart({ data, height = 168 }: { data: GroupedBarPoint[]; height?: number }) {
-  const W = 420, H = 162, PB = 22, PT = 10, PL = 30;
-  const iW = W - PL, iH = H - PB - PT;
-  const rawMax = Math.max(1, ...data.map(d => Math.max(d.a, d.b)));
+export function GroupedBarChart({
+  data,
+  height = 168,
+}: {
+  data: GroupedBarPoint[];
+  height?: number;
+}) {
+  const W = 420,
+    H = 162,
+    PB = 22,
+    PT = 10,
+    PL = 30;
+  const iW = W - PL,
+    iH = H - PB - PT;
+  const rawMax = Math.max(1, ...data.map((d) => Math.max(d.a, d.b)));
   // Round the axis up to a friendly increment so ticks are whole numbers.
   const step = Math.max(1, Math.ceil(rawMax / 3 / 5) * 5);
   const maxV = step * 3;
@@ -340,16 +528,39 @@ export function GroupedBarChart({ data, height = 168 }: { data: GroupedBarPoint[
           {/* Grounds the columns on the baseline so they sit in the card
               instead of floating on it. */}
           <filter id="prodBarShadow" x="-60%" y="-20%" width="220%" height="150%">
-            <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#4A061B" floodOpacity="0.18" />
+            <feDropShadow
+              dx="0"
+              dy="2"
+              stdDeviation="2.5"
+              floodColor="#4A061B"
+              floodOpacity="0.18"
+            />
           </filter>
         </defs>
 
-        {ticks.map(v => {
+        {ticks.map((v) => {
           const y = PT + iH * (1 - v / maxV);
           return (
             <g key={v}>
-              <line x1={PL} y1={y} x2={W} y2={y} stroke={CHART.grid} strokeWidth={1} strokeDasharray={v === 0 ? "0" : "2 4"} />
-              <text x={PL - 6} y={y + 3.5} textAnchor="end" fontFamily={F.ui} fontSize={8.5} fontWeight="500" fill={T.taupe} style={NUM}>
+              <line
+                x1={PL}
+                y1={y}
+                x2={W}
+                y2={y}
+                stroke={CHART.grid}
+                strokeWidth={1}
+                strokeDasharray={v === 0 ? "0" : "2 4"}
+              />
+              <text
+                x={PL - 6}
+                y={y + 3.5}
+                textAnchor="end"
+                fontFamily={F.ui}
+                fontSize={8.5}
+                fontWeight="500"
+                fill={T.taupe}
+                style={NUM}
+              >
                 {v}
               </text>
             </g>
@@ -359,7 +570,8 @@ export function GroupedBarChart({ data, height = 168 }: { data: GroupedBarPoint[
         {data.map((d, i) => {
           const gW = iW / data.length;
           const gx = PL + i * gW + gW / 2;
-          const bW = Math.min(16, gW / 3), gap = 5;
+          const bW = Math.min(16, gW / 3),
+            gap = 5;
           const baseY = PT + iH;
           const hA = (d.a / maxV) * iH;
           const hB = (d.b / maxV) * iH;
@@ -367,18 +579,35 @@ export function GroupedBarChart({ data, height = 168 }: { data: GroupedBarPoint[
             <g key={d.label}>
               <title>{`${d.label} — produced ${d.a}, QC passed ${d.b}`}</title>
               <motion.rect
-                x={gx - bW - gap / 2} width={bW} rx={bW / 2} fill="url(#prodBarA)" filter="url(#prodBarShadow)"
+                x={gx - bW - gap / 2}
+                width={bW}
+                rx={bW / 2}
+                fill="url(#prodBarA)"
+                filter="url(#prodBarShadow)"
                 initial={{ y: baseY, height: 0 }}
                 animate={inView ? { y: baseY - hA, height: hA } : undefined}
                 transition={{ duration: 0.9, delay: 0.25 + i * 0.08, ease: EASE }}
               />
               <motion.rect
-                x={gx + gap / 2} width={bW} rx={bW / 2} fill="url(#prodBarB)" filter="url(#prodBarShadow)"
+                x={gx + gap / 2}
+                width={bW}
+                rx={bW / 2}
+                fill="url(#prodBarB)"
+                filter="url(#prodBarShadow)"
                 initial={{ y: baseY, height: 0 }}
                 animate={inView ? { y: baseY - hB, height: hB } : undefined}
                 transition={{ duration: 0.9, delay: 0.33 + i * 0.08, ease: EASE }}
               />
-              <text x={gx} y={H - 5} textAnchor="middle" fontFamily={F.ui} fontSize={9} fontWeight="500" fill={T.taupe} letterSpacing="0.6">
+              <text
+                x={gx}
+                y={H - 5}
+                textAnchor="middle"
+                fontFamily={F.ui}
+                fontSize={9}
+                fontWeight="500"
+                fill={T.taupe}
+                letterSpacing="0.6"
+              >
                 {d.label}
               </text>
             </g>
@@ -389,12 +618,29 @@ export function GroupedBarChart({ data, height = 168 }: { data: GroupedBarPoint[
   );
 }
 
-export interface SingleBarPoint { label: string; value: number; unit?: string }
+export interface SingleBarPoint {
+  label: string;
+  value: number;
+  unit?: string;
+}
 
-export function SingleBarChart({ data, height = 168, fillId = "prodBarA" }: { data: SingleBarPoint[]; height?: number; fillId?: string }) {
-  const W = 420, H = 162, PB = 30, PT = 32, PL = 30;
-  const iW = W - PL, iH = H - PB - PT;
-  const rawMax = Math.max(1, ...data.map(d => d.value));
+export function SingleBarChart({
+  data,
+  height = 168,
+  fillId = "prodBarA",
+}: {
+  data: SingleBarPoint[];
+  height?: number;
+  fillId?: string;
+}) {
+  const W = 420,
+    H = 162,
+    PB = 30,
+    PT = 32,
+    PL = 30;
+  const iW = W - PL,
+    iH = H - PB - PT;
+  const rawMax = Math.max(1, ...data.map((d) => d.value));
   const step = Math.max(1, Math.ceil(rawMax / 3 / 5) * 5);
   const maxV = step * 3;
   const ticks = [0, step, step * 2, maxV];
@@ -414,16 +660,39 @@ export function SingleBarChart({ data, height = 168, fillId = "prodBarA" }: { da
             <stop offset="100%" stopColor={CHART.secondary} />
           </linearGradient>
           <filter id="singleBarShadow" x="-60%" y="-20%" width="220%" height="150%">
-            <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#4A061B" floodOpacity="0.18" />
+            <feDropShadow
+              dx="0"
+              dy="2"
+              stdDeviation="2.5"
+              floodColor="#4A061B"
+              floodOpacity="0.18"
+            />
           </filter>
         </defs>
 
-        {ticks.map(v => {
+        {ticks.map((v) => {
           const y = PT + iH * (1 - v / maxV);
           return (
             <g key={v}>
-              <line x1={PL} y1={y} x2={W} y2={y} stroke={CHART.grid} strokeWidth={1} strokeDasharray={v === 0 ? "0" : "2 4"} />
-              <text x={PL - 6} y={y + 3.5} textAnchor="end" fontFamily={F.ui} fontSize={8.5} fontWeight="500" fill={T.taupe} style={NUM}>
+              <line
+                x1={PL}
+                y1={y}
+                x2={W}
+                y2={y}
+                stroke={CHART.grid}
+                strokeWidth={1}
+                strokeDasharray={v === 0 ? "0" : "2 4"}
+              />
+              <text
+                x={PL - 6}
+                y={y + 3.5}
+                textAnchor="end"
+                fontFamily={F.ui}
+                fontSize={8.5}
+                fontWeight="500"
+                fill={T.taupe}
+                style={NUM}
+              >
                 {v}
               </text>
             </g>
@@ -440,22 +709,50 @@ export function SingleBarChart({ data, height = 168, fillId = "prodBarA" }: { da
             <g key={d.label}>
               <title>{`${d.label}: ${d.value}${d.unit ? " " + d.unit : ""}`}</title>
               <motion.rect
-                x={gx - bW / 2} width={bW} rx={bW / 2} fill={`url(#${fillId})`} filter="url(#singleBarShadow)"
+                x={gx - bW / 2}
+                width={bW}
+                rx={bW / 2}
+                fill={`url(#${fillId})`}
+                filter="url(#singleBarShadow)"
                 initial={{ y: baseY, height: 0 }}
                 animate={inView ? { y: baseY - hV, height: hV } : undefined}
                 transition={{ duration: 0.9, delay: 0.25 + i * 0.08, ease: EASE }}
               />
               <text
-                x={gx} y={baseY - hV - 8} textAnchor="middle"
-                fontFamily={F.ui} fontSize={15} fontWeight="700" fill={T.luxuryBrown} style={NUM}
+                x={gx}
+                y={baseY - hV - 8}
+                textAnchor="middle"
+                fontFamily={F.ui}
+                fontSize={15}
+                fontWeight="700"
+                fill={T.luxuryBrown}
+                style={NUM}
               >
                 {d.value}
               </text>
-              <text x={gx} y={H - (d.unit ? 15 : 6)} textAnchor="middle" fontFamily={F.ui} fontSize={12} fontWeight="600" fill={T.taupe} letterSpacing="0.6">
+              <text
+                x={gx}
+                y={H - (d.unit ? 15 : 6)}
+                textAnchor="middle"
+                fontFamily={F.ui}
+                fontSize={12}
+                fontWeight="600"
+                fill={T.taupe}
+                letterSpacing="0.6"
+              >
                 {d.label}
               </text>
               {d.unit && (
-                <text x={gx} y={H - 3} textAnchor="middle" fontFamily={F.ui} fontSize={8} fontWeight="500" fill={T.taupe} letterSpacing="0.4">
+                <text
+                  x={gx}
+                  y={H - 3}
+                  textAnchor="middle"
+                  fontFamily={F.ui}
+                  fontSize={8}
+                  fontWeight="500"
+                  fill={T.taupe}
+                  letterSpacing="0.4"
+                >
                   {d.unit}
                 </text>
               )}
@@ -468,16 +765,33 @@ export function SingleBarChart({ data, height = 168, fillId = "prodBarA" }: { da
 }
 
 /** Consistent loading / error / empty state so all four cards behave alike. */
-export function ChartState({ kind, message }: { kind: "loading" | "error" | "empty"; message: string }) {
+export function ChartState({
+  kind,
+  message,
+}: {
+  kind: "loading" | "error" | "empty";
+  message: string;
+}) {
   return (
-    <div style={{
-      flex: 1, minHeight: 160, display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center", gap: 6, textAlign: "center",
-    }}>
-      <span style={{
-        fontFamily: F.ui, fontSize: 13,
-        color: kind === "error" ? T.crimson : T.taupe,
-      }}>
+    <div
+      style={{
+        flex: 1,
+        minHeight: 160,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        textAlign: "center",
+      }}
+    >
+      <span
+        style={{
+          fontFamily: F.ui,
+          fontSize: 13,
+          color: kind === "error" ? T.crimson : T.taupe,
+        }}
+      >
         {message}
       </span>
     </div>

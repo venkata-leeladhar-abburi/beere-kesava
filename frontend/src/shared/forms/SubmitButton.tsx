@@ -10,7 +10,13 @@ export interface SubmitButtonProps extends Omit<ButtonProps, "type"> {
   submittingLabel?: string;
 }
 
-export function SubmitButton({ submitting, submittingLabel = "Saving…", children, disabled, ...rest }: SubmitButtonProps) {
+export function SubmitButton({
+  submitting,
+  submittingLabel = "Saving…",
+  children,
+  disabled,
+  ...rest
+}: SubmitButtonProps) {
   return (
     <Button type="submit" disabled={submitting || disabled} {...rest}>
       {submitting ? (

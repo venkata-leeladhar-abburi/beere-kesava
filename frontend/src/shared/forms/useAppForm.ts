@@ -14,8 +14,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { ZodType } from "zod";
 import { isApiError, isValidationError } from "../api/client";
 
-export interface UseAppFormOptions<TSchema extends FieldValues>
-  extends Omit<UseFormProps<TSchema>, "resolver"> {
+export interface UseAppFormOptions<TSchema extends FieldValues> extends Omit<
+  UseFormProps<TSchema>,
+  "resolver"
+> {
   schema: ZodType<TSchema>;
 }
 

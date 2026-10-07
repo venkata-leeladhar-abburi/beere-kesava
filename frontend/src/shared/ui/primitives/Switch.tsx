@@ -44,20 +44,25 @@ export interface SwitchFieldProps extends SwitchProps {
   description?: React.ReactNode;
 }
 
-export const SwitchField = React.forwardRef<React.ElementRef<typeof SwitchPrimitive.Root>, SwitchFieldProps>(
-  function SwitchField({ label, description, id, className, ...props }, ref) {
-    const generatedId = React.useId();
-    const inputId = id ?? generatedId;
-    return (
-      <div className={cn("flex items-start justify-between gap-3", className)}>
-        <label htmlFor={inputId} className="flex flex-col gap-0.5 cursor-pointer select-none">
-          <span className="bk-label-lg" style={{ color: "var(--text-primary)" }}>{label}</span>
-          {description && (
-            <span className="bk-caption" style={{ color: "var(--text-tertiary)" }}>{description}</span>
-          )}
-        </label>
-        <Switch ref={ref} id={inputId} {...props} />
-      </div>
-    );
-  }
-);
+export const SwitchField = React.forwardRef<
+  React.ElementRef<typeof SwitchPrimitive.Root>,
+  SwitchFieldProps
+>(function SwitchField({ label, description, id, className, ...props }, ref) {
+  const generatedId = React.useId();
+  const inputId = id ?? generatedId;
+  return (
+    <div className={cn("flex items-start justify-between gap-3", className)}>
+      <label htmlFor={inputId} className="flex flex-col gap-0.5 cursor-pointer select-none">
+        <span className="bk-label-lg" style={{ color: "var(--text-primary)" }}>
+          {label}
+        </span>
+        {description && (
+          <span className="bk-caption" style={{ color: "var(--text-tertiary)" }}>
+            {description}
+          </span>
+        )}
+      </label>
+      <Switch ref={ref} id={inputId} {...props} />
+    </div>
+  );
+});

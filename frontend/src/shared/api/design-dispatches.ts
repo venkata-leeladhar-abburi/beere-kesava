@@ -25,7 +25,12 @@ export const designDispatchesApi = {
 
   list: (params?: { page?: number; pageSize?: number }) => {
     const qs = params ? "?" + new URLSearchParams(params as Record<string, string>).toString() : "";
-    return apiClient.get<{ items: BackendDesignDispatch[]; total: number; page: number; pageSize: number }>(`/design-dispatches${qs}`);
+    return apiClient.get<{
+      items: BackendDesignDispatch[];
+      total: number;
+      page: number;
+      pageSize: number;
+    }>(`/design-dispatches${qs}`);
   },
 
   listByWeaver: (weaverId: string) =>
@@ -37,7 +42,7 @@ export const designDispatchesApi = {
       instructions?: string;
       colorSlipImageUrl?: string | null;
       designGraphImageUrl?: string | null;
-    },
+    }
   ) => apiClient.patch<BackendDesignDispatch>(`/design-dispatches/${id}`, data),
 
   delete: (id: string) => apiClient.delete(`/design-dispatches/${id}`),

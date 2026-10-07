@@ -19,7 +19,13 @@ export interface WeaverCardData {
 function OrnateWreathFrame({ initials, color }: { initials: string; color: string }) {
   return (
     <div className="relative w-20 h-20 flex items-center justify-center mb-1">
-      <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" fill="none" stroke={color} strokeWidth="1.4">
+      <svg
+        viewBox="0 0 100 100"
+        className="absolute inset-0 w-full h-full"
+        fill="none"
+        stroke={color}
+        strokeWidth="1.4"
+      >
         {/* Outer dashed flourish ring */}
         <circle cx="50" cy="50" r="41" strokeDasharray="3 2" opacity="0.75" />
         {/* Inner solid ring */}
@@ -78,7 +84,9 @@ export function WeaverCardMockupStyle({
 
   // Resolve uploaded weaver image (if any exists from weaver registration)
   const rawImage = weaver.img || weaver.photo;
-  const hasUploadedImage = Boolean(rawImage && typeof rawImage === "string" && rawImage.trim().length > 0);
+  const hasUploadedImage = Boolean(
+    rawImage && typeof rawImage === "string" && rawImage.trim().length > 0
+  );
   const uploadedImageUrl = hasUploadedImage ? resolveAssetUrl(rawImage!) : null;
 
   // Header background theme matching mockup (when no photo uploaded)
@@ -94,32 +102,25 @@ export function WeaverCardMockupStyle({
   const badgeClass = hasUploadedImage
     ? "bg-black/55 border border-white/20 text-[#E7C983]"
     : isDarkCard
-    ? "bg-black/35 border border-white/20 text-[#E7C983]"
-    : "bg-[#FEF6EC] border border-[#E7C983]/60 text-[#8D5802]";
+      ? "bg-black/35 border border-white/20 text-[#E7C983]"
+      : "bg-[#FEF6EC] border border-[#E7C983]/60 text-[#8D5802]";
   const statusColor = hasUploadedImage ? "#E7C983" : isDarkCard ? "#E7C983" : "#8D5802";
 
   // Header Display Name: For dark cards use uppercase first name; for light cards use Title Case
-  const headerDisplayName = isDarkCard
-    ? weaver.name.split(" ")[0].toUpperCase()
-    : weaver.name;
+  const headerDisplayName = isDarkCard ? weaver.name.split(" ")[0].toUpperCase() : weaver.name;
 
   return (
-    <div
-      className="relative flex flex-col justify-between rounded-[12px] bg-[#FFFDFB] border border-[#F0E5D8] overflow-hidden text-left shadow-[0_4px_20px_rgba(74,6,27,0.05)] cursor-pointer h-full min-h-[490px]"
-    >
+    <div className="relative flex flex-col justify-between rounded-[12px] bg-[#FFFDFB] border border-[#F0E5D8] overflow-hidden text-left shadow-[0_4px_20px_rgba(74,6,27,0.05)] cursor-pointer h-full min-h-[490px]">
       {/* Upper Header Banner Block (Height 235px) */}
       {hasUploadedImage && uploadedImageUrl ? (
         <div className="h-[235px] relative overflow-hidden flex-shrink-0 border-b border-[#F0E5D8] bg-[#2D0310]">
-          <img
-            src={uploadedImageUrl}
-            alt={weaver.name}
-            className="w-full h-full object-cover"
-          />
+          <img src={uploadedImageUrl} alt={weaver.name} className="w-full h-full object-cover" />
           {/* Gradient overlay for contrast */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/20 pointer-events-none" />
 
           {/* Top-Left Code Badge */}
-          <div className={`absolute top-3.5 left-3.5 text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-lg shadow-2xs z-20 max-w-[calc(100%-28px)] truncate ${badgeClass}`}
+          <div
+            className={`absolute top-3.5 left-3.5 text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-lg shadow-2xs z-20 max-w-[calc(100%-28px)] truncate ${badgeClass}`}
             title={weaver.code ?? weaver.id}
           >
             {(weaver.code ?? weaver.id).toUpperCase()}
@@ -127,7 +128,10 @@ export function WeaverCardMockupStyle({
 
           {/* Bottom Weaver Name Overlay on Image */}
           <div className="absolute bottom-10 left-3.5 right-3.5 z-20">
-            <div style={{ fontFamily: "'Fraunces', serif" }} className="text-[20px] font-bold text-[#FFFDF9] leading-tight truncate drop-shadow-md">
+            <div
+              style={{ fontFamily: "'Fraunces', serif" }}
+              className="text-[20px] font-bold text-[#FFFDF9] leading-tight truncate drop-shadow-md"
+            >
               {weaver.name}
             </div>
           </div>
@@ -142,18 +146,21 @@ export function WeaverCardMockupStyle({
               {weaver.status === "active"
                 ? "CURRENTLY WEAVING"
                 : weaver.status === "qc"
-                ? "PENDING QC"
-                : "IDLE"}
+                  ? "PENDING QC"
+                  : "IDLE"}
             </span>
           </div>
         </div>
       ) : (
-        <div className={`h-[235px] relative overflow-hidden flex-shrink-0 flex flex-col items-center justify-center p-4 text-center ${headerBgClass}`}>
+        <div
+          className={`h-[235px] relative overflow-hidden flex-shrink-0 flex flex-col items-center justify-center p-4 text-center ${headerBgClass}`}
+        >
           {/* Pattern texture overlay */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(231,201,131,0.14)_0,transparent_70%)] pointer-events-none" />
 
           {/* Top-Left Code Badge */}
-          <div className={`absolute top-3.5 left-3.5 text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-lg shadow-2xs z-20 max-w-[calc(100%-28px)] truncate ${badgeClass}`}
+          <div
+            className={`absolute top-3.5 left-3.5 text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-lg shadow-2xs z-20 max-w-[calc(100%-28px)] truncate ${badgeClass}`}
             title={weaver.code ?? weaver.id}
           >
             {(weaver.code ?? weaver.id).toUpperCase()}
@@ -186,8 +193,8 @@ export function WeaverCardMockupStyle({
               {weaver.status === "active"
                 ? "CURRENTLY WEAVING"
                 : weaver.status === "qc"
-                ? "PENDING QC"
-                : "IDLE"}
+                  ? "PENDING QC"
+                  : "IDLE"}
             </span>
           </div>
         </div>
@@ -233,7 +240,10 @@ export function WeaverCardMockupStyle({
               <span className="text-[10.5px] font-bold text-[#8D5802] tracking-wider uppercase">
                 LOOMS
               </span>
-              <span style={{ fontFamily: "'Fraunces', serif" }} className="text-[14px] font-bold text-[#4A061B]">
+              <span
+                style={{ fontFamily: "'Fraunces', serif" }}
+                className="text-[14px] font-bold text-[#4A061B]"
+              >
                 {weaver.looms} Looms
               </span>
             </div>

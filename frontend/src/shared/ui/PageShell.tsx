@@ -87,10 +87,7 @@ function Header({ breadcrumb, title, subtitle, actions, className, ...props }: H
     >
       {breadcrumb && <div className="mb-1">{breadcrumb}</div>}
       <div className="flex flex-wrap items-start justify-between gap-[var(--space-3)]">
-        <h1
-          className="bk-title-lg m-0"
-          style={{ color: "var(--text-primary)" }}
-        >
+        <h1 className="bk-title-lg m-0" style={{ color: "var(--text-primary)" }}>
           {title}
         </h1>
         {actions && (
@@ -114,10 +111,7 @@ function Header({ breadcrumb, title, subtitle, actions, className, ...props }: H
 
 function Stats({ className, children, ...props }: React.ComponentProps<"div">) {
   return (
-    <div
-      className={cn("bk-layout-stats mb-[var(--space-6)]", className)}
-      {...props}
-    >
+    <div className={cn("bk-layout-stats mb-[var(--space-6)]", className)} {...props}>
       {children}
     </div>
   );
@@ -180,7 +174,12 @@ interface SectionProps extends Omit<React.ComponentProps<"section">, "title"> {
 
 function Section({ id, title, description, action, className, children, ...props }: SectionProps) {
   return (
-    <section id={id} data-section className={cn("flex flex-col gap-[var(--space-4)]", className)} {...props}>
+    <section
+      id={id}
+      data-section
+      className={cn("flex flex-col gap-[var(--space-4)]", className)}
+      {...props}
+    >
       {(title || action) && (
         <div className="flex items-start justify-between gap-[var(--space-3)]">
           <div>

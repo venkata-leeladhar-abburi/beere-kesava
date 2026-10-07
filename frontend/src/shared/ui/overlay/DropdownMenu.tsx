@@ -36,20 +36,36 @@ import { cn } from "../utils";
  * menu the topmost lock, so its list scrolls; the body is already locked by
  * the dialog, so the jump described above cannot happen.
  */
-export function DropdownMenu({ modal, onOpenChange, ...props }: React.ComponentProps<typeof RadixDropdown.Root>) {
+export function DropdownMenu({
+  modal,
+  onOpenChange,
+  ...props
+}: React.ComponentProps<typeof RadixDropdown.Root>) {
   const [insideScrollLock, setInsideScrollLock] = React.useState(false);
-  const handleOpenChange = React.useCallback((next: boolean) => {
-    if (next) setInsideScrollLock(document.body.hasAttribute("data-scroll-locked"));
-    onOpenChange?.(next);
-  }, [onOpenChange]);
-  return <RadixDropdown.Root modal={modal ?? insideScrollLock} onOpenChange={handleOpenChange} {...props} />;
+  const handleOpenChange = React.useCallback(
+    (next: boolean) => {
+      if (next) setInsideScrollLock(document.body.hasAttribute("data-scroll-locked"));
+      onOpenChange?.(next);
+    },
+    [onOpenChange]
+  );
+  return (
+    <RadixDropdown.Root
+      modal={modal ?? insideScrollLock}
+      onOpenChange={handleOpenChange}
+      {...props}
+    />
+  );
 }
 export const DropdownMenuTrigger = RadixDropdown.Trigger;
 export const DropdownMenuGroup = RadixDropdown.Group;
 export const DropdownMenuRadioGroup = RadixDropdown.RadioGroup;
 
 export function DropdownMenuContent({
-  className, sideOffset = 8, align = "start", ...props
+  className,
+  sideOffset = 8,
+  align = "start",
+  ...props
 }: React.ComponentProps<typeof RadixDropdown.Content>) {
   return (
     <RadixDropdown.Portal>
@@ -79,8 +95,16 @@ export function DropdownMenuContent({
 }
 
 export function DropdownMenuItem({
-  className, destructive, inset, active, ...props
-}: React.ComponentProps<typeof RadixDropdown.Item> & { destructive?: boolean; inset?: boolean; active?: boolean }) {
+  className,
+  destructive,
+  inset,
+  active,
+  ...props
+}: React.ComponentProps<typeof RadixDropdown.Item> & {
+  destructive?: boolean;
+  inset?: boolean;
+  active?: boolean;
+}) {
   return (
     <RadixDropdown.Item
       className={cn(
@@ -101,7 +125,11 @@ export function DropdownMenuItem({
   );
 }
 
-export function DropdownMenuCheckboxItem({ className, children, ...props }: React.ComponentProps<typeof RadixDropdown.CheckboxItem>) {
+export function DropdownMenuCheckboxItem({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof RadixDropdown.CheckboxItem>) {
   return (
     <RadixDropdown.CheckboxItem
       className={cn(
@@ -114,14 +142,20 @@ export function DropdownMenuCheckboxItem({ className, children, ...props }: Reac
       {...props}
     >
       <span className="absolute left-3 flex h-4 w-4 items-center justify-center">
-        <RadixDropdown.ItemIndicator><Check className="h-4 w-4 text-[#6E0F2D]" /></RadixDropdown.ItemIndicator>
+        <RadixDropdown.ItemIndicator>
+          <Check className="h-4 w-4 text-[#6E0F2D]" />
+        </RadixDropdown.ItemIndicator>
       </span>
       {children}
     </RadixDropdown.CheckboxItem>
   );
 }
 
-export function DropdownMenuRadioItem({ className, children, ...props }: React.ComponentProps<typeof RadixDropdown.RadioItem>) {
+export function DropdownMenuRadioItem({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof RadixDropdown.RadioItem>) {
   return (
     <RadixDropdown.RadioItem
       className={cn(
@@ -134,23 +168,34 @@ export function DropdownMenuRadioItem({ className, children, ...props }: React.C
       {...props}
     >
       <span className="absolute left-3 flex h-4 w-4 items-center justify-center">
-        <RadixDropdown.ItemIndicator><Circle className="h-2 w-2 fill-current text-[#6E0F2D]" /></RadixDropdown.ItemIndicator>
+        <RadixDropdown.ItemIndicator>
+          <Circle className="h-2 w-2 fill-current text-[#6E0F2D]" />
+        </RadixDropdown.ItemIndicator>
       </span>
       {children}
     </RadixDropdown.RadioItem>
   );
 }
 
-export function DropdownMenuLabel({ className, ...props }: React.ComponentProps<typeof RadixDropdown.Label>) {
+export function DropdownMenuLabel({
+  className,
+  ...props
+}: React.ComponentProps<typeof RadixDropdown.Label>) {
   return (
     <RadixDropdown.Label
-      className={cn("px-4 py-2 text-xs font-bold uppercase tracking-wider text-[var(--text-tertiary)]", className)}
+      className={cn(
+        "px-4 py-2 text-xs font-bold uppercase tracking-wider text-[var(--text-tertiary)]",
+        className
+      )}
       {...props}
     />
   );
 }
 
-export function DropdownMenuSeparator({ className, ...props }: React.ComponentProps<typeof RadixDropdown.Separator>) {
+export function DropdownMenuSeparator({
+  className,
+  ...props
+}: React.ComponentProps<typeof RadixDropdown.Separator>) {
   return (
     <RadixDropdown.Separator
       className={cn("my-0.5 h-px bg-[rgba(110,15,45,0.08)]", className)}
@@ -159,18 +204,22 @@ export function DropdownMenuSeparator({ className, ...props }: React.ComponentPr
   );
 }
 
-export function DropdownMenuShortcut({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) {
+export function DropdownMenuShortcut({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span
-      className={cn("ml-auto text-xs text-[var(--text-tertiary)]", className)}
-      {...props}
-    />
+    <span className={cn("ml-auto text-xs text-[var(--text-tertiary)]", className)} {...props} />
   );
 }
 
 export const DropdownMenuSub = RadixDropdown.Sub;
 
-export function DropdownMenuSubTrigger({ className, children, ...props }: React.ComponentProps<typeof RadixDropdown.SubTrigger>) {
+export function DropdownMenuSubTrigger({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof RadixDropdown.SubTrigger>) {
   return (
     <RadixDropdown.SubTrigger
       className={cn(
@@ -186,7 +235,10 @@ export function DropdownMenuSubTrigger({ className, children, ...props }: React.
   );
 }
 
-export function DropdownMenuSubContent({ className, ...props }: React.ComponentProps<typeof RadixDropdown.SubContent>) {
+export function DropdownMenuSubContent({
+  className,
+  ...props
+}: React.ComponentProps<typeof RadixDropdown.SubContent>) {
   return (
     <RadixDropdown.Portal>
       <RadixDropdown.SubContent

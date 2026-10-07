@@ -5,8 +5,24 @@ import userEvent from "@testing-library/user-event";
 import { BulkOrderCreateModal } from "./BulkOrderCreateModal";
 
 const MOCK_WHOLESALE_CUSTOMERS = [
-  { id: "WHL-001", name: "Lakshmi Silks", city: "Hyderabad", terms: "Net 30", phone: "+91 98450 11223", address: "G-12, Silk Plaza, Madhapur, Hyderabad - 500081", gstCode: "36AAAAA1111A1Z1" },
-  { id: "WHL-002", name: "Narayana Silk Emporium", city: "Vijayawada", terms: "Net 45", phone: "+91 99123 44556", address: "40-1-5, MG Road, Vijayawada - 520010", gstCode: "37BBBBB2222B2Z2" }
+  {
+    id: "WHL-001",
+    name: "Lakshmi Silks",
+    city: "Hyderabad",
+    terms: "Net 30",
+    phone: "+91 98450 11223",
+    address: "G-12, Silk Plaza, Madhapur, Hyderabad - 500081",
+    gstCode: "36AAAAA1111A1Z1",
+  },
+  {
+    id: "WHL-002",
+    name: "Narayana Silk Emporium",
+    city: "Vijayawada",
+    terms: "Net 45",
+    phone: "+91 99123 44556",
+    address: "40-1-5, MG Road, Vijayawada - 520010",
+    gstCode: "37BBBBB2222B2Z2",
+  },
 ];
 
 vi.mock("./WholesaleCustomerSelectSection", async (importOriginal) => {
@@ -17,12 +33,11 @@ vi.mock("./WholesaleCustomerSelectSection", async (importOriginal) => {
   };
 });
 
-
 function setup() {
   const onSubmit = vi.fn();
   const onClose = vi.fn();
   render(
-    <BulkOrderCreateModal open onClose={onClose} onSubmit={onSubmit} nextRef="ORD-2026-050" />,
+    <BulkOrderCreateModal open onClose={onClose} onSubmit={onSubmit} nextRef="ORD-2026-050" />
   );
   return { onSubmit, onClose };
 }
@@ -66,7 +81,7 @@ describe("BulkOrderCreateModal validation", () => {
     // expressions, so match the menu item by accessible name rather than by
     // an exact text node.
     await user.click(
-      await screen.findByRole("menuitem", { name: new RegExp(MOCK_WHOLESALE_CUSTOMERS[0].name) }),
+      await screen.findByRole("menuitem", { name: new RegExp(MOCK_WHOLESALE_CUSTOMERS[0].name) })
     );
 
     fireEvent.click(screen.getByText("✓ Create Bulk Order"));
@@ -85,7 +100,9 @@ describe("BulkOrderCreateModal validation", () => {
     expect(screen.getByText("Quantity must be at least 1")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Quantity (sarees)"), { target: { value: "10" } });
-    fireEvent.change(screen.getByLabelText("Delivery Deadline"), { target: { value: "2027-01-01" } });
+    fireEvent.change(screen.getByLabelText("Delivery Deadline"), {
+      target: { value: "2027-01-01" },
+    });
     // Select is a Radix DropdownMenu (see Select.tsx): the options only exist
     // once the trigger is open, and fireEvent.change on the trigger button is
     // a no-op, so open it and click the item the way a user does.
@@ -94,12 +111,10 @@ describe("BulkOrderCreateModal validation", () => {
     // expressions, so match the menu item by accessible name rather than by
     // an exact text node.
     await user.click(
-      await screen.findByRole("menuitem", { name: new RegExp(MOCK_WHOLESALE_CUSTOMERS[0].name) }),
+      await screen.findByRole("menuitem", { name: new RegExp(MOCK_WHOLESALE_CUSTOMERS[0].name) })
     );
 
     fireEvent.click(screen.getByText("✓ Create Bulk Order"));
     expect(screen.queryByText("Quantity must be at least 1")).not.toBeInTheDocument();
   });
-
 });
-

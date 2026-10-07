@@ -73,9 +73,15 @@ export function SariTagPhysicalLabel({ tag, stock, caption }: SariTagPhysicalLab
   return (
     <div
       style={{
-        flex: "0 0 60%", minWidth: 0, padding: 32, background: "#F7F4F0",
-        display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center", gap: 24,
+        flex: "0 0 60%",
+        minWidth: 0,
+        padding: 32,
+        background: "#F7F4F0",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 24,
       }}
     >
       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>

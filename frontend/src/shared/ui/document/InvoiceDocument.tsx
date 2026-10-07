@@ -17,7 +17,15 @@ import { TaxSummary } from "./TaxSummary";
 import { AmountInWords } from "./AmountInWords";
 import { TermsBlock, type BankDetails } from "./TermsBlock";
 import { SignatureBlock } from "./SignatureBlock";
-import { taxSplitKind, taxLines, hsnRate, DEFAULT_SAREE_HSN, amountInWords, roundOff, formatPaise } from "../../../lib/gst";
+import {
+  taxSplitKind,
+  taxLines,
+  hsnRate,
+  DEFAULT_SAREE_HSN,
+  amountInWords,
+  roundOff,
+  formatPaise,
+} from "../../../lib/gst";
 
 export interface InvoiceLineItem {
   /** Entity code shown above the description, e.g. a saree id. */
@@ -51,7 +59,12 @@ export interface InvoiceDocumentProps {
   items: InvoiceLineItem[];
   applyGst?: boolean;
   bulkOrderRef?: string;
-  dispatch?: { lrNumber?: string; transportCompany?: string; vehicleNumber?: string; dispatchDate?: string };
+  dispatch?: {
+    lrNumber?: string;
+    transportCompany?: string;
+    vehicleNumber?: string;
+    dispatchDate?: string;
+  };
   statusLabel?: string;
   notes?: string;
   copyLabel?: string;
@@ -61,8 +74,20 @@ export interface InvoiceDocumentProps {
 const lineTotal = (it: InvoiceLineItem) => it.ratePaise * (it.qty ?? 1);
 
 export function InvoiceDocument({
-  invoiceNumber, invoiceDate, dueDate, firm, bank, customer, items,
-  applyGst = true, bulkOrderRef, dispatch, statusLabel, notes, copyLabel, pageInfo,
+  invoiceNumber,
+  invoiceDate,
+  dueDate,
+  firm,
+  bank,
+  customer,
+  items,
+  applyGst = true,
+  bulkOrderRef,
+  dispatch,
+  statusLabel,
+  notes,
+  copyLabel,
+  pageInfo,
 }: InvoiceDocumentProps) {
   const subtotalPaise = items.reduce((sum, it) => sum + lineTotal(it), 0);
   const kind = taxSplitKind(firm.gstin, customer.placeOfSupplyCode ?? firm.placeOfSupplyCode);
@@ -85,9 +110,18 @@ export function InvoiceDocument({
         return {
           hsn,
           taxableLabel: formatPaise(taxablePaise),
-          cgstLabel: kind === "intra" ? `${lines[0].ratePct}%  ${formatPaise(lines[0].amountPaise)}` : undefined,
-          sgstLabel: kind === "intra" ? `${lines[1].ratePct}%  ${formatPaise(lines[1].amountPaise)}` : undefined,
-          igstLabel: kind === "inter" ? `${lines[0].ratePct}%  ${formatPaise(lines[0].amountPaise)}` : undefined,
+          cgstLabel:
+            kind === "intra"
+              ? `${lines[0].ratePct}%  ${formatPaise(lines[0].amountPaise)}`
+              : undefined,
+          sgstLabel:
+            kind === "intra"
+              ? `${lines[1].ratePct}%  ${formatPaise(lines[1].amountPaise)}`
+              : undefined,
+          igstLabel:
+            kind === "inter"
+              ? `${lines[0].ratePct}%  ${formatPaise(lines[0].amountPaise)}`
+              : undefined,
           totalTaxLabel: formatPaise(totalTaxPaise),
           totalTaxPaise,
         };
@@ -135,7 +169,12 @@ export function InvoiceDocument({
         : [{ label: `IGST${rateSuffix(1)}`, amount: formatPaise(totalTaxPaise) }]
       : []),
     ...(adjustmentPaise !== 0
-      ? [{ label: "Round Off", amount: `${adjustmentPaise > 0 ? "+" : "−"}${formatPaise(Math.abs(adjustmentPaise))}` }]
+      ? [
+          {
+            label: "Round Off",
+            amount: `${adjustmentPaise > 0 ? "+" : "−"}${formatPaise(Math.abs(adjustmentPaise))}`,
+          },
+        ]
       : []),
     { label: "Total", amount: formatPaise(roundedPaise), grand: true },
   ];
@@ -143,7 +182,14 @@ export function InvoiceDocument({
   return (
     <DocumentPage
       pageInfo={pageInfo}
-      band={<Letterhead firm={firm} title="Tax Invoice" documentNumber={invoiceNumber} copyLabel={copyLabel} />}
+      band={
+        <Letterhead
+          firm={firm}
+          title="Tax Invoice"
+          documentNumber={invoiceNumber}
+          copyLabel={copyLabel}
+        />
+      }
     >
       <PartyBlock
         parties={[
@@ -163,10 +209,16 @@ export function InvoiceDocument({
         <div style={{ marginTop: "4mm" }}>
           <span
             style={{
-              display: "inline-block", fontSize: "var(--doc-small)", fontWeight: 700,
-              letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--doc-gold-text)",
-              background: "rgba(200,155,71,0.14)", border: "0.3mm solid var(--doc-gold)",
-              borderRadius: "1.2mm", padding: "1.4mm 4mm",
+              display: "inline-block",
+              fontSize: "var(--doc-small)",
+              fontWeight: 700,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "var(--doc-gold-text)",
+              background: "rgba(200,155,71,0.14)",
+              border: "0.3mm solid var(--doc-gold)",
+              borderRadius: "1.2mm",
+              padding: "1.4mm 4mm",
             }}
           >
             {statusLabel}
@@ -178,30 +230,69 @@ export function InvoiceDocument({
         columns={[
           { header: "#", align: "center", width: "9mm", cell: (_row, i) => i + 1 },
           {
-            header: "Description", width: "82mm",
-            cell: row => (
+            header: "Description",
+            width: "82mm",
+            cell: (row) => (
               <div>
                 {/* Entity code and batch share one line — they're both codes,
                     and appending the batch to the prose description was
                     wrapping most rows onto a third line. */}
-                <div style={{ display: "flex", alignItems: "baseline", gap: "2.5mm", flexWrap: "wrap" }}>
-                  <span style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-code)", fontWeight: 600, color: "var(--doc-burgundy)" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: "2.5mm",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: "var(--font-code)",
+                      fontSize: "var(--doc-code)",
+                      fontWeight: 600,
+                      color: "var(--doc-burgundy)",
+                    }}
+                  >
                     {row.id}
                   </span>
                   {row.batchLabel && (
-                    <span style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-small)", color: "var(--doc-faint)" }}>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-code)",
+                        fontSize: "var(--doc-small)",
+                        color: "var(--doc-faint)",
+                      }}
+                    >
                       {row.batchLabel}
                     </span>
                   )}
                 </div>
-                <div style={{ color: "var(--doc-muted)", marginTop: "0.3mm", lineHeight: 1.3 }}>{row.description}</div>
+                <div style={{ color: "var(--doc-muted)", marginTop: "0.3mm", lineHeight: 1.3 }}>
+                  {row.description}
+                </div>
               </div>
             ),
           },
-          { header: "HSN", width: "15mm", cell: row => <span style={{ fontFamily: "var(--font-code)" }}>{row.hsn || DEFAULT_SAREE_HSN}</span> },
-          { header: "Qty", align: "end", width: "13mm", cell: row => row.qty ?? 1 },
-          { header: "Rate", align: "end", width: "24mm", cell: row => formatPaise(row.ratePaise) },
-          { header: "Amount", align: "end", width: "26mm", cell: row => <strong>{formatPaise(lineTotal(row))}</strong> },
+          {
+            header: "HSN",
+            width: "15mm",
+            cell: (row) => (
+              <span style={{ fontFamily: "var(--font-code)" }}>{row.hsn || DEFAULT_SAREE_HSN}</span>
+            ),
+          },
+          { header: "Qty", align: "end", width: "13mm", cell: (row) => row.qty ?? 1 },
+          {
+            header: "Rate",
+            align: "end",
+            width: "24mm",
+            cell: (row) => formatPaise(row.ratePaise),
+          },
+          {
+            header: "Amount",
+            align: "end",
+            width: "26mm",
+            cell: (row) => <strong>{formatPaise(lineTotal(row))}</strong>,
+          },
         ]}
         rows={items}
       />
@@ -211,7 +302,11 @@ export function InvoiceDocument({
           restates the totals block line for line, and costs a third of a page
           doing it — so it renders only when it actually adds information. */}
       {applyGst && byHsn.size > 1 && (
-        <TaxSummary rows={taxSummaryRows} totalRow={taxSummaryTotal} interState={kind === "inter"} />
+        <TaxSummary
+          rows={taxSummaryRows}
+          totalRow={taxSummaryTotal}
+          interState={kind === "inter"}
+        />
       )}
 
       {/* Amount-in-words beside the money, rather than stacked above it — the
@@ -219,7 +314,13 @@ export function InvoiceDocument({
           invoice on one sheet instead of spilling a near-empty second page. */}
       <div
         className="bk-doc__summary"
-        style={{ display: "grid", gridTemplateColumns: "1fr 88mm", gap: "5mm", marginTop: "5mm", alignItems: "start" }}
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 88mm",
+          gap: "5mm",
+          marginTop: "5mm",
+          alignItems: "start",
+        }}
       >
         <AmountInWords words={amountInWords(roundedPaise)} />
         <TotalsBlock rows={totalsRows} />
@@ -241,7 +342,16 @@ export function InvoiceDocument({
       />
 
       {notes && (
-        <div style={{ marginTop: "4mm", fontSize: "var(--doc-small)", color: "var(--doc-muted)", lineHeight: 1.5 }}>{notes}</div>
+        <div
+          style={{
+            marginTop: "4mm",
+            fontSize: "var(--doc-small)",
+            color: "var(--doc-muted)",
+            lineHeight: 1.5,
+          }}
+        >
+          {notes}
+        </div>
       )}
 
       <SignatureBlock firmName={firm.name} />

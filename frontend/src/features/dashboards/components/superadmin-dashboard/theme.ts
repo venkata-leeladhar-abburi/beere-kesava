@@ -1,6 +1,6 @@
 import type React from "react";
 
-import { brand, fonts, semantic } from '@/design-system/tokens';
+import { brand, fonts, semantic } from "@/design-system/tokens";
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS (mirroring BeereDashboard)
 // ═══════════════════════════════════════════════════════════════════════════════

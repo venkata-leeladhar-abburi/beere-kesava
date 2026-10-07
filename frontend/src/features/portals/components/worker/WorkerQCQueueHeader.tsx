@@ -28,8 +28,20 @@ export function WorkerQCQueueHeader({
   isDesktop,
 }: WorkerQCQueueHeaderProps) {
   const stats: WorkerStat[] = [
-    { label: "Pending inspection", value: pendingLength, sub: pendingLength > 0 ? "⚠ Waiting on QC" : "All caught up", icon: AlertCircle, alert: pendingLength > 0 },
-    { label: "Passed this month", value: passedThisMonthCount, sub: "Cleared into stock", icon: CheckCircle2, highlight: true },
+    {
+      label: "Pending inspection",
+      value: pendingLength,
+      sub: pendingLength > 0 ? "⚠ Waiting on QC" : "All caught up",
+      icon: AlertCircle,
+      alert: pendingLength > 0,
+    },
+    {
+      label: "Passed this month",
+      value: passedThisMonthCount,
+      sub: "Cleared into stock",
+      icon: CheckCircle2,
+      highlight: true,
+    },
     { label: "Rejected", value: rejectedCount, sub: "Held as defective", icon: ShieldAlert },
   ];
 
@@ -49,11 +61,37 @@ export function WorkerQCQueueHeader({
       </div>
 
       <div className={isDesktop ? "" : "px-4"}>
-        <div id="wqc-in-progress" style={{ display: "flex", marginBottom: 14, background: T.bg, border: `1px solid ${T.bdr}`, borderRadius: 12, padding: 4 }}>
-          {([["weavers", "By Weaver / Loom"], ["batches", "By Batch"]] as const).map(([key, label]) => (
-            <Button key={key} variant={qcTab === key ? "primary" : "tertiary"} fullWidth
-              onClick={() => { setQcTab(key); setWeaverSearch(""); }}
-              className={qcTab === key ? "rounded-[9px] bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-[9px] bg-transparent"}>
+        <div
+          id="wqc-in-progress"
+          style={{
+            display: "flex",
+            marginBottom: 14,
+            background: T.bg,
+            border: `1px solid ${T.bdr}`,
+            borderRadius: 12,
+            padding: 4,
+          }}
+        >
+          {(
+            [
+              ["weavers", "By Weaver / Loom"],
+              ["batches", "By Batch"],
+            ] as const
+          ).map(([key, label]) => (
+            <Button
+              key={key}
+              variant={qcTab === key ? "primary" : "tertiary"}
+              fullWidth
+              onClick={() => {
+                setQcTab(key);
+                setWeaverSearch("");
+              }}
+              className={
+                qcTab === key
+                  ? "rounded-[9px] bg-[#6E0F2D] hover:bg-[#6E0F2D]"
+                  : "rounded-[9px] bg-transparent"
+              }
+            >
               {label}
             </Button>
           ))}

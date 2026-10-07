@@ -10,7 +10,11 @@ export function useCurrentWeaver() {
   // the weaver's name/code for display — a transient failure (429 burst on
   // a hard refresh, brief network blip) must self-heal instead of
   // permanently blanking every batch-row filter that depends on weaverId.
-  const { data: weaversList, isLoading: listLoading, isError: listError } = useQuery({
+  const {
+    data: weaversList,
+    isLoading: listLoading,
+    isError: listError,
+  } = useQuery({
     // Shared with BatchContext / WeaverPaymentsContext — see
     // WEAVERS_LIST_QUERY_KEY — so the portal's full roster fetch happens
     // once and is reused, not three times in parallel.
@@ -46,12 +50,15 @@ export function useCurrentWeaver() {
   let resolvedWeaver: BackendWeaver | null = null;
 
   if (user) {
-    resolvedWeaver = allWeavers.find(w =>
-      (tokenWeaverId && (w.id === tokenWeaverId || w.code.toLowerCase() === tokenWeaverId.toLowerCase())) ||
-      (user.empId && w.code.toLowerCase() === user.empId.toLowerCase()) ||
-      (user.name && w.name.trim().toLowerCase() === user.name.trim().toLowerCase()) ||
-      w.id === user.id
-    ) ?? null;
+    resolvedWeaver =
+      allWeavers.find(
+        (w) =>
+          (tokenWeaverId &&
+            (w.id === tokenWeaverId || w.code.toLowerCase() === tokenWeaverId.toLowerCase())) ||
+          (user.empId && w.code.toLowerCase() === user.empId.toLowerCase()) ||
+          (user.name && w.name.trim().toLowerCase() === user.name.trim().toLowerCase()) ||
+          w.id === user.id
+      ) ?? null;
   }
 
   // Admin "view as weaver" case: no direct weaverId on the token at all —
@@ -61,16 +68,18 @@ export function useCurrentWeaver() {
   if (!tokenWeaverId && !resolvedWeaver) {
     const savedAdminWeaverId = sessionStorage.getItem("admin_impersonate_weaver_id");
     if (savedAdminWeaverId) {
-      resolvedWeaver = allWeavers.find(w => w.id === savedAdminWeaverId) ?? null;
+      resolvedWeaver = allWeavers.find((w) => w.id === savedAdminWeaverId) ?? null;
     }
 
     if (!resolvedWeaver && allBatches.length > 0) {
-      const activeRow = allBatches.flatMap(b => b.rows).find(r => r.weaverId);
+      const activeRow = allBatches.flatMap((b) => b.rows).find((r) => r.weaverId);
       if (activeRow?.weaverId) {
-        resolvedWeaver = allWeavers.find(w => w.id === activeRow.weaverId || w.code === activeRow.weaverId) ?? null;
+        resolvedWeaver =
+          allWeavers.find((w) => w.id === activeRow.weaverId || w.code === activeRow.weaverId) ??
+          null;
       }
     }
-    
+
     if (!resolvedWeaver) {
       resolvedWeaver = allWeavers[0] ?? null;
     }
@@ -91,7 +100,9 @@ export function useCurrentWeaver() {
     isLoading,
     isError,
     error: isError
-      ? (listError ? new Error("Could not load your weaver profile. Please refresh.") : new Error("No weaver record found in the database."))
+      ? listError
+        ? new Error("Could not load your weaver profile. Please refresh.")
+        : new Error("No weaver record found in the database.")
       : null,
   };
 }

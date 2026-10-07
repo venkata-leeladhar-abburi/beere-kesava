@@ -143,7 +143,12 @@ function ensureImport(content, names) {
     return content.replace(
       /import\s*\{([^}]*)\}\s*from\s*['"]@\/design-system\/tokens['"];?/,
       (full, existingNames) => {
-        const have = new Set(existingNames.split(",").map((s) => s.trim()).filter(Boolean));
+        const have = new Set(
+          existingNames
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        );
         for (const n of names) have.add(n);
         return `import { ${[...have].join(", ")} } from '@/design-system/tokens';`;
       }

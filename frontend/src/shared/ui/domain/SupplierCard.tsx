@@ -21,7 +21,20 @@ export interface SupplierCardProps {
   className?: string;
 }
 
-export function SupplierCard({ code, name, logoSrc, city, notes, purchaseOrders, spend, rating, status, density, onClick, className }: SupplierCardProps) {
+export function SupplierCard({
+  code,
+  name,
+  logoSrc,
+  city,
+  notes,
+  purchaseOrders,
+  spend,
+  rating,
+  status,
+  density,
+  onClick,
+  className,
+}: SupplierCardProps) {
   return (
     <DomainCard
       avatarName={name}
@@ -34,7 +47,14 @@ export function SupplierCard({ code, name, logoSrc, city, notes, purchaseOrders,
       stats={[
         { label: "POs", value: purchaseOrders },
         { label: "Spend", value: <Money value={spend} compact /> },
-        ...(rating != null ? [{ label: "Rating", value: <span className="tabular-nums">{rating.toFixed(1)} / 5</span> }] : []),
+        ...(rating != null
+          ? [
+              {
+                label: "Rating",
+                value: <span className="tabular-nums">{rating.toFixed(1)} / 5</span>,
+              },
+            ]
+          : []),
       ]}
       density={density}
       onClick={onClick}

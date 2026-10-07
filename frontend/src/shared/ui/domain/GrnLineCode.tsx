@@ -39,7 +39,11 @@ export function GrnLineCode({ batchId, itemCode, hideParent, size = "sm" }: GrnL
       {showParent && (
         <span
           className="text-[var(--text-tertiary)]"
-          style={{ fontFamily: "var(--font-code)", fontSize: "var(--text-code-sm)", fontVariantNumeric: "tabular-nums" }}
+          style={{
+            fontFamily: "var(--font-code)",
+            fontSize: "var(--text-code-sm)",
+            fontVariantNumeric: "tabular-nums",
+          }}
         >
           of {batchId}
         </span>

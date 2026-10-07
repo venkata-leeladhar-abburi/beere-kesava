@@ -13,7 +13,17 @@ import { toastMessageForError } from "@/shared/ui/state";
 import { WeaverSareeRow, isSareePickable, useExternalPurchaseRows } from "@/features/weavers";
 
 export function useInventoryPageState() {
-  const { returns, dispatches, dispatchSarees, updateDispatch, deleteDispatch, readySarees, raiseQuotation, quotations, markQuotationDispatched } = useFinishing();
+  const {
+    returns,
+    dispatches,
+    dispatchSarees,
+    updateDispatch,
+    deleteDispatch,
+    readySarees,
+    raiseQuotation,
+    quotations,
+    markQuotationDispatched,
+  } = useFinishing();
   const { getDesign } = useDesignLibrary();
   const { bulkOrders, markDispatched } = useBulkOrders();
   const { batches } = useBatches();
@@ -32,34 +42,34 @@ export function useInventoryPageState() {
   const openSareeType = openSareeTypeCode ? getSareeTypeByCode(openSareeTypeCode) : undefined;
 
   // ── Selection States ────────────────────────────────────────────────────────
-  const [selected, setSelected]               = useState<Set<string>>(new Set());
-  const [mirroredRows, setMirroredRows]       = useState<WeaverSareeRow[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [mirroredRows, setMirroredRows] = useState<WeaverSareeRow[]>([]);
   // Every saree the table knows about, independent of which tab is open —
   // scanning matches against this, not `mirroredRows` (which is only ever
   // whatever the *current* tab shows). Without this, scanning an
   // external-purchase saree while sitting on "Assigned" failed with "not in
   // this list" unless the operator had switched to the "External" tab first.
-  const [allRows, setAllRows]                 = useState<WeaverSareeRow[]>([]);
+  const [allRows, setAllRows] = useState<WeaverSareeRow[]>([]);
   // The table only ever reports the rows its current tab + filters show, but a
   // selection outlives a tab switch — so every row that has been on screen is
   // remembered here, keyed by saree id. Without this, ticking two sarees on
   // "Assigned" and then changing tab emptied the dispatch modals of the very
   // sarees the action bar still counted as selected.
-  const [seenRows, setSeenRows]               = useState<Map<string, WeaverSareeRow>>(new Map());
-  const [viewingItem, setViewingItem]         = useState<InventoryRecord | null>(null);
-  const [modal,    setModal]                  = useState<"shop" | "wholesale" | "quotation" | null>(null);
-  const [scanMsg,  setScanMsg]                = useState("");
+  const [seenRows, setSeenRows] = useState<Map<string, WeaverSareeRow>>(new Map());
+  const [viewingItem, setViewingItem] = useState<InventoryRecord | null>(null);
+  const [modal, setModal] = useState<"shop" | "wholesale" | "quotation" | null>(null);
+  const [scanMsg, setScanMsg] = useState("");
   // Non-blocking detail card shown next to the scan box after a successful
   // scan — a modal on every scan would break bulk-scanning several sarees
   // in a row, so this is a persisted inline panel instead (cleared by the
   // next scan attempt, not a timer, so there's time to actually read it).
-  const [scanDetail, setScanDetail]           = useState<WeaverSareeRow | null>(null);
+  const [scanDetail, setScanDetail] = useState<WeaverSareeRow | null>(null);
   const [quotationDispatch, setQuotationDispatch] = useState<Quotation | null>(null);
-  const [resumeDispatch, setResumeDispatch]   = useState<DispatchRecord | null>(null);
-  const [viewingInvoice, setViewingInvoice]   = useState<DispatchRecord | null>(null);
+  const [resumeDispatch, setResumeDispatch] = useState<DispatchRecord | null>(null);
+  const [viewingInvoice, setViewingInvoice] = useState<DispatchRecord | null>(null);
 
   const dispatchedSareeIds = useMemo(
-    () => new Set(dispatches.flatMap(d => d.sareeIds)),
+    () => new Set(dispatches.flatMap((d) => d.sareeIds)),
     [dispatches]
   );
 
@@ -68,7 +78,7 @@ export function useInventoryPageState() {
   // the quotation existed, so it still reads as pickable and the saree could
   // be quoted a second time. `quotations` is the live record, so it decides.
   const quotedSareeIds = useMemo(
-    () => new Set(quotations.flatMap(q => q.sarees.map(s => s.sareeId))),
+    () => new Set(quotations.flatMap((q) => q.sarees.map((s) => s.sareeId))),
     [quotations]
   );
 
@@ -77,13 +87,16 @@ export function useInventoryPageState() {
     const list: InventoryRecord[] = [];
 
     // 1. Ready sarees (QC Passed — pending finishing)
-    readySarees.forEach(s => {
-      const boRef = s.bulkOrderRef || bulkOrders.find(bo =>
-        bo.design === s.designCode &&
-        (bo.sareeType.toLowerCase().includes(s.sareeType.toLowerCase()) ||
-         s.sareeType.toLowerCase().includes(bo.sareeType.split(" · ")[0].toLowerCase()))
-      )?.ref;
-      const bId = batches.find(b => b.rows.some(row => row.sareeId === s.id))?.batchId;
+    readySarees.forEach((s) => {
+      const boRef =
+        s.bulkOrderRef ||
+        bulkOrders.find(
+          (bo) =>
+            bo.design === s.designCode &&
+            (bo.sareeType.toLowerCase().includes(s.sareeType.toLowerCase()) ||
+              s.sareeType.toLowerCase().includes(bo.sareeType.split(" · ")[0].toLowerCase()))
+        )?.ref;
+      const bId = batches.find((b) => b.rows.some((row) => row.sareeId === s.id))?.batchId;
       list.push({
         id: s.id,
         designCode: s.designCode,
@@ -98,21 +111,26 @@ export function useInventoryPageState() {
         rawType: "readySaree",
         originalId: s.id,
         bulkOrderRef: boRef,
-        batchId: bId
+        batchId: bId,
       });
     });
 
     // 2. Returns (Ready for Dispatch, Dispatched, Damaged)
-    returns.forEach(r => {
-      const boRef = bulkOrders.find(bo =>
-        bo.design === r.designCode &&
-        (bo.sareeType.toLowerCase().includes(r.sareeType.toLowerCase()) ||
-         r.sareeType.toLowerCase().includes(bo.sareeType.split(" · ")[0].toLowerCase()))
+    returns.forEach((r) => {
+      const boRef = bulkOrders.find(
+        (bo) =>
+          bo.design === r.designCode &&
+          (bo.sareeType.toLowerCase().includes(r.sareeType.toLowerCase()) ||
+            r.sareeType.toLowerCase().includes(bo.sareeType.split(" · ")[0].toLowerCase()))
       )?.ref;
-      const bId = batches.find(b => b.rows.some(row => row.sareeId === r.sareeId))?.batchId;
+      const bId = batches.find((b) => b.rows.some((row) => row.sareeId === r.sareeId))?.batchId;
       const status = dispatchedSareeIds.has(r.sareeId)
         ? "Dispatched"
-        : r.inventoryStatus === "Ready for Dispatch" ? "Finishing complete" : (r.inventoryStatus.includes("Damaged") ? "Damaged — Review Needed" : r.inventoryStatus);
+        : r.inventoryStatus === "Ready for Dispatch"
+          ? "Finishing complete"
+          : r.inventoryStatus.includes("Damaged")
+            ? "Damaged — Review Needed"
+            : r.inventoryStatus;
       list.push({
         id: r.sareeId,
         designCode: r.designCode,
@@ -131,7 +149,7 @@ export function useInventoryPageState() {
     // 3. Externally purchased pieces — bought in finished, so they skip QC and
     // finishing and land straight on "ready for dispatch". A piece already sent
     // back to the supplier is no longer ours and is left out entirely.
-    externalRows.forEach(r => {
+    externalRows.forEach((r) => {
       if (r.external?.returned) return;
       list.push({
         id: r.sareeId,
@@ -184,10 +202,10 @@ export function useInventoryPageState() {
     // Dispatched tab / Dispatch History, both of which read `dispatches`
     // directly. Any saree in `dispatchedSareeIds` is dispatched, full stop;
     // it belongs in this list even with no return/external record behind it.
-    dispatchedSareeIds.forEach(sareeId => {
+    dispatchedSareeIds.forEach((sareeId) => {
       if (dedupedById.has(sareeId)) return;
-      const row = batches.flatMap(b => b.rows).find(r => r.sareeId === sareeId);
-      const dispatch = dispatches.find(d => d.sareeIds.includes(sareeId));
+      const row = batches.flatMap((b) => b.rows).find((r) => r.sareeId === sareeId);
+      const dispatch = dispatches.find((d) => d.sareeIds.includes(sareeId));
       dedupedById.set(sareeId, {
         id: sareeId,
         designCode: row?.designCode ?? "—",
@@ -198,7 +216,7 @@ export function useInventoryPageState() {
         rawType: "readySaree",
         originalId: sareeId,
         bulkOrderRef: row?.bulkOrderRef,
-        batchId: row ? batches.find(b => b.rows.includes(row))?.batchId : undefined,
+        batchId: row ? batches.find((b) => b.rows.includes(row))?.batchId : undefined,
       });
     });
 
@@ -206,40 +224,57 @@ export function useInventoryPageState() {
   }, [readySarees, returns, bulkOrders, batches, dispatches, dispatchedSareeIds, externalRows]);
 
   // ── Stats ──────────────────────────────────────────────────────────────────
-  const total        = allRecords.length;
-  const pendingCount = allRecords.filter(r => r.status === "QC Passed").length;
-  const ready        = allRecords.filter(r => r.status === "Finishing complete").length;
-  const dispatched   = allRecords.filter(r => r.status === "Dispatched").length;
-  const damaged      = allRecords.filter(r => r.status === "Damaged — Review Needed").length;
+  const total = allRecords.length;
+  const pendingCount = allRecords.filter((r) => r.status === "QC Passed").length;
+  const ready = allRecords.filter((r) => r.status === "Finishing complete").length;
+  const dispatched = allRecords.filter((r) => r.status === "Dispatched").length;
+  const damaged = allRecords.filter((r) => r.status === "Damaged — Review Needed").length;
 
   // Dispatched this month
-  const thisMonth  = dispatches.filter(d => {
-    try { return new Date(d.dispatchDate).getMonth() === new Date().getMonth(); } catch { return true; }
-  }).reduce((acc, d) => acc + d.sareeIds.length, 0);
+  const thisMonth = dispatches
+    .filter((d) => {
+      try {
+        return new Date(d.dispatchDate).getMonth() === new Date().getMonth();
+      } catch {
+        return true;
+      }
+    })
+    .reduce((acc, d) => acc + d.sareeIds.length, 0);
 
   // ── Selection helpers ──
   // Every row the table has shown, remembered so a selection survives the tab
   // switch, filter or search that scrolls it out of `mirroredRows`.
   const rememberInSeen = useCallback((rows: WeaverSareeRow[]) => {
-    setSeenRows(prev => {
+    setSeenRows((prev) => {
       const next = new Map(prev);
       let changed = false;
-      rows.forEach(r => { if (next.get(r.sareeId) !== r) { next.set(r.sareeId, r); changed = true; } });
+      rows.forEach((r) => {
+        if (next.get(r.sareeId) !== r) {
+          next.set(r.sareeId, r);
+          changed = true;
+        }
+      });
       return changed ? next : prev;
     });
   }, []);
-  const rememberRows = useCallback((rows: WeaverSareeRow[]) => {
-    setMirroredRows(rows);
-    rememberInSeen(rows);
-  }, [rememberInSeen]);
+  const rememberRows = useCallback(
+    (rows: WeaverSareeRow[]) => {
+      setMirroredRows(rows);
+      rememberInSeen(rows);
+    },
+    [rememberInSeen]
+  );
   // Tab-independent: a saree scanned while sitting on a different tab still
   // needs a `seenRows` entry, or it would resolve as "selected" in state
   // while silently vanishing from the dispatch/quotation modals that filter
   // through `seenRows`.
-  const rememberAllRows = useCallback((rows: WeaverSareeRow[]) => {
-    setAllRows(rows);
-    rememberInSeen(rows);
-  }, [rememberInSeen]);
+  const rememberAllRows = useCallback(
+    (rows: WeaverSareeRow[]) => {
+      setAllRows(rows);
+      rememberInSeen(rows);
+    },
+    [rememberInSeen]
+  );
 
   // The one resolution of "what is currently ticked", shared by the action bar,
   // the three dispatch modals and the confirm handlers. It runs the same
@@ -255,26 +290,36 @@ export function useInventoryPageState() {
   const isPickableNow = useCallback(
     (r: WeaverSareeRow) =>
       isSareePickable(r) && !dispatchedSareeIds.has(r.sareeId) && !quotedSareeIds.has(r.sareeId),
-    [dispatchedSareeIds, quotedSareeIds],
+    [dispatchedSareeIds, quotedSareeIds]
   );
 
   const selectedRows = useMemo(
-    () => [...selected]
-      .map(id => seenRows.get(id))
-      .filter((r): r is WeaverSareeRow => !!r && isPickableNow(r)),
-    [selected, seenRows, isPickableNow],
+    () =>
+      [...selected]
+        .map((id) => seenRows.get(id))
+        .filter((r): r is WeaverSareeRow => !!r && isPickableNow(r)),
+    [selected, seenRows, isPickableNow]
   );
 
-  const dispatchableSelected = useMemo(() => selectedRows.map(r => ({
-    id: r.sareeId,
-    originalId: r.sareeId,
-    designCode: r.designCode || "",
-    sareeType: r.sareeTypeName || r.sareeTypeCode || "—",
-    weaverName: r.ownerLabel || "—",
-    date: r.finishingCompletedDate || r.qcDate || r.assignedDate || "",
-    status: r.finishingStatus === "completed" ? "Finishing complete" : r.qcStatus === "passed" ? "QC Passed" : "In Production",
-    bulkOrderRef: undefined as string | undefined,
-  })), [selectedRows]);
+  const dispatchableSelected = useMemo(
+    () =>
+      selectedRows.map((r) => ({
+        id: r.sareeId,
+        originalId: r.sareeId,
+        designCode: r.designCode || "",
+        sareeType: r.sareeTypeName || r.sareeTypeCode || "—",
+        weaverName: r.ownerLabel || "—",
+        date: r.finishingCompletedDate || r.qcDate || r.assignedDate || "",
+        status:
+          r.finishingStatus === "completed"
+            ? "Finishing complete"
+            : r.qcStatus === "passed"
+              ? "QC Passed"
+              : "In Production",
+        bulkOrderRef: undefined as string | undefined,
+      })),
+    [selectedRows]
+  );
 
   // Pool the modals scan and pick against. A saree already on a dispatch record
   // (including one dispatched via a previously raised quotation) is gone from
@@ -283,16 +328,16 @@ export function useInventoryPageState() {
   // the current tab, so scanning an ID inside a modal finds it either way.
   const availableSarees = useMemo<FinishingReturn[]>(
     () => [...seenRows.values()].filter(isPickableNow).map(rowToDispatchSaree),
-    [seenRows, isPickableNow],
+    [seenRows, isPickableNow]
   );
 
   const selectedSarees = useMemo<FinishingReturn[]>(
     () => selectedRows.map(rowToDispatchSaree),
-    [selectedRows],
+    [selectedRows]
   );
 
   const toggleSareeRow = useCallback((id: string) => {
-    setSelected(prev => {
+    setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -301,11 +346,11 @@ export function useInventoryPageState() {
   }, []);
 
   const toggleAllVisible = useCallback((ids: string[]) => {
-    setSelected(prev => {
-      const allSelected = ids.length > 0 && ids.every(id => prev.has(id));
+    setSelected((prev) => {
+      const allSelected = ids.length > 0 && ids.every((id) => prev.has(id));
       const next = new Set(prev);
-      if (allSelected) ids.forEach(id => next.delete(id));
-      else ids.forEach(id => next.add(id));
+      if (allSelected) ids.forEach((id) => next.delete(id));
+      else ids.forEach((id) => next.add(id));
       return next;
     });
   }, []);
@@ -315,51 +360,72 @@ export function useInventoryPageState() {
   // in as text and is matched against the rows on screen. This previously
   // ignored its input entirely and selected a *random* unselected saree, which
   // silently mis-assigned physical goods.
-  const handleScan = useCallback((rawId: string) => {
-    const id = rawId.trim();
-    const show = (msg: string) => { setScanMsg(msg); setTimeout(() => setScanMsg(""), 2500); };
-    setScanDetail(null);
-    if (!id) return show("Scan a barcode or type a saree ID.");
+  const handleScan = useCallback(
+    (rawId: string) => {
+      const id = rawId.trim();
+      const show = (msg: string) => {
+        setScanMsg(msg);
+        setTimeout(() => setScanMsg(""), 2500);
+      };
+      setScanDetail(null);
+      if (!id) return show("Scan a barcode or type a saree ID.");
 
-    const match = allRows.find(r => r.sareeId.toLowerCase() === id.toLowerCase());
-    if (!match) return show(`No saree "${id}" in this list.`);
-    // Same rule as the checkboxes — scanning must not slip a saree past a gate
-    // the table would have blocked, or it would vanish again downstream.
-    if (!isPickableNow(match)) {
-      return show(match.dispatched || dispatchedSareeIds.has(match.sareeId)
-        ? `${match.sareeId} is already dispatched.`
-        : `${match.sareeId} needs a QC decision before it can be dispatched.`);
-    }
-    if (selected.has(match.sareeId)) return show(`${match.sareeId} is already selected.`);
+      const match = allRows.find((r) => r.sareeId.toLowerCase() === id.toLowerCase());
+      if (!match) return show(`No saree "${id}" in this list.`);
+      // Same rule as the checkboxes — scanning must not slip a saree past a gate
+      // the table would have blocked, or it would vanish again downstream.
+      if (!isPickableNow(match)) {
+        return show(
+          match.dispatched || dispatchedSareeIds.has(match.sareeId)
+            ? `${match.sareeId} is already dispatched.`
+            : `${match.sareeId} needs a QC decision before it can be dispatched.`
+        );
+      }
+      if (selected.has(match.sareeId)) return show(`${match.sareeId} is already selected.`);
 
-    setSelected(prev => new Set(prev).add(match.sareeId));
-    setScanDetail(match);
-    show(`Selected ${match.sareeId}`);
-    // The selected row sorts to the top of page 1 inside WeaverSareesSection,
-    // but that alone doesn't move the user's scroll position — on a long
-    // list (very likely on mobile) the newly-selected saree would sort to
-    // the top of a table the user isn't currently looking at. Scroll it into
-    // view so "selected" is actually visible, not just true in state.
-    // Deferred a tick so the re-sort/re-render from setSelected above has
-    // already committed before the scroll measures the page.
-    setTimeout(() => {
-      document.getElementById("inv-all-sarees")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 0);
-  }, [allRows, selected, isPickableNow, dispatchedSareeIds]);
+      setSelected((prev) => new Set(prev).add(match.sareeId));
+      setScanDetail(match);
+      show(`Selected ${match.sareeId}`);
+      // The selected row sorts to the top of page 1 inside WeaverSareesSection,
+      // but that alone doesn't move the user's scroll position — on a long
+      // list (very likely on mobile) the newly-selected saree would sort to
+      // the top of a table the user isn't currently looking at. Scroll it into
+      // view so "selected" is actually visible, not just true in state.
+      // Deferred a tick so the re-sort/re-render from setSelected above has
+      // already committed before the scroll measures the page.
+      setTimeout(() => {
+        document
+          .getElementById("inv-all-sarees")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 0);
+    },
+    [allRows, selected, isPickableNow, dispatchedSareeIds]
+  );
 
   // Awaited, unlike before: the mutation rolls its optimistic row back when the
   // server rejects the dispatch, so firing and forgetting made a failed shop
   // dispatch look like it had worked — the row flashed into Dispatch History
   // and vanished, with the reason only ever reaching the console.
-  const handleShopConfirm = async (transport: TransportData, opts?: { skipped?: boolean; picked?: FinishingReturn[]; receiptUrl?: string | null }) => {
+  const handleShopConfirm = async (
+    transport: TransportData,
+    opts?: { skipped?: boolean; picked?: FinishingReturn[]; receiptUrl?: string | null }
+  ) => {
     const sareeIds = opts?.picked?.length
-      ? opts.picked.map(s => s.sareeId || s.id)
-      : dispatchableSelected.map(r => r.id);
+      ? opts.picked.map((s) => s.sareeId || s.id)
+      : dispatchableSelected.map((r) => r.id);
     try {
       await dispatchSarees(sareeIds, {
-        type: "shop", sareeIds, dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
-        lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
-        pendingTransport: !!opts?.skipped && !(transport.lrNumber && transport.transportCompany && transport.vehicleNumber),
+        type: "shop",
+        sareeIds,
+        dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
+        lrNumber: transport.lrNumber,
+        transportCompany: transport.transportCompany,
+        vehicleNumber: transport.vehicleNumber,
+        driverName: transport.driverName,
+        notes: transport.notes,
+        pendingTransport:
+          !!opts?.skipped &&
+          !(transport.lrNumber && transport.transportCompany && transport.vehicleNumber),
         // A receipt uploaded here settles the requirement, even on a "skip for now" dispatch.
         pendingReceipt: !!opts?.skipped && !opts?.receiptUrl,
         receiptUrl: opts?.receiptUrl ?? undefined,
@@ -374,40 +440,67 @@ export function useInventoryPageState() {
       `${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to Shop`,
       opts?.skipped
         ? { description: "Transport and receipt can be filled in later from Dispatch History." }
-        : undefined,
+        : undefined
     );
   };
 
   const quotationDispatchSarees = useMemo(() => {
     if (!quotationDispatch) return [];
-    return returns.filter(r => r.quotationRef === quotationDispatch.quotationNumber && r.inventoryStatus === "Ready for Dispatch");
+    return returns.filter(
+      (r) =>
+        r.quotationRef === quotationDispatch.quotationNumber &&
+        r.inventoryStatus === "Ready for Dispatch"
+    );
   }, [quotationDispatch, returns]);
 
-  const handleWholesaleConfirm = async (transport: TransportData, inv: InvoiceData, customerId: string, bulkOrderRef?: string, opts?: { skipped?: boolean; picked?: FinishingReturn[]; quotationRef?: string }) => {
+  const handleWholesaleConfirm = async (
+    transport: TransportData,
+    inv: InvoiceData,
+    customerId: string,
+    bulkOrderRef?: string,
+    opts?: { skipped?: boolean; picked?: FinishingReturn[]; quotationRef?: string }
+  ) => {
     const sareeIds = opts?.picked?.length
-      ? opts.picked.map(s => s.sareeId || s.id)
-      : quotationDispatch ? quotationDispatchSarees.map(r => r.sareeId) : dispatchableSelected.map(r => r.id);
-    const customer = wholesaleCustomers.find(c => c.id === customerId);
+      ? opts.picked.map((s) => s.sareeId || s.id)
+      : quotationDispatch
+        ? quotationDispatchSarees.map((r) => r.sareeId)
+        : dispatchableSelected.map((r) => r.id);
+    const customer = wholesaleCustomers.find((c) => c.id === customerId);
     // Rounded to paise: summing typed prices in floating point can leave a
     // tail like .30000000000000004, which the server rightly rejects.
-    const subtotal = Math.round(sareeIds.reduce((sum, id) => sum + (parseFloat(inv.prices[id]) || 0), 0) * 100) / 100;
-    const gstAmount = inv.applyGst ? subtotal * (parseFloat(inv.gstPct) || 0) / 100 : 0;
+    const subtotal =
+      Math.round(sareeIds.reduce((sum, id) => sum + (parseFloat(inv.prices[id]) || 0), 0) * 100) /
+      100;
+    const gstAmount = inv.applyGst ? (subtotal * (parseFloat(inv.gstPct) || 0)) / 100 : 0;
     let created: { id: string; invoiceNumber?: string };
     try {
       created = await dispatchSarees(sareeIds, {
-        type: "wholesale", sareeIds, dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
-        lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
-        customerId, customerName: customer?.name, customerPhone: customer?.phone,
-        expectedDelivery: transport.expectedDelivery, specialInstructions: transport.specialInstructions,
+        type: "wholesale",
+        sareeIds,
+        dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
+        lrNumber: transport.lrNumber,
+        transportCompany: transport.transportCompany,
+        vehicleNumber: transport.vehicleNumber,
+        driverName: transport.driverName,
+        notes: transport.notes,
+        customerId,
+        customerName: customer?.name,
+        customerPhone: customer?.phone,
+        expectedDelivery: transport.expectedDelivery,
+        specialInstructions: transport.specialInstructions,
         invoiceDate: inv.invoiceDate,
         pricePerSaree: sareeIds.length ? Math.round(subtotal / sareeIds.length) : 0,
         totalAmount: subtotal,
         gstPct: inv.applyGst ? parseFloat(inv.gstPct) || 0 : 0,
         grandTotal: subtotal + gstAmount,
-        firmId: inv.firmId, paymentDueDate: inv.paymentDueDate, invoiceNotes: inv.invoiceNotes,
+        firmId: inv.firmId,
+        paymentDueDate: inv.paymentDueDate,
+        invoiceNotes: inv.invoiceNotes,
         bulkOrderRef,
         quotationRef: opts?.quotationRef ?? quotationDispatch?.quotationNumber,
-        pendingTransport: !!opts?.skipped && !(transport.lrNumber && transport.transportCompany && transport.vehicleNumber),
+        pendingTransport:
+          !!opts?.skipped &&
+          !(transport.lrNumber && transport.transportCompany && transport.vehicleNumber),
         pendingReceipt: !!opts?.skipped,
       });
     } catch (err) {
@@ -428,13 +521,18 @@ export function useInventoryPageState() {
       `Invoice${invoiceLabel} ${opts?.skipped ? "raised" : "sent"} — ${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to ${customer?.name}`,
       opts?.skipped
         ? { description: "Transport and receipt can be filled in later from Dispatch History." }
-        : undefined,
+        : undefined
     );
   };
 
-  const handleRaiseQuotation = async (inv: InvoiceData, customerId: string, bulkOrderRef?: string, picked?: FinishingReturn[]) => {
-    const customer = wholesaleCustomers.find(c => c.id === customerId);
-    const quoteSarees = (picked?.length ? picked : selectedSarees).map(s => ({
+  const handleRaiseQuotation = async (
+    inv: InvoiceData,
+    customerId: string,
+    bulkOrderRef?: string,
+    picked?: FinishingReturn[]
+  ) => {
+    const customer = wholesaleCustomers.find((c) => c.id === customerId);
+    const quoteSarees = (picked?.length ? picked : selectedSarees).map((s) => ({
       id: s.sareeId || s.id,
       designCode: s.designCode,
       sareeTypeCode: s.sareeTypeCode,
@@ -442,8 +540,8 @@ export function useInventoryPageState() {
       weaverName: s.weaverName,
     }));
     const subtotal = quoteSarees.reduce((sum, r) => sum + (parseFloat(inv.prices[r.id]) || 0), 0);
-    const gstAmount = inv.applyGst ? subtotal * (parseFloat(inv.gstPct) || 0) / 100 : 0;
-    const firm = firms.find(f => f.id === inv.firmId);
+    const gstAmount = inv.applyGst ? (subtotal * (parseFloat(inv.gstPct) || 0)) / 100 : 0;
+    const firm = firms.find((f) => f.id === inv.firmId);
     const createdQuotation = await raiseQuotation({
       // Placeholder only — QuotationsService assigns the real number, which is
       // read back from the response below for the confirmation toast.
@@ -456,7 +554,7 @@ export function useInventoryPageState() {
       customerAddress: customer?.address,
       customerGst: customer?.gstCode,
       bulkOrderRef,
-      sarees: quoteSarees.map(r => ({
+      sarees: quoteSarees.map((r) => ({
         sareeId: r.id,
         designCode: r.designCode,
         sareeTypeCode: r.sareeTypeCode,
@@ -477,7 +575,9 @@ export function useInventoryPageState() {
     });
     setModal(null);
     setSelected(new Set());
-    toast.success(`Quotation ${createdQuotation.quotationNumber} raised for ${customer?.name}`, { description: "Sent to finishing." });
+    toast.success(`Quotation ${createdQuotation.quotationNumber} raised for ${customer?.name}`, {
+      description: "Sent to finishing.",
+    });
   };
 
   return {

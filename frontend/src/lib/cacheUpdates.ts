@@ -72,7 +72,7 @@ export function upsertInList<T extends Identifiable>(
   queryClient: QueryClient,
   key: QueryKey,
   item: Partial<T> & Identifiable,
-  options: { seed?: Partial<T>; position?: "start" | "end" } = {},
+  options: { seed?: Partial<T>; position?: "start" | "end" } = {}
 ): void {
   const { seed, position = "start" } = options;
 
@@ -102,10 +102,10 @@ export function upsertInList<T extends Identifiable>(
 export function removeFromList<T extends Identifiable>(
   queryClient: QueryClient,
   key: QueryKey,
-  id: string,
+  id: string
 ): void {
   queryClient.setQueryData<T[]>(key, (current) =>
-    current ? current.filter((row) => row.id !== id) : current,
+    current ? current.filter((row) => row.id !== id) : current
   );
 }
 
@@ -126,13 +126,13 @@ export function patchListItems<T>(
   queryClient: QueryClient,
   key: QueryKey,
   match: (row: T) => boolean,
-  patch: Partial<T> | ((row: T) => T),
+  patch: Partial<T> | ((row: T) => T)
 ): void {
   queryClient.setQueryData<T[]>(key, (current) =>
     current?.map((row) => {
       if (!match(row)) return row;
       return typeof patch === "function" ? patch(row) : { ...row, ...patch };
-    }),
+    })
   );
 }
 
@@ -143,7 +143,7 @@ export function patchListItems<T>(
 export function removeFromListWhere<T>(
   queryClient: QueryClient,
   key: QueryKey,
-  match: (row: T) => boolean,
+  match: (row: T) => boolean
 ): void {
   queryClient.setQueryData<T[]>(key, (current) => current?.filter((row) => !match(row)));
 }
@@ -166,7 +166,7 @@ interface ListEnvelope<T> {
 export function removeFromEnvelopeWhere<T>(
   queryClient: QueryClient,
   key: QueryKey,
-  match: (row: T) => boolean,
+  match: (row: T) => boolean
 ): void {
   queryClient.setQueryData<ListEnvelope<T>>(key, (current) => {
     if (!current) return current;
@@ -188,7 +188,7 @@ export function patchEnvelopeItems<T>(
   queryClient: QueryClient,
   key: QueryKey,
   match: (row: T) => boolean,
-  patch: Partial<T> | ((row: T) => T),
+  patch: Partial<T> | ((row: T) => T)
 ): void {
   queryClient.setQueryData<ListEnvelope<T>>(key, (current) =>
     current
@@ -199,7 +199,7 @@ export function patchEnvelopeItems<T>(
             return typeof patch === "function" ? patch(row) : { ...row, ...patch };
           }),
         }
-      : current,
+      : current
   );
 }
 
@@ -216,7 +216,7 @@ export function prependToEnvelope<T>(queryClient: QueryClient, key: QueryKey, it
           items: [...items, ...current.items],
           ...(current.total === undefined ? {} : { total: current.total + items.length }),
         }
-      : current,
+      : current
   );
 }
 

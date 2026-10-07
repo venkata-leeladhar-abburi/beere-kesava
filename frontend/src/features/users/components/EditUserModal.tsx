@@ -12,7 +12,13 @@ export interface UserEditFields {
   email: string;
 }
 
-export function EditUserModal({ row, saving, error, onClose, onSave }: {
+export function EditUserModal({
+  row,
+  saving,
+  error,
+  onClose,
+  onSave,
+}: {
   row: TableRow;
   saving?: boolean;
   error?: string | null;
@@ -20,9 +26,9 @@ export function EditUserModal({ row, saving, error, onClose, onSave }: {
   onSave: (updates: UserEditFields) => void;
 }) {
   const [firstName, setFirstName] = useState(row.firstName);
-  const [lastName,  setLastName]  = useState(row.lastName);
-  const [mobile,    setMobile]    = useState(row.mobile);
-  const [email,     setEmail]     = useState(row.email ?? "");
+  const [lastName, setLastName] = useState(row.lastName);
+  const [mobile, setMobile] = useState(row.mobile);
+  const [email, setEmail] = useState(row.email ?? "");
   // Portals are granted on the Manage Access screen, not here — this modal is
   // for the person's details, and mixing the two put a permissions change one
   // stray click away from a name correction.
@@ -31,32 +37,54 @@ export function EditUserModal({ row, saving, error, onClose, onSave }: {
   const canSave = firstName.trim() && lastName.trim() && mobile.trim();
 
   return (
-    <Modal open onOpenChange={o => { if (!o) onClose(); }} size="md">
+    <Modal
+      open
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+      size="md"
+    >
       <Modal.Header title={`Edit ${row.role} Profile`} />
       <Modal.Body>
         {error && (
-          <div style={{ background: T.crimsonBg, border: "1px solid rgba(192,57,43,0.25)", borderRadius: 10, padding: "10px 14px", marginBottom: 16, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>
+          <div
+            style={{
+              background: T.crimsonBg,
+              border: "1px solid rgba(192,57,43,0.25)",
+              borderRadius: 10,
+              padding: "10px 14px",
+              marginBottom: 16,
+              fontFamily: F.ui,
+              fontSize: 13,
+              color: T.crimson,
+            }}
+          >
             {error}
           </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "18px 24px", paddingBottom: 24 }}>
+        <div
+          className="grid grid-cols-1 md:grid-cols-2"
+          style={{ gap: "18px 24px", paddingBottom: 24 }}
+        >
           <Field label="First Name" required>
-            <Input value={firstName} onChange={e => setFirstName(e.target.value)} />
+            <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
           </Field>
           <Field label="Last Name" required>
-            <Input value={lastName} onChange={e => setLastName(e.target.value)} />
+            <Input value={lastName} onChange={(e) => setLastName(e.target.value)} />
           </Field>
           <Field label="Mobile" required>
             <PhoneInput value={mobile} onValueChange={setMobile} />
           </Field>
           <Field label="Email" hint="Optional">
-            <Input value={email} onChange={e => setEmail(e.target.value)} />
+            <Input value={email} onChange={(e) => setEmail(e.target.value)} />
           </Field>
           {row.backendId && (
             <div className="md:col-span-2">
               <Field label="Portal Access" hint="Changed from Manage Access on the All Users row.">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  {portals.map(p => <RoleBadge key={p} role={p} />)}
+                  {portals.map((p) => (
+                    <RoleBadge key={p} role={p} />
+                  ))}
                 </div>
               </Field>
             </div>
@@ -69,7 +97,9 @@ export function EditUserModal({ row, saving, error, onClose, onSave }: {
         </Button>
         <Button
           variant="primary"
-          onClick={() => { if (canSave) onSave({ firstName, lastName, mobile, email }); }}
+          onClick={() => {
+            if (canSave) onSave({ firstName, lastName, mobile, email });
+          }}
           disabled={!canSave || saving}
         >
           {saving ? "Saving…" : "Save Changes"}

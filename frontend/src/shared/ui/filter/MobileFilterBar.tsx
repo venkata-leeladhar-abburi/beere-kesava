@@ -37,7 +37,7 @@ export function MobileFilterBar({
   const [openDrawer, setOpenDrawer] = useState(false);
 
   // Count active non-default filters
-  const activeFilters = filterGroups.filter(g => {
+  const activeFilters = filterGroups.filter((g) => {
     const defaultVal = g.defaultValue ?? "All";
     return g.value !== defaultVal;
   });
@@ -52,7 +52,7 @@ export function MobileFilterBar({
           <SearchInput
             aria-label={searchPlaceholder || "Search"}
             value={search}
-            onChange={e => onSearchChange(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
             className="w-full text-xs sm:text-sm"
           />
@@ -79,15 +79,17 @@ export function MobileFilterBar({
 
       {/* Horizontal pill chips for active filters & quick scroll */}
       <div className="w-full overflow-x-auto section-nav-scroll pb-1 flex items-center gap-1.5 flex-nowrap text-xs">
-        {activeFilters.map(g => {
-          const matchedOpt = g.options.find(o => o.value === g.value);
+        {activeFilters.map((g) => {
+          const matchedOpt = g.options.find((o) => o.value === g.value);
           const displayLabel = matchedOpt ? matchedOpt.label : g.value;
           return (
             <span
               key={g.id}
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#6E0F2D]/10 text-[#6E0F2D] border border-[#6E0F2D]/20 font-semibold shrink-0 whitespace-nowrap"
             >
-              <span>{g.label}: <strong>{displayLabel}</strong></span>
+              <span>
+                {g.label}: <strong>{displayLabel}</strong>
+              </span>
               <button
                 type="button"
                 onClick={() => g.onChange(g.defaultValue ?? "All")}
@@ -119,7 +121,7 @@ export function MobileFilterBar({
           onClose={() => setOpenDrawer(false)}
         />
         <Drawer.Body className="space-y-6 py-2">
-          {filterGroups.map(g => (
+          {filterGroups.map((g) => (
             <div key={g.id} className="space-y-2.5">
               <div className="text-xs font-bold uppercase tracking-wider text-[#7A6859] flex items-center justify-between">
                 <span>{g.label}</span>
@@ -134,7 +136,7 @@ export function MobileFilterBar({
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
-                {g.options.map(opt => {
+                {g.options.map((opt) => {
                   const isSelected = g.value === opt.value;
                   return (
                     <button

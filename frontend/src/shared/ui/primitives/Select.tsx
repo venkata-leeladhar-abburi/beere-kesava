@@ -79,7 +79,7 @@ export function Select({
   const [open, setOpen] = React.useState(false);
 
   const registerItem = React.useCallback((val: string, label: React.ReactNode) => {
-    setItemsMap(prev => {
+    setItemsMap((prev) => {
       if (prev.get(val) === label) return prev;
       const next = new Map(prev);
       next.set(val, label);
@@ -87,20 +87,23 @@ export function Select({
     });
   }, []);
 
-  const handleSelect = React.useCallback((val: string) => {
-    if (valueProp === undefined) {
-      setInternalValue(val);
-    }
-    onValueChange?.(val);
-    onChange?.({ target: { value: val, name } });
-    setOpen(false);
-  }, [valueProp, onValueChange, onChange, name]);
+  const handleSelect = React.useCallback(
+    (val: string) => {
+      if (valueProp === undefined) {
+        setInternalValue(val);
+      }
+      onValueChange?.(val);
+      onChange?.({ target: { value: val, name } });
+      setOpen(false);
+    },
+    [valueProp, onValueChange, onChange, name]
+  );
 
   // Synchronously parse React.Children to extract value -> label mapping on render
   const childrenMap = React.useMemo(() => {
     const map = new Map<string, React.ReactNode>();
     const extract = (nodes: React.ReactNode) => {
-      React.Children.forEach(nodes, node => {
+      React.Children.forEach(nodes, (node) => {
         if (!node) return;
         if (React.isValidElement(node)) {
           // Only these two fields are probed — a <SelectItem> contributes its
@@ -129,12 +132,20 @@ export function Select({
     [value, handleSelect, registerItem]
   );
 
-  const activeLabel = childrenMap.get(value ?? "") ?? itemsMap.get(value ?? "") ?? (value ? String(value) : placeholder);
+  const activeLabel =
+    childrenMap.get(value ?? "") ??
+    itemsMap.get(value ?? "") ??
+    (value ? String(value) : placeholder);
 
   return (
     <SelectContext.Provider value={contextValue}>
       <DropdownMenu open={open} onOpenChange={setOpen}>
-        <div className={cn("relative inline-flex items-center shrink-0", containerClassName || (className?.includes("w-full") ? "w-full" : "w-auto shrink-0"))}>
+        <div
+          className={cn(
+            "relative inline-flex items-center shrink-0",
+            containerClassName || (className?.includes("w-full") ? "w-full" : "w-auto shrink-0")
+          )}
+        >
           <DropdownMenuTrigger
             id={resolvedId}
             disabled={disabled}
@@ -154,7 +165,12 @@ export function Select({
             )}
           >
             <span className="truncate flex-1 text-left">{activeLabel}</span>
-            <ChevronDown className={cn("size-4 shrink-0 transition-transform duration-200 text-[#3B2314]/70", open && "rotate-180")} />
+            <ChevronDown
+              className={cn(
+                "size-4 shrink-0 transition-transform duration-200 text-[#3B2314]/70",
+                open && "rotate-180"
+              )}
+            />
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
@@ -179,48 +195,72 @@ export interface SelectItemProps {
   className?: string;
 }
 
-export const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
-  function SelectItem({ className, children, value, disabled }, ref) {
-    const ctx = React.useContext(SelectContext);
+export const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(function SelectItem(
+  { className, children, value, disabled },
+  ref
+) {
+  const ctx = React.useContext(SelectContext);
 
-    React.useEffect(() => {
-      ctx?.registerItem(value, children);
-    }, [ctx, value, children]);
+  React.useEffect(() => {
+    ctx?.registerItem(value, children);
+  }, [ctx, value, children]);
 
-    const isSelected = ctx?.value === value;
+  const isSelected = ctx?.value === value;
 
-    return (
-      <DropdownMenuItem
-        ref={ref}
-        disabled={disabled}
-        active={isSelected}
-        onClick={() => ctx?.onSelect(value, children)}
-        className={cn(
-          "h-11 px-4 text-[14px] font-medium cursor-pointer transition-colors border-b border-[rgba(110,15,45,0.04)] last:border-b-0",
-          isSelected
-            ? "bg-[#F8EFE0] font-semibold text-[#2C0913]"
-            : "bg-white text-[#3B2314] hover:bg-[#F9F0E1]/70 hover:text-[#2C0913]",
-          className
-        )}
-      >
-        <span className="truncate">{children}</span>
-      </DropdownMenuItem>
-    );
-  }
-);
+  return (
+    <DropdownMenuItem
+      ref={ref}
+      disabled={disabled}
+      active={isSelected}
+      onClick={() => ctx?.onSelect(value, children)}
+      className={cn(
+        "h-11 px-4 text-[14px] font-medium cursor-pointer transition-colors border-b border-[rgba(110,15,45,0.04)] last:border-b-0",
+        isSelected
+          ? "bg-[#F8EFE0] font-semibold text-[#2C0913]"
+          : "bg-white text-[#3B2314] hover:bg-[#F9F0E1]/70 hover:text-[#2C0913]",
+        className
+      )}
+    >
+      <span className="truncate">{children}</span>
+    </DropdownMenuItem>
+  );
+});
 
-export function SelectGroup({ children, label, className }: { children: React.ReactNode; label?: string; className?: string }) {
+export function SelectGroup({
+  children,
+  label,
+  className,
+}: {
+  children: React.ReactNode;
+  label?: string;
+  className?: string;
+}) {
   return (
     <div className={cn("py-1", className)}>
-      {label && <div className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--text-tertiary)]">{label}</div>}
+      {label && (
+        <div className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--text-tertiary)]">
+          {label}
+        </div>
+      )}
       {children}
     </div>
   );
 }
 
-export function SelectLabel({ children, className }: { children: React.ReactNode; className?: string }) {
+export function SelectLabel({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={cn("px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--text-tertiary)]", className)}>
+    <div
+      className={cn(
+        "px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--text-tertiary)]",
+        className
+      )}
+    >
       {children}
     </div>
   );
@@ -229,4 +269,3 @@ export function SelectLabel({ children, className }: { children: React.ReactNode
 export function SelectSeparator() {
   return <div className="my-0.5 h-px bg-[rgba(110,15,45,0.08)]" />;
 }
-

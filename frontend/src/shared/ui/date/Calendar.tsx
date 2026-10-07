@@ -38,7 +38,11 @@ export interface CalendarProps {
 }
 
 function isSameDay(a: Date, b: Date) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 }
 
 function Caption({ displayMonth, onOpenSelect }: { displayMonth: Date; onOpenSelect: () => void }) {
@@ -77,11 +81,16 @@ function Caption({ displayMonth, onOpenSelect }: { displayMonth: Date; onOpenSel
 }
 
 function DayContent({ date, hasDataDates }: { date: Date; hasDataDates?: Date[] }) {
-  const hasData = hasDataDates?.some(d => isSameDay(d, date));
+  const hasData = hasDataDates?.some((d) => isSameDay(d, date));
   return (
     <div className="relative flex h-full w-full items-center justify-center">
       <span>{date.getDate()}</span>
-      {hasData && <span className="absolute bottom-[3px] h-[3px] w-[3px] rounded-full" style={{ background: "var(--chart-1)" }} />}
+      {hasData && (
+        <span
+          className="absolute bottom-[3px] h-[3px] w-[3px] rounded-full"
+          style={{ background: "var(--chart-1)" }}
+        />
+      )}
     </div>
   );
 }
@@ -103,7 +112,11 @@ export function Calendar({
   onClear,
   className,
 }: CalendarProps) {
-  const initial = defaultMonth ?? monthProp ?? (mode === "single" ? (selected as Date) : (selected as DateRange | undefined)?.from) ?? new Date();
+  const initial =
+    defaultMonth ??
+    monthProp ??
+    (mode === "single" ? (selected as Date) : (selected as DateRange | undefined)?.from) ??
+    new Date();
   const [internalMonth, setInternalMonth] = React.useState<Date>(initial);
   const [view, setView] = React.useState<"days" | "select">("days");
   const [pickerYear, setPickerYear] = React.useState<number>(internalMonth.getFullYear());
@@ -118,20 +131,29 @@ export function Calendar({
   // 7 columns × w-11 (44px) = 308px exactly — matches the cell/head_cell
   // width below so no column needs to flex-shrink to fit.
   return (
-    <div className={cn("select-none", className)} style={{ width: numberOfMonths > 1 ? undefined : 308 }}>
+    <div
+      className={cn("select-none", className)}
+      style={{ width: numberOfMonths > 1 ? undefined : 308 }}
+    >
       {view === "select" ? (
         <div>
-          <div className="flex h-11 items-center justify-center bk-label-lg" style={{ color: "var(--text-primary)" }}>
+          <div
+            className="flex h-11 items-center justify-center bk-label-lg"
+            style={{ color: "var(--text-primary)" }}
+          >
             Select month &amp; year
           </div>
-          <div className="grid grid-cols-[1fr_84px] divide-x" style={{ borderColor: "var(--border-default)" }}>
+          <div
+            className="grid grid-cols-[1fr_84px] divide-x"
+            style={{ borderColor: "var(--border-default)" }}
+          >
             <MonthPicker
               year={pickerYear}
               selectedMonth={displayMonth.getMonth()}
               selectedYear={displayMonth.getFullYear()}
               minDate={minDate}
               maxDate={maxDate}
-              onSelect={monthIdx => {
+              onSelect={(monthIdx) => {
                 setMonth(new Date(pickerYear, monthIdx, 1));
                 setView("days");
               }}
@@ -140,15 +162,23 @@ export function Calendar({
               selectedYear={pickerYear}
               minDate={minDate}
               maxDate={maxDate}
-              onSelect={year => setPickerYear(year)}
+              onSelect={(year) => setPickerYear(year)}
             />
           </div>
         </div>
       ) : (
         <DayPicker
           {...(mode === "range"
-            ? { mode: "range" as const, selected: selected as DateRange, onSelect: (v: DateRange | undefined) => onSelectRange?.(v) }
-            : { mode: "single" as const, selected: selected as Date, onSelect: (v: Date | undefined) => onSelect?.(v) })}
+            ? {
+                mode: "range" as const,
+                selected: selected as DateRange,
+                onSelect: (v: DateRange | undefined) => onSelectRange?.(v),
+              }
+            : {
+                mode: "single" as const,
+                selected: selected as Date,
+                onSelect: (v: Date | undefined) => onSelect?.(v),
+              })}
           month={displayMonth}
           onMonthChange={setMonth}
           numberOfMonths={numberOfMonths}
@@ -156,7 +186,7 @@ export function Calendar({
           fromDate={minDate}
           toDate={maxDate}
           showOutsideDays
-          modifiers={{ weekend: date => date.getDay() === 0 || date.getDay() === 6 }}
+          modifiers={{ weekend: (date) => date.getDay() === 0 || date.getDay() === 6 }}
           modifiersClassNames={{ weekend: "!text-[var(--text-secondary)]" }}
           components={{
             Caption: ({ displayMonth: dm }) => (
@@ -184,7 +214,10 @@ export function Calendar({
             // label (MO/TU/…) sits 8px narrower than the day column beneath
             // it, drifting further out of alignment with every column, worst
             // by the last one (Sunday).
-            head_cell: cn("h-9 w-11 font-normal text-[11px] uppercase tracking-wide flex items-center justify-center", "text-[var(--text-tertiary)]"),
+            head_cell: cn(
+              "h-9 w-11 font-normal text-[11px] uppercase tracking-wide flex items-center justify-center",
+              "text-[var(--text-tertiary)]"
+            ),
             row: "flex w-full mt-0.5",
             cell: "h-11 w-11 flex items-center justify-center p-0 relative",
             day: cn(
@@ -192,19 +225,24 @@ export function Calendar({
               "text-[var(--text-primary)] hover:bg-[var(--bk-neutral-50)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-focus)]"
             ),
             day_today: "ring-2 ring-inset ring-[var(--border-brand)]",
-            day_selected: "!bg-[var(--surface-brand)] !text-[var(--text-on-brand)] hover:!bg-[var(--surface-brand)]",
+            day_selected:
+              "!bg-[var(--surface-brand)] !text-[var(--text-on-brand)] hover:!bg-[var(--surface-brand)]",
             day_outside: "!text-[var(--text-disabled)]",
             day_disabled: "!text-[var(--text-disabled)] line-through pointer-events-none",
             day_range_start: "!rounded-r-none",
             day_range_end: "!rounded-l-none",
-            day_range_middle: "!rounded-none !bg-[var(--surface-brand-subtle)] !text-[var(--text-primary)]",
+            day_range_middle:
+              "!rounded-none !bg-[var(--surface-brand-subtle)] !text-[var(--text-primary)]",
             day_hidden: "invisible",
           }}
         />
       )}
 
       {showFooter && view === "days" && (
-        <div className="flex items-center justify-between border-t px-2 py-2" style={{ borderColor: "var(--border-default)" }}>
+        <div
+          className="flex items-center justify-between border-t px-2 py-2"
+          style={{ borderColor: "var(--border-default)" }}
+        >
           <Button
             variant="link"
             size="sm"

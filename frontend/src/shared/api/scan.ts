@@ -28,11 +28,7 @@ export interface ScanLookupResult {
    *  factory stock, no SHOP dispatch needed.
    *  "WHOLESALE_DISPATCHED" — sent to a wholesale customer, gone from the business. */
   saleEligibility:
-    | "PASSED"
-    | "QC_NOT_PASSED"
-    | "WHOLESALE_DISPATCHED"
-    | "SOLD"
-    | "DAMAGED_REVIEW_NEEDED";
+    "PASSED" | "QC_NOT_PASSED" | "WHOLESALE_DISPATCHED" | "SOLD" | "DAMAGED_REVIEW_NEEDED";
   /** True once a SHOP dispatch has delivered this saree to the shop floor. */
   atShop: boolean;
   /** Worker-entered per-saree retail price from receipt, if set — overrides the type's shared rate. */
@@ -47,9 +43,11 @@ export interface ScanLookupResult {
 }
 
 export const scanApi = {
-  lookup: (sareeId: string) => apiClient.get<ScanLookupResult>(`/scan/${encodeURIComponent(sareeId)}`),
+  lookup: (sareeId: string) =>
+    apiClient.get<ScanLookupResult>(`/scan/${encodeURIComponent(sareeId)}`),
   /** The current code for a scanned/typed one — see resolveSareeCode. */
-  resolve: (code: string) => apiClient.get<{ code: string }>(`/scan/resolve?code=${encodeURIComponent(code)}`),
+  resolve: (code: string) =>
+    apiClient.get<{ code: string }>(`/scan/resolve?code=${encodeURIComponent(code)}`),
 };
 
 /**

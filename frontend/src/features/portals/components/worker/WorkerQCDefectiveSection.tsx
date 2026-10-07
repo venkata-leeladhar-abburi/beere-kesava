@@ -2,7 +2,11 @@ import { useMemo, useState } from "react";
 import { Eye, ShieldAlert, ImageOff } from "lucide-react";
 import { T, F, DefectiveLogItem } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";
-import { DateFilterBar, type DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import {
+  DateFilterBar,
+  type DateFilterState,
+  matchesDateFilter,
+} from "../../../../shared/ui/DateFilterBar";
 import { WorkerQCDefectiveDetailModal } from "./WorkerQCDefectiveDetailModal";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
 import { DataTable, ViewToggle, type ColumnDef } from "../../../../shared/ui/data";
@@ -31,13 +35,16 @@ export function WorkerQCDefectiveSection({
   const canFilterByStaff = role === "admin" || role === "superadmin";
   const [staffFilter, setStaffFilter] = useState("");
   const staffNames = useMemo(
-    () => Array.from(new Set(defLog.map(d => d.inspectedBy).filter((n): n is string => !!n))).sort(),
-    [defLog],
+    () =>
+      Array.from(new Set(defLog.map((d) => d.inspectedBy).filter((n): n is string => !!n))).sort(),
+    [defLog]
   );
 
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
-  const filteredDefLog = defLog.filter(d =>
-    matchesDateFilter(d.isoDate || d.date, defFilter) && (!canFilterByStaff || !staffFilter || d.inspectedBy === staffFilter),
+  const filteredDefLog = defLog.filter(
+    (d) =>
+      matchesDateFilter(d.isoDate || d.date, defFilter) &&
+      (!canFilterByStaff || !staffFilter || d.inspectedBy === staffFilter)
   );
   const [viewing, setViewing] = useState<DefectiveLogItem | null>(null);
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
@@ -48,7 +55,7 @@ export function WorkerQCDefectiveSection({
     {
       id: "photo",
       header: "Photo",
-      accessor: d => d.photoUrl ?? "",
+      accessor: (d) => d.photoUrl ?? "",
       priority: 3,
       cell: (_v, d) =>
         d.photoUrl ? (
@@ -73,35 +80,45 @@ export function WorkerQCDefectiveSection({
     {
       id: "sareeId",
       header: "Saree ID",
-      accessor: d => d.id,
+      accessor: (d) => d.id,
       priority: 1,
       cell: (_v, d) => <EntityCode type="saree" value={d.id} size="sm" />,
     },
     {
       id: "weaver",
       header: "Weaver",
-      accessor: d => d.weaver,
+      accessor: (d) => d.weaver,
       priority: 2,
-      cell: (_v, d) => <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: T.brown }}>{d.weaver}</span>,
+      cell: (_v, d) => (
+        <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: T.brown }}>
+          {d.weaver}
+        </span>
+      ),
     },
     {
       id: "sareeType",
       header: "Saree Type",
-      accessor: d => d.sareeType ?? "—",
+      accessor: (d) => d.sareeType ?? "—",
       priority: 2,
-      cell: (_v, d) => <span style={{ fontFamily: F.u, fontSize: 13, color: T.brown }}>{d.sareeType ?? "—"}</span>,
+      cell: (_v, d) => (
+        <span style={{ fontFamily: F.u, fontSize: 13, color: T.brown }}>{d.sareeType ?? "—"}</span>
+      ),
     },
     {
       id: "date",
       header: "Inspection Date",
-      accessor: d => d.date,
+      accessor: (d) => d.date,
       priority: 3,
-      cell: (_v, d) => <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>{d.date}</span>,
+      cell: (_v, d) => (
+        <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>
+          {d.date}
+        </span>
+      ),
     },
     {
       id: "defects",
       header: "Defect Reason",
-      accessor: d => d.defects?.join(", ") || d.notes || "—",
+      accessor: (d) => d.defects?.join(", ") || d.notes || "—",
       priority: 2,
       cell: (_v, d) => (
         <span style={{ fontFamily: F.u, fontSize: 12, color: "#8A1224", fontWeight: 600 }}>
@@ -112,23 +129,31 @@ export function WorkerQCDefectiveSection({
     {
       id: "deduction",
       header: "Deduction",
-      accessor: d => d.deduction ?? "—",
+      accessor: (d) => d.deduction ?? "—",
       priority: 3,
-      cell: (_v, d) => <span style={{ fontFamily: F.m, fontSize: 12, color: T.muted }}>{d.deduction || "—"}</span>,
+      cell: (_v, d) => (
+        <span style={{ fontFamily: F.m, fontSize: 12, color: T.muted }}>{d.deduction || "—"}</span>
+      ),
     },
     {
       id: "batch",
       header: "Batch",
-      accessor: d => d.batchId ?? "—",
+      accessor: (d) => d.batchId ?? "—",
       priority: 3,
-      cell: (_v, d) => <span style={{ fontFamily: F.m, fontSize: 12, color: T.muted }}>{d.batchId || "—"}</span>,
+      cell: (_v, d) => (
+        <span style={{ fontFamily: F.m, fontSize: 12, color: T.muted }}>{d.batchId || "—"}</span>
+      ),
     },
     {
       id: "inspectedBy",
       header: "Defected By",
-      accessor: d => d.inspectedBy ?? "—",
+      accessor: (d) => d.inspectedBy ?? "—",
       priority: 3,
-      cell: (_v, d) => <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted }}>{d.inspectedBy ?? "—"}</span>,
+      cell: (_v, d) => (
+        <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted }}>
+          {d.inspectedBy ?? "—"}
+        </span>
+      ),
     },
     {
       id: "status",
@@ -136,7 +161,22 @@ export function WorkerQCDefectiveSection({
       accessor: () => "Defective",
       type: "status",
       cell: () => (
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#8A1224", background: "rgba(138,18,36,0.10)", border: "1px solid rgba(138,18,36,0.22)", borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            fontFamily: F.u,
+            fontSize: 12,
+            fontWeight: 700,
+            color: "#8A1224",
+            background: "rgba(138,18,36,0.10)",
+            border: "1px solid rgba(138,18,36,0.22)",
+            borderRadius: 999,
+            padding: "3px 10px",
+            whiteSpace: "nowrap",
+          }}
+        >
           <ShieldAlert size={12} /> Defective
         </span>
       ),
@@ -166,7 +206,18 @@ export function WorkerQCDefectiveSection({
         title="Defective Sarees"
         subtitle="Failed quality check — stored separately."
         actions={
-          <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
+          <span
+            style={{
+              fontFamily: F.u,
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#FFFDF9",
+              background: "rgba(255,255,255,0.14)",
+              border: "1px solid rgba(255,255,255,0.20)",
+              padding: "5px 12px",
+              borderRadius: 999,
+            }}
+          >
             {filteredDefLog.length} of {defLog.length}
           </span>
         }
@@ -175,25 +226,43 @@ export function WorkerQCDefectiveSection({
           <ViewToggle value={viewMode} onChange={setViewMode} />
 
           <div className="flex items-center gap-2 flex-wrap">
-            <DateFilterBar filter={defFilter} onChange={(f) => { setDefFilter(f); pag.setPage(1); }} />
+            <DateFilterBar
+              filter={defFilter}
+              onChange={(f) => {
+                setDefFilter(f);
+                pag.setPage(1);
+              }}
+            />
             {canFilterByStaff && (
-              <StaffFilterSelect names={staffNames} value={staffFilter} onChange={(v) => { setStaffFilter(v); pag.setPage(1); }} />
+              <StaffFilterSelect
+                names={staffNames}
+                value={staffFilter}
+                onChange={(v) => {
+                  setStaffFilter(v);
+                  pag.setPage(1);
+                }}
+              />
             )}
           </div>
         </div>
 
         {filteredDefLog.length === 0 ? (
           <div style={{ padding: "32px 0", textAlign: "center" }}>
-            <div style={{ fontFamily: F.u, fontSize: 14, color: T.muted }}>No defective sarees in this range.</div>
+            <div style={{ fontFamily: F.u, fontSize: 14, color: T.muted }}>
+              No defective sarees in this range.
+            </div>
           </div>
         ) : (
           <>
             {viewMode === "table" ? (
-              <div className="w-full overflow-x-auto" style={{ border: `1.5px solid ${T.bdr}`, borderRadius: 12, overflow: "hidden" }}>
+              <div
+                className="w-full overflow-x-auto"
+                style={{ border: `1.5px solid ${T.bdr}`, borderRadius: 12, overflow: "hidden" }}
+              >
                 <DataTable
                   columns={columns}
                   data={pag.pageItems}
-                  getRowId={d => d.recordId || d.id}
+                  getRowId={(d) => d.recordId || d.id}
                   view="table"
                   pagination={false}
                 />
@@ -202,7 +271,7 @@ export function WorkerQCDefectiveSection({
               <DataTable
                 columns={columns}
                 data={pag.pageItems}
-                getRowId={d => d.recordId || d.id}
+                getRowId={(d) => d.recordId || d.id}
                 view="cards"
                 pagination={false}
               />

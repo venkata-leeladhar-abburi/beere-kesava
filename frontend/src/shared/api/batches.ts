@@ -118,12 +118,16 @@ export const batchesApi = {
   // showing." Walk every backend page and merge them so callers always see
   // every batch, not just the first pageSize.
   list: async (pageSize = BATCHES_MAX_PAGE_SIZE): Promise<PaginatedResponse<BackendBatch>> => {
-    const first = await apiClient.get<PaginatedResponse<BackendBatch>>(`/batches?page=1&pageSize=${pageSize}`);
+    const first = await apiClient.get<PaginatedResponse<BackendBatch>>(
+      `/batches?page=1&pageSize=${pageSize}`
+    );
     const items = [...first.items];
     let page = 1;
     while (items.length < first.total) {
       page += 1;
-      const next = await apiClient.get<PaginatedResponse<BackendBatch>>(`/batches?page=${page}&pageSize=${pageSize}`);
+      const next = await apiClient.get<PaginatedResponse<BackendBatch>>(
+        `/batches?page=${page}&pageSize=${pageSize}`
+      );
       if (next.items.length === 0) break;
       items.push(...next.items);
     }
@@ -146,9 +150,14 @@ export const batchesApi = {
   tallyRow: (
     batchId: string,
     serial: number,
-    payload: { tallied: boolean; weight?: number; warpG?: number; reshamG?: number; jariReels?: number },
-  ) =>
-    apiClient.patch<BackendBatchSareeRow>(`/batches/${batchId}/rows/${serial}/tally`, payload),
+    payload: {
+      tallied: boolean;
+      weight?: number;
+      warpG?: number;
+      reshamG?: number;
+      jariReels?: number;
+    }
+  ) => apiClient.patch<BackendBatchSareeRow>(`/batches/${batchId}/rows/${serial}/tally`, payload),
 
   finalize: (batchId: string) => apiClient.post<BackendBatch>(`/batches/${batchId}/finalize`, {}),
 

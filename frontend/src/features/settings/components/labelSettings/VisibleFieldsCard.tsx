@@ -1,7 +1,13 @@
 import { AlertTriangle } from "lucide-react";
 import { CardSection, F, T, Toggle } from "./primitives";
 
-export type LabelFields = { barcode: boolean; code: boolean; weaver: boolean; date: boolean; branding: boolean };
+export type LabelFields = {
+  barcode: boolean;
+  code: boolean;
+  weaver: boolean;
+  date: boolean;
+  branding: boolean;
+};
 
 const fieldRows: { key: keyof LabelFields; label: string }[] = [
   { key: "barcode", label: "Barcode" },
@@ -11,8 +17,12 @@ const fieldRows: { key: keyof LabelFields; label: string }[] = [
   { key: "branding", label: "BKB Silks Branding" },
 ];
 
-export function VisibleFieldsCard({ fields, toggleField }: {
-  fields: LabelFields; toggleField: (key: keyof LabelFields) => void;
+export function VisibleFieldsCard({
+  fields,
+  toggleField,
+}: {
+  fields: LabelFields;
+  toggleField: (key: keyof LabelFields) => void;
 }) {
   return (
     <CardSection title="Visible Fields">
@@ -24,10 +34,7 @@ export function VisibleFieldsCard({ fields, toggleField }: {
               justifyContent: "space-between",
               alignItems: "center",
               padding: "10px 0",
-              borderBottom:
-                idx < fieldRows.length - 1
-                  ? `1px solid ${T.borderDef}`
-                  : "none",
+              borderBottom: idx < fieldRows.length - 1 ? `1px solid ${T.borderDef}` : "none",
             }}
           >
             <span
@@ -40,10 +47,7 @@ export function VisibleFieldsCard({ fields, toggleField }: {
             >
               {row.label}
             </span>
-            <Toggle
-              value={fields[row.key]}
-              onChange={() => toggleField(row.key)}
-            />
+            <Toggle value={fields[row.key]} onChange={() => toggleField(row.key)} />
           </div>
         </div>
       ))}

@@ -93,8 +93,21 @@ function paymentLabel(method?: string): string {
 }
 
 export function RetailBillDocument({
-  billRef, billDate, firm = DEFAULT_LETTERHEAD_FIRM, customerName, customerPhone,
-  customerAddress, lines, total, billDiscount, gst, paymentMethod, paymentRef, soldBy, saleRefs, pageInfo,
+  billRef,
+  billDate,
+  firm = DEFAULT_LETTERHEAD_FIRM,
+  customerName,
+  customerPhone,
+  customerAddress,
+  lines,
+  total,
+  billDiscount,
+  gst,
+  paymentMethod,
+  paymentRef,
+  soldBy,
+  saleRefs,
+  pageInfo,
   copy = "customer",
 }: RetailBillDocumentProps) {
   const retailTotal = lines.reduce((sum, l) => sum + (l.originalPrice ?? l.soldPrice), 0);
@@ -130,11 +143,23 @@ export function RetailBillDocument({
     // what makes the saving legible as one number.
     ...(discount > 0 ? [{ label: "Retail Total", amount: formatPaise(toPaise(retailTotal)) }] : []),
     ...(sareeDiscount > 0
-      ? [{ label: billOff > 0 ? "Saree Discounts" : "Discount", amount: `− ${formatPaise(toPaise(sareeDiscount))}` }]
+      ? [
+          {
+            label: billOff > 0 ? "Saree Discounts" : "Discount",
+            amount: `− ${formatPaise(toPaise(sareeDiscount))}`,
+          },
+        ]
       : []),
-    ...(billOff > 0 && sareeDiscount > 0 ? [{ label: "Subtotal", amount: formatPaise(toPaise(subtotal)) }] : []),
+    ...(billOff > 0 && sareeDiscount > 0
+      ? [{ label: "Subtotal", amount: formatPaise(toPaise(subtotal)) }]
+      : []),
     ...(billOff > 0
-      ? [{ label: `Bill Discount${billDiscount?.note ? ` (${billDiscount.note})` : ""}`, amount: `− ${formatPaise(toPaise(billOff))}` }]
+      ? [
+          {
+            label: `Bill Discount${billDiscount?.note ? ` (${billDiscount.note})` : ""}`,
+            amount: `− ${formatPaise(toPaise(billOff))}`,
+          },
+        ]
       : []),
     ...(gst
       ? [
@@ -154,7 +179,13 @@ export function RetailBillDocument({
   return (
     <DocumentPage
       pageInfo={pageInfo}
-      band={<Letterhead firm={letterheadFirm} title={admin ? "Retail Bill · Admin Copy" : "Retail Bill"} documentNumber={billRef} />}
+      band={
+        <Letterhead
+          firm={letterheadFirm}
+          title={admin ? "Retail Bill · Admin Copy" : "Retail Bill"}
+          documentNumber={billRef}
+        />
+      }
     >
       <PartyBlock
         parties={[
@@ -175,7 +206,14 @@ export function RetailBillDocument({
           {
             header: "Saree",
             cell: (row: RetailBillLineItem) => (
-              <span style={{ fontFamily: "var(--font-code)", fontWeight: 700, color: "var(--doc-burgundy)", overflowWrap: "anywhere" }}>
+              <span
+                style={{
+                  fontFamily: "var(--font-code)",
+                  fontWeight: 700,
+                  color: "var(--doc-burgundy)",
+                  overflowWrap: "anywhere",
+                }}
+              >
                 {row.sareeId}
               </span>
             ),
@@ -183,30 +221,49 @@ export function RetailBillDocument({
           {
             header: "Saree Type",
             width: admin ? "28mm" : "38mm",
-            cell: (row: RetailBillLineItem) => <span style={{ color: "var(--doc-ink)" }}>{typeOf(row)}</span>,
+            cell: (row: RetailBillLineItem) => (
+              <span style={{ color: "var(--doc-ink)" }}>{typeOf(row)}</span>
+            ),
           },
           ...(admin
-            ? [{
-                header: "Source",
-                width: "34mm",
-                cell: (row: RetailBillLineItem) =>
-                  row.source ? (
-                    <div>
-                      <div style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>
-                        {SOURCE_KIND[row.source.kind]}
+            ? [
+                {
+                  header: "Source",
+                  width: "34mm",
+                  cell: (row: RetailBillLineItem) =>
+                    row.source ? (
+                      <div>
+                        <div
+                          style={{
+                            fontSize: "var(--doc-small)",
+                            color: "var(--doc-muted)",
+                            textTransform: "uppercase" as const,
+                            letterSpacing: "0.04em",
+                          }}
+                        >
+                          {SOURCE_KIND[row.source.kind]}
+                        </div>
+                        <div style={{ color: "var(--doc-ink)", fontWeight: 600 }}>
+                          {row.source.name}
+                        </div>
+                        {row.source.detail && (
+                          <div style={{ color: "var(--doc-muted)" }}>{row.source.detail}</div>
+                        )}
                       </div>
-                      <div style={{ color: "var(--doc-ink)", fontWeight: 600 }}>{row.source.name}</div>
-                      {row.source.detail && <div style={{ color: "var(--doc-muted)" }}>{row.source.detail}</div>}
-                    </div>
-                  ) : <span style={{ color: "var(--doc-muted)" }}>—</span>,
-              }]
+                    ) : (
+                      <span style={{ color: "var(--doc-muted)" }}>—</span>
+                    ),
+                },
+              ]
             : []),
           {
             header: "Rate",
             align: "end",
             width: "24mm",
             cell: (row: RetailBillLineItem) => (
-              <span style={{ color: "var(--doc-muted)" }}>{money(row.originalPrice ?? row.soldPrice)}</span>
+              <span style={{ color: "var(--doc-muted)" }}>
+                {money(row.originalPrice ?? row.soldPrice)}
+              </span>
             ),
           },
           {
@@ -219,7 +276,11 @@ export function RetailBillDocument({
               return (
                 <div>
                   <div style={{ color: "var(--doc-gold-text)" }}>− {money(off)}</div>
-                  {row.discountNote && <div style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)" }}>({row.discountNote})</div>}
+                  {row.discountNote && (
+                    <div style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)" }}>
+                      ({row.discountNote})
+                    </div>
+                  )}
                 </div>
               );
             },
@@ -239,12 +300,31 @@ export function RetailBillDocument({
       {discount > 0 && (
         <div
           className="bk-doc__card"
-          style={{ marginTop: "4mm", display: "flex", justifyContent: "space-between", alignItems: "center", borderColor: "var(--doc-gold-text)" }}
+          style={{
+            marginTop: "4mm",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderColor: "var(--doc-gold-text)",
+          }}
         >
-          <span style={{ fontWeight: 700, color: "var(--doc-gold-text)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          <span
+            style={{
+              fontWeight: 700,
+              color: "var(--doc-gold-text)",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+            }}
+          >
             You saved
           </span>
-          <span style={{ fontWeight: 700, fontSize: "var(--doc-heading)", color: "var(--doc-gold-text)" }}>
+          <span
+            style={{
+              fontWeight: 700,
+              fontSize: "var(--doc-heading)",
+              color: "var(--doc-gold-text)",
+            }}
+          >
             {money(discount)}
           </span>
         </div>
@@ -252,7 +332,13 @@ export function RetailBillDocument({
 
       <div style={{ marginTop: "4mm" }}>
         <div className="bk-doc__words" style={{ padding: "2.5mm 3.5mm" }}>
-          <div style={{ fontSize: "var(--doc-amount-words)", fontWeight: 600, color: "var(--doc-ink)" }}>
+          <div
+            style={{
+              fontSize: "var(--doc-amount-words)",
+              fontWeight: 600,
+              color: "var(--doc-ink)",
+            }}
+          >
             {amountInWords(totalPaise)}
           </div>
         </div>
@@ -266,8 +352,11 @@ export function RetailBillDocument({
           <div className="bk-doc__eyebrow">Sale References</div>
           <div
             style={{
-              fontFamily: "var(--font-code)", fontSize: "var(--doc-code)",
-              color: "var(--doc-muted)", marginTop: "1.5mm", lineHeight: 1.6,
+              fontFamily: "var(--font-code)",
+              fontSize: "var(--doc-code)",
+              color: "var(--doc-muted)",
+              marginTop: "1.5mm",
+              lineHeight: 1.6,
             }}
           >
             {saleRefs.join(" · ")}
@@ -277,23 +366,45 @@ export function RetailBillDocument({
 
       <div
         style={{
-          marginTop: "6mm", paddingTop: "3.5mm", borderTop: "0.3mm solid var(--doc-rule)",
-          display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: "10mm",
+          marginTop: "6mm",
+          paddingTop: "3.5mm",
+          borderTop: "0.3mm solid var(--doc-rule)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          gap: "10mm",
         }}
       >
         <div style={{ maxWidth: "105mm" }}>
-          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: "var(--doc-heading)", color: "var(--doc-burgundy)" }}>
+          <div
+            style={{
+              fontFamily: "var(--font-display)",
+              fontStyle: "italic",
+              fontSize: "var(--doc-heading)",
+              color: "var(--doc-burgundy)",
+            }}
+          >
             Thank you for shopping with {firm.name}.
           </div>
           <div
             style={{
-              fontSize: "var(--doc-small)", color: "var(--doc-gold-text)", marginTop: "1.5mm",
-              letterSpacing: "0.16em", textTransform: "uppercase",
+              fontSize: "var(--doc-small)",
+              color: "var(--doc-gold-text)",
+              marginTop: "1.5mm",
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
             }}
           >
             Tradition · Trust · Timeless Quality
           </div>
-          <div style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)", marginTop: "2.5mm", lineHeight: 1.5 }}>
+          <div
+            style={{
+              fontSize: "var(--doc-small)",
+              color: "var(--doc-muted)",
+              marginTop: "2.5mm",
+              lineHeight: 1.5,
+            }}
+          >
             Goods once sold are exchangeable within 7 days against this bill, unworn and with the
             tag intact. This is a computer-generated bill.
           </div>

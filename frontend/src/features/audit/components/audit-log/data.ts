@@ -11,4 +11,13 @@
 // instead of a local duplicate union.
 import type { AuditEvent } from "@/lib/domain/status";
 
-export type LoginEvent = { id: number | string; event: AuditEvent; user: string; role: string; time: string; device: string; duration: string | null; failReason?: string };
+export type LoginEvent = {
+  id: number | string;
+  event: AuditEvent;
+  user: string;
+  role: string;
+  time: string;
+  device: string;
+  duration: string | null;
+  failReason?: string;
+};

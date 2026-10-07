@@ -49,7 +49,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(fu
       addonLeft={showCountryCode ? "+91" : undefined}
       placeholder={placeholder}
       value={value}
-      onChange={e => onValueChange(normalizePhoneInput(e.target.value))}
+      onChange={(e) => onValueChange(normalizePhoneInput(e.target.value))}
       {...props}
     />
   );

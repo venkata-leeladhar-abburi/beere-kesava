@@ -39,11 +39,15 @@ describe("safeSheetName", () => {
 });
 
 describe("buildXlsx", () => {
-  const bytes = buildXlsx("Retail Sales Report", ["Date", "Customer", "Amount"], [
-    ["2026-08-01", 'A "quoted" & <odd> name', 12500.5],
-    ["2026-08-02", "Ravi Kumar", 300],
-    ["2026-08-03", null, undefined],
-  ]);
+  const bytes = buildXlsx(
+    "Retail Sales Report",
+    ["Date", "Customer", "Amount"],
+    [
+      ["2026-08-01", 'A "quoted" & <odd> name', 12500.5],
+      ["2026-08-02", "Ravi Kumar", 300],
+      ["2026-08-03", null, undefined],
+    ]
+  );
 
   it("produces a ZIP archive", () => {
     expect(Array.from(bytes.subarray(0, 4))).toEqual([0x50, 0x4b, 0x03, 0x04]);

@@ -25,7 +25,10 @@ export function lineAmountPaise(rateRupees: number, qty: number): number {
  * document rather than silently absorbed (Part I.5's own warning: silent
  * rounding is what makes an invoice fail reconciliation).
  */
-export function roundOff(grandTotalPaise: number): { roundedPaise: number; adjustmentPaise: number } {
+export function roundOff(grandTotalPaise: number): {
+  roundedPaise: number;
+  adjustmentPaise: number;
+} {
   const roundedPaise = Math.round(grandTotalPaise / 100) * 100;
   return { roundedPaise, adjustmentPaise: roundedPaise - grandTotalPaise };
 }

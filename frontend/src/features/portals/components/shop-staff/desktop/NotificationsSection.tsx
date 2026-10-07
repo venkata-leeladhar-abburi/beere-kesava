@@ -10,14 +10,35 @@
 import React from "react";
 import { BellRing, CheckCheck, Inbox, RotateCcw, Clock } from "lucide-react";
 import { C, F, PageHero, PortalStatsStrip, type PortalStat } from "../theme";
-import { Button, SearchInput, Select, SelectItem, StatusPill } from "../../../../../shared/ui/primitives";
-import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../../shared/ui/state";
+import {
+  Button,
+  SearchInput,
+  Select,
+  SelectItem,
+  StatusPill,
+} from "../../../../../shared/ui/primitives";
+import {
+  LoadingState,
+  ErrorState,
+  EmptyState,
+  FilteredEmptyState,
+} from "../../../../../shared/ui/state";
 import { RoyalSubTabStrip } from "../../../../../shared/ui/RoyalSubTabStrip";
-import { DateFilterBar, DEFAULT_DATE_FILTER, matchesDateFilter, type DateFilterState } from "../../../../../shared/ui/DateFilterBar";
+import {
+  DateFilterBar,
+  DEFAULT_DATE_FILTER,
+  matchesDateFilter,
+  type DateFilterState,
+} from "../../../../../shared/ui/DateFilterBar";
 import { Pagination, usePagination } from "../../../../../shared/ui/DataPagination";
 import {
-  CATEGORY_ACCENT, CATEGORY_ICON, CATEGORY_LABELS, CATEGORY_TONE, useShopNotifications,
-  type NotifCategory, type ShopNotification,
+  CATEGORY_ACCENT,
+  CATEGORY_ICON,
+  CATEGORY_LABELS,
+  CATEGORY_TONE,
+  useShopNotifications,
+  type NotifCategory,
+  type ShopNotification,
 } from "../notificationsModel";
 
 const CARD: React.CSSProperties = {
@@ -30,11 +51,25 @@ const CARD: React.CSSProperties = {
 function absoluteTime(iso: string): string {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return "—";
-  return d.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 /** One notification, rendered as a card with a category rail. */
-function NotificationCard({ n, onOpen, compact }: { n: ShopNotification; onOpen: () => void; compact: boolean }) {
+function NotificationCard({
+  n,
+  onOpen,
+  compact,
+}: {
+  n: ShopNotification;
+  onOpen: () => void;
+  compact: boolean;
+}) {
   const Icon = CATEGORY_ICON[n.category];
   const accent = CATEGORY_ACCENT[n.category];
   const [hover, setHover] = React.useState(false);
@@ -44,7 +79,12 @@ function NotificationCard({ n, onOpen, compact }: { n: ShopNotification; onOpen:
       role="button"
       tabIndex={0}
       onClick={onOpen}
-      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
@@ -56,7 +96,9 @@ function NotificationCard({ n, onOpen, compact }: { n: ShopNotification; onOpen:
         padding: compact ? "14px 16px" : "18px 22px",
         cursor: "pointer",
         borderLeft: `4px solid ${n.unread ? accent : "rgba(110,15,45,0.10)"}`,
-        background: n.unread ? "linear-gradient(90deg, rgba(200,155,71,0.055) 0%, #FFFFFF 42%)" : "#FFFFFF",
+        background: n.unread
+          ? "linear-gradient(90deg, rgba(200,155,71,0.055) 0%, #FFFFFF 42%)"
+          : "#FFFFFF",
         transform: hover ? "translateY(-1px)" : "none",
         boxShadow: hover
           ? "0 2px 4px rgba(74,6,27,0.05), 0 14px 32px rgba(74,6,27,0.10)"
@@ -64,23 +106,75 @@ function NotificationCard({ n, onOpen, compact }: { n: ShopNotification; onOpen:
         transition: "transform 0.18s ease, box-shadow 0.18s ease",
       }}
     >
-      <div style={{
-        width: compact ? 38 : 44, height: compact ? 38 : 44, borderRadius: 13, flexShrink: 0,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        background: `${accent}14`, border: `1px solid ${accent}2E`,
-      }}>
+      <div
+        style={{
+          width: compact ? 38 : 44,
+          height: compact ? 38 : 44,
+          borderRadius: 13,
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: `${accent}14`,
+          border: `1px solid ${accent}2E`,
+        }}
+      >
         <Icon size={compact ? 18 : 20} color={accent} />
       </div>
 
       <div style={{ minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 4 }}>
-          <span style={{ fontFamily: F.u, fontSize: compact ? 14 : 15, fontWeight: 700, color: C.text, minWidth: 0, overflowWrap: "anywhere" }}>{n.title}</span>
-          <StatusPill tone={CATEGORY_TONE[n.category]} size="sm" label={CATEGORY_LABELS[n.category]} className="gap-1.5" />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            flexWrap: "wrap",
+            marginBottom: 4,
+          }}
+        >
+          <span
+            style={{
+              fontFamily: F.u,
+              fontSize: compact ? 14 : 15,
+              fontWeight: 700,
+              color: C.text,
+              minWidth: 0,
+              overflowWrap: "anywhere",
+            }}
+          >
+            {n.title}
+          </span>
+          <StatusPill
+            tone={CATEGORY_TONE[n.category]}
+            size="sm"
+            label={CATEGORY_LABELS[n.category]}
+            className="gap-1.5"
+          />
           {n.unread && <StatusPill tone="info" size="sm" label="New" className="gap-1.5" />}
         </div>
-        <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, lineHeight: 1.55, overflowWrap: "anywhere" }}>{n.desc}</div>
+        <div
+          style={{
+            fontFamily: F.u,
+            fontSize: 13,
+            color: C.muted,
+            lineHeight: 1.55,
+            overflowWrap: "anywhere",
+          }}
+        >
+          {n.desc}
+        </div>
         {compact && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, fontFamily: F.m, fontSize: 12, color: C.muted }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              marginTop: 8,
+              fontFamily: F.m,
+              fontSize: 12,
+              color: C.muted,
+            }}
+          >
             <Clock size={13} color={C.muted} /> {n.time}
           </div>
         )}
@@ -88,8 +182,12 @@ function NotificationCard({ n, onOpen, compact }: { n: ShopNotification; onOpen:
 
       {!compact && (
         <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 600, color: C.text }}>{n.time}</div>
-          <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginTop: 3 }}>{absoluteTime(n.createdAt)}</div>
+          <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 600, color: C.text }}>
+            {n.time}
+          </div>
+          <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginTop: 3 }}>
+            {absoluteTime(n.createdAt)}
+          </div>
         </div>
       )}
     </div>
@@ -98,33 +196,42 @@ function NotificationCard({ n, onOpen, compact }: { n: ShopNotification; onOpen:
 
 type ReadTab = "all" | "unread" | "read";
 
-export function NotificationsSection({ isTablet, compact = false }: {
+export function NotificationsSection({
+  isTablet,
+  compact = false,
+}: {
   bp?: "tablet" | "desktop";
   isTablet: boolean;
   /** Mobile layout — single column, no absolute timestamps, tighter gutters. */
   compact?: boolean;
 }) {
-  const { notifications, unreadCount, loading, error, refetch, markRead, markAllRead } = useShopNotifications();
+  const { notifications, unreadCount, loading, error, refetch, markRead, markAllRead } =
+    useShopNotifications();
 
   const [search, setSearch] = React.useState("");
   const [category, setCategory] = React.useState<"all" | NotifCategory>("all");
   const [tab, setTab] = React.useState<ReadTab>("all");
   const [dateFilter, setDateFilter] = React.useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
-  const isFiltered = search.trim() !== "" || category !== "all" || tab !== "all" || dateFilter.mode !== "all";
+  const isFiltered =
+    search.trim() !== "" || category !== "all" || tab !== "all" || dateFilter.mode !== "all";
 
   const clearFilters = () => {
-    setSearch(""); setCategory("all"); setTab("all"); setDateFilter(DEFAULT_DATE_FILTER);
+    setSearch("");
+    setCategory("all");
+    setTab("all");
+    setDateFilter(DEFAULT_DATE_FILTER);
   };
 
   const filtered = React.useMemo(() => {
     const q = search.trim().toLowerCase();
-    return notifications.filter(n => {
+    return notifications.filter((n) => {
       if (tab === "unread" && !n.unread) return false;
       if (tab === "read" && n.unread) return false;
       if (category !== "all" && n.category !== category) return false;
       if (!matchesDateFilter(n.createdAt, dateFilter)) return false;
-      if (q && !(`${n.title} ${n.desc} ${CATEGORY_LABELS[n.category]}`.toLowerCase().includes(q))) return false;
+      if (q && !`${n.title} ${n.desc} ${CATEGORY_LABELS[n.category]}`.toLowerCase().includes(q))
+        return false;
       return true;
     });
   }, [notifications, tab, category, dateFilter, search]);
@@ -133,20 +240,36 @@ export function NotificationsSection({ isTablet, compact = false }: {
 
   const todayCount = React.useMemo(() => {
     const today = new Date().toDateString();
-    return notifications.filter(n => new Date(n.createdAt).toDateString() === today).length;
+    return notifications.filter((n) => new Date(n.createdAt).toDateString() === today).length;
   }, [notifications]);
 
   const stats: PortalStat[] = [
-    { label: "Unread", value: unreadCount, sub: "Needs your attention", icon: BellRing, highlight: true, alert: unreadCount > 0 },
+    {
+      label: "Unread",
+      value: unreadCount,
+      sub: "Needs your attention",
+      icon: BellRing,
+      highlight: true,
+      alert: unreadCount > 0,
+    },
     { label: "Today", value: todayCount, sub: "Arrived today", icon: Clock },
-    { label: "Returns", value: notifications.filter(n => n.category === "return").length, sub: "Return activity", icon: RotateCcw },
+    {
+      label: "Returns",
+      value: notifications.filter((n) => n.category === "return").length,
+      sub: "Return activity",
+      icon: RotateCcw,
+    },
     { label: "All notifications", value: notifications.length, sub: "In your feed", icon: Inbox },
   ];
 
   const tabs = [
     { key: "all" as const, label: `All (${notifications.length})`, icon: <Inbox size={16} /> },
     { key: "unread" as const, label: `Unread (${unreadCount})`, icon: <BellRing size={16} /> },
-    { key: "read" as const, label: `Read (${notifications.length - unreadCount})`, icon: <CheckCheck size={16} /> },
+    {
+      key: "read" as const,
+      label: `Read (${notifications.length - unreadCount})`,
+      icon: <CheckCheck size={16} />,
+    },
   ];
 
   return (
@@ -159,35 +282,85 @@ export function NotificationsSection({ isTablet, compact = false }: {
       />
       <PortalStatsStrip stats={stats} />
 
-      <div id="shop-notifications-list" style={{ padding: compact ? "20px 16px 40px" : isTablet ? "24px 28px 48px" : "36px 48px 64px", display: "flex", flexDirection: "column", gap: compact ? 18 : 24 }}>
+      <div
+        id="shop-notifications-list"
+        style={{
+          padding: compact ? "20px 16px 40px" : isTablet ? "24px 28px 48px" : "36px 48px 64px",
+          display: "flex",
+          flexDirection: "column",
+          gap: compact ? 18 : 24,
+        }}
+      >
         {/* ── 1. Controls ─────────────────────────────────────────────── */}
-        <section style={{ ...CARD, padding: compact ? "16px" : isTablet ? "18px 20px" : "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+        <section
+          style={{
+            ...CARD,
+            padding: compact ? "16px" : isTablet ? "18px 20px" : "20px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14 }}>
             <SearchInput
               aria-label="Search notifications"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search notifications..."
               containerClassName={compact ? "w-full" : "w-full sm:w-[280px]"}
             />
             <Select
               value={category}
-              onValueChange={v => setCategory(v as "all" | NotifCategory)}
+              onValueChange={(v) => setCategory(v as "all" | NotifCategory)}
               placeholder="All types"
               containerClassName={compact ? "w-full" : "w-[190px]"}
             >
               <SelectItem value="all">All types</SelectItem>
-              {(Object.keys(CATEGORY_LABELS) as NotifCategory[]).map(k => (
-                <SelectItem key={k} value={k}>{CATEGORY_LABELS[k]}</SelectItem>
+              {(Object.keys(CATEGORY_LABELS) as NotifCategory[]).map((k) => (
+                <SelectItem key={k} value={k}>
+                  {CATEGORY_LABELS[k]}
+                </SelectItem>
               ))}
             </Select>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", minWidth: 0 }}>
-              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: C.muted }}>Timeline</span>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                flexWrap: "wrap",
+                minWidth: 0,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: F.u,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  letterSpacing: 0.5,
+                  textTransform: "uppercase",
+                  color: C.muted,
+                }}
+              >
+                Timeline
+              </span>
               <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: compact ? undefined : "auto", flexWrap: "wrap" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                marginLeft: compact ? undefined : "auto",
+                flexWrap: "wrap",
+              }}
+            >
               {isFiltered && (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="rounded-[12px] text-[#6E0F2D]">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="rounded-[12px] text-[#6E0F2D]"
+                >
                   Clear filters
                 </Button>
               )}
@@ -203,13 +376,24 @@ export function NotificationsSection({ isTablet, compact = false }: {
             </div>
           </div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
-            Showing <strong style={{ color: C.text }}>{filtered.length}</strong> of {notifications.length} notification{notifications.length === 1 ? "" : "s"}
-            {unreadCount > 0 && <> · <strong style={{ color: C.text }}>{unreadCount}</strong> unread</>}
+            Showing <strong style={{ color: C.text }}>{filtered.length}</strong> of{" "}
+            {notifications.length} notification{notifications.length === 1 ? "" : "s"}
+            {unreadCount > 0 && (
+              <>
+                {" "}
+                · <strong style={{ color: C.text }}>{unreadCount}</strong> unread
+              </>
+            )}
           </div>
         </section>
 
         {/* ── 2. Read-state tabs ──────────────────────────────────────── */}
-        <RoyalSubTabStrip tabs={tabs} activeTab={tab} onTabChange={k => setTab(k as ReadTab)} className="mb-0" />
+        <RoyalSubTabStrip
+          tabs={tabs}
+          activeTab={tab}
+          onTabChange={(k) => setTab(k as ReadTab)}
+          className="mb-0"
+        />
 
         {/* ── 3. Records ──────────────────────────────────────────────── */}
         {loading ? (
@@ -231,7 +415,7 @@ export function NotificationsSection({ isTablet, compact = false }: {
         ) : (
           <>
             <div style={{ display: "flex", flexDirection: "column", gap: compact ? 12 : 14 }}>
-              {pg.pageItems.map(n => (
+              {pg.pageItems.map((n) => (
                 <NotificationCard key={n.id} n={n} compact={compact} onOpen={() => markRead(n)} />
               ))}
             </div>

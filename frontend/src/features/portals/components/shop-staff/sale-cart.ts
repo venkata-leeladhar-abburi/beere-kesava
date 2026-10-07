@@ -54,14 +54,15 @@ export const applyDiscount = (line: SaleLine, mode: DiscountMode, value: number)
   soldPrice: discountedPrice(line.originalPrice, mode, value),
 });
 
-export const cartTotal = (lines: SaleLine[]) =>
-  lines.reduce((sum, l) => sum + l.soldPrice, 0);
+export const cartTotal = (lines: SaleLine[]) => lines.reduce((sum, l) => sum + l.soldPrice, 0);
 
 export const cartOriginalTotal = (lines: SaleLine[]) =>
   lines.reduce((sum, l) => sum + l.originalPrice, 0);
 
 /** "10%" or "₹500" — what the counter typed, for the bill's Discount column. */
-export function discountLabel(line: Pick<SaleLine, "discountMode" | "discountValue">): string | undefined {
+export function discountLabel(
+  line: Pick<SaleLine, "discountMode" | "discountValue">
+): string | undefined {
   if (!line.discountValue) return undefined;
   return line.discountMode === "percent" ? `${line.discountValue}%` : undefined;
 }
@@ -114,19 +115,23 @@ export const billTotal = (lines: SaleLine[], d: BillDiscount): number => {
  * read — sum to what the customer actually paid. Rounding leftovers go to the
  * lines with the largest remainders; no line is pushed below zero.
  */
-export function allocateBillDiscount(lines: Pick<SaleLine, "soldPrice">[], amount: number): number[] {
+export function allocateBillDiscount(
+  lines: Pick<SaleLine, "soldPrice">[],
+  amount: number
+): number[] {
   const subtotal = lines.reduce((sum, l) => sum + l.soldPrice, 0);
   if (amount <= 0 || subtotal <= 0) return lines.map(() => 0);
   const off = Math.min(amount, subtotal);
-  const exact = lines.map(l => (l.soldPrice * off) / subtotal);
+  const exact = lines.map((l) => (l.soldPrice * off) / subtotal);
   const shares = exact.map(Math.floor);
   let left = off - shares.reduce((a, b) => a + b, 0);
-  const byRemainder = exact
-    .map((x, i) => ({ i, r: x - Math.floor(x) }))
-    .sort((a, b) => b.r - a.r);
+  const byRemainder = exact.map((x, i) => ({ i, r: x - Math.floor(x) })).sort((a, b) => b.r - a.r);
   for (const { i } of byRemainder) {
     if (left <= 0) break;
-    if (shares[i] < lines[i].soldPrice) { shares[i] += 1; left -= 1; }
+    if (shares[i] < lines[i].soldPrice) {
+      shares[i] += 1;
+      left -= 1;
+    }
   }
   return shares;
 }
@@ -169,8 +174,10 @@ export function gstIssue(g: BillGst): string | null {
   if (!Number.isFinite(g.rate) || g.rate <= 0) return "Enter the GST percentage";
   if (g.rate > GST_MAX_RATE) return `GST can't be more than ${GST_MAX_RATE}%`;
   // Tolerance, not equality: 2.55 * 100 is 254.99999999999997 in floating point.
-  if (Math.abs(Math.round(g.rate * 100) - g.rate * 100) > 1e-6) return "GST percentage can have at most 2 decimals";
-  if (g.gstin.trim() && !isValidGstin(g.gstin)) return "GST number must be a valid 15-character GSTIN";
+  if (Math.abs(Math.round(g.rate * 100) - g.rate * 100) > 1e-6)
+    return "GST percentage can have at most 2 decimals";
+  if (g.gstin.trim() && !isValidGstin(g.gstin))
+    return "GST number must be a valid 15-character GSTIN";
   return null;
 }
 
@@ -217,12 +224,10 @@ export function gstBreakdown(taxable: number, g: BillGst): GstBreakdown | null {
 export function allocateByWeight(weights: number[], total: number): number[] {
   const sum = weights.reduce((a, b) => a + b, 0);
   if (total <= 0 || sum <= 0) return weights.map(() => 0);
-  const exact = weights.map(w => (w * total) / sum);
+  const exact = weights.map((w) => (w * total) / sum);
   const shares = exact.map(Math.floor);
   let left = total - shares.reduce((a, b) => a + b, 0);
-  const byRemainder = exact
-    .map((x, i) => ({ i, r: x - Math.floor(x) }))
-    .sort((a, b) => b.r - a.r);
+  const byRemainder = exact.map((x, i) => ({ i, r: x - Math.floor(x) })).sort((a, b) => b.r - a.r);
   for (const { i } of byRemainder) {
     if (left <= 0) break;
     shares[i] += 1;

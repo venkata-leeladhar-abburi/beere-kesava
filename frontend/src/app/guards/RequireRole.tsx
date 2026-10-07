@@ -22,7 +22,8 @@ export function RequireRole({ allow, children }: { allow: Role; children: ReactN
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   // Several portals assigned and none chosen yet → the portal picker.
-  if (currentRole === null && availableRoles.length > 1) return <Navigate to="/select-role" replace />;
+  if (currentRole === null && availableRoles.length > 1)
+    return <Navigate to="/select-role" replace />;
 
   if (currentRole !== allow) {
     return (

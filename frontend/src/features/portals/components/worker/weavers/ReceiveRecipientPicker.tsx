@@ -27,20 +27,30 @@ export interface RecipientOption {
 }
 
 const CHIP: React.CSSProperties = {
-  fontFamily: F.u, fontSize: 12, fontWeight: 600, borderRadius: 999,
-  padding: "3px 10px", whiteSpace: "nowrap",
+  fontFamily: F.u,
+  fontSize: 12,
+  fontWeight: 600,
+  borderRadius: 999,
+  padding: "3px 10px",
+  whiteSpace: "nowrap",
 };
 
 function countPending(b: WeaverBatchData) {
-  return b.sarees.filter(s => s.status === "pending").length;
+  return b.sarees.filter((s) => s.status === "pending").length;
 }
 
 function Panel({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <div style={{
-      background: "#FFFFFF", border: `1px solid ${C.bdr}`, borderRadius: 18,
-      boxShadow: "0 2px 12px rgba(74,6,27,0.07)", padding: 16, ...style,
-    }}>
+    <div
+      style={{
+        background: "#FFFFFF",
+        border: `1px solid ${C.bdr}`,
+        borderRadius: 18,
+        boxShadow: "0 2px 12px rgba(74,6,27,0.07)",
+        padding: 16,
+        ...style,
+      }}
+    >
       {children}
     </div>
   );
@@ -49,8 +59,23 @@ function Panel({ children, style }: { children: React.ReactNode; style?: React.C
 function StepHeading({ step, title, hint }: { step: number; title: string; hint?: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
-      <div style={{ width: 22, height: 22, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>{step}</span>
+      <div
+        style={{
+          width: 22,
+          height: 22,
+          borderRadius: "50%",
+          background: C.burg,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <span
+          style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#FFF", lineHeight: 1 }}
+        >
+          {step}
+        </span>
       </div>
       <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 700, color: C.wine }}>{title}</span>
       {hint && <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{hint}</span>}
@@ -60,7 +85,15 @@ function StepHeading({ step, title, hint }: { step: number; title: string; hint?
 
 function EmptyNote({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ padding: "18px 14px", textAlign: "center", background: C.bg, border: `1px dashed ${C.bdrMed}`, borderRadius: 12 }}>
+    <div
+      style={{
+        padding: "18px 14px",
+        textAlign: "center",
+        background: C.bg,
+        border: `1px dashed ${C.bdrMed}`,
+        borderRadius: 12,
+      }}
+    >
       <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{children}</span>
     </div>
   );
@@ -68,46 +101,93 @@ function EmptyNote({ children }: { children: React.ReactNode }) {
 
 /** Row in the searchable recipient list. */
 function RecipientRow({
-  option, pendingCount, batchCount, isSelected, onSelect, kind,
+  option,
+  pendingCount,
+  batchCount,
+  isSelected,
+  onSelect,
+  kind,
 }: {
-  option: RecipientOption; pendingCount: number; batchCount: number;
-  isSelected: boolean; onSelect: () => void; kind: "weaver" | "loom";
+  option: RecipientOption;
+  pendingCount: number;
+  batchCount: number;
+  isSelected: boolean;
+  onSelect: () => void;
+  kind: "weaver" | "loom";
 }) {
   return (
     <button
       type="button"
       onClick={onSelect}
       style={{
-        width: "100%", textAlign: "left", padding: "11px 13px",
-        display: "flex", alignItems: "center", gap: 12, cursor: "pointer",
+        width: "100%",
+        textAlign: "left",
+        padding: "11px 13px",
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        cursor: "pointer",
         background: isSelected ? "rgba(110,15,45,0.06)" : "#FFF",
-        border: "none", borderBottom: `1px solid ${C.bdr}`,
+        border: "none",
+        borderBottom: `1px solid ${C.bdr}`,
       }}
       className="transition-colors hover:bg-[#FBF6EE]"
     >
-      <div style={{ width: 36, height: 36, borderRadius: kind === "loom" ? 11 : "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        {kind === "loom"
-          ? <Factory size={16} color="#FFF" />
-          : <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#FFF" }}>{option.avatar}</span>}
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: kind === "loom" ? 11 : "50%",
+          background: C.burg,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        {kind === "loom" ? (
+          <Factory size={16} color="#FFF" />
+        ) : (
+          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#FFF" }}>
+            {option.avatar}
+          </span>
+        )}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-          <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 700, color: C.text }}>{option.name}</span>
+          <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 700, color: C.text }}>
+            {option.name}
+          </span>
           <EntityCode type={kind === "loom" ? "loom" : "weaver"} value={option.code} size="sm" />
         </div>
         {option.subtitle && (
-          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div
+            style={{
+              fontFamily: F.u,
+              fontSize: 12,
+              color: C.muted,
+              marginTop: 2,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
             {option.subtitle}
           </div>
         )}
       </div>
-      <span style={{
-        ...CHIP, flexShrink: 0,
-        color: pendingCount > 0 ? "#8D5802" : C.muted,
-        background: pendingCount > 0 ? "rgba(200,155,71,0.14)" : "rgba(105,99,94,0.08)",
-        border: `1px solid ${pendingCount > 0 ? "rgba(200,155,71,0.30)" : C.bdr}`,
-      }}>
-        {pendingCount > 0 ? `${pendingCount} awaiting · ${batchCount} batch${batchCount === 1 ? "" : "es"}` : "Nothing pending"}
+      <span
+        style={{
+          ...CHIP,
+          flexShrink: 0,
+          color: pendingCount > 0 ? "#8D5802" : C.muted,
+          background: pendingCount > 0 ? "rgba(200,155,71,0.14)" : "rgba(105,99,94,0.08)",
+          border: `1px solid ${pendingCount > 0 ? "rgba(200,155,71,0.30)" : C.bdr}`,
+        }}
+      >
+        {pendingCount > 0
+          ? `${pendingCount} awaiting · ${batchCount} batch${batchCount === 1 ? "" : "es"}`
+          : "Nothing pending"}
       </span>
       {isSelected && <Check size={16} color={C.burg} style={{ flexShrink: 0 }} />}
     </button>
@@ -116,50 +196,100 @@ function RecipientRow({
 
 /** The chosen recipient, restated with every id visible. */
 function SelectedSummary({
-  option, kind, pendingCount, batchCount, onChange,
+  option,
+  kind,
+  pendingCount,
+  batchCount,
+  onChange,
 }: {
-  option: RecipientOption; kind: "weaver" | "loom";
-  pendingCount: number; batchCount: number; onChange: () => void;
+  option: RecipientOption;
+  kind: "weaver" | "loom";
+  pendingCount: number;
+  batchCount: number;
+  onChange: () => void;
 }) {
   return (
-    <div style={{
-      display: "flex", alignItems: "center", gap: 13, flexWrap: "wrap",
-      background: "linear-gradient(135deg, #FFFDF9 0%, #FDF6EA 100%)",
-      border: `1.5px solid ${C.bdrMed}`, borderRadius: 14, padding: "13px 15px",
-    }}>
-      <div style={{ width: 44, height: 44, borderRadius: kind === "loom" ? 13 : "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        {kind === "loom"
-          ? <Factory size={20} color="#FFF" />
-          : <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: "#FFF" }}>{option.avatar}</span>}
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 13,
+        flexWrap: "wrap",
+        background: "linear-gradient(135deg, #FFFDF9 0%, #FDF6EA 100%)",
+        border: `1.5px solid ${C.bdrMed}`,
+        borderRadius: 14,
+        padding: "13px 15px",
+      }}
+    >
+      <div
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: kind === "loom" ? 13 : "50%",
+          background: C.burg,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        {kind === "loom" ? (
+          <Factory size={20} color="#FFF" />
+        ) : (
+          <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: "#FFF" }}>
+            {option.avatar}
+          </span>
+        )}
       </div>
       <div style={{ flex: 1, minWidth: 160 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-          <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: C.wine }}>{option.name}</span>
-          <EntityCode type={kind === "loom" ? "loom" : "weaver"} value={option.code} size="sm" copyable />
+          <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: C.wine }}>
+            {option.name}
+          </span>
+          <EntityCode
+            type={kind === "loom" ? "loom" : "weaver"}
+            value={option.code}
+            size="sm"
+            copyable
+          />
         </div>
         <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3 }}>
           {option.subtitle ? `${option.subtitle} · ` : ""}
-          {pendingCount} saree{pendingCount === 1 ? "" : "s"} awaiting receipt in {batchCount} batch{batchCount === 1 ? "" : "es"}
+          {pendingCount} saree{pendingCount === 1 ? "" : "s"} awaiting receipt in {batchCount} batch
+          {batchCount === 1 ? "" : "es"}
         </div>
       </div>
-      <Button onClick={onChange} variant="secondary" size="sm" className="shrink-0">Change</Button>
+      <Button onClick={onChange} variant="secondary" size="sm" className="shrink-0">
+        Change
+      </Button>
     </div>
   );
 }
 
 /** Batch cards — the id, saree type, bulk order, loom and progress, all stated. */
 function BatchPicker({
-  batches, selectedBatchId, onPickBatch, emptyLabel,
+  batches,
+  selectedBatchId,
+  onPickBatch,
+  emptyLabel,
 }: {
-  batches: WeaverBatchData[]; selectedBatchId: string | null;
-  onPickBatch: (id: string) => void; emptyLabel: string;
+  batches: WeaverBatchData[];
+  selectedBatchId: string | null;
+  onPickBatch: (id: string) => void;
+  emptyLabel: string;
 }) {
   if (batches.length === 0) return <EmptyNote>{emptyLabel}</EmptyNote>;
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: 10 }}>
-      {batches.map(b => {
-        const done = b.sarees.filter(s => s.status !== "pending").length;
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))",
+        gap: 10,
+      }}
+    >
+      {batches.map((b) => {
+        const done = b.sarees.filter((s) => s.status !== "pending").length;
         const pending = countPending(b);
         const active = selectedBatchId === b.id;
         const pct = b.total > 0 ? (done / b.total) * 100 : 0;
@@ -170,7 +300,9 @@ function BatchPicker({
             onClick={() => onPickBatch(b.id)}
             aria-pressed={active}
             style={{
-              textAlign: "left", padding: "12px 13px", cursor: "pointer",
+              textAlign: "left",
+              padding: "12px 13px",
+              cursor: "pointer",
               background: active ? "linear-gradient(135deg, #FFFDF9 0%, #FDF3E4 100%)" : "#FFF",
               border: `1.5px solid ${active ? C.burg : C.bdr}`,
               borderRadius: 14,
@@ -178,32 +310,78 @@ function BatchPicker({
             }}
             className="transition-all hover:border-[rgba(110,15,45,0.35)]"
           >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 7 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 8,
+                marginBottom: 7,
+              }}
+            >
               <EntityCode type="batch" value={b.id} size="sm" />
-              <span style={{
-                ...CHIP, fontSize: 11,
-                color: pending === 0 ? C.green : "#8D5802",
-                background: pending === 0 ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.14)",
-                border: `1px solid ${pending === 0 ? "rgba(30,102,64,0.22)" : "rgba(200,155,71,0.30)"}`,
-              }}>
+              <span
+                style={{
+                  ...CHIP,
+                  fontSize: 11,
+                  color: pending === 0 ? C.green : "#8D5802",
+                  background: pending === 0 ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.14)",
+                  border: `1px solid ${pending === 0 ? "rgba(30,102,64,0.22)" : "rgba(200,155,71,0.30)"}`,
+                }}
+              >
                 {pending === 0 ? "All received" : `${pending} pending`}
               </span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 5 }}>
-              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "2px 8px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                flexWrap: "wrap",
+                marginBottom: 5,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: F.u,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "#845E04",
+                  background: "rgba(200,155,71,0.12)",
+                  border: "1px solid rgba(200,155,71,0.30)",
+                  borderRadius: 8,
+                  padding: "2px 8px",
+                }}
+              >
                 {b.sareeTypeCode}
               </span>
               {b.loomNumber != null && (
-                <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.burg, background: "rgba(110,15,45,0.07)", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "2px 8px" }}>
+                <span
+                  style={{
+                    fontFamily: F.u,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.burg,
+                    background: "rgba(110,15,45,0.07)",
+                    border: `1px solid ${C.bdr}`,
+                    borderRadius: 8,
+                    padding: "2px 8px",
+                  }}
+                >
                   Loom {b.loomNumber}
                 </span>
               )}
             </div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 8 }}>
-              {b.bulkOrderLabel ? `${b.bulkOrderLabel} · ` : ""}{done} of {b.total} received
+              {b.bulkOrderLabel ? `${b.bulkOrderLabel} · ` : ""}
+              {done} of {b.total} received
             </div>
-            <div style={{ background: "#F0EBE4", borderRadius: 999, height: 5, overflow: "hidden" }}>
-              <div style={{ width: `${pct}%`, height: "100%", background: C.gold, borderRadius: 999 }} />
+            <div
+              style={{ background: "#F0EBE4", borderRadius: 999, height: 5, overflow: "hidden" }}
+            >
+              <div
+                style={{ width: `${pct}%`, height: "100%", background: C.gold, borderRadius: 999 }}
+              />
             </div>
           </button>
         );
@@ -236,11 +414,11 @@ export function ReceiveRecipientPicker({
   const [listOpen, setListOpen] = useState(false);
   const [loomFilter, setLoomFilter] = useState<number | "all">("all");
 
-  const selected = options.find(o => o.id === selectedId) ?? null;
+  const selected = options.find((o) => o.id === selectedId) ?? null;
   const selectedKey = selected?.id ?? null;
   const allBatches = useMemo(
     () => (selectedKey ? (batchesByRecipient[selectedKey] ?? []) : []),
-    [batchesByRecipient, selectedKey],
+    [batchesByRecipient, selectedKey]
   );
 
   // Loom-number chips, exactly as Issue Materials does it — but only for the
@@ -260,14 +438,17 @@ export function ReceiveRecipientPicker({
 
   const visibleBatches = useMemo(() => {
     if (loomFilter === "all") return allBatches;
-    return allBatches.filter(b =>
-      b.loomNumber === loomFilter || b.sarees.some(s => s.weaverLoom === loomFilter));
+    return allBatches.filter(
+      (b) => b.loomNumber === loomFilter || b.sarees.some((s) => s.weaverLoom === loomFilter)
+    );
   }, [allBatches, loomFilter]);
 
   // Reset the loom filter whenever the recipient changes, and drop it if it
   // stops matching anything so the batch list can never render empty by
   // accident.
-  useEffect(() => { setLoomFilter("all"); }, [selectedId]);
+  useEffect(() => {
+    setLoomFilter("all");
+  }, [selectedId]);
   useEffect(() => {
     if (loomFilter !== "all" && !loomNumbers.includes(loomFilter)) setLoomFilter("all");
   }, [loomNumbers, loomFilter]);
@@ -277,17 +458,19 @@ export function ReceiveRecipientPicker({
   // batch control read "Select…" while the table below already showed batch #1.
   useEffect(() => {
     if (visibleBatches.length === 0) return;
-    if (!selectedBatchId || !visibleBatches.some(b => b.id === selectedBatchId)) {
+    if (!selectedBatchId || !visibleBatches.some((b) => b.id === selectedBatchId)) {
       onPickBatch(visibleBatches[0].id);
     }
   }, [visibleBatches, selectedBatchId, onPickBatch]);
 
   const q = search.trim().toLowerCase();
   const filtered = q
-    ? options.filter(o =>
-        o.name.toLowerCase().includes(q) ||
-        o.code.toLowerCase().includes(q) ||
-        (o.subtitle ?? "").toLowerCase().includes(q))
+    ? options.filter(
+        (o) =>
+          o.name.toLowerCase().includes(q) ||
+          o.code.toLowerCase().includes(q) ||
+          (o.subtitle ?? "").toLowerCase().includes(q)
+      )
     : options;
 
   const pendingFor = (id: string) =>
@@ -311,7 +494,10 @@ export function ReceiveRecipientPicker({
             kind={kind}
             pendingCount={pendingFor(selected.id)}
             batchCount={allBatches.length}
-            onChange={() => { setListOpen(true); setSearch(""); }}
+            onChange={() => {
+              setListOpen(true);
+              setSearch("");
+            }}
           />
         )}
 
@@ -320,13 +506,26 @@ export function ReceiveRecipientPicker({
             <SearchInput
               aria-label={`Search ${entityWord} by name or ID`}
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               onSearch={setSearch}
-              placeholder={kind === "loom" ? "Search loom by number, ID or operator…" : "Search weaver by name or ID…"}
+              placeholder={
+                kind === "loom"
+                  ? "Search loom by number, ID or operator…"
+                  : "Search weaver by name or ID…"
+              }
               size="lg"
               className="w-full"
             />
-            <div style={{ marginTop: 10, border: `1px solid ${C.bdr}`, borderRadius: 12, overflow: "hidden", maxHeight: 300, overflowY: "auto" }}>
+            <div
+              style={{
+                marginTop: 10,
+                border: `1px solid ${C.bdr}`,
+                borderRadius: 12,
+                overflow: "hidden",
+                maxHeight: 300,
+                overflowY: "auto",
+              }}
+            >
               {loading ? (
                 <EmptyNote>Loading {entityWord}s…</EmptyNote>
               ) : filtered.length === 0 ? (
@@ -336,21 +535,36 @@ export function ReceiveRecipientPicker({
                     No {entityWord} matches “{search}”.
                   </div>
                 </div>
-              ) : filtered.map(o => (
-                <RecipientRow
-                  key={o.id}
-                  option={o}
-                  kind={kind}
-                  pendingCount={pendingFor(o.id)}
-                  batchCount={(batchesByRecipient[o.id] ?? []).length}
-                  isSelected={o.id === selectedId}
-                  onSelect={() => { onPickRecipient(o.id); setListOpen(false); setSearch(""); }}
-                />
-              ))}
+              ) : (
+                filtered.map((o) => (
+                  <RecipientRow
+                    key={o.id}
+                    option={o}
+                    kind={kind}
+                    pendingCount={pendingFor(o.id)}
+                    batchCount={(batchesByRecipient[o.id] ?? []).length}
+                    isSelected={o.id === selectedId}
+                    onSelect={() => {
+                      onPickRecipient(o.id);
+                      setListOpen(false);
+                      setSearch("");
+                    }}
+                  />
+                ))
+              )}
             </div>
             {selected && (
               <div style={{ marginTop: 10, textAlign: "right" }}>
-                <Button variant="link" size="sm" onClick={() => { setListOpen(false); setSearch(""); }}>Cancel</Button>
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={() => {
+                    setListOpen(false);
+                    setSearch("");
+                  }}
+                >
+                  Cancel
+                </Button>
               </div>
             )}
           </>
@@ -372,7 +586,7 @@ export function ReceiveRecipientPicker({
             >
               All looms
             </Button>
-            {loomNumbers.map(n => (
+            {loomNumbers.map((n) => (
               <Button
                 key={n}
                 onClick={() => setLoomFilter(n)}
@@ -394,9 +608,25 @@ export function ReceiveRecipientPicker({
             hint={visibleBatches.length > 0 ? `${visibleBatches.length} open` : undefined}
           />
           {allBatches.length === 0 ? (
-            <div style={{ padding: "18px 14px", textAlign: "center", background: C.bg, border: `1px dashed ${C.bdrMed}`, borderRadius: 12 }}>
+            <div
+              style={{
+                padding: "18px 14px",
+                textAlign: "center",
+                background: C.bg,
+                border: `1px dashed ${C.bdrMed}`,
+                borderRadius: 12,
+              }}
+            >
               <PackageSearch size={20} color={C.muted} />
-              <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, marginTop: 6 }}>
+              <div
+                style={{
+                  fontFamily: F.u,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: C.text,
+                  marginTop: 6,
+                }}
+              >
                 Nothing awaiting receipt
               </div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3 }}>
@@ -416,4 +646,3 @@ export function ReceiveRecipientPicker({
     </div>
   );
 }
-

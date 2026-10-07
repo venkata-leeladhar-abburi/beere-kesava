@@ -5,8 +5,15 @@ export interface WeaverRecord {
    * the UI. `id` stays the UUID used for joins and API calls.
    */
   code: string;
-  name: string; initials: string; bg: string;
-  village: string; sb: number; hz: number; ps: number; bs: number; st: number;
+  name: string;
+  initials: string;
+  bg: string;
+  village: string;
+  sb: number;
+  hz: number;
+  ps: number;
+  bs: number;
+  st: number;
   // A genuine PAYMENT_STATUS value ("Paid"→paid, "Pending"→unpaid — lib/domain/status.ts)
   // left untyped here rather than retyped to PaymentStatus: this literal union is
   // compared with `=== "Paid"` / keyed into dropdown filters across several
@@ -14,7 +21,8 @@ export interface WeaverRecord {
   // WeaverMakingChargesSection.tsx) — retyping would ripple into those files.
   // StatusBadge (components/common/primitives.tsx) renders it through
   // <StatusPill taxonomy="payment"> at the render boundary instead.
-  advance: number; status: "Paid" | "Pending";
+  advance: number;
+  status: "Paid" | "Pending";
   // Uploaded overrides
   uploadedAmount?: number;
   uploadedDeduction?: number;
@@ -48,7 +56,9 @@ export interface ExcelRow {
   deduction: number;
 }
 
-export interface MatchedPayment extends ExcelRow { weaverRecord: WeaverRecord; }
+export interface MatchedPayment extends ExcelRow {
+  weaverRecord: WeaverRecord;
+}
 
 export type UnmatchedRow = ExcelRow;
 
@@ -80,11 +90,15 @@ export interface Invoice {
   /** Human-facing id (INV-<CustomerCode>-NNN) — the only invoice id ever shown in
    * the UI. `id` stays the UUID used for joins and API calls. */
   code: string;
-  customer: string; city: string;
+  customer: string;
+  city: string;
   /** Customer's phone, used to open a WhatsApp reminder. */
   customerPhone?: string;
-  invoiceDate: string; dueDate: string;
-  total: number; paid: number; status: InvoiceStatus;
+  invoiceDate: string;
+  dueDate: string;
+  total: number;
+  paid: number;
+  status: InvoiceStatus;
   daysOverdue?: number;
   payments?: InvoicePayment[];
   dispatchId?: string | null;
@@ -96,10 +110,16 @@ export interface Invoice {
 export type VendorStatus = "Paid" | "Partial" | "Overdue" | "Pending";
 
 export interface VendorPayment {
-  id: string; vendor: string; poNumber: string;
-  invoiceAmt: number; paidAmt: number;
-  dueDate: string; status: VendorStatus; daysOverdue?: number;
-  utr?: string; vendorId?: string;
+  id: string;
+  vendor: string;
+  poNumber: string;
+  invoiceAmt: number;
+  paidAmt: number;
+  dueDate: string;
+  status: VendorStatus;
+  daysOverdue?: number;
+  utr?: string;
+  vendorId?: string;
   /** Real VendorBill.id — undefined until a bill has been raised against this PO. */
   billId?: string;
   invoiceFileUrl?: string;
@@ -108,18 +128,30 @@ export interface VendorPayment {
 
 // ── Vendor payment Excel upload types ─────────────────────────────────────────
 export interface VendorExcelRow {
-  poNumber: string; amountPaid: number; utrNumber: string; paymentDate: string; firmName: string;
+  poNumber: string;
+  amountPaid: number;
+  utrNumber: string;
+  paymentDate: string;
+  firmName: string;
 }
 
-export interface VendorMatchedRow extends VendorExcelRow { vendorPayment: VendorPayment; }
+export interface VendorMatchedRow extends VendorExcelRow {
+  vendorPayment: VendorPayment;
+}
 
-export interface VendorUnmatchedRow extends VendorExcelRow { reason?: string; }
+export interface VendorUnmatchedRow extends VendorExcelRow {
+  reason?: string;
+}
 
 export interface VendorUploadResult {
-  fileName: string; totalRows: number; matched: VendorMatchedRow[]; unmatched: VendorUnmatchedRow[];
+  fileName: string;
+  totalRows: number;
+  matched: VendorMatchedRow[];
+  unmatched: VendorUnmatchedRow[];
 }
 
-export type PayHistType   = "Vendor Payment" | "Weaver Payment" | "Customer Receipt" | "Supplier Payment";
+export type PayHistType =
+  "Vendor Payment" | "Weaver Payment" | "Customer Receipt" | "Supplier Payment";
 
 // PAYMENT_STATUS values ("Paid"→paid, "Partial"→partial, "Pending"→unpaid).
 // Left as-is: HistoryCard.tsx keys its own HIST_STATUS_CFG off these exact
@@ -129,11 +161,22 @@ export type PayHistType   = "Vendor Payment" | "Weaver Payment" | "Customer Rece
 export type PayHistStatus = "Paid" | "Partial" | "Pending";
 
 export interface PayHistRecord {
-  id: string; date: string; type: PayHistType;
-  party: string; refNo: string; description: string;
-  invoicePO?: string; amount: number; status: PayHistStatus;
-  mode: string; utr?: string; recordedBy: string;
+  id: string;
+  date: string;
+  type: PayHistType;
+  party: string;
+  refNo: string;
+  description: string;
+  invoicePO?: string;
+  amount: number;
+  status: PayHistStatus;
+  mode: string;
+  utr?: string;
+  recordedBy: string;
   // Weaver-payment-only fields, captured on upload (CreateWeaverPaymentDto)
   // but previously dropped once folded into this shared history shape.
-  batchNo?: string; loomNumber?: string; noOfSarees?: number; deduction?: number;
+  batchNo?: string;
+  loomNumber?: string;
+  noOfSarees?: number;
+  deduction?: number;
 }

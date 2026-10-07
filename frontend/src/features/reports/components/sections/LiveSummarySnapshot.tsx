@@ -10,21 +10,37 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 // sections still run on richer mocked datasets; this is the honest live
 // subset available today, not a replacement for them.
 export function LiveSummarySnapshot() {
-  const { data: production, isError: productionError, refetch: refetchProduction } = useQuery({
+  const {
+    data: production,
+    isError: productionError,
+    refetch: refetchProduction,
+  } = useQuery({
     queryKey: ["reports", "production-summary"],
     queryFn: () => reportsApi.productionSummary(),
   });
-  const { data: sales, isError: salesError, refetch: refetchSales } = useQuery({
+  const {
+    data: sales,
+    isError: salesError,
+    refetch: refetchSales,
+  } = useQuery({
     queryKey: ["reports", "sales-summary"],
     queryFn: () => reportsApi.salesSummary(),
   });
-  const { data: outstanding, isError: outstandingError, refetch: refetchOutstanding } = useQuery({
+  const {
+    data: outstanding,
+    isError: outstandingError,
+    refetch: refetchOutstanding,
+  } = useQuery({
     queryKey: ["reports", "outstanding-payments"],
     queryFn: () => reportsApi.outstandingPayments(),
   });
 
   const hasError = productionError || salesError || outstandingError;
-  const refetchAll = () => { void refetchProduction(); void refetchSales(); void refetchOutstanding(); };
+  const refetchAll = () => {
+    void refetchProduction();
+    void refetchSales();
+    void refetchOutstanding();
+  };
 
   const cards = [
     {
@@ -42,35 +58,72 @@ export function LiveSummarySnapshot() {
     {
       icon: <Store size={18} color={T.antiqueGold} />,
       label: "Retail Sales (Live)",
-      value: sales ? `${formatMoney(rupees(sales.retailTotalSales))} · ${sales.retailCount} sarees` : "—",
+      value: sales
+        ? `${formatMoney(rupees(sales.retailTotalSales))} · ${sales.retailCount} sarees`
+        : "—",
     },
     {
       icon: <ShoppingBag size={18} color={T.antiqueGold} />,
       label: "Wholesale Dispatched (Live)",
-      value: sales ? `${formatMoney(rupees(sales.wholesaleTotalSales))} · ${sales.wholesaleCount} dispatches` : "—",
+      value: sales
+        ? `${formatMoney(rupees(sales.wholesaleTotalSales))} · ${sales.wholesaleCount} dispatches`
+        : "—",
     },
     {
       icon: <ShoppingBag size={18} color={T.crimson} />,
       label: "Total Outstanding Dues (Live)",
-      value: outstanding ? `${formatMoney(rupees(outstanding.totalOutstanding))} · ${outstanding.count} pending` : "—",
+      value: outstanding
+        ? `${formatMoney(rupees(outstanding.totalOutstanding))} · ${outstanding.count} pending`
+        : "—",
     },
   ];
 
   return (
     <div id="rep-summary" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
-      <div className="grid grid-cols-1 md:grid-cols-5" style={{
-        gap: 14,
-        background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "16px 20px",
-        boxShadow: "0 2px 14px rgba(74,6,27,0.06)",
-      }}>
-        {cards.map(c => (
+      <div
+        className="grid grid-cols-1 md:grid-cols-5"
+        style={{
+          gap: 14,
+          background: "#FFFFFF",
+          border: `1px solid ${T.borderDef}`,
+          borderRadius: 12,
+          padding: "16px 20px",
+          boxShadow: "0 2px 14px rgba(74,6,27,0.06)",
+        }}
+      >
+        {cards.map((c) => (
           <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 9, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 9,
+                background: "rgba(110,15,45,0.06)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
               {c.icon}
             </div>
             <div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>{c.label}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{c.value}</div>
+              <div
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 12,
+                  color: T.taupe,
+                  textTransform: "uppercase" as const,
+                  letterSpacing: "0.4px",
+                }}
+              >
+                {c.label}
+              </div>
+              <div
+                style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}
+              >
+                {c.value}
+              </div>
             </div>
           </div>
         ))}
@@ -79,7 +132,16 @@ export function LiveSummarySnapshot() {
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 6 }}>
           <button
             onClick={refetchAll}
-            style={{ background: "none", border: "none", padding: 0, fontFamily: F.ui, fontSize: 12, color: T.crimson, textDecoration: "underline", cursor: "pointer" }}
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              fontFamily: F.ui,
+              fontSize: 12,
+              color: T.crimson,
+              textDecoration: "underline",
+              cursor: "pointer",
+            }}
           >
             Some live figures failed to load — retry
           </button>
@@ -88,4 +150,3 @@ export function LiveSummarySnapshot() {
     </div>
   );
 }
-

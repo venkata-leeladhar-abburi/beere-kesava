@@ -46,60 +46,154 @@ function toLoginEvent(log: BackendAuditLog): LoginEvent {
 }
 
 export function LoginHistorySection({ staffUserId }: { staffUserId?: string } = {}) {
-  const [loginView, setLoginView] = useState<"timeline"|"table">("timeline");
+  const [loginView, setLoginView] = useState<"timeline" | "table">("timeline");
 
   const columns: ColumnDef<LoginEvent>[] = [
     {
-      id: "time", header: "Timestamp", accessor: e => e.time,
-      cell: (_v, e) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{e.time}</span>,
-    },
-    {
-      id: "user", header: "User", accessor: e => e.user, priority: 1,
-      cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{e.user}</span>,
-    },
-    {
-      id: "role", header: "Role", accessor: e => e.role, priority: 3,
-      cell: (_v, e) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{e.role}</span>,
-    },
-    {
-      id: "event", header: "Event", accessor: e => e.event,
+      id: "time",
+      header: "Timestamp",
+      accessor: (e) => e.time,
       cell: (_v, e) => (
-        <span style={{
-          background: e.event === "login" ? "rgba(30,102,64,0.10)" : e.event === "logout" ? "rgba(139,112,96,0.10)" : "rgba(192,57,43,0.08)",
-          color: e.event === "login" ? T.green : e.event === "logout" ? T.taupe : T.crimson,
-          fontFamily: F.ui, fontSize: 12, fontWeight: 600, padding: "2px 9px", borderRadius: 999, whiteSpace: "nowrap",
-        }}>
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            color: T.taupe,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {e.time}
+        </span>
+      ),
+    },
+    {
+      id: "user",
+      header: "User",
+      accessor: (e) => e.user,
+      priority: 1,
+      cell: (_v, e) => (
+        <span
+          style={{
+            fontFamily: F.ui,
+            fontSize: 12,
+            fontWeight: 600,
+            color: T.luxuryBrown,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {e.user}
+        </span>
+      ),
+    },
+    {
+      id: "role",
+      header: "Role",
+      accessor: (e) => e.role,
+      priority: 3,
+      cell: (_v, e) => (
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
+          {e.role}
+        </span>
+      ),
+    },
+    {
+      id: "event",
+      header: "Event",
+      accessor: (e) => e.event,
+      cell: (_v, e) => (
+        <span
+          style={{
+            background:
+              e.event === "login"
+                ? "rgba(30,102,64,0.10)"
+                : e.event === "logout"
+                  ? "rgba(139,112,96,0.10)"
+                  : "rgba(192,57,43,0.08)",
+            color: e.event === "login" ? T.green : e.event === "logout" ? T.taupe : T.crimson,
+            fontFamily: F.ui,
+            fontSize: 12,
+            fontWeight: 600,
+            padding: "2px 9px",
+            borderRadius: 999,
+            whiteSpace: "nowrap",
+          }}
+        >
           {e.event === "login" ? "✓ Login" : e.event === "logout" ? "→ Logout" : "✗ Failed Login"}
         </span>
       ),
     },
     {
-      id: "device", header: "Device", accessor: e => e.device,
+      id: "device",
+      header: "Device",
+      accessor: (e) => e.device,
       cell: (_v, e) => (
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" }}>
-          {e.device.toLowerCase().includes("mobile") ? <Smartphone size={12} color={T.taupe} /> : <Monitor size={12} color={T.taupe} />}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            fontFamily: F.ui,
+            fontSize: 12,
+            color: T.luxuryBrown,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {e.device.toLowerCase().includes("mobile") ? (
+            <Smartphone size={12} color={T.taupe} />
+          ) : (
+            <Monitor size={12} color={T.taupe} />
+          )}
           {e.device}
         </div>
       ),
     },
     {
-      id: "duration", header: "Session Duration", accessor: e => e.duration,
-      cell: (_v, e) => e.duration ? (
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{e.duration}</span>
-      ) : e.event === "login" ? (
-        <span style={{ color: T.antiqueGold, fontFamily: "var(--font-mono)", fontSize: 12 }}>Ongoing</span>
-      ) : (
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>—</span>
-      ),
+      id: "duration",
+      header: "Session Duration",
+      accessor: (e) => e.duration,
+      cell: (_v, e) =>
+        e.duration ? (
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              color: T.taupe,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {e.duration}
+          </span>
+        ) : e.event === "login" ? (
+          <span style={{ color: T.antiqueGold, fontFamily: "var(--font-mono)", fontSize: 12 }}>
+            Ongoing
+          </span>
+        ) : (
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>—</span>
+        ),
     },
     {
-      id: "status", header: "Status", accessor: e => e.event, type: "status",
+      id: "status",
+      header: "Status",
+      accessor: (e) => e.event,
+      type: "status",
       cell: (_v, e) => (
-        <span style={{
-          background: e.event === "login" ? "rgba(30,102,64,0.10)" : e.event === "logout" ? "rgba(139,112,96,0.10)" : "rgba(192,57,43,0.08)",
-          color: e.event === "login" ? T.green : e.event === "logout" ? T.taupe : T.crimson,
-          fontFamily: F.ui, fontSize: 12, fontWeight: 600, padding: "2px 9px", borderRadius: 999, whiteSpace: "nowrap",
-        }}>
+        <span
+          style={{
+            background:
+              e.event === "login"
+                ? "rgba(30,102,64,0.10)"
+                : e.event === "logout"
+                  ? "rgba(139,112,96,0.10)"
+                  : "rgba(192,57,43,0.08)",
+            color: e.event === "login" ? T.green : e.event === "logout" ? T.taupe : T.crimson,
+            fontFamily: F.ui,
+            fontSize: 12,
+            fontWeight: 600,
+            padding: "2px 9px",
+            borderRadius: 999,
+            whiteSpace: "nowrap",
+          }}
+        >
           {e.event === "login" ? "Active" : e.event === "logout" ? "Ended" : "Failed"}
         </span>
       ),
@@ -117,199 +211,281 @@ export function LoginHistorySection({ staffUserId }: { staffUserId?: string } = 
 
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
-    <SectionCard
-      icon={LogIn}
-      title="Login History — User Sessions"
-      subtitle="Every login, logout, and failed login attempt — with device, session duration, and status."
-      actions={
-        <Button variant="secondary" size="sm" className="bg-white/10 text-[#FFFDF9] border-white/20">
-          Download Login Log
-        </Button>
-      }
-    >
-      {/* View toggle */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        <Button
-          variant={loginView === "timeline" ? "primary" : "secondary"}
-          size="sm"
-          iconLeft={AlignLeft}
-          className="rounded-full"
-          onClick={() => setLoginView("timeline")}
-        >
-          Timeline View
-        </Button>
-        <Button
-          variant={loginView === "table" ? "primary" : "secondary"}
-          size="sm"
-          iconLeft={Table2}
-          className="rounded-full"
-          onClick={() => setLoginView("table")}
-        >
-          Table View
-        </Button>
-      </div>
-
-      <AnimatePresence mode="wait">
-        {loginView === "timeline" ? (
-          <motion.div
-            key="login-timeline"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            style={{ position: "relative" }}
+      <SectionCard
+        icon={LogIn}
+        title="Login History — User Sessions"
+        subtitle="Every login, logout, and failed login attempt — with device, session duration, and status."
+        actions={
+          <Button
+            variant="secondary"
+            size="sm"
+            className="bg-white/10 text-[#FFFDF9] border-white/20"
           >
-            {/* Vertical line */}
-            <div style={{
-              position: "absolute",
-              left: 13,
-              top: 0,
-              bottom: 0,
-              width: 2,
-              background: "rgba(110,15,45,0.18)",
-              borderRadius: 1,
-            }} />
+            Download Login Log
+          </Button>
+        }
+      >
+        {/* View toggle */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+          <Button
+            variant={loginView === "timeline" ? "primary" : "secondary"}
+            size="sm"
+            iconLeft={AlignLeft}
+            className="rounded-full"
+            onClick={() => setLoginView("timeline")}
+          >
+            Timeline View
+          </Button>
+          <Button
+            variant={loginView === "table" ? "primary" : "secondary"}
+            size="sm"
+            iconLeft={Table2}
+            className="rounded-full"
+            onClick={() => setLoginView("table")}
+          >
+            Table View
+          </Button>
+        </div>
 
-            {isLoading && <LoadingState variant="skeleton" rows={4} />}
-            {isError && <ErrorState error={error} onRetry={() => refetch()} />}
-            {!isLoading && !isError && entries.length === 0 && (
-              <EmptyState title="No login history yet" description="Logins, logouts, and failed attempts will show up here." />
-            )}
+        <AnimatePresence mode="wait">
+          {loginView === "timeline" ? (
+            <motion.div
+              key="login-timeline"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              style={{ position: "relative" }}
+            >
+              {/* Vertical line */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: 13,
+                  top: 0,
+                  bottom: 0,
+                  width: 2,
+                  background: "rgba(110,15,45,0.18)",
+                  borderRadius: 1,
+                }}
+              />
 
-            {pag.pageItems.map(entry => {
-              const circleColor = entry.event === "login" ? T.green : entry.event === "logout" ? T.taupe : T.crimson;
-              const circleInitial = entry.event === "login" ? "IN" : entry.event === "logout" ? "OUT" : "!";
-              return (
-                <div key={entry.id} style={{ display: "flex", gap: 20, marginBottom: 14, position: "relative" }}>
-                  {/* Circle */}
-                  <div style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: "50%",
-                    background: circleColor,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    zIndex: 1,
-                  }}>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: "#fff" }}>
-                      {circleInitial}
-                    </span>
-                  </div>
+              {isLoading && <LoadingState variant="skeleton" rows={4} />}
+              {isError && <ErrorState error={error} onRetry={() => refetch()} />}
+              {!isLoading && !isError && entries.length === 0 && (
+                <EmptyState
+                  title="No login history yet"
+                  description="Logins, logouts, and failed attempts will show up here."
+                />
+              )}
 
-                  {/* Card */}
-                  <div style={{
-                    flex: 1,
-                    background: "#fff",
-                    borderRadius: 12,
-                    border: `1px solid ${T.borderDef}`,
-                    boxShadow: "0 1px 8px rgba(44,24,16,0.06)",
-                    padding: "14px 18px",
-                  }}>
-                    {/* Row 1 */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        {/* Status badge */}
-                        <span style={{
-                          background: entry.event === "login"
-                            ? "rgba(30,102,64,0.10)"
-                            : entry.event === "logout"
-                            ? "rgba(139,112,96,0.10)"
-                            : "rgba(192,57,43,0.08)",
-                          color: entry.event === "login" ? T.green : entry.event === "logout" ? T.taupe : T.crimson,
-                          fontFamily: F.ui,
+              {pag.pageItems.map((entry) => {
+                const circleColor =
+                  entry.event === "login"
+                    ? T.green
+                    : entry.event === "logout"
+                      ? T.taupe
+                      : T.crimson;
+                const circleInitial =
+                  entry.event === "login" ? "IN" : entry.event === "logout" ? "OUT" : "!";
+                return (
+                  <div
+                    key={entry.id}
+                    style={{ display: "flex", gap: 20, marginBottom: 14, position: "relative" }}
+                  >
+                    {/* Circle */}
+                    <div
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: "50%",
+                        background: circleColor,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        zIndex: 1,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
                           fontSize: 12,
-                          fontWeight: 600,
-                          padding: "2px 9px",
-                          borderRadius: 999,
-                        }}>
-                          {entry.event === "login" ? "✓ Login" : entry.event === "logout" ? "→ Logout" : "✗ Failed Login"}
-                        </span>
-                        <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>
-                          {entry.user}
-                        </span>
-                        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
-                          {entry.role}
-                        </span>
-                      </div>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
-                        {entry.time}
+                          fontWeight: 700,
+                          color: "#fff",
+                        }}
+                      >
+                        {circleInitial}
                       </span>
                     </div>
 
-                    {/* Row 2 */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: entry.failReason ? 8 : 0 }}>
-                      {entry.device.toLowerCase().includes("mobile") ? <Smartphone size={13} /> : <Monitor size={13} />}
-                      <span>{entry.device}</span>
-                      {entry.duration && (
-                        <>
-                          <span>·</span>
-                          <span>Session:</span>
-                          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{entry.duration}</span>
-                        </>
+                    {/* Card */}
+                    <div
+                      style={{
+                        flex: 1,
+                        background: "#fff",
+                        borderRadius: 12,
+                        border: `1px solid ${T.borderDef}`,
+                        boxShadow: "0 1px 8px rgba(44,24,16,0.06)",
+                        padding: "14px 18px",
+                      }}
+                    >
+                      {/* Row 1 */}
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          {/* Status badge */}
+                          <span
+                            style={{
+                              background:
+                                entry.event === "login"
+                                  ? "rgba(30,102,64,0.10)"
+                                  : entry.event === "logout"
+                                    ? "rgba(139,112,96,0.10)"
+                                    : "rgba(192,57,43,0.08)",
+                              color:
+                                entry.event === "login"
+                                  ? T.green
+                                  : entry.event === "logout"
+                                    ? T.taupe
+                                    : T.crimson,
+                              fontFamily: F.ui,
+                              fontSize: 12,
+                              fontWeight: 600,
+                              padding: "2px 9px",
+                              borderRadius: 999,
+                            }}
+                          >
+                            {entry.event === "login"
+                              ? "✓ Login"
+                              : entry.event === "logout"
+                                ? "→ Logout"
+                                : "✗ Failed Login"}
+                          </span>
+                          <span
+                            style={{
+                              fontFamily: F.ui,
+                              fontWeight: 600,
+                              fontSize: 13,
+                              color: T.luxuryBrown,
+                            }}
+                          >
+                            {entry.user}
+                          </span>
+                          <span
+                            style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}
+                          >
+                            {entry.role}
+                          </span>
+                        </div>
+                        <span
+                          style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}
+                        >
+                          {entry.time}
+                        </span>
+                      </div>
+
+                      {/* Row 2 */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          fontFamily: F.ui,
+                          fontSize: 12,
+                          color: T.taupe,
+                          marginBottom: entry.failReason ? 8 : 0,
+                        }}
+                      >
+                        {entry.device.toLowerCase().includes("mobile") ? (
+                          <Smartphone size={13} />
+                        ) : (
+                          <Monitor size={13} />
+                        )}
+                        <span>{entry.device}</span>
+                        {entry.duration && (
+                          <>
+                            <span>·</span>
+                            <span>Session:</span>
+                            <span
+                              style={{
+                                fontFamily: "var(--font-mono)",
+                                fontSize: 12,
+                                color: T.taupe,
+                              }}
+                            >
+                              {entry.duration}
+                            </span>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Row 3 — fail reason */}
+                      {entry.failReason && (
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson }}>
+                          {entry.failReason}
+                        </div>
                       )}
                     </div>
-
-                    {/* Row 3 — fail reason */}
-                    {entry.failReason && (
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson }}>
-                        {entry.failReason}
-                      </div>
-                    )}
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
 
-            {entries.length > 0 && (
-              <div style={{ marginTop: 8 }}>
-                <Pagination
-                  page={pag.page}
-                  pageCount={pag.pageCount}
-                  total={pag.total}
-                  pageSize={pag.pageSize}
-                  start={pag.start}
-                  onPageChange={pag.setPage}
-                  onPageSizeChange={pag.setPageSize}
+              {entries.length > 0 && (
+                <div style={{ marginTop: 8 }}>
+                  <Pagination
+                    page={pag.page}
+                    pageCount={pag.pageCount}
+                    total={pag.total}
+                    pageSize={pag.pageSize}
+                    start={pag.start}
+                    onPageChange={pag.setPage}
+                    onPageSizeChange={pag.setPageSize}
+                    itemLabel="sessions"
+                  />
+                </div>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="login-table"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div
+                style={{
+                  background: "#fff",
+                  borderRadius: 16,
+                  border: `1px solid ${T.borderDef}`,
+                  boxShadow: "0 2px 12px rgba(44,24,16,0.06)",
+                  overflowX: "auto",
+                }}
+              >
+                <DataTable
+                  columns={columns}
+                  data={entries}
+                  getRowId={(entry) => String(entry.id)}
+                  loading={isLoading}
+                  error={isError}
+                  onRetry={() => refetch()}
+                  emptyTitle="No login history yet"
+                  emptyDescription="Logins, logouts, and failed attempts will show up here."
+                  pagination
                   itemLabel="sessions"
                 />
               </div>
-            )}
-          </motion.div>
-        ) : (
-          <motion.div
-            key="login-table"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div style={{
-              background: "#fff",
-              borderRadius: 16,
-              border: `1px solid ${T.borderDef}`,
-              boxShadow: "0 2px 12px rgba(44,24,16,0.06)",
-              overflowX: "auto",
-            }}>
-              <DataTable
-                columns={columns}
-                data={entries}
-                getRowId={entry => String(entry.id)}
-                loading={isLoading}
-                error={isError}
-                onRetry={() => refetch()}
-                emptyTitle="No login history yet"
-                emptyDescription="Logins, logouts, and failed attempts will show up here."
-                pagination
-                itemLabel="sessions"
-              />
-
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </SectionCard>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </SectionCard>
     </div>
   );
 }

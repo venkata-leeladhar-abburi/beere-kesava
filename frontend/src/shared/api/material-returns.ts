@@ -1,5 +1,10 @@
 import { apiClient } from "./client";
-import { BackendJariGrade, BackendMaterialType, BackendSignatureMethod, BackendWarpSubtype } from "./material-issues";
+import {
+  BackendJariGrade,
+  BackendMaterialType,
+  BackendSignatureMethod,
+  BackendWarpSubtype,
+} from "./material-issues";
 
 export type BackendMaterialReturnStatus = "PENDING_SIGNATURE" | "APPROVED" | "CANCELLED";
 
@@ -93,14 +98,14 @@ export const materialReturnsApi = {
   // back. Walk every page and merge.
   list: async (pageSize = 100): Promise<PaginatedResponse<BackendMaterialReturnRecord>> => {
     const first = await apiClient.get<PaginatedResponse<BackendMaterialReturnRecord>>(
-      `/material-returns?page=1&pageSize=${pageSize}`,
+      `/material-returns?page=1&pageSize=${pageSize}`
     );
     const items = [...first.items];
     let page = 1;
     while (items.length < first.total) {
       page += 1;
       const next = await apiClient.get<PaginatedResponse<BackendMaterialReturnRecord>>(
-        `/material-returns?page=${page}&pageSize=${pageSize}`,
+        `/material-returns?page=${page}&pageSize=${pageSize}`
       );
       if (next.items.length === 0) break;
       items.push(...next.items);
@@ -117,23 +122,31 @@ export const materialReturnsApi = {
     formData.append("signature", signature, "signature.png");
     return apiClient.postForm<BackendMaterialReturnRecord>(
       `/material-returns/${id}/sign`,
-      formData,
+      formData
     );
   },
 
-  cancel: (id: string) => apiClient.post<BackendMaterialReturnRecord>(`/material-returns/${id}/cancel`, {}),
+  cancel: (id: string) =>
+    apiClient.post<BackendMaterialReturnRecord>(`/material-returns/${id}/cancel`, {}),
 
   remove: (id: string) => apiClient.delete<void>(`/material-returns/${id}`),
 
   // loomNumber/batchId narrow the balance to one loom or one batch of the
   // selected recipient — both sides (issued and returned) are scoped, so the
   // figures stay internally consistent at every zoom level.
-  getOutstanding: (params: { weaverId?: string; factoryLoomId?: string; loomNumber?: string; batchId?: string }) => {
+  getOutstanding: (params: {
+    weaverId?: string;
+    factoryLoomId?: string;
+    loomNumber?: string;
+    batchId?: string;
+  }) => {
     const query = new URLSearchParams();
     if (params.weaverId) query.set("weaverId", params.weaverId);
     if (params.factoryLoomId) query.set("factoryLoomId", params.factoryLoomId);
     if (params.loomNumber) query.set("loomNumber", params.loomNumber);
     if (params.batchId) query.set("batchId", params.batchId);
-    return apiClient.get<OutstandingMaterialGroup[]>(`/material-returns/outstanding?${query.toString()}`);
+    return apiClient.get<OutstandingMaterialGroup[]>(
+      `/material-returns/outstanding?${query.toString()}`
+    );
   },
 };

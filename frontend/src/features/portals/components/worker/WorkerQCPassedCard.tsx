@@ -44,23 +44,36 @@ export function WorkerQCPassedCard({
             )}
 
             <div className="min-w-0 flex-1">
-              <div title={id} style={{ fontFamily: F.m }} className="text-[13.5px] font-bold text-[#6E0F2D] break-all">
+              <div
+                title={id}
+                style={{ fontFamily: F.m }}
+                className="text-[13.5px] font-bold text-[#6E0F2D] break-all"
+              >
                 {id}
               </div>
-              <div style={{ fontFamily: F.u }} className="text-[13.5px] font-medium text-[#4F4A45] mt-0.5 truncate">
+              <div
+                style={{ fontFamily: F.u }}
+                className="text-[13.5px] font-medium text-[#4F4A45] mt-0.5 truncate"
+              >
                 {weaver}
               </div>
             </div>
           </div>
 
-          <span style={{ fontFamily: F.u }} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F0FAF4] border border-[#C9E8D4] text-[#1F774E] text-[12px] font-bold flex-shrink-0">
+          <span
+            style={{ fontFamily: F.u }}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F0FAF4] border border-[#C9E8D4] text-[#1F774E] text-[12px] font-bold flex-shrink-0"
+          >
             <CheckCircle2 size={12} /> Passed
           </span>
         </div>
 
         {/* Quality Check Status Tag */}
         <div className="mt-4.5">
-          <div style={{ fontFamily: F.u }} className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase mb-2">
+          <div
+            style={{ fontFamily: F.u }}
+            className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase mb-2"
+          >
             QUALITY CHECK
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -77,44 +90,66 @@ export function WorkerQCPassedCard({
         <div className="mt-4 pt-3.5 border-t border-[#F0E5D8]/70 grid grid-cols-2 gap-x-3 gap-y-3.5">
           {/* Inspected */}
           <div className="min-w-0">
-            <div style={{ fontFamily: F.u }} className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase">
+            <div
+              style={{ fontFamily: F.u }}
+              className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase"
+            >
               INSPECTED
             </div>
             <div className="flex items-center gap-2 mt-1.5 text-[13.5px] font-bold text-[#1D1814]">
               <Calendar size={15} className="text-[#C89B47] flex-shrink-0" />
-              <span style={{ fontFamily: F.u }}>{date}{inspectedBy ? ` · ${inspectedBy}` : ""}</span>
+              <span style={{ fontFamily: F.u }}>
+                {date}
+                {inspectedBy ? ` · ${inspectedBy}` : ""}
+              </span>
             </div>
           </div>
 
           {/* Payable */}
           <div className="min-w-0">
-            <div style={{ fontFamily: F.u }} className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase">
+            <div
+              style={{ fontFamily: F.u }}
+              className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase"
+            >
               PAYABLE
             </div>
-            <div style={{ fontFamily: F.d }} className="text-[20px] font-bold text-[#1F774E] mt-0.5">
+            <div
+              style={{ fontFamily: F.d }}
+              className="text-[20px] font-bold text-[#1F774E] mt-0.5"
+            >
               {payable}
             </div>
           </div>
 
           {/* Saree Type */}
           <div className="min-w-0 pt-3 border-t border-[#F0E5D8]/50">
-            <div style={{ fontFamily: F.u }} className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase">
+            <div
+              style={{ fontFamily: F.u }}
+              className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase"
+            >
               SAREE TYPE
             </div>
             <div className="flex items-center gap-2 mt-1.5 text-[13px] font-semibold text-[#1D1814] min-w-0">
               <Tag size={14} className="text-[#C89B47] flex-shrink-0" />
-              <span style={{ fontFamily: F.u }} className="truncate">{sareeType || "Standard Saree"}</span>
+              <span style={{ fontFamily: F.u }} className="truncate">
+                {sareeType || "Standard Saree"}
+              </span>
             </div>
           </div>
 
           {/* Status */}
           <div className="min-w-0 pt-3 border-t border-[#F0E5D8]/50">
-            <div style={{ fontFamily: F.u }} className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase">
+            <div
+              style={{ fontFamily: F.u }}
+              className="text-[11px] font-bold tracking-widest text-[#89837E] uppercase"
+            >
               STATUS
             </div>
             <div className="flex items-center gap-1.5 mt-1.5 text-[13px] font-bold text-[#1F774E] min-w-0">
               <CheckCircle2 size={14} className="text-[#1F774E] flex-shrink-0" />
-              <span style={{ fontFamily: F.u }} className="truncate">QC Cleared</span>
+              <span style={{ fontFamily: F.u }} className="truncate">
+                QC Cleared
+              </span>
             </div>
           </div>
         </div>

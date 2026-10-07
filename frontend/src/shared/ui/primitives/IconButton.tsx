@@ -27,11 +27,16 @@ const iconButtonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-[var(--surface-brand)] text-[var(--text-on-brand)] hover:bg-[var(--surface-brand-hover)] active:bg-[var(--surface-brand-active)]",
-        secondary: "bg-[var(--surface-raised)] text-[var(--text-brand)] border border-[var(--border-default)] hover:bg-[var(--surface-brand-subtle)] hover:border-[var(--border-brand)]",
-        tertiary: "bg-transparent text-[var(--text-secondary)] hover:bg-[var(--bk-neutral-50)] hover:text-[var(--text-primary)]",
-        ghost: "bg-transparent text-[var(--text-tertiary)] hover:bg-[var(--bk-neutral-50)] hover:text-[var(--text-primary)] active:bg-[var(--bk-neutral-100)]",
-        danger: "bg-[var(--bk-red-700)] text-white hover:bg-[var(--bk-red-800)] active:bg-[var(--bk-red-900)]",
+        primary:
+          "bg-[var(--surface-brand)] text-[var(--text-on-brand)] hover:bg-[var(--surface-brand-hover)] active:bg-[var(--surface-brand-active)]",
+        secondary:
+          "bg-[var(--surface-raised)] text-[var(--text-brand)] border border-[var(--border-default)] hover:bg-[var(--surface-brand-subtle)] hover:border-[var(--border-brand)]",
+        tertiary:
+          "bg-transparent text-[var(--text-secondary)] hover:bg-[var(--bk-neutral-50)] hover:text-[var(--text-primary)]",
+        ghost:
+          "bg-transparent text-[var(--text-tertiary)] hover:bg-[var(--bk-neutral-50)] hover:text-[var(--text-primary)] active:bg-[var(--bk-neutral-100)]",
+        danger:
+          "bg-[var(--bk-red-700)] text-white hover:bg-[var(--bk-red-800)] active:bg-[var(--bk-red-900)]",
       },
       size: {
         sm: "size-8 [&_svg]:size-3.5",
@@ -60,8 +65,7 @@ const HIT_AREA_INSET: Record<string, string> = {
 };
 
 export interface IconButtonProps
-  extends Omit<React.ComponentProps<"button">, "style">,
-    VariantProps<typeof iconButtonVariants> {
+  extends Omit<React.ComponentProps<"button">, "style">, VariantProps<typeof iconButtonVariants> {
   icon: IconName | LucideIcon;
   /** REQUIRED. Becomes aria-label. There is no way to render an unlabelled IconButton. */
   label: string;
@@ -83,9 +87,18 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(f
       className={cn(iconButtonVariants({ variant, size, shape, className }))}
       {...props}
     >
-      <span aria-hidden="true" className="absolute pointer-events-none" style={{ inset: HIT_AREA_INSET[size ?? "md"] }} />
+      <span
+        aria-hidden="true"
+        className="absolute pointer-events-none"
+        style={{ inset: HIT_AREA_INSET[size ?? "md"] }}
+      />
       {loading ? (
-        <Icon icon={Icons.spinner} size={size === "lg" ? "lg" : "sm"} className="animate-spin" decorative />
+        <Icon
+          icon={Icons.spinner}
+          size={size === "lg" ? "lg" : "sm"}
+          className="animate-spin"
+          decorative
+        />
       ) : typeof icon === "string" ? (
         <Icon name={icon} size={size === "lg" ? "lg" : "sm"} />
       ) : (

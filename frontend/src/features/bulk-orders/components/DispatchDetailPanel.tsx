@@ -43,39 +43,125 @@ export function DispatchDetailPanel({ dispatch, onClose }: DispatchDetailPanelPr
     ["Payment Due Date", dispatch.paymentDueDate || "—"],
   ];
   return (
-    <Drawer open onOpenChange={next => { if (!next) onClose(); }} side="right" size="md">
+    <Drawer
+      open
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+      side="right"
+      size="md"
+    >
       <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-        <div style={{ background: `linear-gradient(135deg,${T.deepWine},${T.royalBurgundy})`, padding: "22px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div
+          style={{
+            background: `linear-gradient(135deg,${T.deepWine},${T.royalBurgundy})`,
+            padding: "22px 24px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <Truck size={18} color={T.antiqueGold} />
             <Dialog.Title asChild>
-              <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFF" }}>Dispatch Details</span>
+              <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFF" }}>
+                Dispatch Details
+              </span>
             </Dialog.Title>
-            <Dialog.Description className="sr-only">Transport and receipt details for this dispatch</Dialog.Description>
+            <Dialog.Description className="sr-only">
+              Transport and receipt details for this dispatch
+            </Dialog.Description>
           </div>
-          <span style={{ display: "inline-block", background: "rgba(255,255,255,0.14)", color: "#FFF", borderRadius: 8 }}>
+          <span
+            style={{
+              display: "inline-block",
+              background: "rgba(255,255,255,0.14)",
+              color: "#FFF",
+              borderRadius: 8,
+            }}
+          >
             <Dialog.Close asChild>
               <IconButton onClick={onClose} icon={X} variant="ghost" size="sm" label="Close" />
             </Dialog.Close>
           </span>
         </div>
         {(dispatch.pendingTransport || dispatch.pendingReceipt) && (
-          <div style={{ margin: "16px 20px 0", background: "rgba(200,155,71,0.12)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: "#8B6018", display: "flex", gap: 8 }}>
-            <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} /> Some details are still pending completion from Dispatch History.
+          <div
+            style={{
+              margin: "16px 20px 0",
+              background: "rgba(200,155,71,0.12)",
+              border: `1px solid ${T.borderGold}`,
+              borderRadius: 10,
+              padding: "10px 14px",
+              fontFamily: F.ui,
+              fontSize: 12,
+              color: "#8B6018",
+              display: "flex",
+              gap: 8,
+            }}
+          >
+            <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} /> Some details are
+            still pending completion from Dispatch History.
           </div>
         )}
         <div style={{ padding: "20px 24px", overflowY: "auto", flex: 1 }}>
           {rows.map(([k, v]) => (
-            <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "10px 0", borderBottom: `1px solid ${T.borderDef}` }}>
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, flexShrink: 0 }}>{k}</span>
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown, textAlign: "right" as const, wordBreak: "break-word" as const }}>{v}</span>
+            <div
+              key={k}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
+                padding: "10px 0",
+                borderBottom: `1px solid ${T.borderDef}`,
+              }}
+            >
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, flexShrink: 0 }}>
+                {k}
+              </span>
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 12,
+                  color: T.luxuryBrown,
+                  textAlign: "right" as const,
+                  wordBreak: "break-word" as const,
+                }}
+              >
+                {v}
+              </span>
             </div>
           ))}
           <div style={{ marginTop: 14 }}>
-            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 8 }}>Sarees on this dispatch ({dispatch.sareeIds.length})</div>
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontSize: 12,
+                fontWeight: 700,
+                color: T.taupe,
+                textTransform: "uppercase" as const,
+                letterSpacing: "0.06em",
+                marginBottom: 8,
+              }}
+            >
+              Sarees on this dispatch ({dispatch.sareeIds.length})
+            </div>
             <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
-              {dispatch.sareeIds.map(id => (
-                <span key={id} style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 8px", borderRadius: 6 }}>{id}</span>
+              {dispatch.sareeIds.map((id) => (
+                <span
+                  key={id}
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: T.royalBurgundy,
+                    background: "rgba(110,15,45,0.06)",
+                    padding: "3px 8px",
+                    borderRadius: 6,
+                  }}
+                >
+                  {id}
+                </span>
               ))}
             </div>
           </div>

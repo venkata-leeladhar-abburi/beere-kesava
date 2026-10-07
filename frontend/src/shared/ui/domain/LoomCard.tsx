@@ -19,7 +19,18 @@ export interface LoomCardProps {
   className?: string;
 }
 
-export function LoomCard({ code, location, type, currentBatch, uptime, condition, progress, density, onClick, className }: LoomCardProps) {
+export function LoomCard({
+  code,
+  location,
+  type,
+  currentBatch,
+  uptime,
+  condition,
+  progress,
+  density,
+  onClick,
+  className,
+}: LoomCardProps) {
   return (
     <DomainCard
       avatarName={code}
@@ -28,8 +39,12 @@ export function LoomCard({ code, location, type, currentBatch, uptime, condition
       meta={[location, type].filter(Boolean).join(" · ") || undefined}
       status={<StatusPill taxonomy="condition" status={condition} size="sm" />}
       stats={[
-        ...(currentBatch ? [{ label: "Batch", value: <EntityCode type="batch" value={currentBatch} size="sm" /> }] : []),
-        ...(uptime != null ? [{ label: "Uptime", value: <Percent value={uptime} decimals={0} /> }] : []),
+        ...(currentBatch
+          ? [{ label: "Batch", value: <EntityCode type="batch" value={currentBatch} size="sm" /> }]
+          : []),
+        ...(uptime != null
+          ? [{ label: "Uptime", value: <Percent value={uptime} decimals={0} /> }]
+          : []),
       ]}
       progress={progress}
       progressLabel="Batch progress"

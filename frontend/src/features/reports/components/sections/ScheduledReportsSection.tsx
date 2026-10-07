@@ -33,10 +33,18 @@ import { Button, IconButton, Select, SelectItem, Input } from "../../../../share
 // admin reads is what the scheduler will do.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { reportsApi, type ReportFrequency, type ScheduledReportItem } from "../../../../shared/api/reports";
+import {
+  reportsApi,
+  type ReportFrequency,
+  type ScheduledReportItem,
+} from "../../../../shared/api/reports";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { useConfirm } from "../../../../shared/ui/overlay";
-import { patchEnvelopeItems, prependToEnvelope, removeFromEnvelopeWhere } from "../../../../lib/cacheUpdates";
+import {
+  patchEnvelopeItems,
+  prependToEnvelope,
+  removeFromEnvelopeWhere,
+} from "../../../../lib/cacheUpdates";
 
 // Every entry here must have a matching key in the backend's
 // ReportSchedulerService.REPORT_NAME_HANDLERS (the exact label string,
@@ -152,7 +160,11 @@ export function ScheduledReportsSection() {
     }
   }, [showForm, myNumber]);
 
-  const { data: schedRes, isLoading, isError } = useQuery({
+  const {
+    data: schedRes,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: SCHEDULES_KEY,
     queryFn: () => reportsApi.listSchedules(),
   });
@@ -195,7 +207,7 @@ export function ScheduledReportsSection() {
       toast.success(
         next
           ? `Schedule created — first delivery ${formatRunDate(next)} at ${formatRunTime(next)}`
-          : "Report schedule created",
+          : "Report schedule created"
       );
     },
     onError: (err: unknown) => {
@@ -208,7 +220,12 @@ export function ScheduledReportsSection() {
       reportsApi.updateSchedule(vars.id, { active: vars.active, actorId: user?.id }),
     onSuccess: (updated) => {
       if (updated) {
-        patchEnvelopeItems<ScheduledReportItem>(queryClient, SCHEDULES_KEY, r => r.id === updated.id, updated);
+        patchEnvelopeItems<ScheduledReportItem>(
+          queryClient,
+          SCHEDULES_KEY,
+          (r) => r.id === updated.id,
+          updated
+        );
       }
       invalidate();
       toast.success(
@@ -216,7 +233,7 @@ export function ScheduledReportsSection() {
           ? updated.nextRunAt
             ? `Resumed — next delivery ${formatRunDate(updated.nextRunAt)}`
             : "Schedule resumed"
-          : "Schedule paused — no reports will be sent until you resume it",
+          : "Schedule paused — no reports will be sent until you resume it"
       );
     },
     onError: (err: unknown) => {
@@ -227,7 +244,7 @@ export function ScheduledReportsSection() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => reportsApi.deleteSchedule(id),
     onSuccess: (_result, id) => {
-      removeFromEnvelopeWhere<ScheduledReportItem>(queryClient, SCHEDULES_KEY, r => r.id === id);
+      removeFromEnvelopeWhere<ScheduledReportItem>(queryClient, SCHEDULES_KEY, (r) => r.id === id);
       invalidate();
       toast.success("Report schedule deleted");
     },
@@ -246,211 +263,361 @@ export function ScheduledReportsSection() {
 
   const frequencyHint = useMemo(
     () => FREQUENCY_OPTIONS.find((o) => o.value === frequency)?.hint ?? "",
-    [frequency],
+    [frequency]
   );
 
   return (
-    <div id="rep-scheduled" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36, paddingBottom: 16 }}>
+    <div
+      id="rep-scheduled"
+      className="px-4 md:px-7 xl:px-10"
+      style={{ paddingTop: 36, paddingBottom: 16 }}
+    >
       <FadeUp>
-      <SectionCard
-        icon={CalendarClock}
-        title="Scheduled Reports — Automatic Delivery"
-        subtitle="Each report is generated on its own and sent as a WhatsApp spreadsheet to the number you choose, at the day and time you set. No manual action needed."
-        actions={
-          <Button
-            variant="ghost"
-            size="sm"
-            iconLeft={Plus}
-            onClick={() => setShowForm(!showForm)}
-            className="bg-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.25)] active:bg-[rgba(255,255,255,0.35)] text-[#FFFDF9] hover:text-[#FFFDF9] border border-[rgba(255,255,255,0.25)] rounded-[10px] font-bold shadow-sm transition-all"
+        <SectionCard
+          icon={CalendarClock}
+          title="Scheduled Reports — Automatic Delivery"
+          subtitle="Each report is generated on its own and sent as a WhatsApp spreadsheet to the number you choose, at the day and time you set. No manual action needed."
+          actions={
+            <Button
+              variant="ghost"
+              size="sm"
+              iconLeft={Plus}
+              onClick={() => setShowForm(!showForm)}
+              className="bg-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.25)] active:bg-[rgba(255,255,255,0.35)] text-[#FFFDF9] hover:text-[#FFFDF9] border border-[rgba(255,255,255,0.25)] rounded-[10px] font-bold shadow-sm transition-all"
+            >
+              Add New Schedule
+            </Button>
+          }
+        >
+          {/* Schedule cards grid */}
+          <div
+            className="grid grid-cols-1 md:grid-cols-3"
+            style={{ gap: 18, marginBottom: 20, alignItems: "stretch" }}
           >
-            Add New Schedule
-          </Button>
-        }
-      >
-        {/* Schedule cards grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 18, marginBottom: 20, alignItems: "stretch" }}>
-          {isLoading ? (
-            <div style={{ gridColumn: "1 / -1", padding: 32, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }}>
-              Loading scheduled reports…
-            </div>
-          ) : isError ? (
-            <div style={{ gridColumn: "1 / -1", padding: 32, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.royalBurgundy, background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }}>
-              Failed to load scheduled reports.
-            </div>
-          ) : schedules.length === 0 ? (
-            <div style={{ gridColumn: "1 / -1", padding: 32, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }}>
-              No automated report schedules configured yet. Click "Add New Schedule" to create one.
-            </div>
-          ) : (
-            schedules.map((s, i) => (
-              <ScheduleCard
-                key={s.id}
-                schedule={s}
-                icon={scheduleIcons[i % scheduleIcons.length]}
-                myNumber={myNumber}
-                expanded={expandedId === s.id}
-                onToggleExpand={() => setExpandedId(expandedId === s.id ? null : s.id)}
-                onToggleActive={() => toggleMutation.mutate({ id: s.id, active: !s.active })}
-                toggleDisabled={toggleMutation.isPending}
-                deleteDisabled={deleteMutation.isPending}
-                onDelete={async () => {
-                  const confirmed = await confirm({
-                    title: `Delete scheduled report "${s.reportName}"?`,
-                    description: "This stops future deliveries of this report. You can set up a new schedule again later.",
-                    confirmLabel: "Delete",
-                  });
-                  if (confirmed) deleteMutation.mutate(s.id);
+            {isLoading ? (
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  padding: 32,
+                  textAlign: "center",
+                  fontFamily: F.ui,
+                  fontSize: 14,
+                  color: T.taupe,
+                  background: "#FFF",
+                  borderRadius: 16,
+                  border: `1px solid ${T.borderDef}`,
                 }}
-              />
-            ))
-          )}
-        </div>
-
-        {/* Add Schedule form (collapsible) */}
-        {showForm && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-            style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "24px 28px", marginBottom: 20, boxShadow: "0 4px 16px rgba(74,6,27,0.08)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <div style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown }}>Add New Schedule</div>
-              <IconButton variant="ghost" size="sm" icon={X} label="Close" onClick={() => setShowForm(false)} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4" style={{ gap: 18 }}>
-              <div>
-                <FieldLabel>Select Report Type</FieldLabel>
-                <Select size="sm" value={reportType} onValueChange={setReportType}>
-                  {REPORT_TYPES.map((o) => (
-                    <SelectItem key={o} value={o}>{o}</SelectItem>
-                  ))}
-                </Select>
+              >
+                Loading scheduled reports…
               </div>
-
-              <div>
-                <FieldLabel>Frequency</FieldLabel>
-                <Select size="sm" value={frequency} onValueChange={(v: string) => setFrequency(v as ReportFrequency)}>
-                  {FREQUENCY_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                  ))}
-                </Select>
-                <FieldHint>{frequencyHint}</FieldHint>
+            ) : isError ? (
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  padding: 32,
+                  textAlign: "center",
+                  fontFamily: F.ui,
+                  fontSize: 14,
+                  color: T.royalBurgundy,
+                  background: "#FFF",
+                  borderRadius: 16,
+                  border: `1px solid ${T.borderDef}`,
+                }}
+              >
+                Failed to load scheduled reports.
               </div>
-
-              <div>
-                <FieldLabel>Delivery Time (IST)</FieldLabel>
-                <Input
-                  size="sm"
-                  type="time"
-                  value={deliveryTime}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeliveryTime(e.target.value || "09:00")}
-                />
-                <FieldHint>The report lands within 15 minutes of this time.</FieldHint>
+            ) : schedules.length === 0 ? (
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  padding: 32,
+                  textAlign: "center",
+                  fontFamily: F.ui,
+                  fontSize: 14,
+                  color: T.taupe,
+                  background: "#FFF",
+                  borderRadius: 16,
+                  border: `1px solid ${T.borderDef}`,
+                }}
+              >
+                No automated report schedules configured yet. Click "Add New Schedule" to create
+                one.
               </div>
-
-              <div>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-                  <FieldLabel>Recipient WhatsApp Number</FieldLabel>
-                  {!usingOwnNumber && myNumber.length === 10 && (
-                    <button
-                      type="button"
-                      onClick={() => { setRecipientPhone(myNumber); setPhoneTouched(false); }}
-                      style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.antiqueGold, background: "none", border: "none", cursor: "pointer", padding: 0, marginBottom: 6 }}
-                    >
-                      Use my number
-                    </button>
-                  )}
-                </div>
-                <Input
-                  size="sm"
-                  type="tel"
-                  inputMode="numeric"
-                  maxLength={10}
-                  addonLeft="+91"
-                  placeholder="98765 43210"
-                  invalid={showPhoneError}
-                  value={recipientPhone}
-                  onBlur={() => setPhoneTouched(true)}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    setRecipientPhone(e.target.value.replace(/\D/g, "").slice(0, 10));
-                    setPhoneTouched(true);
+            ) : (
+              schedules.map((s, i) => (
+                <ScheduleCard
+                  key={s.id}
+                  schedule={s}
+                  icon={scheduleIcons[i % scheduleIcons.length]}
+                  myNumber={myNumber}
+                  expanded={expandedId === s.id}
+                  onToggleExpand={() => setExpandedId(expandedId === s.id ? null : s.id)}
+                  onToggleActive={() => toggleMutation.mutate({ id: s.id, active: !s.active })}
+                  toggleDisabled={toggleMutation.isPending}
+                  deleteDisabled={deleteMutation.isPending}
+                  onDelete={async () => {
+                    const confirmed = await confirm({
+                      title: `Delete scheduled report "${s.reportName}"?`,
+                      description:
+                        "This stops future deliveries of this report. You can set up a new schedule again later.",
+                      confirmLabel: "Delete",
+                    });
+                    if (confirmed) deleteMutation.mutate(s.id);
                   }}
                 />
-                {showPhoneError ? (
-                  <FieldHint tone="error">Enter a valid 10-digit mobile number.</FieldHint>
-                ) : usingOwnNumber ? (
-                  <FieldHint>Your own number — change it to send to someone else.</FieldHint>
-                ) : (
-                  <FieldHint>This number receives the spreadsheet on WhatsApp.</FieldHint>
-                )}
-              </div>
-            </div>
+              ))
+            )}
+          </div>
 
-            {/* Live delivery preview — the dates this schedule will actually fire on */}
-            <div style={{ marginTop: 20, background: "rgba(200,155,71,0.07)", border: `1px solid rgba(200,155,71,0.28)`, borderRadius: 12, padding: "16px 18px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                <CalendarDays size={16} color={T.antiqueGold} />
-                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>
-                  Upcoming deliveries
-                </span>
-                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                  · {FREQUENCY_LABEL[frequency]} at {formatClock(deliveryTime)}
-                </span>
-              </div>
-
-              {previewLoading && previewRuns.length === 0 ? (
-                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Working out the dates…</div>
-              ) : previewRuns.length === 0 ? (
-                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                  Dates will appear once a frequency and time are selected.
-                </div>
-              ) : (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {previewRuns.map((run, idx) => (
-                    <span
-                      key={run}
-                      style={{
-                        display: "inline-flex", alignItems: "center", gap: 6,
-                        padding: "6px 12px", borderRadius: 99,
-                        background: idx === 0 ? T.royalBurgundy : "#FFFFFF",
-                        color: idx === 0 ? "#FFFDF9" : T.luxuryBrown,
-                        border: `1px solid ${idx === 0 ? T.royalBurgundy : T.borderDef}`,
-                        fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700,
-                      }}
-                    >
-                      {formatRunDate(run)}
-                      <span style={{ opacity: 0.7, fontWeight: 600 }}>· {formatRunTime(run)}</span>
-                      {idx === 0 && <span style={{ opacity: 0.85, fontWeight: 600 }}>({relativeToNow(run)})</span>}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 12, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
-                <MessageCircle size={14} color={T.green} />
-                <span>
-                  Sent on WhatsApp to{" "}
-                  <strong style={{ color: T.luxuryBrown }}>
-                    +91 {prettyPhone(recipientPhone)}
-                  </strong>
-                  {usingOwnNumber ? " (you)" : ""}
-                </span>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20, borderTop: `1px solid ${T.borderDef}`, paddingTop: 16 }}>
-              <Button variant="secondary" size="sm" onClick={() => setShowForm(false)}>Cancel</Button>
-              <Button
-                variant="primary"
-                size="sm"
-                disabled={createMutation.isPending || !phoneValid}
-                onClick={() => createMutation.mutate()}
+          {/* Add Schedule form (collapsible) */}
+          {showForm && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              style={{
+                background: "#FFFFFF",
+                borderRadius: 14,
+                border: `1px solid ${T.borderDef}`,
+                padding: "24px 28px",
+                marginBottom: 20,
+                boxShadow: "0 4px 16px rgba(74,6,27,0.08)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 20,
+                }}
               >
-                {createMutation.isPending ? "Saving…" : "💾 Save Schedule"}
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </SectionCard>
+                <div style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown }}>
+                  Add New Schedule
+                </div>
+                <IconButton
+                  variant="ghost"
+                  size="sm"
+                  icon={X}
+                  label="Close"
+                  onClick={() => setShowForm(false)}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4" style={{ gap: 18 }}>
+                <div>
+                  <FieldLabel>Select Report Type</FieldLabel>
+                  <Select size="sm" value={reportType} onValueChange={setReportType}>
+                    {REPORT_TYPES.map((o) => (
+                      <SelectItem key={o} value={o}>
+                        {o}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                </div>
+
+                <div>
+                  <FieldLabel>Frequency</FieldLabel>
+                  <Select
+                    size="sm"
+                    value={frequency}
+                    onValueChange={(v: string) => setFrequency(v as ReportFrequency)}
+                  >
+                    {FREQUENCY_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                  <FieldHint>{frequencyHint}</FieldHint>
+                </div>
+
+                <div>
+                  <FieldLabel>Delivery Time (IST)</FieldLabel>
+                  <Input
+                    size="sm"
+                    type="time"
+                    value={deliveryTime}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setDeliveryTime(e.target.value || "09:00")
+                    }
+                  />
+                  <FieldHint>The report lands within 15 minutes of this time.</FieldHint>
+                </div>
+
+                <div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "baseline",
+                      justifyContent: "space-between",
+                      gap: 8,
+                    }}
+                  >
+                    <FieldLabel>Recipient WhatsApp Number</FieldLabel>
+                    {!usingOwnNumber && myNumber.length === 10 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRecipientPhone(myNumber);
+                          setPhoneTouched(false);
+                        }}
+                        style={{
+                          fontFamily: F.ui,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: T.antiqueGold,
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: 0,
+                          marginBottom: 6,
+                        }}
+                      >
+                        Use my number
+                      </button>
+                    )}
+                  </div>
+                  <Input
+                    size="sm"
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
+                    addonLeft="+91"
+                    placeholder="98765 43210"
+                    invalid={showPhoneError}
+                    value={recipientPhone}
+                    onBlur={() => setPhoneTouched(true)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      setRecipientPhone(e.target.value.replace(/\D/g, "").slice(0, 10));
+                      setPhoneTouched(true);
+                    }}
+                  />
+                  {showPhoneError ? (
+                    <FieldHint tone="error">Enter a valid 10-digit mobile number.</FieldHint>
+                  ) : usingOwnNumber ? (
+                    <FieldHint>Your own number — change it to send to someone else.</FieldHint>
+                  ) : (
+                    <FieldHint>This number receives the spreadsheet on WhatsApp.</FieldHint>
+                  )}
+                </div>
+              </div>
+
+              {/* Live delivery preview — the dates this schedule will actually fire on */}
+              <div
+                style={{
+                  marginTop: 20,
+                  background: "rgba(200,155,71,0.07)",
+                  border: `1px solid rgba(200,155,71,0.28)`,
+                  borderRadius: 12,
+                  padding: "16px 18px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                  <CalendarDays size={16} color={T.antiqueGold} />
+                  <span
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: T.luxuryBrown,
+                    }}
+                  >
+                    Upcoming deliveries
+                  </span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                    · {FREQUENCY_LABEL[frequency]} at {formatClock(deliveryTime)}
+                  </span>
+                </div>
+
+                {previewLoading && previewRuns.length === 0 ? (
+                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                    Working out the dates…
+                  </div>
+                ) : previewRuns.length === 0 ? (
+                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                    Dates will appear once a frequency and time are selected.
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {previewRuns.map((run, idx) => (
+                      <span
+                        key={run}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                          padding: "6px 12px",
+                          borderRadius: 99,
+                          background: idx === 0 ? T.royalBurgundy : "#FFFFFF",
+                          color: idx === 0 ? "#FFFDF9" : T.luxuryBrown,
+                          border: `1px solid ${idx === 0 ? T.royalBurgundy : T.borderDef}`,
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 12,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {formatRunDate(run)}
+                        <span style={{ opacity: 0.7, fontWeight: 600 }}>
+                          · {formatRunTime(run)}
+                        </span>
+                        {idx === 0 && (
+                          <span style={{ opacity: 0.85, fontWeight: 600 }}>
+                            ({relativeToNow(run)})
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 7,
+                    marginTop: 12,
+                    fontFamily: F.ui,
+                    fontSize: 12.5,
+                    color: T.taupe,
+                  }}
+                >
+                  <MessageCircle size={14} color={T.green} />
+                  <span>
+                    Sent on WhatsApp to{" "}
+                    <strong style={{ color: T.luxuryBrown }}>
+                      +91 {prettyPhone(recipientPhone)}
+                    </strong>
+                    {usingOwnNumber ? " (you)" : ""}
+                  </span>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  justifyContent: "flex-end",
+                  marginTop: 20,
+                  borderTop: `1px solid ${T.borderDef}`,
+                  paddingTop: 16,
+                }}
+              >
+                <Button variant="secondary" size="sm" onClick={() => setShowForm(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  disabled={createMutation.isPending || !phoneValid}
+                  onClick={() => createMutation.mutate()}
+                >
+                  {createMutation.isPending ? "Saving…" : "💾 Save Schedule"}
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </SectionCard>
       </FadeUp>
     </div>
   );
@@ -458,7 +625,16 @@ export function ScheduledReportsSection() {
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>
+    <span
+      style={{
+        fontFamily: F.ui,
+        fontSize: 12,
+        fontWeight: 600,
+        color: T.luxuryBrown,
+        display: "block",
+        marginBottom: 6,
+      }}
+    >
       {children}
     </span>
   );
@@ -466,7 +642,15 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 
 function FieldHint({ children, tone }: { children: React.ReactNode; tone?: "error" }) {
   return (
-    <span style={{ display: "block", marginTop: 6, fontFamily: F.ui, fontSize: 11.5, color: tone === "error" ? T.royalBurgundy : T.taupe }}>
+    <span
+      style={{
+        display: "block",
+        marginTop: 6,
+        fontFamily: F.ui,
+        fontSize: 11.5,
+        color: tone === "error" ? T.royalBurgundy : T.taupe,
+      }}
+    >
       {children}
     </span>
   );
@@ -502,44 +686,119 @@ function ScheduleCard({
     : (s.recipientEmail ?? "—");
 
   return (
-    <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        background: "#FFFFFF",
+        borderRadius: 16,
+        border: `1px solid ${T.borderDef}`,
+        boxShadow: "0 2px 14px rgba(74,6,27,0.07)",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {/* Top color bar — Royal Burgundy Brown */}
       <div style={{ height: 5, background: s.active ? T.royalBurgundy : T.taupe }} />
 
-      <div style={{ padding: "20px 22px", flex: 1, display: "flex", flexDirection: "column", gap: 14 }}>
+      <div
+        style={{ padding: "20px 22px", flex: 1, display: "flex", flexDirection: "column", gap: 14 }}
+      >
         {/* Header: icon + title */}
         <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-          <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(200,155,71,0.12)" }}>
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              minWidth: 52,
+              borderRadius: 14,
+              background: "rgba(200,155,71,0.10)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(200,155,71,0.12)",
+            }}
+          >
             {icon}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.3, marginBottom: 7 }}>{s.reportName}</div>
-            <span style={{ display: "inline-block", padding: "3px 12px", borderRadius: 99, background: "rgba(200,155,71,0.13)", color: T.antiqueGold, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.4px" }}>
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontSize: 16,
+                fontWeight: 700,
+                color: T.luxuryBrown,
+                lineHeight: 1.3,
+                marginBottom: 7,
+              }}
+            >
+              {s.reportName}
+            </div>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "3px 12px",
+                borderRadius: 99,
+                background: "rgba(200,155,71,0.13)",
+                color: T.antiqueGold,
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "0.4px",
+              }}
+            >
               {FREQUENCY_LABEL[s.frequency] ?? s.frequency}
               {" · "}
-              {formatClock(`${String(s.deliveryHour).padStart(2, "0")}:${String(s.deliveryMinute).padStart(2, "0")}`)}
+              {formatClock(
+                `${String(s.deliveryHour).padStart(2, "0")}:${String(s.deliveryMinute).padStart(2, "0")}`
+              )}
             </span>
           </div>
         </div>
 
         {/* Details */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 7,
+              fontFamily: F.ui,
+              fontSize: 14,
+              color: T.taupe,
+            }}
+          >
             <MessageCircle size={14} color={T.green} />
-            <span><span style={{ fontWeight: 700, color: T.luxuryBrown }}>Send to: </span>{destination}</span>
+            <span>
+              <span style={{ fontWeight: 700, color: T.luxuryBrown }}>Send to: </span>
+              {destination}
+            </span>
           </div>
 
           {/* Next delivery — the single most useful line on the card */}
-          <div style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 7,
+              fontFamily: F.ui,
+              fontSize: 14,
+              color: T.taupe,
+            }}
+          >
             <Clock size={14} color={T.antiqueGold} />
             {s.active && nextRun ? (
               <span>
                 <span style={{ fontWeight: 700, color: T.luxuryBrown }}>Next: </span>
                 {formatRunDate(nextRun)}, {formatRunTime(nextRun)}{" "}
-                <span style={{ color: T.antiqueGold, fontWeight: 700 }}>({relativeToNow(nextRun)})</span>
+                <span style={{ color: T.antiqueGold, fontWeight: 700 }}>
+                  ({relativeToNow(nextRun)})
+                </span>
               </span>
             ) : (
-              <span><span style={{ fontWeight: 700, color: T.luxuryBrown }}>Next: </span>paused — no deliveries scheduled</span>
+              <span>
+                <span style={{ fontWeight: 700, color: T.luxuryBrown }}>Next: </span>paused — no
+                deliveries scheduled
+              </span>
             )}
           </div>
 
@@ -557,23 +816,61 @@ function ScheduleCard({
                 type="button"
                 onClick={onToggleExpand}
                 aria-expanded={expanded}
-                style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer",
+                  fontFamily: F.ui,
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  color: T.royalBurgundy,
+                }}
               >
                 <CalendarDays size={14} />
                 {expanded ? "Hide upcoming dates" : `See next ${upcoming.length} delivery dates`}
-                <ChevronDown size={14} style={{ transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+                <ChevronDown
+                  size={14}
+                  style={{
+                    transform: expanded ? "rotate(180deg)" : "none",
+                    transition: "transform 0.2s",
+                  }}
+                />
               </button>
 
               {expanded && (
                 <motion.ul
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  style={{ overflow: "hidden", listStyle: "none", margin: "10px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: 6 }}
+                  style={{
+                    overflow: "hidden",
+                    listStyle: "none",
+                    margin: "10px 0 0",
+                    padding: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                  }}
                 >
                   {upcoming.map((run, idx) => (
                     <li
                       key={run}
-                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "6px 10px", borderRadius: 8, background: idx === 0 ? "rgba(110,15,45,0.06)" : "rgba(0,0,0,0.02)", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 8,
+                        padding: "6px 10px",
+                        borderRadius: 8,
+                        background: idx === 0 ? "rgba(110,15,45,0.06)" : "rgba(0,0,0,0.02)",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: T.luxuryBrown,
+                      }}
                     >
                       <span>{formatRunDate(run)}</span>
                       <span style={{ color: T.taupe, fontWeight: 600 }}>{formatRunTime(run)}</span>
@@ -585,16 +882,52 @@ function ScheduleCard({
           )}
 
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const, alignItems: "center" }}>
-            <span style={{ padding: "3px 11px", borderRadius: 6, background: "rgba(110,15,45,0.07)", color: T.royalBurgundy, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700 }}>{s.format}</span>
+            <span
+              style={{
+                padding: "3px 11px",
+                borderRadius: 6,
+                background: "rgba(110,15,45,0.07)",
+                color: T.royalBurgundy,
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 700,
+              }}
+            >
+              {s.format}
+            </span>
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <div style={{ width: 10, height: 10, borderRadius: "50%", background: s.active ? T.green : T.taupe }} />
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: s.active ? T.green : T.taupe }}>{s.active ? "Active" : "Paused"}</span>
+              <div
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  background: s.active ? T.green : T.taupe,
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: s.active ? T.green : T.taupe,
+                }}
+              >
+                {s.active ? "Active" : "Paused"}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Actions */}
-        <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8, borderTop: `1px solid ${T.borderDef}` }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            marginTop: "auto",
+            paddingTop: 8,
+            borderTop: `1px solid ${T.borderDef}`,
+          }}
+        >
           <IconButton
             variant="ghost"
             size="sm"

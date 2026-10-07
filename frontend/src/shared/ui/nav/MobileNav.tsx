@@ -171,7 +171,9 @@ export function MobileNav({
                 </span>
               )}
             </span>
-            <span className="bk-label-sm" style={{ fontSize: 11, color, ...labelStyle }}>{item.label}</span>
+            <span className="bk-label-sm" style={{ fontSize: 11, color, ...labelStyle }}>
+              {item.label}
+            </span>
           </Tag>
         );
       })}

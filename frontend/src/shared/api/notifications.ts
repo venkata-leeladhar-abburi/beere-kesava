@@ -37,7 +37,9 @@ export const notificationsApi = {
     query.set("pageSize", String(params.pageSize ?? 100));
     if (params.role) query.set("role", params.role);
     if (params.userId) query.set("userId", params.userId);
-    return apiClient.get<PaginatedResponse<BackendNotification>>(`/notifications?${query.toString()}`);
+    return apiClient.get<PaginatedResponse<BackendNotification>>(
+      `/notifications?${query.toString()}`
+    );
   },
   markRead: (id: string) => apiClient.patch<BackendNotification>(`/notifications/${id}/read`, {}),
 };
@@ -48,7 +50,9 @@ export const notificationsApi = {
  * — the `params` a caller used to pass are no longer trusted by the server,
  * kept only so existing call sites don't need to change their signature.
  */
-export function connectNotificationsSocket(_params: { userId?: string; role?: string } = {}): Socket {
+export function connectNotificationsSocket(
+  _params: { userId?: string; role?: string } = {}
+): Socket {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token") || undefined;
   return io(API_BASE_URL, { transports: ["websocket"], auth: { token } });
 }

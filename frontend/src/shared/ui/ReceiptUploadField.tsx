@@ -29,7 +29,11 @@ export function ReceiptUploadField({
 
   async function handleFile(file: File) {
     setError(null);
-    if (!isAcceptedImageFile(file) && file.type !== "application/pdf" && !/\.pdf$/i.test(file.name)) {
+    if (
+      !isAcceptedImageFile(file) &&
+      file.type !== "application/pdf" &&
+      !/\.pdf$/i.test(file.name)
+    ) {
       setError("Receipt must be a JPG, PNG or PDF file.");
       return;
     }
@@ -45,7 +49,9 @@ export function ReceiptUploadField({
       const { url } = await uploadsApi.uploadReceipt(file);
       onChange(url);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not upload receipt. Please try again.");
+      setError(
+        err instanceof ApiError ? err.message : "Could not upload receipt. Please try again."
+      );
       setFileName(null);
       setFileSize(null);
     } finally {
@@ -72,7 +78,7 @@ export function ReceiptUploadField({
         accept={`${IMAGE_ACCEPT_ATTR},application/pdf,.pdf`}
         aria-label="Upload LR receipt"
         style={{ display: "none" }}
-        onChange={e => {
+        onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) void handleFile(file);
           e.target.value = "";
@@ -84,7 +90,7 @@ export function ReceiptUploadField({
           role="button"
           tabIndex={0}
           onClick={() => inputRef.current?.click()}
-          onKeyDown={e => {
+          onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               inputRef.current?.click();
@@ -119,9 +125,15 @@ export function ReceiptUploadField({
         >
           <div
             style={{
-              width: 44, height: 44, borderRadius: 8, background: "#FDFBF7",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              border: "1px solid rgba(110,15,45,0.10)", flexShrink: 0,
+              width: 44,
+              height: 44,
+              borderRadius: 8,
+              background: "#FDFBF7",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "1px solid rgba(110,15,45,0.10)",
+              flexShrink: 0,
             }}
           >
             {uploading ? (
@@ -133,8 +145,12 @@ export function ReceiptUploadField({
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
-                fontSize: 13, fontWeight: 600, color: "#4A061B",
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#4A061B",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
               }}
             >
               {fileName ?? "Receipt attached"}
@@ -152,8 +168,13 @@ export function ReceiptUploadField({
               type="button"
               onClick={clear}
               style={{
-                background: "none", border: "none", cursor: "pointer",
-                fontSize: 13, fontWeight: 600, color: "#C0392B", padding: "4px 8px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#C0392B",
+                padding: "4px 8px",
               }}
             >
               Remove

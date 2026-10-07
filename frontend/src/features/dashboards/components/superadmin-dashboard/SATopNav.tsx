@@ -1,25 +1,62 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Bell, ChevronDown, ChevronLeft, UserRound, LogOut, Users, Store, Eye, IndianRupee } from "lucide-react";
+import {
+  Bell,
+  ChevronDown,
+  ChevronLeft,
+  UserRound,
+  LogOut,
+  Users,
+  Store,
+  Eye,
+  IndianRupee,
+} from "lucide-react";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import {
-  SectionNavigator, MAIN_NAV_H, SUB_NAV_H, SectionNavItem, getSectionsForPage,
+  SectionNavigator,
+  MAIN_NAV_H,
+  SUB_NAV_H,
+  SectionNavItem,
+  getSectionsForPage,
 } from "../../../../shared/ui/SectionNavigator";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import { T, F, EASE } from "./theme";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "../../../../shared/ui/overlay";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "../../../../shared/ui/overlay";
 import { NAV_GROUPS, findNavGroup } from "./data";
 
-export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, onViewAs }: { active: string; set: (v: string) => void; onBack?: () => void; onLogout?: () => void; sections?: SectionNavItem[]; onProfile?: () => void; onViewAs?: (role: "worker" | "shop") => void }) {
+export function SATopNav({
+  active,
+  set,
+  onBack,
+  onLogout,
+  sections,
+  onProfile,
+  onViewAs,
+}: {
+  active: string;
+  set: (v: string) => void;
+  onBack?: () => void;
+  onLogout?: () => void;
+  sections?: SectionNavItem[];
+  onProfile?: () => void;
+  onViewAs?: (role: "worker" | "shop") => void;
+}) {
   const { w } = useResponsive();
   const compact = w < 1320;
   const [showProfile, setShowProfile] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
 
   const activeGroup = findNavGroup(active);
-  const resolvedSections = (sections && sections.length > 0) ? sections : getSectionsForPage(active);
-  const showSubNav = activeGroup.pages.length > 1 || (resolvedSections && resolvedSections.length > 0);
+  const resolvedSections = sections && sections.length > 0 ? sections : getSectionsForPage(active);
+  const showSubNav =
+    activeGroup.pages.length > 1 || (resolvedSections && resolvedSections.length > 0);
 
   return (
     <>
@@ -29,7 +66,9 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
         transition={{ duration: 0.7, ease: EASE }}
         style={{
           height: MAIN_NAV_H,
-          display: "flex", alignItems: "center", justifyContent: "space-between",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
           padding: compact ? "0 20px" : "0 56px",
           gap: compact ? 12 : 0,
           background: T.darkBurgundy,
@@ -41,21 +80,71 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
         }}
       >
         {/* Logo + Brand */}
-        <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}
-          style={{ display: "flex", alignItems: "center", gap: compact ? 10 : 14, flexShrink: 0, cursor: "pointer" }}
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.2 }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: compact ? 10 : 14,
+            flexShrink: 0,
+            cursor: "pointer",
+          }}
         >
-          <div style={{ width: compact ? 40 : 52, height: compact ? 40 : 52, borderRadius: 14, overflow: "hidden", flexShrink: 0, boxShadow: "0 4px 16px rgba(0,0,0,0.30)", border: `1.5px solid rgba(200,155,71,0.30)` }}>
-            <img src={imgBKLogo} alt="BK Logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <div
+            style={{
+              width: compact ? 40 : 52,
+              height: compact ? 40 : 52,
+              borderRadius: 14,
+              overflow: "hidden",
+              flexShrink: 0,
+              boxShadow: "0 4px 16px rgba(0,0,0,0.30)",
+              border: `1.5px solid rgba(200,155,71,0.30)`,
+            }}
+          >
+            <img
+              src={imgBKLogo}
+              alt="BK Logo"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
           </div>
           {!compact && (
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 16, color: T.warmCream, letterSpacing: "0.5px", lineHeight: 1, textTransform: "uppercase" }}>
+              <div
+                style={{
+                  fontFamily: F.display,
+                  fontWeight: 600,
+                  fontSize: 16,
+                  color: T.warmCream,
+                  letterSpacing: "0.5px",
+                  lineHeight: 1,
+                  textTransform: "uppercase",
+                }}
+              >
                 Beere Kesava
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: "rgba(245,232,208,0.75)", letterSpacing: "1.6px", textTransform: "uppercase" }}>
+              <div
+                style={{
+                  fontFamily: F.ui,
+                  fontWeight: 400,
+                  fontSize: 12,
+                  color: "rgba(245,232,208,0.75)",
+                  letterSpacing: "1.6px",
+                  textTransform: "uppercase",
+                }}
+              >
                 And Brothers Silks
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.antiqueGold, letterSpacing: "3px", textTransform: "uppercase" }}>
+              <div
+                style={{
+                  fontFamily: F.ui,
+                  fontWeight: 500,
+                  fontSize: 12,
+                  color: T.antiqueGold,
+                  letterSpacing: "3px",
+                  textTransform: "uppercase",
+                }}
+              >
                 Since 1999
               </div>
             </div>
@@ -63,7 +152,21 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
         </motion.div>
 
         {/* Group nav — scrolls internally if the viewport is too narrow to fit every group */}
-        <div className="sa-topnav-groups" style={{ display: "flex", height: "100%", alignItems: "stretch", gap: 0, overflowX: "auto", overflowY: "visible", minWidth: 0, scrollbarWidth: "none" } as React.CSSProperties}>
+        <div
+          className="sa-topnav-groups"
+          style={
+            {
+              display: "flex",
+              height: "100%",
+              alignItems: "stretch",
+              gap: 0,
+              overflowX: "auto",
+              overflowY: "visible",
+              minWidth: 0,
+              scrollbarWidth: "none",
+            } as React.CSSProperties
+          }
+        >
           <style>{`.sa-topnav-groups::-webkit-scrollbar { display: none; }`}</style>
           {NAV_GROUPS.map((g, i) => {
             const isActive = activeGroup.key === g.key;
@@ -101,17 +204,27 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                     <Icon size={15} color={isActive ? T.warmCream : "rgba(245,232,208,0.55)"} />
-                    <span style={{
-                      fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13,
-                      color: isActive ? T.warmCream : "rgba(245,232,208,0.72)",
-                      whiteSpace: "nowrap", letterSpacing: "0.1px",
-                      transition: "color 0.2s",
-                    }}>{g.label}</span>
+                    <span
+                      style={{
+                        fontFamily: F.ui,
+                        fontWeight: isActive ? 600 : 400,
+                        fontSize: 13,
+                        color: isActive ? T.warmCream : "rgba(245,232,208,0.72)",
+                        whiteSpace: "nowrap",
+                        letterSpacing: "0.1px",
+                        transition: "color 0.2s",
+                      }}
+                    >
+                      {g.label}
+                    </span>
                     {hasDropdown && (
                       <ChevronDown
                         size={12}
                         color={isActive ? "rgba(245,232,208,0.85)" : "rgba(245,232,208,0.45)"}
-                        style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}
+                        style={{
+                          transform: isOpen ? "rotate(180deg)" : "none",
+                          transition: "transform 0.2s",
+                        }}
                       />
                     )}
                   </div>
@@ -122,17 +235,27 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
                       style={{ height: 2, width: "100%", background: T.royalBurgundy }}
                     />
                   )}
-                  {!isActive && <div style={{ height: 2, width: "100%", background: "transparent" }} />}
+                  {!isActive && (
+                    <div style={{ height: 2, width: "100%", background: "transparent" }} />
+                  )}
                 </Button>
               </motion.div>
             );
 
             if (!hasDropdown) {
-              return <div key={g.key} style={{ position: "relative", height: "100%" }}>{trigger}</div>;
+              return (
+                <div key={g.key} style={{ position: "relative", height: "100%" }}>
+                  {trigger}
+                </div>
+              );
             }
 
             return (
-              <DropdownMenu key={g.key} open={isOpen} onOpenChange={o => setOpenGroup(o ? g.key : null)}>
+              <DropdownMenu
+                key={g.key}
+                open={isOpen}
+                onOpenChange={(o) => setOpenGroup(o ? g.key : null)}
+              >
                 <div style={{ position: "relative", height: "100%" }}>
                   <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
                 </div>
@@ -144,9 +267,14 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
                   className="!w-max !min-w-[250px] !max-w-[calc(100vw-32px)] !max-h-[min(72vh,560px)] !p-2.5 !rounded-2xl"
                   // Same escalation as the admin dashboard's TopNav.tsx —
                   // see its comment for why.
-                  style={{ background: "#FFFFFF", border: "1px solid rgba(110,15,45,0.10)", boxShadow: "0 16px 40px rgba(0,0,0,0.28)", zIndex: "var(--z-tooltip)" }}
+                  style={{
+                    background: "#FFFFFF",
+                    border: "1px solid rgba(110,15,45,0.10)",
+                    boxShadow: "0 16px 40px rgba(0,0,0,0.28)",
+                    zIndex: "var(--z-tooltip)",
+                  }}
                 >
-                  {g.pages.map(p => {
+                  {g.pages.map((p) => {
                     const pActive = active === p.key;
                     return (
                       <DropdownMenuItem
@@ -156,7 +284,11 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
                           set(p.key);
                           setOpenGroup(null);
                           if (active !== p.key) {
-                            try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { /* ignore */ }
+                            try {
+                              window.scrollTo({ top: 0, behavior: "smooth" });
+                            } catch {
+                              /* ignore */
+                            }
                           }
                         }}
                         className={`!h-auto !justify-between !py-[13px] !px-3.5 !mb-0.5 !rounded-[10px] !text-sm ${
@@ -167,9 +299,29 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
                       >
                         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           {p.label}
-                          {p.sa && <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.antiqueGold, flexShrink: 0 }} />}
+                          {p.sa && (
+                            <div
+                              style={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: "50%",
+                                background: T.antiqueGold,
+                                flexShrink: 0,
+                              }}
+                            />
+                          )}
                         </span>
-                        {pActive && <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.royalBurgundy, marginLeft: "auto" }} />}
+                        {pActive && (
+                          <div
+                            style={{
+                              width: 6,
+                              height: 6,
+                              borderRadius: "50%",
+                              background: T.royalBurgundy,
+                              marginLeft: "auto",
+                            }}
+                          />
+                        )}
                       </DropdownMenuItem>
                     );
                   })}
@@ -181,77 +333,230 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
 
         {/* Right actions */}
 
-        <div style={{ display: "flex", alignItems: "center", gap: compact ? 6 : 10, flexShrink: 0 }}>
+        <div
+          style={{ display: "flex", alignItems: "center", gap: compact ? 6 : 10, flexShrink: 0 }}
+        >
           <div style={{ position: "relative" }}>
-            <motion.div initial={{ backgroundColor: "rgba(245,232,208,0.06)" }} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }} style={{ borderRadius: 12 }}>
+            <motion.div
+              initial={{ backgroundColor: "rgba(245,232,208,0.06)" }}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.94 }}
+              style={{ borderRadius: 12 }}
+            >
               <IconButton
                 icon={Bell}
                 label="Notifications"
                 onClick={() => set("Notifications")}
                 variant="ghost"
                 className={`!size-[38px] !rounded-xl !border !border-white/14 !bg-white/6 hover:!bg-white/12 ${
-                  active === "Notifications" ? "!text-[#C89B47] hover:!text-[#C89B47]" : "!text-[rgba(245,232,208,0.75)] hover:!text-[rgba(245,232,208,0.75)]"
+                  active === "Notifications"
+                    ? "!text-[#C89B47] hover:!text-[#C89B47]"
+                    : "!text-[rgba(245,232,208,0.75)] hover:!text-[rgba(245,232,208,0.75)]"
                 }`}
               />
             </motion.div>
-            <div style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: T.antiqueGold, border: `1.5px solid ${T.darkBurgundy}`, pointerEvents: "none" }} />
+            <div
+              style={{
+                position: "absolute",
+                top: 6,
+                right: 6,
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: T.antiqueGold,
+                border: `1.5px solid ${T.darkBurgundy}`,
+                pointerEvents: "none",
+              }}
+            />
           </div>
           {/* Gold SA avatar + profile dropdown */}
-          <DropdownMenu open={showProfile} onOpenChange={o => { setShowProfile(o); if (o) setOpenGroup(null); }}>
+          <DropdownMenu
+            open={showProfile}
+            onOpenChange={(o) => {
+              setShowProfile(o);
+              if (o) setOpenGroup(null);
+            }}
+          >
             <DropdownMenuTrigger asChild>
               <motion.div
                 initial={{ backgroundColor: "rgba(245,232,208,0.04)" }}
                 whileHover={{ scale: 1.02, backgroundColor: "rgba(245,232,208,0.10)" }}
                 whileTap={{ scale: 0.98 }}
-                style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "6px 12px 6px 6px", borderRadius: 12, border: `1px solid ${showProfile ? T.antiqueGold : "rgba(245,232,208,0.14)"}`, backgroundColor: showProfile ? "rgba(245,232,208,0.10)" : "rgba(245,232,208,0.04)" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  cursor: "pointer",
+                  padding: "6px 12px 6px 6px",
+                  borderRadius: 12,
+                  border: `1px solid ${showProfile ? T.antiqueGold : "rgba(245,232,208,0.14)"}`,
+                  backgroundColor: showProfile
+                    ? "rgba(245,232,208,0.10)"
+                    : "rgba(245,232,208,0.04)",
+                }}
               >
-                <div style={{ width: 30, height: 30, borderRadius: 9, background: "#C4923A", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(196,146,58,0.35)" }}>
-                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>SA</span>
+                <div
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 9,
+                    background: "#C4923A",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 3px 10px rgba(196,146,58,0.35)",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: F.display,
+                      fontWeight: 700,
+                      fontSize: 12,
+                      color: "#FFFFFF",
+                    }}
+                  >
+                    SA
+                  </span>
                 </div>
-                {!compact && <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.warmCream, letterSpacing: "0.1px" }}>Superadmin</span>}
-                <ChevronDown size={13} color="rgba(245,232,208,0.75)" style={{ transform: showProfile ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+                {!compact && (
+                  <span
+                    style={{
+                      fontFamily: F.ui,
+                      fontWeight: 500,
+                      fontSize: 12,
+                      color: T.warmCream,
+                      letterSpacing: "0.1px",
+                    }}
+                  >
+                    Superadmin
+                  </span>
+                )}
+                <ChevronDown
+                  size={13}
+                  color="rgba(245,232,208,0.75)"
+                  style={{
+                    transform: showProfile ? "rotate(180deg)" : "none",
+                    transition: "transform 0.2s",
+                  }}
+                />
               </motion.div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="!min-w-[250px] !max-h-none !p-0 !rounded-[14px] !overflow-hidden" style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, zIndex: "var(--z-tooltip)" }}>
-              <div style={{ padding: "16px 18px", background: "rgba(196,146,58,0.06)", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#C4923A", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(196,146,58,0.35)" }}>
-                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFF" }}>SA</span>
+            <DropdownMenuContent
+              align="end"
+              className="!min-w-[250px] !max-h-none !p-0 !rounded-[14px] !overflow-hidden"
+              style={{
+                background: T.warmIvory,
+                border: `1px solid ${T.borderDef}`,
+                zIndex: "var(--z-tooltip)",
+              }}
+            >
+              <div
+                style={{
+                  padding: "16px 18px",
+                  background: "rgba(196,146,58,0.06)",
+                  borderBottom: `1px solid ${T.borderDef}`,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: "50%",
+                    background: "#C4923A",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    boxShadow: "0 3px 12px rgba(196,146,58,0.35)",
+                  }}
+                >
+                  <span
+                    style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFF" }}
+                  >
+                    SA
+                  </span>
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Superadmin</div>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>Full Access · All Portals</div>
+                  <div
+                    style={{
+                      fontFamily: F.ui,
+                      fontWeight: 700,
+                      fontSize: 14,
+                      color: T.luxuryBrown,
+                    }}
+                  >
+                    Superadmin
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 12,
+                      color: T.taupe,
+                      marginTop: 2,
+                    }}
+                  >
+                    Full Access · All Portals
+                  </div>
                 </div>
               </div>
               <div style={{ padding: "6px 0" }}>
-                <DropdownMenuItem onClick={() => onProfile?.()} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                <DropdownMenuItem
+                  onClick={() => onProfile?.()}
+                  className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]"
+                >
                   <UserRound size={15} color={T.taupe} /> View Profile
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {/* Staff oversight — who works in each portal, and what each
                     of them has actually recorded there. */}
-                <DropdownMenuItem onClick={() => set("WorkerStaff")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                <DropdownMenuItem
+                  onClick={() => set("WorkerStaff")}
+                  className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]"
+                >
                   <Users size={15} color={T.taupe} /> Worker Staff
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => set("ShopStaff")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                <DropdownMenuItem
+                  onClick={() => set("ShopStaff")}
+                  className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]"
+                >
                   <Store size={15} color={T.taupe} /> Shop Staff
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => set("AccountantStaff")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                <DropdownMenuItem
+                  onClick={() => set("AccountantStaff")}
+                  className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]"
+                >
                   <IndianRupee size={15} color={T.taupe} /> Accountant Staff
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {/* Opens the staff portal as yourself — not impersonation.
                     Anything recorded in there is attributed to this admin. */}
-                <DropdownMenuItem onClick={() => onViewAs?.("worker")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                <DropdownMenuItem
+                  onClick={() => onViewAs?.("worker")}
+                  className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]"
+                >
                   <Eye size={15} color={T.taupe} /> View as Worker Staff
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onViewAs?.("shop")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                <DropdownMenuItem
+                  onClick={() => onViewAs?.("shop")}
+                  className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]"
+                >
                   <Eye size={15} color={T.taupe} /> View as Shop Staff
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onBack?.()} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                <DropdownMenuItem
+                  onClick={() => onBack?.()}
+                  className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]"
+                >
                   <ChevronLeft size={15} color={T.taupe} /> Switch Portal
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => (onLogout ? onLogout() : onBack?.())} destructive className="!h-auto !py-[11px] !px-[18px]">
+                <DropdownMenuItem
+                  onClick={() => (onLogout ? onLogout() : onBack?.())}
+                  destructive
+                  className="!h-auto !py-[11px] !px-[18px]"
+                >
                   <LogOut size={15} color="#C0392B" /> Logout
                 </DropdownMenuItem>
               </div>
@@ -271,7 +576,10 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
             top: 0,
             zIndex: 100,
             height: SUB_NAV_H,
-            display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 20,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            gap: 20,
             padding: compact ? "0 16px" : "0 28px",
             background: "rgba(255, 253, 249, 0.94)",
             backdropFilter: "blur(12px)",
@@ -281,8 +589,23 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
           }}
         >
           {activeGroup.pages.length > 1 && (
-            <div className="sa-topnav-groups" style={{ display: "flex", alignItems: "center", gap: 4, background: "#F3EEE8", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 5, overflowX: "auto", flexShrink: 0 } as React.CSSProperties}>
-              {activeGroup.pages.map(p => {
+            <div
+              className="sa-topnav-groups"
+              style={
+                {
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  background: "#F3EEE8",
+                  border: `1px solid ${T.borderDef}`,
+                  borderRadius: 14,
+                  padding: 5,
+                  overflowX: "auto",
+                  flexShrink: 0,
+                } as React.CSSProperties
+              }
+            >
+              {activeGroup.pages.map((p) => {
                 const isActive = active === p.key;
                 return (
                   <Button
@@ -290,7 +613,11 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
                     onClick={() => {
                       set(p.key);
                       if (active !== p.key) {
-                        try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { /* ignore */ }
+                        try {
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        } catch {
+                          /* ignore */
+                        }
                       }
                     }}
                     variant="tertiary"
@@ -304,15 +631,36 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
                       <motion.div
                         layoutId="sa-subnav-active-pill"
                         transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                        style={{ position: "absolute", inset: 0, background: T.royalBurgundy, borderRadius: 10, boxShadow: "0 4px 14px rgba(110,15,45,0.28)", zIndex: 0 }}
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          background: T.royalBurgundy,
+                          borderRadius: 10,
+                          boxShadow: "0 4px 14px rgba(110,15,45,0.28)",
+                          zIndex: 0,
+                        }}
                       />
                     )}
-                    <span style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 7 }}>
+                    <span
+                      style={{
+                        position: "relative",
+                        zIndex: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 7,
+                      }}
+                    >
                       {p.label}
                       {p.sa && (
                         <span
                           title="Superadmin-only"
-                          style={{ width: 6, height: 6, borderRadius: "50%", background: isActive ? T.goldLight : T.antiqueGold, flexShrink: 0 }}
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            background: isActive ? T.goldLight : T.antiqueGold,
+                            flexShrink: 0,
+                          }}
                         />
                       )}
                     </span>

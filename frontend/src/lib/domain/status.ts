@@ -14,11 +14,33 @@
  * TypeScript error instead of a silent visual bug.
  */
 import {
-  FileText, Calendar, Loader2, Workflow, Sparkles, Clock, CheckCircle2,
-  XCircle, PauseCircle, Ban, PackageCheck, PackageX, PackageSearch,
-  Undo2, AlertOctagon, HandCoins, CircleDollarSign, BadgeCheck,
-  CalendarClock, RotateCcw, Ban as VoidIcon, Send, FileSignature,
-  UserCheck, UserX, AlertTriangle, UserPlus,
+  FileText,
+  Calendar,
+  Loader2,
+  Workflow,
+  Sparkles,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  PauseCircle,
+  Ban,
+  PackageCheck,
+  PackageX,
+  PackageSearch,
+  Undo2,
+  AlertOctagon,
+  HandCoins,
+  CircleDollarSign,
+  BadgeCheck,
+  CalendarClock,
+  RotateCcw,
+  Ban as VoidIcon,
+  Send,
+  FileSignature,
+  UserCheck,
+  UserX,
+  AlertTriangle,
+  UserPlus,
   type LucideIcon,
 } from "lucide-react";
 
@@ -157,7 +179,10 @@ export const STATUS_TAXONOMIES = {
 export type StatusTaxonomyName = keyof typeof STATUS_TAXONOMIES;
 export type StatusValueOf<T extends StatusTaxonomyName> = keyof (typeof STATUS_TAXONOMIES)[T];
 
-export function resolveStatus<T extends StatusTaxonomyName>(taxonomyName: T, status: StatusValueOf<T>): StatusEntry {
+export function resolveStatus<T extends StatusTaxonomyName>(
+  taxonomyName: T,
+  status: StatusValueOf<T>
+): StatusEntry {
   const entry = (STATUS_TAXONOMIES[taxonomyName] as Record<string, StatusEntry>)[status as string];
   if (!entry) {
     // A status value that doesn't exist in its taxonomy — surface it loudly

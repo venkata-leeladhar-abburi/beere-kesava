@@ -1,34 +1,34 @@
 // ─── Users feature — shared design tokens ─────────────────────────────────────
 import React from "react";
 
-import { brand, fonts, semantic } from '@/design-system/tokens';
+import { brand, fonts, semantic } from "@/design-system/tokens";
 export const T = {
-  silkCream:     semantic.surface.canvas,
-  warmIvory:     semantic.surface.raised,
+  silkCream: semantic.surface.canvas,
+  warmIvory: semantic.surface.raised,
   royalBurgundy: brand.burgundy[900],
-  deepWine:      brand.burgundy[950],
-  darkBurgundy:  "#3D0E1A",
-  antiqueGold:   brand.gold[500],
-  goldLight:     "#E7C983",
-  luxuryBrown:   "#3B2314",
-  warmCream:     "#F5E8D0",
-  taupe:         semantic.text.tertiary,
-  green:         semantic.text.success,
-  greenBg:       "rgba(30,102,64,0.09)",
-  crimson:       semantic.text.danger,
-  crimsonBg:     "rgba(192,57,43,0.08)",
-  borderDef:     "rgba(110,15,45,0.10)",
-  borderMed:     "rgba(110,15,45,0.20)",
-  borderGold:    "rgba(200,155,71,0.22)",
-  bgGold:        "rgba(200,155,71,0.10)",
-  cream:         "#F0E8D0",
-  blue:          "#2C4A8B",
+  deepWine: brand.burgundy[950],
+  darkBurgundy: "#3D0E1A",
+  antiqueGold: brand.gold[500],
+  goldLight: "#E7C983",
+  luxuryBrown: "#3B2314",
+  warmCream: "#F5E8D0",
+  taupe: semantic.text.tertiary,
+  green: semantic.text.success,
+  greenBg: "rgba(30,102,64,0.09)",
+  crimson: semantic.text.danger,
+  crimsonBg: "rgba(192,57,43,0.08)",
+  borderDef: "rgba(110,15,45,0.10)",
+  borderMed: "rgba(110,15,45,0.20)",
+  borderGold: "rgba(200,155,71,0.22)",
+  bgGold: "rgba(200,155,71,0.10)",
+  cream: "#F0E8D0",
+  blue: "#2C4A8B",
 };
 
 export const F = {
   display: fonts.display,
-  ui:      fonts.ui,
-  mono:    fonts.code,
+  ui: fonts.ui,
+  mono: fonts.code,
 };
 
 export const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -67,21 +67,25 @@ export const labelStyle: React.CSSProperties = {
 };
 
 export const ROLE_TO_PORTAL: Record<string, string> = {
-  "Admin":            "Admin Portal — Full Access",
-  "Worker Staff":     "Worker Staff Portal",
-  "Finishing Staff":  "Finishing Staff (No Portal)",
-  "Weaver":           "Weaver Portal",
-  "Shop Staff":       "Shop Staff Portal",
-  "Accountant":       "Accountant Portal",
+  Admin: "Admin Portal — Full Access",
+  "Worker Staff": "Worker Staff Portal",
+  "Finishing Staff": "Finishing Staff (No Portal)",
+  Weaver: "Weaver Portal",
+  "Shop Staff": "Shop Staff Portal",
+  Accountant: "Accountant Portal",
 };
 
 export const ROLE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  "Admin":           { bg: "rgba(110,15,45,0.09)",    text: "#6E0F2D",   border: "rgba(110,15,45,0.15)"   },
-  "Worker Staff":    { bg: "rgba(30,102,64,0.09)",    text: "#1E6640",   border: "rgba(30,102,64,0.15)"   },
-  "Finishing Staff": { bg: "rgba(44,74,139,0.09)",    text: "#2C4A8B",   border: "rgba(44,74,139,0.15)"   },
-  "Weaver":          { bg: "rgba(200,155,71,0.14)",   text: "#7A5E1C",   border: "rgba(200,155,71,0.22)"  },
-  "Shop Staff":      { bg: "rgba(59,35,20,0.08)",     text: "#3B2314",   border: "rgba(59,35,20,0.14)"    },
-  "Accountant":      { bg: "rgba(30,102,64,0.11)",    text: "#0F5C3F",   border: "rgba(30,102,64,0.20)"   },
+  Admin: { bg: "rgba(110,15,45,0.09)", text: "#6E0F2D", border: "rgba(110,15,45,0.15)" },
+  "Worker Staff": { bg: "rgba(30,102,64,0.09)", text: "#1E6640", border: "rgba(30,102,64,0.15)" },
+  "Finishing Staff": {
+    bg: "rgba(44,74,139,0.09)",
+    text: "#2C4A8B",
+    border: "rgba(44,74,139,0.15)",
+  },
+  Weaver: { bg: "rgba(200,155,71,0.14)", text: "#7A5E1C", border: "rgba(200,155,71,0.22)" },
+  "Shop Staff": { bg: "rgba(59,35,20,0.08)", text: "#3B2314", border: "rgba(59,35,20,0.14)" },
+  Accountant: { bg: "rgba(30,102,64,0.11)", text: "#0F5C3F", border: "rgba(30,102,64,0.20)" },
 };
 
 export const ROLES = ["Admin", "Worker Staff", "Finishing Staff", "Shop Staff", "Accountant"];
@@ -89,23 +93,55 @@ export const ROLES = ["Admin", "Worker Staff", "Finishing Staff", "Shop Staff", 
 // Every level the backend can store. One label per value — collapsing the
 // three restricted ones into "Semi Access" meant saving a Money Hidden account
 // silently handed the money back.
-export const PORTAL_ACCESS_LEVELS = ["Full Access", "Semi Access", "No Downloads", "Money Hidden"] as const;
-export type AccessLevel = typeof PORTAL_ACCESS_LEVELS[number];
+export const PORTAL_ACCESS_LEVELS = [
+  "Full Access",
+  "Semi Access",
+  "No Downloads",
+  "Money Hidden",
+] as const;
+export type AccessLevel = (typeof PORTAL_ACCESS_LEVELS)[number];
 
 // The two offered while creating an account. The rest are set afterwards, per
 // portal, on the Manage Access screen — that is the decision they belong to.
 export const ACCESS_LEVELS = ["Full Access", "Semi Access"] as const;
 
-export const ACCESS_LEVEL_META: Record<AccessLevel, { color: string; bg: string; border: string; desc: string }> = {
-  "Full Access":  { color: T.green,   bg: T.greenBg,               border: "rgba(30,102,64,0.18)",  desc: "Complete control — users, finance, settings, every portal section." },
-  "Semi Access":  { color: "#8B6018", bg: "rgba(200,155,71,0.14)", border: "rgba(200,155,71,0.28)", desc: "Restricted — day-to-day operations only. No user management or finance." },
-  "No Downloads": { color: "#2C4A8B", bg: "rgba(44,74,139,0.10)",  border: "rgba(44,74,139,0.22)",  desc: "Can see everything in this portal but cannot export or download reports." },
-  "Money Hidden": { color: T.crimson, bg: T.crimsonBg,             border: "rgba(192,57,43,0.22)",  desc: "Every rupee figure in this portal is hidden — rates, payments, totals." },
+export const ACCESS_LEVEL_META: Record<
+  AccessLevel,
+  { color: string; bg: string; border: string; desc: string }
+> = {
+  "Full Access": {
+    color: T.green,
+    bg: T.greenBg,
+    border: "rgba(30,102,64,0.18)",
+    desc: "Complete control — users, finance, settings, every portal section.",
+  },
+  "Semi Access": {
+    color: "#8B6018",
+    bg: "rgba(200,155,71,0.14)",
+    border: "rgba(200,155,71,0.28)",
+    desc: "Restricted — day-to-day operations only. No user management or finance.",
+  },
+  "No Downloads": {
+    color: "#2C4A8B",
+    bg: "rgba(44,74,139,0.10)",
+    border: "rgba(44,74,139,0.22)",
+    desc: "Can see everything in this portal but cannot export or download reports.",
+  },
+  "Money Hidden": {
+    color: T.crimson,
+    bg: T.crimsonBg,
+    border: "rgba(192,57,43,0.22)",
+    desc: "Every rupee figure in this portal is hidden — rates, payments, totals.",
+  },
 };
 
-export function FieldFocus(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+export function FieldFocus(
+  e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+) {
   (e.target as HTMLElement).style.borderColor = T.royalBurgundy;
 }
-export function FieldBlur(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+export function FieldBlur(
+  e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+) {
   (e.target as HTMLElement).style.borderColor = "rgba(110,15,45,0.18)";
 }

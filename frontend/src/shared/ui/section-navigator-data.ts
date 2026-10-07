@@ -11,10 +11,10 @@
 // `const SUB_NAV_H = 60`, 6px off from this file's old value of 66; that
 // shadow has been removed (see beere-dashboard/components/TopNav.tsx) so
 // every consumer now derives from this one constant, currently 52.
-export const MAIN_NAV_H = 72;      // was 90  — --shell-topbar-h
-export const SUB_NAV_H = 52;       // was 66  — --shell-groupbar-h
-export const SECTION_NAV_H = 48;   // was 56  — --shell-sectionbar-h
-export const MOBILE_NAV_H = 60;    // 60px exact match for MobileTopNav height
+export const MAIN_NAV_H = 72; // was 90  — --shell-topbar-h
+export const SUB_NAV_H = 52; // was 66  — --shell-groupbar-h
+export const SECTION_NAV_H = 48; // was 56  — --shell-sectionbar-h
+export const MOBILE_NAV_H = 60; // 60px exact match for MobileTopNav height
 
 // Worker portal — previously its own independent heights; now the same
 // shell geometry as everything else, aliased under its existing names.
@@ -26,7 +26,10 @@ export const WORKER_SECTION_NAV_H = SECTION_NAV_H;
 export const SHOP_MOBILE_HEADER_H = 56;
 export const SHOP_SECTION_NAV_H = SECTION_NAV_H;
 
-export interface SectionNavItem { id: string; label: string; }
+export interface SectionNavItem {
+  id: string;
+  label: string;
+}
 
 export const PAGE_SECTIONS: Record<string, SectionNavItem[]> = {
   Production: [
@@ -58,9 +61,7 @@ export const PAGE_SECTIONS: Record<string, SectionNavItem[]> = {
     { id: "batch-materials", label: "Materials Given" },
     { id: "batch-table", label: "Sarees List" },
   ],
-  Designs: [
-    { id: "design-control", label: "Dispatch Control" },
-  ],
+  Designs: [{ id: "design-control", label: "Dispatch Control" }],
   Finishing: [
     { id: "finishing-quotations", label: "Quotations" },
     { id: "finishing-staff", label: "Staff Tracking" },
@@ -190,4 +191,3 @@ export const SECTION_NAV_GLOBAL_STYLE = `
     scroll-margin-top: ${SHOP_MOBILE_HEADER_H + SHOP_SECTION_NAV_H + 16}px;
   }
 `;
-

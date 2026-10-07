@@ -4,7 +4,17 @@
  * One format set, app-wide. Never `MM/DD/YYYY` — always spell the month so
  * Indian vs. US day/month order is never ambiguous.
  */
-import { format as fnsFormat, isValid, parseISO, addDays, addWeeks, addMonths, addYears, startOfDay, differenceInCalendarDays } from "date-fns";
+import {
+  format as fnsFormat,
+  isValid,
+  parseISO,
+  addDays,
+  addWeeks,
+  addMonths,
+  addYears,
+  startOfDay,
+  differenceInCalendarDays,
+} from "date-fns";
 
 export const DATE_FORMATS = {
   cell: "d MMM yyyy",
@@ -15,13 +25,19 @@ export const DATE_FORMATS = {
   iso: "yyyy-MM-dd",
 } as const;
 
-export function formatDate(date: Date | null | undefined, variant: keyof typeof DATE_FORMATS = "cell"): string {
+export function formatDate(
+  date: Date | null | undefined,
+  variant: keyof typeof DATE_FORMATS = "cell"
+): string {
   if (!date || !isValid(date)) return "";
   return fnsFormat(date, DATE_FORMATS[variant]);
 }
 
 /** `2 days ago`, `Today`, `Yesterday`, `in 3 days` — falls back to `cell` format beyond 7 days. */
-export function formatRelative(date: Date | null | undefined, reference: Date = new Date()): string {
+export function formatRelative(
+  date: Date | null | undefined,
+  reference: Date = new Date()
+): string {
   if (!date || !isValid(date)) return "";
   const diff = differenceInCalendarDays(startOfDay(date), startOfDay(reference));
   if (diff === 0) return "Today";
@@ -44,14 +60,31 @@ export function formatRange(from: Date | null | undefined, to: Date | null | und
 }
 
 /** Indian financial year: 1 April – 31 March. */
-export function getFinancialYear(date: Date = new Date()): { start: Date; end: Date; label: string } {
+export function getFinancialYear(date: Date = new Date()): {
+  start: Date;
+  end: Date;
+  label: string;
+} {
   const year = date.getMonth() >= 3 /* April */ ? date.getFullYear() : date.getFullYear() - 1;
   const start = new Date(year, 3, 1);
   const end = new Date(year + 1, 2, 31);
   return { start, end, label: `FY ${year}–${String(year + 1).slice(2)}` };
 }
 
-const MONTH_PREFIXES = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+const MONTH_PREFIXES = [
+  "jan",
+  "feb",
+  "mar",
+  "apr",
+  "may",
+  "jun",
+  "jul",
+  "aug",
+  "sep",
+  "oct",
+  "nov",
+  "dec",
+];
 
 /**
  * Typed-entry parser — `12/6/26`, `12 Jun 2026`, `2026-06-12`, `today`,
@@ -72,10 +105,14 @@ export function parseTypedDate(input: string, reference: Date = new Date()): Dat
     const n = parseInt(relative[1], 10);
     const base = startOfDay(reference);
     switch (relative[2]) {
-      case "d": return addDays(base, n);
-      case "w": return addWeeks(base, n);
-      case "m": return addMonths(base, n);
-      case "y": return addYears(base, n);
+      case "d":
+        return addDays(base, n);
+      case "w":
+        return addWeeks(base, n);
+      case "m":
+        return addMonths(base, n);
+      case "y":
+        return addYears(base, n);
     }
   }
 
@@ -99,7 +136,7 @@ export function parseTypedDate(input: string, reference: Date = new Date()): Dat
   const named = s.match(/^(\d{1,2})\s+([a-z]+)\.?\s+(\d{4})$/);
   if (named) {
     const day = parseInt(named[1], 10);
-    const monthIdx = MONTH_PREFIXES.findIndex(m => named[2].startsWith(m));
+    const monthIdx = MONTH_PREFIXES.findIndex((m) => named[2].startsWith(m));
     if (monthIdx === -1) return null;
     const d = new Date(parseInt(named[3], 10), monthIdx, day);
     return isValid(d) && d.getMonth() === monthIdx && d.getDate() === day ? d : null;

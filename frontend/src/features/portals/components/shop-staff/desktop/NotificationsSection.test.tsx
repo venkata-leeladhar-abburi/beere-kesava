@@ -30,7 +30,7 @@ describe("NotificationsSection", () => {
     renderWithQueryClient(
       <MemoryRouter initialEntries={["/shop/notifications"]}>
         <NotificationsSection isTablet={false} />
-      </MemoryRouter>,
+      </MemoryRouter>
     );
 
     expect(await screen.findByText("Notifications")).toBeInTheDocument();

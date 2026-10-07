@@ -12,53 +12,86 @@ const ALL = "__all__";
 
 // ── In-house outstanding (weavers or factory looms) ──────────────────────────
 export function InHouseOutstanding({
-  origin, sarees, search, ageFilter,
+  origin,
+  sarees,
+  search,
+  ageFilter,
 }: {
   origin: Extract<SareeOrigin, "weaver" | "factoryLoom">;
-  sarees: UnifiedSaree[]; search: string; ageFilter: AgeKey;
+  sarees: UnifiedSaree[];
+  search: string;
+  ageFilter: AgeKey;
 }) {
   const [open, setOpen] = useState<string | null>(null);
   const [ownerFilter, setOwnerFilter] = useState(ALL);
   const [batchFilter, setBatchFilter] = useState(ALL);
 
-  const keyOf = (s: UnifiedSaree) => origin === "weaver" ? (s.weaverId || "?") : (s.factoryLoomId || "?");
-  const nameOf = (s: UnifiedSaree) => origin === "weaver" ? (s.weaverName || "—") : (s.factoryLoomNumber || "—");
+  const keyOf = (s: UnifiedSaree) =>
+    origin === "weaver" ? s.weaverId || "?" : s.factoryLoomId || "?";
+  const nameOf = (s: UnifiedSaree) =>
+    origin === "weaver" ? s.weaverName || "—" : s.factoryLoomNumber || "—";
 
-  const originSarees = useMemo(() => sarees.filter(s => s.origin === origin), [sarees, origin]);
+  const originSarees = useMemo(() => sarees.filter((s) => s.origin === origin), [sarees, origin]);
   const ownerOptions = useMemo(() => {
     const m = new Map<string, string>();
-    originSarees.forEach(s => m.set(keyOf(s), nameOf(s)));
+    originSarees.forEach((s) => m.set(keyOf(s), nameOf(s)));
     return [...m.entries()].sort((a, b) => a[1].localeCompare(b[1]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [originSarees]);
   const batchOptions = useMemo(() => {
     const set = new Set<string>();
-    originSarees.forEach(s => { if (s.batchId && (ownerFilter === ALL || keyOf(s) === ownerFilter)) set.add(s.batchId); });
+    originSarees.forEach((s) => {
+      if (s.batchId && (ownerFilter === ALL || keyOf(s) === ownerFilter)) set.add(s.batchId);
+    });
     return [...set].sort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [originSarees, ownerFilter]);
 
   const groups = useMemo(() => {
-    const map = new Map<string, { key: string; name: string; sub: string; all: UnifiedSaree[]; soldRows: UnifiedSaree[]; rows: UnifiedSaree[] }>();
+    const map = new Map<
+      string,
+      {
+        key: string;
+        name: string;
+        sub: string;
+        all: UnifiedSaree[];
+        soldRows: UnifiedSaree[];
+        rows: UnifiedSaree[];
+      }
+    >();
     const q = search.trim().toLowerCase();
-    originSarees.forEach(s => {
+    originSarees.forEach((s) => {
       const key = keyOf(s);
       const name = nameOf(s);
       if (ownerFilter !== ALL && key !== ownerFilter) return;
       if (batchFilter !== ALL && s.batchId !== batchFilter) return;
-      const sub  = origin === "weaver" ? `${s.weaverId} · Loom ${s.weaverLoom}` : `${s.operatorName} · ${s.loomLocation}`;
+      const sub =
+        origin === "weaver"
+          ? `${s.weaverId} · Loom ${s.weaverLoom}`
+          : `${s.operatorName} · ${s.loomLocation}`;
       // Search narrows every list; the ageing filter applies only to outstanding stock.
-      if (q && !s.sareeId.toLowerCase().includes(q) && !name.toLowerCase().includes(q)
-            && !s.sareeTypeName.toLowerCase().includes(q) && !(s.batchId || "").toLowerCase().includes(q)) return;
+      if (
+        q &&
+        !s.sareeId.toLowerCase().includes(q) &&
+        !name.toLowerCase().includes(q) &&
+        !s.sareeTypeName.toLowerCase().includes(q) &&
+        !(s.batchId || "").toLowerCase().includes(q)
+      )
+        return;
       let g = map.get(key);
-      if (!g) { g = { key, name, sub, all: [], soldRows: [], rows: [] }; map.set(key, g); }
+      if (!g) {
+        g = { key, name, sub, all: [], soldRows: [], rows: [] };
+        map.set(key, g);
+      }
       g.all.push(s);
       if (isSold(s)) g.soldRows.push(s);
       if (!isOutstanding(s)) return;
       if (ageFilter !== "all" && ageBucket(s.ageDays) !== ageFilter) return;
       g.rows.push(s);
     });
-    return [...map.values()].filter(g => g.all.length > 0).sort((a, b) => b.rows.length - a.rows.length);
+    return [...map.values()]
+      .filter((g) => g.all.length > 0)
+      .sort((a, b) => b.rows.length - a.rows.length);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [originSarees, origin, search, ageFilter, ownerFilter, batchFilter]);
 
@@ -75,32 +108,93 @@ export function InHouseOutstanding({
       title={`Outstanding Sarees — ${origin === "weaver" ? "Weavers" : "Factory Looms"}`}
       subtitle={`Sarees produced ${origin === "weaver" ? "by our weavers" : "on our factory looms"} that are still not sold — neither retail nor wholesale. Returned sarees that went back into stock are counted here too.`}
       actions={
-        <ExportBtn onClick={() => exportCsv(
-          `outstanding-${origin}.csv`,
-          [[label, "Ref", "Saree Code", "Batch", "Saree Type", "Weight", "QC Date", "Days In Stock", "Cost", "Sell Price"],
-           ...groups.flatMap(g => g.rows.map(s => [g.name, g.sub, s.sareeId, s.batchId || "—", s.sareeTypeName, s.weight, s.qcDate, s.ageDays, s.costPrice, s.finalAmount]))],
-        )} />
+        <ExportBtn
+          onClick={() =>
+            exportCsv(`outstanding-${origin}.csv`, [
+              [
+                label,
+                "Ref",
+                "Saree Code",
+                "Batch",
+                "Saree Type",
+                "Weight",
+                "QC Date",
+                "Days In Stock",
+                "Cost",
+                "Sell Price",
+              ],
+              ...groups.flatMap((g) =>
+                g.rows.map((s) => [
+                  g.name,
+                  g.sub,
+                  s.sareeId,
+                  s.batchId || "—",
+                  s.sareeTypeName,
+                  s.weight,
+                  s.qcDate,
+                  s.ageDays,
+                  s.costPrice,
+                  s.finalAmount,
+                ])
+              ),
+            ])
+          }
+        />
       }
     >
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 10,
+          flexWrap: "wrap",
+          alignItems: "center",
+          marginBottom: 14,
+        }}
+      >
         <Select
           value={ownerFilter}
-          onValueChange={v => { setOwnerFilter(v); setBatchFilter(ALL); }}
-          size="sm" containerClassName="w-full sm:w-auto" className="w-full sm:w-[220px] font-semibold"
+          onValueChange={(v) => {
+            setOwnerFilter(v);
+            setBatchFilter(ALL);
+          }}
+          size="sm"
+          containerClassName="w-full sm:w-auto"
+          className="w-full sm:w-[220px] font-semibold"
         >
           <SelectItem value={ALL}>All {label.toLowerCase()}s</SelectItem>
-          {ownerOptions.map(([k, n]) => <SelectItem key={k} value={k}>{n}</SelectItem>)}
+          {ownerOptions.map(([k, n]) => (
+            <SelectItem key={k} value={k}>
+              {n}
+            </SelectItem>
+          ))}
         </Select>
         <Select
           value={batchFilter}
           onValueChange={setBatchFilter}
-          size="sm" containerClassName="w-full sm:w-auto" className="w-full sm:w-[240px] font-semibold"
+          size="sm"
+          containerClassName="w-full sm:w-auto"
+          className="w-full sm:w-[240px] font-semibold"
         >
-          <SelectItem value={ALL}>All batches{ownerFilter !== ALL ? ` (${batchOptions.length})` : ""}</SelectItem>
-          {batchOptions.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+          <SelectItem value={ALL}>
+            All batches{ownerFilter !== ALL ? ` (${batchOptions.length})` : ""}
+          </SelectItem>
+          {batchOptions.map((b) => (
+            <SelectItem key={b} value={b}>
+              {b}
+            </SelectItem>
+          ))}
         </Select>
         {(ownerFilter !== ALL || batchFilter !== ALL) && (
-          <Button variant="tertiary" size="sm" onClick={() => { setOwnerFilter(ALL); setBatchFilter(ALL); }}>Clear</Button>
+          <Button
+            variant="tertiary"
+            size="sm"
+            onClick={() => {
+              setOwnerFilter(ALL);
+              setBatchFilter(ALL);
+            }}
+          >
+            Clear
+          </Button>
         )}
       </div>
 
@@ -111,41 +205,120 @@ export function InHouseOutstanding({
           { l: "Outstanding", v: String(totalOut), c: T.crimson },
           { l: `${label}s with Stock`, v: String(groups.length), c: T.royalBurgundy },
           { l: "Expected Sale Value", v: inr(totalVal), c: T.green },
-        ].map(k => (
-          <div key={k.l} style={{ flex: "1 1 190px", background: T.warmCream, borderRadius: 12, padding: "13px 16px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 5 }}>{k.l}</div>
-            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.c }}>{k.v}</div>
+        ].map((k) => (
+          <div
+            key={k.l}
+            style={{
+              flex: "1 1 190px",
+              background: T.warmCream,
+              borderRadius: 12,
+              padding: "13px 16px",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontSize: 12,
+                color: T.taupe,
+                textTransform: "uppercase",
+                letterSpacing: "0.8px",
+                marginBottom: 5,
+              }}
+            >
+              {k.l}
+            </div>
+            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.c }}>
+              {k.v}
+            </div>
           </div>
         ))}
       </div>
 
-      {groups.length === 0 ? <Empty msg="Nothing outstanding for the current filters." /> : (
+      {groups.length === 0 ? (
+        <Empty msg="Nothing outstanding for the current filters." />
+      ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {groups.map(g => {
+          {groups.map((g) => {
             const isOpen = open === g.key;
             const val = g.rows.reduce((a, s) => a + s.finalAmount, 0);
             return (
-              <div key={g.key} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 18, background: "#FFFFFF", overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,0.03)" }}>
+              <div
+                key={g.key}
+                style={{
+                  border: `1px solid ${T.borderDef}`,
+                  borderRadius: 18,
+                  background: "#FFFFFF",
+                  overflow: "hidden",
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+                }}
+              >
                 <button
                   type="button"
                   onClick={() => setOpen(isOpen ? null : g.key)}
                   style={{
-                    width: "100%", padding: "16px 18px", background: isOpen ? "rgba(110,15,45,0.03)" : "#FFFFFF",
-                    border: "none", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: 14,
+                    width: "100%",
+                    padding: "16px 18px",
+                    background: isOpen ? "rgba(110,15,45,0.03)" : "#FFFFFF",
+                    border: "none",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 14,
                   }}
                 >
                   {/* Top Header Row: Name & Subtitle on left, Chevron on right */}
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, width: "100%" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      justifyContent: "space-between",
+                      gap: 12,
+                      width: "100%",
+                    }}
+                  >
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.25 }}>
+                      <div
+                        style={{
+                          fontFamily: F.display,
+                          fontSize: 17,
+                          fontWeight: 700,
+                          color: T.luxuryBrown,
+                          lineHeight: 1.25,
+                        }}
+                      >
                         {g.name}
                       </div>
-                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 3, wordBreak: "break-all" }}>
+                      <div
+                        style={{
+                          fontFamily: F.ui,
+                          fontSize: 13,
+                          color: T.taupe,
+                          marginTop: 3,
+                          wordBreak: "break-all",
+                        }}
+                      >
                         {g.sub}
                       </div>
                     </div>
-                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                      {isOpen ? <ChevronDown size={16} color={T.royalBurgundy} /> : <ChevronRight size={16} color={T.taupe} />}
+                    <div
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: "50%",
+                        background: "rgba(110,15,45,0.06)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        marginTop: 2,
+                      }}
+                    >
+                      {isOpen ? (
+                        <ChevronDown size={16} color={T.royalBurgundy} />
+                      ) : (
+                        <ChevronRight size={16} color={T.taupe} />
+                      )}
                     </div>
                   </div>
 
@@ -154,29 +327,151 @@ export function InHouseOutstanding({
 
                   {/* Stat Badges Grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full">
-                    <div style={{ background: "#F6F4EF", borderRadius: 12, padding: "10px 12px", textAlign: "center" }}>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>PRODUCED</div>
-                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{g.all.length}</div>
+                    <div
+                      style={{
+                        background: "#F6F4EF",
+                        borderRadius: 12,
+                        padding: "10px 12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: T.taupe,
+                          letterSpacing: "0.8px",
+                          textTransform: "uppercase",
+                          marginBottom: 4,
+                        }}
+                      >
+                        PRODUCED
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: F.display,
+                          fontSize: 16,
+                          fontWeight: 700,
+                          color: T.luxuryBrown,
+                        }}
+                      >
+                        {g.all.length}
+                      </div>
                     </div>
-                    <div style={{ background: "#F6F4EF", borderRadius: 12, padding: "10px 12px", textAlign: "center" }}>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>SOLD</div>
-                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.green }}>{g.soldRows.length}</div>
+                    <div
+                      style={{
+                        background: "#F6F4EF",
+                        borderRadius: 12,
+                        padding: "10px 12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: T.taupe,
+                          letterSpacing: "0.8px",
+                          textTransform: "uppercase",
+                          marginBottom: 4,
+                        }}
+                      >
+                        SOLD
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: F.display,
+                          fontSize: 16,
+                          fontWeight: 700,
+                          color: T.green,
+                        }}
+                      >
+                        {g.soldRows.length}
+                      </div>
                     </div>
-                    <div style={{ background: "rgba(192,57,43,0.06)", borderRadius: 12, padding: "10px 12px", textAlign: "center" }}>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.crimson, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>OUTSTANDING</div>
-                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.crimson }}>{g.rows.length}</div>
+                    <div
+                      style={{
+                        background: "rgba(192,57,43,0.06)",
+                        borderRadius: 12,
+                        padding: "10px 12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: T.crimson,
+                          letterSpacing: "0.8px",
+                          textTransform: "uppercase",
+                          marginBottom: 4,
+                        }}
+                      >
+                        OUTSTANDING
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: F.display,
+                          fontSize: 16,
+                          fontWeight: 700,
+                          color: T.crimson,
+                        }}
+                      >
+                        {g.rows.length}
+                      </div>
                     </div>
-                    <div style={{ background: "rgba(110,15,45,0.06)", borderRadius: 12, padding: "10px 12px", textAlign: "center" }}>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>VALUE</div>
-                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.royalBurgundy }}>{inr(val)}</div>
+                    <div
+                      style={{
+                        background: "rgba(110,15,45,0.06)",
+                        borderRadius: 12,
+                        padding: "10px 12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: T.royalBurgundy,
+                          letterSpacing: "0.8px",
+                          textTransform: "uppercase",
+                          marginBottom: 4,
+                        }}
+                      >
+                        VALUE
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: F.display,
+                          fontSize: 16,
+                          fontWeight: 700,
+                          color: T.royalBurgundy,
+                        }}
+                      >
+                        {inr(val)}
+                      </div>
                     </div>
                   </div>
                 </button>
                 <AnimatePresence initial={false}>
                   {isOpen && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden", background: "#FFFDF9" }}>
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      style={{ overflow: "hidden", background: "#FFFDF9" }}
+                    >
                       <div style={{ padding: "10px 18px 16px" }}>
-                        <DrilldownTabs produced={g.all} sold={g.soldRows} outstanding={g.rows} showBatch />
+                        <DrilldownTabs
+                          produced={g.all}
+                          sold={g.soldRows}
+                          outstanding={g.rows}
+                          showBatch
+                        />
                       </div>
                     </motion.div>
                   )}

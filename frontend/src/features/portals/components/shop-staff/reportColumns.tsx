@@ -19,14 +19,53 @@ export function salesReportColumns(canSeePrices: boolean): ColumnDef<SalesReport
   // plain one as bare text, and the two pick up different letter casing.
   return [
     {
-      id: "sno", header: "S.No.", accessor: () => "", type: "number", width: 70, sortable: false, priority: 3,
-      cell: (_v, _r, index) => <span style={{ fontFamily: "var(--font-ui)", color: "var(--text-tertiary)" }}>{index + 1}</span>
+      id: "sno",
+      header: "S.No.",
+      accessor: () => "",
+      type: "number",
+      width: 70,
+      sortable: false,
+      priority: 3,
+      cell: (_v, _r, index) => (
+        <span style={{ fontFamily: "var(--font-ui)", color: "var(--text-tertiary)" }}>
+          {index + 1}
+        </span>
+      ),
     },
-    { id: "saree", header: "Saree ID", accessor: r => r.sareeId, type: "code", width: 210, sortable: true, priority: 1 },
-    { id: "date", header: "Date & Time", accessor: r => new Date(r.date), type: "datetime", width: 215, sortable: true, priority: 2 },
-    { id: "customer", header: "Customer", accessor: r => r.customer, type: "text", sortable: true, priority: 2 },
     {
-      id: "channel", header: "Channel", accessor: r => r.design, type: "text", width: 130, sortable: true, priority: 2,
+      id: "saree",
+      header: "Saree ID",
+      accessor: (r) => r.sareeId,
+      type: "code",
+      width: 210,
+      sortable: true,
+      priority: 1,
+    },
+    {
+      id: "date",
+      header: "Date & Time",
+      accessor: (r) => new Date(r.date),
+      type: "datetime",
+      width: 215,
+      sortable: true,
+      priority: 2,
+    },
+    {
+      id: "customer",
+      header: "Customer",
+      accessor: (r) => r.customer,
+      type: "text",
+      sortable: true,
+      priority: 2,
+    },
+    {
+      id: "channel",
+      header: "Channel",
+      accessor: (r) => r.design,
+      type: "text",
+      width: 130,
+      sortable: true,
+      priority: 2,
       cell: (_v, r) => (
         <Chip
           label={r.design}
@@ -35,18 +74,56 @@ export function salesReportColumns(canSeePrices: boolean): ColumnDef<SalesReport
         />
       ),
     },
-    { id: "pay", header: "Payment", accessor: r => r.pay, type: "text", width: 140, sortable: true, priority: 2 },
-    { id: "soldBy", header: "Sold by", accessor: r => r.soldBy, type: "text", width: 160, sortable: true, priority: 3 },
+    {
+      id: "pay",
+      header: "Payment",
+      accessor: (r) => r.pay,
+      type: "text",
+      width: 140,
+      sortable: true,
+      priority: 2,
+    },
+    {
+      id: "soldBy",
+      header: "Sold by",
+      accessor: (r) => r.soldBy,
+      type: "text",
+      width: 160,
+      sortable: true,
+      priority: 3,
+    },
     ...(canSeePrices
       ? [
-        {
-          id: "gst", header: "GST", accessor: (r: SalesReportRow) => r.gst, type: "currency" as const, width: 140, sortable: true, priority: 3 as const,
-          cell: (_v: unknown, r: SalesReportRow) => r.gstRate === null
-            ? <span style={{ color: "var(--text-tertiary)" }}>—</span>
-            : <span>{formatMoney(rupees(r.gst))} <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>@ {r.gstRate}%</span></span>,
-        },
-        { id: "amount", header: "Amount", accessor: (r: SalesReportRow) => r.amount, type: "currency" as const, width: 150, sortable: true, priority: 2 as const },
-      ]
+          {
+            id: "gst",
+            header: "GST",
+            accessor: (r: SalesReportRow) => r.gst,
+            type: "currency" as const,
+            width: 140,
+            sortable: true,
+            priority: 3 as const,
+            cell: (_v: unknown, r: SalesReportRow) =>
+              r.gstRate === null ? (
+                <span style={{ color: "var(--text-tertiary)" }}>—</span>
+              ) : (
+                <span>
+                  {formatMoney(rupees(r.gst))}{" "}
+                  <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>
+                    @ {r.gstRate}%
+                  </span>
+                </span>
+              ),
+          },
+          {
+            id: "amount",
+            header: "Amount",
+            accessor: (r: SalesReportRow) => r.amount,
+            type: "currency" as const,
+            width: 150,
+            sortable: true,
+            priority: 2 as const,
+          },
+        ]
       : []),
   ];
 }
@@ -57,14 +134,57 @@ export function returnReportColumns(canSeePrices: boolean): ColumnDef<ReturnRepo
   // plain one as bare text, and the two pick up different letter casing.
   return [
     {
-      id: "sno", header: "S.No.", accessor: () => "", type: "number", width: 70, sortable: false, priority: 3,
-      cell: (_v, _r, index) => <span style={{ fontFamily: "var(--font-ui)", color: "var(--text-tertiary)" }}>{index + 1}</span>
+      id: "sno",
+      header: "S.No.",
+      accessor: () => "",
+      type: "number",
+      width: 70,
+      sortable: false,
+      priority: 3,
+      cell: (_v, _r, index) => (
+        <span style={{ fontFamily: "var(--font-ui)", color: "var(--text-tertiary)" }}>
+          {index + 1}
+        </span>
+      ),
     },
-    { id: "saree", header: "Saree ID", accessor: r => r.sareeId, type: "code", width: 210, sortable: true, priority: 1 },
-    { id: "date", header: "Date", accessor: r => new Date(r.date), type: "date", width: 170, sortable: true, priority: 2 },
-    { id: "reason", header: "Reason", accessor: r => r.reason, type: "text", sortable: true, priority: 2 },
+    {
+      id: "saree",
+      header: "Saree ID",
+      accessor: (r) => r.sareeId,
+      type: "code",
+      width: 210,
+      sortable: true,
+      priority: 1,
+    },
+    {
+      id: "date",
+      header: "Date",
+      accessor: (r) => new Date(r.date),
+      type: "date",
+      width: 170,
+      sortable: true,
+      priority: 2,
+    },
+    {
+      id: "reason",
+      header: "Reason",
+      accessor: (r) => r.reason,
+      type: "text",
+      sortable: true,
+      priority: 2,
+    },
     ...(canSeePrices
-      ? [{ id: "amount", header: "Refund", accessor: (r: ReturnReportRow) => r.amount, type: "currency" as const, width: 150, sortable: true, priority: 2 as const }]
+      ? [
+          {
+            id: "amount",
+            header: "Refund",
+            accessor: (r: ReturnReportRow) => r.amount,
+            type: "currency" as const,
+            width: 150,
+            sortable: true,
+            priority: 2 as const,
+          },
+        ]
       : []),
   ];
 }

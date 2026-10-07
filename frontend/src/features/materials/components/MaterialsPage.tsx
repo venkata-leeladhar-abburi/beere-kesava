@@ -12,7 +12,11 @@ import { F, MobileCtx } from "./theme";
 import { PageHeader, MetricsBar } from "./sections/PageHeaderAndMetrics";
 import { AlertsCard } from "./sections/AlertsCard";
 import { POTrackerSection } from "./sections/POTrackerSection";
-import { StockOverview, IssuedThisMonthCard, ReturnedThisMonthCard } from "./sections/StockOverviewAndIssued";
+import {
+  StockOverview,
+  IssuedThisMonthCard,
+  ReturnedThisMonthCard,
+} from "./sections/StockOverviewAndIssued";
 import { BatchesSection } from "./sections/BatchesSection";
 import { PurchaseHistorySection } from "./sections/PurchaseHistorySection";
 import { MovementHistorySection } from "./sections/MovementHistorySection";
@@ -28,7 +32,9 @@ type ReportExporter = (format: ReportFormat) => void | Promise<void>;
  * modals/ + sections/, all under this same directory. See git history for
  * the pre-split version if you need to trace exactly what moved where.
  */
-export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: unknown) => void } = {}) {
+export function MaterialsPage({
+  onNavigate,
+}: { onNavigate?: (tab: string, ctx?: unknown) => void } = {}) {
   const isMobile = useIsMobile();
   const px = isMobile ? 16 : 56;
 
@@ -52,7 +58,11 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
       setSuccessPOId(po.poNumber);
       toast.success(`${po.poNumber} submitted for Superadmin approval`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to submit the purchase order. Please try again.");
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to submit the purchase order. Please try again."
+      );
     }
   };
 
@@ -68,17 +78,20 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
         <div style={{ background: "#F7F2EA", paddingBottom: 48 }}>
           {successPOId && (
             <div style={{ padding: `16px ${px}px 0` }}>
-              <div style={{
-                background: "rgba(30,102,64,0.12)",
-                border: "1px solid rgba(30,102,64,0.24)",
-                borderRadius: 10,
-                padding: "13px 18px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}>
+              <div
+                style={{
+                  background: "rgba(30,102,64,0.12)",
+                  border: "1px solid rgba(30,102,64,0.24)",
+                  borderRadius: 10,
+                  padding: "13px 18px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: "#1E6640", fontWeight: 600 }}>
-                  ✓ Purchase Order {successPOId} submitted for Superadmin approval. You will be notified when it is approved or rejected.
+                  ✓ Purchase Order {successPOId} submitted for Superadmin approval. You will be
+                  notified when it is approved or rejected.
                 </span>
                 <IconButton
                   icon={X}
@@ -92,7 +105,9 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
             </div>
           )}
 
-          <div id="mat-alerts"><AlertsCard onCreatePO={() => setShowCreatePO(true)} /></div>
+          <div id="mat-alerts">
+            <AlertsCard onCreatePO={() => setShowCreatePO(true)} />
+          </div>
           <div id="mat-pos">
             <POTrackerSection
               onCreatePO={() => setShowCreatePO(true)}
@@ -100,21 +115,45 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
               onNavigate={onNavigate}
             />
           </div>
-          <div id="mat-stock"><StockOverview onSeeFullReports={() => setShowFullReports(true)} /></div>
+          <div id="mat-stock">
+            <StockOverview onSeeFullReports={() => setShowFullReports(true)} />
+          </div>
           <div id="mat-issued-returned">
             <IssuedThisMonthCard onNavigate={onNavigate} />
             <ReturnedThisMonthCard onNavigate={onNavigate} />
           </div>
-          <div id="mat-batches"><BatchesSection onAddNewStock={() => onNavigate?.("ReceiveStock")} /></div>
-          <div id="mat-purchase"><PurchaseHistorySection onDownloadReport={fn => setPurchaseExport(() => fn)} /></div>
-          <div id="mat-movement"><MovementHistorySection onDownloadMovementReport={fn => setMovementExport(() => fn)} /></div>
+          <div id="mat-batches">
+            <BatchesSection onAddNewStock={() => onNavigate?.("ReceiveStock")} />
+          </div>
+          <div id="mat-purchase">
+            <PurchaseHistorySection onDownloadReport={(fn) => setPurchaseExport(() => fn)} />
+          </div>
+          <div id="mat-movement">
+            <MovementHistorySection
+              onDownloadMovementReport={(fn) => setMovementExport(() => fn)}
+            />
+          </div>
         </div>
         <MaterialsFooter />
 
         <AddNewStockModal open={showAddStock} onClose={() => setShowAddStock(false)} />
         <FullReportsModal open={showFullReports} onClose={() => setShowFullReports(false)} />
-        {purchaseExport && <DownloadReportModal open onClose={() => setPurchaseExport(null)} title="Purchase History Report" onExport={purchaseExport} />}
-        {movementExport && <DownloadReportModal open onClose={() => setMovementExport(null)} title="Movement History Report" onExport={movementExport} />}
+        {purchaseExport && (
+          <DownloadReportModal
+            open
+            onClose={() => setPurchaseExport(null)}
+            title="Purchase History Report"
+            onExport={purchaseExport}
+          />
+        )}
+        {movementExport && (
+          <DownloadReportModal
+            open
+            onClose={() => setMovementExport(null)}
+            title="Movement History Report"
+            onExport={movementExport}
+          />
+        )}
 
         <POCreateModal
           open={showCreatePO}
@@ -122,11 +161,7 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
           onSubmit={handlePOSubmit}
           nextPONumber={nextPONumber}
         />
-        <PODocumentModal
-          open={!!viewPO}
-          onClose={() => setViewPO(null)}
-          po={viewPO}
-        />
+        <PODocumentModal open={!!viewPO} onClose={() => setViewPO(null)} po={viewPO} />
       </div>
     </MobileCtx.Provider>
   );

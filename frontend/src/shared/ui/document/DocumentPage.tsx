@@ -27,7 +27,14 @@ export interface DocumentPageProps extends React.ComponentProps<"div"> {
   size?: "a4" | "a5-landscape";
 }
 
-export function DocumentPage({ children, className, band, pageInfo, size = "a4", ...props }: DocumentPageProps) {
+export function DocumentPage({
+  children,
+  className,
+  band,
+  pageInfo,
+  size = "a4",
+  ...props
+}: DocumentPageProps) {
   return (
     <div className={cn("bk-doc", size === "a5-landscape" && "bk-doc--a5", className)} {...props}>
       {band}
@@ -36,8 +43,11 @@ export function DocumentPage({ children, className, band, pageInfo, size = "a4",
         {pageInfo && (
           <div
             style={{
-              marginTop: "auto", paddingTop: "6mm", textAlign: "right",
-              fontSize: "var(--doc-small)", color: "var(--doc-muted)",
+              marginTop: "auto",
+              paddingTop: "6mm",
+              textAlign: "right",
+              fontSize: "var(--doc-small)",
+              color: "var(--doc-muted)",
             }}
           >
             Page {pageInfo.page} of {pageInfo.of}
@@ -60,7 +70,12 @@ const SHEET_WIDTH_PX = 793.7;
  * behind the modal's overflow. The measured scale lands on `--doc-zoom`,
  * which print.css applies as `zoom` (never enlarging past 1).
  */
-export function DocumentViewport({ children, className, style, ...props }: React.ComponentProps<"div">) {
+export function DocumentViewport({
+  children,
+  className,
+  style,
+  ...props
+}: React.ComponentProps<"div">) {
   const ref = React.useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = React.useState<number | undefined>(undefined);
 

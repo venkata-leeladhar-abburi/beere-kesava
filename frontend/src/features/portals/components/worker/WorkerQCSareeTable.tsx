@@ -29,33 +29,55 @@ export function WorkerQCSareeTable({
 
   const columns: ColumnDef<SareeItem>[] = [
     {
-      id: "sareeId", header: "Saree ID", accessor: s => s.id, priority: 1,
+      id: "sareeId",
+      header: "Saree ID",
+      accessor: (s) => s.id,
+      priority: 1,
       cell: (_v, s) => (
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-[#FEF4F5] border border-[#FEE8EB] flex items-center justify-center text-[#6E0F2D] flex-shrink-0">
             <Package size={13} />
           </div>
-          <span style={{ fontFamily: F.m }} className="text-[12.5px] font-bold text-[#4A061B]" title={s.id}>
+          <span
+            style={{ fontFamily: F.m }}
+            className="text-[12.5px] font-bold text-[#4A061B]"
+            title={s.id}
+          >
             {s.id}
           </span>
         </div>
       ),
     },
     {
-      id: "batch", header: "Batch", accessor: s => s.batch, priority: 3,
+      id: "batch",
+      header: "Batch",
+      accessor: (s) => s.batch,
+      priority: 3,
       cell: (_v, s) => (
-        <span style={{ fontFamily: F.m }} className="text-[11.5px] font-bold text-[#6E0F2D]">{s.batch}</span>
+        <span style={{ fontFamily: F.m }} className="text-[11.5px] font-bold text-[#6E0F2D]">
+          {s.batch}
+        </span>
       ),
     },
     {
-      id: "weaver", header: "Weaver", accessor: s => s.weaver, priority: 2,
+      id: "weaver",
+      header: "Weaver",
+      accessor: (s) => s.weaver,
+      priority: 2,
       cell: (_v, s) => (
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-6 h-6 rounded-full bg-white border border-[#C89B47] flex items-center justify-center flex-shrink-0">
-            <span style={{ fontFamily: F.u }} className="font-bold text-[9.5px] text-[#845E04]">{initials(s.weaver)}</span>
+            <span style={{ fontFamily: F.u }} className="font-bold text-[9.5px] text-[#845E04]">
+              {initials(s.weaver)}
+            </span>
           </div>
           <div className="min-w-0">
-            <div style={{ fontFamily: F.u }} className="text-[12.5px] font-semibold text-[#1D1814] truncate max-w-[140px]">{s.weaver}</div>
+            <div
+              style={{ fontFamily: F.u }}
+              className="text-[12.5px] font-semibold text-[#1D1814] truncate max-w-[140px]"
+            >
+              {s.weaver}
+            </div>
             <div className="flex items-center gap-1 text-[10.5px] text-[#69635E]">
               {s.source === "outsourced" ? <User size={10} /> : <Factory size={10} />}
               {s.source === "outsourced" ? "Outsourced" : "Own Factory"}
@@ -65,13 +87,21 @@ export function WorkerQCSareeTable({
       ),
     },
     {
-      id: "sareeType", header: "Saree Type", accessor: s => typeOf(s).typeName ?? "", priority: 2,
+      id: "sareeType",
+      header: "Saree Type",
+      accessor: (s) => typeOf(s).typeName ?? "",
+      priority: 2,
       cell: (_v, s) => (
-        <span style={{ fontFamily: F.u }} className="text-[12.5px] font-semibold text-[#1D1814]">{typeOf(s).typeName || "—"}</span>
+        <span style={{ fontFamily: F.u }} className="text-[12.5px] font-semibold text-[#1D1814]">
+          {typeOf(s).typeName || "—"}
+        </span>
       ),
     },
     {
-      id: "sareeCode", header: "Saree Code", accessor: s => typeOf(s).sareeCode, priority: 3,
+      id: "sareeCode",
+      header: "Saree Code",
+      accessor: (s) => typeOf(s).sareeCode,
+      priority: 3,
       cell: (_v, s) => {
         const { sareeCode } = typeOf(s);
         // A real button when there is a code to open — it used to be a span
@@ -86,12 +116,18 @@ export function WorkerQCSareeTable({
             {sareeCode}
           </button>
         ) : (
-          <span style={{ fontFamily: F.m }} className="text-[12px] font-bold text-[#6E0F2D]">{sareeCode}</span>
+          <span style={{ fontFamily: F.m }} className="text-[12px] font-bold text-[#6E0F2D]">
+            {sareeCode}
+          </span>
         );
       },
     },
     {
-      id: "weight", header: "Weight", accessor: s => s.weight, type: "number", priority: 3,
+      id: "weight",
+      header: "Weight",
+      accessor: (s) => s.weight,
+      type: "number",
+      priority: 3,
       cell: (_v, s) => (
         <span style={{ fontFamily: F.m }} className="text-[12.5px] font-bold text-[#1D1814]">
           {s.weight > 0 ? `${s.weight}g` : "—"}
@@ -99,29 +135,52 @@ export function WorkerQCSareeTable({
       ),
     },
     {
-      id: "color", header: "Color", accessor: s => s.color ?? "", priority: 3,
-      cell: (_v, s) => s.color ? (
-        <span style={{ fontFamily: F.u }} className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#1D1814] bg-[#FAF8F6] border border-[#EAE5E1] px-2.5 py-1 rounded-full">
-          {s.color}
-        </span>
-      ) : (
-        <span style={{ fontFamily: F.u }} className="text-[12px] text-[#A69E96]">—</span>
-      ),
+      id: "color",
+      header: "Color",
+      accessor: (s) => s.color ?? "",
+      priority: 3,
+      cell: (_v, s) =>
+        s.color ? (
+          <span
+            style={{ fontFamily: F.u }}
+            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#1D1814] bg-[#FAF8F6] border border-[#EAE5E1] px-2.5 py-1 rounded-full"
+          >
+            {s.color}
+          </span>
+        ) : (
+          <span style={{ fontFamily: F.u }} className="text-[12px] text-[#A69E96]">
+            —
+          </span>
+        ),
     },
     {
-      id: "order", header: "Order", accessor: s => s.bulkOrderLabel ?? "", priority: 3,
-      cell: (_v, s) => s.bulkOrderLabel ? (
-        <span style={{ fontFamily: F.u }} className="inline-flex items-center px-2.5 py-1 rounded-lg bg-[#F0FAF4] border border-[#C9E8D4] text-[11px] font-medium text-[#0F4C30]">
-          {s.bulkOrderLabel}
-        </span>
-      ) : (
-        <span style={{ fontFamily: F.u }} className="inline-flex items-center px-2.5 py-1 rounded-lg bg-[#F5F2EE] border border-[#EAE5E1] text-[11px] font-normal text-[#69635E]">
-          General Stock
-        </span>
-      ),
+      id: "order",
+      header: "Order",
+      accessor: (s) => s.bulkOrderLabel ?? "",
+      priority: 3,
+      cell: (_v, s) =>
+        s.bulkOrderLabel ? (
+          <span
+            style={{ fontFamily: F.u }}
+            className="inline-flex items-center px-2.5 py-1 rounded-lg bg-[#F0FAF4] border border-[#C9E8D4] text-[11px] font-medium text-[#0F4C30]"
+          >
+            {s.bulkOrderLabel}
+          </span>
+        ) : (
+          <span
+            style={{ fontFamily: F.u }}
+            className="inline-flex items-center px-2.5 py-1 rounded-lg bg-[#F5F2EE] border border-[#EAE5E1] text-[11px] font-normal text-[#69635E]"
+          >
+            General Stock
+          </span>
+        ),
     },
     {
-      id: "actions", header: "Actions", accessor: () => null, type: "actions", align: "end",
+      id: "actions",
+      header: "Actions",
+      accessor: () => null,
+      type: "actions",
+      align: "end",
       cell: (_v, s) => (
         <div className="flex items-center justify-end gap-1.5">
           <button
@@ -162,7 +221,7 @@ export function WorkerQCSareeTable({
         responsive
         columns={columns}
         data={sarees}
-        getRowId={s => s.id}
+        getRowId={(s) => s.id}
         emptyTitle="No sarees awaiting QC"
       />
     </div>

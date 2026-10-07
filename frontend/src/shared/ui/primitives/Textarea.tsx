@@ -9,7 +9,18 @@ export interface TextareaProps extends Omit<React.ComponentProps<"textarea">, "s
 }
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
-  { invalid: invalidProp, showCounter, className, id, disabled, maxLength, value, defaultValue, onChange, ...props },
+  {
+    invalid: invalidProp,
+    showCounter,
+    className,
+    id,
+    disabled,
+    maxLength,
+    value,
+    defaultValue,
+    onChange,
+    ...props
+  },
   ref
 ) {
   const field = useFieldContext();
@@ -18,11 +29,16 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(fun
   const describedBy = field ? (invalid ? field.errorId : field.hintId) : undefined;
 
   const [length, setLength] = React.useState(
-    typeof value === "string" ? value.length : typeof defaultValue === "string" ? defaultValue.length : 0
+    typeof value === "string"
+      ? value.length
+      : typeof defaultValue === "string"
+        ? defaultValue.length
+        : 0
   );
 
   const pct = maxLength ? (length / maxLength) * 100 : 0;
-  const counterColor = pct >= 100 ? "var(--text-danger)" : pct >= 90 ? "var(--text-warning)" : "var(--text-tertiary)";
+  const counterColor =
+    pct >= 100 ? "var(--text-danger)" : pct >= 90 ? "var(--text-warning)" : "var(--text-tertiary)";
 
   return (
     <div className="relative">
@@ -45,7 +61,9 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(fun
           "bg-[var(--surface-raised)] text-[var(--text-primary)] text-[14px]",
           "px-3 py-2.5 outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-standard)]",
           "placeholder:text-[var(--text-placeholder)]",
-          invalid ? "border-[var(--border-danger)]" : "border-[var(--border-default)] hover:border-[var(--border-strong)]",
+          invalid
+            ? "border-[var(--border-danger)]"
+            : "border-[var(--border-default)] hover:border-[var(--border-strong)]",
           "focus-visible:border-[var(--border-focus)] focus-visible:shadow-[var(--shadow-focus)]",
           disabled && "bg-[var(--surface-disabled)] text-[var(--text-disabled)] cursor-not-allowed",
           className
@@ -53,7 +71,10 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(fun
         {...props}
       />
       {showCounter && maxLength && (
-        <span className="absolute bottom-2 right-3 bk-caption pointer-events-none" style={{ color: counterColor }}>
+        <span
+          className="absolute bottom-2 right-3 bk-caption pointer-events-none"
+          style={{ color: counterColor }}
+        >
           {length} / {maxLength}
         </span>
       )}

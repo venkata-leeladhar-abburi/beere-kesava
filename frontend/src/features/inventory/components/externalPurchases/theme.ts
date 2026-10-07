@@ -1,4 +1,4 @@
-import { brand, fonts, semantic } from '@/design-system/tokens';
+import { brand, fonts, semantic } from "@/design-system/tokens";
 // ── Design tokens for the External Purchases feature ──────────────────────────
 // Deliberately separate from the sibling InventoryPage's theme.ts (different
 // color names / values) to avoid confusing the two split features.

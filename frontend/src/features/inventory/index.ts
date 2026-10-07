@@ -10,4 +10,8 @@ export * from "./components/ExternalPurchasesPage";
 export * from "./components/InventoryPage";
 export * from "./components/SupplierReturnsPage";
 export { DispatchInvoiceModal } from "./components/modals/DispatchInvoiceModal";
-export { SareePhotoCapture, SareeDetailsCard, SareePhotoUploadDialog } from "./components/sareePhotos";
+export {
+  SareePhotoCapture,
+  SareeDetailsCard,
+  SareePhotoUploadDialog,
+} from "./components/sareePhotos";

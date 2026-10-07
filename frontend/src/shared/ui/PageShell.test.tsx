@@ -7,7 +7,11 @@ describe("PageShell", () => {
   it("renders header title, subtitle and actions", () => {
     render(
       <PageShell>
-        <PageShell.Header title="Customers" subtitle="Wholesale and retail" actions={<button>Add</button>} />
+        <PageShell.Header
+          title="Customers"
+          subtitle="Wholesale and retail"
+          actions={<button>Add</button>}
+        />
       </PageShell>
     );
     expect(screen.getByText("Customers")).toBeInTheDocument();

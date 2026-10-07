@@ -57,29 +57,62 @@ export function PhotoUploadField({
 
   return (
     <div>
-      <label style={{ fontFamily: "inherit", fontSize: 14, fontWeight: 600, display: "block", marginBottom: 8 }}>{labelText}</label>
-      <div style={{ fontSize: 13, color: "#69635E", marginBottom: 14, marginTop: -4 }}>{helpText}</div>
+      <label
+        style={{
+          fontFamily: "inherit",
+          fontSize: 14,
+          fontWeight: 600,
+          display: "block",
+          marginBottom: 8,
+        }}
+      >
+        {labelText}
+      </label>
+      <div style={{ fontSize: 13, color: "#69635E", marginBottom: 14, marginTop: -4 }}>
+        {helpText}
+      </div>
       <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
           style={{
-            width: 120, height: 120, borderRadius: "50%",
+            width: 120,
+            height: 120,
+            borderRadius: "50%",
             border: "2px dashed rgba(110,15,45,0.25)",
             background: displayUrl ? "transparent" : "rgba(110,15,45,0.04)",
-            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-            cursor: uploading ? "wait" : "pointer", flexShrink: 0, overflow: "hidden", padding: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: uploading ? "wait" : "pointer",
+            flexShrink: 0,
+            overflow: "hidden",
+            padding: 0,
           }}
         >
           {displayUrl ? (
-            <img src={displayUrl} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img
+              src={displayUrl}
+              alt="Preview"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
           ) : uploading ? (
             <Loader2 size={26} color="rgba(110,15,45,0.5)" className="animate-spin" />
           ) : (
             <>
               <Camera size={28} color="rgba(110,15,45,0.35)" strokeWidth={1.5} />
-              <span style={{ fontSize: 12, color: "rgba(110,15,45,0.45)", marginTop: 8, fontWeight: 600 }}>Upload Photo</span>
+              <span
+                style={{
+                  fontSize: 12,
+                  color: "rgba(110,15,45,0.45)",
+                  marginTop: 8,
+                  fontWeight: 600,
+                }}
+              >
+                Upload Photo
+              </span>
             </>
           )}
         </button>
@@ -94,7 +127,7 @@ export function PhotoUploadField({
         accept={IMAGE_ACCEPT_ATTR}
         aria-label={labelText || "Upload photo"}
         style={{ display: "none" }}
-        onChange={e => {
+        onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) void handleFile(file);
           e.target.value = "";

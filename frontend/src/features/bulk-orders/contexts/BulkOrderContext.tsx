@@ -54,23 +54,46 @@ export interface BulkOrder {
 
 // ─── Backend <-> frontend enum mapping ─────────────────────────────────────────
 const STATUS_TO_BACKEND: Record<BulkOrder["status"], BackendBulkOrderStatus> = {
-  "on-track": "ON_TRACK", "at-risk": "AT_RISK", overdue: "OVERDUE",
+  "on-track": "ON_TRACK",
+  "at-risk": "AT_RISK",
+  overdue: "OVERDUE",
 };
 const STATUS_FROM_BACKEND: Record<BackendBulkOrderStatus, BulkOrder["status"]> = {
-  ON_TRACK: "on-track", AT_RISK: "at-risk", OVERDUE: "overdue",
+  ON_TRACK: "on-track",
+  AT_RISK: "at-risk",
+  OVERDUE: "overdue",
 };
-const DISPATCH_STATUS_FROM_BACKEND: Record<BackendDispatchStatus, NonNullable<BulkOrder["dispatchStatus"]>> = {
-  PENDING: "pending", DISPATCHED: "dispatched", INVOICED: "invoiced",
+const DISPATCH_STATUS_FROM_BACKEND: Record<
+  BackendDispatchStatus,
+  NonNullable<BulkOrder["dispatchStatus"]>
+> = {
+  PENDING: "pending",
+  DISPATCHED: "dispatched",
+  INVOICED: "invoiced",
 };
-const PAYMENT_STATUS_TO_BACKEND: Record<NonNullable<BulkOrder["paymentStatus"]>, BackendOrderPaymentStatus> = {
-  pending: "PENDING", partial: "PARTIAL", paid: "PAID",
+const PAYMENT_STATUS_TO_BACKEND: Record<
+  NonNullable<BulkOrder["paymentStatus"]>,
+  BackendOrderPaymentStatus
+> = {
+  pending: "PENDING",
+  partial: "PARTIAL",
+  paid: "PAID",
 };
-const PAYMENT_STATUS_FROM_BACKEND: Record<BackendOrderPaymentStatus, NonNullable<BulkOrder["paymentStatus"]>> = {
-  PENDING: "pending", PARTIAL: "partial", PAID: "paid",
+const PAYMENT_STATUS_FROM_BACKEND: Record<
+  BackendOrderPaymentStatus,
+  NonNullable<BulkOrder["paymentStatus"]>
+> = {
+  PENDING: "pending",
+  PARTIAL: "partial",
+  PAID: "paid",
 };
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function backendOrderToFrontend(
@@ -107,11 +130,13 @@ function backendOrderToFrontend(
     phone: o.phone ?? undefined,
     gstCode: o.gstCode ?? undefined,
     visitingCardUrl: resolveAssetUrl(o.visitingCardUrl) ?? undefined,
-    photoUrls: o.photoUrls?.map(u => resolveAssetUrl(u) ?? u),
+    photoUrls: o.photoUrls?.map((u) => resolveAssetUrl(u) ?? u),
     tallied: o.tallied,
     talliedBy: o.talliedBy ?? undefined,
     talliedDate: o.talliedDate ?? undefined,
-    createdBy: o.createdBy ? { id: o.createdBy.id, name: `${o.createdBy.firstName} ${o.createdBy.lastName}`.trim() } : null,
+    createdBy: o.createdBy
+      ? { id: o.createdBy.id, name: `${o.createdBy.firstName} ${o.createdBy.lastName}`.trim() }
+      : null,
   };
 }
 
@@ -146,18 +171,29 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   // gate fired the combined call for them too.
   const enabled = useAuthGate("shop", "accountant", "admin", "superadmin");
 
-  const { data: bulkOrders = [], isError, error, isLoading, refetch } = useQuery({
+  const {
+    data: bulkOrders = [],
+    isError,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: QUERY_KEY,
     enabled,
     queryFn: async () => {
-      const [ordersRes, customersRes] = await Promise.all([bulkOrdersApi.list(), customersApi.list()]);
-      const customerLookup = new Map(customersRes.items.map(c => [c.id, c.name]));
-      return ordersRes.items.map(o => backendOrderToFrontend(o, customerLookup, getSareeTypeByCode));
+      const [ordersRes, customersRes] = await Promise.all([
+        bulkOrdersApi.list(),
+        customersApi.list(),
+      ]);
+      const customerLookup = new Map(customersRes.items.map((c) => [c.id, c.name]));
+      return ordersRes.items.map((o) =>
+        backendOrderToFrontend(o, customerLookup, getSareeTypeByCode)
+      );
     },
   });
 
   const setBulkOrders = (updater: (prev: BulkOrder[]) => BulkOrder[]) => {
-    queryClient.setQueryData<BulkOrder[]>(QUERY_KEY, prev => updater(prev ?? []));
+    queryClient.setQueryData<BulkOrder[]>(QUERY_KEY, (prev) => updater(prev ?? []));
   };
 
   const addBulkOrderMutation = useMutation({
@@ -177,7 +213,7 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
         address: order.address,
         phone: order.phone,
         visitingCardUrl: toStoredAssetPath(order.visitingCardUrl) ?? undefined,
-        photoUrls: order.photoUrls?.map(u => toStoredAssetPath(u) ?? u),
+        photoUrls: order.photoUrls?.map((u) => toStoredAssetPath(u) ?? u),
         actorId: user?.id,
       });
     },
@@ -190,10 +226,14 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
       // path.
       const customerName = queryClient
         .getQueryData<BackendCustomer[]>(["customers"])
-        ?.find(c => c.id === order.customerId)?.name;
+        ?.find((c) => c.id === order.customerId)?.name;
       if (customerName && order.customerId) {
-        setBulkOrders(prev => [
-          backendOrderToFrontend(created, new Map([[order.customerId as string, customerName]]), getSareeTypeByCode),
+        setBulkOrders((prev) => [
+          backendOrderToFrontend(
+            created,
+            new Map([[order.customerId as string, customerName]]),
+            getSareeTypeByCode
+          ),
           ...prev,
         ]);
       }
@@ -212,7 +252,9 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
         status: args.updates.status ? STATUS_TO_BACKEND[args.updates.status] : undefined,
         done: args.updates.done,
         shortage: args.updates.shortage,
-        paymentStatus: args.updates.paymentStatus ? PAYMENT_STATUS_TO_BACKEND[args.updates.paymentStatus] : undefined,
+        paymentStatus: args.updates.paymentStatus
+          ? PAYMENT_STATUS_TO_BACKEND[args.updates.paymentStatus]
+          : undefined,
         amountPaid: args.updates.amountPaid,
         tallied: args.updates.tallied,
         talliedBy: args.updates.talliedBy,
@@ -222,7 +264,9 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
       // a cached BulkOrder is a join of the backend order with a customer-name
       // lookup (see queryFn), which PATCH /bulk-orders does not return. The row
       // already exists, so patching known fields keeps the join intact.
-      setBulkOrders(prev => prev.map(o => (o.ref === args.ref ? { ...o, ...args.updates } : o)));
+      setBulkOrders((prev) =>
+        prev.map((o) => (o.ref === args.ref ? { ...o, ...args.updates } : o))
+      );
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Bulk order updated");
     },
@@ -238,8 +282,8 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   const markDispatchedMutation = useMutation({
     mutationFn: (args: { ref: string; invoiceId?: string }) => Promise.resolve(args),
     onSuccess: ({ ref, invoiceId }) => {
-      setBulkOrders(prev =>
-        prev.map(o =>
+      setBulkOrders((prev) =>
+        prev.map((o) =>
           o.ref === ref
             ? {
                 ...o,
@@ -256,27 +300,33 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
 
   const recordPaymentMutation = useMutation({
     mutationFn: (args: { ref: string; amount: number }) => {
-      const current = queryClient.getQueryData<BulkOrder[]>(QUERY_KEY)?.find(o => o.ref === args.ref);
+      const current = queryClient
+        .getQueryData<BulkOrder[]>(QUERY_KEY)
+        ?.find((o) => o.ref === args.ref);
       const newPaid = (current?.amountPaid || 0) + args.amount;
       const due = current?.amountDue || 0;
       const paymentStatus: NonNullable<BulkOrder["paymentStatus"]> =
         due > 0 && newPaid >= due ? "paid" : newPaid > 0 ? "partial" : "pending";
       return bulkOrdersApi
-        .update(args.ref, { amountPaid: newPaid, paymentStatus: PAYMENT_STATUS_TO_BACKEND[paymentStatus] })
+        .update(args.ref, {
+          amountPaid: newPaid,
+          paymentStatus: PAYMENT_STATUS_TO_BACKEND[paymentStatus],
+        })
         .then(() => args);
     },
     onSuccess: (args) => {
-      setBulkOrders(prev =>
-        prev.map(o => {
+      setBulkOrders((prev) =>
+        prev.map((o) => {
           if (o.ref !== args.ref) return o;
           const amountPaid = (o.amountPaid || 0) + args.amount;
           const due = o.amountDue || 0;
           return {
             ...o,
             amountPaid,
-            paymentStatus: due > 0 && amountPaid >= due ? "paid" : amountPaid > 0 ? "partial" : "pending",
+            paymentStatus:
+              due > 0 && amountPaid >= due ? "paid" : amountPaid > 0 ? "partial" : "pending",
           };
-        }),
+        })
       );
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Payment recorded");
@@ -288,10 +338,11 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   });
 
   const tallyOrderMutation = useMutation({
-    mutationFn: (args: { ref: string; by: string }) => bulkOrdersApi.update(args.ref, { tallied: true, talliedBy: args.by }),
+    mutationFn: (args: { ref: string; by: string }) =>
+      bulkOrdersApi.update(args.ref, { tallied: true, talliedBy: args.by }),
     onSuccess: (_updated, args) => {
-      setBulkOrders(prev =>
-        prev.map(o => (o.ref === args.ref ? { ...o, tallied: true, talliedBy: args.by } : o)),
+      setBulkOrders((prev) =>
+        prev.map((o) => (o.ref === args.ref ? { ...o, tallied: true, talliedBy: args.by } : o))
       );
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Order tallied");
@@ -309,7 +360,7 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   const deleteBulkOrderMutation = useMutation({
     mutationFn: (ref: string) => bulkOrdersApi.remove(ref),
     onSuccess: (_result, ref) => {
-      setBulkOrders(prev => prev.filter(o => o.ref !== ref));
+      setBulkOrders((prev) => prev.filter((o) => o.ref !== ref));
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       void queryClient.invalidateQueries({ queryKey: ["finishing"] });
       toast.success("Bulk order deleted");
@@ -321,19 +372,23 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   });
 
   const addBulkOrder = (order: BulkOrder) => addBulkOrderMutation.mutate(order);
-  const updateBulkOrder = (ref: string, updates: Partial<BulkOrder>) => updateBulkOrderMutation.mutate({ ref, updates });
-  const markDispatched = (ref: string, invoiceId?: string) => markDispatchedMutation.mutate({ ref, invoiceId });
-  const recordPayment = (ref: string, amount: number) => recordPaymentMutation.mutate({ ref, amount });
+  const updateBulkOrder = (ref: string, updates: Partial<BulkOrder>) =>
+    updateBulkOrderMutation.mutate({ ref, updates });
+  const markDispatched = (ref: string, invoiceId?: string) =>
+    markDispatchedMutation.mutate({ ref, invoiceId });
+  const recordPayment = (ref: string, amount: number) =>
+    recordPaymentMutation.mutate({ ref, amount });
   const tallyOrder = (ref: string, by: string) => tallyOrderMutation.mutate({ ref, by });
-  const deleteBulkOrder = (ref: string) => deleteBulkOrderMutation.mutateAsync(ref).then(() => undefined);
+  const deleteBulkOrder = (ref: string) =>
+    deleteBulkOrderMutation.mutateAsync(ref).then(() => undefined);
 
   const nextOrderRef = useMemo(() => {
     const allNums = bulkOrders
-      .map(o => {
+      .map((o) => {
         const m = o.ref.match(/ORD-\d{4}-(\d+)/);
         return m ? parseInt(m[1] ?? "0", 10) : 0;
       })
-      .filter(n => n > 0);
+      .filter((n) => n > 0);
     // Preview only — BulkOrdersService assigns the authoritative ref on create.
     // Starts from 0 on an empty database; it previously seeded from 41, which
     // invented "ORD-2026-042" as the very first order number.
@@ -342,7 +397,22 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   }, [bulkOrders]);
 
   return (
-    <BulkOrderContext.Provider value={{ bulkOrders, addBulkOrder, updateBulkOrder, nextOrderRef, markDispatched, recordPayment, tallyOrder, deleteBulkOrder, isError, error, isLoading, refetch: () => void refetch() }}>
+    <BulkOrderContext.Provider
+      value={{
+        bulkOrders,
+        addBulkOrder,
+        updateBulkOrder,
+        nextOrderRef,
+        markDispatched,
+        recordPayment,
+        tallyOrder,
+        deleteBulkOrder,
+        isError,
+        error,
+        isLoading,
+        refetch: () => void refetch(),
+      }}
+    >
       {children}
     </BulkOrderContext.Provider>
   );

@@ -1,11 +1,30 @@
 import React, { useState } from "react";
-import { Bell, ChevronLeft, ChevronRight, LogOut, Menu, UserRound, Home, ShoppingBag, Package, Users, BarChart2, RotateCcw, X } from "lucide-react";
+import {
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  Menu,
+  UserRound,
+  Home,
+  ShoppingBag,
+  Package,
+  Users,
+  BarChart2,
+  RotateCcw,
+  X,
+} from "lucide-react";
 import { staffIdentitySubtitle, useAdminStaffView } from "@/shared/ui/portal/AdminStaffView";
 import { C, F } from "./theme";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "../../../../shared/ui/overlay";
 import { PortalSwitchMenuItems } from "../../../../shared/ui/portal/PortalSwitcher";
 import { Drawer } from "../../../../shared/ui/overlay/Drawer";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -16,7 +35,16 @@ import { toInitials } from "@/shared/lib/initials";
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
 
 export function MobileHeader({
-  title, activeTab, setActive, setShowReturn, showProfile, setShowProfile, setShowProfileModal, handleLogout, selectRole, routerNavigate,
+  title,
+  activeTab,
+  setActive,
+  setShowReturn,
+  showProfile,
+  setShowProfile,
+  setShowProfileModal,
+  handleLogout,
+  selectRole,
+  routerNavigate,
 }: {
   title: string;
   onBack?: () => void;
@@ -33,7 +61,16 @@ export function MobileHeader({
   const { user, role } = useAuth();
   const { adminViewingAs } = useAdminStaffView();
   const name = user?.name || "Shop Staff";
-  const initials = name === "Shop Staff" ? "SS" : name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const initials =
+    name === "Shop Staff"
+      ? "SS"
+      : name
+          .split(" ")
+          .filter(Boolean)
+          .map((w) => w[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase();
   const [openDrawer, setOpenDrawer] = useState(false);
   const { notifications, unreadCount, markAllRead, markRead } = useShopNotifications(20);
   const recent = notifications.slice(0, 8);
@@ -76,12 +113,37 @@ export function MobileHeader({
             className="!size-9 !rounded-[10px] border border-[rgba(110,15,45,0.12)] bg-transparent hover:bg-[rgba(0,0,0,0.04)] text-[#1A0A0F]"
           />
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 9, overflow: "hidden", flexShrink: 0, border: `1px solid rgba(200,155,71,0.30)` }}>
-              <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 9,
+                overflow: "hidden",
+                flexShrink: 0,
+                border: `1px solid rgba(200,155,71,0.30)`,
+              }}
+            >
+              <img
+                src={imgBKLogo}
+                alt="BK"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
             </div>
             <div>
-              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: C.dark, lineHeight: 1.1 }}>Beere Kesava</div>
-              <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 11, color: C.muted }}>Shop Staff · {title}</div>
+              <div
+                style={{
+                  fontFamily: F.d,
+                  fontWeight: 700,
+                  fontSize: 14,
+                  color: C.dark,
+                  lineHeight: 1.1,
+                }}
+              >
+                Beere Kesava
+              </div>
+              <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 11, color: C.muted }}>
+                Shop Staff · {title}
+              </div>
             </div>
           </div>
         </div>
@@ -111,12 +173,41 @@ export function MobileHeader({
               >
                 <Bell size={18} color="#4A061B" />
                 {unreadCount > 0 && (
-                  <span style={{ position: "absolute", top: 4, right: 4, width: 8, height: 8, borderRadius: "50%", background: "#F47B72", border: "1.5px solid #FFFDF9" }} />
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: 4,
+                      right: 4,
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: "#F47B72",
+                      border: "1.5px solid #FFFDF9",
+                    }}
+                  />
                 )}
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="!w-[min(340px,calc(100vw-24px))] !max-w-[calc(100vw-24px)] !p-0 !rounded-[14px] !overflow-hidden !max-h-[min(70vh,520px)] flex flex-col" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.12)`, zIndex: 2000 }}>
-              <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <DropdownMenuContent
+              align="end"
+              className="!w-[min(340px,calc(100vw-24px))] !max-w-[calc(100vw-24px)] !p-0 !rounded-[14px] !overflow-hidden !max-h-[min(70vh,520px)] flex flex-col"
+              style={{
+                background: "#FFFDF9",
+                border: `1px solid rgba(110,15,45,0.12)`,
+                zIndex: 2000,
+              }}
+            >
+              <div
+                style={{
+                  padding: "12px 16px",
+                  borderBottom: `1px solid rgba(110,15,45,0.08)`,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 10,
+                  flexShrink: 0,
+                }}
+              >
                 <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: C.dark }}>
                   Notifications{unreadCount > 0 ? ` (${unreadCount})` : ""}
                 </span>
@@ -132,7 +223,15 @@ export function MobileHeader({
               </div>
               <div style={{ flex: 1, minHeight: 0, overflowY: "auto" as const }}>
                 {recent.length === 0 ? (
-                  <div style={{ padding: "20px 16px", textAlign: "center" as const, fontFamily: F.u, fontSize: 13, color: C.muted }}>
+                  <div
+                    style={{
+                      padding: "20px 16px",
+                      textAlign: "center" as const,
+                      fontFamily: F.u,
+                      fontSize: 13,
+                      color: C.muted,
+                    }}
+                  >
                     No notifications.
                   </div>
                 ) : (
@@ -142,17 +241,72 @@ export function MobileHeader({
                       role="button"
                       tabIndex={0}
                       onClick={() => markRead(n)}
-                      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); markRead(n); } }}
-                      style={{ padding: "10px 16px", borderBottom: i < recent.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer", background: n.unread ? "rgba(200,155,71,0.06)" : "transparent" }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          markRead(n);
+                        }
+                      }}
+                      style={{
+                        padding: "10px 16px",
+                        borderBottom:
+                          i < recent.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none",
+                        display: "flex",
+                        gap: 10,
+                        alignItems: "flex-start",
+                        cursor: "pointer",
+                        background: n.unread ? "rgba(200,155,71,0.06)" : "transparent",
+                      }}
                     >
-                      <span style={{ width: 32, height: 32, borderRadius: 10, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: `${CATEGORY_ACCENT[n.category]}14`, border: `1px solid ${CATEGORY_ACCENT[n.category]}2E` }}>
-                        {React.createElement(CATEGORY_ICON[n.category], { size: 16, color: CATEGORY_ACCENT[n.category] })}
+                      <span
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 10,
+                          flexShrink: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: `${CATEGORY_ACCENT[n.category]}14`,
+                          border: `1px solid ${CATEGORY_ACCENT[n.category]}2E`,
+                        }}
+                      >
+                        {React.createElement(CATEGORY_ICON[n.category], {
+                          size: 16,
+                          color: CATEGORY_ACCENT[n.category],
+                        })}
                       </span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.dark, marginBottom: 2 }}>{n.title}</div>
-                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>{n.desc}</div>
+                        <div
+                          style={{
+                            fontFamily: F.u,
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: C.dark,
+                            marginBottom: 2,
+                          }}
+                        >
+                          {n.title}
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: F.u,
+                            fontSize: 12,
+                            color: C.muted,
+                            overflow: "hidden",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical" as const,
+                          }}
+                        >
+                          {n.desc}
+                        </div>
                       </div>
-                      <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted, flexShrink: 0 }}>{n.time}</span>
+                      <span
+                        style={{ fontFamily: F.m, fontSize: 12, color: C.muted, flexShrink: 0 }}
+                      >
+                        {n.time}
+                      </span>
                     </div>
                   ))
                 )}
@@ -189,32 +343,62 @@ export function MobileHeader({
                   outline: "none",
                 }}
               >
-                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 13, color: "#FFFDF9" }}>{toInitials(initials)}</span>
+                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 13, color: "#FFFDF9" }}>
+                  {toInitials(initials)}
+                </span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="!min-w-[220px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid ${C.bdr}`, zIndex: 2000 }}>
-              <div style={{ padding: "14px 16px", background: "rgba(110,15,45,0.04)", borderBottom: `1px solid ${C.bdr}` }}>
-                <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{name}</div>
-                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{staffIdentitySubtitle({ adminViewingAs, portalLabel: "Shop Staff", fallback: user?.empId ? `${user.empId} · Shop Staff` : "Shop Staff" })}</div>
+            <DropdownMenuContent
+              align="end"
+              className="!min-w-[220px] !p-0 !rounded-[14px] !overflow-hidden"
+              style={{ background: "#FFFDF9", border: `1px solid ${C.bdr}`, zIndex: 2000 }}
+            >
+              <div
+                style={{
+                  padding: "14px 16px",
+                  background: "rgba(110,15,45,0.04)",
+                  borderBottom: `1px solid ${C.bdr}`,
+                }}
+              >
+                <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>
+                  {name}
+                </div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>
+                  {staffIdentitySubtitle({
+                    adminViewingAs,
+                    portalLabel: "Shop Staff",
+                    fallback: user?.empId ? `${user.empId} · Shop Staff` : "Shop Staff",
+                  })}
+                </div>
               </div>
               <div style={{ padding: "6px 0" }}>
-                <DropdownMenuItem onClick={() => setShowProfileModal(true)} className="!h-auto !py-2.5 !px-4 !text-[13px] !text-[#3B2314]">
+                <DropdownMenuItem
+                  onClick={() => setShowProfileModal(true)}
+                  className="!h-auto !py-2.5 !px-4 !text-[13px] !text-[#3B2314]"
+                >
                   <UserRound size={14} color={C.muted} /> View Profile
                 </DropdownMenuItem>
                 {localStorage.getItem("bk_original_admin_role") && (
-                  <DropdownMenuItem onClick={() => {
-                    const origAdminRole = localStorage.getItem("bk_original_admin_role");
-                    if (origAdminRole) {
-                      localStorage.removeItem("bk_original_admin_role");
-                      selectRole(origAdminRole as Role);
-                      routerNavigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
-                    }
-                  }} className="!h-auto !py-2.5 !px-4 !text-[13px] !text-[#3B2314]">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      const origAdminRole = localStorage.getItem("bk_original_admin_role");
+                      if (origAdminRole) {
+                        localStorage.removeItem("bk_original_admin_role");
+                        selectRole(origAdminRole as Role);
+                        routerNavigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
+                      }
+                    }}
+                    className="!h-auto !py-2.5 !px-4 !text-[13px] !text-[#3B2314]"
+                  >
                     <ChevronLeft size={14} color={C.muted} /> My Portal
                   </DropdownMenuItem>
                 )}
                 <PortalSwitchMenuItems itemClassName="!h-auto !py-2.5 !px-4 !text-[13px] !text-[#3B2314]" />
-                <DropdownMenuItem onClick={handleLogout} destructive className="!h-auto !py-2.5 !px-4 !text-[13px]">
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  destructive
+                  className="!h-auto !py-2.5 !px-4 !text-[13px]"
+                >
                   <LogOut size={14} color="#C0392B" /> Logout
                 </DropdownMenuItem>
               </div>
@@ -225,19 +409,67 @@ export function MobileHeader({
 
       {/* Side Navbar Drawer */}
       <Drawer open={openDrawer} onOpenChange={setOpenDrawer} side="left" size="sm">
-        <div style={{ display: "flex", flexDirection: "column", height: "100%", background: C.dark }}>
+        <div
+          style={{ display: "flex", flexDirection: "column", height: "100%", background: C.dark }}
+        >
           {/* Header matching Superadmin / Weaver / Worker drawer header */}
-          <div style={{ padding: "20px 20px 16px", borderBottom: `2px solid rgba(200,155,71,0.60)`, display: "flex", alignItems: "center", justifyContent: "space-between", background: `linear-gradient(135deg, ${C.dark} 0%, #6E0F2D 100%)`, flexShrink: 0 }}>
+          <div
+            style={{
+              padding: "20px 20px 16px",
+              borderBottom: `2px solid rgba(200,155,71,0.60)`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              background: `linear-gradient(135deg, ${C.dark} 0%, #6E0F2D 100%)`,
+              flexShrink: 0,
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 11, overflow: "hidden", border: "1.5px solid rgba(200,155,71,0.40)", flexShrink: 0 }}>
-                <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 11,
+                  overflow: "hidden",
+                  border: "1.5px solid rgba(200,155,71,0.40)",
+                  flexShrink: 0,
+                }}
+              >
+                <img
+                  src={imgBKLogo}
+                  alt="BK"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
               </div>
               <div>
                 <Dialog.Title asChild>
-                  <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: "#FFFDF9", lineHeight: 1.1 }}>Beere Kesava</div>
+                  <div
+                    style={{
+                      fontFamily: F.d,
+                      fontWeight: 700,
+                      fontSize: 14,
+                      color: "#FFFDF9",
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    Beere Kesava
+                  </div>
                 </Dialog.Title>
-                <Dialog.Description className="sr-only">Shop staff portal navigation menu</Dialog.Description>
-                <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 11, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>SHOP STAFF</div>
+                <Dialog.Description className="sr-only">
+                  Shop staff portal navigation menu
+                </Dialog.Description>
+                <div
+                  style={{
+                    fontFamily: F.u,
+                    fontWeight: 500,
+                    fontSize: 11,
+                    color: "rgba(231,201,131,0.85)",
+                    letterSpacing: "2px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  SHOP STAFF
+                </div>
               </div>
             </div>
             <Dialog.Close asChild>
@@ -253,7 +485,7 @@ export function MobileHeader({
 
           {/* Menu Navigation Items */}
           <div style={{ flex: 1, padding: "16px 12px", overflowY: "auto" }}>
-            {NAV_ITEMS.map(item => {
+            {NAV_ITEMS.map((item) => {
               const isActive = activeTab === item.id;
               const ItemIcon = item.icon;
               return (
@@ -309,20 +541,49 @@ export function MobileHeader({
           </div>
 
           {/* Footer Card */}
-          <div style={{ padding: "16px", borderTop: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.20)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div
+            style={{
+              padding: "16px",
+              borderTop: "1px solid rgba(255,255,255,0.08)",
+              background: "rgba(0,0,0,0.20)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 36, height: 36, borderRadius: "50%", background: C.burg, border: "1px solid rgba(200,155,71,0.30)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 13, color: "#FFF" }}>{toInitials(initials)}</span>
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  background: C.burg,
+                  border: "1px solid rgba(200,155,71,0.30)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 13, color: "#FFF" }}>
+                  {toInitials(initials)}
+                </span>
               </div>
               <div>
-                <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: "#FFFDF9" }}>{name}</div>
-                <div style={{ fontFamily: F.u, fontSize: 11, color: "rgba(255,253,249,0.50)" }}>Shop Staff</div>
+                <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: "#FFFDF9" }}>
+                  {name}
+                </div>
+                <div style={{ fontFamily: F.u, fontSize: 11, color: "rgba(255,253,249,0.50)" }}>
+                  Shop Staff
+                </div>
               </div>
             </div>
             <IconButton
               icon={LogOut}
               label="Logout"
-              onClick={() => { setOpenDrawer(false); handleLogout(); }}
+              onClick={() => {
+                setOpenDrawer(false);
+                handleLogout();
+              }}
               variant="ghost"
               className="!size-9 !rounded-[10px] text-[#F47B72] hover:bg-[rgba(244,123,114,0.15)]"
             />

@@ -30,7 +30,11 @@ function renderControls(over: Partial<Parameters<typeof AllWeaversControls>[0]> 
     onImport: vi.fn(),
     ...over,
   };
-  renderWithQueryClient(<AllWeaversControls {...props}><div>child content</div></AllWeaversControls>);
+  renderWithQueryClient(
+    <AllWeaversControls {...props}>
+      <div>child content</div>
+    </AllWeaversControls>
+  );
   return props;
 }
 
@@ -41,7 +45,7 @@ describe("AllWeaversControls", () => {
     expect(screen.getAllByText("All Weavers").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Add New Weaver" })).toBeInTheDocument();
     expect(
-      screen.getByPlaceholderText(/Search by weaver name, weaver code, or village/i),
+      screen.getByPlaceholderText(/Search by weaver name, weaver code, or village/i)
     ).toBeInTheDocument();
     expect(screen.getByText("child content")).toBeInTheDocument();
     // The view toggle and the filter pills sit either side of the wrapper that

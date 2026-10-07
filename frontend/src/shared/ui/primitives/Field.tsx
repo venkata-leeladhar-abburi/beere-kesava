@@ -46,7 +46,16 @@ export interface FieldProps extends React.ComponentProps<"div"> {
   id?: string;
 }
 
-export function Field({ label, required = false, hint, error, id, className, children, ...props }: FieldProps) {
+export function Field({
+  label,
+  required = false,
+  hint,
+  error,
+  id,
+  className,
+  children,
+  ...props
+}: FieldProps) {
   const generatedId = React.useId();
   const inputId = id ?? generatedId;
   const hintId = `${inputId}-hint`;
@@ -78,7 +87,12 @@ export function Field({ label, required = false, hint, error, id, className, chi
       {/* Row is always reserved (min-height) so validation never shifts layout. */}
       <div className="min-h-[20px]">
         {error ? (
-          <p id={errorId} role="alert" className="bk-caption flex items-center gap-1" style={{ color: "var(--text-danger)" }}>
+          <p
+            id={errorId}
+            role="alert"
+            className="bk-caption flex items-center gap-1"
+            style={{ color: "var(--text-danger)" }}
+          >
             <Icon name="error" size="xs" />
             {error}
           </p>

@@ -70,7 +70,8 @@ export const bulkOrdersApi = {
 
   findOne: (ref: string) => apiClient.get<BackendBulkOrder>(`/bulk-orders/${ref}`),
 
-  create: (payload: CreateBulkOrderPayload) => apiClient.post<BackendBulkOrder>("/bulk-orders", payload),
+  create: (payload: CreateBulkOrderPayload) =>
+    apiClient.post<BackendBulkOrder>("/bulk-orders", payload),
 
   update: (ref: string, payload: UpdateBulkOrderPayload) =>
     apiClient.patch<BackendBulkOrder>(`/bulk-orders/${ref}`, payload),

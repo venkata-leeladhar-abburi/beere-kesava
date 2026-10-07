@@ -8,10 +8,24 @@ import { useRatesPricing } from "@/features/pricing";
 import { AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
-  ChevronLeft, CheckCircle2, Search, AlertTriangle, ClipboardCheck, User, Package, LayoutGrid, Table2,
+  ChevronLeft,
+  CheckCircle2,
+  Search,
+  AlertTriangle,
+  ClipboardCheck,
+  User,
+  Package,
+  LayoutGrid,
+  Table2,
 } from "lucide-react";
 import {
-  T, F, SareeItem, InspectionResult, DefectiveLogItem, PassedLogItem, splitDesignField,
+  T,
+  F,
+  SareeItem,
+  InspectionResult,
+  DefectiveLogItem,
+  PassedLogItem,
+  splitDesignField,
 } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";
 import { WorkerQCInspectionScreen } from "./WorkerQCInspectionScreen";
@@ -28,23 +42,43 @@ import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import {
+  type DateFilterState,
+  DEFAULT_DATE_FILTER,
+  matchesDateFilter,
+} from "../../../../shared/ui/DateFilterBar";
 
 export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTablet?: boolean }) {
-  const { batches, isLoading: batchesLoading, isError: batchesError, error: batchesErrorObj, refetch: refetchBatches } = useBatches();
+  const {
+    batches,
+    isLoading: batchesLoading,
+    isError: batchesError,
+    error: batchesErrorObj,
+    refetch: refetchBatches,
+  } = useBatches();
   const { addReadySaree, dispatches } = useFinishing();
-  const { recordQc, qcRecords, isLoading: qcLoading, isError: qcError, error: qcErrorObj, refetch: refetchQc } = useQc();
+  const {
+    recordQc,
+    qcRecords,
+    isLoading: qcLoading,
+    isError: qcError,
+    error: qcErrorObj,
+    refetch: refetchQc,
+  } = useQc();
 
   const isLoading = batchesLoading || qcLoading;
   const isError = batchesError || qcError;
   const loadError = batchesErrorObj ?? qcErrorObj ?? null;
-  const refetchAll = () => { refetchBatches(); refetchQc(); };
+  const refetchAll = () => {
+    refetchBatches();
+    refetchQc();
+  };
   // A saree already on a dispatch record has left the premises — it has no
   // business sitting in the inspection queue even if its receipt/QC fields
   // say otherwise (mis-sequenced dispatch, or a late-entered QC result).
   const dispatchedSareeIds = useMemo(
-    () => new Set(dispatches.flatMap(d => d.sareeIds)),
-    [dispatches],
+    () => new Set(dispatches.flatMap((d) => d.sareeIds)),
+    [dispatches]
   );
   const { getSareeTypeByName, getSareeTypeByCode } = useRatesPricing();
   const [openSareeTypeCode, setOpenSareeTypeCode] = useState<string | null>(null);
@@ -52,8 +86,8 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
 
   const contextRows = useMemo<SareeItem[]>(() => {
     return batches
-      .filter(b => b.status === "active")
-      .flatMap(b =>
+      .filter((b) => b.status === "active")
+      .flatMap((b) =>
         b.rows
           // qcPassed stays null/undefined until a QC record exists for the
           // row — once set (pass or fail), it must drop out of the queue.
@@ -63,11 +97,18 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
           // either identity is enough to admit it into the queue, not just
           // weaverName (which is null for factory-loom rows and previously
           // hid them from Quality Check entirely).
-          .filter(r => r.sareeId && (r.weaverName || r.factoryLoomNumber) && r.receivedAt && r.qcPassed == null && !dispatchedSareeIds.has(r.sareeId))
-          .map(r => ({
+          .filter(
+            (r) =>
+              r.sareeId &&
+              (r.weaverName || r.factoryLoomNumber) &&
+              r.receivedAt &&
+              r.qcPassed == null &&
+              !dispatchedSareeIds.has(r.sareeId)
+          )
+          .map((r) => ({
             id: r.sareeId!,
             batch: b.batchId,
-            source: r.weaverName ? "outsourced" as const : "own" as const,
+            source: r.weaverName ? ("outsourced" as const) : ("own" as const),
             weaver: r.weaverName ?? r.factoryLoomNumber ?? "Factory Loom",
             // factoryLoomId is a raw database id, not a human-readable code —
             // factoryLoomNumber (e.g. "Loom F-02") already serves as this
@@ -111,7 +152,10 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   // the 4-second corner toast that used to be the only confirmation: on the
   // shop floor it was routinely missed, leaving no way to tell a saved
   // verdict apart from a tap that never registered.
-  const [completion, setCompletion] = useState<{ sareeId: string; kind: "passed" | "semi" | "defective" } | null>(null);
+  const [completion, setCompletion] = useState<{
+    sareeId: string;
+    kind: "passed" | "semi" | "defective";
+  } | null>(null);
   // A Passed verdict needs photographic evidence as well, so the tap on
   // "Passed" opens a capture step instead of recording the verdict outright.
   const [passPhotoFor, setPassPhotoFor] = useState<SareeItem | null>(null);
@@ -122,52 +166,62 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   };
   // Derived straight from real QC records — recordQc's refetch keeps this
   // current, so there's no local mutation to make when a defect is logged.
-  const qcLog = useMemo<DefectiveLogItem[]>(() => qcRecords
-    .filter(r => r.result === "defective" || r.result === "semi")
-    .map(r => ({
-      recordId: r.id,
-      id: r.sareeId,
-      weaver: r.weaverName ?? r.factoryLoomNumber ?? "—",
-      defects: r.defects,
-      date: new Date(r.qcDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
-      deduction: formatMoney(rupees(r.deduction)),
-      isoDate: r.qcDate,
-      result: r.result as "defective" | "semi",
-      sareeType: r.sareeTypeName ?? "",
-      batchId: r.batchId,
-      makingCharge: formatMoney(rupees(r.makingCharge)),
-      payable: formatMoney(rupees(r.payable)),
-      deductionValue: Number(r.deduction),
-      makingChargeValue: Number(r.makingCharge),
-      notes: r.notes,
-      photoUrl: r.photoUrl,
-      inspectedBy: r.inspectedBy,
-      receivedDate: new Date(r.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
-    })),
-  [qcRecords]);
+  const qcLog = useMemo<DefectiveLogItem[]>(
+    () =>
+      qcRecords
+        .filter((r) => r.result === "defective" || r.result === "semi")
+        .map((r) => ({
+          recordId: r.id,
+          id: r.sareeId,
+          weaver: r.weaverName ?? r.factoryLoomNumber ?? "—",
+          defects: r.defects,
+          date: new Date(r.qcDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
+          deduction: formatMoney(rupees(r.deduction)),
+          isoDate: r.qcDate,
+          result: r.result as "defective" | "semi",
+          sareeType: r.sareeTypeName ?? "",
+          batchId: r.batchId,
+          makingCharge: formatMoney(rupees(r.makingCharge)),
+          payable: formatMoney(rupees(r.payable)),
+          deductionValue: Number(r.deduction),
+          makingChargeValue: Number(r.makingCharge),
+          notes: r.notes,
+          photoUrl: r.photoUrl,
+          inspectedBy: r.inspectedBy,
+          receivedDate: new Date(r.receivedDate).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+        })),
+    [qcRecords]
+  );
 
-  const defLog = useMemo(() => qcLog.filter(d => d.result === "defective"), [qcLog]);
-  const semiLog = useMemo(() => qcLog.filter(d => d.result === "semi"), [qcLog]);
+  const defLog = useMemo(() => qcLog.filter((d) => d.result === "defective"), [qcLog]);
+  const semiLog = useMemo(() => qcLog.filter((d) => d.result === "semi"), [qcLog]);
 
-  const passedLog = useMemo<PassedLogItem[]>(() => qcRecords
-    .filter(r => r.result === "passed")
-    .map(r => ({
-      recordId: r.id,
-      id: r.sareeId,
-      weaver: r.weaverName ?? r.factoryLoomNumber ?? "—",
-      sareeType: r.sareeTypeName ?? "",
-      date: new Date(r.qcDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
-      payable: formatMoney(rupees(r.payable)),
-      isoDate: r.qcDate,
-      inspectedBy: r.inspectedBy,
-      photoUrl: r.photoUrl,
-    }))
-    .sort((a, b) => b.isoDate.localeCompare(a.isoDate)),
-  [qcRecords]);
+  const passedLog = useMemo<PassedLogItem[]>(
+    () =>
+      qcRecords
+        .filter((r) => r.result === "passed")
+        .map((r) => ({
+          recordId: r.id,
+          id: r.sareeId,
+          weaver: r.weaverName ?? r.factoryLoomNumber ?? "—",
+          sareeType: r.sareeTypeName ?? "",
+          date: new Date(r.qcDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
+          payable: formatMoney(rupees(r.payable)),
+          isoDate: r.qcDate,
+          inspectedBy: r.inspectedBy,
+          photoUrl: r.photoUrl,
+        }))
+        .sort((a, b) => b.isoDate.localeCompare(a.isoDate)),
+    [qcRecords]
+  );
 
   const completedTodayLog = useMemo(() => {
     const todayStr = new Date().toDateString();
-    return passedLog.filter(p => new Date(p.isoDate).toDateString() === todayStr);
+    return passedLog.filter((p) => new Date(p.isoDate).toDateString() === todayStr);
   }, [passedLog]);
 
   const [qcDateFilter, setQcDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -182,38 +236,60 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   const [qcPage, setQcPage] = useState(1);
   const [qcViewMode, setQcViewMode] = useState<"table" | "card">("table");
 
-  const pending = ALL_QUEUE.filter(s => !inspected.has(s.id) && matchesDateFilter(s.isoDate, qcDateFilter));
+  const pending = ALL_QUEUE.filter(
+    (s) => !inspected.has(s.id) && matchesDateFilter(s.isoDate, qcDateFilter)
+  );
 
   const passedThisMonthCount = useMemo(() => {
     const now = new Date();
-    return qcRecords.filter(r => {
+    return qcRecords.filter((r) => {
       const d = new Date(r.qcDate);
-      return r.result === "passed" && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      return (
+        r.result === "passed" &&
+        d.getMonth() === now.getMonth() &&
+        d.getFullYear() === now.getFullYear()
+      );
     }).length;
   }, [qcRecords]);
 
   const rejectedCount = useMemo(() => {
-    return qcRecords.filter(r => r.result === "defective").length;
+    return qcRecords.filter((r) => r.result === "defective").length;
   }, [qcRecords]);
 
   const weaverGroups = Object.values(
-    pending.reduce((acc, s) => {
-      if (!acc[s.weaver]) acc[s.weaver] = { name: s.weaver, code: s.weaverCode ?? "", source: s.source, sarees: [] as SareeItem[] };
-      acc[s.weaver].sarees.push(s);
-      return acc;
-    }, {} as Record<string, { name: string; code: string; source: string; sarees: SareeItem[] }>)
+    pending.reduce(
+      (acc, s) => {
+        if (!acc[s.weaver])
+          acc[s.weaver] = {
+            name: s.weaver,
+            code: s.weaverCode ?? "",
+            source: s.source,
+            sarees: [] as SareeItem[],
+          };
+        acc[s.weaver].sarees.push(s);
+        return acc;
+      },
+      {} as Record<string, { name: string; code: string; source: string; sarees: SareeItem[] }>
+    )
   );
 
   const batchGroups = Object.values(
-    pending.reduce((acc, s) => {
-      if (!acc[s.batch]) acc[s.batch] = { id: s.batch, sarees: [] as SareeItem[] };
-      acc[s.batch].sarees.push(s);
-      return acc;
-    }, {} as Record<string, { id: string; sarees: SareeItem[] }>)
+    pending.reduce(
+      (acc, s) => {
+        if (!acc[s.batch]) acc[s.batch] = { id: s.batch, sarees: [] as SareeItem[] };
+        acc[s.batch].sarees.push(s);
+        return acc;
+      },
+      {} as Record<string, { id: string; sarees: SareeItem[] }>
+    )
   );
 
   const filteredWeavers = weaverSearch
-    ? weaverGroups.filter(w => w.name.toLowerCase().includes(weaverSearch.toLowerCase()) || w.code.toLowerCase().includes(weaverSearch.toLowerCase()))
+    ? weaverGroups.filter(
+        (w) =>
+          w.name.toLowerCase().includes(weaverSearch.toLowerCase()) ||
+          w.code.toLowerCase().includes(weaverSearch.toLowerCase())
+      )
     : weaverGroups;
 
   const reset = () => {
@@ -234,7 +310,12 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     return rate ? Number(rate.charge) || 0 : 0;
   };
 
-  const saveQc = (s: SareeItem, result: "passed" | "semi" | "defective", semiDeduction = 0, passPhoto: string | null = null) => {
+  const saveQc = (
+    s: SareeItem,
+    result: "passed" | "semi" | "defective",
+    semiDeduction = 0,
+    passPhoto: string | null = null
+  ) => {
     const { typeName } = splitDesignField(s.design);
     return recordQc({
       sareeId: s.id,
@@ -272,33 +353,41 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   };
 
   const markPassedDirect = (s: SareeItem, passPhoto: string) => {
-    saveQc(s, "passed", 0, passPhoto).then(() => {
-      setInspected(p => new Set(p).add(s.id));
+    saveQc(s, "passed", 0, passPhoto)
+      .then(() => {
+        setInspected((p) => new Set(p).add(s.id));
 
-      const { code: designCode, typeName } = splitDesignField(s.design);
-      const sareeTypeCode = s.sareeTypeCode ?? getSareeTypeByName(typeName)?.code ?? "";
-      const qcPassDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+        const { code: designCode, typeName } = splitDesignField(s.design);
+        const sareeTypeCode = s.sareeTypeCode ?? getSareeTypeByName(typeName)?.code ?? "";
+        const qcPassDate = new Date().toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
 
-      addReadySaree({
-        id: s.id,
-        weaverId: s.wcode || undefined,
-        weaverName: s.weaver,
-        designCode,
-        sareeTypeCode,
-        sareeType: typeName,
-        weight: s.weight ? `${s.weight}g` : undefined,
-        qcPassDate,
-        bulkOrderRef: s.bulkOrderRef,
-        status: "qc-passed-pending-finishing",
+        addReadySaree({
+          id: s.id,
+          weaverId: s.wcode || undefined,
+          weaverName: s.weaver,
+          designCode,
+          sareeTypeCode,
+          sareeType: typeName,
+          weight: s.weight ? `${s.weight}g` : undefined,
+          qcPassDate,
+          bulkOrderRef: s.bulkOrderRef,
+          status: "qc-passed-pending-finishing",
+        });
+        setPassSaving(false);
+        setPassPhotoFor(null);
+        setPassPhotoUrl(null);
+        showCompletion(s.id, "passed");
+      })
+      .catch((err) => {
+        setPassSaving(false);
+        showError(
+          `Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`
+        );
       });
-      setPassSaving(false);
-      setPassPhotoFor(null);
-      setPassPhotoUrl(null);
-      showCompletion(s.id, "passed");
-    }).catch((err) => {
-      setPassSaving(false);
-      showError(`Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
-    });
   };
 
   const startDefect = (s: SareeItem) => {
@@ -307,18 +396,25 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     setResult("defective");
   };
 
-  const closeInspect = () => { setInspecting(null); reset(); };
+  const closeInspect = () => {
+    setInspecting(null);
+    reset();
+  };
 
   const confirmDefective = () => {
     if (!inspecting) return;
     const s = inspecting;
-    saveQc(s, "defective").then(() => {
-      setInspected(p => new Set(p).add(s.id));
-      setDefectSubmitted(true);
-      showCompletion(s.id, "defective");
-    }).catch((err) => {
-      showError(`Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
-    });
+    saveQc(s, "defective")
+      .then(() => {
+        setInspected((p) => new Set(p).add(s.id));
+        setDefectSubmitted(true);
+        showCompletion(s.id, "defective");
+      })
+      .catch((err) => {
+        showError(
+          `Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`
+        );
+      });
   };
 
   const startSemiApproved = (s: SareeItem) => {
@@ -335,19 +431,43 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   const confirmSemiApproved = () => {
     if (!inspecting) return;
     const s = inspecting;
-    saveQc(s, "semi", Number(deductionAmount) || 0).then(() => {
-      setInspected(p => new Set(p).add(s.id));
-      setDefectSubmitted(true);
-      showCompletion(s.id, "semi");
-    }).catch((err) => {
-      showError(`Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
-    });
+    saveQc(s, "semi", Number(deductionAmount) || 0)
+      .then(() => {
+        setInspected((p) => new Set(p).add(s.id));
+        setDefectSubmitted(true);
+        showCompletion(s.id, "semi");
+      })
+      .catch((err) => {
+        showError(
+          `Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`
+        );
+      });
   };
 
   const toasts = createPortal(
     <>
       {errorToast && (
-        <div style={{ position: "fixed", bottom: 84, left: "50%", transform: "translateX(-50%)", zIndex: 9999, background: T.crim, color: "#FFF", borderRadius: 999, padding: "11px 22px", fontFamily: F.u, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 28px rgba(192,57,43,0.32)", display: "flex", alignItems: "center", gap: 8, maxWidth: "90vw" }}>
+        <div
+          style={{
+            position: "fixed",
+            bottom: 84,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 9999,
+            background: T.crim,
+            color: "#FFF",
+            borderRadius: 999,
+            padding: "11px 22px",
+            fontFamily: F.u,
+            fontSize: 13,
+            fontWeight: 600,
+            boxShadow: "0 8px 28px rgba(192,57,43,0.32)",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            maxWidth: "90vw",
+          }}
+        >
           <AlertTriangle size={15} style={{ flexShrink: 0 }} /> <span>{errorToast}</span>
         </div>
       )}
@@ -363,37 +483,97 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         />
       )}
 
-      {completion && (() => {
-        const style = {
-          passed: { bg: T.green, icon: CheckCircle2, verdict: "Passed", note: "Sent to finishing as QC-passed." },
-          semi: { bg: "#C4923A", icon: AlertTriangle, verdict: "Semi-Approved", note: "Goes back to the weaver for rework — not to finishing." },
-          defective: { bg: T.crim, icon: AlertTriangle, verdict: "Defective", note: "Logged against the weaver with the making charge deducted." },
-        }[completion.kind];
-        const Icon = style.icon;
-        return (
-          <Modal open onOpenChange={o => !o && setCompletion(null)} size="xs">
-            <div style={{ padding: "28px 26px 22px", textAlign: "center" }}>
-              <div style={{ width: 58, height: 58, borderRadius: "50%", background: style.bg, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-                <Icon size={30} color="#FFF" />
-              </div>
-              <Dialog.Title asChild>
-                <h3 style={{ fontFamily: F.d, fontSize: 19, fontWeight: 700, color: T.brown, margin: "0 0 6px" }}>QC Completed</h3>
-              </Dialog.Title>
-              <Dialog.Description asChild>
-                <p style={{ fontFamily: F.u, fontSize: 13.5, color: T.brown, margin: "0 0 4px", lineHeight: 1.5 }}>
-                  <strong>{completion.sareeId}</strong> marked <strong style={{ color: style.bg }}>{style.verdict}</strong>.
+      {completion &&
+        (() => {
+          const style = {
+            passed: {
+              bg: T.green,
+              icon: CheckCircle2,
+              verdict: "Passed",
+              note: "Sent to finishing as QC-passed.",
+            },
+            semi: {
+              bg: "#C4923A",
+              icon: AlertTriangle,
+              verdict: "Semi-Approved",
+              note: "Goes back to the weaver for rework — not to finishing.",
+            },
+            defective: {
+              bg: T.crim,
+              icon: AlertTriangle,
+              verdict: "Defective",
+              note: "Logged against the weaver with the making charge deducted.",
+            },
+          }[completion.kind];
+          const Icon = style.icon;
+          return (
+            <Modal open onOpenChange={(o) => !o && setCompletion(null)} size="xs">
+              <div style={{ padding: "28px 26px 22px", textAlign: "center" }}>
+                <div
+                  style={{
+                    width: 58,
+                    height: 58,
+                    borderRadius: "50%",
+                    background: style.bg,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    margin: "0 auto 16px",
+                  }}
+                >
+                  <Icon size={30} color="#FFF" />
+                </div>
+                <Dialog.Title asChild>
+                  <h3
+                    style={{
+                      fontFamily: F.d,
+                      fontSize: 19,
+                      fontWeight: 700,
+                      color: T.brown,
+                      margin: "0 0 6px",
+                    }}
+                  >
+                    QC Completed
+                  </h3>
+                </Dialog.Title>
+                <Dialog.Description asChild>
+                  <p
+                    style={{
+                      fontFamily: F.u,
+                      fontSize: 13.5,
+                      color: T.brown,
+                      margin: "0 0 4px",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    <strong>{completion.sareeId}</strong> marked{" "}
+                    <strong style={{ color: style.bg }}>{style.verdict}</strong>.
+                  </p>
+                </Dialog.Description>
+                <p
+                  style={{
+                    fontFamily: F.u,
+                    fontSize: 12.5,
+                    color: T.muted,
+                    margin: "0 0 20px",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {style.note}
                 </p>
-              </Dialog.Description>
-              <p style={{ fontFamily: F.u, fontSize: 12.5, color: T.muted, margin: "0 0 20px", lineHeight: 1.5 }}>
-                {style.note}
-              </p>
-              <Button onClick={() => setCompletion(null)} variant="primary" size="lg" fullWidth className="h-[46px] rounded-full">
-                Done
-              </Button>
-            </div>
-          </Modal>
-        );
-      })()}
+                <Button
+                  onClick={() => setCompletion(null)}
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  className="h-[46px] rounded-full"
+                >
+                  Done
+                </Button>
+              </div>
+            </Modal>
+          );
+        })()}
     </>,
     document.body
   );
@@ -475,13 +655,20 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         onOpenSareeTypeCode={setOpenSareeTypeCode}
       />
     ) : (
-      <div style={{ display: "grid", gridTemplateColumns: cols, gap: isDesktop ? 14 : 10, padding: pad }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: cols,
+          gap: isDesktop ? 14 : 10,
+          padding: pad,
+        }}
+      >
         {sarees.map(renderCard)}
       </div>
     );
 
   if (selectedWeaverQC !== null) {
-    const wg = weaverGroups.find(w => w.name === selectedWeaverQC);
+    const wg = weaverGroups.find((w) => w.name === selectedWeaverQC);
     const wSarees = wg?.sarees ?? [];
     const totalPages = Math.ceil(wSarees.length / ITEMS_PER_PAGE);
     const pageSarees = wSarees.slice((qcPage - 1) * ITEMS_PER_PAGE, qcPage * ITEMS_PER_PAGE);
@@ -507,7 +694,18 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
           actions={
             <div className="flex items-center gap-2.5">
               <ViewModeToggle />
-              <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 14px", borderRadius: 999 }}>
+              <span
+                style={{
+                  fontFamily: F.u,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#FFFDF9",
+                  background: "rgba(255,255,255,0.14)",
+                  border: "1px solid rgba(255,255,255,0.20)",
+                  padding: "5px 14px",
+                  borderRadius: 999,
+                }}
+              >
                 {wSarees.length} pending
               </span>
             </div>
@@ -520,7 +718,9 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
           ) : wSarees.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center" }}>
               <CheckCircle2 size={36} color={T.green} style={{ margin: "0 auto 10px" }} />
-              <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: T.brown }}>All done for this weaver!</div>
+              <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: T.brown }}>
+                All done for this weaver!
+              </div>
             </div>
           ) : (
             <>
@@ -529,20 +729,25 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
               {totalPages > 1 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t border-[#EAE5E1]">
                   <div style={{ fontFamily: F.u }} className="text-[13px] text-[#69635E]">
-                    Showing <span className="font-semibold text-[#1D1814]">{(qcPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(qcPage * ITEMS_PER_PAGE, wSarees.length)}</span> of <span className="font-semibold text-[#1D1814]">{wSarees.length}</span> sarees
+                    Showing{" "}
+                    <span className="font-semibold text-[#1D1814]">
+                      {(qcPage - 1) * ITEMS_PER_PAGE + 1}–
+                      {Math.min(qcPage * ITEMS_PER_PAGE, wSarees.length)}
+                    </span>{" "}
+                    of <span className="font-semibold text-[#1D1814]">{wSarees.length}</span> sarees
                   </div>
 
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
                       disabled={qcPage <= 1}
-                      onClick={() => setQcPage(p => Math.max(1, p - 1))}
+                      onClick={() => setQcPage((p) => Math.max(1, p - 1))}
                       className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                     >
                       ‹ Prev
                     </button>
 
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                       <button
                         key={p}
                         type="button"
@@ -560,7 +765,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
                     <button
                       type="button"
                       disabled={qcPage >= totalPages}
-                      onClick={() => setQcPage(p => Math.min(totalPages, p + 1))}
+                      onClick={() => setQcPage((p) => Math.min(totalPages, p + 1))}
                       className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                     >
                       Next ›
@@ -577,7 +782,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   }
 
   if (selectedBatchQC !== null) {
-    const bg = batchGroups.find(b => b.id === selectedBatchQC);
+    const bg = batchGroups.find((b) => b.id === selectedBatchQC);
     const bSarees = bg?.sarees ?? [];
     const totalPages = Math.ceil(bSarees.length / ITEMS_PER_PAGE);
     const pageSarees = bSarees.slice((qcPage - 1) * ITEMS_PER_PAGE, qcPage * ITEMS_PER_PAGE);
@@ -603,7 +808,18 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
           actions={
             <div className="flex items-center gap-2.5">
               <ViewModeToggle />
-              <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 14px", borderRadius: 999 }}>
+              <span
+                style={{
+                  fontFamily: F.u,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#FFFDF9",
+                  background: "rgba(255,255,255,0.14)",
+                  border: "1px solid rgba(255,255,255,0.20)",
+                  padding: "5px 14px",
+                  borderRadius: 999,
+                }}
+              >
                 {bSarees.length} pending
               </span>
             </div>
@@ -612,7 +828,9 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
           {bSarees.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center" }}>
               <CheckCircle2 size={36} color={T.green} style={{ margin: "0 auto 10px" }} />
-              <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: T.brown }}>All done for this batch!</div>
+              <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: T.brown }}>
+                All done for this batch!
+              </div>
             </div>
           ) : (
             <>
@@ -621,20 +839,25 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
               {totalPages > 1 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t border-[#EAE5E1]">
                   <div style={{ fontFamily: F.u }} className="text-[13px] text-[#69635E]">
-                    Showing <span className="font-semibold text-[#1D1814]">{(qcPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(qcPage * ITEMS_PER_PAGE, bSarees.length)}</span> of <span className="font-semibold text-[#1D1814]">{bSarees.length}</span> sarees
+                    Showing{" "}
+                    <span className="font-semibold text-[#1D1814]">
+                      {(qcPage - 1) * ITEMS_PER_PAGE + 1}–
+                      {Math.min(qcPage * ITEMS_PER_PAGE, bSarees.length)}
+                    </span>{" "}
+                    of <span className="font-semibold text-[#1D1814]">{bSarees.length}</span> sarees
                   </div>
 
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
                       disabled={qcPage <= 1}
-                      onClick={() => setQcPage(p => Math.max(1, p - 1))}
+                      onClick={() => setQcPage((p) => Math.max(1, p - 1))}
                       className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                     >
                       ‹ Prev
                     </button>
 
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                       <button
                         key={p}
                         type="button"
@@ -652,7 +875,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
                     <button
                       type="button"
                       disabled={qcPage >= totalPages}
-                      onClick={() => setQcPage(p => Math.min(totalPages, p + 1))}
+                      onClick={() => setQcPage((p) => Math.min(totalPages, p + 1))}
                       className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                     >
                       Next ›
@@ -686,9 +909,24 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         <SectionCard
           icon={ClipboardCheck}
           title="Pending Quality Check"
-          subtitle={qcTab === "weavers" ? "Grouped by weaver or factory loom — pick one to start inspecting." : "Grouped by batch — pick a batch to start inspecting."}
+          subtitle={
+            qcTab === "weavers"
+              ? "Grouped by weaver or factory loom — pick one to start inspecting."
+              : "Grouped by batch — pick a batch to start inspecting."
+          }
           actions={
-            <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
+            <span
+              style={{
+                fontFamily: F.u,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#FFFDF9",
+                background: "rgba(255,255,255,0.14)",
+                border: "1px solid rgba(255,255,255,0.20)",
+                padding: "5px 12px",
+                borderRadius: 999,
+              }}
+            >
               {pending.length} pending
             </span>
           }
@@ -700,21 +938,32 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
           ) : pending.length === 0 ? (
             <div style={{ padding: "36px 20px", textAlign: "center" }}>
               <CheckCircle2 size={36} color={T.green} style={{ margin: "0 auto 10px" }} />
-              <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: T.brown }}>All sarees inspected!</div>
-              <div style={{ fontFamily: F.u, fontSize: 13, color: T.muted, marginTop: 4 }}>Nothing is waiting in the QC queue right now.</div>
+              <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: T.brown }}>
+                All sarees inspected!
+              </div>
+              <div style={{ fontFamily: F.u, fontSize: 13, color: T.muted, marginTop: 4 }}>
+                Nothing is waiting in the QC queue right now.
+              </div>
             </div>
           ) : qcTab === "weavers" ? (
             <>
               <div style={{ paddingBottom: 16 }}>
                 <Input
-                  value={weaverSearch} onChange={e => { setWeaverSearch(e.target.value); setQcPage(1); }}
+                  value={weaverSearch}
+                  onChange={(e) => {
+                    setWeaverSearch(e.target.value);
+                    setQcPage(1);
+                  }}
                   placeholder="Search weavers or looms..."
                   iconLeft={Search}
                   className="w-full"
                 />
               </div>
               <WorkerQCWeaverGrid
-                filteredWeavers={filteredWeavers.slice((qcPage - 1) * ITEMS_PER_PAGE, qcPage * ITEMS_PER_PAGE)}
+                filteredWeavers={filteredWeavers.slice(
+                  (qcPage - 1) * ITEMS_PER_PAGE,
+                  qcPage * ITEMS_PER_PAGE
+                )}
                 setSelectedWeaverQC={setSelectedWeaverQC}
                 isDesktop={isDesktop}
                 isTablet={isTablet}
@@ -724,20 +973,30 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
               {Math.ceil(filteredWeavers.length / ITEMS_PER_PAGE) > 1 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t border-[#EAE5E1]">
                   <div style={{ fontFamily: F.u }} className="text-[13px] text-[#69635E]">
-                    Showing <span className="font-semibold text-[#1D1814]">{(qcPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(qcPage * ITEMS_PER_PAGE, filteredWeavers.length)}</span> of <span className="font-semibold text-[#1D1814]">{filteredWeavers.length}</span> weavers
+                    Showing{" "}
+                    <span className="font-semibold text-[#1D1814]">
+                      {(qcPage - 1) * ITEMS_PER_PAGE + 1}–
+                      {Math.min(qcPage * ITEMS_PER_PAGE, filteredWeavers.length)}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-semibold text-[#1D1814]">{filteredWeavers.length}</span>{" "}
+                    weavers
                   </div>
 
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
                       disabled={qcPage <= 1}
-                      onClick={() => setQcPage(p => Math.max(1, p - 1))}
+                      onClick={() => setQcPage((p) => Math.max(1, p - 1))}
                       className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                     >
                       ‹ Prev
                     </button>
 
-                    {Array.from({ length: Math.ceil(filteredWeavers.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map(p => (
+                    {Array.from(
+                      { length: Math.ceil(filteredWeavers.length / ITEMS_PER_PAGE) },
+                      (_, i) => i + 1
+                    ).map((p) => (
                       <button
                         key={p}
                         type="button"
@@ -755,7 +1014,11 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
                     <button
                       type="button"
                       disabled={qcPage >= Math.ceil(filteredWeavers.length / ITEMS_PER_PAGE)}
-                      onClick={() => setQcPage(p => Math.min(Math.ceil(filteredWeavers.length / ITEMS_PER_PAGE), p + 1))}
+                      onClick={() =>
+                        setQcPage((p) =>
+                          Math.min(Math.ceil(filteredWeavers.length / ITEMS_PER_PAGE), p + 1)
+                        )
+                      }
                       className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                     >
                       Next ›
@@ -767,7 +1030,10 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
           ) : (
             <>
               <WorkerQCBatchGrid
-                batchGroups={batchGroups.slice((qcPage - 1) * ITEMS_PER_PAGE, qcPage * ITEMS_PER_PAGE)}
+                batchGroups={batchGroups.slice(
+                  (qcPage - 1) * ITEMS_PER_PAGE,
+                  qcPage * ITEMS_PER_PAGE
+                )}
                 setSelectedBatchQC={setSelectedBatchQC}
                 isDesktop={isDesktop}
                 isTablet={isTablet}
@@ -777,20 +1043,29 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
               {Math.ceil(batchGroups.length / ITEMS_PER_PAGE) > 1 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t border-[#EAE5E1]">
                   <div style={{ fontFamily: F.u }} className="text-[13px] text-[#69635E]">
-                    Showing <span className="font-semibold text-[#1D1814]">{(qcPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(qcPage * ITEMS_PER_PAGE, batchGroups.length)}</span> of <span className="font-semibold text-[#1D1814]">{batchGroups.length}</span> batches
+                    Showing{" "}
+                    <span className="font-semibold text-[#1D1814]">
+                      {(qcPage - 1) * ITEMS_PER_PAGE + 1}–
+                      {Math.min(qcPage * ITEMS_PER_PAGE, batchGroups.length)}
+                    </span>{" "}
+                    of <span className="font-semibold text-[#1D1814]">{batchGroups.length}</span>{" "}
+                    batches
                   </div>
 
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
                       disabled={qcPage <= 1}
-                      onClick={() => setQcPage(p => Math.max(1, p - 1))}
+                      onClick={() => setQcPage((p) => Math.max(1, p - 1))}
                       className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                     >
                       ‹ Prev
                     </button>
 
-                    {Array.from({ length: Math.ceil(batchGroups.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map(p => (
+                    {Array.from(
+                      { length: Math.ceil(batchGroups.length / ITEMS_PER_PAGE) },
+                      (_, i) => i + 1
+                    ).map((p) => (
                       <button
                         key={p}
                         type="button"
@@ -808,7 +1083,11 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
                     <button
                       type="button"
                       disabled={qcPage >= Math.ceil(batchGroups.length / ITEMS_PER_PAGE)}
-                      onClick={() => setQcPage(p => Math.min(Math.ceil(batchGroups.length / ITEMS_PER_PAGE), p + 1))}
+                      onClick={() =>
+                        setQcPage((p) =>
+                          Math.min(Math.ceil(batchGroups.length / ITEMS_PER_PAGE), p + 1)
+                        )
+                      }
                       className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                     >
                       Next ›
@@ -852,7 +1131,9 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
       />
 
       <AnimatePresence>
-        {openSareeType && <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />}
+        {openSareeType && (
+          <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />
+        )}
       </AnimatePresence>
 
       {toasts}

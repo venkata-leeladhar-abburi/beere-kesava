@@ -47,7 +47,14 @@ function fullFrame(vw: number, vh: number, rotate = 0): ScanRegion {
 function centerCrop(vw: number, vh: number, rotate = 0): ScanRegion {
   const w = vw * CENTER_CROP;
   const h = vh * CENTER_CROP;
-  return { x: (vw - w) / 2, y: (vh - h) / 2, w, h, rotate, longSide: rotate === 0 ? DECODE_LONG_SIDE : ROTATED_LONG_SIDE };
+  return {
+    x: (vw - w) / 2,
+    y: (vh - h) / 2,
+    w,
+    h,
+    rotate,
+    longSide: rotate === 0 ? DECODE_LONG_SIDE : ROTATED_LONG_SIDE,
+  };
 }
 
 /**
@@ -93,7 +100,14 @@ export function qrRegion(attempt: number, vw: number, vh: number): ScanRegion {
   const crop = attempt % 2 === 0 ? 1 : QR_CROPS[((attempt - 1) / 2) % QR_CROPS.length];
   const w = vw * crop;
   const h = vh * crop;
-  return { x: (vw - w) / 2, y: (vh - h) / 2, w, h, rotate: 0, longSide: Math.min(QR_LONG_SIDE, Math.max(w, h)) };
+  return {
+    x: (vw - w) / 2,
+    y: (vh - h) / 2,
+    w,
+    h,
+    rotate: 0,
+    longSide: Math.min(QR_LONG_SIDE, Math.max(w, h)),
+  };
 }
 
 /**
@@ -108,7 +122,11 @@ export function canvasSize(region: ScanRegion): { width: number; height: number;
   const bw = region.w * cos + region.h * sin;
   const bh = region.w * sin + region.h * cos;
   const scale = region.longSide / Math.max(bw, bh);
-  return { width: Math.max(1, Math.round(bw * scale)), height: Math.max(1, Math.round(bh * scale)), scale };
+  return {
+    width: Math.max(1, Math.round(bw * scale)),
+    height: Math.max(1, Math.round(bh * scale)),
+    scale,
+  };
 }
 
 /**

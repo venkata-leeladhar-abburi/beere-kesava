@@ -4,7 +4,13 @@
 import { useState } from "react";
 import { T, F } from "../theme";
 import { SareeInventoryTable, type SareeRow } from "./SareeInventoryTable";
-import { Purchase, purchaseTotals, purchasePieces, useSuppliers, withPieceImage } from "../../contexts/SupplierContext";
+import {
+  Purchase,
+  purchaseTotals,
+  purchasePieces,
+  useSuppliers,
+  withPieceImage,
+} from "../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { FileText } from "lucide-react";
 import { Button } from "../../../../shared/ui/primitives";
@@ -15,7 +21,7 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
   const { updatePurchaseSarees } = useSuppliers();
 
   function toggle(id: string) {
-    setExpandedIds(prev => {
+    setExpandedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -25,50 +31,138 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
 
   const columns: ColumnDef<Purchase>[] = [
     {
-      id: "ref", header: "Purchase Ref", accessor: p => p.id,
+      id: "ref",
+      header: "Purchase Ref",
+      accessor: (p) => p.id,
       cell: (_v, p) => (
         <>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>{p.id}</div>
+          <div
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              fontWeight: 600,
+              color: T.royalBurgundy,
+              marginBottom: 4,
+            }}
+          >
+            {p.id}
+          </div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</div>
         </>
       ),
     },
     {
-      id: "invoice", header: "Invoice", accessor: p => p.invoiceNumber,
+      id: "invoice",
+      header: "Invoice",
+      accessor: (p) => p.invoiceNumber,
       cell: (_v, p) => (
         <>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown }}>{p.invoiceNumber || "—"}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown }}>
+            {p.invoiceNumber || "—"}
+          </div>
           {p.invoiceFileName && (
             <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 4 }}>
               <FileText size={11} color={T.royalBurgundy} />
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.invoiceFileName}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                {p.invoiceFileName}
+              </span>
             </div>
           )}
         </>
       ),
     },
     {
-      id: "sarees", header: "Sarees", accessor: p => purchasePieces(p),
-      cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{v as number}</span>,
+      id: "sarees",
+      header: "Sarees",
+      accessor: (p) => purchasePieces(p),
+      cell: (v) => (
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 13,
+            fontWeight: 700,
+            color: T.luxuryBrown,
+          }}
+        >
+          {v as number}
+        </span>
+      ),
     },
     {
-      id: "buying", header: "Buying Price", accessor: p => purchaseTotals(p.sarees).buying,
-      cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{formatMoney(rupees(v as number))}</span>,
+      id: "buying",
+      header: "Buying Price",
+      accessor: (p) => purchaseTotals(p.sarees).buying,
+      cell: (v) => (
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            color: T.luxuryBrown,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {formatMoney(rupees(v as number))}
+        </span>
+      ),
     },
     {
-      id: "selling", header: "Selling Price", accessor: p => purchaseTotals(p.sarees).selling,
-      cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.antiqueGold, whiteSpace: "nowrap" }}>{formatMoney(rupees(v as number))}</span>,
+      id: "selling",
+      header: "Selling Price",
+      accessor: (p) => purchaseTotals(p.sarees).selling,
+      cell: (v) => (
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            fontWeight: 600,
+            color: T.antiqueGold,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {formatMoney(rupees(v as number))}
+        </span>
+      ),
     },
     {
-      id: "profit", header: "Profit", accessor: p => purchaseTotals(p.sarees).profit,
-      cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.green, whiteSpace: "nowrap" }}>{formatMoney(rupees(v as number))}</span>,
+      id: "profit",
+      header: "Profit",
+      accessor: (p) => purchaseTotals(p.sarees).profit,
+      cell: (v) => (
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            fontWeight: 700,
+            color: T.green,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {formatMoney(rupees(v as number))}
+        </span>
+      ),
     },
     {
-      id: "billAmount", header: "Bill Amount", accessor: p => p.billAmount,
-      cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: "#8B6018" }}>{v as string}</span>,
+      id: "billAmount",
+      header: "Bill Amount",
+      accessor: (p) => p.billAmount,
+      cell: (v) => (
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#8B6018",
+          }}
+        >
+          {v as string}
+        </span>
+      ),
     },
     {
-      id: "expand", header: "", align: "end", accessor: () => null,
+      id: "expand",
+      header: "",
+      align: "end",
+      accessor: () => null,
       cell: (_v, p) => (
         <Button variant="tertiary" size="sm" onClick={() => toggle(p.id)}>
           {expandedIds.has(p.id) ? "Hide sarees" : `View ${purchasePieces(p)} sarees`}
@@ -81,19 +175,29 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
     <DataTable
       columns={columns}
       data={purchases}
-      getRowId={p => p.id}
+      getRowId={(p) => p.id}
       pagination
       expandedIds={expandedIds}
-      renderExpandedRow={p => (
+      renderExpandedRow={(p) => (
         <div style={{ padding: "6px 16px 16px", background: "rgba(247,242,234,0.7)" }}>
           <SareeInventoryTable
-            rows={p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier, supplierId: p.supplierId }))}
+            rows={p.sarees.map((s) => ({
+              ...s,
+              purchaseId: p.id,
+              invoiceNumber: p.invoiceNumber,
+              supplier: p.supplier,
+              supplierId: p.supplierId,
+            }))}
             onUploadPhoto={(row: SareeRow, url: string) =>
-              void updatePurchaseSarees(p.id, sarees =>
-                sarees.map(s => s.id === row.id ? { ...s, imageUrl: url } : s))}
+              void updatePurchaseSarees(p.id, (sarees) =>
+                sarees.map((s) => (s.id === row.id ? { ...s, imageUrl: url } : s))
+              )
+            }
             onUploadPieceImage={(row: SareeRow, pieceNo: number, url: string) =>
-              void updatePurchaseSarees(p.id, sarees =>
-                sarees.map(s => s.id === row.id ? withPieceImage(s, pieceNo, url) : s))}
+              void updatePurchaseSarees(p.id, (sarees) =>
+                sarees.map((s) => (s.id === row.id ? withPieceImage(s, pieceNo, url) : s))
+              )
+            }
           />
         </div>
       )}

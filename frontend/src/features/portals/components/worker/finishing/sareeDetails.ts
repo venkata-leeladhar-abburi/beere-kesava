@@ -29,21 +29,24 @@ export interface SareeDetail {
   photoUrl: string | null;
 }
 
-function toDetail(batchId: string, r: {
-  sareeId: string | null;
-  recipientType?: "weaver" | "factoryLoom";
-  weaverCode: string | null;
-  weaverName: string | null;
-  weaverLoom: number | null;
-  factoryLoomNumber?: string | null;
-  designCode: string | null;
-  sareeTypeCode: string | null;
-  sareeTypeName: string | null;
-  bulkOrderRef: string | null;
-  receivedWeight: string | null;
-  receivedColor: string | null;
-  receivedPhotoUrl: string | null;
-}): SareeDetail {
+function toDetail(
+  batchId: string,
+  r: {
+    sareeId: string | null;
+    recipientType?: "weaver" | "factoryLoom";
+    weaverCode: string | null;
+    weaverName: string | null;
+    weaverLoom: number | null;
+    factoryLoomNumber?: string | null;
+    designCode: string | null;
+    sareeTypeCode: string | null;
+    sareeTypeName: string | null;
+    bulkOrderRef: string | null;
+    receivedWeight: string | null;
+    receivedColor: string | null;
+    receivedPhotoUrl: string | null;
+  }
+): SareeDetail {
   const weight = r.receivedWeight != null ? Number(r.receivedWeight) : null;
   return {
     sareeId: r.sareeId as string,

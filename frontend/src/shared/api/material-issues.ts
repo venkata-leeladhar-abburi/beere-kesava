@@ -97,14 +97,14 @@ export const materialIssuesApi = {
   // fix as batchesApi.list/weaverPaymentsApi.list.
   list: async (pageSize = 100): Promise<PaginatedResponse<BackendMaterialIssueRecord>> => {
     const first = await apiClient.get<PaginatedResponse<BackendMaterialIssueRecord>>(
-      `/material-issues?page=1&pageSize=${pageSize}`,
+      `/material-issues?page=1&pageSize=${pageSize}`
     );
     const items = [...first.items];
     let page = 1;
     while (items.length < first.total) {
       page += 1;
       const next = await apiClient.get<PaginatedResponse<BackendMaterialIssueRecord>>(
-        `/material-issues?page=${page}&pageSize=${pageSize}`,
+        `/material-issues?page=${page}&pageSize=${pageSize}`
       );
       if (next.items.length === 0) break;
       items.push(...next.items);
@@ -121,13 +121,11 @@ export const materialIssuesApi = {
   sign: (id: string, signature: Blob) => {
     const formData = new FormData();
     formData.append("signature", signature, "signature.png");
-    return apiClient.postForm<BackendMaterialIssueRecord>(
-      `/material-issues/${id}/sign`,
-      formData,
-    );
+    return apiClient.postForm<BackendMaterialIssueRecord>(`/material-issues/${id}/sign`, formData);
   },
 
-  cancel: (id: string) => apiClient.post<BackendMaterialIssueRecord>(`/material-issues/${id}/cancel`, {}),
+  cancel: (id: string) =>
+    apiClient.post<BackendMaterialIssueRecord>(`/material-issues/${id}/cancel`, {}),
 
   remove: (id: string) => apiClient.delete<void>(`/material-issues/${id}`),
 };

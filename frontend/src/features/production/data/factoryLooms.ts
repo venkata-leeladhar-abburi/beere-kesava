@@ -4,9 +4,12 @@ export interface FactoryLoom {
    * when displayCode hasn't loaded yet, same fallback pattern as customers. */
   displayCode?: string;
   loomNumber: string;
-  location: string; operatorName: string; operatorPhone: string;
+  location: string;
+  operatorName: string;
+  operatorPhone: string;
   status: "active" | "idle" | "maintenance";
-  installedYear: string; notes: string;
+  installedYear: string;
+  notes: string;
 }
 
 /**

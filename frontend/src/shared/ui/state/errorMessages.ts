@@ -46,7 +46,8 @@ const COPY: Record<ErrorCode, ErrorCopy> = {
   // verbatim instead. This is what any other screen would render.
   GEOFENCE_BLOCKED: {
     title: "You're not at the premises",
-    description: "This portal can only be used at the factory. Contact your administrator if you think this is wrong.",
+    description:
+      "This portal can only be used at the factory. Contact your administrator if you think this is wrong.",
     retryable: false,
   },
   NOT_FOUND: {

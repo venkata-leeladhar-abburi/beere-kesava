@@ -295,12 +295,14 @@ export interface RecordDownloadPayload {
 }
 
 export const reportsApi = {
-  outstandingPayments: () => apiClient.get<OutstandingPaymentsReport>("/reports/outstanding-payments"),
+  outstandingPayments: () =>
+    apiClient.get<OutstandingPaymentsReport>("/reports/outstanding-payments"),
   productionSummary: () => apiClient.get<ProductionSummaryReport>("/reports/production-summary"),
   salesSummary: () => apiClient.get<SalesSummaryReport>("/reports/sales-summary"),
   retailSalesReport: () => apiClient.get<RetailSalesReport>("/reports/retail-sales"),
   wholesaleSalesReport: () => apiClient.get<WholesaleSalesReport>("/reports/wholesale-sales"),
-  productionAnalytics: () => apiClient.get<ProductionAnalyticsReport>("/reports/production-analytics"),
+  productionAnalytics: () =>
+    apiClient.get<ProductionAnalyticsReport>("/reports/production-analytics"),
   rawMaterialReport: () => apiClient.get<RawMaterialReport>("/reports/raw-material"),
   weaverPaymentReport: () => apiClient.get<WeaverPaymentReport>("/reports/weaver-payments"),
   customerReport: () => apiClient.get<CustomerReport>("/reports/customers"),
@@ -311,12 +313,16 @@ export const reportsApi = {
   previewSchedule: (frequency: ReportFrequency, deliveryTime: string, count = 5) =>
     apiClient.get<{ runs: string[] }>(
       `/reports/schedules/preview?frequency=${encodeURIComponent(frequency)}` +
-        `&deliveryTime=${encodeURIComponent(deliveryTime)}&count=${count}`,
+        `&deliveryTime=${encodeURIComponent(deliveryTime)}&count=${count}`
     ),
-  createSchedule: (payload: CreateSchedulePayload) => apiClient.post<ScheduledReportItem>("/reports/schedules", payload),
+  createSchedule: (payload: CreateSchedulePayload) =>
+    apiClient.post<ScheduledReportItem>("/reports/schedules", payload),
   updateSchedule: (id: string, payload: UpdateSchedulePayload) =>
     apiClient.patch<ScheduledReportItem>(`/reports/schedules/${id}`, payload),
-  deleteSchedule: (id: string) => apiClient.delete<{ success: boolean }>(`/reports/schedules/${id}`),
-  listHistory: () => apiClient.get<{ items: ReportDownloadHistoryItem[]; total: number }>("/reports/history"),
-  recordDownload: (payload: RecordDownloadPayload) => apiClient.post<ReportDownloadHistoryItem>("/reports/history", payload),
+  deleteSchedule: (id: string) =>
+    apiClient.delete<{ success: boolean }>(`/reports/schedules/${id}`),
+  listHistory: () =>
+    apiClient.get<{ items: ReportDownloadHistoryItem[]; total: number }>("/reports/history"),
+  recordDownload: (payload: RecordDownloadPayload) =>
+    apiClient.post<ReportDownloadHistoryItem>("/reports/history", payload),
 };

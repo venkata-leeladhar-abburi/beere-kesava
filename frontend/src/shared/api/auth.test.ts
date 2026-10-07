@@ -75,7 +75,7 @@ describe("authApi location handling", () => {
     getCurrentFix.mockResolvedValue(null);
 
     await expect(authApi.requestOtp("9999999999")).rejects.toThrow(
-      "You appear to be about 1.1 km from Dharmavaram factory.",
+      "You appear to be about 1.1 km from Dharmavaram factory."
     );
     expect(post).toHaveBeenCalledTimes(1);
   });

@@ -50,7 +50,13 @@ export const auditLogApi = {
   },
 
   listActions: (
-    params: { pageSize?: number; page?: number; module?: string; userId?: string; modules?: string[] } = {},
+    params: {
+      pageSize?: number;
+      page?: number;
+      module?: string;
+      userId?: string;
+      modules?: string[];
+    } = {}
   ) => {
     const { pageSize = 100, page, module, userId, modules } = params;
     const query = new URLSearchParams({ pageSize: String(pageSize) });
@@ -60,6 +66,8 @@ export const auditLogApi = {
     // person's history to the portal they work in.
     if (modules?.length) query.set("modules", modules.join(","));
     else if (module && module !== "All Modules") query.set("module", module);
-    return apiClient.get<PaginatedResponse<ActionLogEntry>>(`/audit-log/actions?${query.toString()}`);
+    return apiClient.get<PaginatedResponse<ActionLogEntry>>(
+      `/audit-log/actions?${query.toString()}`
+    );
   },
 };

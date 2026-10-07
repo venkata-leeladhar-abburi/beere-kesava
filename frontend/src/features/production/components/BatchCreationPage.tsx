@@ -14,11 +14,19 @@ import { Modal } from "../../../shared/ui/overlay";
 
 import { T, F, rowComplete, lbl } from "./batch-creation/constants";
 import {
-  WeaverPickerModal, BulkOrderPickerModal, DesignCodePickerModal,
-  SareeTypePickerModal, WeaverLoomPickerModal, BulkWeaverLoomPickerModal, FactoryLoomPickerModal,
+  WeaverPickerModal,
+  BulkOrderPickerModal,
+  DesignCodePickerModal,
+  SareeTypePickerModal,
+  WeaverLoomPickerModal,
+  BulkWeaverLoomPickerModal,
+  FactoryLoomPickerModal,
 } from "./batch-creation/PickerModals";
 import {
-  WeaverDetailsModal, FactoryLoomDetailsModal, BulkOrderDetailsModal, SareeDetailsModal,
+  WeaverDetailsModal,
+  FactoryLoomDetailsModal,
+  BulkOrderDetailsModal,
+  SareeDetailsModal,
 } from "./batch-creation/DetailModals";
 import { BatchTable } from "./batch-creation/BatchTable";
 import { MaterialsGivenPanel } from "./batch-creation/MaterialsGivenPanel";
@@ -32,7 +40,16 @@ import { useBatchFormHandlers, WeaverOption, LoomOption } from "./useBatchFormHa
 
 export function BatchCreationPage() {
   const { rates, isLoading: ratesLoading, isError: ratesError, refreshRates } = useRatesPricing();
-  const { batches, saveDraft, isSaving, finalizeBatch, isFinalizing, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId } = useBatches();
+  const {
+    batches,
+    saveDraft,
+    isSaving,
+    finalizeBatch,
+    isFinalizing,
+    nextBatchId,
+    pendingOpenBatchId,
+    setPendingOpenBatchId,
+  } = useBatches();
   const { bulkOrders } = useBulkOrders();
   const { issueRecords } = useMaterialIssue();
 
@@ -49,22 +66,38 @@ export function BatchCreationPage() {
 
   const loadDirectories = useCallback(async () => {
     try {
-      const [weaversRes, loomsRes] = await Promise.all([
-        weaversApi.list(), factoryLoomsApi.list(),
-      ]);
-      setWeavers(weaversRes.items.map(w => ({ id: w.id, code: w.code, name: w.name, initials: w.initials, looms: w.looms })));
-      setLooms(loomsRes.items.map(l => ({
-        id: l.id, displayCode: l.code, loomNumber: l.loomNumber, location: l.location ?? "", status: l.status,
-        operatorName: l.operatorName ?? "", operatorPhone: l.operatorPhone ?? "",
-        installedYear: l.installedYear, notes: l.notes ?? "",
-      })));
+      const [weaversRes, loomsRes] = await Promise.all([weaversApi.list(), factoryLoomsApi.list()]);
+      setWeavers(
+        weaversRes.items.map((w) => ({
+          id: w.id,
+          code: w.code,
+          name: w.name,
+          initials: w.initials,
+          looms: w.looms,
+        }))
+      );
+      setLooms(
+        loomsRes.items.map((l) => ({
+          id: l.id,
+          displayCode: l.code,
+          loomNumber: l.loomNumber,
+          location: l.location ?? "",
+          status: l.status,
+          operatorName: l.operatorName ?? "",
+          operatorPhone: l.operatorPhone ?? "",
+          installedYear: l.installedYear,
+          notes: l.notes ?? "",
+        }))
+      );
       setDirectoryError(null);
     } catch (err) {
       setDirectoryError(err instanceof Error ? err.message : "Could not load weavers/looms/rates.");
     }
   }, []);
 
-  useEffect(() => { void loadDirectories(); }, [loadDirectories]);
+  useEffect(() => {
+    void loadDirectories();
+  }, [loadDirectories]);
 
   // ── Tab: "new" or "drafts"
   const [tab, setTab] = useState<"new" | "drafts">("new");
@@ -90,16 +123,37 @@ export function BatchCreationPage() {
       }
     }
     return acc;
-  // editingBatchId is read above; recompute when either input changes.
+    // editingBatchId is read above; recompute when either input changes.
   }, [batches, editingBatchId]);
 
   // Custom hook for row management and picker handlers
   const {
-    rows, setRows, selected, setSelected, picker, setPicker, generated, setGenerated,
-    loomPickerRow, setLoomPickerRow, applyWeaverLoomToSelected, generateRows, addRows, allSelected, toggleAll, toggleRow,
-    applyWeaver, applyWeaverLoomToRow, applyFactoryLoom, applyBulkOrder,
-    applyDesign, applySareeType, removeSelected,
-    bulkOrderConflict, assignBulkOrderUpToCapacity, dismissBulkOrderConflict,
+    rows,
+    setRows,
+    selected,
+    setSelected,
+    picker,
+    setPicker,
+    generated,
+    setGenerated,
+    loomPickerRow,
+    setLoomPickerRow,
+    applyWeaverLoomToSelected,
+    generateRows,
+    addRows,
+    allSelected,
+    toggleAll,
+    toggleRow,
+    applyWeaver,
+    applyWeaverLoomToRow,
+    applyFactoryLoom,
+    applyBulkOrder,
+    applyDesign,
+    applySareeType,
+    removeSelected,
+    bulkOrderConflict,
+    assignBulkOrderUpToCapacity,
+    dismissBulkOrderConflict,
   } = useBatchFormHandlers(bulkOrders, assignedElsewhereByRef);
 
   // ── Add more sarees to an already-generated table (editing a draft/active
@@ -114,7 +168,10 @@ export function BatchCreationPage() {
 
   // ── Finalize result popup (Part D — replaces the easy-to-miss inline
   // text with a real modal, matching the app's other confirmation flows).
-  const [finalizeResult, setFinalizeResult] = useState<{ kind: "success" | "error"; message: string } | null>(null);
+  const [finalizeResult, setFinalizeResult] = useState<{
+    kind: "success" | "error";
+    message: string;
+  } | null>(null);
 
   // ── Card view modals
   const [viewSareeType, setViewSareeType] = useState<SareeTypeRecord | null>(null);
@@ -143,16 +200,19 @@ export function BatchCreationPage() {
   const savedSnapshot = useRef<string>("");
   const snapshotOf = useCallback(
     (r: SareeRow[], due: string) => JSON.stringify({ due, rows: r }),
-    [],
+    []
   );
   const isDirty = rows.length > 0 && snapshotOf(rows, dueDate) !== savedSnapshot.current;
 
   // Navigation the user asked for but that is blocked pending a dirty check.
   const [pendingLeave, setPendingLeave] = useState<(() => void) | null>(null);
-  const guardLeave = useCallback((go: () => void) => {
-    if (isDirty) setPendingLeave(() => go);
-    else go();
-  }, [isDirty]);
+  const guardLeave = useCallback(
+    (go: () => void) => {
+      if (isDirty) setPendingLeave(() => go);
+      else go();
+    },
+    [isDirty]
+  );
 
   // Keep batchId in sync with next available when not editing a draft
   useEffect(() => {
@@ -169,7 +229,10 @@ export function BatchCreationPage() {
   // never heard of, silently spawning a new empty batch each time.
   async function handleSaveDraft(): Promise<boolean> {
     const record: BatchRecord = {
-      batchId, totalCount: rows.length, dueDate, rows,
+      batchId,
+      totalCount: rows.length,
+      dueDate,
+      rows,
       status: "draft",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -184,20 +247,25 @@ export function BatchCreationPage() {
       setTimeout(() => setSavedMsg(null), 3000);
       return true;
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Could not save the draft. Please try again.");
+      setSaveError(
+        err instanceof Error ? err.message : "Could not save the draft. Please try again."
+      );
       return false;
     }
   }
 
   // ── Finalize
   const completeRows = rows.filter(rowComplete);
-  const incompleteRows = rows.filter(r => !rowComplete(r));
+  const incompleteRows = rows.filter((r) => !rowComplete(r));
   const canFinalize = rows.length > 0 && incompleteRows.length === 0;
 
   async function handleFinalize() {
     if (!canFinalize) return;
     const record: BatchRecord = {
-      batchId, totalCount: rows.length, dueDate, rows,
+      batchId,
+      totalCount: rows.length,
+      dueDate,
+      rows,
       status: "draft",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -211,7 +279,7 @@ export function BatchCreationPage() {
       // Editing an already-ACTIVE batch is allowed at any time — that edit
       // is just persisted via saveDraft's row assignments above; there's
       // nothing left to "finalize" a second time.
-      const currentStatus = batches.find(b => b.batchId === realId)?.status;
+      const currentStatus = batches.find((b) => b.batchId === realId)?.status;
       if (currentStatus === "draft" || currentStatus === undefined) {
         await finalizeBatch(realId);
         setFinalizeResult({ kind: "success", message: `Batch ${realId} finalized and active!` });
@@ -228,34 +296,68 @@ export function BatchCreationPage() {
       setSelected(new Set());
       setEditingBatchId(null);
     } catch (err) {
-      setFinalizeResult({ kind: "error", message: err instanceof Error ? err.message : "Could not finalize the batch. Please try again." });
+      setFinalizeResult({
+        kind: "error",
+        message:
+          err instanceof Error ? err.message : "Could not finalize the batch. Please try again.",
+      });
     }
   }
 
-  const weaverOptions = React.useMemo(() => ["All", ...Array.from(new Set(rows.map(r => r.weaverName || r.factoryLoomNumber).filter(Boolean)))].sort(), [rows]);
-  const orderOptions = React.useMemo(() => ["All", "General Stock", ...Array.from(new Set(rows.map(r => r.bulkOrderLabel).filter(l => l && l !== "General Stock")))].sort(), [rows]);
-  const sareeTypeOptions = React.useMemo(() => ["All", ...Array.from(new Set(rows.map(r => r.sareeTypeCode).filter(Boolean)))].sort(), [rows]);
+  const weaverOptions = React.useMemo(
+    () =>
+      [
+        "All",
+        ...Array.from(
+          new Set(rows.map((r) => r.weaverName || r.factoryLoomNumber).filter(Boolean))
+        ),
+      ].sort(),
+    [rows]
+  );
+  const orderOptions = React.useMemo(
+    () =>
+      [
+        "All",
+        "General Stock",
+        ...Array.from(
+          new Set(rows.map((r) => r.bulkOrderLabel).filter((l) => l && l !== "General Stock"))
+        ),
+      ].sort(),
+    [rows]
+  );
+  const sareeTypeOptions = React.useMemo(
+    () => ["All", ...Array.from(new Set(rows.map((r) => r.sareeTypeCode).filter(Boolean)))].sort(),
+    [rows]
+  );
 
-  const displayRows = [...rows].filter(r => {
-    const q = searchFilter.toLowerCase();
-    const mSearch = !q || r.sareeId?.toLowerCase().includes(q) || r.weaverName?.toLowerCase().includes(q) || r.factoryLoomNumber?.toLowerCase().includes(q);
-    const wName = r.weaverName || r.factoryLoomNumber;
-    const mWeaver = weaverFilter === "All" || wName === weaverFilter;
-    const orderLabel = r.bulkOrderLabel || "General Stock";
-    const mOrder = orderFilter === "All" || orderLabel === orderFilter;
-    const mType = sareeTypeFilter === "All" || r.sareeTypeCode === sareeTypeFilter;
-    return mSearch && mWeaver && mOrder && mType;
-  }).sort((a, b) => {
-    if (sortBy === "weaver") {
-      const an = a.weaverName || "", bn = b.weaverName || "";
-      return an.localeCompare(bn) || a.serial - b.serial;
-    }
-    if (sortBy === "factoryLoom") {
-      const an = a.factoryLoomNumber || "", bn = b.factoryLoomNumber || "";
-      return an.localeCompare(bn) || a.serial - b.serial;
-    }
-    return a.serial - b.serial;
-  });
+  const displayRows = [...rows]
+    .filter((r) => {
+      const q = searchFilter.toLowerCase();
+      const mSearch =
+        !q ||
+        r.sareeId?.toLowerCase().includes(q) ||
+        r.weaverName?.toLowerCase().includes(q) ||
+        r.factoryLoomNumber?.toLowerCase().includes(q);
+      const wName = r.weaverName || r.factoryLoomNumber;
+      const mWeaver = weaverFilter === "All" || wName === weaverFilter;
+      const orderLabel = r.bulkOrderLabel || "General Stock";
+      const mOrder = orderFilter === "All" || orderLabel === orderFilter;
+      const mType = sareeTypeFilter === "All" || r.sareeTypeCode === sareeTypeFilter;
+      return mSearch && mWeaver && mOrder && mType;
+    })
+    .sort((a, b) => {
+      if (sortBy === "weaver") {
+        const an = a.weaverName || "",
+          bn = b.weaverName || "";
+        return an.localeCompare(bn) || a.serial - b.serial;
+      }
+      if (sortBy === "factoryLoom") {
+        const an = a.factoryLoomNumber || "",
+          bn = b.factoryLoomNumber || "";
+        return an.localeCompare(bn) || a.serial - b.serial;
+      }
+      return a.serial - b.serial;
+    });
 
   // ── Open a draft for editing
   function openDraft(b: BatchRecord) {
@@ -272,27 +374,48 @@ export function BatchCreationPage() {
 
   useEffect(() => {
     if (pendingOpenBatchId) {
-      const b = batches.find(x => x.batchId === pendingOpenBatchId);
+      const b = batches.find((x) => x.batchId === pendingOpenBatchId);
       if (b) openDraft(b);
       setPendingOpenBatchId(null);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingOpenBatchId]);
 
   function openSareeTypeCard(code: string) {
-    const r = rates.find(x => x.code === code);
+    const r = rates.find((x) => x.code === code);
     if (r) setViewSareeType(r);
   }
 
-  const drafts = batches.filter(b => b.status === "draft");
-  const active = batches.filter(b => b.status === "active");
+  const drafts = batches.filter((b) => b.status === "draft");
+  const active = batches.filter((b) => b.status === "active");
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: F.ui }}>
       {directoryError && (
-        <div className="px-4 md:px-7 xl:px-14" style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", paddingTop: 12, paddingBottom: 12, fontFamily: F.ui, fontSize: 13, color: T.red, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div
+          className="px-4 md:px-7 xl:px-14"
+          style={{
+            background: "rgba(192,57,43,0.08)",
+            border: "1px solid rgba(192,57,43,0.25)",
+            paddingTop: 12,
+            paddingBottom: 12,
+            fontFamily: F.ui,
+            fontSize: 13,
+            color: T.red,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           <span>Could not load weavers/factory looms: {directoryError}</span>
-          <Button onClick={() => void loadDirectories()} variant="ghost" size="sm" className="border border-[var(--text-danger)] text-[var(--text-danger)] hover:bg-[var(--surface-danger-subtle)]">Retry</Button>
+          <Button
+            onClick={() => void loadDirectories()}
+            variant="ghost"
+            size="sm"
+            className="border border-[var(--text-danger)] text-[var(--text-danger)] hover:bg-[var(--surface-danger-subtle)]"
+          >
+            Retry
+          </Button>
         </div>
       )}
 
@@ -319,21 +442,24 @@ export function BatchCreationPage() {
       {/* ════════════════════ TAB: NEW BATCH ════════════════════ */}
       {tab === "new" && (
         <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 28, paddingBottom: 64 }}>
-
           <div id="batch-setup">
             <BatchSetupStep
               batchId={batchId}
-            totalCount={totalCount}
-            setTotalCount={setTotalCount}
-            dueDate={dueDate}
-            setDueDate={setDueDate}
-            generateRows={() => generateRows(totalCount)}
-            setGenerated={setGenerated}
-            generated={generated}
-            incompleteRows={incompleteRows}
-            isEditing={!!editingBatchId}
+              totalCount={totalCount}
+              setTotalCount={setTotalCount}
+              dueDate={dueDate}
+              setDueDate={setDueDate}
+              generateRows={() => generateRows(totalCount)}
+              setGenerated={setGenerated}
+              generated={generated}
+              incompleteRows={incompleteRows}
+              isEditing={!!editingBatchId}
               rowCount={rows.length}
-              batchStatus={editingBatchId ? batches.find(b => b.batchId === editingBatchId)?.status : undefined}
+              batchStatus={
+                editingBatchId
+                  ? batches.find((b) => b.batchId === editingBatchId)?.status
+                  : undefined
+              }
             />
           </div>
 
@@ -341,12 +467,24 @@ export function BatchCreationPage() {
           {generated && rows.length > 0 && (
             <div style={{ display: "flex", alignItems: "flex-end", gap: 10, marginBottom: 16 }}>
               <div style={{ width: 140 }}>
-                <label htmlFor="add-sarees-count" style={lbl}>Add No. of Sarees</label>
-                <NumberInput id="add-sarees-count" min={1} max={500} value={addSareesCount === "" ? "" : Number(addSareesCount)}
-                  onValueChange={v => setAddSareesCount(v === "" ? "" : String(v))}
-                  placeholder="e.g. 5" />
+                <label htmlFor="add-sarees-count" style={lbl}>
+                  Add No. of Sarees
+                </label>
+                <NumberInput
+                  id="add-sarees-count"
+                  min={1}
+                  max={500}
+                  value={addSareesCount === "" ? "" : Number(addSareesCount)}
+                  onValueChange={(v) => setAddSareesCount(v === "" ? "" : String(v))}
+                  placeholder="e.g. 5"
+                />
               </div>
-              <Button onClick={handleAddSarees} disabled={!addSareesCount || parseInt(addSareesCount, 10) < 1} variant="secondary" size="md">
+              <Button
+                onClick={handleAddSarees}
+                disabled={!addSareesCount || parseInt(addSareesCount, 10) < 1}
+                variant="secondary"
+                size="md"
+              >
                 + Add Sarees
               </Button>
             </div>
@@ -377,7 +515,12 @@ export function BatchCreationPage() {
                 title="Materials Given"
                 subtitle="Every material issued for this batch, grouped by weaver / factory loom"
               >
-                <MaterialsGivenPanel rows={rows} issueRecords={issueRecords} batchId={batchId} weavers={weavers} />
+                <MaterialsGivenPanel
+                  rows={rows}
+                  issueRecords={issueRecords}
+                  batchId={batchId}
+                  weavers={weavers}
+                />
               </SectionCard>
             </div>
           )}
@@ -387,39 +530,39 @@ export function BatchCreationPage() {
             <div id="batch-table">
               <BatchTable
                 weavers={weavers}
-              looms={looms}
-              rows={rows}
-              displayRows={displayRows}
-              selected={selected}
-              toggleAll={toggleAll}
-              toggleRow={toggleRow}
-              allSelected={allSelected}
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              searchFilter={searchFilter}
-              setSearchFilter={setSearchFilter}
-              weaverFilter={weaverFilter}
-              setWeaverFilter={setWeaverFilter}
-              sareeTypeFilter={sareeTypeFilter}
-              setSareeTypeFilter={setSareeTypeFilter}
-              orderFilter={orderFilter}
-              setOrderFilter={setOrderFilter}
-              weaverOptions={weaverOptions}
-              orderOptions={orderOptions}
-              sareeTypeOptions={sareeTypeOptions}
-              completeRows={completeRows}
-              incompleteRows={incompleteRows}
-              setPicker={setPicker}
-              removeSelected={removeSelected}
-              bulkOrders={bulkOrders}
-              setViewSareeRow={setViewSareeRow}
-              setViewFactoryLoom={setViewFactoryLoom}
-              setViewWeaver={setViewWeaver}
-              setViewBulkOrder={setViewBulkOrder}
-              setLoomPickerRow={setLoomPickerRow}
-              openSareeTypeCard={openSareeTypeCard}
-            />
-          </div>
+                looms={looms}
+                rows={rows}
+                displayRows={displayRows}
+                selected={selected}
+                toggleAll={toggleAll}
+                toggleRow={toggleRow}
+                allSelected={allSelected}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                searchFilter={searchFilter}
+                setSearchFilter={setSearchFilter}
+                weaverFilter={weaverFilter}
+                setWeaverFilter={setWeaverFilter}
+                sareeTypeFilter={sareeTypeFilter}
+                setSareeTypeFilter={setSareeTypeFilter}
+                orderFilter={orderFilter}
+                setOrderFilter={setOrderFilter}
+                weaverOptions={weaverOptions}
+                orderOptions={orderOptions}
+                sareeTypeOptions={sareeTypeOptions}
+                completeRows={completeRows}
+                incompleteRows={incompleteRows}
+                setPicker={setPicker}
+                removeSelected={removeSelected}
+                bulkOrders={bulkOrders}
+                setViewSareeRow={setViewSareeRow}
+                setViewFactoryLoom={setViewFactoryLoom}
+                setViewWeaver={setViewWeaver}
+                setViewBulkOrder={setViewBulkOrder}
+                setLoomPickerRow={setLoomPickerRow}
+                openSareeTypeCard={openSareeTypeCard}
+              />
+            </div>
           )}
 
           {/* Step 5: Save buttons (also pinned above the table) */}
@@ -446,9 +589,9 @@ export function BatchCreationPage() {
         <div id="batch-drafts">
           <DraftsTab
             batches={batches}
-          batchDateFilter={batchDateFilter}
-          setBatchDateFilter={setBatchDateFilter}
-          setTab={setTab}
+            batchDateFilter={batchDateFilter}
+            setBatchDateFilter={setBatchDateFilter}
+            setTab={setTab}
             openDraft={openDraft}
           />
         </div>
@@ -456,29 +599,58 @@ export function BatchCreationPage() {
 
       {/* ── Picker modals ── */}
       <AnimatePresence>
-        {picker === "weaver"     && <WeaverPickerModal     key="wp" weavers={weavers} onClose={() => setPicker(null)} onSelect={applyWeaver} />}
-        {picker === "bulkorder"  && <BulkOrderPickerModal  key="bp" onClose={() => setPicker(null)} onSelect={applyBulkOrder} />}
-        {picker === "factoryloom" && <FactoryLoomPickerModal key="flp" looms={looms} onClose={() => setPicker(null)} onSelect={applyFactoryLoom} />}
-        {picker === "design"     && <DesignCodePickerModal key="dp" onClose={() => setPicker(null)} onSelect={applyDesign} />}
-        {picker === "loomnumber" && (() => {
-          // Only the weavers actually present on the selection drive the loom
-          // range, so the grid can never offer a loom one of them lacks.
-          const selectedRows = rows.filter(r => selected.has(r.serial));
-          const selectedWeavers = weavers.filter(w => selectedRows.some(r => r.weaverId === w.id));
-          return (
-            <BulkWeaverLoomPickerModal
-              key="blp"
-              weavers={selectedWeavers}
-              rowsWithoutWeaver={selectedRows.filter(r => !r.weaverId).length}
-              onClose={() => setPicker(null)}
-              onSelect={applyWeaverLoomToSelected}
-            />
-          );
-        })()}
-        {picker === "saretype"   && (
+        {picker === "weaver" && (
+          <WeaverPickerModal
+            key="wp"
+            weavers={weavers}
+            onClose={() => setPicker(null)}
+            onSelect={applyWeaver}
+          />
+        )}
+        {picker === "bulkorder" && (
+          <BulkOrderPickerModal
+            key="bp"
+            onClose={() => setPicker(null)}
+            onSelect={applyBulkOrder}
+          />
+        )}
+        {picker === "factoryloom" && (
+          <FactoryLoomPickerModal
+            key="flp"
+            looms={looms}
+            onClose={() => setPicker(null)}
+            onSelect={applyFactoryLoom}
+          />
+        )}
+        {picker === "design" && (
+          <DesignCodePickerModal key="dp" onClose={() => setPicker(null)} onSelect={applyDesign} />
+        )}
+        {picker === "loomnumber" &&
+          (() => {
+            // Only the weavers actually present on the selection drive the loom
+            // range, so the grid can never offer a loom one of them lacks.
+            const selectedRows = rows.filter((r) => selected.has(r.serial));
+            const selectedWeavers = weavers.filter((w) =>
+              selectedRows.some((r) => r.weaverId === w.id)
+            );
+            return (
+              <BulkWeaverLoomPickerModal
+                key="blp"
+                weavers={selectedWeavers}
+                rowsWithoutWeaver={selectedRows.filter((r) => !r.weaverId).length}
+                onClose={() => setPicker(null)}
+                onSelect={applyWeaverLoomToSelected}
+              />
+            );
+          })()}
+        {picker === "saretype" && (
           <SareeTypePickerModal
             key="sp"
-            sareeTypes={rates.map(r => ({ code: r.code, name: r.type, charge: Number(r.charge) }))}
+            sareeTypes={rates.map((r) => ({
+              code: r.code,
+              name: r.type,
+              charge: Number(r.charge),
+            }))}
             isLoading={ratesLoading}
             isError={ratesError}
             onRetry={refreshRates}
@@ -486,19 +658,47 @@ export function BatchCreationPage() {
             onSelect={applySareeType}
           />
         )}
-        {loomPickerRow && loomPickerRow.weaverId && (() => {
-          const w = weavers.find(x => x.id === loomPickerRow.weaverId);
-          return w ? (
-            <WeaverLoomPickerModal key="wlp" weaver={w} current={loomPickerRow.weaverLoom}
-              onClose={() => setLoomPickerRow(null)}
-              onSelect={(loomNum) => applyWeaverLoomToRow(loomPickerRow, loomNum)} />
-          ) : null;
-        })()}
-        {viewSareeType && <SareeTypeCard   key="sc" sareeType={viewSareeType} onClose={() => setViewSareeType(null)} />}
-        {viewWeaver    && <WeaverDetailsModal key="wv" weaver={viewWeaver} onClose={() => setViewWeaver(null)} />}
-        {viewFactoryLoom && <FactoryLoomDetailsModal key="fld" loom={viewFactoryLoom} onClose={() => setViewFactoryLoom(null)} />}
-        {viewBulkOrder && <BulkOrderDetailsModal key="bo" order={viewBulkOrder} onClose={() => setViewBulkOrder(null)} />}
-        {viewSareeRow  && <SareeDetailsModal key="sr" row={viewSareeRow} onClose={() => setViewSareeRow(null)} />}
+        {loomPickerRow &&
+          loomPickerRow.weaverId &&
+          (() => {
+            const w = weavers.find((x) => x.id === loomPickerRow.weaverId);
+            return w ? (
+              <WeaverLoomPickerModal
+                key="wlp"
+                weaver={w}
+                current={loomPickerRow.weaverLoom}
+                onClose={() => setLoomPickerRow(null)}
+                onSelect={(loomNum) => applyWeaverLoomToRow(loomPickerRow, loomNum)}
+              />
+            ) : null;
+          })()}
+        {viewSareeType && (
+          <SareeTypeCard
+            key="sc"
+            sareeType={viewSareeType}
+            onClose={() => setViewSareeType(null)}
+          />
+        )}
+        {viewWeaver && (
+          <WeaverDetailsModal key="wv" weaver={viewWeaver} onClose={() => setViewWeaver(null)} />
+        )}
+        {viewFactoryLoom && (
+          <FactoryLoomDetailsModal
+            key="fld"
+            loom={viewFactoryLoom}
+            onClose={() => setViewFactoryLoom(null)}
+          />
+        )}
+        {viewBulkOrder && (
+          <BulkOrderDetailsModal
+            key="bo"
+            order={viewBulkOrder}
+            onClose={() => setViewBulkOrder(null)}
+          />
+        )}
+        {viewSareeRow && (
+          <SareeDetailsModal key="sr" row={viewSareeRow} onClose={() => setViewSareeRow(null)} />
+        )}
       </AnimatePresence>
 
       {/* Bulk order over-capacity guard */}
@@ -516,7 +716,9 @@ export function BatchCreationPage() {
         onDiscard={() => {
           // Roll the form back to what the server last stored, so the discarded
           // edits are actually gone rather than lingering in memory.
-          const saved = editingBatchId ? batches.find(b => b.batchId === editingBatchId) : undefined;
+          const saved = editingBatchId
+            ? batches.find((b) => b.batchId === editingBatchId)
+            : undefined;
           if (saved) {
             setRows(saved.rows);
             setDueDate(saved.dueDate);
@@ -529,33 +731,67 @@ export function BatchCreationPage() {
           setPendingLeave(null);
           go?.();
         }}
-        onSaveAndLeave={() => { void (async () => {
-          const ok = await handleSaveDraft();
-          if (!ok) return;
-          const go = pendingLeave;
-          setPendingLeave(null);
-          go?.();
-        })(); }}
+        onSaveAndLeave={() => {
+          void (async () => {
+            const ok = await handleSaveDraft();
+            if (!ok) return;
+            const go = pendingLeave;
+            setPendingLeave(null);
+            go?.();
+          })();
+        }}
       />
 
       {/* Finalize result popup */}
-      <Modal open={!!finalizeResult} onOpenChange={o => { if (!o) setFinalizeResult(null); }} size="xs">
-        <div style={{ padding: "28px 28px 24px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 12 }}>
-          <div style={{
-            width: 48, height: 48, borderRadius: 24, display: "flex", alignItems: "center", justifyContent: "center",
-            background: finalizeResult?.kind === "error" ? "rgba(192,57,43,0.10)" : "rgba(30,102,64,0.10)",
-          }}>
-            {finalizeResult?.kind === "error"
-              ? <span style={{ fontSize: 22, color: T.red }}>⚠</span>
-              : <CheckCircle size={24} color={T.green} />}
+      <Modal
+        open={!!finalizeResult}
+        onOpenChange={(o) => {
+          if (!o) setFinalizeResult(null);
+        }}
+        size="xs"
+      >
+        <div
+          style={{
+            padding: "28px 28px 24px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background:
+                finalizeResult?.kind === "error" ? "rgba(192,57,43,0.10)" : "rgba(30,102,64,0.10)",
+            }}
+          >
+            {finalizeResult?.kind === "error" ? (
+              <span style={{ fontSize: 22, color: T.red }}>⚠</span>
+            ) : (
+              <CheckCircle size={24} color={T.green} />
+            )}
           </div>
-          <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>
+          <div
+            style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}
+          >
             {finalizeResult?.kind === "error" ? "Could Not Finalize" : "Success"}
           </div>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.5 }}>
             {finalizeResult?.message}
           </div>
-          <Button onClick={() => setFinalizeResult(null)} variant="primary" size="md" className="mt-2 w-full">
+          <Button
+            onClick={() => setFinalizeResult(null)}
+            variant="primary"
+            size="md"
+            className="mt-2 w-full"
+          >
             OK
           </Button>
         </div>

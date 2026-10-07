@@ -32,11 +32,11 @@ describe("shop portal routing", () => {
     renderWithQueryClient(
       <MemoryRouter initialEntries={["/shop/notifications"]}>
         <ShopStaffPortal />
-      </MemoryRouter>,
+      </MemoryRouter>
     );
 
     await waitFor(() =>
-      expect(screen.getByText(/Every sale, return, stock alert/i)).toBeInTheDocument(),
+      expect(screen.getByText(/Every sale, return, stock alert/i)).toBeInTheDocument()
     );
     // ...and not the home screen it used to fall back to.
     expect(screen.queryByText("Shop Home")).not.toBeInTheDocument();
@@ -47,14 +47,14 @@ describe("shop portal routing", () => {
     renderWithQueryClient(
       <MemoryRouter initialEntries={["/shop/home"]}>
         <ShopStaffPortal />
-      </MemoryRouter>,
+      </MemoryRouter>
     );
 
     await user.click(await screen.findByRole("button", { name: /Notifications/i }));
     await user.click(await screen.findByText("View all notifications"));
 
     await waitFor(() =>
-      expect(screen.getByText(/Every sale, return, stock alert/i)).toBeInTheDocument(),
+      expect(screen.getByText(/Every sale, return, stock alert/i)).toBeInTheDocument()
     );
   });
 });

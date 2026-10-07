@@ -27,16 +27,26 @@ export function TaxSummary({ rows, totalRow, interState }: TaxSummaryProps) {
       <thead>
         <tr>
           <th style={{ textAlign: "start" }}>HSN</th>
-          <th data-num style={{ textAlign: "end" }}>Taxable</th>
+          <th data-num style={{ textAlign: "end" }}>
+            Taxable
+          </th>
           {interState ? (
-            <th data-num style={{ textAlign: "end" }}>IGST</th>
+            <th data-num style={{ textAlign: "end" }}>
+              IGST
+            </th>
           ) : (
             <>
-              <th data-num style={{ textAlign: "end" }}>CGST</th>
-              <th data-num style={{ textAlign: "end" }}>SGST</th>
+              <th data-num style={{ textAlign: "end" }}>
+                CGST
+              </th>
+              <th data-num style={{ textAlign: "end" }}>
+                SGST
+              </th>
             </>
           )}
-          <th data-num style={{ textAlign: "end" }}>Total Tax</th>
+          <th data-num style={{ textAlign: "end" }}>
+            Total Tax
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -44,7 +54,9 @@ export function TaxSummary({ rows, totalRow, interState }: TaxSummaryProps) {
           <tr key={r.hsn}>
             <td style={{ fontFamily: "var(--font-code)" }}>{r.hsn}</td>
             <td data-num>{r.taxableLabel}</td>
-            {interState ? <td data-num>{r.igstLabel}</td> : (
+            {interState ? (
+              <td data-num>{r.igstLabel}</td>
+            ) : (
               <>
                 <td data-num>{r.cgstLabel}</td>
                 <td data-num>{r.sgstLabel}</td>
@@ -58,7 +70,9 @@ export function TaxSummary({ rows, totalRow, interState }: TaxSummaryProps) {
         <tr style={{ fontWeight: 600 }}>
           <td>Total</td>
           <td data-num>{totalRow.taxableLabel}</td>
-          {interState ? <td data-num>{totalRow.igstLabel}</td> : (
+          {interState ? (
+            <td data-num>{totalRow.igstLabel}</td>
+          ) : (
             <>
               <td data-num>{totalRow.cgstLabel}</td>
               <td data-num>{totalRow.sgstLabel}</td>

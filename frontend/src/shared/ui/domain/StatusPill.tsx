@@ -22,7 +22,12 @@ export interface DomainStatusPillProps<T extends StatusTaxonomyName> {
   className?: string;
 }
 
-export function StatusPill<T extends StatusTaxonomyName>({ taxonomy, status, size, className }: DomainStatusPillProps<T>) {
+export function StatusPill<T extends StatusTaxonomyName>({
+  taxonomy,
+  status,
+  size,
+  className,
+}: DomainStatusPillProps<T>) {
   const entry = resolveStatus(taxonomy, status);
   return <BaseStatusPill tone={entry.tone} label={entry.label} size={size} className={className} />;
 }

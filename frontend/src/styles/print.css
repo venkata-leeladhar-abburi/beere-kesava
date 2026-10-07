@@ -21,26 +21,26 @@
 
 :root {
   /* ── Document palette — Phase 1 ramps, not loose hexes ── */
-  --doc-wine:         var(--bk-burgundy-950);  /* #4A061B */
-  --doc-burgundy:     var(--bk-burgundy-900);  /* #6E0F2D — brand primary */
-  --doc-burgundy-mid: var(--bk-burgundy-800);  /* #872D44 */
-  --doc-gold:         var(--bk-gold-500);      /* #C89B47 — decorative only, never text */
-  --doc-gold-text:    var(--bk-gold-700);      /* #845E04 — the readable gold, 5.86:1 */
-  --doc-gold-bright:  var(--bk-gold-300);      /* #E0C59A — on the dark band only */
-  --doc-gold-soft:    var(--bk-gold-200);      /* #EDDCC1 */
+  --doc-wine: var(--bk-burgundy-950); /* #4A061B */
+  --doc-burgundy: var(--bk-burgundy-900); /* #6E0F2D — brand primary */
+  --doc-burgundy-mid: var(--bk-burgundy-800); /* #872D44 */
+  --doc-gold: var(--bk-gold-500); /* #C89B47 — decorative only, never text */
+  --doc-gold-text: var(--bk-gold-700); /* #845E04 — the readable gold, 5.86:1 */
+  --doc-gold-bright: var(--bk-gold-300); /* #E0C59A — on the dark band only */
+  --doc-gold-soft: var(--bk-gold-200); /* #EDDCC1 */
 
-  --doc-paper:        #FFFFFF;                 /* true paper — the sheet itself */
-  --doc-cream:        var(--bk-neutral-0);     /* #FFFDFB */
-  --doc-cream-2:      var(--bk-neutral-25);    /* #FAF8F6 — zebra / card fill */
-  --doc-warm:         var(--bk-gold-100);      /* #F6EDDD */
+  --doc-paper: #ffffff; /* true paper — the sheet itself */
+  --doc-cream: var(--bk-neutral-0); /* #FFFDFB */
+  --doc-cream-2: var(--bk-neutral-25); /* #FAF8F6 — zebra / card fill */
+  --doc-warm: var(--bk-gold-100); /* #F6EDDD */
 
-  --doc-ink:          var(--bk-neutral-900);   /* #1D1814 — 17.6:1 primary */
-  --doc-ink-soft:     var(--bk-neutral-800);   /* #322D28 — 13.6:1 table body */
-  --doc-muted:        var(--bk-neutral-700);   /* #4F4A45 —  8.8:1 labels/secondary */
-  --doc-faint:        var(--bk-neutral-600);   /* #69635E —  5.9:1 true tertiary only */
+  --doc-ink: var(--bk-neutral-900); /* #1D1814 — 17.6:1 primary */
+  --doc-ink-soft: var(--bk-neutral-800); /* #322D28 — 13.6:1 table body */
+  --doc-muted: var(--bk-neutral-700); /* #4F4A45 —  8.8:1 labels/secondary */
+  --doc-faint: var(--bk-neutral-600); /* #69635E —  5.9:1 true tertiary only */
 
-  --doc-rule:         rgba(110, 15, 45, 0.16);
-  --doc-rule-soft:    rgba(110, 15, 45, 0.08);
+  --doc-rule: rgba(110, 15, 45, 0.16);
+  --doc-rule-soft: rgba(110, 15, 45, 0.08);
 }
 
 /* ── Part E — print type scale ──
@@ -49,23 +49,25 @@
    step up from the first draft — 7.5pt body copy tested as too tight to
    scan on a dense invoice. 8pt is the hard floor (Part E). */
 :root {
-  --doc-brand-size:    17pt;
-  --doc-title:         15pt;
-  --doc-heading:       10.5pt;
-  --doc-body:          9pt;
-  --doc-table:         8.5pt;
-  --doc-table-head:    7.5pt;
-  --doc-small:         8pt;
-  --doc-code:          8.5pt;
-  --doc-total:         14pt;
-  --doc-amount-words:  9.5pt;
+  --doc-brand-size: 17pt;
+  --doc-title: 15pt;
+  --doc-heading: 10.5pt;
+  --doc-body: 9pt;
+  --doc-table: 8.5pt;
+  --doc-table-head: 7.5pt;
+  --doc-small: 8pt;
+  --doc-code: 8.5pt;
+  --doc-total: 14pt;
+  --doc-amount-words: 9.5pt;
 }
 
 /* The print portal target is never part of the on-screen layout — without
    this it renders a second, full-size copy of the document below the app
    for as long as the tree stays mounted. It is promoted back to visible
    inside @media print below. */
-#document-print-root { display: none; }
+#document-print-root {
+  display: none;
+}
 
 /* ── Part D.1 — A4 geometry ──
    Padding lives on .bk-doc__body, not the sheet, so the letterhead band can
@@ -108,8 +110,8 @@
 /* ── ① Letterhead band — full-bleed brand gradient ── */
 .bk-doc__band {
   background:
-    radial-gradient(115% 160% at 88% -10%, rgba(200, 155, 71, 0.20) 0%, rgba(200, 155, 71, 0) 55%),
-    linear-gradient(135deg, var(--doc-wine) 0%, var(--doc-burgundy) 58%, #7E1233 100%);
+    radial-gradient(115% 160% at 88% -10%, rgba(200, 155, 71, 0.2) 0%, rgba(200, 155, 71, 0) 55%),
+    linear-gradient(135deg, var(--doc-wine) 0%, var(--doc-burgundy) 58%, #7e1233 100%);
   padding: 7.5mm 15mm 6.5mm;
   color: var(--doc-cream);
   position: relative;
@@ -117,14 +119,17 @@
 .bk-doc__band::after {
   content: "";
   position: absolute;
-  left: 0; right: 0; bottom: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: 1.4mm;
-  background: linear-gradient(90deg, var(--doc-gold) 0%, #E7C983 45%, var(--doc-gold) 100%);
+  background: linear-gradient(90deg, var(--doc-gold) 0%, #e7c983 45%, var(--doc-gold) 100%);
 }
 .bk-doc__logo {
-  width: 17mm; height: 17mm;
+  width: 17mm;
+  height: 17mm;
   border-radius: 2.5mm;
-  background: #FFFFFF;
+  background: #ffffff;
   padding: 1.6mm;
   object-fit: contain;
   flex-shrink: 0;
@@ -138,7 +143,9 @@
   border-radius: 2mm;
   padding: 3mm 3.5mm;
 }
-.bk-doc__card--accent { border-left: 1.4mm solid var(--doc-gold); }
+.bk-doc__card--accent {
+  border-left: 1.4mm solid var(--doc-gold);
+}
 
 .bk-doc__eyebrow {
   font-size: var(--doc-table-head);
@@ -158,24 +165,34 @@
   font-variant-numeric: tabular-nums;
 }
 .bk-doc__table thead th {
-  font-size: var(--doc-table-head); font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.09em;
+  font-size: var(--doc-table-head);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
   color: var(--doc-warm);
   background: var(--doc-burgundy);
   padding: 2.2mm 2.5mm;
   text-align: start;
   white-space: nowrap;
 }
-.bk-doc__table thead th:first-child { border-top-left-radius: 1.5mm; }
-.bk-doc__table thead th:last-child  { border-top-right-radius: 1.5mm; }
+.bk-doc__table thead th:first-child {
+  border-top-left-radius: 1.5mm;
+}
+.bk-doc__table thead th:last-child {
+  border-top-right-radius: 1.5mm;
+}
 .bk-doc__table td {
   padding: 1.9mm 2.5mm;
   border-bottom: 0.25mm solid var(--doc-rule-soft);
   vertical-align: top;
   color: var(--doc-ink-soft);
 }
-.bk-doc__table tbody tr:nth-child(even) td { background: var(--doc-cream-2); }
-.bk-doc__table tbody tr:last-child td { border-bottom: 0.4mm solid var(--doc-rule); }
+.bk-doc__table tbody tr:nth-child(even) td {
+  background: var(--doc-cream-2);
+}
+.bk-doc__table tbody tr:last-child td {
+  border-bottom: 0.4mm solid var(--doc-rule);
+}
 .bk-doc__table [data-num] {
   text-align: end;
   font-variant-numeric: tabular-nums;
@@ -183,7 +200,9 @@
 }
 
 /* Repeat the column header on every printed page (Part J). */
-.bk-doc__table thead { display: table-header-group; }
+.bk-doc__table thead {
+  display: table-header-group;
+}
 
 /* Tax summary shares the table skin but sits quieter than the line items */
 .bk-doc__tax-summary thead th {
@@ -208,12 +227,12 @@
 }
 .bk-doc__totals-grand {
   background: linear-gradient(120deg, var(--doc-burgundy) 0%, var(--doc-wine) 100%);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 /* ── ⑦ Amount in words ── */
 .bk-doc__words {
-  background: linear-gradient(90deg, rgba(200,155,71,0.18) 0%, rgba(200,155,71,0.04) 100%);
+  background: linear-gradient(90deg, rgba(200, 155, 71, 0.18) 0%, rgba(200, 155, 71, 0.04) 100%);
   border-left: 1.4mm solid var(--doc-gold);
   border-radius: 1.5mm;
   padding: 3mm 4mm;
@@ -248,12 +267,16 @@
   zoom: var(--doc-zoom, 1);
 }
 @media (max-width: 900px) {
-  .bk-doc-viewport { padding: var(--space-4); }
+  .bk-doc-viewport {
+    padding: var(--space-4);
+  }
 }
 /* Firefox only shipped `zoom` in 126 — there, fall back to letting the
    viewport scroll horizontally rather than clipping the sheet. */
 @supports not (zoom: 0.5) {
-  .bk-doc-viewport { overflow: auto; }
+  .bk-doc-viewport {
+    overflow: auto;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -313,7 +336,7 @@
     padding: 0 !important;
     width: auto !important;
     box-shadow: none !important;
-    background: #FFFFFF !important;
+    background: #ffffff !important;
   }
 
   /* globals.css sets `body * { visibility: hidden }` for the legacy
@@ -321,16 +344,24 @@
      tree prints as a blank page even though its layout is correct.
      (Unlike `display`, forcing `visibility` has no layout side effects.) */
   #document-print-root,
-  #document-print-root * { visibility: visible !important; }
+  #document-print-root * {
+    visibility: visible !important;
+  }
 
   [data-print="hide"],
-  .bk-shell__topbar, .bk-shell__groupbar, .bk-shell__footer,
-  .bk-scrim, .bk-mobilenav, [role="tooltip"], [data-sonner-toaster] {
+  .bk-shell__topbar,
+  .bk-shell__groupbar,
+  .bk-shell__footer,
+  .bk-scrim,
+  .bk-mobilenav,
+  [role="tooltip"],
+  [data-sonner-toaster] {
     display: none !important;
   }
 
-  html, body {
-    background: #FFFFFF !important;
+  html,
+  body {
+    background: #ffffff !important;
     overflow: visible !important;
     height: auto !important;
     margin: 0 !important;
@@ -357,7 +388,9 @@
   /* On screen the body's bottom padding is what keeps content off the sheet
      edge. In print the @page bottom margin does that job on every page, so
      keeping both stacks ~23mm of dead space under the signature block. */
-  .bk-doc__body { padding-bottom: 0 !important; }
+  .bk-doc__body {
+    padding-bottom: 0 !important;
+  }
 
   /* The whole document is brand-coloured by design (see header note), so
      colour adjustment is forced on every tinted surface, not just bands. */
@@ -373,14 +406,29 @@
   .bk-doc__signature,
   .bk-doc__words,
   .bk-doc__terms,
-  .bk-doc__card { break-inside: avoid; }
+  .bk-doc__card {
+    break-inside: avoid;
+  }
 
-  .bk-doc__signature { break-before: avoid; }
-  .bk-doc__table tbody tr { break-inside: avoid; }
-  .bk-doc__table tfoot { display: table-footer-group; }
+  .bk-doc__signature {
+    break-before: avoid;
+  }
+  .bk-doc__table tbody tr {
+    break-inside: avoid;
+  }
+  .bk-doc__table tfoot {
+    display: table-footer-group;
+  }
 
-  h1, h2, h3 { break-after: avoid; }
-  p { orphans: 3; widows: 3; }
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -396,7 +444,7 @@
    stays proportional if a superadmin selects a different roll.
    ═══════════════════════════════════════════════════════════════════════════ */
 .bk-label-sheet {
-  background: #FFFFFF;
+  background: #ffffff;
   color: #000000;
   /* Binds to the @page rule LabelSheet writes for the configured stock. */
   page: bk-label;
@@ -404,14 +452,18 @@
 
 /* The QR inside a tile carries width/height attributes in px; the sticker is
    measured in mm, so the class lets the tile's own box drive the size. */
-.bk-label-qr { width: 100%; height: 100%; display: block; }
+.bk-label-qr {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 
 .bk-label-tile {
   width: var(--label-w);
   height: var(--label-h);
   box-sizing: border-box;
-  overflow: hidden;         /* a sticker cannot grow — clip, never reflow the page */
-  background: #FFFFFF;
+  overflow: hidden; /* a sticker cannot grow — clip, never reflow the page */
+  background: #ffffff;
   color: #000000;
   break-inside: avoid;
   page-break-inside: avoid;
@@ -419,16 +471,30 @@
 
 /* On screen (the preview inside a modal) the tiles sit in a row; in print each
    one owns its own page. */
-.bk-label-sheet { display: flex; flex-wrap: wrap; gap: 4mm; }
+.bk-label-sheet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4mm;
+}
 
 @media print {
-  .bk-label-sheet { display: block; gap: 0; }
-  .bk-label-tile { break-after: page; page-break-after: always; }
-  .bk-label-tile:last-child { break-after: auto; page-break-after: auto; }
+  .bk-label-sheet {
+    display: block;
+    gap: 0;
+  }
+  .bk-label-tile {
+    break-after: page;
+    page-break-after: always;
+  }
+  .bk-label-tile:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
 
   /* Labels are pure black-on-white line art; forcing exact colour keeps the
      barcode from being lightened by the browser's print colour adjustment. */
-  .bk-label-sheet, .bk-label-sheet * {
+  .bk-label-sheet,
+  .bk-label-sheet * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }

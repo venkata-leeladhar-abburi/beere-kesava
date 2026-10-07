@@ -49,8 +49,7 @@ export function SiteMap({
   const n = Math.pow(2, zoom);
   const xExact = ((longitude + 180) / 360) * n;
   const latRad = (latitude * Math.PI) / 180;
-  const yExact =
-    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n;
+  const yExact = ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n;
   const xTile = Math.floor(xExact);
   const yTile = Math.floor(yExact);
   const offsetX = (xExact - xTile) * TILE_SIZE;
@@ -109,7 +108,14 @@ export function SiteMap({
             stroke={T.royalBurgundy}
             strokeWidth={2}
           />
-          <circle cx={width / 2} cy={height / 2} r={5} fill={T.royalBurgundy} stroke="#FFFDF9" strokeWidth={2} />
+          <circle
+            cx={width / 2}
+            cy={height / 2}
+            r={5}
+            fill={T.royalBurgundy}
+            stroke="#FFFDF9"
+            strokeWidth={2}
+          />
         </svg>
       </div>
 

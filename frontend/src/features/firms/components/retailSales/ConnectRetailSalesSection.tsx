@@ -12,14 +12,14 @@
  */
 import React from "react";
 import { useQueries } from "@tanstack/react-query";
-import {
-  Link2, ShoppingBag, ArrowRight, AlertCircle, CheckCircle2, Power,
-} from "lucide-react";
+import { Link2, ShoppingBag, ArrowRight, AlertCircle, CheckCircle2, Power } from "lucide-react";
 import type { Firm } from "../../contexts/FirmsContext";
 import { firmsApi } from "../../../../shared/api/firms";
 import {
-  firmRetailSalesKey, useConnectableRetailSales,
-  useRetailSalesFirm, useRetailSalesFirmControl,
+  firmRetailSalesKey,
+  useConnectableRetailSales,
+  useRetailSalesFirm,
+  useRetailSalesFirmControl,
 } from "../../hooks/useFirmRetailSales";
 import { ConnectRetailSalesModal } from "./ConnectRetailSalesModal";
 import { T, F } from "../theme";
@@ -33,7 +33,8 @@ import { rupees } from "@/lib/domain/money";
 const EMPTY_QUERY = {} as const;
 
 export function ConnectRetailSalesSection({
-  firms, onGoToRetailSales,
+  firms,
+  onGoToRetailSales,
 }: {
   firms: Firm[];
   /** Opens the firm's page directly on its Retail Sales tab. */
@@ -54,7 +55,7 @@ export function ConnectRetailSalesSection({
   const unconnectedValue = unconnectedSample.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
 
   const perFirm = useQueries({
-    queries: firms.map(firm => ({
+    queries: firms.map((firm) => ({
       queryKey: firmRetailSalesKey(firm.id, EMPTY_QUERY),
       queryFn: () => firmsApi.listRetailSales(firm.id, EMPTY_QUERY),
     })),
@@ -69,10 +70,10 @@ export function ConnectRetailSalesSection({
       count: perFirm[i]?.data?.total ?? 0,
       amount: perFirm[i]?.data?.totalAmount ?? 0,
     }))
-    .filter(r => r.count > 0)
+    .filter((r) => r.count > 0)
     .sort((a, b) => b.amount - a.amount);
 
-  const pickedFirm = firms.find(f => f.id === pickedFirmId) ?? null;
+  const pickedFirm = firms.find((f) => f.id === pickedFirmId) ?? null;
   const isSwitch = Boolean(activeFirm && pickedFirmId && activeFirm.id !== pickedFirmId);
 
   async function handleSetActive() {
@@ -98,7 +99,8 @@ export function ConnectRetailSalesSection({
   async function handleClearActive() {
     const confirmed = await confirm({
       title: `Stop booking retail sales to ${activeFirm?.firmName}?`,
-      description: "New counter sales will be left unconnected until you set a retail firm again. Sales already booked keep their firm — nothing is removed from anyone's income.",
+      description:
+        "New counter sales will be left unconnected until you set a retail firm again. Sales already booked keep their firm — nothing is removed from anyone's income.",
       confirmLabel: "Stop automatic booking",
       tone: "danger",
     });
@@ -125,10 +127,23 @@ export function ConnectRetailSalesSection({
         }
       >
         {firms.length === 0 ? (
-          <div style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "16px 18px", background: T.bgGold, border: `1px solid ${T.borderGold}`, borderRadius: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              alignItems: "flex-start",
+              padding: "16px 18px",
+              background: T.bgGold,
+              border: `1px solid ${T.borderGold}`,
+              borderRadius: 12,
+            }}
+          >
             <AlertCircle size={16} color={T.antiqueGold} style={{ flexShrink: 0, marginTop: 1 }} />
-            <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, lineHeight: 1.6 }}>
-              Add a firm first — retail sales are booked <em>to</em> a firm, so there has to be one to book them to.
+            <div
+              style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, lineHeight: 1.6 }}
+            >
+              Add a firm first — retail sales are booked <em>to</em> a firm, so there has to be one
+              to book them to.
             </div>
           </div>
         ) : (
@@ -136,18 +151,44 @@ export function ConnectRetailSalesSection({
             {/* Who is currently receiving retail sales */}
             <div
               style={{
-                display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14,
-                padding: "16px 18px", marginBottom: 20, borderRadius: 14,
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: 14,
+                padding: "16px 18px",
+                marginBottom: 20,
+                borderRadius: 14,
                 background: activeFirm ? "rgba(30,102,64,0.07)" : T.crimsonBg,
                 border: `1px solid ${activeFirm ? "rgba(30,102,64,0.22)" : `${T.crimson}33`}`,
               }}
             >
-              {activeFirm ? <CheckCircle2 size={20} color={T.green} /> : <AlertCircle size={20} color={T.crimson} />}
+              {activeFirm ? (
+                <CheckCircle2 size={20} color={T.green} />
+              ) : (
+                <AlertCircle size={20} color={T.crimson} />
+              )}
               <div style={{ flex: 1, minWidth: 200 }}>
-                <div style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", color: T.taupe }}>
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 10.5,
+                    fontWeight: 700,
+                    letterSpacing: "1.2px",
+                    textTransform: "uppercase",
+                    color: T.taupe,
+                  }}
+                >
                   Currently booking retail sales to
                 </div>
-                <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: activeFirm ? T.green : T.crimson, marginTop: 3 }}>
+                <div
+                  style={{
+                    fontFamily: F.display,
+                    fontSize: 17,
+                    fontWeight: 700,
+                    color: activeFirm ? T.green : T.crimson,
+                    marginTop: 3,
+                  }}
+                >
                   {activeLoading ? "…" : activeFirm ? activeFirm.firmName : "No firm set"}
                 </div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>
@@ -158,10 +199,19 @@ export function ConnectRetailSalesSection({
               </div>
               {activeFirm && (
                 <div className="flex flex-wrap gap-2.5">
-                  <Button variant="secondary" iconRight={ArrowRight} onClick={() => onGoToRetailSales(activeFirm.id)}>
+                  <Button
+                    variant="secondary"
+                    iconRight={ArrowRight}
+                    onClick={() => onGoToRetailSales(activeFirm.id)}
+                  >
                     View Firm&apos;s Sales
                   </Button>
-                  <Button variant="tertiary" iconLeft={Power} onClick={() => void handleClearActive()} loading={isClearingFirm}>
+                  <Button
+                    variant="tertiary"
+                    iconLeft={Power}
+                    onClick={() => void handleClearActive()}
+                    loading={isClearingFirm}
+                  >
                     Stop
                   </Button>
                 </div>
@@ -169,7 +219,10 @@ export function ConnectRetailSalesSection({
             </div>
 
             {/* Choose / switch the firm */}
-            <div className="flex flex-col lg:flex-row lg:items-end gap-3.5" style={{ marginBottom: 20 }}>
+            <div
+              className="flex flex-col lg:flex-row lg:items-end gap-3.5"
+              style={{ marginBottom: 20 }}
+            >
               <div className="flex-1 min-w-0 max-w-full lg:max-w-[420px]">
                 <Field
                   label={activeFirm ? "Switch to a different firm" : "Firm"}
@@ -185,9 +238,10 @@ export function ConnectRetailSalesSection({
                     align="start"
                     className="w-full"
                   >
-                    {firms.map(f => (
+                    {firms.map((f) => (
                       <SelectItem key={f.id} value={f.id}>
-                        {f.firmName}{f.id === activeFirm?.id ? " · current" : ""}
+                        {f.firmName}
+                        {f.id === activeFirm?.id ? " · current" : ""}
                       </SelectItem>
                     ))}
                   </Select>
@@ -205,7 +259,19 @@ export function ConnectRetailSalesSection({
             </div>
 
             {setFirmError && (
-              <div role="alert" style={{ marginBottom: 20, background: T.crimsonBg, border: `1px solid ${T.crimson}33`, borderRadius: 12, padding: "12px 14px", fontFamily: F.ui, fontSize: 13, color: T.crimson }}>
+              <div
+                role="alert"
+                style={{
+                  marginBottom: 20,
+                  background: T.crimsonBg,
+                  border: `1px solid ${T.crimson}33`,
+                  borderRadius: 12,
+                  padding: "12px 14px",
+                  fontFamily: F.ui,
+                  fontSize: 13,
+                  color: T.crimson,
+                }}
+              >
                 {setFirmError.message}
               </div>
             )}
@@ -217,53 +283,156 @@ export function ConnectRetailSalesSection({
                   key: "unconnected",
                   label: "Unconnected Sales",
                   value: String(unconnectedCount),
-                  sub: unconnectedCount === 0
-                    ? "Everything is booked"
-                    : unconnectedSample.length < unconnectedCount
-                      ? `${fmtFull(unconnectedValue)} across the latest ${unconnectedSample.length}`
-                      : fmtFull(unconnectedValue),
+                  sub:
+                    unconnectedCount === 0
+                      ? "Everything is booked"
+                      : unconnectedSample.length < unconnectedCount
+                        ? `${fmtFull(unconnectedValue)} across the latest ${unconnectedSample.length}`
+                        : fmtFull(unconnectedValue),
                   tone: unconnectedCount > 0 ? T.crimson : T.green,
                 },
-                { key: "count", label: "Connected Sales", value: String(connectedCount), sub: "Across all firms", tone: T.luxuryBrown },
-                { key: "revenue", label: "Connected Revenue", value: <Money value={rupees(connectedTotal)} />, sub: "Counted as firm income", tone: T.green },
-              ].map(s => (
-                <div key={s.key} style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "15px 18px" }}>
-                  <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", color: T.taupe }}>{s.label}</div>
-                  <div style={{ fontSize: 19, fontWeight: 700, color: s.tone, marginTop: 5, fontVariantNumeric: "tabular-nums" }}>{s.value}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 3 }}>{s.sub}</div>
+                {
+                  key: "count",
+                  label: "Connected Sales",
+                  value: String(connectedCount),
+                  sub: "Across all firms",
+                  tone: T.luxuryBrown,
+                },
+                {
+                  key: "revenue",
+                  label: "Connected Revenue",
+                  value: <Money value={rupees(connectedTotal)} />,
+                  sub: "Counted as firm income",
+                  tone: T.green,
+                },
+              ].map((s) => (
+                <div
+                  key={s.key}
+                  style={{
+                    background: "#FFFDF9",
+                    border: `1px solid ${T.borderDef}`,
+                    borderRadius: 14,
+                    padding: "15px 18px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: "1.2px",
+                      textTransform: "uppercase",
+                      color: T.taupe,
+                    }}
+                  >
+                    {s.label}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 19,
+                      fontWeight: 700,
+                      color: s.tone,
+                      marginTop: 5,
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    {s.value}
+                  </div>
+                  <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 3 }}>
+                    {s.sub}
+                  </div>
                 </div>
               ))}
             </div>
 
             {/* Per-firm breakdown — each row opens that firm's Retail Sales tab */}
             {firmRows.length > 0 && (
-              <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 16px", background: T.bgGold, borderBottom: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 11, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", color: T.taupe }}>
+              <div
+                style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "11px 16px",
+                    background: T.bgGold,
+                    borderBottom: `1px solid ${T.borderDef}`,
+                    fontFamily: F.ui,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "1.2px",
+                    textTransform: "uppercase",
+                    color: T.taupe,
+                  }}
+                >
                   <ShoppingBag size={14} color={T.antiqueGold} /> Retail sales by firm
                 </div>
-                {firmRows.map(r => (
+                {firmRows.map((r) => (
                   <button
                     key={r.firm.id}
                     type="button"
                     onClick={() => onGoToRetailSales(r.firm.id)}
                     className="w-full flex items-center justify-between gap-4 text-left hover:bg-[rgba(200,155,71,0.06)] transition-colors"
-                    style={{ padding: "13px 16px", borderBottom: `1px solid ${T.borderDef}`, background: "transparent" }}
+                    style={{
+                      padding: "13px 16px",
+                      borderBottom: `1px solid ${T.borderDef}`,
+                      background: "transparent",
+                    }}
                   >
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <div
+                        style={{
+                          fontFamily: F.ui,
+                          fontSize: 14,
+                          fontWeight: 700,
+                          color: T.luxuryBrown,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         {r.firm.firmName}
                         {r.firm.id === activeFirm?.id && (
-                          <span style={{ marginLeft: 8, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.6px", textTransform: "uppercase", color: T.green, background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.22)", borderRadius: 999, padding: "2px 8px" }}>
+                          <span
+                            style={{
+                              marginLeft: 8,
+                              fontSize: 10.5,
+                              fontWeight: 700,
+                              letterSpacing: "0.6px",
+                              textTransform: "uppercase",
+                              color: T.green,
+                              background: "rgba(30,102,64,0.10)",
+                              border: "1px solid rgba(30,102,64,0.22)",
+                              borderRadius: 999,
+                              padding: "2px 8px",
+                            }}
+                          >
                             Active
                           </span>
                         )}
                       </div>
-                      <div style={{ fontSize: 11.5, color: T.taupe, marginTop: 2, fontVariantNumeric: "tabular-nums" }}>{r.firm.id}</div>
+                      <div
+                        style={{
+                          fontSize: 11.5,
+                          color: T.taupe,
+                          marginTop: 2,
+                          fontVariantNumeric: "tabular-nums",
+                        }}
+                      >
+                        {r.firm.id}
+                      </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
                       <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(r.amount)} /></div>
-                        <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 2 }}>{r.count} sale{r.count === 1 ? "" : "s"}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: T.green }}>
+                          <Money value={rupees(r.amount)} />
+                        </div>
+                        <div
+                          style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 2 }}
+                        >
+                          {r.count} sale{r.count === 1 ? "" : "s"}
+                        </div>
                       </div>
                       <ArrowRight size={16} color={T.taupe} />
                     </div>

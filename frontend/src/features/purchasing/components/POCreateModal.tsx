@@ -9,7 +9,16 @@ import { T, F, Vendor, ExtItem, emptyItem } from "./POTypesAndVendors";
 import { PODocPreview } from "./PODocPreview";
 import { POMaterialRow } from "./POMaterialRow";
 import { POVendorDetailsSection } from "./POVendorDetailsSection";
-import { Button, IconButton, Input, Textarea, Select, SelectItem, RadioGroup, RadioField } from "../../../shared/ui/primitives";
+import {
+  Button,
+  IconButton,
+  Input,
+  Textarea,
+  Select,
+  SelectItem,
+  RadioGroup,
+  RadioField,
+} from "../../../shared/ui/primitives";
 import { vendorsApi } from "../../../shared/api/vendors";
 import { Modal } from "../../../shared/ui/overlay";
 
@@ -23,7 +32,11 @@ const poFormSchema = z
   .superRefine((data, ctx) => {
     data.materials.forEach((m, i) => {
       if (!m.quantity || m.quantity <= 0) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Required", path: ["materials", i, "quantity"] });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Required",
+          path: ["materials", i, "quantity"],
+        });
       }
     });
   });
@@ -37,18 +50,36 @@ interface POCreateModalProps {
 
 export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreateModalProps) {
   const today = new Date().toISOString().split("T")[0];
-  const todayDisplay = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  const todayDisplay = new Date().toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 
   const { firms } = useFirms();
 
   const [vendors, setVendors] = useState<Vendor[]>([]);
   useEffect(() => {
     if (!open) return;
-    vendorsApi.list().then(res => setVendors(res.items.map(v => ({
-      id: v.id, code: v.code ?? undefined, name: v.name, city: v.city ?? "", type: v.specialty ?? "",
-      phone: v.phone ?? "", terms: v.terms ?? "", gstCode: v.gstCode ?? "",
-      address: v.address ?? "", contactName: v.contactName ?? "",
-    })))).catch(() => setVendors([]));
+    vendorsApi
+      .list()
+      .then((res) =>
+        setVendors(
+          res.items.map((v) => ({
+            id: v.id,
+            code: v.code ?? undefined,
+            name: v.name,
+            city: v.city ?? "",
+            type: v.specialty ?? "",
+            phone: v.phone ?? "",
+            terms: v.terms ?? "",
+            gstCode: v.gstCode ?? "",
+            address: v.address ?? "",
+            contactName: v.contactName ?? "",
+          }))
+        )
+      )
+      .catch(() => setVendors([]));
   }, [open]);
 
   const [selectedFirmId, setSelectedFirmId] = useState("");
@@ -91,14 +122,14 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
   }, [open, nextPONumber]);
 
   const vendor = selectedVendorIdx >= 0 ? vendors[selectedVendorIdx] : null;
-  const selectedFirm = firms.find(f => f.id === selectedFirmId) ?? null;
+  const selectedFirm = firms.find((f) => f.id === selectedFirmId) ?? null;
 
   const validate = (): boolean => {
     const result = poFormSchema.safeParse({
       firm: selectedFirmId,
       vendor: vendor?.name ?? "",
       deliveryDate,
-      materials: materials.map(m => ({ _key: m._key, quantity: m.quantity })),
+      materials: materials.map((m) => ({ _key: m._key, quantity: m.quantity })),
     });
     if (result.success) {
       setErrors({});
@@ -116,7 +147,14 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
       const field = issue.path[0];
       if (typeof field === "string") {
         if (!e[field]) e[field] = issue.message;
-        const label = field === "firm" ? "Purchasing Firm" : field === "vendor" ? "Vendor" : field === "deliveryDate" ? "Expected Delivery Date" : field;
+        const label =
+          field === "firm"
+            ? "Purchasing Firm"
+            : field === "vendor"
+              ? "Vendor"
+              : field === "deliveryDate"
+                ? "Expected Delivery Date"
+                : field;
         if (!missing.includes(label)) missing.push(label);
       }
     }
@@ -147,7 +185,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
       firmId: selectedFirmId,
       firmName: selectedFirm?.firmName,
       deliveryDate: deliveryDate || new Date().toISOString().split("T")[0],
-      materials: materials.map(m => ({
+      materials: materials.map((m) => ({
         materialType: m.materialType,
         subtype: m.subtype,
         description: m.description,
@@ -156,7 +194,10 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
         pricePerUnit: m.pricePerUnit || 0,
         subtotal: m.subtotal || (m.pricePerUnit || 0) * (m.quantity || 0),
       })),
-      totalValue: materials.reduce((sum, m) => sum + (m.subtotal || (m.pricePerUnit || 0) * (m.quantity || 0)), 0),
+      totalValue: materials.reduce(
+        (sum, m) => sum + (m.subtotal || (m.pricePerUnit || 0) * (m.quantity || 0)),
+        0
+      ),
       notesVendor: notesVendor || undefined,
       notesAdmin: notesAdmin || undefined,
       urgency,
@@ -169,17 +210,29 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
   };
 
   const labelStyle: React.CSSProperties = {
-    fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe,
-    letterSpacing: "0.3px", marginBottom: 6, display: "block",
+    fontFamily: F.ui,
+    fontWeight: 600,
+    fontSize: 12,
+    color: T.taupe,
+    letterSpacing: "0.3px",
+    marginBottom: 6,
+    display: "block",
   };
   const sectionTitleStyle: React.CSSProperties = {
-    fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown,
-    marginBottom: 14, paddingBottom: 8, borderBottom: `1px solid ${T.borderDef}`,
-    display: "flex", alignItems: "center", gap: 8,
+    fontFamily: F.display,
+    fontWeight: 700,
+    fontSize: 14,
+    color: T.luxuryBrown,
+    marginBottom: 14,
+    paddingBottom: 8,
+    borderBottom: `1px solid ${T.borderDef}`,
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
   };
 
   return (
-    <Modal open={open} onOpenChange={o => !o && onClose()} size="xl">
+    <Modal open={open} onOpenChange={(o) => !o && onClose()} size="xl">
       {/* Header */}
       <div
         className="flex shrink-0 items-start justify-between gap-3 px-[18px] py-[16px] sm:px-[26px] sm:py-[20px]"
@@ -232,31 +285,72 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
         >
           {/* PURCHASING FIRM */}
           <div>
-            <div style={sectionTitleStyle}><Building2 size={15} color={T.royalBurgundy} /> Purchasing Firm</div>
+            <div style={sectionTitleStyle}>
+              <Building2 size={15} color={T.royalBurgundy} /> Purchasing Firm
+            </div>
             <div>
-              <label style={labelStyle} htmlFor="firm-name">Firm Name *</label>
+              <label style={labelStyle} htmlFor="firm-name">
+                Firm Name *
+              </label>
               <Select
                 value={selectedFirmId}
-                onValueChange={v => {
+                onValueChange={(v) => {
                   setSelectedFirmId(v);
-                  setErrors(prev => ({ ...prev, firm: "" }));
+                  setErrors((prev) => ({ ...prev, firm: "" }));
                 }}
                 placeholder="Select purchasing firm…"
                 className="w-full"
               >
-                {firms.map(f => (
-                  <SelectItem key={f.id} value={f.id}>{f.firmName}</SelectItem>
+                {firms.map((f) => (
+                  <SelectItem key={f.id} value={f.id}>
+                    {f.firmName}
+                  </SelectItem>
                 ))}
               </Select>
-              {errors.firm && <div style={{ color: T.crimson, fontSize: 12, marginTop: 4 }}>{errors.firm}</div>}
+              {errors.firm && (
+                <div style={{ color: T.crimson, fontSize: 12, marginTop: 4 }}>{errors.firm}</div>
+              )}
               {selectedFirm && (
                 <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.10)", padding: "3px 10px", borderRadius: 6 }}>{selectedFirm.firmName}</span>
+                  <span
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 12,
+                      color: T.antiqueGold,
+                      background: "rgba(200,155,71,0.10)",
+                      padding: "3px 10px",
+                      borderRadius: 6,
+                    }}
+                  >
+                    {selectedFirm.firmName}
+                  </span>
                   {selectedFirm.gstNumber && (
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "3px 10px", borderRadius: 6 }}>GST: {selectedFirm.gstNumber}</span>
+                    <span
+                      style={{
+                        fontFamily: F.ui,
+                        fontSize: 12,
+                        color: T.taupe,
+                        background: T.silkCream,
+                        padding: "3px 10px",
+                        borderRadius: 6,
+                      }}
+                    >
+                      GST: {selectedFirm.gstNumber}
+                    </span>
                   )}
                   {selectedFirm.bankName && (
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "3px 10px", borderRadius: 6 }}>{selectedFirm.bankName}</span>
+                    <span
+                      style={{
+                        fontFamily: F.ui,
+                        fontSize: 12,
+                        color: T.taupe,
+                        background: T.silkCream,
+                        padding: "3px 10px",
+                        borderRadius: 6,
+                      }}
+                    >
+                      {selectedFirm.bankName}
+                    </span>
                   )}
                 </div>
               )}
@@ -283,9 +377,20 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
 
           {/* MATERIALS */}
           <div>
-            <div style={sectionTitleStyle}><FileText size={15} color={T.royalBurgundy} /> Materials to Order</div>
-            <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "0 0 14px", lineHeight: 1.5 }}>
-              What materials are you ordering from this vendor? Rates are settled with the vendor separately — only the material and quantity are captured here.
+            <div style={sectionTitleStyle}>
+              <FileText size={15} color={T.royalBurgundy} /> Materials to Order
+            </div>
+            <p
+              style={{
+                fontFamily: F.ui,
+                fontSize: 12,
+                color: T.taupe,
+                margin: "0 0 14px",
+                lineHeight: 1.5,
+              }}
+            >
+              What materials are you ordering from this vendor? Rates are settled with the vendor
+              separately — only the material and quantity are captured here.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {materials.map((m, i) => (
@@ -293,16 +398,24 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                   key={m._key}
                   item={m}
                   index={i + 1}
-                  onChange={updated => setMaterials(prev => prev.map(x => x._key === m._key ? updated : x))}
-                  onRemove={() => setMaterials(prev => prev.filter(x => x._key !== m._key))}
+                  onChange={(updated) =>
+                    setMaterials((prev) => prev.map((x) => (x._key === m._key ? updated : x)))
+                  }
+                  onRemove={() => setMaterials((prev) => prev.filter((x) => x._key !== m._key))}
                   canRemove={materials.length > 1}
                   errors={errors}
                 />
               ))}
             </div>
             <Button
-              onClick={() => setMaterials(prev => [...prev, { ...emptyItem(), _key: Date.now() }])}
-              variant="secondary" size="lg" fullWidth className="mt-3 border-dashed" iconLeft={Plus}
+              onClick={() =>
+                setMaterials((prev) => [...prev, { ...emptyItem(), _key: Date.now() }])
+              }
+              variant="secondary"
+              size="lg"
+              fullWidth
+              className="mt-3 border-dashed"
+              iconLeft={Plus}
             >
               Add Another Material
             </Button>
@@ -310,29 +423,44 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
 
           {/* ADDITIONAL DETAILS */}
           <div>
-            <div style={sectionTitleStyle}><ClipboardList size={15} color={T.royalBurgundy} /> Additional Details</div>
+            <div style={sectionTitleStyle}>
+              <ClipboardList size={15} color={T.royalBurgundy} /> Additional Details
+            </div>
 
             <div style={{ marginBottom: 14 }}>
-              <label style={labelStyle} htmlFor="po-number">PO Number</label>
-              <Input id="po-number" value={poNumber} onChange={e => setPoNumber(e.target.value)} className="font-mono" />
+              <label style={labelStyle} htmlFor="po-number">
+                PO Number
+              </label>
+              <Input
+                id="po-number"
+                value={poNumber}
+                onChange={(e) => setPoNumber(e.target.value)}
+                className="font-mono"
+              />
             </div>
 
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
               <div>
-                <label style={labelStyle} htmlFor="notes-for-vendor-optional">Notes for Vendor (optional)</label>
-                <Textarea id="notes-for-vendor-optional"
+                <label style={labelStyle} htmlFor="notes-for-vendor-optional">
+                  Notes for Vendor (optional)
+                </label>
+                <Textarea
+                  id="notes-for-vendor-optional"
                   value={notesVendor}
-                  onChange={e => setNotesVendor(e.target.value)}
+                  onChange={(e) => setNotesVendor(e.target.value)}
                   placeholder="Any special instructions for this order..."
                   rows={3}
                 />
               </div>
 
               <div>
-                <label style={labelStyle} htmlFor="notes-for-superadmin-optional">Notes for Superadmin (optional)</label>
-                <Textarea id="notes-for-superadmin-optional"
+                <label style={labelStyle} htmlFor="notes-for-superadmin-optional">
+                  Notes for Superadmin (optional)
+                </label>
+                <Textarea
+                  id="notes-for-superadmin-optional"
                   value={notesAdmin}
-                  onChange={e => setNotesAdmin(e.target.value)}
+                  onChange={(e) => setNotesAdmin(e.target.value)}
                   placeholder="Why is this order needed..."
                   rows={3}
                 />
@@ -341,10 +469,21 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
 
             {/* Urgency */}
             <div style={{ marginTop: 14 }}>
-              <div id="urgency-group-label" style={labelStyle}>Urgency</div>
-              <RadioGroup aria-labelledby="urgency-group-label" value={urgency} onValueChange={v => setUrgency(v as "Normal" | "Urgent")} className="flex flex-wrap gap-3">
-                {(["Normal", "Urgent"] as const).map(u => (
-                  <RadioField key={u} value={u} label={u === "Normal" ? "Normal" : "🔴 Urgent — Low Stock"} />
+              <div id="urgency-group-label" style={labelStyle}>
+                Urgency
+              </div>
+              <RadioGroup
+                aria-labelledby="urgency-group-label"
+                value={urgency}
+                onValueChange={(v) => setUrgency(v as "Normal" | "Urgent")}
+                className="flex flex-wrap gap-3"
+              >
+                {(["Normal", "Urgent"] as const).map((u) => (
+                  <RadioField
+                    key={u}
+                    value={u}
+                    label={u === "Normal" ? "Normal" : "🔴 Urgent — Low Stock"}
+                  />
                 ))}
               </RadioGroup>
             </div>
@@ -352,8 +491,10 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
 
           {/* Preview toggle — stacked layout only. */}
           <Button
-            onClick={() => setShowPreview(p => !p)}
-            variant="secondary" size="md" fullWidth
+            onClick={() => setShowPreview((p) => !p)}
+            variant="secondary"
+            size="md"
+            fullWidth
             className="lg:hidden"
             iconLeft={showPreview ? EyeOff : Eye}
           >
@@ -370,7 +511,12 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
               caption scrolls out of view and the pane loses its title. */}
           <div
             className="sticky top-0 z-[1] -mx-[14px] mb-[12px] px-[14px] pb-[10px] pt-[16px] text-center text-[11px] font-semibold uppercase"
-            style={{ fontFamily: F.ui, color: T.taupe, letterSpacing: "0.5px", background: T.silkCream }}
+            style={{
+              fontFamily: F.ui,
+              color: T.taupe,
+              letterSpacing: "0.5px",
+              background: T.silkCream,
+            }}
           >
             PO Document Preview
           </div>
@@ -409,8 +555,13 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
           Cancel
         </Button>
         <Button
-          onClick={() => { void handleSubmit(); }}
-          variant="primary" size="md" fullWidth className="sm:w-auto"
+          onClick={() => {
+            void handleSubmit();
+          }}
+          variant="primary"
+          size="md"
+          fullWidth
+          className="sm:w-auto"
           iconLeft={ClipboardList}
         >
           Submit for Superadmin Approval

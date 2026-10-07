@@ -84,7 +84,10 @@ function toFirm(backend: BackendFirm): Firm {
   };
 }
 
-function groupEntriesIntoFinancials(firmId: string, entries: BackendFinancialEntry[]): FirmFinancials {
+function groupEntriesIntoFinancials(
+  firmId: string,
+  entries: BackendFinancialEntry[]
+): FirmFinancials {
   const income: FinancialEntry[] = [];
   const expenses: FinancialEntry[] = [];
   const misc: MiscEntry[] = [];
@@ -134,7 +137,7 @@ function groupEntriesIntoFinancials(firmId: string, entries: BackendFinancialEnt
 function applyEntriesToFinancials(
   financials: FirmFinancials,
   entries: BackendFinancialEntry[],
-  removeIds: string[] = [],
+  removeIds: string[] = []
 ): FirmFinancials {
   const stale = new Set([...removeIds, ...entries.map((e) => e.id)]);
   const grouped = groupEntriesIntoFinancials(financials.firmId, entries);
@@ -164,7 +167,11 @@ interface FirmsContextValue {
   addMiscEntry: (firmId: string, entry: Omit<MiscEntry, "id">) => void;
   /** Corrects a hand-typed entry in place — manual rows are the only part of
    *  the ledger that can carry a typo, so they're the only editable part. */
-  updateEntry: (firmId: string, entryId: string, entry: Omit<FinancialEntry, "id"> | Omit<MiscEntry, "id">) => void;
+  updateEntry: (
+    firmId: string,
+    entryId: string,
+    entry: Omit<FinancialEntry, "id"> | Omit<MiscEntry, "id">
+  ) => void;
   deleteEntry: (firmId: string, entryId: string) => Promise<void>;
   getFirmFinancials: (firmId: string) => FirmFinancials;
 }
@@ -184,7 +191,12 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
   // "Your role (SHOP) is not permitted to perform this action."
   const enabled = useAuthGate("accountant", "admin", "superadmin");
 
-  const { data: backendFirms = [], isLoading, error, refetch } = useQuery({
+  const {
+    data: backendFirms = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: FIRMS_KEY,
     enabled,
     queryFn: () => firmsApi.list().then((res) => res.items),
@@ -198,7 +210,7 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
         backendFirms.map(async (firm) => {
           const entries = await firmsApi.listEntries(firm.id).then((res) => res.items);
           return groupEntriesIntoFinancials(firm.id, entries);
-        }),
+        })
       );
       return results;
     },
@@ -214,8 +226,8 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
    * inventing one would shadow the real fetch.
    */
   const seedFinancials = (firmId: string, update: (current: FirmFinancials) => FirmFinancials) =>
-    queryClient.setQueryData<FirmFinancials[]>(FINANCIALS_KEY, prev =>
-      prev?.map(fin => (fin.firmId === firmId ? update(fin) : fin)),
+    queryClient.setQueryData<FirmFinancials[]>(FINANCIALS_KEY, (prev) =>
+      prev?.map((fin) => (fin.firmId === firmId ? update(fin) : fin))
     );
 
   const addFirmMutation = useMutation({
@@ -263,7 +275,7 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
     mutationFn: (args: { firmId: string; payload: CreateFinancialEntryPayload }) =>
       firmsApi.addEntry(args.firmId, args.payload),
     onSuccess: (created, args) => {
-      seedFinancials(args.firmId, fin => applyEntriesToFinancials(fin, [created]));
+      seedFinancials(args.firmId, (fin) => applyEntriesToFinancials(fin, [created]));
       void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
       void queryClient.invalidateQueries({ queryKey: ["firms", "activity", args.firmId] });
       toast.success("Entry added");
@@ -277,10 +289,15 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
   // activity query is invalidated alongside the manual one — otherwise the
   // summary strip keeps showing the pre-edit figure until a hard refresh.
   const updateEntryMutation = useMutation({
-    mutationFn: (args: { firmId: string; entryId: string; payload: Partial<CreateFinancialEntryPayload> }) =>
-      firmsApi.updateEntry(args.firmId, args.entryId, args.payload),
+    mutationFn: (args: {
+      firmId: string;
+      entryId: string;
+      payload: Partial<CreateFinancialEntryPayload>;
+    }) => firmsApi.updateEntry(args.firmId, args.entryId, args.payload),
     onSuccess: (updated, args) => {
-      seedFinancials(args.firmId, fin => applyEntriesToFinancials(fin, [updated], [args.entryId]));
+      seedFinancials(args.firmId, (fin) =>
+        applyEntriesToFinancials(fin, [updated], [args.entryId])
+      );
       void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
       void queryClient.invalidateQueries({ queryKey: ["firms", "activity", args.firmId] });
       toast.success("Entry updated");
@@ -294,7 +311,7 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
     mutationFn: (args: { firmId: string; entryId: string }) =>
       firmsApi.removeEntry(args.firmId, args.entryId),
     onSuccess: (_data, args) => {
-      seedFinancials(args.firmId, fin => applyEntriesToFinancials(fin, [], [args.entryId]));
+      seedFinancials(args.firmId, (fin) => applyEntriesToFinancials(fin, [], [args.entryId]));
       void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
       void queryClient.invalidateQueries({ queryKey: ["firms", "activity", args.firmId] });
       toast.success("Entry deleted");
@@ -307,18 +324,31 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
   const addFirm = (data: Omit<Firm, "id" | "createdAt">) => addFirmMutation.mutate(data);
   const updateFirm = (id: string, updates: Omit<Firm, "id" | "createdAt">) =>
     updateFirmMutation.mutate({ id, updates });
-  const deleteFirm = (id: string): Promise<void> => deleteFirmMutation.mutateAsync(id).then(() => undefined);
+  const deleteFirm = (id: string): Promise<void> =>
+    deleteFirmMutation.mutateAsync(id).then(() => undefined);
 
   const addIncomeEntry = (firmId: string, entry: Omit<FinancialEntry, "id">) =>
     addEntryMutation.mutate({
       firmId,
-      payload: { kind: "INCOME", category: entry.category, description: entry.description, amount: entry.amount, date: entry.date },
+      payload: {
+        kind: "INCOME",
+        category: entry.category,
+        description: entry.description,
+        amount: entry.amount,
+        date: entry.date,
+      },
     });
 
   const addExpenseEntry = (firmId: string, entry: Omit<FinancialEntry, "id">) =>
     addEntryMutation.mutate({
       firmId,
-      payload: { kind: "EXPENSE", category: entry.category, description: entry.description, amount: entry.amount, date: entry.date },
+      payload: {
+        kind: "EXPENSE",
+        category: entry.category,
+        description: entry.description,
+        amount: entry.amount,
+        date: entry.date,
+      },
     });
 
   const addMiscEntry = (firmId: string, entry: Omit<MiscEntry, "id">) =>
@@ -339,7 +369,7 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
   const updateEntry = (
     firmId: string,
     entryId: string,
-    entry: Omit<FinancialEntry, "id"> | Omit<MiscEntry, "id">,
+    entry: Omit<FinancialEntry, "id"> | Omit<MiscEntry, "id">
   ) => {
     const isMisc = "type" in entry;
     updateEntryMutation.mutate({
@@ -368,9 +398,16 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
 
   const getFirmFinancials = useCallback(
     (firmId: string): FirmFinancials => {
-      return financials.find((f) => f.firmId === firmId) ?? { firmId, income: [], expenses: [], misc: [] };
+      return (
+        financials.find((f) => f.firmId === firmId) ?? {
+          firmId,
+          income: [],
+          expenses: [],
+          misc: [],
+        }
+      );
     },
-    [financials],
+    [financials]
   );
 
   return (

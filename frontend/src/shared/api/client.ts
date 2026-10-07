@@ -37,7 +37,7 @@ export class ApiError extends Error {
      */
     public readonly code: ErrorCode = defaultCodeForStatus(statusCode),
     /** Per-field validation messages, keyed by the DTO's dotted field path. */
-    public readonly fields?: Record<string, string[]>,
+    public readonly fields?: Record<string, string[]>
   ) {
     super(message);
     this.name = "ApiError";
@@ -101,11 +101,18 @@ export function isServerError(error: unknown): boolean {
 
 /** Worth retrying automatically: transient by nature. A 4xx never is. */
 export function isRetryable(error: unknown): boolean {
-  return isNetworkError(error) || isServerError(error) || (isApiError(error) && error.code === "RATE_LIMITED");
+  return (
+    isNetworkError(error) ||
+    isServerError(error) ||
+    (isApiError(error) && error.code === "RATE_LIMITED")
+  );
 }
 
 function getAuthHeaders(): Record<string, string> {
-  const token = typeof window !== "undefined" ? (localStorage.getItem("token") || sessionStorage.getItem("token")) : null;
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("token") || sessionStorage.getItem("token")
+      : null;
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 

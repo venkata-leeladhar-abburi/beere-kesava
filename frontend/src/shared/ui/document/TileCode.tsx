@@ -130,9 +130,14 @@ export function TileCode({
       )}
       <span
         style={{
-          fontFamily: "var(--font-code, ui-monospace, monospace)", fontWeight: 700,
-          fontSize: `${size}em`, letterSpacing: `${CODE_LETTER_SPACING_EM}em`, maxWidth: "100%",
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          fontFamily: "var(--font-code, ui-monospace, monospace)",
+          fontWeight: 700,
+          fontSize: `${size}em`,
+          letterSpacing: `${CODE_LETTER_SPACING_EM}em`,
+          maxWidth: "100%",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
         }}
       >
         {code}

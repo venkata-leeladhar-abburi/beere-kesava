@@ -1,4 +1,12 @@
-import { Hero, MetricsBar, ThreeCol, ActivityStrip, WeaverSection, RawMaterial, Footer } from './desktop';
+import {
+  Hero,
+  MetricsBar,
+  ThreeCol,
+  ActivityStrip,
+  WeaverSection,
+  RawMaterial,
+  Footer,
+} from "./desktop";
 
 /**
  * The admin dashboard's "Overview" tab content, split into its own chunk so

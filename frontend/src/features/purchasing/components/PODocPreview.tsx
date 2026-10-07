@@ -15,7 +15,11 @@
  * and sent to the vendor.
  */
 import { ExtItem } from "./POTypesAndVendors";
-import { DocumentThumb, PurchaseOrderDocument, DEFAULT_LETTERHEAD_FIRM } from "../../../shared/ui/document";
+import {
+  DocumentThumb,
+  PurchaseOrderDocument,
+  DEFAULT_LETTERHEAD_FIRM,
+} from "../../../shared/ui/document";
 
 interface PODocPreviewProps {
   vendor: string;

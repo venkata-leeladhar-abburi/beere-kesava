@@ -23,7 +23,21 @@ export interface CustomerCardProps {
   className?: string;
 }
 
-export function CustomerCard({ code, name, avatarSrc, city, orders, outstanding, lastOrder, status, paymentStatus, progress, density, onClick, className }: CustomerCardProps) {
+export function CustomerCard({
+  code,
+  name,
+  avatarSrc,
+  city,
+  orders,
+  outstanding,
+  lastOrder,
+  status,
+  paymentStatus,
+  progress,
+  density,
+  onClick,
+  className,
+}: CustomerCardProps) {
   return (
     <DomainCard
       avatarName={name}

@@ -1,4 +1,7 @@
-export type CodeCallbacks = { onDesignClick?: (code: string) => void; onSareeTypeClick?: (code: string) => void };
+export type CodeCallbacks = {
+  onDesignClick?: (code: string) => void;
+  onSareeTypeClick?: (code: string) => void;
+};
 
 export type OrderStatus = "on-track" | "at-risk" | "overdue";
 
@@ -35,14 +38,35 @@ export interface BulkOrder {
 
 export type BatchStage = "weaving" | "submitted" | "qc-passed" | "finishing";
 
-export interface WeaverRef { name: string; id: string; code?: string | null; initials: string; bg: string }
+export interface WeaverRef {
+  name: string;
+  id: string;
+  code?: string | null;
+  initials: string;
+  bg: string;
+}
 
 export interface Batch {
-  id: string; stage: BatchStage; sareeCode: string; sareeTypeName: string; rate: number;
-  design: string; designName: string; weavers: WeaverRef[];
-  materials: string; started: string; expected?: string; submitted?: string;
-  done: number; total: number; late?: number; qcPassed?: number; finishingDone?: number; rejected?: number;
-  isLive?: boolean; createdBy?: string | null;
+  id: string;
+  stage: BatchStage;
+  sareeCode: string;
+  sareeTypeName: string;
+  rate: number;
+  design: string;
+  designName: string;
+  weavers: WeaverRef[];
+  materials: string;
+  started: string;
+  expected?: string;
+  submitted?: string;
+  done: number;
+  total: number;
+  late?: number;
+  qcPassed?: number;
+  finishingDone?: number;
+  rejected?: number;
+  isLive?: boolean;
+  createdBy?: string | null;
 }
 
 export type HistoryStatus = "Printing Completed" | "Printing In Process" | "Challenge in Progress";

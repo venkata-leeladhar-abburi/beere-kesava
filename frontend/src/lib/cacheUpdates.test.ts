@@ -47,7 +47,12 @@ describe("upsertInList", () => {
   it("honours position: end for lists ordered oldest-first", () => {
     const qc = clientWith([{ id: "a", name: "A", totalSpend: 0 }]);
 
-    upsertInList<Row>(qc, KEY, { id: "b", name: "B" }, { seed: { totalSpend: 0 }, position: "end" });
+    upsertInList<Row>(
+      qc,
+      KEY,
+      { id: "b", name: "B" },
+      { seed: { totalSpend: 0 }, position: "end" }
+    );
 
     expect((qc.getQueryData(KEY) as Row[]).map((r) => r.id)).toEqual(["a", "b"]);
   });
@@ -136,13 +141,24 @@ describe("patchListItems", () => {
   it("accepts a function patch so nested rows can be rewritten from current state", () => {
     const qc = new QueryClient();
     qc.setQueryData(BATCH_KEY, [
-      { batchId: "B1", rows: [{ serial: 1, tallied: false }, { serial: 2, tallied: false }] },
+      {
+        batchId: "B1",
+        rows: [
+          { serial: 1, tallied: false },
+          { serial: 2, tallied: false },
+        ],
+      },
     ] as Batch[]);
 
-    patchListItems<Batch>(qc, BATCH_KEY, (b) => b.batchId === "B1", (b) => ({
-      ...b,
-      rows: b.rows.map((r) => (r.serial === 2 ? { ...r, tallied: true } : r)),
-    }));
+    patchListItems<Batch>(
+      qc,
+      BATCH_KEY,
+      (b) => b.batchId === "B1",
+      (b) => ({
+        ...b,
+        rows: b.rows.map((r) => (r.serial === 2 ? { ...r, tallied: true } : r)),
+      })
+    );
 
     expect(qc.getQueryData<Batch[]>(BATCH_KEY)?.[0].rows).toEqual([
       { serial: 1, tallied: false },
@@ -160,7 +176,10 @@ describe("patchListItems", () => {
 describe("removeFromListWhere", () => {
   it("drops rows selected by an arbitrary key", () => {
     const qc = new QueryClient();
-    qc.setQueryData(BATCH_KEY, [{ batchId: "B1", rows: [] }, { batchId: "B2", rows: [] }] as Batch[]);
+    qc.setQueryData(BATCH_KEY, [
+      { batchId: "B1", rows: [] },
+      { batchId: "B2", rows: [] },
+    ] as Batch[]);
 
     removeFromListWhere<Batch>(qc, BATCH_KEY, (b) => b.batchId === "B1");
 

@@ -70,8 +70,6 @@ const RESULT_FROM_BACKEND: Record<BackendQcResult, QcResult> = {
   DEFECTIVE: "defective",
 };
 
-
-
 /**
  * Single source of truth for how a QC outcome hits the weaver's payment.
  *  defective → the whole making charge is withheld, weaver earns nothing
@@ -84,7 +82,7 @@ const RESULT_FROM_BACKEND: Record<BackendQcResult, QcResult> = {
 export function computeQcPayment(
   result: QcResult,
   makingCharge: number,
-  semiDeduction = 0,
+  semiDeduction = 0
 ): { deduction: number; payable: number } {
   if (result === "defective") return { deduction: makingCharge, payable: 0 };
   if (result === "semi") {
@@ -158,7 +156,9 @@ function backendRecordToFrontend(
     batchId: r.batchId,
     loomNumber: null,
     sareeTypeCode: row?.sareeTypeCode ?? null,
-    sareeTypeName: row?.sareeTypeCode ? (getSareeTypeByCode(row.sareeTypeCode)?.type ?? row.sareeTypeCode) : null,
+    sareeTypeName: row?.sareeTypeCode
+      ? (getSareeTypeByCode(row.sareeTypeCode)?.type ?? row.sareeTypeCode)
+      : null,
     bulkOrderLabel: row?.bulkOrderRef ?? null,
     result: RESULT_FROM_BACKEND[r.result],
     defects: r.defects,
@@ -172,7 +172,9 @@ function backendRecordToFrontend(
     // Real name of whoever performed the check — joined server-side onto
     // QcRecord.inspectedById. Falls back to a generic label only when that
     // relation is genuinely missing (legacy record with no resolvable user).
-    inspectedBy: r.inspectedBy ? `${r.inspectedBy.firstName} ${r.inspectedBy.lastName}`.trim() : "Worker Staff",
+    inspectedBy: r.inspectedBy
+      ? `${r.inspectedBy.firstName} ${r.inspectedBy.lastName}`.trim()
+      : "Worker Staff",
   };
 }
 
@@ -195,7 +197,13 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
   // not permitted" 403.
   const enabled = useAuthGate("worker", "weaver", "admin", "superadmin");
 
-  const { data: qcRecords = [], isError, error, isLoading, refetch } = useQuery({
+  const {
+    data: qcRecords = [],
+    isError,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: QUERY_KEY,
     enabled,
     queryFn: async () => {
@@ -207,12 +215,16 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
           : Promise.resolve({ items: [] as BackendFactoryLoom[] }),
         batchesApi.list().catch(() => ({ items: [] as BackendBatch[] })),
       ]);
-      const weaverLookup = new Map(weaversRes.items.map(w => [w.id, w.name]));
-      const loomLookup = new Map(loomsRes.items.map(l => [l.id, l.code || l.loomNumber]));
+      const weaverLookup = new Map(weaversRes.items.map((w) => [w.id, w.name]));
+      const loomLookup = new Map(loomsRes.items.map((l) => [l.id, l.code || l.loomNumber]));
       const rowLookup = new Map(
-        batchesRes.items.flatMap(b => b.rows.filter(r => r.sareeId).map(r => [r.sareeId as string, r] as const)),
+        batchesRes.items.flatMap((b) =>
+          b.rows.filter((r) => r.sareeId).map((r) => [r.sareeId as string, r] as const)
+        )
       );
-      return qcRes.items.map(r => backendRecordToFrontend(r, weaverLookup, loomLookup, rowLookup, getSareeTypeByCode));
+      return qcRes.items.map((r) =>
+        backendRecordToFrontend(r, weaverLookup, loomLookup, rowLookup, getSareeTypeByCode)
+      );
     },
   });
 
@@ -248,7 +260,7 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
   const recordQc = (input: RecordQcInput): Promise<void> =>
     recordQcMutation.mutateAsync(input).then(() => undefined);
 
-const updateDeductionMutation = useMutation({
+  const updateDeductionMutation = useMutation({
     mutationFn: ({ recordId, deduction }: { recordId: string; deduction: number }) =>
       qcApi.updateDeduction(recordId, { deduction, actorId: user?.id }),
     onSuccess: () => {
@@ -267,22 +279,35 @@ const updateDeductionMutation = useMutation({
     updateDeductionMutation.mutateAsync({ recordId, deduction }).then(() => undefined);
 
   const getQcForSaree = useCallback(
-    (sareeId: string) => qcRecords.find(r => r.sareeId === sareeId),
-    [qcRecords],
+    (sareeId: string) => qcRecords.find((r) => r.sareeId === sareeId),
+    [qcRecords]
   );
 
   const getQcForWeaver = useCallback(
-    (weaverId: string) => qcRecords.filter(r => r.weaverId === weaverId),
-    [qcRecords],
+    (weaverId: string) => qcRecords.filter((r) => r.weaverId === weaverId),
+    [qcRecords]
   );
 
   const getQcForLoom = useCallback(
-    (factoryLoomId: string) => qcRecords.filter(r => r.factoryLoomId === factoryLoomId),
-    [qcRecords],
+    (factoryLoomId: string) => qcRecords.filter((r) => r.factoryLoomId === factoryLoomId),
+    [qcRecords]
   );
 
   return (
-    <QcContext.Provider value={{ qcRecords, recordQc, updateDeduction, getQcForSaree, getQcForWeaver, getQcForLoom, isError, error, isLoading, refetch: () => void refetch() }}>
+    <QcContext.Provider
+      value={{
+        qcRecords,
+        recordQc,
+        updateDeduction,
+        getQcForSaree,
+        getQcForWeaver,
+        getQcForLoom,
+        isError,
+        error,
+        isLoading,
+        refetch: () => void refetch(),
+      }}
+    >
       {children}
     </QcContext.Provider>
   );

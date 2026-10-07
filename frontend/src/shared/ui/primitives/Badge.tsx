@@ -57,9 +57,12 @@ export type StatusTone = "neutral" | "brand" | "success" | "warning" | "danger" 
 
 const TONE_CLASS: Record<StatusTone, string> = {
   neutral: "bg-[var(--bk-neutral-50)] border-[var(--bk-neutral-200)] text-[var(--text-secondary)]",
-  brand: "bg-[var(--surface-brand-subtle)] border-[var(--bk-burgundy-200)] text-[var(--text-brand)]",
-  success: "bg-[var(--surface-success-subtle)] border-[var(--bk-green-200)] text-[var(--text-success)]",
-  warning: "bg-[var(--surface-warning-subtle)] border-[var(--bk-amber-200)] text-[var(--text-warning)]",
+  brand:
+    "bg-[var(--surface-brand-subtle)] border-[var(--bk-burgundy-200)] text-[var(--text-brand)]",
+  success:
+    "bg-[var(--surface-success-subtle)] border-[var(--bk-green-200)] text-[var(--text-success)]",
+  warning:
+    "bg-[var(--surface-warning-subtle)] border-[var(--bk-amber-200)] text-[var(--text-warning)]",
   danger: "bg-[var(--surface-danger-subtle)] border-[var(--bk-red-200)] text-[var(--text-danger)]",
   info: "bg-[var(--surface-info-subtle)] border-[var(--bk-blue-200)] text-[var(--text-info)]",
 };
@@ -91,7 +94,10 @@ export function StatusPill({ tone, label, size = "md", className, ...props }: St
       )}
       {...props}
     >
-      <span aria-hidden="true" className={cn("size-1.5 rounded-full shrink-0", TONE_DOT_CLASS[tone])} />
+      <span
+        aria-hidden="true"
+        className={cn("size-1.5 rounded-full shrink-0", TONE_DOT_CLASS[tone])}
+      />
       {label}
     </span>
   );

@@ -2,17 +2,31 @@ import { AccessLevel } from "./theme";
 import type { FinishingStaffMember } from "@/features/finishing";
 
 export function todayFormatted(): string {
-  return new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date().toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export function formatBackendDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 // One row of the "All Users" table
 export type TableRow = {
-  empId: string; firstName: string; lastName: string; role: string;
-  mobile: string; portal: string; dateAdded: string; status: string;
+  empId: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  mobile: string;
+  portal: string;
+  dateAdded: string;
+  status: string;
   email?: string;
   /** Extra portals (frontend role labels) besides `role`. */
   additionalRoles?: string[];

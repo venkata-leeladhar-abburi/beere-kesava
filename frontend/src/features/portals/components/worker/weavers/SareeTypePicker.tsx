@@ -34,20 +34,45 @@ export function SareeTypePicker({ assignedCode, value, onChange, count }: SareeT
   const missing = !value;
 
   return (
-    <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "10px 12px", marginBottom: 10 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+    <div
+      style={{
+        background: "#FFF",
+        border: `1px solid ${C.bdr}`,
+        borderRadius: 12,
+        padding: "10px 12px",
+        marginBottom: 10,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
+          marginBottom: 6,
+          flexWrap: "wrap",
+        }}
+      >
         <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text }}>
           Saree Type{count > 1 ? ` · applies to all ${count} selected` : ""}
         </span>
         {changed && (
-          <Button variant="link" onClick={() => onChange(assigned)} className="p-0 text-xs text-[#6E0F2D] underline">
+          <Button
+            variant="link"
+            onClick={() => onChange(assigned)}
+            className="p-0 text-xs text-[#6E0F2D] underline"
+          >
             Reset to {assigned}
           </Button>
         )}
       </div>
 
-      <Select value={value ?? ""} onValueChange={onChange} placeholder="Select the saree type received">
-        {rates.map(r => (
+      <Select
+        value={value ?? ""}
+        onValueChange={onChange}
+        placeholder="Select the saree type received"
+      >
+        {rates.map((r) => (
           <SelectItem key={r.code} value={r.code}>
             {r.code} · {r.type} ({r.stdWeight}g)
           </SelectItem>

@@ -18,11 +18,19 @@ if (typeof globalThis.localStorage === "undefined") {
     let store: Record<string, string> = {};
     return {
       getItem: (k: string) => (k in store ? store[k] : null),
-      setItem: (k: string, v: string) => { store[k] = String(v); },
-      removeItem: (k: string) => { delete store[k]; },
-      clear: () => { store = {}; },
+      setItem: (k: string, v: string) => {
+        store[k] = String(v);
+      },
+      removeItem: (k: string) => {
+        delete store[k];
+      },
+      clear: () => {
+        store = {};
+      },
       key: (i: number) => Object.keys(store)[i] ?? null,
-      get length() { return Object.keys(store).length; },
+      get length() {
+        return Object.keys(store).length;
+      },
     } as Storage;
   };
   for (const name of ["localStorage", "sessionStorage"] as const) {
@@ -47,7 +55,9 @@ if (!("IntersectionObserver" in window)) {
     observe() {}
     unobserve() {}
     disconnect() {}
-    takeRecords() { return []; }
+    takeRecords() {
+      return [];
+    }
   }
   // @ts-expect-error — minimal test-only polyfill
   window.IntersectionObserver = MockIntersectionObserver;

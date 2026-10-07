@@ -24,24 +24,45 @@ export function ApprovalsPage() {
   const [histPeriod, setHistPeriod] = useState("This Month");
   const [viewDocPOId, setViewDocPOId] = useState<string | null>(null);
 
-  const { data: warpRes, isError: warpError, isLoading: warpLoading, refetch: refetchWarp } = useQuery({
+  const {
+    data: warpRes,
+    isError: warpError,
+    isLoading: warpLoading,
+    refetch: refetchWarp,
+  } = useQuery({
     queryKey: ["warp-requests-pending"],
     queryFn: () => warpRequestsApi.list("PENDING"),
   });
   const warpList = warpRes?.items ?? [];
 
-  const { data: rateRes, isError: rateError, isLoading: rateLoading, refetch: refetchRate } = useQuery({
+  const {
+    data: rateRes,
+    isError: rateError,
+    isLoading: rateLoading,
+    refetch: refetchRate,
+  } = useQuery({
     queryKey: ["rate-requests-pending"],
     queryFn: () => rateRequestsApi.list("PENDING"),
   });
   const rateList = rateRes?.items ?? [];
 
-  const { pos, approvePO, rejectPO, isError: poError, isLoading: poLoading, refetch: refetchPO } = usePO();
+  const {
+    pos,
+    approvePO,
+    rejectPO,
+    isError: poError,
+    isLoading: poLoading,
+    refetch: refetchPO,
+  } = usePO();
   const hasApprovalsError = warpError || rateError || poError;
   const isLoading = warpLoading || rateLoading || poLoading;
-  const refetchAll = () => { void refetchWarp(); void refetchRate(); void refetchPO(); };
+  const refetchAll = () => {
+    void refetchWarp();
+    void refetchRate();
+    void refetchPO();
+  };
   const { requests, decideRequest } = useSuppliers();
-  const pendingRequests = requests.filter(r => r.status === "pending");
+  const pendingRequests = requests.filter((r) => r.status === "pending");
 
   // Mirrors SupplierContext.decideRequest's own "approved" | "rejected"
   // param type (features/suppliers, out of this pass's scope) — both values
@@ -50,7 +71,7 @@ export function ApprovalsPage() {
   // function's narrower signature, so it stays a local 2-value literal union.
   const decideExternal = (id: string, status: "approved" | "rejected") => {
     decideRequest(id, status, "Superadmin");
-    const req = requests.find(r => r.id === id);
+    const req = requests.find((r) => r.id === id);
     toast[status === "approved" ? "success" : "info"](
       status === "approved"
         ? `Approved — external purchase created for ${req?.supplierName ?? "supplier"}`
@@ -61,13 +82,20 @@ export function ApprovalsPage() {
   // Purchase Orders tab now renders exclusively from the real backend
   // (PurchaseOrdersContext, GET /purchase-orders) filtered to PENDING.
   const contextPendingItems = pos
-    .filter(p => p.status === "pending")
-    .map(p => ({
+    .filter((p) => p.status === "pending")
+    .map((p) => ({
       id: p.id,
-      raised: new Date(p.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
+      raised: new Date(p.submittedDate).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+      }),
       vendor: p.vendor,
       vendorCity: p.vendorCity,
-      materials: p.materials.map(m => ({ label: `${m.materialType}${m.subtype ? ` ${m.subtype}` : ""}`, qty: `${m.quantity} ${m.unit}`, icon: "pkg" })),
+      materials: p.materials.map((m) => ({
+        label: `${m.materialType}${m.subtype ? ` ${m.subtype}` : ""}`,
+        qty: `${m.quantity} ${m.unit}`,
+        icon: "pkg",
+      })),
       estimated: formatMoney(rupees(p.totalValue ?? 0)),
       stock: "",
       raisedBy: p.raisedBy,
@@ -78,21 +106,18 @@ export function ApprovalsPage() {
   const combinedPOList = contextPendingItems;
 
   // Find PO for document view
-  const viewDocPO = viewDocPOId
-    ? pos.find(p => p.id === viewDocPOId) ?? null
-    : null;
+  const viewDocPO = viewDocPOId ? (pos.find((p) => p.id === viewDocPOId) ?? null) : null;
 
   const allEmpty = combinedPOList.length === 0 && warpList.length === 0 && rateList.length === 0;
 
   const tabs: { key: "po" | "warp" | "rate"; label: string; count: number }[] = [
-    { key: "po",   label: "Purchase Orders",   count: combinedPOList.length },
-    { key: "warp", label: "Warp Requests",     count: warpList.length },
-    { key: "rate", label: "Rate Changes",      count: rateList.length },
+    { key: "po", label: "Purchase Orders", count: combinedPOList.length },
+    { key: "warp", label: "Warp Requests", count: warpList.length },
+    { key: "rate", label: "Rate Changes", count: rateList.length },
   ];
 
   return (
     <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
-
       <ApprovalsHeader />
 
       <StatsStrip
@@ -105,9 +130,29 @@ export function ApprovalsPage() {
       <TabsNav tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {hasApprovalsError && (
-        <div style={{ margin: "0 56px", padding: "14px 20px", borderRadius: 12, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.30)", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#C0392B", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-          <span>Failed to load some approvals data. Counts and lists shown below may be incomplete.</span>
-          <Button onClick={refetchAll} variant="danger-subtle" size="sm">Retry</Button>
+        <div
+          style={{
+            margin: "0 56px",
+            padding: "14px 20px",
+            borderRadius: 12,
+            background: "rgba(192,57,43,0.08)",
+            border: "1px solid rgba(192,57,43,0.30)",
+            fontFamily: F.ui,
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#C0392B",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+          }}
+        >
+          <span>
+            Failed to load some approvals data. Counts and lists shown below may be incomplete.
+          </span>
+          <Button onClick={refetchAll} variant="danger-subtle" size="sm">
+            Retry
+          </Button>
         </div>
       )}
 
@@ -116,20 +161,20 @@ export function ApprovalsPage() {
           <LoadingState variant="skeleton" rows={4} />
         </div>
       ) : (
-      <TabContent
-        activeTab={activeTab}
-        combinedPOList={combinedPOList}
-        contextPendingItems={contextPendingItems}
-        pos={pos}
-        pendingRequests={pendingRequests}
-        warpList={warpList}
-        rateList={rateList}
-        allEmpty={allEmpty}
-        approvePO={approvePO}
-        rejectPO={rejectPO}
-        setViewDocPOId={setViewDocPOId}
-        decideExternal={decideExternal}
-      />
+        <TabContent
+          activeTab={activeTab}
+          combinedPOList={combinedPOList}
+          contextPendingItems={contextPendingItems}
+          pos={pos}
+          pendingRequests={pendingRequests}
+          warpList={warpList}
+          rateList={rateList}
+          allEmpty={allEmpty}
+          approvePO={approvePO}
+          rejectPO={rejectPO}
+          setViewDocPOId={setViewDocPOId}
+          decideExternal={decideExternal}
+        />
       )}
 
       <HistorySection
@@ -140,11 +185,18 @@ export function ApprovalsPage() {
       />
 
       {/* ── 6. FOOTER ───────────────────────────────────────────────────────── */}
-      <div className="px-4 md:px-7 xl:px-14" style={{
-        background: T.luxuryBrown,
-        paddingTop: 24, paddingBottom: 24,
-        display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-      }}>
+      <div
+        className="px-4 md:px-7 xl:px-14"
+        style={{
+          background: T.luxuryBrown,
+          paddingTop: 24,
+          paddingBottom: 24,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
         <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 400, color: T.warmCream }}>
           Beere Kesava &amp; Brothers Silks · Est. 1999
         </span>

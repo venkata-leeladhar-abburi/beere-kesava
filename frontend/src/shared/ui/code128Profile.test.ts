@@ -1,16 +1,20 @@
 import { describe, it, expect } from "vitest";
 import { Code128Reader } from "@zxing/library";
 import {
-  CODE128_PATTERNS, classifyCharacter, decodeProfile, decodeStraightCrop, symbolsToText,
+  CODE128_PATTERNS,
+  classifyCharacter,
+  decodeProfile,
+  decodeStraightCrop,
+  symbolsToText,
 } from "./code128Profile";
 
 /** Code Set B encoding of `text` as element widths in modules, stop bar included. */
 function encodeB(text: string): number[] {
-  const values = [104, ...[...text].map(c => c.charCodeAt(0) - 32)];
+  const values = [104, ...[...text].map((c) => c.charCodeAt(0) - 32)];
   let sum = values[0];
   for (let i = 1; i < values.length; i++) sum += values[i] * i;
   values.push(sum % 103, 106);
-  const widths = values.flatMap(v => [...CODE128_PATTERNS[v]].map(Number));
+  const widths = values.flatMap((v) => [...CODE128_PATTERNS[v]].map(Number));
   widths.push(2); // the stop's final bar
   return widths;
 }
@@ -18,7 +22,10 @@ function encodeB(text: string): number[] {
 /** Deterministic pseudo-random noise so a failing case is reproducible. */
 function rng(seed: number) {
   let s = seed;
-  return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+  return () => {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    return s / 0x7fffffff;
+  };
 }
 
 /**
@@ -26,7 +33,13 @@ function rng(seed: number) {
  * module, Gaussian blur of `sigma` pixels, additive noise, bars at ~45 and
  * paper at ~215 like a printed tag under indoor light.
  */
-function renderProfile(widths: number[], modPx: number, sigma: number, noise: number, seed = 1): Float32Array {
+function renderProfile(
+  widths: number[],
+  modPx: number,
+  sigma: number,
+  noise: number,
+  seed = 1
+): Float32Array {
   const quiet = 14;
   const totalMods = widths.reduce((a, b) => a + b, 0) + quiet * 2;
   const n = Math.ceil(totalMods * modPx);
@@ -45,7 +58,9 @@ function renderProfile(widths: number[], modPx: number, sigma: number, noise: nu
     x += w;
   });
   const r = Math.ceil(sigma * 3);
-  const kernel = Array.from({ length: r * 2 + 1 }, (_, i) => Math.exp(-((i - r) ** 2) / (2 * sigma * sigma)));
+  const kernel = Array.from({ length: r * 2 + 1 }, (_, i) =>
+    Math.exp(-((i - r) ** 2) / (2 * sigma * sigma))
+  );
   const ksum = kernel.reduce((a, b) => a + b, 0);
   const out = new Float32Array(n);
   const rand = rng(seed);
@@ -74,7 +89,7 @@ describe("CODE128_PATTERNS", () => {
 
   it("classifies every character from its own widths, at any scale", () => {
     CODE128_PATTERNS.forEach((p, v) => {
-      expect(classifyCharacter([...p].map(c => Number(c) * 3.7))).toBe(v);
+      expect(classifyCharacter([...p].map((c) => Number(c) * 3.7))).toBe(v);
     });
   });
 });
@@ -133,7 +148,9 @@ describe("decodeProfile", () => {
 describe("decodeStraightCrop", () => {
   it("averages bands of a 2D crop and needs two of them to agree", () => {
     const id = "SAB0-3850-001-02";
-    const rows = Array.from({ length: 40 }, (_, y) => renderProfile(encodeB(id), 2.4, 1, 14, y + 1));
+    const rows = Array.from({ length: 40 }, (_, y) =>
+      renderProfile(encodeB(id), 2.4, 1, 14, y + 1)
+    );
     const width = rows[0].length;
     const data = new Float32Array(width * rows.length);
     rows.forEach((r, y) => data.set(r, y * width));

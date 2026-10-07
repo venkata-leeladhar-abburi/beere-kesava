@@ -39,59 +39,67 @@ function SmallTile({ item, isLastInRow = false }: { item: StatItem; isLastInRow?
       }}
     >
       {/* 1. Icon (Top) */}
-      <div style={{
-        width: 44,
-        height: 44,
-        borderRadius: 13,
-        background: "rgba(245,232,208,0.08)",
-        border: "1px solid rgba(245,232,208,0.14)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-        marginBottom: 4,
-      }}>
+      <div
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 13,
+          background: "rgba(245,232,208,0.08)",
+          border: "1px solid rgba(245,232,208,0.14)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          marginBottom: 4,
+        }}
+      >
         {item.icon}
       </div>
 
       {/* 2. Number (Below Icon) */}
-      <div style={{
-        fontFamily: F.display,
-        fontWeight: 400,
-        fontSize: "clamp(32px, 4.5vw, 52px)",
-        color: item.crimson ? "#F47B72" : item.goldVal ? T.goldLight : "#FFFDF9",
-        lineHeight: 1.0,
-        letterSpacing: "-0.01em",
-        fontVariantNumeric: "tabular-nums",
-      }}>
+      <div
+        style={{
+          fontFamily: F.display,
+          fontWeight: 400,
+          fontSize: "clamp(32px, 4.5vw, 52px)",
+          color: item.crimson ? "#F47B72" : item.goldVal ? T.goldLight : "#FFFDF9",
+          lineHeight: 1.0,
+          letterSpacing: "-0.01em",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
         {item.value}
       </div>
 
       {/* 3. Heading (Below Number) */}
-      <div style={{
-        fontFamily: F.ui,
-        fontWeight: 600,
-        fontSize: "clamp(10px, 1.3vw, 12px)",
-        color: "rgba(245,232,208,0.90)",
-        letterSpacing: "1.8px",
-        textTransform: "uppercase",
-        lineHeight: 1.35,
-        marginTop: 2,
-      }}>
+      <div
+        style={{
+          fontFamily: F.ui,
+          fontWeight: 600,
+          fontSize: "clamp(10px, 1.3vw, 12px)",
+          color: "rgba(245,232,208,0.90)",
+          letterSpacing: "1.8px",
+          textTransform: "uppercase",
+          lineHeight: 1.35,
+          marginTop: 2,
+        }}
+      >
         {item.label}
       </div>
 
       {/* 4. Subtitle (Below Heading) */}
       {item.sub && (
-        <div style={{
-          fontFamily: F.ui,
-          fontWeight: 500,
-          fontSize: "clamp(11px, 1.2vw, 12px)",
-          color: "rgba(245,232,208,0.70)",
-          letterSpacing: "0.1px",
-          lineHeight: 1.4,
-          marginTop: 2,
-        }}>
+        <div
+          style={{
+            fontFamily: F.ui,
+            fontWeight: 500,
+            fontSize: "clamp(11px, 1.2vw, 12px)",
+            color: "rgba(245,232,208,0.70)",
+            letterSpacing: "0.1px",
+            lineHeight: 1.4,
+            marginTop: 2,
+          }}
+        >
           {item.sub}
         </div>
       )}
@@ -114,21 +122,40 @@ function FeaturedTile({ item }: { item: StatItem }) {
         cursor: item.onClick ? "pointer" : "default",
       }}
     >
-      <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg,#C89B47,#E7C983)" }} />
+      <div
+        className="gold-bar-shimmer"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 2,
+          background: "linear-gradient(90deg,#C89B47,#E7C983)",
+        }}
+      />
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {/* Top row: Icon on left, action on right */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-          <div style={{
-            width: 44,
-            height: 44,
-            borderRadius: 13,
-            background: "rgba(200,155,71,0.18)",
-            border: "1px solid rgba(200,155,71,0.42)",
+        <div
+          style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}>
+            justifyContent: "space-between",
+            marginBottom: 4,
+          }}
+        >
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 13,
+              background: "rgba(200,155,71,0.18)",
+              border: "1px solid rgba(200,155,71,0.42)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
             {item.icon}
           </div>
           {item.onClick && (
@@ -152,43 +179,49 @@ function FeaturedTile({ item }: { item: StatItem }) {
         </div>
 
         {/* Number */}
-        <div style={{
-          fontFamily: F.display,
-          fontWeight: 400,
-          fontSize: "clamp(32px, 4.5vw, 52px)",
-          color: T.goldLight,
-          lineHeight: 1.0,
-          letterSpacing: "-0.01em",
-          fontVariantNumeric: "tabular-nums",
-        }}>
+        <div
+          style={{
+            fontFamily: F.display,
+            fontWeight: 400,
+            fontSize: "clamp(32px, 4.5vw, 52px)",
+            color: T.goldLight,
+            lineHeight: 1.0,
+            letterSpacing: "-0.01em",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
           {item.value}
         </div>
 
         {/* Heading */}
-        <div style={{
-          fontFamily: F.ui,
-          fontWeight: 700,
-          fontSize: "clamp(11px, 1.4vw, 12px)",
-          color: "rgba(200,155,71,1)",
-          letterSpacing: "1.8px",
-          textTransform: "uppercase",
-          lineHeight: 1.35,
-          marginTop: 2,
-        }}>
+        <div
+          style={{
+            fontFamily: F.ui,
+            fontWeight: 700,
+            fontSize: "clamp(11px, 1.4vw, 12px)",
+            color: "rgba(200,155,71,1)",
+            letterSpacing: "1.8px",
+            textTransform: "uppercase",
+            lineHeight: 1.35,
+            marginTop: 2,
+          }}
+        >
           {item.label}
         </div>
 
         {/* Subtitle */}
         {item.sub && (
-          <div style={{
-            fontFamily: F.ui,
-            fontWeight: 500,
-            fontSize: "clamp(11px, 1.2vw, 12px)",
-            color: "rgba(231,201,131,0.95)",
-            letterSpacing: "0.1px",
-            lineHeight: 1.4,
-            marginTop: 2,
-          }}>
+          <div
+            style={{
+              fontFamily: F.ui,
+              fontWeight: 500,
+              fontSize: "clamp(11px, 1.2vw, 12px)",
+              color: "rgba(231,201,131,0.95)",
+              letterSpacing: "0.1px",
+              lineHeight: 1.4,
+              marginTop: 2,
+            }}
+          >
             {item.sub}
           </div>
         )}
@@ -222,7 +255,9 @@ function DesktopRow({ stats, className = "", style }: LuxuryStatsCardProps) {
               flex: item.highlight || isLongText ? "1.3 1 0px" : "0.85 1 0px",
               minWidth: 0,
               padding: "20px 16px",
-              background: item.highlight ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : "none",
+              background: item.highlight
+                ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)"
+                : "none",
               borderRight: i < stats.length - 1 ? "1px solid rgba(245,232,208,0.12)" : "none",
               display: "flex",
               alignItems: "center",
@@ -232,69 +267,94 @@ function DesktopRow({ stats, className = "", style }: LuxuryStatsCardProps) {
             }}
           >
             {item.highlight && (
-              <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg,#C89B47,#E7C983)" }} />
+              <div
+                className="gold-bar-shimmer"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 2,
+                  background: "linear-gradient(90deg,#C89B47,#E7C983)",
+                }}
+              />
             )}
 
             {/* Left: Icon Box */}
-            <div style={{
-              width: 42,
-              height: 42,
-              borderRadius: 13,
-              background: item.highlight ? "rgba(200,155,71,0.18)" : "rgba(245,232,208,0.08)",
-              border: `1px solid ${item.highlight ? "rgba(200,155,71,0.42)" : "rgba(245,232,208,0.14)"}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}>
+            <div
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 13,
+                background: item.highlight ? "rgba(200,155,71,0.18)" : "rgba(245,232,208,0.08)",
+                border: `1px solid ${item.highlight ? "rgba(200,155,71,0.42)" : "rgba(245,232,208,0.14)"}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
               {item.icon}
             </div>
 
             {/* Right Column: Heading -> Number -> Subtitle */}
             <div style={{ flex: 1, minWidth: 0 }}>
               {/* 1. Heading (Top) */}
-              <div style={{
-                fontFamily: F.ui,
-                fontWeight: 600,
-                fontSize: "clamp(10px, 1.3vw, 12px)",
-                letterSpacing: "1.4px",
-                textTransform: "uppercase",
-                marginBottom: 4,
-                whiteSpace: "normal",
-                wordBreak: "break-word",
-                lineHeight: 1.3,
-                color: item.highlight ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)",
-              }}>
+              <div
+                style={{
+                  fontFamily: F.ui,
+                  fontWeight: 600,
+                  fontSize: "clamp(10px, 1.3vw, 12px)",
+                  letterSpacing: "1.4px",
+                  textTransform: "uppercase",
+                  marginBottom: 4,
+                  whiteSpace: "normal",
+                  wordBreak: "break-word",
+                  lineHeight: 1.3,
+                  color: item.highlight ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)",
+                }}
+              >
                 {item.label}
               </div>
 
               {/* 2. Number (Middle) */}
-              <div style={{
-                fontFamily: F.display,
-                fontWeight: 400,
-                fontSize: "clamp(28px, 3.5vw, 44px)",
-                color: item.crimson ? "#F47B72" : item.highlight || item.goldVal ? T.goldLight : "#FFFDF9",
-                lineHeight: 1.05,
-                marginBottom: 4,
-                whiteSpace: typeof item.value === "string" && item.value.includes(" ") ? "normal" : "nowrap",
-                wordBreak: "break-word",
-                overflowWrap: "break-word",
-                fontVariantNumeric: "tabular-nums",
-              }}>
+              <div
+                style={{
+                  fontFamily: F.display,
+                  fontWeight: 400,
+                  fontSize: "clamp(28px, 3.5vw, 44px)",
+                  color: item.crimson
+                    ? "#F47B72"
+                    : item.highlight || item.goldVal
+                      ? T.goldLight
+                      : "#FFFDF9",
+                  lineHeight: 1.05,
+                  marginBottom: 4,
+                  whiteSpace:
+                    typeof item.value === "string" && item.value.includes(" ")
+                      ? "normal"
+                      : "nowrap",
+                  wordBreak: "break-word",
+                  overflowWrap: "break-word",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
                 {item.value}
               </div>
 
               {/* 3. Subtitle (Bottom) */}
               {item.sub && (
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{
-                    fontFamily: F.ui,
-                    fontWeight: 500,
-                    fontSize: "clamp(11px, 1.2vw, 12px)",
-                    color: item.highlight ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.70)",
-                    letterSpacing: "0.1px",
-                    lineHeight: 1.3,
-                  }}>
+                  <span
+                    style={{
+                      fontFamily: F.ui,
+                      fontWeight: 500,
+                      fontSize: "clamp(11px, 1.2vw, 12px)",
+                      color: item.highlight ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.70)",
+                      letterSpacing: "0.1px",
+                      lineHeight: 1.3,
+                    }}
+                  >
                     {item.sub}
                   </span>
                   {item.highlight && item.onClick && (

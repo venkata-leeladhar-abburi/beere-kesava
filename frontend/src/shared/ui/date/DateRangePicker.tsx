@@ -8,7 +8,17 @@
  */
 import * as React from "react";
 import * as Popover from "@radix-ui/react-popover";
-import { startOfMonth, endOfMonth, startOfDay, endOfDay, subDays, subMonths, startOfQuarter, endOfQuarter, differenceInCalendarDays } from "date-fns";
+import {
+  startOfMonth,
+  endOfMonth,
+  startOfDay,
+  endOfDay,
+  subDays,
+  subMonths,
+  startOfQuarter,
+  endOfQuarter,
+  differenceInCalendarDays,
+} from "date-fns";
 import { cn } from "../utils";
 import { Input } from "../primitives/Input";
 import { Button } from "../primitives/Button";
@@ -40,7 +50,10 @@ function buildPresets(): { label: string; range: DateRange }[] {
     { label: "Last 7 days", range: { from: subDays(today, 6), to: today } },
     { label: "Last 30 days", range: { from: subDays(today, 29), to: today } },
     { label: "This month", range: { from: startOfMonth(today), to: endOfMonth(today) } },
-    { label: "Last month", range: { from: startOfMonth(subMonths(today, 1)), to: endOfMonth(subMonths(today, 1)) } },
+    {
+      label: "Last month",
+      range: { from: startOfMonth(subMonths(today, 1)), to: endOfMonth(subMonths(today, 1)) },
+    },
     { label: "This quarter", range: { from: startOfQuarter(today), to: endOfQuarter(today) } },
     { label: fy.label + " (this FY)", range: { from: fy.start, to: fy.end } },
     { label: lastFy.label + " (last FY)", range: { from: lastFy.start, to: lastFy.end } },
@@ -48,10 +61,23 @@ function buildPresets(): { label: string; range: DateRange }[] {
 }
 
 function isSameRange(a: DateRange, b: { from: Date; to: Date }) {
-  return !!a.from && !!a.to && startOfDay(a.from).getTime() === b.from.getTime() && startOfDay(a.to).getTime() === b.to.getTime();
+  return (
+    !!a.from &&
+    !!a.to &&
+    startOfDay(a.from).getTime() === b.from.getTime() &&
+    startOfDay(a.to).getTime() === b.to.getTime()
+  );
 }
 
-export function DateRangePicker({ value, onChange, minDate, maxDate, placeholder = "Select date range", disabled, className }: DateRangePickerProps) {
+export function DateRangePicker({
+  value,
+  onChange,
+  minDate,
+  maxDate,
+  placeholder = "Select date range",
+  disabled,
+  className,
+}: DateRangePickerProps) {
   const [open, setOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<DateRange>(value);
 
@@ -97,9 +123,16 @@ export function DateRangePicker({ value, onChange, minDate, maxDate, placeholder
           style={{ zIndex: "var(--z-popover)" }}
         >
           <div className="flex">
-            <div className="flex w-[176px] shrink-0 flex-col gap-0.5 border-r p-2" style={{ borderColor: "var(--border-default)" }}>
-              {presets.map(p => {
-                const active = isSameRange(draft, { from: startOfDay(p.range.from!), to: endOfDay(p.range.to!) }) || isSameRange(draft, p.range as { from: Date; to: Date });
+            <div
+              className="flex w-[176px] shrink-0 flex-col gap-0.5 border-r p-2"
+              style={{ borderColor: "var(--border-default)" }}
+            >
+              {presets.map((p) => {
+                const active =
+                  isSameRange(draft, {
+                    from: startOfDay(p.range.from!),
+                    to: endOfDay(p.range.to!),
+                  }) || isSameRange(draft, p.range as { from: Date; to: Date });
                 return (
                   <button
                     key={p.label}
@@ -107,21 +140,25 @@ export function DateRangePicker({ value, onChange, minDate, maxDate, placeholder
                     onClick={() => setDraft(p.range)}
                     className={cn(
                       "rounded-[var(--radius-md)] px-3 py-2 text-left text-[13px] transition-colors",
-                      active ? "bg-[var(--surface-brand-subtle)] text-[var(--text-brand)]" : "text-[var(--text-primary)] hover:bg-[var(--bk-neutral-50)]"
+                      active
+                        ? "bg-[var(--surface-brand-subtle)] text-[var(--text-brand)]"
+                        : "text-[var(--text-primary)] hover:bg-[var(--bk-neutral-50)]"
                     )}
                   >
                     {p.label}
                   </button>
                 );
               })}
-              <div className="rounded-[var(--radius-md)] px-3 py-2 text-left text-[13px] text-[var(--text-tertiary)]">Custom…</div>
+              <div className="rounded-[var(--radius-md)] px-3 py-2 text-left text-[13px] text-[var(--text-tertiary)]">
+                Custom…
+              </div>
             </div>
 
             <div className="flex flex-col">
               <Calendar
                 mode="range"
                 selected={{ from: draft.from ?? undefined, to: draft.to ?? undefined }}
-                onSelectRange={range => {
+                onSelectRange={(range) => {
                   let { from, to } = range ?? {};
                   if (from && to && from > to) [from, to] = [to, from];
                   setDraft({ from: from ?? null, to: to ?? null });
@@ -131,13 +168,27 @@ export function DateRangePicker({ value, onChange, minDate, maxDate, placeholder
                 numberOfMonths={2}
                 showFooter={false}
               />
-              <div className="flex items-center justify-between border-t px-4 py-3" style={{ borderColor: "var(--border-default)" }}>
+              <div
+                className="flex items-center justify-between border-t px-4 py-3"
+                style={{ borderColor: "var(--border-default)" }}
+              >
                 <span className="text-[13px]" style={{ color: "var(--text-tertiary)" }}>
-                  {draft.from && draft.to ? `${formatRange(draft.from, draft.to)} (${dayCount} day${dayCount === 1 ? "" : "s"})` : "Select a start and end date"}
+                  {draft.from && draft.to
+                    ? `${formatRange(draft.from, draft.to)} (${dayCount} day${dayCount === 1 ? "" : "s"})`
+                    : "Select a start and end date"}
                 </span>
                 <div className="flex gap-2">
-                  <Button variant="secondary" size="sm" onClick={() => setOpen(false)}>Cancel</Button>
-                  <Button variant="primary" size="sm" onClick={apply} disabled={!draft.from || !draft.to}>Apply</Button>
+                  <Button variant="secondary" size="sm" onClick={() => setOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={apply}
+                    disabled={!draft.from || !draft.to}
+                  >
+                    Apply
+                  </Button>
                 </div>
               </div>
             </div>

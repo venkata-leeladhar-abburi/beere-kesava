@@ -10,33 +10,63 @@ import { JariUnit, jariFromReels, jariToReels, jariGrams, trimNum } from "./jari
  * Jari quantity input. The stored value is always reels; the operator can key
  * it in as reels or buns (1 reel = 4 buns) and always sees the gram equivalent.
  */
-export function JariWeightField({ reels, onChange }: { reels: string; onChange: (reels: string) => void }) {
+export function JariWeightField({
+  reels,
+  onChange,
+}: {
+  reels: string;
+  onChange: (reels: string) => void;
+}) {
   const [unit, setUnit] = useState<JariUnit>("reels");
   const reelsNum = parseFloat(reels) || 0;
   const shown = reels === "" ? "" : trimNum(jariFromReels(reelsNum, unit));
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+      <div
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
+      >
         <span style={{ ...labelStyle, marginBottom: 3, display: "block" }}>Jari ({unit})</span>
-        <div style={{ display: "flex", background: "rgba(110,15,45,0.06)", borderRadius: 999, padding: 2, marginBottom: 3 }}>
-          {(["reels", "buns"] as JariUnit[]).map(u => (
-            <Button key={u} type="button" variant="ghost" size="sm" onClick={() => setUnit(u)}
+        <div
+          style={{
+            display: "flex",
+            background: "rgba(110,15,45,0.06)",
+            borderRadius: 999,
+            padding: 2,
+            marginBottom: 3,
+          }}
+        >
+          {(["reels", "buns"] as JariUnit[]).map((u) => (
+            <Button
+              key={u}
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setUnit(u)}
               className={`h-auto rounded-full px-2.5 py-[3px] text-[12px] font-semibold capitalize font-[var(--font-ui)] ${
-                unit === u ? "bg-[#3B2314] text-white hover:bg-[#3B2314] hover:text-white" : "text-[var(--text-tertiary)]"
-              }`}>
+                unit === u
+                  ? "bg-[#3B2314] text-white hover:bg-[#3B2314] hover:text-white"
+                  : "text-[var(--text-tertiary)]"
+              }`}
+            >
               {u}
             </Button>
           ))}
         </div>
       </div>
-      <NumberInput aria-label="0" value={shown === "" ? "" : Number(shown)} placeholder="0" step={0.01}
-        onValueChange={v => {
+      <NumberInput
+        aria-label="0"
+        value={shown === "" ? "" : Number(shown)}
+        placeholder="0"
+        step={0.01}
+        onValueChange={(v) => {
           onChange(v === "" ? "" : trimNum(jariToReels(v, unit)));
         }}
-        className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+        className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]"
+      />
       <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 4 }}>
-        {trimNum(reelsNum)} reels · {trimNum(jariFromReels(reelsNum, "buns"))} buns · {trimNum(jariGrams(reelsNum), 0)}g
+        {trimNum(reelsNum)} reels · {trimNum(jariFromReels(reelsNum, "buns"))} buns ·{" "}
+        {trimNum(jariGrams(reelsNum), 0)}g
       </div>
     </div>
   );
@@ -62,36 +92,104 @@ export function SectionCard({
   id?: string;
 }) {
   return (
-    <div id={id} style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
-      <div className="p-4 sm:p-7" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
+    <div
+      id={id}
+      style={{
+        background: "#FFFFFF",
+        borderRadius: 20,
+        border: `1px solid ${T.borderDef}`,
+        boxShadow: "0 6px 32px rgba(74,6,27,0.08)",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        className="p-4 sm:p-7"
+        style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}
+      >
         <div className="flex items-start gap-3.5 sm:gap-4 w-full">
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "rgba(255,255,255,0.12)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              marginTop: 2,
+            }}
+          >
             <Icon size={24} color="#FFFDF9" />
           </div>
           <div className="flex flex-col items-start gap-3 flex-1 min-w-0">
             <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px", lineHeight: 1.2 }}>{title}</div>
-              {subtitle && <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.70)", marginTop: 4, lineHeight: 1.5 }}>{subtitle}</div>}
+              <div
+                style={{
+                  fontFamily: F.display,
+                  fontWeight: 700,
+                  fontSize: 20,
+                  color: "#FFFDF9",
+                  letterSpacing: "-0.2px",
+                  lineHeight: 1.2,
+                }}
+              >
+                {title}
+              </div>
+              {subtitle && (
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 14,
+                    color: "rgba(255,253,249,0.70)",
+                    marginTop: 4,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {subtitle}
+                </div>
+              )}
             </div>
-            {actions && <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto pt-1">{actions}</div>}
+            {actions && (
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto pt-1">
+                {actions}
+              </div>
+            )}
           </div>
         </div>
       </div>
-      <div className="p-2.5 sm:p-5 md:p-6 pb-2.5 sm:pb-4">
-        {children}
-      </div>
+      <div className="p-2.5 sm:p-5 md:p-6 pb-2.5 sm:pb-4">{children}</div>
     </div>
   );
 }
 
-export function GoldLink({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
+export function GoldLink({
+  children,
+  onClick,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+}) {
   return (
     <span
       onClick={onClick}
       role="button"
       tabIndex={0}
-      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { onClick?.(); } }}
-      style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.antiqueGold, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          onClick?.();
+        }
+      }}
+      style={{
+        fontFamily: F.ui,
+        fontSize: 13,
+        fontWeight: 500,
+        color: T.antiqueGold,
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        gap: 4,
+      }}
     >
       {children}
     </span>
@@ -102,13 +200,21 @@ export function GoldLink({ children, onClick }: { children: React.ReactNode; onC
 // SAREE TYPE COMBOBOX
 // ═══════════════════════════════════════════════════════════════════════════
 export function SareeTypeCombobox({
-  value, onChange, options,
-}: { value: string; onChange: (v: string) => void; options: string[] }) {
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+}) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(value);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { setQuery(value); }, [value]);
+  useEffect(() => {
+    setQuery(value);
+  }, [value]);
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -119,16 +225,21 @@ export function SareeTypeCombobox({
   }, [open]);
 
   const filtered = options
-    .filter(o => o.toLowerCase().includes(query.toLowerCase()))
+    .filter((o) => o.toLowerCase().includes(query.toLowerCase()))
     .sort((a, b) => a.localeCompare(b));
 
-  const showNew = query.trim() && !options.some(o => o.toLowerCase() === query.trim().toLowerCase());
+  const showNew =
+    query.trim() && !options.some((o) => o.toLowerCase() === query.trim().toLowerCase());
 
   return (
     <div ref={ref} style={{ position: "relative" }}>
       <Input
         value={query}
-        onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          onChange(e.target.value);
+          setOpen(true);
+        }}
         onFocus={() => setOpen(true)}
         className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]"
         placeholder="e.g. Self Brocade or type a new name…"
@@ -142,20 +253,41 @@ export function SareeTypeCombobox({
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.14 }}
             style={{
-              position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 500,
-              background: "#FFFDF9", borderRadius: 10, boxShadow: "0 8px 28px rgba(44,6,27,0.14)",
-              border: `1px solid ${T.borderDef}`, overflow: "hidden", maxHeight: 220, overflowY: "auto",
+              position: "absolute",
+              top: "calc(100% + 4px)",
+              left: 0,
+              right: 0,
+              zIndex: 500,
+              background: "#FFFDF9",
+              borderRadius: 10,
+              boxShadow: "0 8px 28px rgba(44,6,27,0.14)",
+              border: `1px solid ${T.borderDef}`,
+              overflow: "hidden",
+              maxHeight: 220,
+              overflowY: "auto",
             }}
           >
-            {filtered.map(opt => (
-              <Button key={opt} variant="ghost" onMouseDown={() => { onChange(opt); setQuery(opt); setOpen(false); }}
+            {filtered.map((opt) => (
+              <Button
+                key={opt}
+                variant="ghost"
+                onMouseDown={() => {
+                  onChange(opt);
+                  setQuery(opt);
+                  setOpen(false);
+                }}
                 className="h-auto w-full justify-start rounded-none px-3.5 py-[9px] text-[13px] font-normal text-[#3B2314] hover:bg-[rgba(110,15,45,0.05)]"
               >
                 {opt}
               </Button>
             ))}
             {showNew && (
-              <Button variant="ghost" onMouseDown={() => { onChange(query.trim()); setOpen(false); }}
+              <Button
+                variant="ghost"
+                onMouseDown={() => {
+                  onChange(query.trim());
+                  setOpen(false);
+                }}
                 className={`h-auto w-full justify-start gap-2 rounded-none px-3.5 py-[9px] text-[13px] font-normal text-[#6E0F2D] bg-[rgba(110,15,45,0.03)] hover:bg-[rgba(110,15,45,0.07)] ${filtered.length > 0 ? "border-t border-[rgba(110,15,45,0.10)]" : ""}`}
               >
                 <Plus size={13} /> Add &ldquo;{query.trim()}&rdquo; as new type

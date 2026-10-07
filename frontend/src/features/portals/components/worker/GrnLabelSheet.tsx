@@ -44,24 +44,48 @@ function LabelTile({ label }: { label: GrnLabel }) {
   return (
     <div
       style={{
-        width: "100%", height: "100%", boxSizing: "border-box",
-        border: "0.25mm solid #000", borderRadius: "0.8em",
+        width: "100%",
+        height: "100%",
+        boxSizing: "border-box",
+        border: "0.25mm solid #000",
+        borderRadius: "0.8em",
         padding: "1em 1.2em",
-        display: "flex", flexDirection: "column", justifyContent: "space-between",
-        background: "#FFFFFF", color: "#000000",
-        overflow: "hidden", lineHeight: 1.15,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        background: "#FFFFFF",
+        color: "#000000",
+        overflow: "hidden",
+        lineHeight: 1.15,
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", gap: "1em", alignItems: "baseline" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: "1em",
+          alignItems: "baseline",
+        }}
+      >
         <span style={{ fontFamily: ui, fontWeight: 700, fontSize: "1.9em", ...ellipsis }}>
           Beere Kesava &amp; Brothers Silks
         </span>
-        <span style={{ fontFamily: mono, fontSize: "1.7em", flexShrink: 0 }}>{label.grnBatchId}</span>
+        <span style={{ fontFamily: mono, fontSize: "1.7em", flexShrink: 0 }}>
+          {label.grnBatchId}
+        </span>
       </div>
 
       <TileCode code={label.code} barsEm={9.4} maxCodeEm={2.3} />
 
-      <div style={{ display: "flex", justifyContent: "space-between", gap: "1em", fontFamily: ui, fontSize: "1.8em" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: "1em",
+          fontFamily: ui,
+          fontSize: "1.8em",
+        }}
+      >
         <span style={{ minWidth: 0, ...ellipsis }}>
           {label.materialType} · {label.quantity}
         </span>
@@ -76,7 +100,9 @@ function LabelTile({ label }: { label: GrnLabel }) {
 export function GrnLabelSheet({ labels, stock }: { labels: GrnLabel[]; stock?: LabelStock }) {
   return (
     <LabelSheet stock={stock}>
-      {labels.map(label => <LabelTile key={label.code} label={label} />)}
+      {labels.map((label) => (
+        <LabelTile key={label.code} label={label} />
+      ))}
     </LabelSheet>
   );
 }

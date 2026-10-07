@@ -1,6 +1,10 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { purchasesApi, type BackendPurchase, type BackendPurchaseSareeLine } from "@/shared/api/purchases";
+import {
+  purchasesApi,
+  type BackendPurchase,
+  type BackendPurchaseSareeLine,
+} from "@/shared/api/purchases";
 import { resolveAssetUrl } from "@/shared/api/uploads";
 import { pieceCodeFromLineCode, computeFinalAmount, returnedPieceSet } from "@/features/suppliers";
 import { useAuthGate } from "@/contexts/AuthContext";
@@ -37,10 +41,13 @@ export function useExternalPurchaseRows(enabled: boolean): {
   // computes both correctly for production sarees the same way.
   const { dispatches } = useFinishing();
   const { soldSareeIds } = useSales();
-  const dispatchedSareeIds = useMemo(() => new Set(dispatches.flatMap(d => d.sareeIds)), [dispatches]);
+  const dispatchedSareeIds = useMemo(
+    () => new Set(dispatches.flatMap((d) => d.sareeIds)),
+    [dispatches]
+  );
   const wholesaleSareeIds = useMemo(
-    () => new Set(dispatches.filter(d => d.type === "wholesale").flatMap(d => d.sareeIds)),
-    [dispatches],
+    () => new Set(dispatches.filter((d) => d.type === "wholesale").flatMap((d) => d.sareeIds)),
+    [dispatches]
   );
 
   const { data, isLoading, isError } = useQuery({
@@ -52,36 +59,80 @@ export function useExternalPurchaseRows(enabled: boolean): {
     staleTime: 60_000,
   });
 
-  return useMemo(() => ({
-    isLoading,
-    isError,
-    rows: (data?.items ?? []).flatMap(p => purchaseRows(p, dispatchedSareeIds, wholesaleSareeIds, soldSareeIds)),
-  }), [data, isLoading, isError, dispatchedSareeIds, wholesaleSareeIds, soldSareeIds]);
+  return useMemo(
+    () => ({
+      isLoading,
+      isError,
+      rows: (data?.items ?? []).flatMap((p) =>
+        purchaseRows(p, dispatchedSareeIds, wholesaleSareeIds, soldSareeIds)
+      ),
+    }),
+    [data, isLoading, isError, dispatchedSareeIds, wholesaleSareeIds, soldSareeIds]
+  );
 }
 
-function purchaseRows(p: BackendPurchase, dispatchedSareeIds: Set<string>, wholesaleSareeIds: Set<string>, soldSareeIds: Set<string>): WeaverSareeRow[] {
+function purchaseRows(
+  p: BackendPurchase,
+  dispatchedSareeIds: Set<string>,
+  wholesaleSareeIds: Set<string>,
+  soldSareeIds: Set<string>
+): WeaverSareeRow[] {
   const supplier = p.supplier?.name ?? p.supplierName ?? "—";
-  const location = p.location
-    ?? (p.supplier ? `${p.supplier.city ?? ""}, ${p.supplier.state ?? ""}`.replace(/^, |, $/, "") : "");
-  const paymentStatus = p.status === "PAID" ? "Paid" : p.status === "PARTIAL" ? "Partial" : "Pending";
+  const location =
+    p.location ??
+    (p.supplier
+      ? `${p.supplier.city ?? ""}, ${p.supplier.state ?? ""}`.replace(/^, |, $/, "")
+      : "");
+  const paymentStatus =
+    p.status === "PAID" ? "Paid" : p.status === "PARTIAL" ? "Partial" : "Pending";
 
-  return p.sareeLines.flatMap(line => {
+  return p.sareeLines.flatMap((line) => {
     const qty = Number(line.quantity) || 1;
     const price = Number(line.price) || 0;
     const sellPercent = Number(line.sellPercent) || 0;
-    const returnedSet = returnedPieceSet(qty, Number(line.returnedQuantity) || 0, line.returnedPieceNos);
+    const returnedSet = returnedPieceSet(
+      qty,
+      Number(line.returnedQuantity) || 0,
+      line.returnedPieceNos
+    );
 
     return Array.from({ length: qty }, (_, i) => {
       const pieceNo = i + 1;
       // Same rule as expandSareePieces on the purchase screens.
       const returned = returnedSet.has(pieceNo);
-      return pieceRow({ p, line, pieceNo, qty, price, sellPercent, returned, supplier, location, paymentStatus, dispatchedSareeIds, wholesaleSareeIds, soldSareeIds });
+      return pieceRow({
+        p,
+        line,
+        pieceNo,
+        qty,
+        price,
+        sellPercent,
+        returned,
+        supplier,
+        location,
+        paymentStatus,
+        dispatchedSareeIds,
+        wholesaleSareeIds,
+        soldSareeIds,
+      });
     });
   });
 }
 
 function pieceRow({
-  p, line, pieceNo, qty, price, sellPercent, returned, supplier, location, paymentStatus, dispatchedSareeIds, wholesaleSareeIds, soldSareeIds,
+  p,
+  line,
+  pieceNo,
+  qty,
+  price,
+  sellPercent,
+  returned,
+  supplier,
+  location,
+  paymentStatus,
+  dispatchedSareeIds,
+  wholesaleSareeIds,
+  soldSareeIds,
 }: {
   p: BackendPurchase;
   line: BackendPurchaseSareeLine;

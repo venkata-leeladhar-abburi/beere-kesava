@@ -1,179 +1,387 @@
-import { useRef } from 'react';
-import { motion, useInView } from 'motion/react';
-import { MapPin, Phone, Eye, Edit3, Layers3, Activity, AlertTriangle } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useRef } from "react";
+import { motion, useInView } from "motion/react";
+import { MapPin, Phone, Eye, Edit3, Layers3, Activity, AlertTriangle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Rows3 as Rows } from "lucide-react";
-import { T, F, G, EASE } from './theme';
-import { MATS } from './data';
-import { useDashboardWeavers } from './hooks/useDashboardWeavers';
-import { rawMaterialsApi } from '../../../../shared/api/rawMaterials';
+import { T, F, G, EASE } from "./theme";
+import { MATS } from "./data";
+import { useDashboardWeavers } from "./hooks/useDashboardWeavers";
+import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { Button } from "../../../../shared/ui/primitives";
 import { toInitials } from "@/shared/lib/initials";
 
-export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: { weaverId: string; mode: "view" | "edit" }) => void }) {
+export function MobileWeavers({
+  onNavigate,
+}: {
+  onNavigate: (tab: string, ctx?: { weaverId: string; mode: "view" | "edit" }) => void;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });
   const { data: weavers = [], isLoading } = useDashboardWeavers();
 
   return (
     <div style={{ padding: "24px 16px 0" }}>
-      <div ref={ref} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <div
+        ref={ref}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 16,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 3, height: 18, borderRadius: 2, background: G.gold }} />
-          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Active Weavers</span>
+          <span
+            style={{
+              fontFamily: F.display,
+              fontWeight: 400,
+              fontSize: 20,
+              color: T.luxuryBrown,
+              letterSpacing: "-0.1px",
+            }}
+          >
+            Active Weavers
+          </span>
         </div>
-        <Button onClick={() => onNavigate("AllWeavers")} variant="link" className="!p-0 !h-auto !text-xs !font-semibold !text-[#6E0F2D] !tracking-[0.1px]">View All →</Button>
+        <Button
+          onClick={() => onNavigate("AllWeavers")}
+          variant="link"
+          className="!p-0 !h-auto !text-xs !font-semibold !text-[#6E0F2D] !tracking-[0.1px]"
+        >
+          View All →
+        </Button>
       </div>
       {isLoading ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
           {/* static loading skeletons with no backing data — index is a stable
               fallback since the list length never changes at runtime */}
           {Array.from({ length: 2 }).map((_, i) => (
-            // eslint-disable-next-line react/no-array-index-key -- static loading skeletons with no backing data; list length never changes at runtime.
-            <div key={`skeleton-${i}`} style={{ height: 320, borderRadius: 24, background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.10)` }} />
+            <div
+              // eslint-disable-next-line react/no-array-index-key -- static loading skeletons with no backing data; list length never changes at runtime.
+              key={`skeleton-${i}`}
+              style={{
+                height: 320,
+                borderRadius: 24,
+                background: "rgba(110,15,45,0.05)",
+                border: `1px solid rgba(110,15,45,0.10)`,
+              }}
+            />
           ))}
         </div>
       ) : weavers.length === 0 ? (
-        <div style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, padding: "32px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 24,
+            border: `1px solid ${T.borderDef}`,
+            padding: "32px",
+            textAlign: "center",
+            fontFamily: F.ui,
+            fontSize: 14,
+            color: T.taupe,
+          }}
+        >
           No weavers in database yet.
         </div>
       ) : (
-      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-        {weavers.map((w, i) => (
-          <motion.div
-            key={w.id}
-            onClick={() => onNavigate("Weavers", { weaverId: w.id, mode: "view" })}
-            initial={{ opacity: 0, y: 22 }}
-            animate={inView ? { opacity: 1, y: 0 } : undefined}
-            whileHover={{ y: -4, boxShadow: "0px 14px 40px rgba(74,6,27,0.12)" }}
-            transition={{ duration: 0.55, delay: i * 0.1, ease: EASE }}
-            style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, overflow: "hidden", display: "flex", flexDirection: "column", cursor: "pointer" }}
-          >
-            {/* Header Banner - Full Image Height 170px */}
-            <div style={{ height: 170, position: "relative", overflow: "hidden", background: T.silkCream, flexShrink: 0 }}>
-              {w.img ? (
-                <motion.img
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.5 }}
-                  src={w.img}
-                  alt={w.name}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
-                <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${w.bg} 0%, ${T.luxuryBrown} 100%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{toInitials(w.initials)}</span>
-                </div>
-              )}
-
-              {/* Dark gradient overlay for modern look */}
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
-
-              {/* Floating ID badge in top left */}
-              <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
-                {w.code}
-              </div>
-
-              {/* Floating status pill */}
-              <div style={{
-                position: "absolute",
-                bottom: 12,
-                left: 12,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "4px 8px"
-              }}>
-                {w.status === "active" ? (
-                  <Activity size={13} color="#2ECC71" style={{ flexShrink: 0 }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          {weavers.map((w, i) => (
+            <motion.div
+              key={w.id}
+              onClick={() => onNavigate("Weavers", { weaverId: w.id, mode: "view" })}
+              initial={{ opacity: 0, y: 22 }}
+              animate={inView ? { opacity: 1, y: 0 } : undefined}
+              whileHover={{ y: -4, boxShadow: "0px 14px 40px rgba(74,6,27,0.12)" }}
+              transition={{ duration: 0.55, delay: i * 0.1, ease: EASE }}
+              style={{
+                background: "#FFFFFF",
+                borderRadius: 24,
+                border: `1px solid ${T.borderDef}`,
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+                cursor: "pointer",
+              }}
+            >
+              {/* Header Banner - Full Image Height 170px */}
+              <div
+                style={{
+                  height: 170,
+                  position: "relative",
+                  overflow: "hidden",
+                  background: T.silkCream,
+                  flexShrink: 0,
+                }}
+              >
+                {w.img ? (
+                  <motion.img
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.5 }}
+                    src={w.img}
+                    alt={w.name}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
                 ) : (
-                  <AlertTriangle size={13} color="#BDC3C7" style={{ flexShrink: 0 }} />
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      background: `linear-gradient(135deg, ${w.bg} 0%, ${T.luxuryBrown} 100%)`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: F.display,
+                        fontSize: 48,
+                        fontWeight: 700,
+                        color: "#FFFDF9",
+                        letterSpacing: "1px",
+                      }}
+                    >
+                      {toInitials(w.initials)}
+                    </span>
+                  </div>
                 )}
-                <span style={{
-                  fontFamily: F.ui,
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: "#FFFFFF",
-                  textTransform: "uppercase" as const,
-                  letterSpacing: "0.5px",
-                  textShadow: "0 1px 4px rgba(0,0,0,0.6)"
-                }}>
-                  {w.status === "active" ? "Currently Weaving" : "Inactive"}
-                </span>
-              </div>
-            </div>
 
-            {/* Content Area */}
-            <div style={{ padding: "20px", display: "flex", flexDirection: "column" }}>
-              {/* Name */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const, marginBottom: 8 }}>
-                <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 800, lineHeight: 1.25 }}>
-                  {w.name}
+                {/* Dark gradient overlay for modern look */}
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                      "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)",
+                    pointerEvents: "none",
+                  }}
+                />
+
+                {/* Floating ID badge in top left */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 12,
+                    left: 12,
+                    background: "rgba(26,10,15,0.65)",
+                    backdropFilter: "blur(6px)",
+                    color: "#FFFDF9",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    letterSpacing: "0.5px",
+                    padding: "4px 10px",
+                    borderRadius: 6,
+                    border: "1px solid rgba(255,255,255,0.15)",
+                  }}
+                >
+                  {w.code}
+                </div>
+
+                {/* Floating status pill */}
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 12,
+                    left: 12,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "4px 8px",
+                  }}
+                >
+                  {w.status === "active" ? (
+                    <Activity size={13} color="#2ECC71" style={{ flexShrink: 0 }} />
+                  ) : (
+                    <AlertTriangle size={13} color="#BDC3C7" style={{ flexShrink: 0 }} />
+                  )}
+                  <span
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: "#FFFFFF",
+                      textTransform: "uppercase" as const,
+                      letterSpacing: "0.5px",
+                      textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+                    }}
+                  >
+                    {w.status === "active" ? "Currently Weaving" : "Inactive"}
+                  </span>
                 </div>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                  <MapPin size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
-                  <span>{w.village ?? "—"}</span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                  <Phone size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
-                  <span>{w.mobile}</span>
-                </div>
-              </div>
-
-              <div style={{ height: 1, background: "rgba(110,15,45,0.06)", margin: "4px 0 12px 0" }} />
-
-              {/* Looms stat */}
-              <div style={{ marginBottom: 12 }}>
-                <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Rows size={14} color={T.royalBurgundy} />
+              {/* Content Area */}
+              <div style={{ padding: "20px", display: "flex", flexDirection: "column" }}>
+                {/* Name */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    flexWrap: "wrap" as const,
+                    marginBottom: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: F.display,
+                      fontSize: 20,
+                      color: T.luxuryBrown,
+                      fontWeight: 800,
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    {w.name}
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>
-                    <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{w.looms} Looms</span>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      fontFamily: F.ui,
+                      fontSize: 13,
+                      color: T.taupe,
+                    }}
+                  >
+                    <MapPin size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
+                    <span>{w.village ?? "—"}</span>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      fontFamily: F.ui,
+                      fontSize: 13,
+                      color: T.taupe,
+                    }}
+                  >
+                    <Phone size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
+                    <span>{w.mobile}</span>
                   </div>
                 </div>
-              </div>
 
-              {/* Action buttons */}
-              <div style={{ display: "flex", gap: 8, paddingTop: 8 }}>
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1 }}>
-                  <Button
-                    onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
-                    variant="tertiary"
-                    fullWidth
-                    className="!gap-1.5 !bg-[rgba(110,15,45,0.04)] !text-[#6E0F2D] !border-[1.5px] !border-[rgba(110,15,45,0.15)] !rounded-xl !py-2.5 !px-1 !text-xs !font-bold hover:!bg-[rgba(110,15,45,0.08)] hover:!text-[#6E0F2D]"
+                <div
+                  style={{ height: 1, background: "rgba(110,15,45,0.06)", margin: "4px 0 12px 0" }}
+                />
+
+                {/* Looms stat */}
+                <div style={{ marginBottom: 12 }}>
+                  <div
+                    style={{
+                      background: "rgba(110,15,45,0.03)",
+                      border: `1px solid ${T.borderDef}`,
+                      borderRadius: 12,
+                      padding: "10px 12px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
                   >
-                    <Eye size={14} /> Details
-                  </Button>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1 }}>
-                  <Button
-                    onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "edit" }); }}
-                    variant="tertiary"
-                    fullWidth
-                    className="!gap-1.5 !bg-transparent !text-[#6E0F2D] !border !border-[#6E0F2D] !rounded-xl !py-2.5 !px-1 !text-xs !font-semibold hover:!bg-[rgba(110,15,45,0.05)] hover:!text-[#6E0F2D]"
+                    <div
+                      style={{
+                        width: 26,
+                        height: 26,
+                        borderRadius: 6,
+                        background: "rgba(110,15,45,0.06)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Rows size={14} color={T.royalBurgundy} />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <span
+                        style={{
+                          fontFamily: F.ui,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color: T.taupe,
+                          letterSpacing: "0.5px",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Looms
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: F.display,
+                          fontSize: 14,
+                          fontWeight: 700,
+                          color: T.luxuryBrown,
+                        }}
+                      >
+                        {w.looms} Looms
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div style={{ display: "flex", gap: 8, paddingTop: 8 }}>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{ flex: 1 }}
                   >
-                    <Edit3 size={13} /> Edit
-                  </Button>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1 }}>
-                  <Button
-                    onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
-                    variant="tertiary"
-                    fullWidth
-                    className="!gap-1.5 !bg-[rgba(110,15,45,0.04)] !text-[#6E0F2D] !border-[1.5px] !border-[rgba(110,15,45,0.15)] !rounded-xl !py-2.5 !px-1 !text-xs !font-bold hover:!bg-[rgba(110,15,45,0.08)] hover:!text-[#6E0F2D]"
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onNavigate("Weavers", { weaverId: w.id, mode: "view" });
+                      }}
+                      variant="tertiary"
+                      fullWidth
+                      className="!gap-1.5 !bg-[rgba(110,15,45,0.04)] !text-[#6E0F2D] !border-[1.5px] !border-[rgba(110,15,45,0.15)] !rounded-xl !py-2.5 !px-1 !text-xs !font-bold hover:!bg-[rgba(110,15,45,0.08)] hover:!text-[#6E0F2D]"
+                    >
+                      <Eye size={14} /> Details
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{ flex: 1 }}
                   >
-                    <Layers3 size={14} /> Batches
-                  </Button>
-                </motion.div>
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onNavigate("Weavers", { weaverId: w.id, mode: "edit" });
+                      }}
+                      variant="tertiary"
+                      fullWidth
+                      className="!gap-1.5 !bg-transparent !text-[#6E0F2D] !border !border-[#6E0F2D] !rounded-xl !py-2.5 !px-1 !text-xs !font-semibold hover:!bg-[rgba(110,15,45,0.05)] hover:!text-[#6E0F2D]"
+                    >
+                      <Edit3 size={13} /> Edit
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{ flex: 1 }}
+                  >
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onNavigate("Weavers", { weaverId: w.id, mode: "view" });
+                      }}
+                      variant="tertiary"
+                      fullWidth
+                      className="!gap-1.5 !bg-[rgba(110,15,45,0.04)] !text-[#6E0F2D] !border-[1.5px] !border-[rgba(110,15,45,0.15)] !rounded-xl !py-2.5 !px-1 !text-xs !font-bold hover:!bg-[rgba(110,15,45,0.08)] hover:!text-[#6E0F2D]"
+                    >
+                      <Layers3 size={14} /> Batches
+                    </Button>
+                  </motion.div>
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+            </motion.div>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -185,19 +393,29 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
 export function MobileRawMaterial({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });
-  const { data: stockRes, isLoading: stockLoading, isError: stockError } = useQuery({
+  const {
+    data: stockRes,
+    isLoading: stockLoading,
+    isError: stockError,
+  } = useQuery({
     queryKey: ["raw-material-stock-list"],
     queryFn: () => rawMaterialsApi.listStock(),
   });
   const stockItems = stockRes?.items ?? [];
-  const warpStock = stockItems.filter(i => i.materialType === "WARP").reduce((s, i) => s + Number(i.currentStock), 0);
-  const reshamStock = stockItems.filter(i => i.materialType === "RESHAM").reduce((s, i) => s + Number(i.currentStock), 0);
-  const jariStock = stockItems.filter(i => i.materialType === "JARI").reduce((s, i) => s + Number(i.currentStock), 0);
+  const warpStock = stockItems
+    .filter((i) => i.materialType === "WARP")
+    .reduce((s, i) => s + Number(i.currentStock), 0);
+  const reshamStock = stockItems
+    .filter((i) => i.materialType === "RESHAM")
+    .reduce((s, i) => s + Number(i.currentStock), 0);
+  const jariStock = stockItems
+    .filter((i) => i.materialType === "JARI")
+    .reduce((s, i) => s + Number(i.currentStock), 0);
   // No max-capacity field exists on raw material stock (only a reorder
   // threshold, which is a floor, not a ceiling) - there is no honest basis
   // for a "% of storage capacity" figure, so unlike the removed mock data
   // that bar and badge are dropped rather than backed by an invented number.
-  const mats = MATS.map(m => {
+  const mats = MATS.map((m) => {
     if (m.name === "Warp") return { ...m, stock: `${warpStock} kg in stock` };
     if (m.name === "Resham") return { ...m, stock: `${reshamStock} kg in stock` };
     if (m.name === "Jari") return { ...m, stock: `${jariStock} Buns in stock` };
@@ -205,20 +423,57 @@ export function MobileRawMaterial({ onNavigate }: { onNavigate: (tab: string) =>
   });
   return (
     <div style={{ padding: "24px 16px 0" }}>
-      <div ref={ref} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <div
+        ref={ref}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 16,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 3, height: 18, borderRadius: 2, background: G.gold }} />
-          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Raw Material Overview</span>
+          <span
+            style={{
+              fontFamily: F.display,
+              fontWeight: 400,
+              fontSize: 20,
+              color: T.luxuryBrown,
+              letterSpacing: "-0.1px",
+            }}
+          >
+            Raw Material Overview
+          </span>
         </div>
-        <Button onClick={() => onNavigate("Materials")} variant="link" className="!p-0 !h-auto !text-xs !font-semibold !text-[#6E0F2D] !tracking-[0.1px]">View All →</Button>
+        <Button
+          onClick={() => onNavigate("Materials")}
+          variant="link"
+          className="!p-0 !h-auto !text-xs !font-semibold !text-[#6E0F2D] !tracking-[0.1px]"
+        >
+          View All →
+        </Button>
       </div>
       {stockError && (
-        <div style={{ padding: "12px 16px", marginBottom: 16, borderRadius: 10, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", fontFamily: F.ui, fontSize: 13, color: "#C0392B" }}>
+        <div
+          style={{
+            padding: "12px 16px",
+            marginBottom: 16,
+            borderRadius: 10,
+            background: "rgba(192,57,43,0.08)",
+            border: "1px solid rgba(192,57,43,0.25)",
+            fontFamily: F.ui,
+            fontSize: 13,
+            color: "#C0392B",
+          }}
+        >
           Failed to load raw material stock.
         </div>
       )}
       {stockLoading && (
-        <div style={{ padding: "12px 0", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading stock...</div>
+        <div style={{ padding: "12px 0", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+          Loading stock...
+        </div>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {mats.map((m, i) => (
@@ -229,7 +484,14 @@ export function MobileRawMaterial({ onNavigate }: { onNavigate: (tab: string) =>
             animate={inView ? { opacity: 1, scale: 1, y: 0 } : undefined}
             whileHover={{ y: -4, boxShadow: "0px 14px 40px rgba(74,6,27,0.10)" }}
             transition={{ duration: 0.55, delay: i * 0.12, ease: EASE }}
-            style={{ background: T.warmIvory, borderRadius: 20, overflow: "hidden", border: `1px solid ${T.borderDef}`, boxShadow: "0px 6px 24px rgba(74,6,27,0.06)", cursor: "pointer" }}
+            style={{
+              background: T.warmIvory,
+              borderRadius: 20,
+              overflow: "hidden",
+              border: `1px solid ${T.borderDef}`,
+              boxShadow: "0px 6px 24px rgba(74,6,27,0.06)",
+              cursor: "pointer",
+            }}
           >
             <div style={{ height: 150, overflow: "hidden" }}>
               <motion.img
@@ -241,10 +503,42 @@ export function MobileRawMaterial({ onNavigate }: { onNavigate: (tab: string) =>
               />
             </div>
             <div style={{ padding: "18px 20px 20px", display: "flex", flexDirection: "column" }}>
-              <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 4 }}>{m.name}</div>
-              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.taupe, lineHeight: 1.5, marginBottom: 4 }}>{m.desc}</div>
+              <div
+                style={{
+                  fontFamily: F.display,
+                  fontWeight: 600,
+                  fontSize: 20,
+                  color: T.luxuryBrown,
+                  marginBottom: 4,
+                }}
+              >
+                {m.name}
+              </div>
+              <div
+                style={{
+                  fontFamily: F.ui,
+                  fontWeight: 400,
+                  fontSize: 13,
+                  color: T.taupe,
+                  lineHeight: 1.5,
+                  marginBottom: 4,
+                }}
+              >
+                {m.desc}
+              </div>
               {m.extra && <div style={{ marginBottom: 4 }}>{m.extra}</div>}
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 30, color: m.stockColor, lineHeight: 1, margin: "12px 0 6px" }}>{m.stock}</div>
+              <div
+                style={{
+                  fontFamily: F.display,
+                  fontWeight: 700,
+                  fontSize: 30,
+                  color: m.stockColor,
+                  lineHeight: 1,
+                  margin: "12px 0 6px",
+                }}
+              >
+                {m.stock}
+              </div>
             </div>
           </motion.div>
         ))}

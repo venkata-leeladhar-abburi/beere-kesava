@@ -59,6 +59,12 @@ export function useDataAccess(scope: DataAccessScope): boolean {
 }
 
 /** Renders its children only where `scope` is visible. */
-export function DataGate({ scope, children }: { scope: DataAccessScope; children: React.ReactNode }) {
+export function DataGate({
+  scope,
+  children,
+}: {
+  scope: DataAccessScope;
+  children: React.ReactNode;
+}) {
   return useDataAccess(scope) ? <>{children}</> : null;
 }

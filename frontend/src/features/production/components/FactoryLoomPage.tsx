@@ -3,9 +3,14 @@ import { useListDetailScroll } from "@/shared/ui/ScrollToTop";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Plus, Edit2,
-  LayoutGrid, LayoutList,
-  Factory, CheckCircle2, AlertTriangle, Settings2
+  Plus,
+  Edit2,
+  LayoutGrid,
+  LayoutList,
+  Factory,
+  CheckCircle2,
+  AlertTriangle,
+  Settings2,
 } from "lucide-react";
 import factoryLoomsHero from "../../../assets/inline/factoryLoomsHero.jpg";
 import { FactoryLoom, loomLabel } from "../data/factoryLooms";
@@ -18,7 +23,11 @@ import { LoomCard } from "./factory-loom/LoomCard";
 import { LoomAnalytics } from "./factory-loom/LoomAnalytics";
 import { SectionCard } from "./common/primitives";
 import { ApiError } from "../../../shared/api/client";
-import { BackendFactoryLoom, BackendLoomStatus, factoryLoomsApi } from "../../../shared/api/factory-looms";
+import {
+  BackendFactoryLoom,
+  BackendLoomStatus,
+  factoryLoomsApi,
+} from "../../../shared/api/factory-looms";
 import { batchesApi } from "../../../shared/api/batches";
 import { qcApi } from "../../../shared/api/qc";
 import { useMaterialIssue } from "@/features/materials";
@@ -61,12 +70,12 @@ export function FactoryLoomPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [view, setView] = useState<"card"|"table">("table");
+  const [view, setView] = useState<"card" | "table">("table");
   const [search, setSearch] = useState("");
   const [sf, setSf] = useState<LoomStatusFilter>("all");
   const [showModal, setShowModal] = useState(false);
-  const [editLoom, setEditLoom] = useState<FactoryLoom|null>(null);
-  const [selected, setSelected] = useState<FactoryLoom|null>(null);
+  const [editLoom, setEditLoom] = useState<FactoryLoom | null>(null);
+  const [selected, setSelected] = useState<FactoryLoom | null>(null);
   const { openDetail, backToList } = useListDetailScroll();
 
   const { data: batchesRes } = useQuery({
@@ -86,22 +95,24 @@ export function FactoryLoomPage() {
     // Only batches with a real FACTORY_LOOM row belong to a loom — a batch
     // with no such row isn't loom work at all, so it's excluded rather than
     // dumped onto a fake placeholder loom.
-    return batchesRes.items.flatMap(b => {
-      const loomId = b.rows.find(r => r.recipientType === "FACTORY_LOOM")?.factoryLoomId;
+    return batchesRes.items.flatMap((b) => {
+      const loomId = b.rows.find((r) => r.recipientType === "FACTORY_LOOM")?.factoryLoomId;
       if (!loomId) return [];
-      const completedCount = b.rows.filter(r => r.qcPassed).length;
-      return [{
-        batchId: b.id,
-        loomId,
-        sareeCount: b.totalCount,
-        completedCount,
-        dueDate: new Date(b.dueDate).toLocaleDateString("en-IN"),
-        designCode: b.rows[0]?.designCode ?? "Design",
-        designName: b.rows[0]?.designCode ?? "Design",
-        orderRef: b.id,
-        status: b.status.toLowerCase() as LoomBatch["status"],
-        startDate: new Date(b.createdAt).toLocaleDateString("en-IN"),
-      }];
+      const completedCount = b.rows.filter((r) => r.qcPassed).length;
+      return [
+        {
+          batchId: b.id,
+          loomId,
+          sareeCount: b.totalCount,
+          completedCount,
+          dueDate: new Date(b.dueDate).toLocaleDateString("en-IN"),
+          designCode: b.rows[0]?.designCode ?? "Design",
+          designName: b.rows[0]?.designCode ?? "Design",
+          orderRef: b.id,
+          status: b.status.toLowerCase() as LoomBatch["status"],
+          startDate: new Date(b.createdAt).toLocaleDateString("en-IN"),
+        },
+      ];
     });
   }, [batchesRes]);
 
@@ -132,7 +143,7 @@ export function FactoryLoomPage() {
 
   const sarees = useMemo<LoomSaree[]>(() => {
     if (!batchesRes?.items) return [];
-    const qcMap = new Map((qcRes?.items ?? []).map(q => [q.sareeId, q]));
+    const qcMap = new Map((qcRes?.items ?? []).map((q) => [q.sareeId, q]));
     const list: LoomSaree[] = [];
 
     for (const b of batchesRes.items) {
@@ -167,10 +178,17 @@ export function FactoryLoomPage() {
     }
   }, []);
 
-  useEffect(() => { void loadLooms(); }, [loadLooms]);
+  useEffect(() => {
+    void loadLooms();
+  }, [loadLooms]);
 
-  const filtered = looms.filter(l => {
-    const ms = !search || loomLabel(l).toLowerCase().includes(search.toLowerCase()) || l.loomNumber.toLowerCase().includes(search.toLowerCase()) || l.operatorName.toLowerCase().includes(search.toLowerCase()) || l.id.toLowerCase().includes(search.toLowerCase());
+  const filtered = looms.filter((l) => {
+    const ms =
+      !search ||
+      loomLabel(l).toLowerCase().includes(search.toLowerCase()) ||
+      l.loomNumber.toLowerCase().includes(search.toLowerCase()) ||
+      l.operatorName.toLowerCase().includes(search.toLowerCase()) ||
+      l.id.toLowerCase().includes(search.toLowerCase());
     return ms && (sf === "all" || l.status === sf);
   });
 
@@ -187,7 +205,7 @@ export function FactoryLoomPage() {
           installedYear: l.installedYear ? Number(l.installedYear) : undefined,
           notes: l.notes,
         });
-        setLooms(prev => prev.map(x => (x.id === l.id ? backendLoomToFrontend(updated) : x)));
+        setLooms((prev) => prev.map((x) => (x.id === l.id ? backendLoomToFrontend(updated) : x)));
       } else {
         const created = await factoryLoomsApi.create({
           loomNumber: l.loomNumber,
@@ -199,9 +217,11 @@ export function FactoryLoomPage() {
         });
         const final =
           l.status !== "active"
-            ? await factoryLoomsApi.update(created.id, { status: FRONTEND_TO_BACKEND_STATUS[l.status] })
+            ? await factoryLoomsApi.update(created.id, {
+                status: FRONTEND_TO_BACKEND_STATUS[l.status],
+              })
             : created;
-        setLooms(prev => [backendLoomToFrontend(final), ...prev]);
+        setLooms((prev) => [backendLoomToFrontend(final), ...prev]);
       }
       setShowModal(false);
       setEditLoom(null);
@@ -213,33 +233,111 @@ export function FactoryLoomPage() {
   };
 
   return (
-    <div style={{ background: "#FFFDF9", minHeight: "var(--shell-content-min-h)", display: "flex", flexDirection: "column", paddingBottom: 0 }}>
+    <div
+      style={{
+        background: "#FFFDF9",
+        minHeight: "var(--shell-content-min-h)",
+        display: "flex",
+        flexDirection: "column",
+        paddingBottom: 0,
+      }}
+    >
       {selected ? (
         <LoomDetailPage
           loom={selected}
           onBack={() => backToList(() => setSelected(null))}
-          onEdit={l => { setEditLoom(l); setShowModal(true); }}
+          onEdit={(l) => {
+            setEditLoom(l);
+            setShowModal(true);
+          }}
         />
       ) : (
         <>
           {/* Hero Header */}
-          <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 340, display: "flex", alignItems: "center" }}>
-            <div className="px-4 md:px-7 xl:px-12 w-full" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110 }}>
+          <header
+            style={{
+              background: "#0D0207",
+              position: "relative",
+              overflow: "hidden",
+              minHeight: 340,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <div
+              className="px-4 md:px-7 xl:px-12 w-full"
+              style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110 }}
+            >
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                <span style={{ fontFamily: F.ui, fontSize: "clamp(11px, 1.4vw, 13px)", color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", fontWeight: 400 }}>
+                <span
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: "clamp(11px, 1.4vw, 13px)",
+                    color: "rgba(255,253,249,0.50)",
+                    letterSpacing: "1.8px",
+                    textTransform: "uppercase",
+                    fontWeight: 400,
+                  }}
+                >
                   Since 1999 · Power Loom Management
                 </span>
               </div>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
-                <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 6vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Factory Looms</h1>
-                <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 5vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Production</span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 12,
+                  flexWrap: "wrap",
+                  marginBottom: 8,
+                }}
+              >
+                <h1
+                  style={{
+                    fontFamily: "'DM Serif Display', serif",
+                    fontSize: "clamp(32px, 6vw, 56px)",
+                    fontWeight: 400,
+                    color: "#FFFDF9",
+                    margin: 0,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  Factory Looms
+                </h1>
+                <span
+                  style={{
+                    fontFamily: "'DM Serif Display', serif",
+                    fontSize: "clamp(22px, 5vw, 36px)",
+                    fontStyle: "italic",
+                    color: T.antiqueGold,
+                    fontWeight: 400,
+                  }}
+                >
+                  &amp; Production
+                </span>
               </div>
-              <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(14px, 2.2vw, 16px)", color: "rgba(255,253,249,0.70)", margin: "0 0 16px", lineHeight: 1.6 }}>
-                Real-time monitoring of in-house power looms, weaver assignments, production output &amp; maintenance schedules.
+              <p
+                className="max-w-[600px]"
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: "clamp(14px, 2.2vw, 16px)",
+                  color: "rgba(255,253,249,0.70)",
+                  margin: "0 0 16px",
+                  lineHeight: 1.6,
+                }}
+              >
+                Real-time monitoring of in-house power looms, weaver assignments, production output
+                &amp; maintenance schedules.
               </p>
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ alignSelf: "flex-start", flexShrink: 0, display: "inline-block" }}>
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                style={{ alignSelf: "flex-start", flexShrink: 0, display: "inline-block" }}
+              >
                 <Button
-                  onClick={() => { setEditLoom(null); setShowModal(true); }}
+                  onClick={() => {
+                    setEditLoom(null);
+                    setShowModal(true);
+                  }}
                   variant="primary"
                   iconLeft={Plus}
                   className="rounded-xl bg-[linear-gradient(135deg,#C89B47,#E7C983)] text-[#2C0913] shadow-[0_4px_20px_rgba(200,155,71,0.35)] hover:bg-[linear-gradient(135deg,#C89B47,#E7C983)]"
@@ -249,20 +347,69 @@ export function FactoryLoomPage() {
               </motion.div>
             </div>
 
-            <div className="hidden xl:block" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
-              <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, #0D0207 0%, rgba(13,2,7,0.7) 38%, rgba(13,2,7,0.1) 100%)` }} />
-              <img src={factoryLoomsHero} alt="Factory Looms" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(0.75) saturate(0.90)" }} />
+            <div
+              className="hidden xl:block"
+              style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  zIndex: 2,
+                  background: `linear-gradient(to right, #0D0207 0%, rgba(13,2,7,0.7) 38%, rgba(13,2,7,0.1) 100%)`,
+                }}
+              />
+              <img
+                src={factoryLoomsHero}
+                alt="Factory Looms"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  objectPosition: "center",
+                  filter: "brightness(0.75) saturate(0.90)",
+                }}
+              />
             </div>
           </header>
 
           {/* Stats Strip */}
-          <div className="px-4 md:px-7 xl:px-14 -mt-8 md:-mt-14 xl:-mt-[80px]" style={{ position: "relative", zIndex: 20 }}>
-            <LuxuryStatsCard stats={[
-              { label: "Total In-House Looms", value: String(looms.length), sub: "Registered units", icon: <Factory size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
-              { label: "Active Looms", value: String(looms.filter(l => l.status === "active").length), sub: "Currently weaving", icon: <CheckCircle2 size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
-              { label: "Idle Looms", value: String(looms.filter(l => l.status === "idle").length), sub: "Awaiting warp / weaver", icon: <AlertTriangle size={20} color="rgba(231,201,131,0.95)" />, highlight: true },
-              { label: "In Maintenance", value: String(looms.filter(l => l.status === "maintenance").length), sub: "Under repair", icon: <Settings2 size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
-            ]} />
+          <div
+            className="px-4 md:px-7 xl:px-14 -mt-8 md:-mt-14 xl:-mt-[80px]"
+            style={{ position: "relative", zIndex: 20 }}
+          >
+            <LuxuryStatsCard
+              stats={[
+                {
+                  label: "Total In-House Looms",
+                  value: String(looms.length),
+                  sub: "Registered units",
+                  icon: <Factory size={20} color="rgba(245,232,208,0.90)" />,
+                  highlight: false,
+                },
+                {
+                  label: "Active Looms",
+                  value: String(looms.filter((l) => l.status === "active").length),
+                  sub: "Currently weaving",
+                  icon: <CheckCircle2 size={20} color="rgba(245,232,208,0.90)" />,
+                  highlight: false,
+                },
+                {
+                  label: "Idle Looms",
+                  value: String(looms.filter((l) => l.status === "idle").length),
+                  sub: "Awaiting warp / weaver",
+                  icon: <AlertTriangle size={20} color="rgba(231,201,131,0.95)" />,
+                  highlight: true,
+                },
+                {
+                  label: "In Maintenance",
+                  value: String(looms.filter((l) => l.status === "maintenance").length),
+                  sub: "Under repair",
+                  icon: <Settings2 size={20} color="rgba(245,232,208,0.90)" />,
+                  highlight: false,
+                },
+              ]}
+            />
           </div>
 
           {/* Main Body */}
@@ -273,7 +420,10 @@ export function FactoryLoomPage() {
               subtitle="Browse every registered power loom, its operator, and current status."
               actions={
                 <Button
-                  onClick={() => { setEditLoom(null); setShowModal(true); }}
+                  onClick={() => {
+                    setEditLoom(null);
+                    setShowModal(true);
+                  }}
                   variant="secondary"
                   iconLeft={Plus}
                   className="bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white"
@@ -283,7 +433,18 @@ export function FactoryLoomPage() {
               }
             >
               {loadError && (
-                <div style={{ background: "rgba(192,57,43,0.08)", border: `1px solid ${T.crimson}`, color: T.crimson, borderRadius: 12, padding: "14px 20px", marginBottom: 20, fontFamily: F.ui, fontSize: 14 }}>
+                <div
+                  style={{
+                    background: "rgba(192,57,43,0.08)",
+                    border: `1px solid ${T.crimson}`,
+                    color: T.crimson,
+                    borderRadius: 12,
+                    padding: "14px 20px",
+                    marginBottom: 20,
+                    fontFamily: F.ui,
+                    fontSize: 14,
+                  }}
+                >
                   {loadError}
                 </div>
               )}
@@ -300,9 +461,9 @@ export function FactoryLoomPage() {
                       label: "Status",
                       value: sf,
                       defaultValue: "all",
-                      options: (["all", "active", "idle", "maintenance"] as const).map(st => ({
+                      options: (["all", "active", "idle", "maintenance"] as const).map((st) => ({
                         value: st,
-                        label: `${st.charAt(0).toUpperCase() + st.slice(1)} (${st === "all" ? looms.length : looms.filter(l => l.status === st).length})`,
+                        label: `${st.charAt(0).toUpperCase() + st.slice(1)} (${st === "all" ? looms.length : looms.filter((l) => l.status === st).length})`,
                       })),
                       onChange: (v: string) => setSf(v as LoomStatusFilter),
                     },
@@ -316,11 +477,18 @@ export function FactoryLoomPage() {
 
               {/* Desktop Filter Bar */}
               <div className="hidden md:flex items-center justify-between gap-4 mb-6 flex-wrap">
-                <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 280 }}>
+                <div
+                  style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 280 }}
+                >
                   <div style={{ width: 280 }}>
-                    <SearchInput aria-label="Search loom number or operator" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search loom #, operator..." />
+                    <SearchInput
+                      aria-label="Search loom number or operator"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Search loom #, operator..."
+                    />
                   </div>
-                  {(["all", "active", "idle", "maintenance"] as const).map(st => (
+                  {(["all", "active", "idle", "maintenance"] as const).map((st) => (
                     <Button
                       key={st}
                       onClick={() => setSf(st)}
@@ -328,18 +496,35 @@ export function FactoryLoomPage() {
                       size="sm"
                       className="capitalize"
                     >
-                      {st} ({st === "all" ? looms.length : looms.filter(l => l.status === st).length})
+                      {st} (
+                      {st === "all" ? looms.length : looms.filter((l) => l.status === st).length})
                     </Button>
                   ))}
                 </div>
 
-                <div style={{ display: "inline-flex", alignItems: "center", background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 999, padding: 3, gap: 2 }}>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    background: "#FFFFFF",
+                    border: `1.5px solid ${T.borderDef}`,
+                    borderRadius: 999,
+                    padding: 3,
+                    gap: 2,
+                  }}
+                >
                   <button
                     type="button"
                     onClick={() => setView("card")}
                     style={{
-                      display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 999,
-                      fontFamily: F.ui, fontSize: 13, fontWeight: 600,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "7px 16px",
+                      borderRadius: 999,
+                      fontFamily: F.ui,
+                      fontSize: 13,
+                      fontWeight: 600,
                       background: view === "card" ? "#6E0F2D" : "transparent",
                       color: view === "card" ? "#FFFFFF" : T.taupe,
                       border: "none",
@@ -355,8 +540,14 @@ export function FactoryLoomPage() {
                     type="button"
                     onClick={() => setView("table")}
                     style={{
-                      display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 999,
-                      fontFamily: F.ui, fontSize: 13, fontWeight: 600,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "7px 16px",
+                      borderRadius: 999,
+                      fontFamily: F.ui,
+                      fontSize: 13,
+                      fontWeight: 600,
                       background: view === "table" ? "#6E0F2D" : "transparent",
                       color: view === "table" ? "#FFFFFF" : T.taupe,
                       border: "none",
@@ -383,11 +574,16 @@ export function FactoryLoomPage() {
                     description="Click '+ Register New Power Loom' above to add one."
                   />
                 ) : (
-                  <FilteredEmptyState onClearFilters={() => { setSearch(""); setSf("all"); }} />
+                  <FilteredEmptyState
+                    onClearFilters={() => {
+                      setSearch("");
+                      setSf("all");
+                    }}
+                  />
                 )
               ) : view === "card" ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                  {filtered.map(l => (
+                  {filtered.map((l) => (
                     <LoomCard
                       key={l.id}
                       loom={l}
@@ -398,44 +594,129 @@ export function FactoryLoomPage() {
                   ))}
                 </div>
               ) : (
-                <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }} className="w-full overflow-x-auto section-nav-scroll p-2">
+                <div
+                  style={{
+                    background: "#FFFFFF",
+                    borderRadius: 16,
+                    border: `1px solid ${T.borderDef}`,
+                  }}
+                  className="w-full overflow-x-auto section-nav-scroll p-2"
+                >
                   <div className="min-w-[840px]">
                     <DataTable
                       responsive={false}
                       pagination
-                      columns={[
-                        {
-                          id: "loomNumber", header: "Loom #", accessor: l => loomLabel(l), priority: 1,
-                          cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{loomLabel(l)}</span>,
-                        },
-                        {
-                          id: "operator", header: "Operator", accessor: l => l.operatorName,
-                          cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{l.operatorName || "—"}</span>,
-                        },
-                        {
-                          id: "location", header: "Location", accessor: l => l.location, priority: 3,
-                          cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{l.location || "—"}</span>,
-                        },
-                        {
-                          id: "notes", header: "Notes", accessor: l => l.notes || "", priority: 3,
-                          cell: (_v, l) => <span title={l.notes || undefined} style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, display: "inline-block", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", verticalAlign: "bottom" }}>{l.notes || "—"}</span>,
-                        },
-                        {
-                          id: "status", header: "Status", accessor: l => l.status, type: "status",
-                          cell: (_v, l) => <StatusPill taxonomy="condition" status={LOOM_STATUS_TO_CONDITION[l.status]} />,
-                        },
-                        {
-                          id: "actions", header: "Actions", accessor: () => null, type: "actions",
-                          cell: (_v, l) => (
-                            <>
-                              <Button onClick={() => openDetail(() => setSelected(l))} variant="link" size="sm" className="mr-3">View Details</Button>
-                              <IconButton onClick={() => { setEditLoom(l); setShowModal(true); }} icon={Edit2} label={`Edit loom ${loomLabel(l)}`} variant="ghost" size="sm" />
-                            </>
-                          ),
-                        },
-                      ] as ColumnDef<FactoryLoom>[]}
+                      columns={
+                        [
+                          {
+                            id: "loomNumber",
+                            header: "Loom #",
+                            accessor: (l) => loomLabel(l),
+                            priority: 1,
+                            cell: (_v, l) => (
+                              <span
+                                style={{
+                                  fontFamily: F.ui,
+                                  fontSize: 14,
+                                  fontWeight: 700,
+                                  color: T.luxuryBrown,
+                                }}
+                              >
+                                {loomLabel(l)}
+                              </span>
+                            ),
+                          },
+                          {
+                            id: "operator",
+                            header: "Operator",
+                            accessor: (l) => l.operatorName,
+                            cell: (_v, l) => (
+                              <span
+                                style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}
+                              >
+                                {l.operatorName || "—"}
+                              </span>
+                            ),
+                          },
+                          {
+                            id: "location",
+                            header: "Location",
+                            accessor: (l) => l.location,
+                            priority: 3,
+                            cell: (_v, l) => (
+                              <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+                                {l.location || "—"}
+                              </span>
+                            ),
+                          },
+                          {
+                            id: "notes",
+                            header: "Notes",
+                            accessor: (l) => l.notes || "",
+                            priority: 3,
+                            cell: (_v, l) => (
+                              <span
+                                title={l.notes || undefined}
+                                style={{
+                                  fontFamily: F.ui,
+                                  fontSize: 14,
+                                  color: T.taupe,
+                                  display: "inline-block",
+                                  maxWidth: 220,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                  verticalAlign: "bottom",
+                                }}
+                              >
+                                {l.notes || "—"}
+                              </span>
+                            ),
+                          },
+                          {
+                            id: "status",
+                            header: "Status",
+                            accessor: (l) => l.status,
+                            type: "status",
+                            cell: (_v, l) => (
+                              <StatusPill
+                                taxonomy="condition"
+                                status={LOOM_STATUS_TO_CONDITION[l.status]}
+                              />
+                            ),
+                          },
+                          {
+                            id: "actions",
+                            header: "Actions",
+                            accessor: () => null,
+                            type: "actions",
+                            cell: (_v, l) => (
+                              <>
+                                <Button
+                                  onClick={() => openDetail(() => setSelected(l))}
+                                  variant="link"
+                                  size="sm"
+                                  className="mr-3"
+                                >
+                                  View Details
+                                </Button>
+                                <IconButton
+                                  onClick={() => {
+                                    setEditLoom(l);
+                                    setShowModal(true);
+                                  }}
+                                  icon={Edit2}
+                                  label={`Edit loom ${loomLabel(l)}`}
+                                  variant="ghost"
+                                  size="sm"
+                                />
+                              </>
+                            ),
+                          },
+                        ] as ColumnDef<FactoryLoom>[]
+                      }
                       data={filtered}
-                      getRowId={l => l.id}
+                      getRowId={(l) => l.id}
                     />
                   </div>
                 </div>
@@ -451,7 +732,11 @@ export function FactoryLoomPage() {
 
       <AddLoomModal
         open={showModal}
-        onClose={() => { setShowModal(false); setEditLoom(null); setSaveError(null); }}
+        onClose={() => {
+          setShowModal(false);
+          setEditLoom(null);
+          setSaveError(null);
+        }}
         onAdd={handleAddOrEdit}
         editLoom={editLoom}
         saving={saving}

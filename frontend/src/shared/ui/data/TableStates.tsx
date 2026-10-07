@@ -59,15 +59,21 @@ export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; column
           // eslint-disable-next-line react/no-array-index-key
           key={`skeleton-row-${r}`}
           style={{
-            display: "flex", gap: "var(--space-4)", alignItems: "center",
-            height: "var(--row-height-default, 48px)", padding: "0 var(--pad-cell-x, 16px)",
+            display: "flex",
+            gap: "var(--space-4)",
+            alignItems: "center",
+            height: "var(--row-height-default, 48px)",
+            padding: "0 var(--pad-cell-x, 16px)",
             borderBottom: "1px solid var(--border-subtle)",
           }}
         >
           {Array.from({ length: columns }).map((_, c) => (
             // Placeholder skeleton cells with no backing data — position is the only identity.
-            // eslint-disable-next-line react/no-array-index-key
-            <Skeleton key={`skeleton-cell-${c}`} style={{ height: 14, flex: c === 0 ? 2 : 1, minWidth: 40 }} />
+            <Skeleton
+              // eslint-disable-next-line react/no-array-index-key
+              key={`skeleton-cell-${c}`}
+              style={{ height: 14, flex: c === 0 ? 2 : 1, minWidth: 40 }}
+            />
           ))}
         </div>
       ))}

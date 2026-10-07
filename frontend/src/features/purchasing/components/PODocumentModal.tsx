@@ -6,7 +6,12 @@ import { PurchaseOrder } from "../contexts/POContext";
 import { toast } from "sonner";
 import { Button, IconButton } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
-import { DocumentViewer, PurchaseOrderDocument, DEFAULT_LETTERHEAD_FIRM, exportDocumentPdfBlob } from "../../../shared/ui/document";
+import {
+  DocumentViewer,
+  PurchaseOrderDocument,
+  DEFAULT_LETTERHEAD_FIRM,
+  exportDocumentPdfBlob,
+} from "../../../shared/ui/document";
 import { StatusPill } from "../../../shared/ui/domain";
 import type { StatusValueOf } from "@/lib/domain/status";
 import { whatsappApi } from "../../../shared/api/whatsapp";
@@ -14,24 +19,24 @@ import { isApiError } from "../../../shared/api/client";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const T = {
-  silkCream:     "#F7F2EA",
-  warmIvory:     "#FFFDF9",
+  silkCream: "#F7F2EA",
+  warmIvory: "#FFFDF9",
   royalBurgundy: "#6E0F2D",
-  darkBurgundy:  "#3D0E1A",
-  antiqueGold:   "#C89B47",
-  goldLight:     "#E7C983",
-  luxuryBrown:   "#3B2314",
-  warmCream:     "#F5E8D0",
-  taupe:         "#69635E",
-  crimson:       "#C0392B",
-  green:         "#1E6640",
-  borderDef:     "rgba(110,15,45,0.10)",
-  borderGold:    "rgba(200,155,71,0.22)",
+  darkBurgundy: "#3D0E1A",
+  antiqueGold: "#C89B47",
+  goldLight: "#E7C983",
+  luxuryBrown: "#3B2314",
+  warmCream: "#F5E8D0",
+  taupe: "#69635E",
+  crimson: "#C0392B",
+  green: "#1E6640",
+  borderDef: "rgba(110,15,45,0.10)",
+  borderGold: "rgba(200,155,71,0.22)",
 };
 const F = {
   display: "'Plus Jakarta Sans', sans-serif",
-  ui:      "'Inter', sans-serif",
-  mono:    "'JetBrains Mono', monospace",
+  ui: "'Inter', sans-serif",
+  mono: "'JetBrains Mono', monospace",
 };
 
 // PurchaseOrder["status"] doesn't have its own "pending approval" key in the
@@ -65,9 +70,17 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
 
   if (!po) return null;
 
-  const todayDisplay = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  const todayDisplay = new Date().toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
   const approvedDisplay = po.approvedDate
-    ? new Date(po.approvedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+    ? new Date(po.approvedDate).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
     : todayDisplay;
 
   const showApproved = isApproved || po.status === "approved" || po.status === "received";
@@ -75,8 +88,20 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
   const documentNode = (
     <PurchaseOrderDocument
       poNumber={po.poNumber}
-      submittedDate={new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-      deliveryDate={po.deliveryDate ? new Date(po.deliveryDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : undefined}
+      submittedDate={new Date(po.submittedDate).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })}
+      deliveryDate={
+        po.deliveryDate
+          ? new Date(po.deliveryDate).toLocaleDateString("en-IN", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })
+          : undefined
+      }
       firm={DEFAULT_LETTERHEAD_FIRM}
       supplier={{ name: po.vendor, city: po.vendorCity, contact: po.vendorContact }}
       materials={po.materials}
@@ -87,7 +112,9 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
       raisedBy={po.raisedBy}
       approvedBy={showApproved ? "Superadmin" : undefined}
       approvedDate={showApproved ? approvedDisplay : undefined}
-      statusLabel={po.status === "rejected" ? "REJECTED" : po.status === "received" ? "RECEIVED" : undefined}
+      statusLabel={
+        po.status === "rejected" ? "REJECTED" : po.status === "received" ? "RECEIVED" : undefined
+      }
     />
   );
 
@@ -95,7 +122,10 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
     setSharing(true);
     const toastId = toast.loading(`Preparing ${po.poNumber} for ${po.vendor}…`);
     try {
-      const pdf = await exportDocumentPdfBlob(documentNode, { fileName: po.poNumber, title: `Purchase Order ${po.poNumber}` });
+      const pdf = await exportDocumentPdfBlob(documentNode, {
+        fileName: po.poNumber,
+        title: `Purchase Order ${po.poNumber}`,
+      });
       await whatsappApi.sendPoDocument(po.id, pdf);
       toast.success(`Sent to ${po.vendor} on WhatsApp`, { id: toastId });
     } catch (err: unknown) {
@@ -107,29 +137,55 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
   };
 
   return (
-    <Modal open={open} onOpenChange={o => !o && onClose()} size="xl">
+    <Modal open={open} onOpenChange={(o) => !o && onClose()} size="xl">
       <div className="flex flex-col h-[85vh] rounded-2xl overflow-hidden bg-[#FFFDF9]">
         {/* Header */}
-        <div className="rounded-t-2xl overflow-hidden" style={{
-          background: T.darkBurgundy,
-          padding: "16px 20px",
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          flexShrink: 0,
-        }}>
+        <div
+          className="rounded-t-2xl overflow-hidden"
+          style={{
+            background: T.darkBurgundy,
+            padding: "16px 20px",
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            flexShrink: 0,
+          }}
+        >
           <div>
             <Dialog.Title asChild>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFFDF9", marginBottom: 4 }}>
+              <div
+                style={{
+                  fontFamily: F.display,
+                  fontWeight: 700,
+                  fontSize: 16,
+                  color: "#FFFDF9",
+                  marginBottom: 4,
+                }}
+              >
                 Purchase Order Document
               </div>
             </Dialog.Title>
-            <Dialog.Description className="sr-only">Purchase order document preview</Dialog.Description>
+            <Dialog.Description className="sr-only">
+              Purchase order document preview
+            </Dialog.Description>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold }}>{po.poNumber}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold }}>
+                {po.poNumber}
+              </span>
               <StatusBadge status={po.status} />
               {po.urgency === "Urgent" && (
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.20)", padding: "2px 8px", borderRadius: 5 }}>🔴 URGENT</span>
+                <span
+                  style={{
+                    fontFamily: F.mono,
+                    fontSize: 12,
+                    color: T.crimson,
+                    background: "rgba(192,57,43,0.20)",
+                    padding: "2px 8px",
+                    borderRadius: 5,
+                  }}
+                >
+                  🔴 URGENT
+                </span>
               )}
             </div>
           </div>
@@ -137,7 +193,9 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
             <Button
               onClick={handleShare}
               disabled={sharing}
-              variant="secondary" size="sm" iconLeft={Share2}
+              variant="secondary"
+              size="sm"
+              iconLeft={Share2}
               className="rounded-[10px] bg-white/10 border-white/20 text-white hover:bg-white/20 active:bg-white/30"
             >
               {sharing ? "Sending…" : "Share with Vendor"}

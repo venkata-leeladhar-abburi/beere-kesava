@@ -47,7 +47,7 @@ export function usePendingShopDispatchCount(): number {
 }
 
 const awaiting = (d: PendingShopDispatch): number =>
-  d.sarees.filter(s => s.receiptStatus === null || s.receiptStatus === "MISSING").length;
+  d.sarees.filter((s) => s.receiptStatus === null || s.receiptStatus === "MISSING").length;
 
 export function IncomingDispatchSection() {
   const [receiving, setReceiving] = useState<PendingShopDispatch | null>(null);
@@ -56,11 +56,16 @@ export function IncomingDispatchSection() {
 
   const columns: ColumnDef<PendingShopDispatch>[] = [
     {
-      id: "consignment", header: "Consignment", priority: 1, sortable: true,
-      accessor: d => consignmentLabel(d),
+      id: "consignment",
+      header: "Consignment",
+      priority: 1,
+      sortable: true,
+      accessor: (d) => consignmentLabel(d),
       cell: (_v, d) => (
         <span style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
-          <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{consignmentLabel(d)}</span>
+          <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>
+            {consignmentLabel(d)}
+          </span>
           {d.receiptStatus === "PARTIALLY_RECEIVED" && (
             <Chip label="Partly received" color="#845E04" bg="rgba(200,155,71,0.18)" />
           )}
@@ -68,8 +73,12 @@ export function IncomingDispatchSection() {
       ),
     },
     {
-      id: "awaiting", header: "Awaiting", type: "text", priority: 1, sortable: true,
-      accessor: d => awaiting(d),
+      id: "awaiting",
+      header: "Awaiting",
+      type: "text",
+      priority: 1,
+      sortable: true,
+      accessor: (d) => awaiting(d),
       cell: (_v, d) => (
         <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
           {awaiting(d)} of {d.sarees.length} saree(s)
@@ -77,20 +86,36 @@ export function IncomingDispatchSection() {
       ),
     },
     {
-      id: "dispatched", header: "Dispatched", type: "date", priority: 2, sortable: true,
-      accessor: d => d.dispatchDate,
-      cell: (_v, d) => <span style={{ fontFamily: F.u, fontSize: 13 }}>{fmtDate(d.dispatchDate)}</span>,
+      id: "dispatched",
+      header: "Dispatched",
+      type: "date",
+      priority: 2,
+      sortable: true,
+      accessor: (d) => d.dispatchDate,
+      cell: (_v, d) => (
+        <span style={{ fontFamily: F.u, fontSize: 13 }}>{fmtDate(d.dispatchDate)}</span>
+      ),
     },
     {
-      id: "dispatchedBy", header: "Dispatched by", priority: 3,
-      accessor: d => d.dispatchedBy ? `${d.dispatchedBy.firstName} ${d.dispatchedBy.lastName}`.trim() : "—",
+      id: "dispatchedBy",
+      header: "Dispatched by",
+      priority: 3,
+      accessor: (d) =>
+        d.dispatchedBy ? `${d.dispatchedBy.firstName} ${d.dispatchedBy.lastName}`.trim() : "—",
     },
     {
-      id: "transport", header: "Transport", priority: 3,
-      accessor: d => [d.lrNumber ? `LR ${d.lrNumber}` : null, d.transportCompany].filter(Boolean).join(" · ") || "—",
+      id: "transport",
+      header: "Transport",
+      priority: 3,
+      accessor: (d) =>
+        [d.lrNumber ? `LR ${d.lrNumber}` : null, d.transportCompany].filter(Boolean).join(" · ") ||
+        "—",
     },
     {
-      id: "actions", header: "Actions", type: "actions", accessor: () => null,
+      id: "actions",
+      header: "Actions",
+      type: "actions",
+      accessor: () => null,
       cell: (_v, d) => (
         <Button variant="primary" size="md" iconLeft={PackageCheck} onClick={() => setReceiving(d)}>
           Receive
@@ -115,7 +140,11 @@ export function IncomingDispatchSection() {
         actions={
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             {pending.length > 0 && (
-              <Chip label={`${pending.length} to receive`} color="#845E04" bg="rgba(200,155,71,0.18)" />
+              <Chip
+                label={`${pending.length} to receive`}
+                color="#845E04"
+                bg="rgba(200,155,71,0.18)"
+              />
             )}
             <ViewToggle value={dataView} onChange={setDataView} />
           </div>
@@ -125,10 +154,18 @@ export function IncomingDispatchSection() {
           <div
             role="status"
             style={{
-              display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 14,
-              fontFamily: F.u, fontSize: 13, color: "#0F766E",
-              background: "rgba(15,118,110,0.08)", border: "1px solid rgba(15,118,110,0.22)",
-              borderRadius: 10, padding: "10px 12px",
+              display: "flex",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 6,
+              marginBottom: 14,
+              fontFamily: F.u,
+              fontSize: 13,
+              color: "#0F766E",
+              background: "rgba(15,118,110,0.08)",
+              border: "1px solid rgba(15,118,110,0.22)",
+              borderRadius: 10,
+              padding: "10px 12px",
             }}
           >
             <PackageCheck size={15} />
@@ -141,7 +178,7 @@ export function IncomingDispatchSection() {
         <DataTable
           columns={columns}
           data={pending}
-          getRowId={d => d.id}
+          getRowId={(d) => d.id}
           caption="Consignments awaiting receipt at this shop"
           view={dataView}
           density="compact"
@@ -158,7 +195,7 @@ export function IncomingDispatchSection() {
           dispatch={receiving}
           open
           onClose={() => setReceiving(null)}
-          onReceived={code => setConfirmed(code)}
+          onReceived={(code) => setConfirmed(code)}
         />
       )}
     </div>

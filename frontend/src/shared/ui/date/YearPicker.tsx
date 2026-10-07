@@ -17,7 +17,14 @@ export interface YearPickerProps {
   className?: string;
 }
 
-export function YearPicker({ selectedYear, minDate, maxDate, span = 12, onSelect, className }: YearPickerProps) {
+export function YearPicker({
+  selectedYear,
+  minDate,
+  maxDate,
+  span = 12,
+  onSelect,
+  className,
+}: YearPickerProps) {
   const centerYear = selectedYear ?? new Date().getFullYear();
   const minYear = minDate ? minDate.getFullYear() : centerYear - span;
   const maxYear = maxDate ? maxDate.getFullYear() : centerYear + span;
@@ -36,8 +43,13 @@ export function YearPicker({ selectedYear, minDate, maxDate, span = 12, onSelect
   }, []);
 
   return (
-    <div ref={listRef} className={cn("flex flex-col gap-0.5 overflow-y-auto p-2 max-h-[280px]", className)} role="listbox" aria-label="Select year">
-      {years.map(year => {
+    <div
+      ref={listRef}
+      className={cn("flex flex-col gap-0.5 overflow-y-auto p-2 max-h-[280px]", className)}
+      role="listbox"
+      aria-label="Select year"
+    >
+      {years.map((year) => {
         const selected = year === selectedYear;
         return (
           <button

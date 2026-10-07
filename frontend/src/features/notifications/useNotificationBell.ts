@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { BackendNotification, connectNotificationsSocket, notificationsApi } from "@/shared/api/notifications";
+import {
+  BackendNotification,
+  connectNotificationsSocket,
+  notificationsApi,
+} from "@/shared/api/notifications";
 
 /**
  * Everything a portal's notification bell needs: the caller's own feed, a
@@ -20,10 +24,17 @@ export function useNotificationBell({ enabled = true, pageSize = 8 } = {}) {
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
-    notificationsApi.list({ pageSize })
-      .then(res => { if (!cancelled) setNotifications(res.items); })
-      .catch(() => { if (!cancelled) setNotifications([]); });
-    return () => { cancelled = true; };
+    notificationsApi
+      .list({ pageSize })
+      .then((res) => {
+        if (!cancelled) setNotifications(res.items);
+      })
+      .catch(() => {
+        if (!cancelled) setNotifications([]);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [enabled, pageSize]);
 
   useEffect(() => {
@@ -32,24 +43,28 @@ export function useNotificationBell({ enabled = true, pageSize = 8 } = {}) {
     socket.on("notification", (raw: BackendNotification) => {
       // An id we already hold is a grouped notification (a counter bill)
       // that just gained a saree — replace it and bring it back to the top.
-      setNotifications(prev => [raw, ...prev.filter(n => n.id !== raw.id)].slice(0, pageSize));
+      setNotifications((prev) => [raw, ...prev.filter((n) => n.id !== raw.id)].slice(0, pageSize));
     });
-    return () => { socket.disconnect(); };
+    return () => {
+      socket.disconnect();
+    };
   }, [enabled, pageSize]);
 
-  const unreadCount = notifications.filter(n => n.readAt === null).length;
+  const unreadCount = notifications.filter((n) => n.readAt === null).length;
 
   const markRead = useCallback((id: string) => {
     const now = new Date().toISOString();
-    setNotifications(prev => prev.map(n => (n.id === id ? { ...n, readAt: n.readAt ?? now } : n)));
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, readAt: n.readAt ?? now } : n))
+    );
     notificationsApi.markRead(id).catch(() => {
       // Server state didn't change — undo the optimistic read.
-      setNotifications(prev => prev.map(n => (n.id === id ? { ...n, readAt: null } : n)));
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, readAt: null } : n)));
     });
   }, []);
 
   const markAllRead = useCallback(() => {
-    notifications.filter(n => n.readAt === null).forEach(n => markRead(n.id));
+    notifications.filter((n) => n.readAt === null).forEach((n) => markRead(n.id));
   }, [notifications, markRead]);
 
   return { notifications, unreadCount, markRead, markAllRead };

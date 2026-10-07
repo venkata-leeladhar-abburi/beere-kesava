@@ -1,14 +1,32 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle2, ChevronDown, ChevronRight, ClipboardCheck, Search, XCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  ClipboardCheck,
+  Search,
+  XCircle,
+} from "lucide-react";
 
 import { C, F, SectionCard } from "./theme";
 import { consignmentLabel } from "./ReceiveDispatchModal";
-import { shopReceiptsApi, shopReceiptKeys, type ShopReceipt, type ShopReceiptItemStatus } from "../../../../shared/api/shop-receipts";
+import {
+  shopReceiptsApi,
+  shopReceiptKeys,
+  type ShopReceipt,
+  type ShopReceiptItemStatus,
+} from "../../../../shared/api/shop-receipts";
 import { Input } from "../../../../shared/ui/primitives";
 import { EntityCode } from "../../../../shared/ui/domain";
 import { DataTable, ViewToggle, type ColumnDef, type DataView } from "../../../../shared/ui/data";
-import { DateFilterBar, DEFAULT_DATE_FILTER, matchesDateFilter, type DateFilterState } from "../../../../shared/ui/DateFilterBar";
+import {
+  DateFilterBar,
+  DEFAULT_DATE_FILTER,
+  matchesDateFilter,
+  type DateFilterState,
+} from "../../../../shared/ui/DateFilterBar";
 
 /**
  * Received-dispatch history — every receipt this shop has raised, newest first.
@@ -23,10 +41,19 @@ const fmtDateTime = (iso: string): string => {
   const d = new Date(iso);
   return isNaN(d.getTime())
     ? "—"
-    : d.toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    : d.toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
 };
 
-const STATUS_META: Record<ShopReceiptItemStatus, { label: string; icon: typeof CheckCircle2; color: string }> = {
+const STATUS_META: Record<
+  ShopReceiptItemStatus,
+  { label: string; icon: typeof CheckCircle2; color: string }
+> = {
   RECEIVED: { label: "Received", icon: CheckCircle2, color: "#0F766E" },
   DAMAGED: { label: "Damaged", icon: AlertTriangle, color: "#B45309" },
   MISSING: { label: "Missing", icon: XCircle, color: "#C0392B" },
@@ -34,9 +61,9 @@ const STATUS_META: Record<ShopReceiptItemStatus, { label: string; icon: typeof C
 
 function tally(receipt: ShopReceipt) {
   return {
-    received: receipt.items.filter(i => i.status === "RECEIVED").length,
-    damaged: receipt.items.filter(i => i.status === "DAMAGED").length,
-    missing: receipt.items.filter(i => i.status === "MISSING").length,
+    received: receipt.items.filter((i) => i.status === "RECEIVED").length,
+    damaged: receipt.items.filter((i) => i.status === "DAMAGED").length,
+    missing: receipt.items.filter((i) => i.status === "MISSING").length,
   };
 }
 
@@ -55,20 +82,20 @@ export function ReceivedHistorySection() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return receipts.filter(r => {
+    return receipts.filter((r) => {
       if (!matchesDateFilter(r.receivedAt, dateFilter)) return false;
       if (!q) return true;
       return (
         r.code.toLowerCase().includes(q) ||
         (r.dispatch.challanNumber ?? "").toLowerCase().includes(q) ||
         (r.dispatch.lrNumber ?? "").toLowerCase().includes(q) ||
-        r.items.some(i => i.sareeId.toLowerCase().includes(q))
+        r.items.some((i) => i.sareeId.toLowerCase().includes(q))
       );
     });
   }, [receipts, search, dateFilter]);
 
   const toggle = (id: string) =>
-    setExpanded(prev => {
+    setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -81,7 +108,7 @@ export function ReceivedHistorySection() {
       header: "Receipt No.",
       type: "code",
       priority: 1,
-      accessor: r => r.code,
+      accessor: (r) => r.code,
       cell: (_v, r) => (
         <button
           type="button"
@@ -89,8 +116,13 @@ export function ReceivedHistorySection() {
           aria-expanded={expanded.has(r.id)}
           aria-label={`${expanded.has(r.id) ? "Hide" : "Show"} the sarees on receipt ${r.code}`}
           style={{
-            display: "flex", alignItems: "center", gap: 6, background: "none", border: "none",
-            padding: 0, cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            background: "none",
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
           }}
         >
           {expanded.has(r.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -101,24 +133,25 @@ export function ReceivedHistorySection() {
     {
       id: "consignment",
       header: "Consignment",
-      accessor: r => consignmentLabel(r.dispatch),
+      accessor: (r) => consignmentLabel(r.dispatch),
     },
     {
       id: "receivedAt",
       header: "Received on",
       sortable: true,
-      accessor: r => r.receivedAt,
+      accessor: (r) => r.receivedAt,
       cell: (_v, r) => fmtDateTime(r.receivedAt),
     },
     {
       id: "receivedBy",
       header: "Received by",
-      accessor: r => (r.receivedBy ? `${r.receivedBy.firstName} ${r.receivedBy.lastName}`.trim() : "—"),
+      accessor: (r) =>
+        r.receivedBy ? `${r.receivedBy.firstName} ${r.receivedBy.lastName}`.trim() : "—",
     },
     {
       id: "counts",
       header: "Sarees",
-      accessor: r => tally(r).received,
+      accessor: (r) => tally(r).received,
       cell: (_v, r) => {
         const t = tally(r);
         return (
@@ -143,7 +176,7 @@ export function ReceivedHistorySection() {
         <div style={{ marginBottom: 14 }}>
           <Input
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by receipt no., challan, LR number or saree ID"
             iconLeft={Search}
             size="lg"
@@ -151,7 +184,16 @@ export function ReceivedHistorySection() {
           />
         </div>
 
-        <div style={{ marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" as const }}>
+        <div
+          style={{
+            marginBottom: 12,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+            flexWrap: "wrap" as const,
+          }}
+        >
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           <ViewToggle value={dataView} onChange={setDataView} />
         </div>
@@ -159,7 +201,7 @@ export function ReceivedHistorySection() {
         <DataTable
           columns={columns}
           data={filtered}
-          getRowId={r => r.id}
+          getRowId={(r) => r.id}
           caption="Shop goods receipts raised at this counter"
           density="compact"
           view={dataView}
@@ -168,27 +210,53 @@ export function ReceivedHistorySection() {
           error={isError}
           onRetry={() => void refetch()}
           isFiltered={search.trim() !== "" || dateFilter.mode !== "all"}
-          onClearFilters={() => { setSearch(""); setDateFilter(DEFAULT_DATE_FILTER); }}
+          onClearFilters={() => {
+            setSearch("");
+            setDateFilter(DEFAULT_DATE_FILTER);
+          }}
           emptyTitle="No receipts yet"
           emptyDescription="Consignments received at this counter will be listed here."
           expandedIds={expanded}
-          renderExpandedRow={r => (
+          renderExpandedRow={(r) => (
             <div style={{ padding: "12px 16px 16px", background: "rgba(0,0,0,0.015)" }}>
               {r.dispatch.dispatchedBy && (
-                <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted, marginBottom: r.notes ? 4 : 8 }}>
-                  Dispatched by {r.dispatch.dispatchedBy.firstName} {r.dispatch.dispatchedBy.lastName}
+                <div
+                  style={{
+                    fontFamily: F.u,
+                    fontSize: 12.5,
+                    color: C.muted,
+                    marginBottom: r.notes ? 4 : 8,
+                  }}
+                >
+                  Dispatched by {r.dispatch.dispatchedBy.firstName}{" "}
+                  {r.dispatch.dispatchedBy.lastName}
                 </div>
               )}
               {r.notes && (
-                <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted, marginBottom: 8 }}>Note: {r.notes}</div>
+                <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted, marginBottom: 8 }}>
+                  Note: {r.notes}
+                </div>
               )}
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {r.items.map(item => {
+                {r.items.map((item) => {
                   const meta = STATUS_META[item.status];
                   const Icon = meta.icon;
                   return (
-                    <div key={item.id} style={{ display: "flex", gap: 8, alignItems: "baseline", fontFamily: F.u, fontSize: 12.5 }}>
-                      <Icon size={13} color={meta.color} style={{ flexShrink: 0, alignSelf: "center" }} />
+                    <div
+                      key={item.id}
+                      style={{
+                        display: "flex",
+                        gap: 8,
+                        alignItems: "baseline",
+                        fontFamily: F.u,
+                        fontSize: 12.5,
+                      }}
+                    >
+                      <Icon
+                        size={13}
+                        color={meta.color}
+                        style={{ flexShrink: 0, alignSelf: "center" }}
+                      />
                       <span style={{ fontWeight: 600, color: C.text }}>{item.sareeId}</span>
                       <span style={{ color: meta.color }}>{meta.label}</span>
                       {item.remarks && <span style={{ color: C.muted }}>— {item.remarks}</span>}

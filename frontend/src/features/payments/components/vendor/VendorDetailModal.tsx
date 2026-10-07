@@ -14,7 +14,15 @@ import { formatRecordedBy } from "@/lib/domain/actor";
 import { EntityCode, Money } from "@/shared/ui/domain";
 
 // ── Vendor Detail Modal ───────────────────────────────────────────────────────
-export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPayment; matchedPO?: PurchaseOrder; onClose: () => void }) {
+export function VendorDetailModal({
+  vp,
+  matchedPO,
+  onClose,
+}: {
+  vp: VendorPayment;
+  matchedPO?: PurchaseOrder;
+  onClose: () => void;
+}) {
   const { firms } = useFirms();
   const balance = vp.invoiceAmt - vp.paidAmt;
   const vendorId = vp.vendorId ?? vp.id;
@@ -23,12 +31,12 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
     queryFn: () => vendorPaymentsApi.list(vendorId),
   });
   const history = (paymentsRes?.items ?? [])
-    .filter(p => !vp.billId || p.billId === vp.billId)
-    .map(p => ({
+    .filter((p) => !vp.billId || p.billId === vp.billId)
+    .map((p) => ({
       id: p.id,
       amount: Number(p.amount),
       date: p.date ? p.date.split("T")[0] : "—",
-      firm: firms.find(f => f.id === p.firmId)?.firmName ?? p.firmId ?? "—",
+      firm: firms.find((f) => f.id === p.firmId)?.firmName ?? p.firmId ?? "—",
       utr: p.utr ?? "—",
       method: p.method ?? "—",
       recordedBy: formatRecordedBy(p.recordedBy),
@@ -36,36 +44,159 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
   const vendorName = matchedPO?.vendor ?? vp.vendor;
 
   return (
-    <Modal open onOpenChange={o => { if (!o) onClose(); }} size="md">
-      <div style={{ display: "flex", flexDirection: "column", height: "100%", maxHeight: "calc(100dvh - 96px)", background: T.warmIvory, borderRadius: "1rem", overflow: "hidden" }}>
-        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", paddingRight: 56, position: "relative", flexShrink: 0 }}>
-          <Dialog.Title style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9", margin: 0 }}>{vendorName}</Dialog.Title>
-          <Dialog.Description asChild><div style={{ marginTop: 4 }}><EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" /></div></Dialog.Description>
+    <Modal
+      open
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+      size="md"
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          maxHeight: "calc(100dvh - 96px)",
+          background: T.warmIvory,
+          borderRadius: "1rem",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`,
+            padding: "24px 28px",
+            paddingRight: 56,
+            position: "relative",
+            flexShrink: 0,
+          }}
+        >
+          <Dialog.Title
+            style={{
+              fontFamily: F.display,
+              fontSize: 20,
+              fontWeight: 700,
+              color: "#FFFDF9",
+              margin: 0,
+            }}
+          >
+            {vendorName}
+          </Dialog.Title>
+          <Dialog.Description asChild>
+            <div style={{ marginTop: 4 }}>
+              <EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" />
+            </div>
+          </Dialog.Description>
           <Dialog.Close asChild>
-            <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose}
-              className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />
+            <IconButton
+              icon={X}
+              label="Close"
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]"
+            />
           </Dialog.Close>
         </div>
 
-        <div style={{ padding: "24px 28px 28px", display: "flex", flexDirection: "column", gap: 22, flex: 1, minHeight: 0, overflowY: "auto" }}>
+        <div
+          style={{
+            padding: "24px 28px 28px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 22,
+            flex: 1,
+            minHeight: 0,
+            overflowY: "auto",
+          }}
+        >
           {/* PO details */}
           <div>
-            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>PO Details</div>
-            <div className="grid grid-cols-1 md:grid-cols-2" style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 16px", gap: 10, marginBottom: 10 }}>
-              <div><span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>PO Number</span><div style={{ marginTop: 2 }}><EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" /></div></div>
-              <div><span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Firm Name</span><div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{matchedPO?.firmName ?? "—"}</div></div>
-              <div><span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Vendor</span><div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{vendorName}</div></div>
-              <div><span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Vendor City</span><div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{matchedPO?.vendorCity ?? "—"}</div></div>
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontWeight: 700,
+                fontSize: 13,
+                color: T.luxuryBrown,
+                marginBottom: 8,
+              }}
+            >
+              PO Details
+            </div>
+            <div
+              className="grid grid-cols-1 md:grid-cols-2"
+              style={{
+                background: "#FFFFFF",
+                borderRadius: 12,
+                border: `1px solid ${T.borderDef}`,
+                padding: "14px 16px",
+                gap: 10,
+                marginBottom: 10,
+              }}
+            >
+              <div>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>PO Number</span>
+                <div style={{ marginTop: 2 }}>
+                  <EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" />
+                </div>
+              </div>
+              <div>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Firm Name</span>
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
+                  {matchedPO?.firmName ?? "—"}
+                </div>
+              </div>
+              <div>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Vendor</span>
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
+                  {vendorName}
+                </div>
+              </div>
+              <div>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Vendor City</span>
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
+                  {matchedPO?.vendorCity ?? "—"}
+                </div>
+              </div>
             </div>
             {matchedPO && (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {matchedPO.materials.map((m, i) => (
                   // POItem.id is optional (only set once persisted); fall back to
                   // materialType+index composite since materials can repeat a type.
-                  <div key={m.id ?? `${m.materialType}-${i}`} style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 8px", borderRadius: 6 }}>{m.materialType}</span>
-                    <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, flex: 1 }}>{m.description || m.subtype}</span>
-                    <span style={{ fontSize: 12, color: T.taupe, fontVariantNumeric: "tabular-nums" }}>{m.quantity} {m.unit}</span>
+                  <div
+                    key={m.id ?? `${m.materialType}-${i}`}
+                    style={{
+                      background: "#FFFFFF",
+                      borderRadius: 10,
+                      border: `1px solid ${T.borderDef}`,
+                      padding: "10px 14px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: F.ui,
+                        fontWeight: 700,
+                        fontSize: 12,
+                        color: T.royalBurgundy,
+                        background: "rgba(110,15,45,0.06)",
+                        padding: "2px 8px",
+                        borderRadius: 6,
+                      }}
+                    >
+                      {m.materialType}
+                    </span>
+                    <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, flex: 1 }}>
+                      {m.description || m.subtype}
+                    </span>
+                    <span
+                      style={{ fontSize: 12, color: T.taupe, fontVariantNumeric: "tabular-nums" }}
+                    >
+                      {m.quantity} {m.unit}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -74,48 +205,184 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
 
           {/* Payment details */}
           <div>
-            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Payment Details</div>
-            <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px" }}>
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontWeight: 700,
+                fontSize: 13,
+                color: T.luxuryBrown,
+                marginBottom: 8,
+              }}
+            >
+              Payment Details
+            </div>
+            <div
+              style={{
+                background: "#FFFFFF",
+                borderRadius: 12,
+                border: `1px solid ${T.borderDef}`,
+                padding: "16px",
+              }}
+            >
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Invoice Amount</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(vp.invoiceAmt)} /></span>
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                  Invoice Amount
+                </span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>
+                  <Money value={rupees(vp.invoiceAmt)} />
+                </span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Paid</span>
-                <span style={{ fontSize: 14, fontWeight: 600, color: T.green }}><Money value={rupees(vp.paidAmt)} /></span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: T.green }}>
+                  <Money value={rupees(vp.paidAmt)} />
+                </span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Balance</span>
-                <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: balance === 0 ? T.green : T.crimson }}><Money value={rupees(balance)} /></span>
+                <span
+                  style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}
+                >
+                  Balance
+                </span>
+                <span
+                  style={{
+                    fontFamily: F.display,
+                    fontSize: 16,
+                    fontWeight: 700,
+                    color: balance === 0 ? T.green : T.crimson,
+                  }}
+                >
+                  <Money value={rupees(balance)} />
+                </span>
               </div>
               {vp.utr && (
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>UTR Number</span>
-                  <span style={{ fontSize: 12, color: T.green, fontVariantNumeric: "tabular-nums" }}>{vp.utr}</span>
+                  <span
+                    style={{ fontSize: 12, color: T.green, fontVariantNumeric: "tabular-nums" }}
+                  >
+                    {vp.utr}
+                  </span>
                 </div>
               )}
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Due Date</span>
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: vp.status === "Overdue" ? T.crimson : T.luxuryBrown }}>{vp.dueDate}</span>
+                <span
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 13,
+                    color: vp.status === "Overdue" ? T.crimson : T.luxuryBrown,
+                  }}
+                >
+                  {vp.dueDate}
+                </span>
               </div>
             </div>
           </div>
 
           {/* Payment history */}
           <div>
-            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Payment History</div>
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontWeight: 700,
+                fontSize: 13,
+                color: T.luxuryBrown,
+                marginBottom: 8,
+              }}
+            >
+              Payment History
+            </div>
             {history.length === 0 ? (
-              <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px", fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center" }}>No payments recorded yet.</div>
+              <div
+                style={{
+                  background: "#FFFFFF",
+                  borderRadius: 12,
+                  border: `1px solid ${T.borderDef}`,
+                  padding: "16px",
+                  fontFamily: F.ui,
+                  fontSize: 13,
+                  color: T.taupe,
+                  textAlign: "center",
+                }}
+              >
+                No payments recorded yet.
+              </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {history.map((h) => (
-                  <div key={h.id} className="grid grid-cols-1 md:grid-cols-6" style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", gap: 10 }}>
-                    <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Amount</div><div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(h.amount)} /></div></div>
-                    <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Date</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.date}</div></div>
-                    <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Paying Firm</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.firm}</div></div>
-                    <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>UTR</div><div style={{ fontSize: 12, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{h.utr}</div></div>
-                    <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Method</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.method}</div></div>
-                    <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Recorded By</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.recordedBy}</div></div>
+                  <div
+                    key={h.id}
+                    className="grid grid-cols-1 md:grid-cols-6"
+                    style={{
+                      background: "#FFFFFF",
+                      borderRadius: 10,
+                      border: `1px solid ${T.borderDef}`,
+                      padding: "12px 16px",
+                      gap: 10,
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>
+                        Amount
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: F.display,
+                          fontSize: 14,
+                          fontWeight: 700,
+                          color: T.green,
+                        }}
+                      >
+                        <Money value={rupees(h.amount)} />
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>
+                        Date
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+                        {h.date}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>
+                        Paying Firm
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+                        {h.firm}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>
+                        UTR
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: T.luxuryBrown,
+                          fontVariantNumeric: "tabular-nums",
+                        }}
+                      >
+                        {h.utr}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>
+                        Method
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+                        {h.method}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>
+                        Recorded By
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+                        {h.recordedBy}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -123,8 +390,18 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
           </div>
         </div>
 
-        <div style={{ padding: "18px 28px", borderTop: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
-          <Button variant="primary" onClick={onClose} className="rounded-[14px] bg-[#6E0F2D]">Close</Button>
+        <div
+          style={{
+            padding: "18px 28px",
+            borderTop: `1px solid ${T.borderDef}`,
+            display: "flex",
+            justifyContent: "flex-end",
+            flexShrink: 0,
+          }}
+        >
+          <Button variant="primary" onClick={onClose} className="rounded-[14px] bg-[#6E0F2D]">
+            Close
+          </Button>
         </div>
       </div>
     </Modal>

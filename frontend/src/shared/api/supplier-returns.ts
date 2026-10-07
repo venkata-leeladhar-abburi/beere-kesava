@@ -1,6 +1,7 @@
 import { apiClient } from "./client";
 
-export type BackendSupplierReturnStatus = "PENDING" | "APPROVED" | "PARTIALLY_APPROVED" | "REJECTED" | "CANCELLED";
+export type BackendSupplierReturnStatus =
+  "PENDING" | "APPROVED" | "PARTIALLY_APPROVED" | "REJECTED" | "CANCELLED";
 
 export interface BackendSupplierReturnRequest {
   id: string;
@@ -47,9 +48,23 @@ type BackendUserRef = { id: string; firstName: string; lastName: string };
 export interface BackendSupplierDebitNote {
   id: string;
   purchaseId: string;
-  purchase: { id: string; supplierName: string | null; invoiceNumber: string | null; gstNumber: string | null; date: string };
+  purchase: {
+    id: string;
+    supplierName: string | null;
+    invoiceNumber: string | null;
+    gstNumber: string | null;
+    date: string;
+  };
   supplierId: string;
-  supplier: { id: string; name: string; code: string | null; city: string | null; address: string | null; phone: string | null; gstCode: string | null };
+  supplier: {
+    id: string;
+    name: string;
+    code: string | null;
+    city: string | null;
+    address: string | null;
+    phone: string | null;
+    gstCode: string | null;
+  };
   reason: string | null;
   status: BackendSupplierReturnStatus;
   requestedById: string;
@@ -59,7 +74,10 @@ export interface BackendSupplierDebitNote {
   decidedAt: string | null;
   decisionNote: string | null;
   createdAt: string;
-  requests: (Omit<BackendSupplierReturnRequest, "purchase" | "supplier" | "requestedBy" | "decidedBy">)[];
+  requests: Omit<
+    BackendSupplierReturnRequest,
+    "purchase" | "supplier" | "requestedBy" | "decidedBy"
+  >[];
 }
 
 export interface CreateSupplierDebitNotePayload {
@@ -102,9 +120,21 @@ export interface ReturnableLine {
   sareeDate: string | null;
   purchase: { id: string; invoiceNumber: string | null; gstNumber: string | null; date: string };
   /** Null for a purchase from an unregistered supplier — those can't be returned. */
-  supplier: { id: string; name: string; code: string | null; city: string | null; phone: string | null } | null;
+  supplier: {
+    id: string;
+    name: string;
+    code: string | null;
+    city: string | null;
+    phone: string | null;
+  } | null;
   supplierName: string | null;
-  pieces: { pieceNo: number; code: string; status: ReturnablePieceStatus; debitNoteId: string | null; imageUrl: string | null }[];
+  pieces: {
+    pieceNo: number;
+    code: string;
+    status: ReturnablePieceStatus;
+    debitNoteId: string | null;
+    imageUrl: string | null;
+  }[];
   /** Set when the query was one exact piece tag. */
   matchedPieceNo: number | null;
   match: "PIECE" | "LINE" | "SEARCH";
@@ -122,38 +152,60 @@ export const supplierReturnsApi = {
     const query = new URLSearchParams();
     query.set("pageSize", String(params.pageSize ?? 100));
     if (params.status) query.set("status", params.status);
-    return apiClient.get<PaginatedResponse<BackendSupplierReturnRequest>>(`/supplier-returns?${query.toString()}`);
+    return apiClient.get<PaginatedResponse<BackendSupplierReturnRequest>>(
+      `/supplier-returns?${query.toString()}`
+    );
   },
 
   create: (payload: CreateSupplierReturnRequestPayload, requestedById: string) =>
-    apiClient.post<BackendSupplierReturnRequest>("/supplier-returns", { ...payload, requestedById }),
+    apiClient.post<BackendSupplierReturnRequest>("/supplier-returns", {
+      ...payload,
+      requestedById,
+    }),
 
   decide: (id: string, payload: DecideSupplierReturnRequestPayload, decidedById: string) =>
-    apiClient.post<BackendSupplierReturnRequest>(`/supplier-returns/${id}/decide`, { ...payload, decidedById }),
+    apiClient.post<BackendSupplierReturnRequest>(`/supplier-returns/${id}/decide`, {
+      ...payload,
+      decidedById,
+    }),
 };
 
 export const supplierDebitNotesApi = {
-  list: (params: { status?: BackendSupplierReturnStatus; purchaseId?: string; pageSize?: number } = {}) => {
+  list: (
+    params: { status?: BackendSupplierReturnStatus; purchaseId?: string; pageSize?: number } = {}
+  ) => {
     const query = new URLSearchParams();
     query.set("pageSize", String(params.pageSize ?? 100));
     if (params.status) query.set("status", params.status);
     if (params.purchaseId) query.set("purchaseId", params.purchaseId);
-    return apiClient.get<PaginatedResponse<BackendSupplierDebitNote>>(`/supplier-debit-notes?${query.toString()}`);
+    return apiClient.get<PaginatedResponse<BackendSupplierDebitNote>>(
+      `/supplier-debit-notes?${query.toString()}`
+    );
   },
 
   /** Scanned tag, line code, or free text (invoice, supplier, type, colour) → matching lines. */
   lookup: (q: string) =>
     apiClient.get<ReturnableLine[]>(`/supplier-debit-notes/lookup?q=${encodeURIComponent(q)}`),
 
-  get: (id: string) => apiClient.get<BackendSupplierDebitNote>(`/supplier-debit-notes/${encodeURIComponent(id)}`),
+  get: (id: string) =>
+    apiClient.get<BackendSupplierDebitNote>(`/supplier-debit-notes/${encodeURIComponent(id)}`),
 
   create: (payload: CreateSupplierDebitNotePayload, requestedById: string) =>
-    apiClient.post<BackendSupplierDebitNote>("/supplier-debit-notes", { ...payload, requestedById }),
+    apiClient.post<BackendSupplierDebitNote>("/supplier-debit-notes", {
+      ...payload,
+      requestedById,
+    }),
 
   decide: (id: string, payload: DecideSupplierDebitNotePayload, decidedById: string) =>
-    apiClient.post<BackendSupplierDebitNote>(`/supplier-debit-notes/${encodeURIComponent(id)}/decide`, { ...payload, decidedById }),
+    apiClient.post<BackendSupplierDebitNote>(
+      `/supplier-debit-notes/${encodeURIComponent(id)}/decide`,
+      { ...payload, decidedById }
+    ),
 
   /** Withdraw a pending note — its raiser or an admin. Frees the reserved pieces; moves no stock. */
   cancel: (id: string, cancelledById: string, note?: string) =>
-    apiClient.post<BackendSupplierDebitNote>(`/supplier-debit-notes/${encodeURIComponent(id)}/cancel`, { cancelledById, note }),
+    apiClient.post<BackendSupplierDebitNote>(
+      `/supplier-debit-notes/${encodeURIComponent(id)}/cancel`,
+      { cancelledById, note }
+    ),
 };

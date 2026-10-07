@@ -28,11 +28,13 @@ const RELOAD_FLAG = "bk:chunk-reload";
 
 function isChunkLoadError(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err);
-  return /dynamically imported module|Importing a module script failed|Loading chunk|Failed to fetch/i.test(msg);
+  return /dynamically imported module|Importing a module script failed|Loading chunk|Failed to fetch/i.test(
+    msg
+  );
 }
 
 export function lazyWithRetry<T extends ComponentType<unknown>>(
-  factory: () => Promise<{ default: T }>,
+  factory: () => Promise<{ default: T }>
 ) {
   return lazy(async () => {
     try {

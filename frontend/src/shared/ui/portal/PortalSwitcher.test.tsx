@@ -17,7 +17,11 @@ vi.mock("@/contexts/AuthContext", async (importOriginal) => {
 function setup(role: Role, availableRoles: Role[]) {
   auth.role = role;
   auth.availableRoles = availableRoles;
-  render(<MemoryRouter><PortalSwitchButtonRows /></MemoryRouter>);
+  render(
+    <MemoryRouter>
+      <PortalSwitchButtonRows />
+    </MemoryRouter>
+  );
 }
 
 describe("PortalSwitchButtonRows", () => {

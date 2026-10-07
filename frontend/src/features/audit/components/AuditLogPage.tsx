@@ -50,8 +50,9 @@ export function AuditLogPage() {
   const staffOptions = useMemo(() => {
     const backendRole = ROLE_FILTER_TO_BACKEND[roleFilter];
     const users = staffData?.items ?? [];
-    const scoped = roleFilter === DEFAULT_ROLE ? users : users.filter(u => u.role === backendRole);
-    return scoped.map(u => ({ id: u.id, label: `${u.firstName} ${u.lastName}` }));
+    const scoped =
+      roleFilter === DEFAULT_ROLE ? users : users.filter((u) => u.role === backendRole);
+    return scoped.map((u) => ({ id: u.id, label: `${u.firstName} ${u.lastName}` }));
   }, [staffData, roleFilter]);
 
   const isFiltered =
@@ -74,18 +75,33 @@ export function AuditLogPage() {
   const staffUserId = staffFilter !== DEFAULT_STAFF ? staffFilter : undefined;
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: "'Inter', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        background: T.silkCream,
+        minHeight: "100dvh",
+        fontFamily: "'Inter', sans-serif",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <PageHeaderStats />
 
       {/* Section wrapper — clears stats strip */}
       <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 96 }}>
         <LiveFilterBar
-          search={search} setSearch={setSearch}
-          roleFilter={roleFilter} setRoleFilter={setRoleFilter}
-          staffFilter={staffFilter} setStaffFilter={setStaffFilter} staffOptions={staffOptions}
-          moduleFilter={moduleFilter} setModuleFilter={setModuleFilter}
-          actionFilter={actionFilter} setActionFilter={setActionFilter}
-          periodFilter={periodFilter} setPeriodFilter={setPeriodFilter}
+          search={search}
+          setSearch={setSearch}
+          roleFilter={roleFilter}
+          setRoleFilter={setRoleFilter}
+          staffFilter={staffFilter}
+          setStaffFilter={setStaffFilter}
+          staffOptions={staffOptions}
+          moduleFilter={moduleFilter}
+          setModuleFilter={setModuleFilter}
+          actionFilter={actionFilter}
+          setActionFilter={setActionFilter}
+          periodFilter={periodFilter}
+          setPeriodFilter={setPeriodFilter}
         />
       </div>
 

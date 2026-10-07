@@ -73,22 +73,40 @@ export interface ExternalPieceInfo {
 }
 
 export type TabKey =
-  | "assigned" | "produced" | "qcpassed" | "semi"
-  | "defective" | "finishing" | "sold" | "outstanding" | "shortage" | "external" | "dispatched";
+  | "assigned"
+  | "produced"
+  | "qcpassed"
+  | "semi"
+  | "defective"
+  | "finishing"
+  | "sold"
+  | "outstanding"
+  | "shortage"
+  | "external"
+  | "dispatched";
 
 /** Which date each tab filters and sorts on. */
 export function tabDate(row: WeaverSareeRow, tab: TabKey): string | null {
   switch (tab) {
-    case "assigned": return row.assignedDate;
-    case "produced": return row.receivedDate ?? row.stock?.qcDate ?? null;
+    case "assigned":
+      return row.assignedDate;
+    case "produced":
+      return row.receivedDate ?? row.stock?.qcDate ?? null;
     case "qcpassed":
     case "semi":
-    case "defective": return row.qcDate;
-    case "finishing": return row.finishingCompletedDate;
-    case "sold": return row.stock?.sale?.date ?? null;
-    case "outstanding": return row.stock?.qcDate ?? null;
-    case "shortage": return row.finishingCompletedDate ?? row.qcDate ?? null;
-    case "external": return row.stock?.purchaseDate ?? row.stock?.qcDate ?? null;
-    case "dispatched": return row.stock?.sale?.date ?? row.finishingCompletedDate ?? null;
+    case "defective":
+      return row.qcDate;
+    case "finishing":
+      return row.finishingCompletedDate;
+    case "sold":
+      return row.stock?.sale?.date ?? null;
+    case "outstanding":
+      return row.stock?.qcDate ?? null;
+    case "shortage":
+      return row.finishingCompletedDate ?? row.qcDate ?? null;
+    case "external":
+      return row.stock?.purchaseDate ?? row.stock?.qcDate ?? null;
+    case "dispatched":
+      return row.stock?.sale?.date ?? row.finishingCompletedDate ?? null;
   }
 }

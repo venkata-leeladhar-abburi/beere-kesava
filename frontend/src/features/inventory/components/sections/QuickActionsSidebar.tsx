@@ -34,14 +34,21 @@ export function QuickActionsSidebar({
   if (!showQuickDispatch && !showCategorySplit) return null;
 
   const categories = [
-    { label: "Pending Finishing",  val: pendingCount, total: Math.max(1, total), color: T.antiqueGold },
-    { label: "Ready for Dispatch",  val: ready,        total: Math.max(1, total), color: T.green },
-    { label: "Dispatched",          val: dispatched,   total: Math.max(1, total), color: T.royalBurgundy },
-    { label: "Damaged / Review",    val: damaged,      total: Math.max(1, total), color: T.crimson },
+    {
+      label: "Pending Finishing",
+      val: pendingCount,
+      total: Math.max(1, total),
+      color: T.antiqueGold,
+    },
+    { label: "Ready for Dispatch", val: ready, total: Math.max(1, total), color: T.green },
+    { label: "Dispatched", val: dispatched, total: Math.max(1, total), color: T.royalBurgundy },
+    { label: "Damaged / Review", val: damaged, total: Math.max(1, total), color: T.crimson },
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16, position: "sticky", top: 100 }}>
+    <div
+      style={{ display: "flex", flexDirection: "column", gap: 16, position: "sticky", top: 100 }}
+    >
       {/* Dispatch buttons */}
       {showQuickDispatch && (
         <div style={{ ...card, padding: "20px 20px", borderRadius: 16 }}>
@@ -83,8 +90,17 @@ export function QuickActionsSidebar({
                   <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFF" }}>
                     Dispatch to Shop
                   </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 1 }}>
-                    {selectedCount > 0 ? `${selectedCount} saree${selectedCount > 1 ? "s" : ""} ready` : "Select sarees first"}
+                  <div
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 12,
+                      color: "rgba(255,255,255,0.65)",
+                      marginTop: 1,
+                    }}
+                  >
+                    {selectedCount > 0
+                      ? `${selectedCount} saree${selectedCount > 1 ? "s" : ""} ready`
+                      : "Select sarees first"}
                   </div>
                 </div>
               </Button>
@@ -110,7 +126,14 @@ export function QuickActionsSidebar({
                   <Users size={18} color={T.royalBurgundy} />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>
+                  <div
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: T.luxuryBrown,
+                    }}
+                  >
                     Dispatch to Wholesale
                   </div>
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>
@@ -140,7 +163,14 @@ export function QuickActionsSidebar({
                   <FileText size={18} color={T.antiqueGold} />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>
+                  <div
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: T.luxuryBrown,
+                    }}
+                  >
                     Raise Quotation
                   </div>
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>
@@ -175,11 +205,26 @@ export function QuickActionsSidebar({
               <div key={b.label} style={{ marginBottom: 12 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.label}</span>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: b.color, fontVariantNumeric: "tabular-nums" }}>
+                  <span
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: b.color,
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
                     {b.val} <span style={{ color: T.taupe, fontWeight: 400 }}>({pct}%)</span>
                   </span>
                 </div>
-                <div style={{ background: "rgba(139,112,96,0.10)", borderRadius: 999, height: 8, overflow: "hidden" }}>
+                <div
+                  style={{
+                    background: "rgba(139,112,96,0.10)",
+                    borderRadius: 999,
+                    height: 8,
+                    overflow: "hidden",
+                  }}
+                >
                   <div
                     style={{
                       width: `${pct}%`,

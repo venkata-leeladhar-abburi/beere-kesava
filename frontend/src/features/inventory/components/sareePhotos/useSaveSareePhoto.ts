@@ -32,16 +32,23 @@ export function useSaveSareePhoto() {
     try {
       const shrunk = await downscaleImage(file);
       if (shrunk.size > MAX_UPLOAD_BYTES) {
-        setError("This photo is over 5MB and couldn't be shrunk. Take it again, or pick a smaller one.");
+        setError(
+          "This photo is over 5MB and couldn't be shrunk. Take it again, or pick a smaller one."
+        );
         return null;
       }
       const { url } = await uploadsApi.uploadPhoto(shrunk);
       const updated = await sareePhotosApi.setPhoto(sareeId, url);
       queryClient.setQueryData(["saree-photo", updated.sareeId], updated);
-      for (const queryKey of PHOTO_BEARING_QUERIES) void queryClient.invalidateQueries({ queryKey: [...queryKey] });
+      for (const queryKey of PHOTO_BEARING_QUERIES)
+        void queryClient.invalidateQueries({ queryKey: [...queryKey] });
       return updated;
     } catch (err) {
-      setError(err instanceof ApiError || err instanceof Error ? err.message : "Could not save the photo. Please try again.");
+      setError(
+        err instanceof ApiError || err instanceof Error
+          ? err.message
+          : "Could not save the photo. Please try again."
+      );
       return null;
     } finally {
       setSaving(false);

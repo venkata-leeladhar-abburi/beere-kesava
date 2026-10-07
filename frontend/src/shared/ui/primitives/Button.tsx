@@ -105,8 +105,7 @@ const HIT_AREA_INSET: Record<string, string> = {
 };
 
 export interface ButtonProps
-  extends Omit<React.ComponentProps<"button">, "style">,
-    VariantProps<typeof buttonVariants> {
+  extends Omit<React.ComponentProps<"button">, "style">, VariantProps<typeof buttonVariants> {
   iconLeft?: IconName | LucideIcon;
   iconRight?: IconName | LucideIcon;
   loading?: boolean;
@@ -155,7 +154,12 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
   // Survives the unmount that a successful submit usually causes — setting
   // state on a gone component is a no-op warning at best.
   const mounted = React.useRef(true);
-  React.useEffect(() => () => { mounted.current = false; }, []);
+  React.useEffect(
+    () => () => {
+      mounted.current = false;
+    },
+    []
+  );
 
   const handleClick = React.useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -163,7 +167,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
       const result = onClick?.(event) as unknown;
       if (!result || typeof (result as PromiseLike<unknown>).then !== "function") return;
       setPending(true);
-      const clear = () => { if (mounted.current) setPending(false); };
+      const clear = () => {
+        if (mounted.current) setPending(false);
+      };
       // Both settle paths are handled here rather than via .finally(), which
       // would re-reject and surface as an unhandled rejection on top of
       // whatever the caller already does. A promise that rejects this far up
@@ -173,7 +179,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
         console.error("Button onClick failed:", error);
       });
     },
-    [onClick, pending],
+    [onClick, pending]
   );
 
   const busy = loading || pending;
@@ -189,9 +195,17 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
       {...props}
     >
       {showHitArea && (
-        <span aria-hidden="true" className="absolute inset-x-0 pointer-events-none" style={{ inset: `${HIT_AREA_INSET[size]}` }} />
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 pointer-events-none"
+          style={{ inset: `${HIT_AREA_INSET[size]}` }}
+        />
       )}
-      {busy ? <Icon icon={Icons.spinner} size="sm" className="animate-spin" decorative /> : resolveIcon(iconLeft)}
+      {busy ? (
+        <Icon icon={Icons.spinner} size="sm" className="animate-spin" decorative />
+      ) : (
+        resolveIcon(iconLeft)
+      )}
       {busy && <span className="sr-only">{loadingLabel}</span>}
       {children}
       {!busy && resolveIcon(iconRight)}

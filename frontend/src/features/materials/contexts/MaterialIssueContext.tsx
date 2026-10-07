@@ -10,7 +10,10 @@ import {
   CreateMaterialIssuePayload,
   materialIssuesApi,
 } from "../../../shared/api/material-issues";
-import { BackendMaterialReturnRecord, materialReturnsApi } from "../../../shared/api/material-returns";
+import {
+  BackendMaterialReturnRecord,
+  materialReturnsApi,
+} from "../../../shared/api/material-returns";
 import { BackendWeaver, weaversApi } from "../../../shared/api/weavers";
 import { BackendFactoryLoom, factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
@@ -19,14 +22,14 @@ import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface IssuedMaterialItem {
   materialType: "Warp" | "Resham" | "Jari";
-  warpSubtype?: "Resham Warp" | "Jari Warp";  // only for Warp type
+  warpSubtype?: "Resham Warp" | "Jari Warp"; // only for Warp type
   description?: string;
   quantity: number;
-  unit: string;        // kg for Warp/Resham, Buns/Reels for Jari
+  unit: string; // kg for Warp/Resham, Buns/Reels for Jari
   jariType?: "Polyester" | "Silk Fast";
   jariGrade?: "1G" | "2G" | "3G" | "4G" | "5G";
   jariColor?: string;
-  grnBatchId: string;  // which received GRN batch this material came from
+  grnBatchId: string; // which received GRN batch this material came from
   /** GrnItem.id of the exact received line — what the backend deducts against. */
   grnItemId?: string;
   /** Structured per-line code of that GRN line (e.g. "GRN-SreeVignesh-004-002-1") — the same id Receive Stock displays. */
@@ -36,22 +39,22 @@ export interface IssuedMaterialItem {
 }
 
 export interface MaterialIssueRecord {
-  id: string;               // auto-generated e.g. "MIR-2026-001"
-  weaverId?: string;         // Weaver.id (UUID) — the FK, not for display
+  id: string; // auto-generated e.g. "MIR-2026-001"
+  weaverId?: string; // Weaver.id (UUID) — the FK, not for display
   /** Human-facing weaver ID (e.g. "Wea-003"). Show this in the UI; `weaverId` is a UUID. */
   weaverCode?: string;
   weaverName?: string;
-  loomNumber?: number;      // Loom number selected
-  batchId?: string;         // Production batch this issuance is for
-  factoryLoomId?: string;   // set instead of weaverId when issued to a factory loom
+  loomNumber?: number; // Loom number selected
+  batchId?: string; // Production batch this issuance is for
+  factoryLoomId?: string; // set instead of weaverId when issued to a factory loom
   factoryLoomNumber?: string;
-  issuedBy: string;         // Admin name who issued
-  issuedAt: string;         // date-time
+  issuedBy: string; // Admin name who issued
+  issuedAt: string; // date-time
   materials: IssuedMaterialItem[];
   signatureMethod: "here" | "remote";
   signatureCaptured: boolean;
   signatureTimestamp?: string;
-  signatureUrl?: string;    // resolved URL of the captured signature image (HERE method only)
+  signatureUrl?: string; // resolved URL of the captured signature image (HERE method only)
   notes?: string;
   // Rendered via <StatusPill taxonomy="document" .../> in RecordDetailsModal.tsx
   // through ISSUE_STATUS_TO_DOCUMENT (pending-signature → pending, signed →
@@ -63,12 +66,18 @@ export interface MaterialIssueRecord {
 // ─── Backend <-> frontend enum mapping ─────────────────────────────────────────
 // Exported so MaterialReturnContext.tsx (return-materials flow) can reuse the
 // exact same mapping instead of duplicating it.
-export const MATERIAL_TYPE_TO_BACKEND: Record<IssuedMaterialItem["materialType"], BackendMaterialType> = {
+export const MATERIAL_TYPE_TO_BACKEND: Record<
+  IssuedMaterialItem["materialType"],
+  BackendMaterialType
+> = {
   Warp: "WARP",
   Resham: "RESHAM",
   Jari: "JARI",
 };
-export const MATERIAL_TYPE_FROM_BACKEND: Record<BackendMaterialType, IssuedMaterialItem["materialType"]> = {
+export const MATERIAL_TYPE_FROM_BACKEND: Record<
+  BackendMaterialType,
+  IssuedMaterialItem["materialType"]
+> = {
   WARP: "Warp",
   RESHAM: "Resham",
   JARI: "Jari",
@@ -82,19 +91,30 @@ export const WARP_SUBTYPE_FROM_BACKEND: Record<BackendWarpSubtype, "Resham Warp"
   JARI_WARP: "Jari Warp",
 };
 export const JARI_GRADE_TO_BACKEND: Record<string, BackendJariGrade> = {
-  "1G": "G1", "2G": "G2", "3G": "G3", "4G": "G4", "5G": "G5",
+  "1G": "G1",
+  "2G": "G2",
+  "3G": "G3",
+  "4G": "G4",
+  "5G": "G5",
 };
 export const JARI_GRADE_FROM_BACKEND: Record<BackendJariGrade, "1G" | "2G" | "3G" | "4G" | "5G"> = {
-  G1: "1G", G2: "2G", G3: "3G", G4: "4G", G5: "5G",
+  G1: "1G",
+  G2: "2G",
+  G3: "3G",
+  G4: "4G",
+  G5: "5G",
 };
 
-function backendItemToFrontend(item: BackendMaterialIssueRecord["items"][number]): IssuedMaterialItem {
+function backendItemToFrontend(
+  item: BackendMaterialIssueRecord["items"][number]
+): IssuedMaterialItem {
   return {
     materialType: MATERIAL_TYPE_FROM_BACKEND[item.materialType],
     warpSubtype: item.warpSubtype ? WARP_SUBTYPE_FROM_BACKEND[item.warpSubtype] : undefined,
     quantity: Number(item.quantity),
     unit: item.unit,
-    jariType: item.jariType === "Polyester" || item.jariType === "Silk Fast" ? item.jariType : undefined,
+    jariType:
+      item.jariType === "Polyester" || item.jariType === "Silk Fast" ? item.jariType : undefined,
     jariGrade: item.jariGrade ? JARI_GRADE_FROM_BACKEND[item.jariGrade] : undefined,
     jariColor: item.jariColor ?? undefined,
     grnBatchId: item.grnBatchId ?? "",
@@ -108,7 +128,7 @@ function backendItemToFrontend(item: BackendMaterialIssueRecord["items"][number]
 function backendRecordToFrontend(
   r: BackendMaterialIssueRecord,
   weaverLookup: Map<string, string>,
-  loomLookup: Map<string, string>,
+  loomLookup: Map<string, string>
 ): MaterialIssueRecord {
   return {
     id: r.id,
@@ -127,7 +147,12 @@ function backendRecordToFrontend(
     signatureTimestamp: r.signatureTimestamp ?? undefined,
     signatureUrl: r.signatureUrl ?? undefined,
     notes: r.notes ?? undefined,
-    status: r.status === "PENDING_SIGNATURE" ? "pending-signature" : r.status === "SIGNED" ? "signed" : "cancelled",
+    status:
+      r.status === "PENDING_SIGNATURE"
+        ? "pending-signature"
+        : r.status === "SIGNED"
+          ? "signed"
+          : "cancelled",
   };
 }
 
@@ -174,13 +199,13 @@ export function materialItemToGrams(m: IssuedMaterialItem): number {
 // below — it isn't literally one row per saree (a saree can span several
 // material-type items on the same record), but the weight is what matters.
 export interface ReceivedSareeRecord {
-  id: string;          // Saree ID e.g. "RAVI-L2-004"
+  id: string; // Saree ID e.g. "RAVI-L2-004"
   weaverId: string;
   batchId?: string;
-  weightGrams: number;        // provisional weight entered by worker staff at receipt
-  finalWeightGrams?: number;  // final weight entered by admin during tally
-  tallied?: boolean;          // true once admin has confirmed the tally for this series
-  receivedAt: string;  // ISO date-time
+  weightGrams: number; // provisional weight entered by worker staff at receipt
+  finalWeightGrams?: number; // final weight entered by admin during tally
+  tallied?: boolean; // true once admin has confirmed the tally for this series
+  receivedAt: string; // ISO date-time
   color?: string;
   // No taxonomy pill wired here — this field has no rendering call site today
   // (only ever set, never displayed as a badge); adding a home would be
@@ -224,30 +249,38 @@ function backendReturnToReceivedSaree(r: BackendMaterialReturnRecord): ReceivedS
 
 // ─── Outstanding material summary ─────────────────────────────────────────────
 export interface WeaverMaterialSummary {
-  issuedGrams: number;       // total material given (in grams)
-  receivedGrams: number;     // total weight of sarees returned & weighed
-  outstandingGrams: number;  // still lying with the weaver (issued − received)
-  jariReels: number;         // total jari issued expressed in reels
-  sareesReceived: number;    // count of sarees returned
+  issuedGrams: number; // total material given (in grams)
+  receivedGrams: number; // total weight of sarees returned & weighed
+  outstandingGrams: number; // still lying with the weaver (issued − received)
+  jariReels: number; // total jari issued expressed in reels
+  sareesReceived: number; // count of sarees returned
 }
 
 export interface BatchMaterialSummary extends WeaverMaterialSummary {
-  batchId: string;           // production batch this material relates to
+  batchId: string; // production batch this material relates to
 }
 
 // Compute a summary from a set of issue records + received sarees.
-function summarize(records: MaterialIssueRecord[], received: ReceivedSareeRecord[]): WeaverMaterialSummary {
+function summarize(
+  records: MaterialIssueRecord[],
+  received: ReceivedSareeRecord[]
+): WeaverMaterialSummary {
   let issuedGrams = 0;
   let jariReels = 0;
-  records.forEach(r => r.materials.forEach(m => {
-    issuedGrams += materialItemToGrams(m);
-    if (m.materialType === "Jari") {
-      jariReels += (m.unit || "").toLowerCase().startsWith("bun")
-        ? (m.quantity || 0) / BUNS_PER_REEL
-        : (m.quantity || 0);
-    }
-  }));
-  const receivedGrams = received.reduce((sum, r) => sum + (r.finalWeightGrams ?? r.weightGrams ?? 0), 0);
+  records.forEach((r) =>
+    r.materials.forEach((m) => {
+      issuedGrams += materialItemToGrams(m);
+      if (m.materialType === "Jari") {
+        jariReels += (m.unit || "").toLowerCase().startsWith("bun")
+          ? (m.quantity || 0) / BUNS_PER_REEL
+          : m.quantity || 0;
+      }
+    })
+  );
+  const receivedGrams = received.reduce(
+    (sum, r) => sum + (r.finalWeightGrams ?? r.weightGrams ?? 0),
+    0
+  );
   return {
     issuedGrams,
     receivedGrams,
@@ -308,11 +341,15 @@ const ISSUE_RECORDS_KEY = ["materialIssue", "issueRecords"] as const;
  */
 function toRecordUsingInputNames(
   created: Parameters<typeof backendRecordToFrontend>[0],
-  input: AddIssueRecordInput,
+  input: AddIssueRecordInput
 ): MaterialIssueRecord {
-  const weaverLookup = new Map(input.weaverId && input.weaverName ? [[input.weaverId, input.weaverName]] : []);
+  const weaverLookup = new Map(
+    input.weaverId && input.weaverName ? [[input.weaverId, input.weaverName]] : []
+  );
   const loomLookup = new Map(
-    input.factoryLoomId && input.factoryLoomNumber ? [[input.factoryLoomId, input.factoryLoomNumber]] : [],
+    input.factoryLoomId && input.factoryLoomNumber
+      ? [[input.factoryLoomId, input.factoryLoomNumber]]
+      : []
   );
   return backendRecordToFrontend(created, weaverLookup, loomLookup);
 }
@@ -335,7 +372,13 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   // they got back nothing but a "your role is not permitted" 403.
   const enabled = useAuthGate("worker", "weaver", "admin", "superadmin");
 
-  const { data: issueRecords = [], isError, error, isLoading, refetch } = useQuery({
+  const {
+    data: issueRecords = [],
+    isError,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ISSUE_RECORDS_KEY,
     enabled,
     queryFn: async () => {
@@ -347,8 +390,10 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
           : Promise.resolve({ items: [] as BackendFactoryLoom[] }),
       ]);
       const weaverLookup = new Map(weaversRes.items.map((w: BackendWeaver) => [w.id, w.name]));
-      const loomLookup = new Map(loomsRes.items.map((l: BackendFactoryLoom) => [l.id, l.code || l.loomNumber]));
-      return issuesRes.items.map(r => backendRecordToFrontend(r, weaverLookup, loomLookup));
+      const loomLookup = new Map(
+        loomsRes.items.map((l: BackendFactoryLoom) => [l.id, l.code || l.loomNumber])
+      );
+      return issuesRes.items.map((r) => backendRecordToFrontend(r, weaverLookup, loomLookup));
     },
   });
 
@@ -416,7 +461,10 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   const addReceivedSareeMutation = useMutation({
     mutationFn: (rec: ReceivedSareeRecord) => Promise.resolve(rec),
     onSuccess: (rec) => {
-      queryClient.setQueryData<ReceivedSareeRecord[]>(RECEIVED_SAREES_KEY, prev => [rec, ...(prev ?? [])]);
+      queryClient.setQueryData<ReceivedSareeRecord[]>(RECEIVED_SAREES_KEY, (prev) => [
+        rec,
+        ...(prev ?? []),
+      ]);
       toast.success("Saree received");
     },
   });
@@ -432,8 +480,8 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
       patchListItems<MaterialIssueRecord>(
         queryClient,
         ISSUE_RECORDS_KEY,
-        r => r.id === args.recordId,
-        { signatureCaptured: true, status: "signed", signatureTimestamp: new Date().toISOString() },
+        (r) => r.id === args.recordId,
+        { signatureCaptured: true, status: "signed", signatureTimestamp: new Date().toISOString() }
       );
       void queryClient.invalidateQueries({ queryKey: ISSUE_RECORDS_KEY });
       toast.success("Signature captured");
@@ -446,8 +494,8 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   const finalizeReceivedWeightMutation = useMutation({
     mutationFn: (args: { id: string; finalWeightGrams: number }) => Promise.resolve(args),
     onSuccess: ({ id, finalWeightGrams }) => {
-      queryClient.setQueryData<ReceivedSareeRecord[]>(RECEIVED_SAREES_KEY, prev =>
-        (prev ?? []).map(r => (r.id === id ? { ...r, finalWeightGrams, tallied: true } : r))
+      queryClient.setQueryData<ReceivedSareeRecord[]>(RECEIVED_SAREES_KEY, (prev) =>
+        (prev ?? []).map((r) => (r.id === id ? { ...r, finalWeightGrams, tallied: true } : r))
       );
       toast.success("Weight finalized");
     },
@@ -459,59 +507,101 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   const deleteIssueRecord = (id: string): Promise<void> =>
     deleteIssueRecordMutation.mutateAsync(id).then(() => undefined);
 
-  const getRecordsForWeaver = useCallback((weaverId: string) => {
-    return issueRecords.filter(r => r.weaverId === weaverId);
-  }, [issueRecords]);
+  const getRecordsForWeaver = useCallback(
+    (weaverId: string) => {
+      return issueRecords.filter((r) => r.weaverId === weaverId);
+    },
+    [issueRecords]
+  );
 
   const addReceivedSaree = (rec: ReceivedSareeRecord) => addReceivedSareeMutation.mutate(rec);
 
-  const getReceivedForWeaver = useCallback((weaverId: string) => {
-    return receivedSarees.filter(r => r.weaverId === weaverId);
-  }, [receivedSarees]);
+  const getReceivedForWeaver = useCallback(
+    (weaverId: string) => {
+      return receivedSarees.filter((r) => r.weaverId === weaverId);
+    },
+    [receivedSarees]
+  );
 
-  const getReceivedForBatch = useCallback((batchId: string) => {
-    return receivedSarees.filter(r => r.batchId === batchId);
-  }, [receivedSarees]);
+  const getReceivedForBatch = useCallback(
+    (batchId: string) => {
+      return receivedSarees.filter((r) => r.batchId === batchId);
+    },
+    [receivedSarees]
+  );
 
-  const getRecordsForBatch = useCallback((batchId: string) => {
-    return issueRecords.filter(r => r.batchId === batchId);
-  }, [issueRecords]);
+  const getRecordsForBatch = useCallback(
+    (batchId: string) => {
+      return issueRecords.filter((r) => r.batchId === batchId);
+    },
+    [issueRecords]
+  );
 
   const finalizeReceivedWeight = (id: string, finalWeightGrams: number) =>
     finalizeReceivedWeightMutation.mutate({ id, finalWeightGrams });
 
-  const getMaterialSummaryForWeaver = useCallback((weaverId: string): WeaverMaterialSummary => {
-    return summarize(
-      issueRecords.filter(r => r.weaverId === weaverId),
-      receivedSarees.filter(r => r.weaverId === weaverId),
-    );
-  }, [issueRecords, receivedSarees]);
+  const getMaterialSummaryForWeaver = useCallback(
+    (weaverId: string): WeaverMaterialSummary => {
+      return summarize(
+        issueRecords.filter((r) => r.weaverId === weaverId),
+        receivedSarees.filter((r) => r.weaverId === weaverId)
+      );
+    },
+    [issueRecords, receivedSarees]
+  );
 
-  const getMaterialSummaryByBatch = useCallback((weaverId: string): BatchMaterialSummary[] => {
-    const records = issueRecords.filter(r => r.weaverId === weaverId);
-    const received = receivedSarees.filter(r => r.weaverId === weaverId);
-    // Every batch that appears in either issued material or returned sarees.
-    const batchIds = Array.from(new Set([
-      ...records.map(r => r.batchId || "Unassigned"),
-      ...received.map(r => r.batchId || "Unassigned"),
-    ]));
-    return batchIds
-      .map(batchId => ({
-        batchId,
-        ...summarize(
-          records.filter(r => (r.batchId || "Unassigned") === batchId),
-          received.filter(r => (r.batchId || "Unassigned") === batchId),
-        ),
-      }))
-      // Show batches with the most material still outstanding first.
-      .sort((a, b) => b.outstandingGrams - a.outstandingGrams);
-  }, [issueRecords, receivedSarees]);
+  const getMaterialSummaryByBatch = useCallback(
+    (weaverId: string): BatchMaterialSummary[] => {
+      const records = issueRecords.filter((r) => r.weaverId === weaverId);
+      const received = receivedSarees.filter((r) => r.weaverId === weaverId);
+      // Every batch that appears in either issued material or returned sarees.
+      const batchIds = Array.from(
+        new Set([
+          ...records.map((r) => r.batchId || "Unassigned"),
+          ...received.map((r) => r.batchId || "Unassigned"),
+        ])
+      );
+      return (
+        batchIds
+          .map((batchId) => ({
+            batchId,
+            ...summarize(
+              records.filter((r) => (r.batchId || "Unassigned") === batchId),
+              received.filter((r) => (r.batchId || "Unassigned") === batchId)
+            ),
+          }))
+          // Show batches with the most material still outstanding first.
+          .sort((a, b) => b.outstandingGrams - a.outstandingGrams)
+      );
+    },
+    [issueRecords, receivedSarees]
+  );
 
   const updateSignatureStatus = (recordId: string, signatureBlob: Blob) =>
     updateSignatureStatusMutation.mutateAsync({ recordId, signatureBlob }).then(() => undefined);
 
   return (
-    <MaterialIssueContext.Provider value={{ issueRecords, receivedSarees, addIssueRecord, deleteIssueRecord, addReceivedSaree, getRecordsForWeaver, getRecordsForBatch, getReceivedForWeaver, getReceivedForBatch, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, updateSignatureStatus, finalizeReceivedWeight, isError, error, isLoading, refetch: () => void refetch() }}>
+    <MaterialIssueContext.Provider
+      value={{
+        issueRecords,
+        receivedSarees,
+        addIssueRecord,
+        deleteIssueRecord,
+        addReceivedSaree,
+        getRecordsForWeaver,
+        getRecordsForBatch,
+        getReceivedForWeaver,
+        getReceivedForBatch,
+        getMaterialSummaryForWeaver,
+        getMaterialSummaryByBatch,
+        updateSignatureStatus,
+        finalizeReceivedWeight,
+        isError,
+        error,
+        isLoading,
+        refetch: () => void refetch(),
+      }}
+    >
       {children}
     </MaterialIssueContext.Provider>
   );

@@ -38,5 +38,7 @@ export const sareePhotosApi = {
     apiClient.get<SareePhotoRecord>(`/saree-photos/${encodeURIComponent(sareeId.trim())}`),
   /** `photoUrl` must be the path POST /uploads/photo returned. */
   setPhoto: (sareeId: string, photoUrl: string) =>
-    apiClient.put<SareePhotoRecord>(`/saree-photos/${encodeURIComponent(sareeId.trim())}`, { photoUrl }),
+    apiClient.put<SareePhotoRecord>(`/saree-photos/${encodeURIComponent(sareeId.trim())}`, {
+      photoUrl,
+    }),
 };

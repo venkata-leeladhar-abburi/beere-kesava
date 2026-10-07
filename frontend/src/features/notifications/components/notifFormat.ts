@@ -51,7 +51,10 @@ function sourceText(v: unknown): string | null {
 const paymentText = (p: Payload): string | null => {
   const method = str(p.paymentMethod);
   if (!method) return null;
-  const label = method.toUpperCase() === "UPI" ? "UPI" : method.charAt(0).toUpperCase() + method.slice(1).toLowerCase();
+  const label =
+    method.toUpperCase() === "UPI"
+      ? "UPI"
+      : method.charAt(0).toUpperCase() + method.slice(1).toLowerCase();
   return p.paymentRef ? `${label} · ${String(p.paymentRef)}` : label;
 };
 
@@ -61,7 +64,9 @@ const gstText = (rate: unknown, amount: unknown): string | null =>
   num(amount) > 0 ? `${num(rate)}% · ${money(amount)}` : null;
 
 const rows = (list: Array<[string, string | null, boolean?]>): NotifDetail[] =>
-  list.filter(([, v]) => v !== null && v !== "").map(([label, value, strong]) => ({ label, value: value!, strong }));
+  list
+    .filter(([, v]) => v !== null && v !== "")
+    .map(([label, value, strong]) => ({ label, value: value!, strong }));
 
 /** Past sales recorded before the counter discount was saved: their rate is
  *  the saree's listed price, so the discount is inferred, not recorded. */
@@ -74,16 +79,17 @@ const listedPriceNote = (p: Payload): string | null =>
 const saleConfig = (category: "retail" | "wholesale"): TypeConfig => ({
   category,
   priority: "success",
-  title: p => `${category === "retail" ? "Retail" : "Wholesale"} Sale${suffix(p.saleRef)}`,
-  body: p => {
+  title: (p) => `${category === "retail" ? "Retail" : "Wholesale"} Sale${suffix(p.saleRef)}`,
+  body: (p) => {
     const discount = num(p.discount);
-    const off = discount > 0
-      ? ` after ${money(discount)} off${p.discountNote ? ` (${String(p.discountNote)})` : ""}`
-      : "";
+    const off =
+      discount > 0
+        ? ` after ${money(discount)} off${p.discountNote ? ` (${String(p.discountNote)})` : ""}`
+        : "";
     const type = str(p.sareeType);
     return `${str(p.sareeId) ?? "A saree"}${type ? ` (${type})` : ""} sold to ${str(p.customerName) ?? "customer"} for ${money(p.amount)}${off}.`;
   },
-  details: p => {
+  details: (p) => {
     const discount = num(p.discount);
     return rows([
       ["Sale ref", str(p.saleRef)],
@@ -93,7 +99,12 @@ const saleConfig = (category: "retail" | "wholesale"): TypeConfig => ({
       ["Saree type", str(p.sareeType)],
       ["Source", sourceText(p.source)],
       ["Rate", p.rate != null ? money(p.rate) : null],
-      ["Discount", discount > 0 ? `− ${money(discount)}${p.discountNote ? ` (${String(p.discountNote)})` : ""}` : null],
+      [
+        "Discount",
+        discount > 0
+          ? `− ${money(discount)}${p.discountNote ? ` (${String(p.discountNote)})` : ""}`
+          : null,
+      ],
       ["GST", gstText(p.gstRate, p.gstAmount)],
       ["Customer GSTIN", str(p.customerGstin)],
       ["Final amount", money(p.amount), true],
@@ -123,66 +134,68 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
   WEAVER_WARP_REQUEST_RAISED: {
     category: "weaver",
     priority: "warning",
-    title: p => `Warp Requested${suffix(p.weaverName)}`,
-    body: p =>
+    title: (p) => `Warp Requested${suffix(p.weaverName)}`,
+    body: (p) =>
       `${num(p.lengthMeters)}m of ${str(p.warpType) ?? "warp"} requested${p.loomNumber ? ` for loom ${String(p.loomNumber)}` : ""}. Awaiting approval.`,
   },
   WEAVER_WARP_REQUEST_APPROVED: {
     category: "weaver",
     priority: "success",
     title: () => "Warp Request Approved",
-    body: p => `${num(p.lengthMeters)}m of ${str(p.warpType) ?? "warp"} has been approved for issue.`,
+    body: (p) =>
+      `${num(p.lengthMeters)}m of ${str(p.warpType) ?? "warp"} has been approved for issue.`,
   },
   WEAVER_WARP_REQUEST_REJECTED: {
     category: "weaver",
     priority: "critical",
     title: () => "Warp Request Rejected",
-    body: p => withReason(`Your request for ${str(p.warpType) ?? "warp"} was not approved.`, p.reason),
+    body: (p) =>
+      withReason(`Your request for ${str(p.warpType) ?? "warp"} was not approved.`, p.reason),
   },
   WEAVER_RATE_REQUEST_RAISED: {
     category: "weaver",
     priority: "warning",
-    title: p => `Rate Change Requested${suffix(p.sareeTypeCode)}`,
-    body: p =>
+    title: (p) => `Rate Change Requested${suffix(p.sareeTypeCode)}`,
+    body: (p) =>
       `${str(p.requestedByName) ?? "Someone"} asked to change the making charge from ${money(p.oldMakingCharge)} to ${money(p.newMakingCharge)}.`,
   },
   WEAVER_RATE_REQUEST_APPROVED: {
     category: "weaver",
     priority: "success",
-    title: p => `Rate Change Approved${suffix(p.sareeTypeCode)}`,
-    body: p => `The making charge is now ${money(p.newMakingCharge)}.`,
+    title: (p) => `Rate Change Approved${suffix(p.sareeTypeCode)}`,
+    body: (p) => `The making charge is now ${money(p.newMakingCharge)}.`,
   },
   WEAVER_RATE_REQUEST_REJECTED: {
     category: "weaver",
     priority: "critical",
-    title: p => `Rate Change Rejected${suffix(p.sareeTypeCode)}`,
-    body: p => withReason("The existing rate stays in place.", p.reason),
+    title: (p) => `Rate Change Rejected${suffix(p.sareeTypeCode)}`,
+    body: (p) => withReason("The existing rate stays in place.", p.reason),
   },
   WEAVER_PAYMENT_PAID: {
     category: "weaver",
     priority: "success",
     title: () => "Payment Received",
-    body: p =>
+    body: (p) =>
       `${money(p.amountPaid)} has been paid to you${p.utrNumber ? ` (UTR ${String(p.utrNumber)})` : ""}.`,
   },
   WEAVER_DESIGN_ASSIGNED: {
     category: "weaver",
     priority: "info",
     title: () => "New Design Assigned",
-    body: p => str(p.instructions) ?? "A new design has been dispatched to you.",
+    body: (p) => str(p.instructions) ?? "A new design has been dispatched to you.",
   },
   WEAVER_LOOM_ROW_ASSIGNED: {
     category: "weaver",
     priority: "info",
     title: () => "Sarees Assigned",
-    body: p =>
+    body: (p) =>
       `${pieces(p.rowCount)} from batch ${str(p.batchId) ?? "—"} assigned to you${p.designCode ? ` (design ${String(p.designCode)})` : ""}.`,
   },
   WEAVER_DEACTIVATED: {
     category: "weaver",
     priority: "warning",
-    title: p => `Weaver Removed${suffix(p.weaverName)}`,
-    body: p =>
+    title: (p) => `Weaver Removed${suffix(p.weaverName)}`,
+    body: (p) =>
       p.hadPortalAccess
         ? "Their weaver record and portal login have both been deleted."
         : "Their weaver record has been deleted.",
@@ -192,38 +205,41 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
   BATCH_QC_FAILED: {
     category: "production",
     priority: "critical",
-    title: p => `QC Failed${suffix(p.sareeId)}`,
-    body: p => {
-      const defects = Array.isArray(p.defects) && p.defects.length ? ` Defects: ${p.defects.join(", ")}.` : "";
+    title: (p) => `QC Failed${suffix(p.sareeId)}`,
+    body: (p) => {
+      const defects =
+        Array.isArray(p.defects) && p.defects.length ? ` Defects: ${p.defects.join(", ")}.` : "";
       return `Saree rejected at inspection and sent back for rework.${defects} Deduction ${money(p.deduction)}.`;
     },
   },
   BATCH_QC_SEMI_DEFECT: {
     category: "production",
     priority: "warning",
-    title: p => `QC Downgraded${suffix(p.sareeId)}`,
-    body: p => {
-      const defects = Array.isArray(p.defects) && p.defects.length ? ` Defects: ${p.defects.join(", ")}.` : "";
+    title: (p) => `QC Downgraded${suffix(p.sareeId)}`,
+    body: (p) => {
+      const defects =
+        Array.isArray(p.defects) && p.defects.length ? ` Defects: ${p.defects.join(", ")}.` : "";
       return `Passed as semi-defective and sent back for rework.${defects} Deduction ${money(p.deduction)}.`;
     },
   },
   BATCH_FINALIZED: {
     category: "production",
     priority: "success",
-    title: p => `Batch Finalized${suffix(p.batchId)}`,
-    body: p => `${pieces(p.rowCount)} are now active and out at the looms.`,
+    title: (p) => `Batch Finalized${suffix(p.batchId)}`,
+    body: (p) => `${pieces(p.rowCount)} are now active and out at the looms.`,
   },
   BATCH_ROW_RECEIVED: {
     category: "production",
     priority: "info",
-    title: p => `Saree Received${suffix(p.sareeId)}`,
-    body: p => `Row ${num(p.serial)} of batch ${str(p.batchId) ?? "—"} received at ${num(p.weight)}g.`,
+    title: (p) => `Saree Received${suffix(p.sareeId)}`,
+    body: (p) =>
+      `Row ${num(p.serial)} of batch ${str(p.batchId) ?? "—"} received at ${num(p.weight)}g.`,
   },
   BATCH_TALLY_MISMATCH: {
     category: "production",
     priority: "critical",
-    title: p => `Tally Corrected${suffix(p.sareeId)}`,
-    body: p => {
+    title: (p) => `Tally Corrected${suffix(p.sareeId)}`,
+    body: (p) => {
       const parts = [
         p.correctedWeight != null ? `weight ${num(p.correctedWeight)}g` : null,
         p.correctedWarpG != null ? `warp ${num(p.correctedWarpG)}g` : null,
@@ -236,28 +252,28 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
   BATCH_DELIVERY_OVERDUE: {
     category: "production",
     priority: "critical",
-    title: p => `Batch Overdue${suffix(p.batchId)}`,
-    body: p =>
+    title: (p) => `Batch Overdue${suffix(p.batchId)}`,
+    body: (p) =>
       `${pieces(p.pendingCount)} of ${num(p.totalCount)} still out at the looms, ${num(p.daysOverdue)} day(s) past the due date.`,
   },
   FINISHING_SENT: {
     category: "production",
     priority: "info",
     title: () => "Sent to Finishing",
-    body: p =>
+    body: (p) =>
       `${pieces(p.sareeCount)} assigned to ${str(p.finishingStaffName) ?? "finishing staff"}${p.quotationRef ? ` against quotation ${String(p.quotationRef)}` : ""}.`,
   },
   FINISHING_RETURN_RECEIVED: {
     category: "production",
     priority: "success",
-    title: p => `Finishing Complete${suffix(p.sareeId)}`,
+    title: (p) => `Finishing Complete${suffix(p.sareeId)}`,
     body: () => "Returned in perfect condition and ready for dispatch.",
   },
   FINISHING_RETURN_DAMAGED: {
     category: "production",
     priority: "critical",
-    title: p => `Damaged in Finishing${suffix(p.sareeId)}`,
-    body: p =>
+    title: (p) => `Damaged in Finishing${suffix(p.sareeId)}`,
+    body: (p) =>
       `Returned damaged${p.damageType ? ` (${String(p.damageType)}` : ""}${p.damageSeverity ? `, ${String(p.damageSeverity)})` : p.damageType ? ")" : ""} and parked for review.`,
   },
 
@@ -265,210 +281,224 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
   po_stock_received: {
     category: "material",
     priority: "success",
-    title: p => `Stock Received${suffix(p.poNumber)}`,
-    body: p =>
+    title: (p) => `Stock Received${suffix(p.poNumber)}`,
+    body: (p) =>
       `${p.vendorName ? `${String(p.vendorName)} · ` : ""}Goods receipt ${str(p.grnId) ?? ""} has been recorded.`.trim(),
   },
   material_signature_request: {
     category: "material",
     priority: "warning",
-    title: p => (p.recordKind === "RETURN" ? "Confirm Material Return" : "Confirm Materials Issued"),
-    body: p =>
-      `Record ${str(p.recordId) ?? "—"} is waiting for your signature in the portal.`,
+    title: (p) =>
+      p.recordKind === "RETURN" ? "Confirm Material Return" : "Confirm Materials Issued",
+    body: (p) => `Record ${str(p.recordId) ?? "—"} is waiting for your signature in the portal.`,
   },
   MATERIAL_SIGNATURE_COMPLETED: {
     category: "material",
     priority: "success",
-    title: p => (p.recordKind === "RETURN" ? "Material Return Signed" : "Material Issue Signed"),
-    body: p =>
+    title: (p) => (p.recordKind === "RETURN" ? "Material Return Signed" : "Material Issue Signed"),
+    body: (p) =>
       `${str(p.weaverName) ?? "The weaver"} has signed for record ${str(p.recordId) ?? "—"}.`,
   },
   RAW_MATERIAL_LOW_STOCK: {
     category: "material",
     priority: "warning",
-    title: p => `Low Stock${suffix(p.materialName)}`,
-    body: p =>
-      `${num(p.currentStock)} ${str(p.unit) ?? ""} left, at or below the reorder level of ${num(p.reorderLevel)} ${str(p.unit) ?? ""}.`.replace(/\s+/g, " "),
+    title: (p) => `Low Stock${suffix(p.materialName)}`,
+    body: (p) =>
+      `${num(p.currentStock)} ${str(p.unit) ?? ""} left, at or below the reorder level of ${num(p.reorderLevel)} ${str(p.unit) ?? ""}.`.replace(
+        /\s+/g,
+        " "
+      ),
   },
   RAW_MATERIAL_OUT_OF_STOCK: {
     category: "material",
     priority: "critical",
-    title: p => `Out of Stock${suffix(p.materialName)}`,
+    title: (p) => `Out of Stock${suffix(p.materialName)}`,
     body: () => "Nothing left to issue — this will stop the looms until it is replenished.",
   },
   PURCHASE_REQUEST_RAISED: {
     category: "material",
     priority: "warning",
-    title: p => `Purchase Requested${suffix(p.sareeType)}`,
-    body: p =>
+    title: (p) => `Purchase Requested${suffix(p.sareeType)}`,
+    body: (p) =>
       `${str(p.requestedByName) ?? "Someone"} requested ${num(p.quantity)} × ${str(p.sareeType) ?? "item"}${p.estimatedAmount ? ` (est. ${money(p.estimatedAmount)})` : ""}${p.urgency ? ` · ${String(p.urgency)}` : ""}.`,
   },
   PURCHASE_REQUEST_APPROVED: {
     category: "material",
     priority: "success",
-    title: p => `Purchase Request Approved${suffix(p.sareeType)}`,
-    body: p => withReason(`${num(p.quantity)} × ${str(p.sareeType) ?? "item"} approved for purchase.`, p.decisionNote),
+    title: (p) => `Purchase Request Approved${suffix(p.sareeType)}`,
+    body: (p) =>
+      withReason(
+        `${num(p.quantity)} × ${str(p.sareeType) ?? "item"} approved for purchase.`,
+        p.decisionNote
+      ),
   },
   PURCHASE_REQUEST_REJECTED: {
     category: "material",
     priority: "critical",
-    title: p => `Purchase Request Rejected${suffix(p.sareeType)}`,
-    body: p => withReason("This request will not be purchased.", p.decisionNote),
+    title: (p) => `Purchase Request Rejected${suffix(p.sareeType)}`,
+    body: (p) => withReason("This request will not be purchased.", p.decisionNote),
   },
   PURCHASE_ORDER_RAISED: {
     category: "material",
     priority: "info",
-    title: p => `Purchase Order Raised${suffix(p.poNumber)}`,
-    body: p =>
+    title: (p) => `Purchase Order Raised${suffix(p.poNumber)}`,
+    body: (p) =>
       `${str(p.vendorName) ?? "Vendor"} · ${num(p.itemCount)} line(s), ${money(p.totalValue)}${p.urgency ? ` · ${String(p.urgency)}` : ""}. Awaiting approval.`,
   },
   GRN_QUANTITY_MISMATCH: {
     category: "material",
     priority: "critical",
-    title: p => `Short Delivery${suffix(p.poNumber)}`,
-    body: p =>
+    title: (p) => `Short Delivery${suffix(p.poNumber)}`,
+    body: (p) =>
       `${num(p.lineCount)} line(s) from ${str(p.vendorName) ?? "the vendor"} did not match what was ordered.`,
   },
   SUPPLIER_RETURN_RAISED: {
     category: "material",
     priority: "warning",
-    title: p => `Return Requested${suffix(p.supplierName)}`,
-    body: p =>
-      withReason(`${pieces(p.quantity)} to be returned. These stay reserved until decided.`, p.reason),
+    title: (p) => `Return Requested${suffix(p.supplierName)}`,
+    body: (p) =>
+      withReason(
+        `${pieces(p.quantity)} to be returned. These stay reserved until decided.`,
+        p.reason
+      ),
   },
   SUPPLIER_RETURN_DECIDED: {
     category: "material",
     priority: "info",
-    title: p =>
+    title: (p) =>
       `Return ${p.decision === "APPROVED" ? "Approved" : p.decision === "PARTIALLY_APPROVED" ? "Partly Approved" : "Rejected"}${suffix(p.supplierName)}`,
-    body: p =>
+    body: (p) =>
       withReason(
         p.decision === "PARTIALLY_APPROVED" && p.approvedQuantity != null
           ? `${num(p.approvedQuantity)} of ${pieces(p.quantity)} approved.`
           : `${pieces(p.quantity)}.`,
-        p.decisionNote,
+        p.decisionNote
       ),
   },
 
   VENDOR_ADDED: {
     category: "material",
     priority: "info",
-    title: p => `Vendor Added${suffix(p.name)}`,
-    body: p =>
+    title: (p) => `Vendor Added${suffix(p.name)}`,
+    body: (p) =>
       `${str(p.code) ?? "New vendor"}${p.city ? ` · ${String(p.city)}` : ""}${p.contactName ? ` · contact ${String(p.contactName)}` : ""}.`,
   },
   VENDOR_STATUS_CHANGED: {
     category: "material",
     priority: "warning",
-    title: p => `Vendor ${p.status === "OVERDUE" ? "Marked Overdue" : "Deactivated"}${suffix(p.name)}`,
-    body: p => `Status changed from ${str(p.previousStatus) ?? "—"} to ${str(p.status) ?? "—"}.`,
+    title: (p) =>
+      `Vendor ${p.status === "OVERDUE" ? "Marked Overdue" : "Deactivated"}${suffix(p.name)}`,
+    body: (p) => `Status changed from ${str(p.previousStatus) ?? "—"} to ${str(p.status) ?? "—"}.`,
   },
   VENDOR_REACTIVATED: {
     category: "material",
     priority: "success",
-    title: p => `Vendor Reactivated${suffix(p.name)}`,
-    body: p => `Back to active from ${str(p.previousStatus) ?? "—"} — orders can be raised again.`,
+    title: (p) => `Vendor Reactivated${suffix(p.name)}`,
+    body: (p) =>
+      `Back to active from ${str(p.previousStatus) ?? "—"} — orders can be raised again.`,
   },
   VENDOR_REMOVED: {
     category: "material",
     priority: "warning",
-    title: p => `Vendor Removed${suffix(p.name)}`,
-    body: p => `${str(p.code) ?? "The vendor"} has been deleted.`,
+    title: (p) => `Vendor Removed${suffix(p.name)}`,
+    body: (p) => `${str(p.code) ?? "The vendor"} has been deleted.`,
   },
   SUPPLIER_ADDED: {
     category: "material",
     priority: "info",
-    title: p => `Supplier Added${suffix(p.name)}`,
-    body: p =>
+    title: (p) => `Supplier Added${suffix(p.name)}`,
+    body: (p) =>
       `${str(p.code) ?? "New supplier"}${p.city ? ` · ${String(p.city)}` : ""}${p.contactName ? ` · contact ${String(p.contactName)}` : ""}.`,
   },
   SUPPLIER_STATUS_CHANGED: {
     category: "material",
     priority: "warning",
-    title: p => `Supplier ${p.status === "OVERDUE" ? "Marked Overdue" : "Deactivated"}${suffix(p.name)}`,
-    body: p => `Status changed from ${str(p.previousStatus) ?? "—"} to ${str(p.status) ?? "—"}.`,
+    title: (p) =>
+      `Supplier ${p.status === "OVERDUE" ? "Marked Overdue" : "Deactivated"}${suffix(p.name)}`,
+    body: (p) => `Status changed from ${str(p.previousStatus) ?? "—"} to ${str(p.status) ?? "—"}.`,
   },
   SUPPLIER_REACTIVATED: {
     category: "material",
     priority: "success",
-    title: p => `Supplier Reactivated${suffix(p.name)}`,
-    body: p => `Back to active from ${str(p.previousStatus) ?? "—"} — purchases can be raised again.`,
+    title: (p) => `Supplier Reactivated${suffix(p.name)}`,
+    body: (p) =>
+      `Back to active from ${str(p.previousStatus) ?? "—"} — purchases can be raised again.`,
   },
   SUPPLIER_REMOVED: {
     category: "material",
     priority: "warning",
-    title: p => `Supplier Removed${suffix(p.name)}`,
-    body: p => `${str(p.code) ?? "The supplier"} has been deleted.`,
+    title: (p) => `Supplier Removed${suffix(p.name)}`,
+    body: (p) => `${str(p.code) ?? "The supplier"} has been deleted.`,
   },
 
   // ── Payments & Invoices ──────────────────────────────────────────────
   invoice_overdue: {
     category: "payment",
     priority: "critical",
-    title: p => `Invoice Overdue${suffix(p.invoiceNumber)}`,
-    body: p => `Outstanding amount ${money(p.outstanding)} is more than 45 days overdue.`,
+    title: (p) => `Invoice Overdue${suffix(p.invoiceNumber)}`,
+    body: (p) => `Outstanding amount ${money(p.outstanding)} is more than 45 days overdue.`,
   },
   bulk_order_payment_overdue: {
     category: "payment",
     priority: "critical",
-    title: p => `Order Payment Overdue${suffix(p.bulkOrderRef)}`,
-    body: p => `Outstanding amount ${money(p.outstanding)} is more than 45 days overdue.`,
+    title: (p) => `Order Payment Overdue${suffix(p.bulkOrderRef)}`,
+    body: (p) => `Outstanding amount ${money(p.outstanding)} is more than 45 days overdue.`,
   },
   INVOICE_CREATED: {
     category: "payment",
     priority: "info",
-    title: p => `Invoice Raised${suffix(p.invoiceNumber)}`,
-    body: p => `${money(p.total)} billed to ${str(p.customerName) ?? "customer"}.`,
+    title: (p) => `Invoice Raised${suffix(p.invoiceNumber)}`,
+    body: (p) => `${money(p.total)} billed to ${str(p.customerName) ?? "customer"}.`,
   },
   INVOICE_PAYMENT_RECEIVED: {
     category: "payment",
     priority: "success",
-    title: p => `Part Payment Received${suffix(p.invoiceNumber)}`,
-    body: p => `${money(p.amount)} received. ${money(p.outstanding)} still outstanding.`,
+    title: (p) => `Part Payment Received${suffix(p.invoiceNumber)}`,
+    body: (p) => `${money(p.amount)} received. ${money(p.outstanding)} still outstanding.`,
   },
   INVOICE_PAID: {
     category: "payment",
     priority: "success",
-    title: p => `Invoice Settled${suffix(p.invoiceNumber)}`,
-    body: p => `${money(p.total)} paid in full.`,
+    title: (p) => `Invoice Settled${suffix(p.invoiceNumber)}`,
+    body: (p) => `${money(p.total)} paid in full.`,
   },
   VENDOR_BILL_CREATED: {
     category: "payment",
     priority: "info",
-    title: p => `Vendor Bill Raised${suffix(p.vendorName)}`,
-    body: p => `${money(p.amount)} billed${p.poNumber ? ` against ${String(p.poNumber)}` : ""}.`,
+    title: (p) => `Vendor Bill Raised${suffix(p.vendorName)}`,
+    body: (p) => `${money(p.amount)} billed${p.poNumber ? ` against ${String(p.poNumber)}` : ""}.`,
   },
   VENDOR_BILL_MISMATCH: {
     category: "payment",
     priority: "critical",
-    title: p => `Bill Does Not Match Order${suffix(p.poNumber)}`,
-    body: p =>
+    title: (p) => `Bill Does Not Match Order${suffix(p.poNumber)}`,
+    body: (p) =>
       `${str(p.vendorName) ?? "Vendor"} billed ${money(p.billedAmount)} against an order of ${money(p.orderedValue)} — a difference of ${money(Math.abs(num(p.difference)))}.`,
   },
   VENDOR_PAYMENT_PAID: {
     category: "payment",
     priority: "success",
-    title: p => `Vendor Paid${suffix(p.vendorName)}`,
-    body: p => `${money(p.amount)} paid${p.billId ? " against a bill" : ""}.`,
+    title: (p) => `Vendor Paid${suffix(p.vendorName)}`,
+    body: (p) => `${money(p.amount)} paid${p.billId ? " against a bill" : ""}.`,
   },
   SUPPLIER_PAYMENT_PAID: {
     category: "payment",
     priority: "success",
-    title: p => `Supplier Paid${suffix(p.supplierName)}`,
-    body: p => `${money(p.amount)} paid${p.purchaseId ? " against a purchase" : ""}.`,
+    title: (p) => `Supplier Paid${suffix(p.supplierName)}`,
+    body: (p) => `${money(p.amount)} paid${p.purchaseId ? " against a purchase" : ""}.`,
   },
   BULK_ORDER_PAYMENT_RECEIVED: {
     category: "payment",
     priority: "success",
-    title: p => `Order Payment Received${suffix(p.bulkOrderRef)}`,
-    body: p =>
+    title: (p) => `Order Payment Received${suffix(p.bulkOrderRef)}`,
+    body: (p) =>
       `${money(p.amount)} received from ${str(p.customerName) ?? "customer"}. ${money(p.amountDue)} still due.`,
   },
   PAYMENT_IMPORT_COMPLETED: {
     category: "payment",
     priority: "success",
-    title: p => `${p.kind === "VENDOR" ? "Vendor" : "Weaver"} Payment Import Finished`,
-    body: p =>
+    title: (p) => `${p.kind === "VENDOR" ? "Vendor" : "Weaver"} Payment Import Finished`,
+    body: (p) =>
       `${num(p.created)} payment(s) saved totalling ${money(p.totalAmount)}${num(p.failed) > 0 ? `, ${num(p.failed)} row(s) failed` : ""}.`,
   },
 
@@ -476,41 +506,41 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
   SHOP_DISPATCH_INCOMING_STOCK: {
     category: "dispatch",
     priority: "info",
-    title: p => `Consignment On Its Way${suffix(p.challanNumber)}`,
-    body: p =>
+    title: (p) => `Consignment On Its Way${suffix(p.challanNumber)}`,
+    body: (p) =>
       `${pieces(p.sareeCount)} dispatched to the shop${p.lrNumber ? ` · LR ${String(p.lrNumber)}` : ""}.`,
   },
   SHOP_DISPATCH_RECEIVED: {
     category: "dispatch",
     priority: "success",
-    title: p => `Consignment Received${suffix(p.challanNumber)}`,
-    body: p => `The shop counter receipted ${pieces(p.received)} in full.`,
+    title: (p) => `Consignment Received${suffix(p.challanNumber)}`,
+    body: (p) => `The shop counter receipted ${pieces(p.received)} in full.`,
   },
   SHOP_RECEIPT_DISCREPANCY_ALERT: {
     category: "dispatch",
     priority: "critical",
-    title: p => `Consignment Shortage${suffix(p.challanNumber)}`,
-    body: p =>
+    title: (p) => `Consignment Shortage${suffix(p.challanNumber)}`,
+    body: (p) =>
       `${num(p.damaged)} damaged and ${num(p.missing)} missing out of ${num(p.received) + num(p.damaged) + num(p.missing)} on receipt ${str(p.code) ?? "—"}.`,
   },
   SHOP_DISPATCH_UNCONFIRMED: {
     category: "dispatch",
     priority: "warning",
-    title: p => `Consignment Not Receipted${suffix(p.challanNumber)}`,
-    body: p =>
+    title: (p) => `Consignment Not Receipted${suffix(p.challanNumber)}`,
+    body: (p) =>
       `${pieces(p.sareeCount)} dispatched ${num(p.daysSinceDispatch)} day(s) ago and still not confirmed by the shop.`,
   },
   RETAIL_BILL_RECORDED: {
     category: "retail",
     priority: "success",
-    title: p => `Retail Sale${suffix(p.billRef)}`,
-    body: p => {
+    title: (p) => `Retail Sale${suffix(p.billRef)}`,
+    body: (p) => {
       const discount = num(p.discount);
       const count = num(p.sareeCount);
       const gst = num(p.gst) > 0 ? ` incl. ${num(p.gstRate)}% GST` : "";
       return `${count} saree${count === 1 ? "" : "s"} sold to ${str(p.customerName) ?? "customer"} for ${money(p.total)}${gst}${discount > 0 ? ` after ${money(discount)} off` : ""}.`;
     },
-    details: p => {
+    details: (p) => {
       const discount = num(p.discount);
       return rows([
         ["Bill no", str(p.billRef)],
@@ -529,9 +559,9 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
         ["Note", listedPriceNote(p)],
       ]);
     },
-    sarees: p =>
+    sarees: (p) =>
       Array.isArray(p.lines)
-        ? (p.lines as Payload[]).map(l => {
+        ? (p.lines as Payload[]).map((l) => {
             const discount = num(l.discount);
             const note = l.discountNote ? ` (${String(l.discountNote)})` : "";
             // Line prices are shown before GST — the bill's GST is its own row.
@@ -540,9 +570,10 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
               sareeId: String(l.sareeId ?? "—"),
               sareeType: str(l.sareeType),
               source: sourceText(l.source),
-              price: discount > 0
-                ? `${money(l.rate)} − ${money(discount)}${note} = ${money(net)}`
-                : money(net),
+              price:
+                discount > 0
+                  ? `${money(l.rate)} − ${money(discount)}${note} = ${money(net)}`
+                  : money(net),
             };
           })
         : [],
@@ -552,10 +583,10 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
   WHOLESALE_DISPATCH_RECORDED: {
     category: "wholesale",
     priority: "success",
-    title: p => `Wholesale Sale${suffix(p.invoiceNumber)}`,
-    body: p =>
+    title: (p) => `Wholesale Sale${suffix(p.invoiceNumber)}`,
+    body: (p) =>
       `${pieces(p.sareeCount)} dispatched to ${str(p.customerName) ?? "a wholesale customer"} · ${money(p.grandTotal)}${num(p.gstPct) > 0 ? ` incl. ${num(p.gstPct)}% GST` : ""}.`,
-    details: p =>
+    details: (p) =>
       rows([
         ["Customer", str(p.customerName)],
         ["Phone", str(p.customerPhone)],
@@ -563,14 +594,24 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
         ["Sarees", String(num(p.sareeCount))],
         ["Rate per saree", num(p.pricePerSaree) > 0 ? money(p.pricePerSaree) : null],
         ["Subtotal", money(p.totalAmount)],
-        ["GST", num(p.gstPct) > 0 ? `${num(p.gstPct)}% · ${money(num(p.grandTotal) - num(p.totalAmount))}` : null],
+        [
+          "GST",
+          num(p.gstPct) > 0
+            ? `${num(p.gstPct)}% · ${money(num(p.grandTotal) - num(p.totalAmount))}`
+            : null,
+        ],
         ["Grand total", money(p.grandTotal), true],
         ["Bulk order", str(p.bulkOrderRef)],
-        ["Transport", [str(p.transportCompany), p.lrNumber ? `LR ${String(p.lrNumber)}` : null].filter(Boolean).join(" · ") || null],
+        [
+          "Transport",
+          [str(p.transportCompany), p.lrNumber ? `LR ${String(p.lrNumber)}` : null]
+            .filter(Boolean)
+            .join(" · ") || null,
+        ],
       ]),
-    sarees: p =>
+    sarees: (p) =>
       Array.isArray(p.sarees)
-        ? (p.sarees as Payload[]).map(x => ({
+        ? (p.sarees as Payload[]).map((x) => ({
             sareeId: String(x.sareeId ?? "—"),
             sareeType: str(x.sareeType),
             source: sourceText(x.source),
@@ -579,46 +620,46 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
   },
   // Older rows, written before sales split into Retail and Wholesale.
   SHOP_SALE_RECORDED: {
-    category: p => (String(p.channel).toUpperCase() === "WHOLESALE" ? "wholesale" : "retail"),
+    category: (p) => (String(p.channel).toUpperCase() === "WHOLESALE" ? "wholesale" : "retail"),
     priority: "info",
-    title: p => `Sale Recorded${suffix(p.saleRef)}`,
-    body: p =>
+    title: (p) => `Sale Recorded${suffix(p.saleRef)}`,
+    body: (p) =>
       `${str(p.sareeId) ?? "A saree"} sold to ${str(p.customerName) ?? "customer"} for ${money(p.amount)} (${str(p.channel) ?? "retail"}).`,
   },
   SHOP_SALE_RETURNED: {
     category: "dispatch",
     priority: "warning",
-    title: p => `Sale Returned${suffix(p.returnRef)}`,
-    body: p =>
+    title: (p) => `Sale Returned${suffix(p.returnRef)}`,
+    body: (p) =>
       withReason(
         `${str(p.sareeId) ?? "A saree"} returned by ${str(p.customerName) ?? "customer"}${p.refundAmount ? `, refund ${money(p.refundAmount)}` : ""}.`,
-        p.reason,
+        p.reason
       ),
   },
   SHOP_RETURN_TO_INVENTORY: {
     category: "dispatch",
     priority: "info",
-    title: p => `Return Back In Stock${suffix(p.returnRef)}`,
-    body: p => `${str(p.sareeId) ?? "A saree"} has been put back on the shop floor.`,
+    title: (p) => `Return Back In Stock${suffix(p.returnRef)}`,
+    body: (p) => `${str(p.sareeId) ?? "A saree"} has been put back on the shop floor.`,
   },
   SHOP_STOCK_LOW: {
     category: "dispatch",
     priority: "warning",
     title: () => "Shop Stock Running Low",
-    body: p =>
+    body: (p) =>
       `Only ${pieces(p.available)} left on the floor, at or below the threshold of ${num(p.threshold)}.`,
   },
   BULK_ORDER_PLACED: {
     category: "dispatch",
     priority: "info",
-    title: p => `Bulk Order Placed${suffix(p.bulkOrderRef)}`,
-    body: p =>
+    title: (p) => `Bulk Order Placed${suffix(p.bulkOrderRef)}`,
+    body: (p) =>
       `${str(p.customerName) ?? "Customer"} · ${money(p.total)}${p.designCode ? ` · design ${String(p.designCode)}` : ""}.`,
   },
 };
 
 export function humanizeType(type: string): string {
-  return type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  return type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 /**
@@ -631,18 +672,35 @@ export function inferCategory(type: string): UnifiedNotif["category"] {
   if (t.includes("PAYMENT") || t.includes("INVOICE") || t.includes("BILL")) return "payment";
   if (t.includes("WHOLESALE")) return "wholesale";
   if (t.includes("SALE") && !t.includes("RETURN")) return "retail";
-  if (t.includes("DISPATCH") || t.includes("SHOP") || t.includes("ORDER") || t.includes("SALE")) return "dispatch";
+  if (t.includes("DISPATCH") || t.includes("SHOP") || t.includes("ORDER") || t.includes("SALE"))
+    return "dispatch";
   if (t.includes("WEAVER") || t.includes("LOOM")) return "weaver";
-  if (t.includes("WARP") || t.includes("MATERIAL") || t.includes("STOCK") || t.includes("GRN")) return "material";
-  if (t.includes("BATCH") || t.includes("SAREE") || t.includes("QC") || t.includes("FINISHING")) return "production";
+  if (t.includes("WARP") || t.includes("MATERIAL") || t.includes("STOCK") || t.includes("GRN"))
+    return "material";
+  if (t.includes("BATCH") || t.includes("SAREE") || t.includes("QC") || t.includes("FINISHING"))
+    return "production";
   return "production";
 }
 
 export function inferPriority(type: string): Priority {
   const t = type.toUpperCase();
-  if (t.includes("REJECT") || t.includes("FAIL") || t.includes("DEFECT") || t.includes("OVERDUE") || t.includes("CRITICAL")) return "critical";
+  if (
+    t.includes("REJECT") ||
+    t.includes("FAIL") ||
+    t.includes("DEFECT") ||
+    t.includes("OVERDUE") ||
+    t.includes("CRITICAL")
+  )
+    return "critical";
   if (t.includes("PENDING") || t.includes("WARN") || t.includes("RISK")) return "warning";
-  if (t.includes("APPROVE") || t.includes("PAID") || t.includes("SUCCESS") || t.includes("COMPLETE") || t.includes("SIGNED")) return "success";
+  if (
+    t.includes("APPROVE") ||
+    t.includes("PAID") ||
+    t.includes("SUCCESS") ||
+    t.includes("COMPLETE") ||
+    t.includes("SIGNED")
+  )
+    return "success";
   return "info";
 }
 
@@ -695,12 +753,17 @@ export function formatRelativeTime(iso: string): string {
 export function toUnifiedNotif(n: BackendNotification): UnifiedNotif {
   const cfg = TYPE_CONFIG[n.type];
   const payload = n.payload ?? {};
-  const category = typeof cfg?.category === "function"
-    ? safely(cfg.category, payload, () => inferCategory(n.type)) as UnifiedNotif["category"]
-    : cfg?.category ?? inferCategory(n.type);
-  const optional = <T,>(render: ((p: Payload) => T) | undefined): T | undefined => {
+  const category =
+    typeof cfg?.category === "function"
+      ? (safely(cfg.category, payload, () => inferCategory(n.type)) as UnifiedNotif["category"])
+      : (cfg?.category ?? inferCategory(n.type));
+  const optional = <T>(render: ((p: Payload) => T) | undefined): T | undefined => {
     if (!render) return undefined;
-    try { return render(payload); } catch { return undefined; }
+    try {
+      return render(payload);
+    } catch {
+      return undefined;
+    }
   };
   return {
     id: n.id,

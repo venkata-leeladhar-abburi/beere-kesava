@@ -65,11 +65,9 @@ export function useDashboardAnalytics() {
     staleTime: 10_000,
   });
 
-  const isLoading =
-    production.isLoading && batches.isLoading && weavers.isLoading;
+  const isLoading = production.isLoading && batches.isLoading && weavers.isLoading;
 
-  const isError =
-    batches.isError && weavers.isError;
+  const isError = batches.isError && weavers.isError;
 
   const refetch = () => {
     void production.refetch();
@@ -91,14 +89,14 @@ export function useDashboardAnalytics() {
   const activeBatchesCount = activeBatches.length > 0 ? activeBatches.length : allBatches.length;
 
   const weaversWorkingOnBatches = new Set(
-    allBatches.flatMap((b) =>
-      b.rows
-        .filter((r) => r.weaverId)
-        .map((r) => r.weaverId!),
-    ),
+    allBatches.flatMap((b) => b.rows.filter((r) => r.weaverId).map((r) => r.weaverId!))
   );
   const activeWeaversInDb = (weavers.data?.items ?? []).filter((w) => w.status === "ACTIVE").length;
-  const weaversWorkingCount = Math.max(weaversWorkingOnBatches.size, activeWeaversInDb, weavers.data?.total ?? 0);
+  const weaversWorkingCount = Math.max(
+    weaversWorkingOnBatches.size,
+    activeWeaversInDb,
+    weavers.data?.total ?? 0
+  );
 
   const sareeTypeCodesCount = (sareeTypes.data?.items ?? []).length;
 
@@ -111,7 +109,7 @@ export function useDashboardAnalytics() {
   // history entries (one truck run can carry many sarees), so it undercounts
   // what the "Dispatch" tile is meant to report.
   const dispatchedSareeIds = new Set(
-    (dispatches.data?.items ?? []).flatMap((d) => d.sarees.map((s) => s.sareeId)),
+    (dispatches.data?.items ?? []).flatMap((d) => d.sarees.map((s) => s.sareeId))
   );
   const dispatchedCount = dispatchedSareeIds.size;
 
@@ -120,16 +118,21 @@ export function useDashboardAnalytics() {
   // so it has to be subtracted rather than counting every pass ever recorded.
   const inStockSareesCount = Math.max(0, (qc?.PASSED ?? 0) - dispatchedSareeIds.size);
 
-  const overdueInvoicesCount = (outstanding.data?.items ?? []).filter((i) => i.status === "OVERDUE").length;
+  const overdueInvoicesCount = (outstanding.data?.items ?? []).filter(
+    (i) => i.status === "OVERDUE"
+  ).length;
 
   const paymentsCollectedPct = productionAnalytics.data?.paymentsCollectedPct ?? 0;
 
   // What fraction of QC-passed production is still sitting in stock
   // (undispatched) — the "Inventory" progress bar was a hardcoded 0% before,
   // wired to nothing.
-  const inStockPct = (qc?.PASSED ?? 0) > 0 ? Math.round((inStockSareesCount / (qc?.PASSED ?? 1)) * 100) : 0;
+  const inStockPct =
+    (qc?.PASSED ?? 0) > 0 ? Math.round((inStockSareesCount / (qc?.PASSED ?? 1)) * 100) : 0;
 
-  const pendingApprovalsCount = (purchaseRequests.data?.items ?? []).filter((r) => r.status === "PENDING").length;
+  const pendingApprovalsCount = (purchaseRequests.data?.items ?? []).filter(
+    (r) => r.status === "PENDING"
+  ).length;
 
   return {
     isLoading,

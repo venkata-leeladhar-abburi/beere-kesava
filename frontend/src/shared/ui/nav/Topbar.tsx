@@ -51,7 +51,15 @@ export const Topbar = React.forwardRef<HTMLElement, TopbarProps>(function Topbar
       }}
       {...props}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", minWidth: 0, flexShrink: 0 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "var(--space-3)",
+          minWidth: 0,
+          flexShrink: 0,
+        }}
+      >
         {leading}
         {brand}
       </div>

@@ -16,7 +16,6 @@ import { labelsApi, LabelSettings } from "../../../shared/api/labels";
 import { LoadingState, ErrorState } from "../../../shared/ui/state";
 import { DEFAULT_LABEL_SIZE } from "../../../shared/ui/document";
 
-
 const DEFAULT_FIELDS: LabelFields = {
   barcode: true,
   code: true,
@@ -65,7 +64,12 @@ function toLocalState(settings: LabelSettings) {
 export function LabelSettingsPage() {
   const queryClient = useQueryClient();
 
-  const { data: settings, isLoading, isError, refetch } = useQuery({
+  const {
+    data: settings,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["label-settings"],
     queryFn: () => labelsApi.getSettings(),
     staleTime: 60_000,
@@ -122,8 +126,7 @@ export function LabelSettingsPage() {
     },
   });
 
-  const toggleField = (key: keyof LabelFields) =>
-    setFields((f) => ({ ...f, [key]: !f[key] }));
+  const toggleField = (key: keyof LabelFields) => setFields((f) => ({ ...f, [key]: !f[key] }));
   const toggleScanField = (key: keyof ScanFields) =>
     setScanFields((f) => ({ ...f, [key]: !f[key] }));
 
@@ -148,7 +151,10 @@ export function LabelSettingsPage() {
           alignItems: "center",
         }}
       >
-        <div className="px-4 md:px-7 xl:px-12 w-full" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110 }}>
+        <div
+          className="px-4 md:px-7 xl:px-12 w-full"
+          style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110 }}
+        >
           {/* Eyebrow */}
           <div
             style={{
@@ -163,7 +169,15 @@ export function LabelSettingsPage() {
             SINCE 1999 · SUPERADMIN · LABEL SETTINGS
           </div>
           {/* H1 & Subtitle */}
-          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: 12,
+              flexWrap: "wrap",
+              marginBottom: 8,
+            }}
+          >
             <h1
               style={{
                 fontFamily: "'DM Serif Display', serif",
@@ -199,9 +213,8 @@ export function LabelSettingsPage() {
               lineHeight: 1.6,
             }}
           >
-            Configure the physical saree tag label — fields shown, barcode
-            format, printer connection, and what customers see when they scan a
-            saree QR code.
+            Configure the physical saree tag label — fields shown, barcode format, printer
+            connection, and what customers see when they scan a saree QR code.
           </p>
         </div>
       </header>
@@ -225,24 +238,30 @@ export function LabelSettingsPage() {
               zIndex: 10,
             }}
           >
-          <SectionCard icon={Tag} title="Label & Barcode Settings" subtitle="Configure what prints on every saree label, and how it connects to your printer.">
-            <div className="flex flex-col xl:flex-row gap-6 xl:gap-8 items-start w-full">
-              <LabelPreviewCard fields={fields} labelSize={labelSize} />
+            <SectionCard
+              icon={Tag}
+              title="Label & Barcode Settings"
+              subtitle="Configure what prints on every saree label, and how it connects to your printer."
+            >
+              <div className="flex flex-col xl:flex-row gap-6 xl:gap-8 items-start w-full">
+                <LabelPreviewCard fields={fields} labelSize={labelSize} />
 
-              {/* RIGHT COLUMN */}
-              <div className="w-full flex-1 flex flex-col gap-5">
-                <LabelDimensionsCard labelSize={labelSize} setLabelSize={setLabelSize} />
-                <VisibleFieldsCard fields={fields} toggleField={toggleField} />
-                <BarcodeSettingsCard />
-                <PrinterConfigCard
-                  printer={printer} setPrinter={setPrinter}
-                  connectionType={connectionType} setConnectionType={setConnectionType}
-                  printerConnected={printerConnected}
-                />
-                <ScanPageSettingsCard scanFields={scanFields} toggleScanField={toggleScanField} />
+                {/* RIGHT COLUMN */}
+                <div className="w-full flex-1 flex flex-col gap-5">
+                  <LabelDimensionsCard labelSize={labelSize} setLabelSize={setLabelSize} />
+                  <VisibleFieldsCard fields={fields} toggleField={toggleField} />
+                  <BarcodeSettingsCard />
+                  <PrinterConfigCard
+                    printer={printer}
+                    setPrinter={setPrinter}
+                    connectionType={connectionType}
+                    setConnectionType={setConnectionType}
+                    printerConnected={printerConnected}
+                  />
+                  <ScanPageSettingsCard scanFields={scanFields} toggleScanField={toggleScanField} />
+                </div>
               </div>
-            </div>
-          </SectionCard>
+            </SectionCard>
           </div>
 
           <StickyFooter

@@ -15,8 +15,11 @@ export function SlowNetworkHint({ compact = false }: { compact?: boolean }) {
       role="status"
       aria-live="polite"
       style={{
-        display: "flex", alignItems: "center", gap: "var(--space-2)",
-        color: "var(--text-tertiary)", fontSize: "13px",
+        display: "flex",
+        alignItems: "center",
+        gap: "var(--space-2)",
+        color: "var(--text-tertiary)",
+        fontSize: "13px",
         marginTop: compact ? "var(--space-1)" : "var(--space-3)",
       }}
     >

@@ -6,18 +6,18 @@ import type { DocumentStatus } from "../../../lib/domain/status";
 
 /** One saree line inside an external purchase. */
 export interface SareeTag {
-  id: string;           // auto-generated: SUPPLIER-PREFIX + serial + invoice number
+  id: string; // auto-generated: SUPPLIER-PREFIX + serial + invoice number
   /** Real PurchaseSareeLine.id (UUID) — the FK a SupplierReturnRequest is created against. */
   lineId?: string;
   weight: string;
   date: string;
   sareeType: string;
   color: string;
-  price: number;        // cost price, per piece
-  sellPercent: number;  // markup %
+  price: number; // cost price, per piece
+  sellPercent: number; // markup %
   /** Pieces bought under this line. Defaults to 1 for older records. */
   quantity?: number;
-  finalAmount: number;  // (price + price * sellPercent / 100) * quantity
+  finalAmount: number; // (price + price * sellPercent / 100) * quantity
   notes: string;
   /** Optional photo of the saree, stored as a data URL. */
   imageUrl?: string;
@@ -181,7 +181,12 @@ export function supplierPrefix(supplier: string, shortName?: string | null): str
  * purchase from Ravi Silks (short name RAVI) against invoice 34, third line,
  * is RAVI-34-003.
  */
-export function buildSareeCode(supplier: string, serial: number, invoiceNumber: string, shortName?: string | null): string {
+export function buildSareeCode(
+  supplier: string,
+  serial: number,
+  invoiceNumber: string,
+  shortName?: string | null
+): string {
   const inv = (invoiceNumber || "").trim() || "NOINV";
   return `${supplierPrefix(supplier, shortName)}-${inv}-${String(serial).padStart(3, "0")}`;
 }
@@ -202,13 +207,13 @@ export function assignLineCodes(
   rows: { code?: string }[],
   supplier: string,
   invoiceNumber: string,
-  shortName?: string | null,
+  shortName?: string | null
 ): string[] {
   const current = (code: string) => {
     const serial = serialFromLineCode(code);
     return serial ? buildSareeCode(supplier, Number(serial), invoiceNumber, shortName) : code;
   };
-  const taken = new Set(rows.flatMap(r => (r.code ? [current(r.code)] : [])));
+  const taken = new Set(rows.flatMap((r) => (r.code ? [current(r.code)] : [])));
   let serial = 0;
   return rows.map((r, idx) => {
     if (r.code) return current(r.code);
@@ -233,7 +238,11 @@ export function assignLineCodes(
  *   piece  RAVI-34-003-01, RAVI-34-003-02, …
  */
 export function buildSareePieceCode(
-  supplier: string, serial: number, pieceNo: number, invoiceNumber: string, shortName?: string | null,
+  supplier: string,
+  serial: number,
+  pieceNo: number,
+  invoiceNumber: string,
+  shortName?: string | null
 ): string {
   return pieceCodeFromLineCode(buildSareeCode(supplier, serial, invoiceNumber, shortName), pieceNo);
 }
@@ -342,11 +351,15 @@ export function lineBuying(s: Pick<SareeTag, "price" | "quantity" | "returnedQua
 
 /** What the line should sell for — buying plus markup, across the pieces we
  * still hold; returned pieces are netted out. */
-export function lineSelling(s: Pick<SareeTag, "price" | "sellPercent" | "quantity" | "returnedQuantity">): number {
+export function lineSelling(
+  s: Pick<SareeTag, "price" | "sellPercent" | "quantity" | "returnedQuantity">
+): number {
   return computeFinalAmount(Number(s.price) || 0, Number(s.sellPercent) || 0, remainingQuantity(s));
 }
 
-export function lineProfit(s: Pick<SareeTag, "price" | "sellPercent" | "quantity" | "returnedQuantity">): number {
+export function lineProfit(
+  s: Pick<SareeTag, "price" | "sellPercent" | "quantity" | "returnedQuantity">
+): number {
   return lineSelling(s) - lineBuying(s);
 }
 
@@ -374,7 +387,7 @@ export interface SareePiece extends SareeTag {
 export function returnedPieceSet(
   quantity: number,
   returnedQuantity: number,
-  returnedPieceNos: readonly number[] = [],
+  returnedPieceNos: readonly number[] = []
 ): Set<number> {
   const count = Math.min(Math.max(Number(returnedQuantity) || 0, 0), quantity);
   const set = new Set<number>();
@@ -391,7 +404,7 @@ export function returnedPieceSet(
  * each with its own code. Money is stated per piece.
  */
 export function expandSareePieces<T extends SareeTag>(sarees: T[]): (T & SareePiece)[] {
-  return sarees.flatMap(s => {
+  return sarees.flatMap((s) => {
     const qty = Number(s.quantity) || 1;
     const price = Number(s.price) || 0;
     const sellPercent = Number(s.sellPercent) || 0;
@@ -437,10 +450,14 @@ export interface PurchaseTotals {
 /** What the purchase was invoiced for — every piece bought, ignoring anything
  * later returned. The supplier's bill doesn't shrink when stock goes back, so
  * bill figures use this rather than the netted `purchaseTotals`. */
-export function invoicedSelling(sarees: Pick<SareeTag, "price" | "sellPercent" | "quantity">[]): number {
+export function invoicedSelling(
+  sarees: Pick<SareeTag, "price" | "sellPercent" | "quantity">[]
+): number {
   return sarees.reduce(
-    (sum, s) => sum + computeFinalAmount(Number(s.price) || 0, Number(s.sellPercent) || 0, Number(s.quantity) || 1),
-    0,
+    (sum, s) =>
+      sum +
+      computeFinalAmount(Number(s.price) || 0, Number(s.sellPercent) || 0, Number(s.quantity) || 1),
+    0
   );
 }
 
@@ -449,7 +466,10 @@ export function invoicedSelling(sarees: Pick<SareeTag, "price" | "sellPercent" |
  * back). The subtotal a purchase's discount and GST apply to. */
 export function invoicedBuying(sarees: Pick<SareeTag, "price" | "quantity">[]): number {
   return toPaiseRupees(
-    sarees.reduce((sum, s) => sum + (Number(s.price) || 0) * (Number(s.quantity) > 0 ? Number(s.quantity) : 1), 0),
+    sarees.reduce(
+      (sum, s) => sum + (Number(s.price) || 0) * (Number(s.quantity) > 0 ? Number(s.quantity) : 1),
+      0
+    )
   );
 }
 
@@ -475,24 +495,36 @@ export function computePurchaseBill(
   sarees: Pick<SareeTag, "price" | "quantity">[],
   discountType: DiscountType,
   discountValue: number,
-  gstPercent: number,
+  gstPercent: number
 ): PurchaseBill {
   const subtotal = invoicedBuying(sarees);
   const value = Math.max(0, Number(discountValue) || 0);
   const gst = Math.max(0, Number(gstPercent) || 0);
   let error: string | null = null;
   if (discountType === "percent" && value > 100) error = "Discount can't be more than 100%";
-  else if (discountType === "amount" && value > subtotal) error = "Discount can't be more than the sarees' total";
+  else if (discountType === "amount" && value > subtotal)
+    error = "Discount can't be more than the sarees' total";
   else if (gst > 100) error = "GST can't be more than 100%";
-  const discountAmount = toPaiseRupees(discountType === "percent" ? (subtotal * Math.min(value, 100)) / 100 : Math.min(value, subtotal));
+  const discountAmount = toPaiseRupees(
+    discountType === "percent" ? (subtotal * Math.min(value, 100)) / 100 : Math.min(value, subtotal)
+  );
   const taxable = toPaiseRupees(subtotal - discountAmount);
   const gstAmount = toPaiseRupees((taxable * Math.min(gst, 100)) / 100);
-  return { subtotal, discountAmount, taxable, gstAmount, billAmount: toPaiseRupees(taxable + gstAmount), error };
+  return {
+    subtotal,
+    discountAmount,
+    taxable,
+    gstAmount,
+    billAmount: toPaiseRupees(taxable + gstAmount),
+    error,
+  };
 }
 
 /** Roll a set of saree lines up into buying / selling / profit totals, with
  * returned pieces netted out — see `invoicedSelling` for the gross figure. */
-export function purchaseTotals(sarees: Pick<SareeTag, "price" | "sellPercent" | "quantity" | "returnedQuantity">[]): PurchaseTotals {
+export function purchaseTotals(
+  sarees: Pick<SareeTag, "price" | "sellPercent" | "quantity" | "returnedQuantity">[]
+): PurchaseTotals {
   return sarees.reduce<PurchaseTotals>(
     (acc, s) => {
       acc.pieces += remainingQuantity(s);
@@ -506,5 +538,13 @@ export function purchaseTotals(sarees: Pick<SareeTag, "price" | "sellPercent" | 
 }
 
 export function initialsOf(name: string): string {
-  return name.split(" ").filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase() || "SU";
+  return (
+    name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase() || "SU"
+  );
 }

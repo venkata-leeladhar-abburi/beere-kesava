@@ -15,8 +15,12 @@ vi.mock("../../../../shared/api/firms", async (orig) => {
     ...actual,
     firmsApi: {
       ...actual.firmsApi,
-      listRetailSales: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 500, totalAmount: 0 }),
-      listConnectableRetailSales: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 500 }),
+      listRetailSales: vi
+        .fn()
+        .mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 500, totalAmount: 0 }),
+      listConnectableRetailSales: vi
+        .fn()
+        .mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 500 }),
       retailSaleFilterOptions: vi.fn().mockResolvedValue({ paymentMethods: [], soldBy: [] }),
       getRetailSalesFirm: vi.fn().mockResolvedValue(null),
     },
@@ -30,7 +34,7 @@ describe("retail sales UI mounts", () => {
     renderWithQueryClient(
       <ConfirmProvider>
         <ConnectRetailSalesSection firms={[FIRM]} onGoToRetailSales={() => {}} />
-      </ConfirmProvider>,
+      </ConfirmProvider>
     );
     expect(screen.getByText(/Retail Sales Firm/i)).toBeTruthy();
   });
@@ -41,7 +45,7 @@ describe("retail sales UI mounts", () => {
     renderWithQueryClient(
       <ConfirmProvider>
         <ConnectRetailSalesModal open onOpenChange={() => {}} firms={[FIRM]} />
-      </ConfirmProvider>,
+      </ConfirmProvider>
     );
     expect(screen.getByText(/Connect Retail Sales to a Firm/i)).toBeTruthy();
     expect(screen.getByText(/Step 2 — Select the retail sales/i)).toBeTruthy();
@@ -51,7 +55,7 @@ describe("retail sales UI mounts", () => {
     renderWithQueryClient(
       <ConfirmProvider>
         <FirmRetailSalesTab firm={FIRM} firms={[FIRM]} />
-      </ConfirmProvider>,
+      </ConfirmProvider>
     );
     expect(screen.getByText(/Counter sales booked to Kesava Silks/i)).toBeTruthy();
     expect(screen.getAllByText(/Connected Sales/i).length).toBeGreaterThan(0);

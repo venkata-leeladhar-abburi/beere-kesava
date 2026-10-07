@@ -4,7 +4,10 @@ import { Button } from "../../../../shared/ui/primitives";
 import { usePrintSareeTags, SareeTagPreview } from "@/features/weavers";
 import { parseLabelSize } from "../../../../shared/ui/document";
 
-export function LabelPreviewCard({ fields, labelSize }: {
+export function LabelPreviewCard({
+  fields,
+  labelSize,
+}: {
   fields: { barcode: boolean; code: boolean; weaver: boolean; date: boolean; branding: boolean };
   /** The size being edited — the preview follows it live, before saving. */
   labelSize: string;
@@ -49,7 +52,9 @@ export function LabelPreviewCard({ fields, labelSize }: {
             actual <SareeTagPreview> rather than a hand-built mock means the
             preview cannot drift from what the printer produces, and it shows
             the true proportions of the configured stock. */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16, overflowX: "auto" }}>
+        <div
+          style={{ display: "flex", justifyContent: "center", marginBottom: 16, overflowX: "auto" }}
+        >
           <SareeTagPreview tag={previewTag} stock={stock} zoom={3} />
         </div>
 
@@ -72,7 +77,9 @@ export function LabelPreviewCard({ fields, labelSize }: {
             other tag in the app uses. */}
         <div style={{ marginTop: 16, display: "flex", justifyContent: "center" }}>
           <Button
-            variant="secondary" size="sm" iconLeft={Printer}
+            variant="secondary"
+            size="sm"
+            iconLeft={Printer}
             onClick={() => printSareeTags([previewTag])}
           >
             Print Test Label

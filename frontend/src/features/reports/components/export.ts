@@ -28,7 +28,7 @@ export function downloadXlsx(
   filename: string,
   sheetName: string,
   headers: string[],
-  rows: CellValue[][],
+  rows: CellValue[][]
 ): void {
   const bytes = buildXlsx(sheetName, headers, rows);
   // Copy into a fresh ArrayBuffer so the Blob never sees a SharedArrayBuffer view.

@@ -30,9 +30,9 @@ export type SareeSaleStatus = "unsold" | "retail" | "wholesale" | "returned";
 export interface SaleInfo {
   saleRef: string;
   channel: SaleChannel;
-  date: string;          // "12 Jun 2026"
+  date: string; // "12 Jun 2026"
   customer: string;
-  amount: number;        // ₹ realised
+  amount: number; // ₹ realised
 }
 
 export interface ReturnInfo {
@@ -72,11 +72,11 @@ export interface UnifiedSaree {
   sareeTypeCode: string;
   sareeTypeName: string;
   weight: string;
-  qcDate: string;          // for external = received / tagged date
+  qcDate: string; // for external = received / tagged date
 
-  costPrice: number;       // external: SareeTag.price · in-house: material + making cost
-  sellPercent: number;     // external: SareeTag.sellPercent
-  finalAmount: number;     // expected selling price
+  costPrice: number; // external: SareeTag.price · in-house: material + making cost
+  sellPercent: number; // external: SareeTag.sellPercent
+  finalAmount: number; // expected selling price
 
   status: SareeSaleStatus;
   sale: SaleInfo | null;

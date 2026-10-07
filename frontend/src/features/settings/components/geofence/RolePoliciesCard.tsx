@@ -3,7 +3,11 @@ import { ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { F, T, SectionCard, Toggle } from "../labelSettings/primitives";
 import { StatusPill } from "./primitives";
-import { geofenceApi, type GeofenceMode, type GeofenceRolePolicy } from "../../../../shared/api/geofence";
+import {
+  geofenceApi,
+  type GeofenceMode,
+  type GeofenceRolePolicy,
+} from "../../../../shared/api/geofence";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 
 const ROLE_LABELS: Record<string, string> = {
@@ -30,7 +34,14 @@ function ModeChoice({
   ];
 
   return (
-    <div style={{ display: "inline-flex", borderRadius: 10, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+    <div
+      style={{
+        display: "inline-flex",
+        borderRadius: 10,
+        border: `1px solid ${T.borderDef}`,
+        overflow: "hidden",
+      }}
+    >
       {options.map((option) => {
         const selected = mode === option.value;
         return (
@@ -84,7 +95,8 @@ function PolicyRow({ policy }: { policy: GeofenceRolePolicy }) {
         <div style={{ minWidth: 0 }}>
           <div style={nameStyle}>{label}</div>
           <div className="max-w-[520px]" style={subStyle}>
-            Never location-checked. This is what keeps a way back in if the radius is ever set wrong.
+            Never location-checked. This is what keeps a way back in if the radius is ever set
+            wrong.
           </div>
         </div>
         <StatusPill tone="muted">Always allowed anywhere</StatusPill>
@@ -98,13 +110,15 @@ function PolicyRow({ policy }: { policy: GeofenceRolePolicy }) {
       const ok = window.confirm(
         `Start blocking ${label}?\n\n` +
           `From now on they will be refused sign-in unless they are at the premises. ` +
-          `Check the recorded sign-ins below first — anyone whose phone reads badly indoors will be turned away.`,
+          `Check the recorded sign-ins below first — anyone whose phone reads badly indoors will be turned away.`
       );
       if (!ok) return;
     }
     save.mutate({ enforced: policy.enforced, mode: next });
     toast.success(
-      next === "ENFORCE" ? `${label} will now be blocked when away` : `${label} set back to recording only`,
+      next === "ENFORCE"
+        ? `${label} will now be blocked when away`
+        : `${label} set back to recording only`
     );
   };
 
@@ -166,7 +180,13 @@ const subStyle: React.CSSProperties = {
 };
 
 export function RolePoliciesCard() {
-  const { data: policies, isLoading, isError, error, refetch } = useQuery({
+  const {
+    data: policies,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["geofence", "policies"],
     queryFn: () => geofenceApi.listPolicies(),
   });

@@ -23,7 +23,13 @@ export interface ChartFigureProps {
   className?: string;
 }
 
-export function ChartFigure({ title, summary, children, viewAsTable, className }: ChartFigureProps) {
+export function ChartFigure({
+  title,
+  summary,
+  children,
+  viewAsTable,
+  className,
+}: ChartFigureProps) {
   const idRef = useRef<string>();
   if (!idRef.current) idRef.current = `chart-figure-${++chartFigureIdSeq}`;
   const summaryId = `${idRef.current}-summary`;
@@ -38,11 +44,24 @@ export function ChartFigure({ title, summary, children, viewAsTable, className }
       aria-describedby={summary ? summaryId : undefined}
       className={cn("m-0", className)}
     >
-      {summary && <p id={summaryId} className="sr-only">{summary}</p>}
+      {summary && (
+        <p id={summaryId} className="sr-only">
+          {summary}
+        </p>
+      )}
       {children}
       {viewAsTable && (
         <details style={{ marginTop: 10 }}>
-          <summary style={{ fontSize: 12, fontWeight: 600, cursor: "pointer", color: "var(--text-tertiary)" }}>View as table</summary>
+          <summary
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              color: "var(--text-tertiary)",
+            }}
+          >
+            View as table
+          </summary>
           <div style={{ marginTop: 8 }}>{viewAsTable}</div>
         </details>
       )}

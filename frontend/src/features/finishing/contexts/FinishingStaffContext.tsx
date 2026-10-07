@@ -61,7 +61,11 @@ function backendToMember(s: BackendFinishingStaff): FinishingStaffMember {
     email: s.email ?? "",
     specialisation: s.specialisation ?? "",
     notes: s.notes ?? "",
-    dateAdded: new Date(s.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+    dateAdded: new Date(s.createdAt).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
     status: s.status === "ACTIVE" ? "Active" : "Inactive",
   };
 }
@@ -72,7 +76,13 @@ export function FinishingStaffProvider({ children }: { children: React.ReactNode
   // WORKER-only on the backend (ADMIN/SUPERADMIN bypass every role check).
   const enabled = useAuthGate("worker", "admin", "superadmin");
 
-  const { data: members = [], isLoading, isError, error, refetch } = useQuery({
+  const {
+    data: members = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: QUERY_KEY,
     enabled,
     queryFn: async () => {
@@ -126,8 +136,11 @@ export function FinishingStaffProvider({ children }: { children: React.ReactNode
 
   const toggleStatusMutation = useMutation({
     mutationFn: (id: string) => {
-      const current = queryClient.getQueryData<FinishingStaffMember[]>(QUERY_KEY)?.find(m => m.id === id);
-      const nextStatus: FinishingStaffMember["status"] = current?.status === "Active" ? "Inactive" : "Active";
+      const current = queryClient
+        .getQueryData<FinishingStaffMember[]>(QUERY_KEY)
+        ?.find((m) => m.id === id);
+      const nextStatus: FinishingStaffMember["status"] =
+        current?.status === "Active" ? "Inactive" : "Active";
       return finishingStaffApi.update(id, { status: STATUS_TO_BACKEND[nextStatus] });
     },
     onSuccess: (updated) => {
@@ -152,15 +165,30 @@ export function FinishingStaffProvider({ children }: { children: React.ReactNode
     },
   });
 
-  const addMember = (m: Omit<FinishingStaffMember, "id" | "dateAdded">) => addMemberMutation.mutate(m);
-  const updateMember = (id: string, updates: Partial<FinishingStaffMember>) => updateMemberMutation.mutate({ id, updates });
+  const addMember = (m: Omit<FinishingStaffMember, "id" | "dateAdded">) =>
+    addMemberMutation.mutate(m);
+  const updateMember = (id: string, updates: Partial<FinishingStaffMember>) =>
+    updateMemberMutation.mutate({ id, updates });
   const toggleStatus = (id: string) => toggleStatusMutation.mutate(id);
   const deleteMember = (id: string) => deleteMemberMutation.mutateAsync(id);
 
-  const activeMembers = useMemo(() => members.filter(m => m.status === "Active"), [members]);
+  const activeMembers = useMemo(() => members.filter((m) => m.status === "Active"), [members]);
 
   return (
-    <FinishingStaffContext.Provider value={{ members, addMember, updateMember, toggleStatus, deleteMember, activeMembers, isLoading, isError, error, refetch: () => void refetch() }}>
+    <FinishingStaffContext.Provider
+      value={{
+        members,
+        addMember,
+        updateMember,
+        toggleStatus,
+        deleteMember,
+        activeMembers,
+        isLoading,
+        isError,
+        error,
+        refetch: () => void refetch(),
+      }}
+    >
       {children}
     </FinishingStaffContext.Provider>
   );

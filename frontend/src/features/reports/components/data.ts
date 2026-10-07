@@ -3,10 +3,10 @@ import { BarChart2, Clock, Calendar, Download, FileText } from "lucide-react";
 
 // ── SECTION 1 — PAGE HEADER (HERO) ──────────────────────────────────────────
 export const REPORTS_CHIPS = [
-  { value: "8",        label: "Report Categories"      },
-  { value: "All Periods", label: "Date Range Support"  },
-  { value: "Excel (.xlsx)", label: "Export Format"     },
-  { value: "5 Active", label: "Scheduled Reports"      },
+  { value: "8", label: "Report Categories" },
+  { value: "All Periods", label: "Date Range Support" },
+  { value: "Excel (.xlsx)", label: "Export Format" },
+  { value: "5 Active", label: "Scheduled Reports" },
 ];
 
 // ── SECTION 2 — STATS STRIP ──────────────────────────────────────────────────

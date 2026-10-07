@@ -9,15 +9,20 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 export const inr = (n: number) => formatMoney(rupees(n));
 
 export const AGE_BUCKETS = ["0-30", "31-60", "61-90", "90+"] as const;
-export type AgeKey = typeof AGE_BUCKETS[number] | "all";
+export type AgeKey = (typeof AGE_BUCKETS)[number] | "all";
 
 export const getAgeColor = (bucket: string) => {
   switch (bucket) {
-    case "0-30": return T.green;
-    case "31-60": return T.antiqueGold;
-    case "61-90": return T.orange;
-    case "90+": return T.crimson;
-    default: return T.green;
+    case "0-30":
+      return T.green;
+    case "31-60":
+      return T.antiqueGold;
+    case "61-90":
+      return T.orange;
+    case "90+":
+      return T.crimson;
+    default:
+      return T.green;
   }
 };
 
@@ -26,21 +31,81 @@ export const AGE_COLOR: Record<string, string> = new Proxy({} as Record<string, 
 });
 
 // ── Small building blocks ────────────────────────────────────────────────────
-export function StatChip({ label, value, tone = "plain" }: { label: string; value: string; tone?: "plain" | "gold" | "green" | "red" }) {
-  const c = tone === "gold" ? T.antiqueGold : tone === "green" ? "#6DCE9A" : tone === "red" ? "#F0857D" : "#FFFDF9";
-  const bg = tone === "gold" ? "rgba(200,155,71,0.18)" : tone === "green" ? "rgba(30,102,64,0.20)" : tone === "red" ? "rgba(224,82,82,0.18)" : "rgba(255,253,249,0.10)";
-  const bd = tone === "gold" ? "rgba(200,155,71,0.38)" : tone === "green" ? "rgba(30,102,64,0.35)" : tone === "red" ? "rgba(224,82,82,0.35)" : "rgba(255,253,249,0.15)";
+export function StatChip({
+  label,
+  value,
+  tone = "plain",
+}: {
+  label: string;
+  value: string;
+  tone?: "plain" | "gold" | "green" | "red";
+}) {
+  const c =
+    tone === "gold"
+      ? T.antiqueGold
+      : tone === "green"
+        ? "#6DCE9A"
+        : tone === "red"
+          ? "#F0857D"
+          : "#FFFDF9";
+  const bg =
+    tone === "gold"
+      ? "rgba(200,155,71,0.18)"
+      : tone === "green"
+        ? "rgba(30,102,64,0.20)"
+        : tone === "red"
+          ? "rgba(224,82,82,0.18)"
+          : "rgba(255,253,249,0.10)";
+  const bd =
+    tone === "gold"
+      ? "rgba(200,155,71,0.38)"
+      : tone === "green"
+        ? "rgba(30,102,64,0.35)"
+        : tone === "red"
+          ? "rgba(224,82,82,0.35)"
+          : "rgba(255,253,249,0.15)";
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, background: bg, border: `1px solid ${bd}`, borderRadius: 99, padding: "9px 18px" }}>
-      <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: c }}>{value}</span>
-      <span style={{ fontFamily: F.ui, fontSize: 12, color: tone === "plain" ? "rgba(255,253,249,0.68)" : c }}>{label}</span>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        background: bg,
+        border: `1px solid ${bd}`,
+        borderRadius: 99,
+        padding: "9px 18px",
+      }}
+    >
+      <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: c }}>
+        {value}
+      </span>
+      <span
+        style={{
+          fontFamily: F.ui,
+          fontSize: 12,
+          color: tone === "plain" ? "rgba(255,253,249,0.68)" : c,
+        }}
+      >
+        {label}
+      </span>
     </div>
   );
 }
 
 export function Pill({ label, color, bg }: { label: string; color: string; bg: string }) {
   return (
-    <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color, background: bg, borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>
+    <span
+      style={{
+        fontFamily: F.ui,
+        fontWeight: 600,
+        fontSize: 12,
+        color,
+        background: bg,
+        borderRadius: 999,
+        padding: "3px 10px",
+        whiteSpace: "nowrap",
+      }}
+    >
       {label}
     </span>
   );
@@ -54,18 +119,54 @@ export function AgePill({ days }: { days: number }) {
 
 export function Card({ children, pad = 22 }: { children: React.ReactNode; pad?: number }) {
   return (
-    <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.06)", padding: pad }}>
+    <div
+      style={{
+        background: "#FFFFFF",
+        borderRadius: 18,
+        border: `1px solid ${T.borderDef}`,
+        boxShadow: "0 4px 20px rgba(74,6,27,0.06)",
+        padding: pad,
+      }}
+    >
       {children}
     </div>
   );
 }
 
-export function SectionTitle({ title, sub, right }: { title: string; sub?: string; right?: React.ReactNode }) {
+export function SectionTitle({
+  title,
+  sub,
+  right,
+}: {
+  title: string;
+  sub?: string;
+  right?: React.ReactNode;
+}) {
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "space-between",
+        gap: 16,
+        marginBottom: 16,
+      }}
+    >
       <div>
-        <h3 style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown, margin: 0 }}>{title}</h3>
-        {sub && <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: "5px 0 0" }}>{sub}</p>}
+        <h3
+          style={{
+            fontFamily: F.display,
+            fontSize: 20,
+            fontWeight: 700,
+            color: T.luxuryBrown,
+            margin: 0,
+          }}
+        >
+          {title}
+        </h3>
+        {sub && (
+          <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: "5px 0 0" }}>{sub}</p>
+        )}
       </div>
       {right}
     </div>
@@ -91,48 +192,126 @@ export function SectionCard({
   id?: string;
 }) {
   return (
-    <div id={id} style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
-      <div className="p-4 sm:p-7" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
+    <div
+      id={id}
+      style={{
+        background: "#FFFFFF",
+        borderRadius: 20,
+        border: `1px solid ${T.borderDef}`,
+        boxShadow: "0 6px 32px rgba(74,6,27,0.08)",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        className="p-4 sm:p-7"
+        style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}
+      >
         <div className="flex items-start gap-3.5 sm:gap-4 w-full">
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "rgba(255,255,255,0.12)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              marginTop: 2,
+            }}
+          >
             <Icon size={24} color="#FFFDF9" />
           </div>
           <div className="flex flex-col items-start gap-3 flex-1 min-w-0">
             <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px", lineHeight: 1.2 }}>{title}</div>
-              {subtitle && <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.70)", marginTop: 4, lineHeight: 1.5 }}>{subtitle}</div>}
+              <div
+                style={{
+                  fontFamily: F.display,
+                  fontWeight: 700,
+                  fontSize: 20,
+                  color: "#FFFDF9",
+                  letterSpacing: "-0.2px",
+                  lineHeight: 1.2,
+                }}
+              >
+                {title}
+              </div>
+              {subtitle && (
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 14,
+                    color: "rgba(255,253,249,0.70)",
+                    marginTop: 4,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {subtitle}
+                </div>
+              )}
             </div>
-            {actions && <div className="flex items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto flex-nowrap min-w-0 pt-0.5">{actions}</div>}
+            {actions && (
+              <div className="flex items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto flex-nowrap min-w-0 pt-0.5">
+                {actions}
+              </div>
+            )}
           </div>
         </div>
       </div>
-      <div className="p-2.5 sm:p-5 md:p-6 pb-2.5 sm:pb-4">
-        {children}
-      </div>
+      <div className="p-2.5 sm:p-5 md:p-6 pb-2.5 sm:pb-4">{children}</div>
     </div>
   );
 }
 
 const td: React.CSSProperties = {
-  fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "11px 12px", borderBottom: `1px solid rgba(110,15,45,0.06)`, verticalAlign: "middle",
+  fontFamily: F.ui,
+  fontSize: 13,
+  color: T.luxuryBrown,
+  padding: "11px 12px",
+  borderBottom: `1px solid rgba(110,15,45,0.06)`,
+  verticalAlign: "middle",
 };
-export const tdMono: React.CSSProperties = { ...td, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
+export const tdMono: React.CSSProperties = {
+  ...td,
+  fontFamily: F.ui,
+  fontSize: 12,
+  fontWeight: 600,
+  color: T.royalBurgundy,
+};
 
 export function Empty({ msg }: { msg: string }) {
   return (
-    <div style={{ padding: "48px 24px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+    <div
+      style={{
+        padding: "48px 24px",
+        textAlign: "center",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <Package size={44} color={T.taupe} style={{ opacity: 0.45, marginBottom: 12 }} />
-      <div className="max-w-[360px]" style={{ fontFamily: F.display, fontSize: 16, color: T.taupe, margin: "0 auto" }}>{msg}</div>
+      <div
+        className="max-w-[360px]"
+        style={{ fontFamily: F.display, fontSize: 16, color: T.taupe, margin: "0 auto" }}
+      >
+        {msg}
+      </div>
     </div>
   );
 }
 
 // ── CSV export ───────────────────────────────────────────────────────────────
 export function exportCsv(filename: string, rows: (string | number)[][]) {
-  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const csv = rows
+    .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+    .join("\n");
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
   const a = document.createElement("a");
-  a.href = url; a.download = filename; a.click();
+  a.href = url;
+  a.download = filename;
+  a.click();
   URL.revokeObjectURL(url);
 }
 

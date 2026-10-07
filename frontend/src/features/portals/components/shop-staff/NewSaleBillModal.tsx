@@ -51,13 +51,34 @@ export function NewSaleBillModal({
   onClose,
 }: NewSaleBillModalProps) {
   const ref = billRef || "—";
-  const billDate = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  const billDate = new Date().toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: isMobile ? "100vh" : "85vh" }}>
-      <div style={{ background: C.burg, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-        <IconButton icon={ChevronLeft} label="Back" variant="ghost" onClick={onClose} className="text-white" />
-        <span style={{ fontFamily: F.d, fontWeight: 600, fontSize: 18, color: "#FFF" }}>Bill Preview</span>
+      <div
+        style={{
+          background: C.burg,
+          padding: "16px 20px",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          flexShrink: 0,
+        }}
+      >
+        <IconButton
+          icon={ChevronLeft}
+          label="Back"
+          variant="ghost"
+          onClick={onClose}
+          className="text-white"
+        />
+        <span style={{ fontFamily: F.d, fontWeight: 600, fontSize: 18, color: "#FFF" }}>
+          Bill Preview
+        </span>
       </div>
       <DocumentViewer fileName={ref} documentTitle={`Retail Bill ${ref}`} className="flex-1">
         <RetailBillDocument

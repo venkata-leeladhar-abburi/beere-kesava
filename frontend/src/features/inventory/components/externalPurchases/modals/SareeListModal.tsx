@@ -5,9 +5,15 @@ import { X, Printer, Undo2, FileText } from "lucide-react";
 import { toast } from "sonner";
 import {
   Purchase,
-  lineProfit, purchaseTotals, expandSareePieces, withPieceImage, serialFromPieceCode, formatSellPercent,
+  lineProfit,
+  purchaseTotals,
+  expandSareePieces,
+  withPieceImage,
+  serialFromPieceCode,
+  formatSellPercent,
   pieceCodeFromLineCode,
-  SareeInventoryTable, type PieceExtra,
+  SareeInventoryTable,
+  type PieceExtra,
   useSuppliers,
 } from "@/features/suppliers";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,13 +32,7 @@ import { DebitNoteModal, DEBIT_NOTE_STATUS_STYLE } from "../../modals/DebitNoteM
 /** Full saree/barcode breakdown for one purchase — grouped by serial number
  * (one row per purchase line), matching the Suppliers → Order History view,
  * expandable to the individual physical pieces under each serial. */
-export function SareeListModal({
-  purchase,
-  onClose,
-}: {
-  purchase: Purchase;
-  onClose: () => void;
-}) {
+export function SareeListModal({ purchase, onClose }: { purchase: Purchase; onClose: () => void }) {
   const printSareeTags = usePrintSareeTags();
   const { print: printSummary } = useDocument();
   const { user } = useAuth();
@@ -44,7 +44,10 @@ export function SareeListModal({
   // customer, so a dispatched piece kept showing "With Us" indefinitely.
   const { dispatches } = useFinishing();
   const { soldSareeIds } = useSales();
-  const dispatchedSareeIds = useMemo(() => new Set(dispatches.flatMap(d => d.sareeIds)), [dispatches]);
+  const dispatchedSareeIds = useMemo(
+    () => new Set(dispatches.flatMap((d) => d.sareeIds)),
+    [dispatches]
+  );
 
   // Pending return requests reserve pieces the same way an APPROVED one
   // removes them — fetched here so "With Us" doesn't show a piece that's
@@ -93,10 +96,10 @@ export function SareeListModal({
   const pendingByLineId = useMemo(() => {
     const map = new Map<string, { named: Set<number>; count: number }>();
     (pendingRes?.items ?? [])
-      .filter(r => r.purchaseId === purchase.id)
-      .forEach(r => {
+      .filter((r) => r.purchaseId === purchase.id)
+      .forEach((r) => {
         const entry = map.get(r.sareeLineId) ?? { named: new Set<number>(), count: 0 };
-        (r.pieceNos ?? []).forEach(n => entry.named.add(n));
+        (r.pieceNos ?? []).forEach((n) => entry.named.add(n));
         entry.count += r.quantity;
         map.set(r.sareeLineId, entry);
       });
@@ -110,22 +113,26 @@ export function SareeListModal({
     for (const s of purchase.sarees) {
       const entry = s.lineId ? pendingByLineId.get(s.lineId) : undefined;
       if (!entry) continue;
-      const linePieces = expanded.filter(p => p.lineCode === s.id && !p.returned);
-      const pending = new Set([...entry.named].filter(n => linePieces.some(p => p.pieceNo === n)));
+      const linePieces = expanded.filter((p) => p.lineCode === s.id && !p.returned);
+      const pending = new Set(
+        [...entry.named].filter((n) => linePieces.some((p) => p.pieceNo === n))
+      );
       for (const p of linePieces) {
         if (pending.size >= entry.count) break;
         pending.add(p.pieceNo);
       }
-      linePieces.filter(p => pending.has(p.pieceNo)).forEach(p => pendingIds.add(p.id));
+      linePieces.filter((p) => pending.has(p.pieceNo)).forEach((p) => pendingIds.add(p.id));
     }
-    return expanded.map(s => ({ ...s, pending: pendingIds.has(s.id) }));
+    return expanded.map((s) => ({ ...s, pending: pendingIds.has(s.id) }));
   }, [purchase.sarees, pendingByLineId]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   // Only pieces with nothing already in motion can be selected.
-  const selectedReturnablePieces = pieces.filter(s => selectedIds.has(s.id) && !s.returned && !s.pending);
+  const selectedReturnablePieces = pieces.filter(
+    (s) => selectedIds.has(s.id) && !s.returned && !s.pending
+  );
 
   // Raises ONE debit note covering every selected piece — the backend opens a
   // PENDING SupplierReturnRequest per affected line under it. Nothing leaves
@@ -134,12 +141,14 @@ export function SareeListModal({
   const handleReturnSelected = async () => {
     if (selectedReturnablePieces.length === 0) return;
     const piecesByLineId = new Map<string, number[]>();
-    selectedReturnablePieces.forEach(s => {
+    selectedReturnablePieces.forEach((s) => {
       if (!s.lineId) return;
       piecesByLineId.set(s.lineId, [...(piecesByLineId.get(s.lineId) ?? []), s.pieceNo]);
     });
     if (piecesByLineId.size === 0) {
-      setSubmitError("These sarees aren't saved against a purchase line yet — reopen the purchase and try again.");
+      setSubmitError(
+        "These sarees aren't saved against a purchase line yet — reopen the purchase and try again."
+      );
       return;
     }
     setSubmitting(true);
@@ -151,16 +160,20 @@ export function SareeListModal({
           lines: [...piecesByLineId].map(([sareeLineId, pieceNos]) => ({ sareeLineId, pieceNos })),
           reason: reason.trim() || undefined,
         },
-        requestedById,
+        requestedById
       );
       setSelectedIds(new Set());
       setReason("");
       void qc.invalidateQueries({ queryKey: ["supplier-returns"] });
       void qc.invalidateQueries({ queryKey: ["supplier-debit-notes"] });
-      toast.success(`Debit note ${note.id} raised`, { description: "Sent to an admin for approval." });
+      toast.success(`Debit note ${note.id} raised`, {
+        description: "Sent to an admin for approval.",
+      });
       setOpenNoteId(note.id);
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Could not request this return. Please try again.");
+      setSubmitError(
+        err instanceof Error ? err.message : "Could not request this return. Please try again."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -170,10 +183,18 @@ export function SareeListModal({
   // handed to SareeInventoryTable's expanded piece list so a piece already
   // returned or pending a decision can't be selected again.
   const pieceExtra = (pieceId: string): PieceExtra | undefined => {
-    const s = pieces.find(p => p.id === pieceId);
+    const s = pieces.find((p) => p.id === pieceId);
     if (!s) return undefined;
-    if (soldSareeIds.has(pieceId)) return { badge: { label: "Sold", color: T.taupe, bg: "rgba(105,99,94,0.10)" }, selectable: false };
-    if (dispatchedSareeIds.has(pieceId)) return { badge: { label: "Dispatched", color: T.royalBurgundy, bg: "rgba(110,15,45,0.08)" }, selectable: false };
+    if (soldSareeIds.has(pieceId))
+      return {
+        badge: { label: "Sold", color: T.taupe, bg: "rgba(105,99,94,0.10)" },
+        selectable: false,
+      };
+    if (dispatchedSareeIds.has(pieceId))
+      return {
+        badge: { label: "Dispatched", color: T.royalBurgundy, bg: "rgba(110,15,45,0.08)" },
+        selectable: false,
+      };
     // A returned / pending piece's badge opens the debit note it's on. One
     // returned before debit notes existed has none — its hover text says
     // where to find it instead.
@@ -183,16 +204,33 @@ export function SareeListModal({
       : notesRes
         ? { title: "Raised before debit notes — no document. Find it in Supplier Returns." }
         : {};
-    if (s.returned) return { badge: { label: "Returned", color: T.crimson, bg: "rgba(192,57,43,0.08)", ...noteLink }, selectable: false };
-    if (s.pending) return { badge: { label: "Return Pending", color: T.antiqueGold, bg: "rgba(200,155,71,0.10)", ...noteLink }, selectable: false };
-    return { badge: { label: "With Us", color: T.green, bg: "rgba(30,102,64,0.08)" }, selectable: true };
+    if (s.returned)
+      return {
+        badge: { label: "Returned", color: T.crimson, bg: "rgba(192,57,43,0.08)", ...noteLink },
+        selectable: false,
+      };
+    if (s.pending)
+      return {
+        badge: {
+          label: "Return Pending",
+          color: T.antiqueGold,
+          bg: "rgba(200,155,71,0.10)",
+          ...noteLink,
+        },
+        selectable: false,
+      };
+    return {
+      badge: { label: "With Us", color: T.green, bg: "rgba(30,102,64,0.08)" },
+      selectable: true,
+    };
   };
 
   const toggleSelectPiece = (pieceId: string) => {
     if (!pieceExtra(pieceId)?.selectable) return;
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(pieceId)) next.delete(pieceId); else next.add(pieceId);
+      if (next.has(pieceId)) next.delete(pieceId);
+      else next.add(pieceId);
       return next;
     });
   };
@@ -201,9 +239,17 @@ export function SareeListModal({
   // a photo uploaded now is mirrored locally too — otherwise the new picture
   // wouldn't appear until the saree list was closed and reopened.
   const [sarees, setSarees] = useState(purchase.sarees);
-  useEffect(() => { setSarees(purchase.sarees); }, [purchase.sarees]);
+  useEffect(() => {
+    setSarees(purchase.sarees);
+  }, [purchase.sarees]);
 
-  const rows = sarees.map(s => ({ ...s, purchaseId: purchase.id, invoiceNumber: purchase.invoiceNumber, supplier: purchase.supplier, supplierId: purchase.supplierId }));
+  const rows = sarees.map((s) => ({
+    ...s,
+    purchaseId: purchase.id,
+    invoiceNumber: purchase.invoiceNumber,
+    supplier: purchase.supplier,
+    supplierId: purchase.supplierId,
+  }));
 
   const persistSarees = (next: typeof sarees) => {
     setSarees(next);
@@ -211,10 +257,10 @@ export function SareeListModal({
   };
 
   const handleUploadPhoto = (row: (typeof rows)[number], url: string) =>
-    persistSarees(sarees.map(s => s.id === row.id ? { ...s, imageUrl: url } : s));
+    persistSarees(sarees.map((s) => (s.id === row.id ? { ...s, imageUrl: url } : s)));
 
   const handleUploadPieceImage = (row: (typeof rows)[number], pieceNo: number, url: string) =>
-    persistSarees(sarees.map(s => s.id === row.id ? withPieceImage(s, pieceNo, url) : s));
+    persistSarees(sarees.map((s) => (s.id === row.id ? withPieceImage(s, pieceNo, url) : s)));
 
   const totals = purchaseTotals(purchase.sarees);
 
@@ -222,11 +268,12 @@ export function SareeListModal({
   // cost, plain selling price. Previously "Print All Barcodes" produced a
   // single text summary table with no barcode graphic and no price column
   // at all — despite the label, it printed zero barcodes.
-  const supplierShortName = suppliers.find(sup => sup.id === purchase.supplierId)?.shortName ?? null;
+  const supplierShortName =
+    suppliers.find((sup) => sup.id === purchase.supplierId)?.shortName ?? null;
   const printAllBarcodes = () => {
     const tags: SareeTagData[] = pieces
-      .filter(p => !p.returned)
-      .map(p => ({
+      .filter((p) => !p.returned)
+      .map((p) => ({
         sareeId: p.id,
         isExternal: true,
         sareeTypeName: p.sareeType || null,
@@ -249,18 +296,47 @@ export function SareeListModal({
   const printTable = (
     <div style={{ padding: "16mm" }}>
       <div style={{ marginBottom: "4mm" }}>
-        <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "14pt", color: "var(--doc-burgundy)" }}>
+        <div
+          style={{
+            fontFamily: "var(--font-display)",
+            fontWeight: 700,
+            fontSize: "14pt",
+            color: "var(--doc-burgundy)",
+          }}
+        >
           {purchase.id} — Saree Details
         </div>
-        <div style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-code)", color: "var(--doc-muted)" }}>{purchase.supplier}</div>
+        <div
+          style={{
+            fontFamily: "var(--font-code)",
+            fontSize: "var(--doc-code)",
+            color: "var(--doc-muted)",
+          }}
+        >
+          {purchase.supplier}
+        </div>
       </div>
       {/* eslint-disable-next-line no-restricted-syntax -- printable document template */}
       <table className="bk-doc__table">
         <thead>
           <tr>
-            {["S.No", "Saree Code", "Line Serial", "Saree Type", "Colour", "Weight", "Buying Price", "Sell %", "Selling Price", "Profit", "Notes"].map(h => (
+            {[
+              "S.No",
+              "Saree Code",
+              "Line Serial",
+              "Saree Type",
+              "Colour",
+              "Weight",
+              "Buying Price",
+              "Sell %",
+              "Selling Price",
+              "Profit",
+              "Notes",
+            ].map((h) => (
               // eslint-disable-next-line no-restricted-syntax -- printable document template
-              <th key={h} style={{ textAlign: /Price|Profit|%/.test(h) ? "end" : "start" }}>{h}</th>
+              <th key={h} style={{ textAlign: /Price|Profit|%/.test(h) ? "end" : "start" }}>
+                {h}
+              </th>
             ))}
           </tr>
         </thead>
@@ -302,7 +378,13 @@ export function SareeListModal({
   );
 
   return (
-    <Modal open onOpenChange={o => { if (!o) onClose(); }} size="xl">
+    <Modal
+      open
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+      size="xl"
+    >
       <div
         style={{
           display: "flex",
@@ -314,169 +396,277 @@ export function SareeListModal({
           borderTopRightRadius: "var(--radius-xl)",
         }}
       >
+        <div
+          style={{
+            background: T.darkBurgundy,
+            padding: "16px 24px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexShrink: 0,
+          }}
+        >
+          <div>
+            <Dialog.Title
+              style={{
+                fontFamily: F.display,
+                fontWeight: 700,
+                fontSize: 16,
+                color: "#FFF",
+                margin: 0,
+              }}
+            >
+              {purchase.id} — Saree Details
+            </Dialog.Title>
+            <Dialog.Description asChild>
+              <div
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 12,
+                  color: "rgba(200,155,71,0.8)",
+                }}
+              >
+                {purchase.supplier}
+              </div>
+            </Dialog.Description>
+          </div>
+          <Dialog.Close asChild>
+            <IconButton
+              icon={X}
+              label="Close"
+              onClick={onClose}
+              size="sm"
+              className="rounded-full bg-white/12 text-white hover:bg-white/20"
+            />
+          </Dialog.Close>
+        </div>
+
+        <div style={{ overflow: "auto", flex: 1 }}>
+          <SareeInventoryTable
+            rows={rows}
+            onUploadPhoto={handleUploadPhoto}
+            onUploadPieceImage={handleUploadPieceImage}
+            pieceExtra={pieceExtra}
+            selectedPieceIds={selectedIds}
+            onTogglePieceSelect={toggleSelectPiece}
+          />
+          {/* SareeInventoryTable has no tfoot support — totals row rendered as a matching footer bar. */}
           <div
             style={{
-              background: T.darkBurgundy,
-              padding: "16px 24px",
               display: "flex",
-              justifyContent: "space-between",
               alignItems: "center",
-              flexShrink: 0,
+              gap: 24,
+              background: T.silkCream,
+              borderTop: `1px solid ${T.borderDef}`,
+              padding: "10px 14px",
+              flexWrap: "wrap" as const,
             }}
           >
-            <div>
-              <Dialog.Title style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFF", margin: 0 }}>
-                {purchase.id} — Saree Details
-              </Dialog.Title>
-              <Dialog.Description asChild>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(200,155,71,0.8)" }}>
-                  {purchase.supplier}
-                </div>
-              </Dialog.Description>
-            </div>
-            <Dialog.Close asChild>
-              <IconButton
-                icon={X}
-                label="Close"
-                onClick={onClose}
-                size="sm"
-                className="rounded-full bg-white/12 text-white hover:bg-white/20"
-              />
-            </Dialog.Close>
+            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>
+              Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}
+            </span>
+            <span
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 700,
+                color: T.luxuryBrown,
+                whiteSpace: "nowrap" as const,
+              }}
+            >
+              Buying {formatMoney(rupees(totals.buying))}
+            </span>
+            <span
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 700,
+                color: T.antiqueGold,
+                whiteSpace: "nowrap" as const,
+              }}
+            >
+              Selling {formatMoney(rupees(totals.selling))}
+            </span>
+            <span
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 700,
+                color: T.green,
+                whiteSpace: "nowrap" as const,
+              }}
+            >
+              Profit {formatMoney(rupees(totals.profit))}
+            </span>
           </div>
+        </div>
 
-          <div style={{ overflow: "auto", flex: 1 }}>
-            <SareeInventoryTable
-              rows={rows}
-              onUploadPhoto={handleUploadPhoto}
-              onUploadPieceImage={handleUploadPieceImage}
-              pieceExtra={pieceExtra}
-              selectedPieceIds={selectedIds}
-              onTogglePieceSelect={toggleSelectPiece}
+        {selectedReturnablePieces.length > 0 && (
+          <div style={{ padding: "12px 24px 0", flexShrink: 0 }}>
+            <Textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Reason for return (optional)"
+              rows={2}
             />
-            {/* SareeInventoryTable has no tfoot support — totals row rendered as a matching footer bar. */}
+            {submitError && (
+              <div
+                style={{
+                  marginTop: 8,
+                  fontFamily: F.ui,
+                  fontSize: 12,
+                  color: T.crimson,
+                  background: "rgba(192,57,43,0.08)",
+                  border: "1px solid rgba(192,57,43,0.20)",
+                  borderRadius: 8,
+                  padding: "8px 12px",
+                }}
+              >
+                {submitError}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* A failed lookup used to hide the debit-note row silently, which
+         * looks exactly like "no notes raised". Say so instead. */}
+        {notesError && (
+          <div style={{ padding: "10px 24px 0", flexShrink: 0 }}>
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 24,
-                background: T.silkCream,
-                borderTop: `1px solid ${T.borderDef}`,
-                padding: "10px 14px",
-                flexWrap: "wrap" as const,
+                justifyContent: "space-between",
+                gap: 10,
+                fontFamily: F.ui,
+                fontSize: 12,
+                color: T.crimson,
+                background: "rgba(192,57,43,0.08)",
+                border: "1px solid rgba(192,57,43,0.20)",
+                borderRadius: 8,
+                padding: "8px 12px",
               }}
             >
-              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>
-                Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}
-              </span>
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>Buying {formatMoney(rupees(totals.buying))}</span>
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.antiqueGold, whiteSpace: "nowrap" as const }}>Selling {formatMoney(rupees(totals.selling))}</span>
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.green, whiteSpace: "nowrap" as const }}>Profit {formatMoney(rupees(totals.profit))}</span>
+              <span>Couldn't load the debit notes for this purchase.</span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => void refetchNotes()}
+                disabled={notesFetching}
+              >
+                {notesFetching ? "Retrying…" : "Retry"}
+              </Button>
             </div>
           </div>
+        )}
 
-          {selectedReturnablePieces.length > 0 && (
-            <div style={{ padding: "12px 24px 0", flexShrink: 0 }}>
-              <Textarea
-                value={reason}
-                onChange={e => setReason(e.target.value)}
-                placeholder="Reason for return (optional)"
-                rows={2}
-              />
-              {submitError && (
-                <div style={{ marginTop: 8, fontFamily: F.ui, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.20)", borderRadius: 8, padding: "8px 12px" }}>
-                  {submitError}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* A failed lookup used to hide the debit-note row silently, which
-            * looks exactly like "no notes raised". Say so instead. */}
-          {notesError && (
-            <div style={{ padding: "10px 24px 0", flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, fontFamily: F.ui, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.20)", borderRadius: 8, padding: "8px 12px" }}>
-                <span>Couldn't load the debit notes for this purchase.</span>
-                <Button variant="secondary" size="sm" onClick={() => void refetchNotes()} disabled={notesFetching}>
-                  {notesFetching ? "Retrying…" : "Retry"}
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {debitNotes.length > 0 && (
-            <div style={{ padding: "10px 24px 0", flexShrink: 0, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>Debit notes:</span>
-              {debitNotes.map(n => {
-                const st = DEBIT_NOTE_STATUS_STYLE[n.status];
-                return (
-                  <button
-                    key={n.id}
-                    type="button"
-                    onClick={() => setOpenNoteId(n.id)}
-                    title={`Open debit note ${n.id}`}
-                    style={{
-                      display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer",
-                      background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 999, padding: "4px 10px",
-                    }}
-                  >
-                    <FileText size={13} color={T.royalBurgundy} />
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{n.id}</span>
-                    <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: st.color, background: st.bg, borderRadius: 6, padding: "1px 6px" }}>{st.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
+        {debitNotes.length > 0 && (
           <div
             style={{
-              padding: "14px 24px",
-              borderTop: `1px solid ${T.borderDef}`,
-              display: "flex",
-              gap: 10,
+              padding: "10px 24px 0",
               flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flexWrap: "wrap",
             }}
           >
-            {selectedReturnablePieces.length > 0 && (
-              <Button
-                variant="danger"
-                iconLeft={Undo2}
-                onClick={handleReturnSelected}
-                disabled={submitting}
-                fullWidth
-                className="rounded-full"
-              >
-                {submitting
-                  ? "Raising debit note…"
-                  : `Raise Debit Note · Return ${selectedReturnablePieces.length} Saree${selectedReturnablePieces.length !== 1 ? "s" : ""}`}
-              </Button>
-            )}
+            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>
+              Debit notes:
+            </span>
+            {debitNotes.map((n) => {
+              const st = DEBIT_NOTE_STATUS_STYLE[n.status];
+              return (
+                <button
+                  key={n.id}
+                  type="button"
+                  onClick={() => setOpenNoteId(n.id)}
+                  title={`Open debit note ${n.id}`}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    cursor: "pointer",
+                    background: "#FFF",
+                    border: `1px solid ${T.borderDef}`,
+                    borderRadius: 999,
+                    padding: "4px 10px",
+                  }}
+                >
+                  <FileText size={13} color={T.royalBurgundy} />
+                  <span
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: T.royalBurgundy,
+                    }}
+                  >
+                    {n.id}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: st.color,
+                      background: st.bg,
+                      borderRadius: 6,
+                      padding: "1px 6px",
+                    }}
+                  >
+                    {st.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        <div
+          style={{
+            padding: "14px 24px",
+            borderTop: `1px solid ${T.borderDef}`,
+            display: "flex",
+            gap: 10,
+            flexShrink: 0,
+          }}
+        >
+          {selectedReturnablePieces.length > 0 && (
             <Button
-              variant="primary"
-              iconLeft={Printer}
-              onClick={printAllBarcodes}
+              variant="danger"
+              iconLeft={Undo2}
+              onClick={handleReturnSelected}
+              disabled={submitting}
               fullWidth
               className="rounded-full"
             >
-              Print All Barcodes
+              {submitting
+                ? "Raising debit note…"
+                : `Raise Debit Note · Return ${selectedReturnablePieces.length} Saree${selectedReturnablePieces.length !== 1 ? "s" : ""}`}
             </Button>
-            <Button
-              variant="secondary"
-              iconLeft={Printer}
-              onClick={() => printSummary(printTable)}
-              className="flex-none rounded-full"
-            >
-              Print Summary Sheet
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={onClose}
-              className="flex-none rounded-full"
-            >
-              Close
-            </Button>
-          </div>
+          )}
+          <Button
+            variant="primary"
+            iconLeft={Printer}
+            onClick={printAllBarcodes}
+            fullWidth
+            className="rounded-full"
+          >
+            Print All Barcodes
+          </Button>
+          <Button
+            variant="secondary"
+            iconLeft={Printer}
+            onClick={() => printSummary(printTable)}
+            className="flex-none rounded-full"
+          >
+            Print Summary Sheet
+          </Button>
+          <Button variant="secondary" onClick={onClose} className="flex-none rounded-full">
+            Close
+          </Button>
+        </div>
       </div>
       {openNoteId && <DebitNoteModal noteId={openNoteId} onClose={() => setOpenNoteId(null)} />}
     </Modal>

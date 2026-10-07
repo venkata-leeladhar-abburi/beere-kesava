@@ -22,7 +22,19 @@ import { PaymentsSection } from "./desktop/PaymentsSection";
 
 // ─── DESKTOP SHELL ─────────────────────────────────────────────────────────
 
-export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProfile }: { onBack?: () => void; bp?: "tablet" | "desktop"; active: Tab5; setActive: (t: Tab5) => void; onProfile?: () => void }) {
+export function DesktopWeaverPortal({
+  onBack,
+  bp = "desktop",
+  active,
+  setActive,
+  onProfile,
+}: {
+  onBack?: () => void;
+  bp?: "tablet" | "desktop";
+  active: Tab5;
+  setActive: (t: Tab5) => void;
+  onProfile?: () => void;
+}) {
   const { selectRole } = useAuth();
   const navigate = useNavigate();
   const isTablet = bp === "tablet";
@@ -34,10 +46,12 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
   const [batchesSubPage, setBatchesSubPage] = useState<"main" | "history" | "completed">("main");
 
   const { batches } = useBatches();
-  const { getRecordsForWeaver, getMaterialSummaryForWeaver, getMaterialSummaryByBatch } = useMaterialIssue();
+  const { getRecordsForWeaver, getMaterialSummaryForWeaver, getMaterialSummaryByBatch } =
+    useMaterialIssue();
   const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
   const weaverMaterialRecords = weaverId ? getRecordsForWeaver(weaverId) : [];
-  const pendingMaterialRecord = weaverMaterialRecords.find(r => r.status === "pending-signature") ?? null;
+  const pendingMaterialRecord =
+    weaverMaterialRecords.find((r) => r.status === "pending-signature") ?? null;
   const matSummary = getMaterialSummaryForWeaver(weaverId ?? "");
   const matByBatch = weaverId ? getMaterialSummaryByBatch(weaverId) : [];
 
@@ -54,23 +68,22 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
   // A batch is visible to its assigned weaver even in draft status
   // so they can see upcoming work, and so the "Draft" quick filter works.
   const myWeaverBatches: MyBatchEntry[] = batches
-    .map(b => ({ ...b, myRows: b.rows.filter(isMyRow) }))
-    .filter(b => b.myRows.length > 0);
-
+    .map((b) => ({ ...b, myRows: b.rows.filter(isMyRow) }))
+    .filter((b) => b.myRows.length > 0);
 
   // Completed: batch status is completed OR every saree assigned to this weaver is finished (produced)
   const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(isBatchDoneForWeaver);
   // Active: anything not yet completed
-  const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !isBatchDoneForWeaver(b));
+  const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter((b) => !isBatchDoneForWeaver(b));
 
   const myDefectiveSarees = useMemo(() => {
-    return batches.flatMap(b =>
+    return batches.flatMap((b) =>
       b.rows
         // qcPassed is false for BOTH defective and semi-approved sarees, and a
         // semi-approved one is a rework, not a rejection — key off the verdict
         // itself so reworks don't get reported as defects.
-        .filter(r => r.weaverId === weaverId && r.qcResult === "defective")
-        .map(r => ({
+        .filter((r) => r.weaverId === weaverId && r.qcResult === "defective")
+        .map((r) => ({
           sareeId: r.sareeId,
           batchId: b.batchId,
           designCode: r.designCode,
@@ -93,80 +106,124 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
   const [_requestSent, setRequestSent] = useState(false);
 
   const NAV: { id: Tab5; label: string; icon: React.ReactNode }[] = [
-    { id: "batches",   label: "My Batches",   icon: <Layers size={16} /> },
-    { id: "confirm",   label: "Confirm",       icon: <ClipboardCheck size={16} /> },
-    { id: "warp",      label: "Warp Request",  icon: <Package size={16} /> },
-    { id: "payments",  label: "Payments",      icon: <CreditCard size={16} /> },
+    { id: "batches", label: "My Batches", icon: <Layers size={16} /> },
+    { id: "confirm", label: "Confirm", icon: <ClipboardCheck size={16} /> },
+    { id: "warp", label: "Warp Request", icon: <Package size={16} /> },
+    { id: "payments", label: "Payments", icon: <CreditCard size={16} /> },
   ];
 
   return (
     <div style={{ minHeight: "100dvh", background: "#F8F4F0", fontFamily: F.u }}>
       <TopNav
-        isTablet={isTablet} NAV={NAV} active={active} showNotifs={showNotifs}
-        setActive={setActive} setShowNotifs={setShowNotifs}
-        search={search} setSearch={setSearch}
-        showProfile={showProfile} setShowProfile={setShowProfile}
-        onProfile={onProfile} onBack={onBack}
-        selectRole={selectRole} navigate={navigate}
+        isTablet={isTablet}
+        NAV={NAV}
+        active={active}
+        showNotifs={showNotifs}
+        setActive={setActive}
+        setShowNotifs={setShowNotifs}
+        search={search}
+        setSearch={setSearch}
+        showProfile={showProfile}
+        setShowProfile={setShowProfile}
+        onProfile={onProfile}
+        onBack={onBack}
+        selectRole={selectRole}
+        navigate={navigate}
       />
 
       {/* ── Page Content ── */}
       {!showNotifs && weaverLoading && (
-        <div style={{ margin: "40px 24px", textAlign: "center" as const, fontFamily: F.u, fontSize: 14, color: "#8A7F76" }}>Loading your weaver profile…</div>
+        <div
+          style={{
+            margin: "40px 24px",
+            textAlign: "center" as const,
+            fontFamily: F.u,
+            fontSize: 14,
+            color: "#8A7F76",
+          }}
+        >
+          Loading your weaver profile…
+        </div>
       )}
       {!showNotifs && !weaverLoading && (weaverError || !weaverId) && (
-        <div style={{ margin: "40px 24px", background: "#FFF", borderRadius: 14, padding: "28px 20px", textAlign: "center" as const, border: "1px solid rgba(110,15,45,0.12)" }}>
-          <div style={{ fontFamily: F.u, fontSize: 14, color: "#3B2314", fontWeight: 600 }}>Couldn't find your weaver profile</div>
-          <div style={{ fontFamily: F.u, fontSize: 13, color: "#8A7F76", marginTop: 4 }}>Your login isn't linked to a weaver record yet. Contact your supervisor.</div>
+        <div
+          style={{
+            margin: "40px 24px",
+            background: "#FFF",
+            borderRadius: 14,
+            padding: "28px 20px",
+            textAlign: "center" as const,
+            border: "1px solid rgba(110,15,45,0.12)",
+          }}
+        >
+          <div style={{ fontFamily: F.u, fontSize: 14, color: "#3B2314", fontWeight: 600 }}>
+            Couldn't find your weaver profile
+          </div>
+          <div style={{ fontFamily: F.u, fontSize: 13, color: "#8A7F76", marginTop: 4 }}>
+            Your login isn't linked to a weaver record yet. Contact your supervisor.
+          </div>
         </div>
       )}
       <AnimatePresence mode="wait">
         {(showNotifs || (!weaverLoading && !weaverError && weaverId)) && (
-        <motion.div key={showNotifs ? "notifs" : active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
+          <motion.div
+            key={showNotifs ? "notifs" : active}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+          >
+            {/* ════════ NOTIFICATIONS ════════ */}
+            {showNotifs && <NotificationsPage />}
 
-          {/* ════════ NOTIFICATIONS ════════ */}
-          {showNotifs && (<NotificationsPage />)}
+            {/* ════════ MY BATCHES ════════ */}
+            {!showNotifs && active === "batches" && (
+              <BatchesSection
+                bp={bp}
+                isTablet={isTablet}
+                batchesSubPage={batchesSubPage}
+                setBatchesSubPage={setBatchesSubPage}
+                myDefectiveSarees={myDefectiveSarees}
+                myActiveBatches={myActiveBatches}
+                completedBatches={completedBatches}
+                setActive={setActive}
+              />
+            )}
 
-          {/* ════════ MY BATCHES ════════ */}
-          {!showNotifs && active === "batches" && (
-            <BatchesSection
-              bp={bp} isTablet={isTablet}
-              batchesSubPage={batchesSubPage} setBatchesSubPage={setBatchesSubPage}
-              myDefectiveSarees={myDefectiveSarees}
-              myActiveBatches={myActiveBatches} completedBatches={completedBatches}
-              setActive={setActive}
-            />
-          )}
+            {/* ════════ CONFIRM ════════ */}
+            {!showNotifs && active === "confirm" && (
+              <ConfirmSection
+                bp={bp}
+                isTablet={isTablet}
+                pendingMaterialRecord={pendingMaterialRecord}
+                confirmed={confirmed}
+                confirmedRecord={confirmedRecord}
+                matByBatch={matByBatch}
+                matSummary={matSummary}
+                weaverMaterialRecords={weaverMaterialRecords}
+                setActive={setActive}
+                setConfirmed={setConfirmed}
+                setConfirmedRecord={setConfirmedRecord}
+                setSigMethod={setSigMethod}
+                setHasSig={setHasSig}
+                setRequestSent={setRequestSent}
+              />
+            )}
 
-          {/* ════════ CONFIRM ════════ */}
-          {!showNotifs && active === "confirm" && (
-            <ConfirmSection
-              bp={bp} isTablet={isTablet}
-              pendingMaterialRecord={pendingMaterialRecord} confirmed={confirmed} confirmedRecord={confirmedRecord}
-              matByBatch={matByBatch} matSummary={matSummary} weaverMaterialRecords={weaverMaterialRecords}
-              setActive={setActive} setConfirmed={setConfirmed} setConfirmedRecord={setConfirmedRecord}
-              setSigMethod={setSigMethod} setHasSig={setHasSig} setRequestSent={setRequestSent}
-            />
-          )}
+            {/* ════════ WARP REQUEST ════════ */}
+            {!showNotifs && active === "warp" && <WarpSection bp={bp} isTablet={isTablet} />}
 
-          {/* ════════ WARP REQUEST ════════ */}
-          {!showNotifs && active === "warp" && (
-            <WarpSection bp={bp} isTablet={isTablet} />
-          )}
-
-          {/* ════════ PAYMENTS ════════ */}
-          {!showNotifs && active === "payments" && (
-            <PaymentsSection bp={bp} isTablet={isTablet} />
-          )}
-
-        </motion.div>
+            {/* ════════ PAYMENTS ════════ */}
+            {!showNotifs && active === "payments" && (
+              <PaymentsSection bp={bp} isTablet={isTablet} />
+            )}
+          </motion.div>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {viewDesign && <DesignCodeCard design={viewDesign} onClose={() => setViewDesign(null)} />}
       </AnimatePresence>
-
     </div>
   );
 }

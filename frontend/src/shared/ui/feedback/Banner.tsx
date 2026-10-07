@@ -48,7 +48,14 @@ export interface BannerProps extends Omit<React.ComponentProps<"div">, "title"> 
   onDismiss?: () => void;
 }
 
-export function Banner({ tone = "info", children, action, onDismiss, className, ...props }: BannerProps) {
+export function Banner({
+  tone = "info",
+  children,
+  action,
+  onDismiss,
+  className,
+  ...props
+}: BannerProps) {
   return (
     <div
       role={TONE_ROLE[tone]}
@@ -59,10 +66,19 @@ export function Banner({ tone = "info", children, action, onDismiss, className, 
       <span className="shrink-0" style={{ color: TONE_TEXT[tone] }}>
         <Icon name={TONE_ICON[tone]} size="sm" />
       </span>
-      <p className="bk-label-lg text-center" style={{ color: TONE_TEXT[tone] }}>{children}</p>
+      <p className="bk-label-lg text-center" style={{ color: TONE_TEXT[tone] }}>
+        {children}
+      </p>
       {action}
       {onDismiss && (
-        <IconButton icon="close" label="Dismiss" size="sm" variant="ghost" onClick={onDismiss} className="shrink-0" />
+        <IconButton
+          icon="close"
+          label="Dismiss"
+          size="sm"
+          variant="ghost"
+          onClick={onDismiss}
+          className="shrink-0"
+        />
       )}
     </div>
   );

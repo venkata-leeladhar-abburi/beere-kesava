@@ -26,8 +26,11 @@ export interface CreateWarpRequestPayload {
 
 export const warpRequestsApi = {
   list: (status?: string) =>
-    apiClient.get<{ items: BackendWarpRequest[] }>(`/warp-requests${status ? `?status=${status}` : ""}`),
-  create: (payload: CreateWarpRequestPayload) => apiClient.post<BackendWarpRequest>("/warp-requests", payload),
+    apiClient.get<{ items: BackendWarpRequest[] }>(
+      `/warp-requests${status ? `?status=${status}` : ""}`
+    ),
+  create: (payload: CreateWarpRequestPayload) =>
+    apiClient.post<BackendWarpRequest>("/warp-requests", payload),
   approve: (id: string, decidedById?: string) =>
     apiClient.patch<BackendWarpRequest>(`/warp-requests/${id}/approve`, { decidedById }),
   reject: (id: string, decidedById?: string, notes?: string) =>

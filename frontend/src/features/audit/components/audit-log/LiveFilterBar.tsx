@@ -4,22 +4,34 @@ import { F, T } from "./tokens";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 
 export function LiveFilterBar({
-  search, setSearch,
-  roleFilter, setRoleFilter,
-  staffFilter, setStaffFilter,
+  search,
+  setSearch,
+  roleFilter,
+  setRoleFilter,
+  staffFilter,
+  setStaffFilter,
   staffOptions,
-  moduleFilter, setModuleFilter,
-  actionFilter, setActionFilter,
-  periodFilter, setPeriodFilter,
+  moduleFilter,
+  setModuleFilter,
+  actionFilter,
+  setActionFilter,
+  periodFilter,
+  setPeriodFilter,
   resultsLabel,
 }: {
-  search: string; setSearch: (v: string) => void;
-  roleFilter: string; setRoleFilter: (v: string) => void;
-  staffFilter: string; setStaffFilter: (v: string) => void;
+  search: string;
+  setSearch: (v: string) => void;
+  roleFilter: string;
+  setRoleFilter: (v: string) => void;
+  staffFilter: string;
+  setStaffFilter: (v: string) => void;
   staffOptions: { id: string; label: string }[];
-  moduleFilter: string; setModuleFilter: (v: string) => void;
-  actionFilter: string; setActionFilter: (v: string) => void;
-  periodFilter: string; setPeriodFilter: (v: string) => void;
+  moduleFilter: string;
+  setModuleFilter: (v: string) => void;
+  actionFilter: string;
+  setActionFilter: (v: string) => void;
+  periodFilter: string;
+  setPeriodFilter: (v: string) => void;
   resultsLabel?: string;
 }) {
   return (
@@ -53,33 +65,51 @@ export function LiveFilterBar({
       </div>
 
       {/* ── 4. SEARCH AND FILTER BAR ── */}
-      <div className="p-3.5 sm:p-5 md:p-6 mb-6" style={{
-        background: "#fff",
-        borderRadius: 14,
-        border: `1px solid ${T.borderDef}`,
-        boxShadow: "0 2px 12px rgba(44,24,16,0.06)",
-      }}>
+      <div
+        className="p-3.5 sm:p-5 md:p-6 mb-6"
+        style={{
+          background: "#fff",
+          borderRadius: 14,
+          border: `1px solid ${T.borderDef}`,
+          boxShadow: "0 2px 12px rgba(44,24,16,0.06)",
+        }}
+      >
         {/* Title row */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 16,
+          }}
+        >
           <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.luxuryBrown }}>
             Search &amp; Filter Audit Log
           </span>
-          <Button variant="secondary" size="sm" iconLeft={Download} className="text-[#C89B47] border-[#C89B47]">
+          <Button
+            variant="secondary"
+            size="sm"
+            iconLeft={Download}
+            className="text-[#C89B47] border-[#C89B47]"
+          >
             Export
           </Button>
         </div>
 
         {/* Filter row */}
-        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr]" style={{
-          gap: 12,
-          marginBottom: 14,
-        }}>
+        <div
+          className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr]"
+          style={{
+            gap: 12,
+            marginBottom: 14,
+          }}
+        >
           {/* Search */}
           <SearchInput
             aria-label="Search actions, users, records..."
             placeholder="Search actions, users, records..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
           />
           {/* Role */}
           <Select value={roleFilter} onValueChange={setRoleFilter} placeholder="All Roles">
@@ -93,8 +123,10 @@ export function LiveFilterBar({
           {/* Staff — scoped to whichever role is selected above */}
           <Select value={staffFilter} onValueChange={setStaffFilter} placeholder="All Staff">
             <SelectItem value="All Staff">All Staff</SelectItem>
-            {staffOptions.map(s => (
-              <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
+            {staffOptions.map((s) => (
+              <SelectItem key={s.id} value={s.id}>
+                {s.label}
+              </SelectItem>
             ))}
           </Select>
           {/* Module */}
@@ -137,7 +169,7 @@ export function LiveFilterBar({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Period pills */}
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            {["Today", "This Week", "This Month", "Last 3 Months", "All Time"].map(p => (
+            {["Today", "This Week", "This Month", "Last 3 Months", "All Time"].map((p) => (
               <Button
                 key={p}
                 variant={periodFilter === p ? "primary" : "secondary"}
@@ -151,7 +183,12 @@ export function LiveFilterBar({
           </div>
           {/* Apply / Clear */}
           <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
-            <Button variant="primary" size="sm" iconLeft={Search} className="rounded-[10px] text-xs">
+            <Button
+              variant="primary"
+              size="sm"
+              iconLeft={Search}
+              className="rounded-[10px] text-xs"
+            >
               Apply Filters
             </Button>
             <Button variant="ghost" size="sm" iconLeft={X} className="text-xs">
@@ -161,7 +198,9 @@ export function LiveFilterBar({
         </div>
 
         {/* Results label */}
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 10 }}>
+        <div
+          style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 10 }}
+        >
           {resultsLabel ?? "Filters apply to the action log below."}
         </div>
       </div>

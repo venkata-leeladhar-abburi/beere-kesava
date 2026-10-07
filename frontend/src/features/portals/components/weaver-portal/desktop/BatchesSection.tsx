@@ -1,6 +1,13 @@
-
 import { useState } from "react";
-import { AlertCircle, AlertTriangle, CheckCircle2, History, ListChecks, Package, RotateCcw } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  History,
+  ListChecks,
+  Package,
+  RotateCcw,
+} from "lucide-react";
 
 import { C, F, BG_IMAGE, MyBatchEntry, Tab5 } from "../theme";
 import { DataTable, ViewToggle, type ColumnDef, type ViewMode } from "@/shared/ui/data";
@@ -34,7 +41,6 @@ import { useCurrentWeaver } from "../useCurrentWeaver";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 import { Money } from "@/shared/ui/domain";
-
 
 /** House rule: a weaver may hold at most this many batches at once. */
 const MAX_ACTIVE_BATCHES = 2;
@@ -148,68 +154,157 @@ export function BatchesSection({
 
   const activeBatchColumns: ColumnDef<MyBatchEntry>[] = [
     {
-      id: "batchId", header: "Batch ID", priority: 1, accessor: b => b.batchId,
-      cell: (_v, b) => <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 15, color: C.burg }}>{b.batchId}</span>,
+      id: "batchId",
+      header: "Batch ID",
+      priority: 1,
+      accessor: (b) => b.batchId,
+      cell: (_v, b) => (
+        <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 15, color: C.burg }}>
+          {b.batchId}
+        </span>
+      ),
     },
     {
-      id: "status", header: "Status", priority: 2, type: "badge", accessor: b => b.status,
+      id: "status",
+      header: "Status",
+      priority: 2,
+      type: "badge",
+      accessor: (b) => b.status,
       cell: (_v, b) => (
-        <span style={{ fontFamily: F.u, fontSize: 12, color: b.status === "active" ? C.green : C.gold, background: b.status === "active" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.15)", borderRadius: 999, padding: "4px 12px", fontWeight: 600 }}>
+        <span
+          style={{
+            fontFamily: F.u,
+            fontSize: 12,
+            color: b.status === "active" ? C.green : C.gold,
+            background: b.status === "active" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.15)",
+            borderRadius: 999,
+            padding: "4px 12px",
+            fontWeight: 600,
+          }}
+        >
           {b.status === "active" ? "Weaving in Progress" : "Draft"}
         </span>
       ),
     },
     {
-      id: "sarees", header: "Sarees Assigned", priority: 2, type: "number", accessor: b => b.myRows.length,
+      id: "sarees",
+      header: "Sarees Assigned",
+      priority: 2,
+      type: "number",
+      accessor: (b) => b.myRows.length,
     },
     {
-      id: "produced", header: "Produced", priority: 2, accessor: b => b.myRows.filter(isRowProduced).length,
+      id: "produced",
+      header: "Produced",
+      priority: 2,
+      accessor: (b) => b.myRows.filter(isRowProduced).length,
       cell: (_v, b) => {
         const total = b.myRows.length || 1;
         const produced = b.myRows.filter(isRowProduced).length;
-        return <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{produced} of {b.myRows.length} ({Math.round((produced / total) * 100)}%)</span>;
+        return (
+          <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>
+            {produced} of {b.myRows.length} ({Math.round((produced / total) * 100)}%)
+          </span>
+        );
       },
     },
     {
-      id: "qc", header: "QC Passed", priority: 2, accessor: b => b.myRows.filter(r => r.qcPassed === true).length,
+      id: "qc",
+      header: "QC Passed",
+      priority: 2,
+      accessor: (b) => b.myRows.filter((r) => r.qcPassed === true).length,
       cell: (_v, b) => {
         const total = b.myRows.length || 1;
-        const passed = b.myRows.filter(r => r.qcPassed === true).length;
-        return <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{passed} of {b.myRows.length} ({Math.round((passed / total) * 100)}%)</span>;
+        const passed = b.myRows.filter((r) => r.qcPassed === true).length;
+        return (
+          <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>
+            {passed} of {b.myRows.length} ({Math.round((passed / total) * 100)}%)
+          </span>
+        );
       },
     },
     {
-      id: "rework", header: "Rework", priority: 2, type: "number", accessor: b => b.myRows.filter(r => r.awaitingRework === true).length,
+      id: "rework",
+      header: "Rework",
+      priority: 2,
+      type: "number",
+      accessor: (b) => b.myRows.filter((r) => r.awaitingRework === true).length,
     },
     {
-      id: "due", header: "Due Date", priority: 2, accessor: b => b.dueDate,
-      cell: (_v, b) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{formatDueDate(b.dueDate) || "—"}</span>,
+      id: "due",
+      header: "Due Date",
+      priority: 2,
+      accessor: (b) => b.dueDate,
+      cell: (_v, b) => (
+        <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>
+          {formatDueDate(b.dueDate) || "—"}
+        </span>
+      ),
     },
   ];
 
   const completedBatchColumns: ColumnDef<MyBatchEntry>[] = [
     {
-      id: "batchId", header: "Batch ID", priority: 1, accessor: b => b.batchId,
-      cell: (_v, b) => <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 15, color: C.burg }}>{b.batchId}</span>,
+      id: "batchId",
+      header: "Batch ID",
+      priority: 1,
+      accessor: (b) => b.batchId,
+      cell: (_v, b) => (
+        <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 15, color: C.burg }}>
+          {b.batchId}
+        </span>
+      ),
     },
     {
-      id: "status", header: "Status", priority: 2, type: "badge", accessor: () => "completed",
+      id: "status",
+      header: "Status",
+      priority: 2,
+      type: "badge",
+      accessor: () => "completed",
       cell: () => (
-        <span style={{ fontFamily: F.u, fontSize: 12, color: "#1D4ED8", background: "rgba(29,78,216,0.10)", borderRadius: 999, padding: "4px 12px", fontWeight: 600 }}>
+        <span
+          style={{
+            fontFamily: F.u,
+            fontSize: 12,
+            color: "#1D4ED8",
+            background: "rgba(29,78,216,0.10)",
+            borderRadius: 999,
+            padding: "4px 12px",
+            fontWeight: 600,
+          }}
+        >
           Completed
         </span>
       ),
     },
     {
-      id: "sarees", header: "Sarees Assigned", priority: 2, type: "number", accessor: b => b.myRows.length,
+      id: "sarees",
+      header: "Sarees Assigned",
+      priority: 2,
+      type: "number",
+      accessor: (b) => b.myRows.length,
     },
     {
-      id: "qc", header: "QC Passed", priority: 2, accessor: b => b.myRows.length,
-      cell: (_v, b) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.green }}>{b.myRows.length} of {b.myRows.length} (100%)</span>,
+      id: "qc",
+      header: "QC Passed",
+      priority: 2,
+      accessor: (b) => b.myRows.length,
+      cell: (_v, b) => (
+        <span style={{ fontFamily: F.u, fontSize: 13, color: C.green }}>
+          {b.myRows.length} of {b.myRows.length} (100%)
+        </span>
+      ),
     },
     {
-      id: "due", header: "Due Date", priority: 2, accessor: b => b.dueDate,
-      cell: (_v, b) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{formatDueDate(b.dueDate) || "—"}</span>,
+      id: "due",
+      header: "Due Date",
+      priority: 2,
+      accessor: (b) => b.dueDate,
+      cell: (_v, b) => (
+        <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>
+          {formatDueDate(b.dueDate) || "—"}
+        </span>
+      ),
     },
   ];
 
@@ -449,8 +544,21 @@ export function BatchesSection({
               </div>
             </div>
           ) : activeView === "table" ? (
-            <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: "auto", marginBottom: 20 }}>
-              <DataTable columns={activeBatchColumns} data={myActiveBatches} getRowId={b => b.batchId} view="table" />
+            <div
+              style={{
+                background: "#FFF",
+                border: `1px solid ${C.bdr}`,
+                borderRadius: 20,
+                overflow: "auto",
+                marginBottom: 20,
+              }}
+            >
+              <DataTable
+                columns={activeBatchColumns}
+                data={myActiveBatches}
+                getRowId={(b) => b.batchId}
+                view="table"
+              />
             </div>
           ) : (
             <div
@@ -551,8 +659,20 @@ export function BatchesSection({
               </div>
             </div>
           ) : completedView === "table" ? (
-            <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: "auto" }}>
-              <DataTable columns={completedBatchColumns} data={completedBatches.slice(0, 4)} getRowId={b => b.batchId} view="table" />
+            <div
+              style={{
+                background: "#FFF",
+                border: `1px solid ${C.bdr}`,
+                borderRadius: 20,
+                overflow: "auto",
+              }}
+            >
+              <DataTable
+                columns={completedBatchColumns}
+                data={completedBatches.slice(0, 4)}
+                getRowId={(b) => b.batchId}
+                view="table"
+              />
             </div>
           ) : (
             <div

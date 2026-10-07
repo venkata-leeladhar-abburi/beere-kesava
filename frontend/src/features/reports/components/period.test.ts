@@ -30,11 +30,17 @@ describe("resolvePeriod", () => {
 
   it("treats an incomplete or reversed custom range as All Time rather than emptying the page", () => {
     expect(resolvePeriod("Custom Dates", { from: "2026-08-01" }, NOW).current).toBeNull();
-    expect(resolvePeriod("Custom Dates", { from: "2026-08-10", to: "2026-08-01" }, NOW).current).toBeNull();
+    expect(
+      resolvePeriod("Custom Dates", { from: "2026-08-10", to: "2026-08-01" }, NOW).current
+    ).toBeNull();
   });
 
   it("makes a custom range inclusive of its end date, with an equally long prior window", () => {
-    const { current, prior } = resolvePeriod("Custom Dates", { from: "2026-08-01", to: "2026-08-10" }, NOW);
+    const { current, prior } = resolvePeriod(
+      "Custom Dates",
+      { from: "2026-08-01", to: "2026-08-10" },
+      NOW
+    );
     expect(inRange(current, "2026-08-10T18:00:00Z")).toBe(true);
     expect(inRange(current, "2026-08-11T00:00:00")).toBe(false);
     expect(prior!.from).toEqual(new Date(2026, 6, 22)); // the 10 days before 1 Aug

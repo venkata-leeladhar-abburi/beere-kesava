@@ -21,12 +21,22 @@ const DEFAULT_INCLUDES = [
 ];
 
 export function ExportReportDialog({
-  dialog, onClose, format, setFormat, done, setDone,
-  formats, includes = DEFAULT_INCLUDES, onExport,
+  dialog,
+  onClose,
+  format,
+  setFormat,
+  done,
+  setDone,
+  formats,
+  includes = DEFAULT_INCLUDES,
+  onExport,
 }: {
-  dialog: { label: string } | null; onClose: () => void;
-  format: ExportFormat; setFormat: (f: ExportFormat) => void;
-  done: boolean; setDone: (v: boolean) => void;
+  dialog: { label: string } | null;
+  onClose: () => void;
+  format: ExportFormat;
+  setFormat: (f: ExportFormat) => void;
+  done: boolean;
+  setDone: (v: boolean) => void;
   /** Offered formats — defaults to all three. Pass a subset where only some
    *  are genuinely produced (the reports export writes CSV/XLSX, not PDF). */
   formats?: ExportFormat[];
@@ -37,10 +47,13 @@ export function ExportReportDialog({
   onExport?: (format: ExportFormat) => void | Promise<void>;
 }) {
   const [busy, setBusy] = React.useState(false);
-  const shownFormats = ALL_FORMATS.filter(f => !formats || formats.includes(f.key));
+  const shownFormats = ALL_FORMATS.filter((f) => !formats || formats.includes(f.key));
 
   async function handleExport() {
-    if (!onExport) { setDone(true); return; }
+    if (!onExport) {
+      setDone(true);
+      return;
+    }
     setBusy(true);
     try {
       await onExport(format);
@@ -51,86 +64,230 @@ export function ExportReportDialog({
   }
 
   return (
-    <Modal open={!!dialog} onOpenChange={o => { if (!o) onClose(); }} size="sm">
+    <Modal
+      open={!!dialog}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+      size="sm"
+    >
       {dialog && (
-        <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
-            {/* Header */}
-            <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, padding: "28px 32px 24px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(200,155,71,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <FileText size={24} color={C.gold} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <Dialog.Title style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF" }}>Export Report</Dialog.Title>
-                  <Dialog.Description asChild><div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>{dialog.label}</div></Dialog.Description>
-                </div>
-                <Dialog.Close asChild>
-                  <IconButton
-                    icon={X}
-                    label="Close"
-                    onClick={onClose}
-                    variant="ghost"
-                    shape="circle"
-                    className="bg-white/10 text-white/70 w-9 h-9"
-                  />
-                </Dialog.Close>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            borderTopLeftRadius: "var(--radius-xl)",
+            borderTopRightRadius: "var(--radius-xl)",
+          }}
+        >
+          {/* Header */}
+          <div
+            style={{
+              background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`,
+              padding: "28px 32px 24px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 14,
+                  background: "rgba(200,155,71,0.22)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <FileText size={24} color={C.gold} />
               </div>
+              <div style={{ flex: 1 }}>
+                <Dialog.Title
+                  style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF" }}
+                >
+                  Export Report
+                </Dialog.Title>
+                <Dialog.Description asChild>
+                  <div
+                    style={{
+                      fontFamily: F.u,
+                      fontSize: 13,
+                      color: "rgba(255,255,255,0.55)",
+                      marginTop: 2,
+                    }}
+                  >
+                    {dialog.label}
+                  </div>
+                </Dialog.Description>
+              </div>
+              <Dialog.Close asChild>
+                <IconButton
+                  icon={X}
+                  label="Close"
+                  onClick={onClose}
+                  variant="ghost"
+                  shape="circle"
+                  className="bg-white/10 text-white/70 w-9 h-9"
+                />
+              </Dialog.Close>
             </div>
-            <div style={{ padding: "28px 32px 32px" }}>
-              {done ? (
-                <div style={{ textAlign: "center" as const, padding: "20px 0" }}>
-                  <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(30,102,64,0.10)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>
-                    <Check size={36} color={C.green} />
-                  </div>
-                  <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text, marginBottom: 10 }}>Export Ready!</div>
-                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 24 }}>
-                    Your <strong style={{ color: C.text }}>{dialog!.label}</strong> report has been exported as <strong style={{ color: C.text }}>{format.toUpperCase()}</strong>. Check your downloads folder.
-                  </div>
-                  <Button variant="primary" onClick={onClose} fullWidth className="h-[52px] rounded-[14px] border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm">Done</Button>
+          </div>
+          <div style={{ padding: "28px 32px 32px" }}>
+            {done ? (
+              <div style={{ textAlign: "center" as const, padding: "20px 0" }}>
+                <div
+                  style={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: "50%",
+                    background: "rgba(30,102,64,0.10)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    margin: "0 auto 18px",
+                  }}
+                >
+                  <Check size={36} color={C.green} />
                 </div>
-              ) : (
-                <>
-                  {/* Format selection */}
-                  <div style={{ marginBottom: 24 }}>
-                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 14 }}>Export format</div>
-                    <div style={{ display: "flex", gap: 12 }}>
-                      {shownFormats.map(f => (
-                        <Button
-                          key={f.key}
-                          onClick={() => setFormat(f.key)}
-                          variant="ghost"
-                          className={
-                            "flex-1 h-auto py-4 px-2.5 rounded-2xl border-2 text-center flex-col " +
-                            (format === f.key ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.06)]" : "border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.04)]")
-                          }
-                        >
-                          <div style={{ fontSize: 20, marginBottom: 6 }}>{f.icon}</div>
-                          <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: format === f.key ? C.burg : C.text, marginBottom: 2 }}>{f.label}</div>
-                          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{f.desc}</div>
-                        </Button>
-                      ))}
-                    </div>
+                <div
+                  style={{
+                    fontFamily: F.d,
+                    fontWeight: 700,
+                    fontSize: 20,
+                    color: C.text,
+                    marginBottom: 10,
+                  }}
+                >
+                  Export Ready!
+                </div>
+                <div
+                  style={{
+                    fontFamily: F.u,
+                    fontSize: 14,
+                    color: C.muted,
+                    lineHeight: 1.6,
+                    marginBottom: 24,
+                  }}
+                >
+                  Your <strong style={{ color: C.text }}>{dialog!.label}</strong> report has been
+                  exported as <strong style={{ color: C.text }}>{format.toUpperCase()}</strong>.
+                  Check your downloads folder.
+                </div>
+                <Button
+                  variant="primary"
+                  onClick={onClose}
+                  fullWidth
+                  className="h-[52px] rounded-[14px] border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm"
+                >
+                  Done
+                </Button>
+              </div>
+            ) : (
+              <>
+                {/* Format selection */}
+                <div style={{ marginBottom: 24 }}>
+                  <div
+                    style={{
+                      fontFamily: F.u,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      color: C.text,
+                      marginBottom: 14,
+                    }}
+                  >
+                    Export format
                   </div>
-                  {/* What's included */}
-                  <div style={{ background: "#F8F4F0", borderRadius: 14, padding: "16px 18px", marginBottom: 24 }}>
-                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 10 }}>Includes</div>
-                    {includes.map((item, i) => (
-                      <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: i < includes.length - 1 ? 8 : 0 }}>
-                        <Check size={14} color={C.green} />
-                        <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{item}</span>
-                      </div>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    {shownFormats.map((f) => (
+                      <Button
+                        key={f.key}
+                        onClick={() => setFormat(f.key)}
+                        variant="ghost"
+                        className={
+                          "flex-1 h-auto py-4 px-2.5 rounded-2xl border-2 text-center flex-col " +
+                          (format === f.key
+                            ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.06)]"
+                            : "border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.04)]")
+                        }
+                      >
+                        <div style={{ fontSize: 20, marginBottom: 6 }}>{f.icon}</div>
+                        <div
+                          style={{
+                            fontFamily: F.u,
+                            fontWeight: 700,
+                            fontSize: 14,
+                            color: format === f.key ? C.burg : C.text,
+                            marginBottom: 2,
+                          }}
+                        >
+                          {f.label}
+                        </div>
+                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>
+                          {f.desc}
+                        </div>
+                      </Button>
                     ))}
                   </div>
-                  {/* Actions */}
-                  <div style={{ display: "flex", gap: 12 }}>
-                    <Button onClick={onClose} variant="ghost" className="flex-1 h-[52px] rounded-[14px] border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.06)] font-semibold text-sm text-[#69635E] hover:text-[#1A0A0F]">Cancel</Button>
-                    <Button variant="primary" onClick={() => void handleExport()} disabled={busy} className="flex-[2] h-[52px] rounded-[14px] border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
-                      <FileText size={17} /> {busy ? "Exporting…" : `Export as ${format.toUpperCase()}`}
-                    </Button>
+                </div>
+                {/* What's included */}
+                <div
+                  style={{
+                    background: "#F8F4F0",
+                    borderRadius: 14,
+                    padding: "16px 18px",
+                    marginBottom: 24,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: F.u,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      color: C.text,
+                      marginBottom: 10,
+                    }}
+                  >
+                    Includes
                   </div>
-                </>
-              )}
-            </div>
+                  {includes.map((item, i) => (
+                    <div
+                      key={item}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        marginBottom: i < includes.length - 1 ? 8 : 0,
+                      }}
+                    >
+                      <Check size={14} color={C.green} />
+                      <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{item}</span>
+                    </div>
+                  ))}
+                </div>
+                {/* Actions */}
+                <div style={{ display: "flex", gap: 12 }}>
+                  <Button
+                    onClick={onClose}
+                    variant="ghost"
+                    className="flex-1 h-[52px] rounded-[14px] border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.06)] font-semibold text-sm text-[#69635E] hover:text-[#1A0A0F]"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => void handleExport()}
+                    disabled={busy}
+                    className="flex-[2] h-[52px] rounded-[14px] border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]"
+                  >
+                    <FileText size={17} />{" "}
+                    {busy ? "Exporting…" : `Export as ${format.toUpperCase()}`}
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
     </Modal>

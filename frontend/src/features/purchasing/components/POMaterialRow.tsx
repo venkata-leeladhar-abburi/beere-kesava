@@ -1,7 +1,13 @@
 /* eslint-disable no-restricted-syntax */
 import { Trash2 } from "lucide-react";
 import { T, F, ExtItem } from "./POTypesAndVendors";
-import { IconButton, Textarea, NumberInput, Select, SelectItem } from "../../../shared/ui/primitives";
+import {
+  IconButton,
+  Textarea,
+  NumberInput,
+  Select,
+  SelectItem,
+} from "../../../shared/ui/primitives";
 
 interface POMaterialRowProps {
   item: ExtItem;
@@ -22,13 +28,21 @@ const labelStyle: React.CSSProperties = { fontFamily: F.ui, color: T.taupe };
  * stacked layout is what pushed the quantity control ~34px below the
  * description textarea beside it, so the two columns never lined up.
  */
-function UnitToggle({ units, value, onChange }: { units: string[]; value: string; onChange: (u: string) => void }) {
+function UnitToggle({
+  units,
+  value,
+  onChange,
+}: {
+  units: string[];
+  value: string;
+  onChange: (u: string) => void;
+}) {
   return (
     <span
       className="flex shrink-0 items-center gap-[2px] rounded-[7px] p-[2px]"
       style={{ background: T.silkCream, border: `1px solid ${T.borderDef}` }}
     >
-      {units.map(u => {
+      {units.map((u) => {
         const active = value === u;
         return (
           <button
@@ -103,7 +117,13 @@ export function POMaterialRow({
           Material {index ?? 1}
         </span>
         {canRemove && (
-          <IconButton onClick={onRemove} label="Remove material" icon={Trash2} variant="ghost" size="sm" />
+          <IconButton
+            onClick={onRemove}
+            label="Remove material"
+            icon={Trash2}
+            variant="ghost"
+            size="sm"
+          />
         )}
       </div>
 
@@ -116,8 +136,14 @@ export function POMaterialRow({
       <div className="grid grid-cols-1 gap-x-[12px] gap-y-[12px] sm:grid-cols-[minmax(110px,132px)_minmax(0,1fr)]">
         {/* Material Type */}
         <div className="min-w-0">
-          <span className={labelCls} style={labelStyle}>Type *</span>
-          <Select value={item.materialType} onValueChange={v => set("materialType", v)} className="w-full">
+          <span className={labelCls} style={labelStyle}>
+            Type *
+          </span>
+          <Select
+            value={item.materialType}
+            onValueChange={(v) => set("materialType", v)}
+            className="w-full"
+          >
             <SelectItem value="Warp">Warp</SelectItem>
             <SelectItem value="Resham">Resham</SelectItem>
             <SelectItem value="Jari">Jari</SelectItem>
@@ -126,10 +152,12 @@ export function POMaterialRow({
 
         {/* Description */}
         <div className="min-w-0">
-          <span className={labelCls} style={labelStyle}>Description</span>
+          <span className={labelCls} style={labelStyle}>
+            Description
+          </span>
           <Textarea
             value={item.description ?? ""}
-            onChange={e => set("description", e.target.value)}
+            onChange={(e) => set("description", e.target.value)}
             placeholder="Colour, grade, quality notes…"
             rows={1}
             className="min-h-[40px] resize-y"
@@ -139,20 +167,29 @@ export function POMaterialRow({
         {/* Quantity — the unit switch lives INSIDE the field as an addon, so
             the control is one row tall like the two above it. */}
         <div className="min-w-0 sm:col-span-2 sm:max-w-[240px]">
-          <span className={labelCls} style={labelStyle}>Quantity *</span>
+          <span className={labelCls} style={labelStyle}>
+            Quantity *
+          </span>
           <NumberInput
             min={0}
             value={item.quantity || ""}
-            onValueChange={v => set("quantity", v === "" ? 0 : v)}
+            onValueChange={(v) => set("quantity", v === "" ? 0 : v)}
             placeholder="0"
             invalid={Boolean(qtyError)}
             className="font-mono"
-            addonRight={<UnitToggle units={units} value={item.unit} onChange={u => set("unit", u)} />}
+            addonRight={
+              <UnitToggle units={units} value={item.unit} onChange={(u) => set("unit", u)} />
+            }
           />
           {qtyError ? (
-            <div className="mt-[4px] text-[11px]" style={{ color: T.crimson }}>{qtyError}</div>
+            <div className="mt-[4px] text-[11px]" style={{ color: T.crimson }}>
+              {qtyError}
+            </div>
           ) : conversion ? (
-            <div className="mt-[4px] text-[11px] font-semibold" style={{ fontFamily: F.ui, color: T.antiqueGold }}>
+            <div
+              className="mt-[4px] text-[11px] font-semibold"
+              style={{ fontFamily: F.ui, color: T.antiqueGold }}
+            >
               = {conversion}
             </div>
           ) : null}

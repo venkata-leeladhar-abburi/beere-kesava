@@ -9,12 +9,14 @@ import React from "react";
 // Defaults to true so admin/superadmin/accountant are unaffected.
 const MoneyAccessContext = React.createContext<boolean>(true);
 
-export function MoneyAccessProvider({ allowed, children }: { allowed: boolean; children: React.ReactNode }) {
-  return (
-    <MoneyAccessContext.Provider value={allowed}>
-      {children}
-    </MoneyAccessContext.Provider>
-  );
+export function MoneyAccessProvider({
+  allowed,
+  children,
+}: {
+  allowed: boolean;
+  children: React.ReactNode;
+}) {
+  return <MoneyAccessContext.Provider value={allowed}>{children}</MoneyAccessContext.Provider>;
 }
 
 /** True when the current portal is allowed to see monetary figures. */

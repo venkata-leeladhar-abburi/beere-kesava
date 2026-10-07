@@ -4,11 +4,36 @@ import { scrollToTop } from "@/shared/ui/ScrollToTop";
 import { useAuth } from "../../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Home, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck, LogOut, Activity, Camera } from "lucide-react";
+import {
+  Home,
+  Users,
+  Bell,
+  ChevronLeft,
+  Menu,
+  Search,
+  X,
+  UserRound,
+  Sparkles,
+  UserCheck,
+  Truck,
+  LogOut,
+  Activity,
+  Camera,
+} from "lucide-react";
 import { C, F } from "./worker/tokens";
 import { Drawer, Popover } from "../../../shared/ui/overlay";
-import { formatRelativeTime, notificationBody, notificationTitle, useNotificationBell } from "@/features/notifications";
-import { AdminViewingBanner, roleLabel, staffIdentitySubtitle, useAdminStaffView } from "@/shared/ui/portal/AdminStaffView";
+import {
+  formatRelativeTime,
+  notificationBody,
+  notificationTitle,
+  useNotificationBell,
+} from "@/features/notifications";
+import {
+  AdminViewingBanner,
+  roleLabel,
+  staffIdentitySubtitle,
+  useAdminStaffView,
+} from "@/shared/ui/portal/AdminStaffView";
 import { PortalSwitchButtonRows } from "@/shared/ui/portal/PortalSwitcher";
 import { WorkerHome } from "./worker/WorkerHome";
 import { WorkerWeavers } from "./worker/WorkerWeavers";
@@ -19,7 +44,10 @@ import { WorkerActivity } from "./worker/WorkerActivity";
 import { WorkerSareePhotos } from "./worker/WorkerSareePhotos";
 import { WorkerPortalDesktop } from "./WorkerPortalDesktop";
 import {
-  SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE, WORKER_SECTION_NAV_H,
+  SectionNavigator,
+  PAGE_SECTIONS,
+  SECTION_NAV_GLOBAL_STYLE,
+  WORKER_SECTION_NAV_H,
 } from "../../../shared/ui/SectionNavigator";
 import { useResponsive } from "../../../hooks/useResponsive";
 import type { IconComponent } from "../../../lib/icon";
@@ -38,17 +66,24 @@ function notifEmoji(type: string): string {
 }
 
 const TABS: { id: Tab; Icon: IconComponent; label: string; badge?: string }[] = [
-  { id: "home",      Icon: Home,       label: "Home"          },
-  { id: "qc",        Icon: Search,     label: "QC", badge: "6" },
-  { id: "weavers",   Icon: Users,      label: "Receive"       },
-  { id: "finishing", Icon: Sparkles,   label: "Finishing", badge: "2" },
-  { id: "dispatch",  Icon: Truck,      label: "Dispatch"      },
+  { id: "home", Icon: Home, label: "Home" },
+  { id: "qc", Icon: Search, label: "QC", badge: "6" },
+  { id: "weavers", Icon: Users, label: "Receive" },
+  { id: "finishing", Icon: Sparkles, label: "Finishing", badge: "2" },
+  { id: "dispatch", Icon: Truck, label: "Dispatch" },
 ];
 
+interface WorkerPortalProps {
+  onBack?: () => void;
+}
 
-interface WorkerPortalProps { onBack?: () => void }
-
-function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void; onProfile: () => void }) {
+function WorkerMobileTopNav({
+  onMenuOpen,
+  onProfile,
+}: {
+  onMenuOpen: () => void;
+  onProfile: () => void;
+}) {
   const { user, logout } = useAuth();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
@@ -58,7 +93,14 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
   const { adminViewingAs, isAdminViewing, returnToAdmin } = useAdminStaffView();
 
   const userName = user?.name || "Ravi Kumar";
-  const initials = userName.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "RK";
+  const initials =
+    userName
+      .split(" ")
+      .filter(Boolean)
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "RK";
   const subtitleText = staffIdentitySubtitle({
     adminViewingAs,
     portalLabel: "Worker Staff",
@@ -93,18 +135,49 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
       />
 
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 9, overflow: "hidden", flexShrink: 0, border: `1px solid rgba(200,155,71,0.30)` }}>
-          <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 9,
+            overflow: "hidden",
+            flexShrink: 0,
+            border: `1px solid rgba(200,155,71,0.30)`,
+          }}
+        >
+          <img
+            src={imgBKLogo}
+            alt="BK"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
         </div>
         <div>
-          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: C.dark, lineHeight: 1.1 }}>Beere Kesava</div>
-          <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 11, color: C.muted }}>Worker Staff · Est. 1999</div>
+          <div
+            style={{
+              fontFamily: F.d,
+              fontWeight: 700,
+              fontSize: 14,
+              color: C.dark,
+              lineHeight: 1.1,
+            }}
+          >
+            Beere Kesava
+          </div>
+          <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 11, color: C.muted }}>
+            Worker Staff · Est. 1999
+          </div>
         </div>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         {/* Notifications Icon Button */}
-        <Popover open={showNotif} onOpenChange={o => { setShowNotif(o); if (o) setShowProfileDropdown(false); }}>
+        <Popover
+          open={showNotif}
+          onOpenChange={(o) => {
+            setShowNotif(o);
+            if (o) setShowProfileDropdown(false);
+          }}
+        >
           <Popover.Trigger asChild>
             <motion.div
               whileHover={{ scale: 1.08 }}
@@ -118,15 +191,62 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
                 className="!size-9 !rounded-[10px] border border-[rgba(110,15,45,0.16)] bg-[rgba(110,15,45,0.04)] hover:!bg-[rgba(110,15,45,0.10)] text-[#6E0F2D] hover:!text-[#6E0F2D] transition-all duration-200"
               />
               {unreadCount > 0 && (
-                <div style={{ position: "absolute", top: 4, right: 4, width: 8, height: 8, borderRadius: "50%", background: "#6E0F2D", border: `1.5px solid #FFFDF9`, pointerEvents: "none" }} />
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 4,
+                    right: 4,
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: "#6E0F2D",
+                    border: `1.5px solid #FFFDF9`,
+                    pointerEvents: "none",
+                  }}
+                />
               )}
             </motion.div>
           </Popover.Trigger>
-          <Popover.Content align="end" sideOffset={8} className="!w-[360px] !max-w-[calc(100vw-32px)] !p-0 !rounded-[16px] !overflow-hidden !z-[200]" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.14)`, boxShadow: "0 10px 36px rgba(44,24,16,0.18)" }}>
-            <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FFFDF9" }}>
+          <Popover.Content
+            align="end"
+            sideOffset={8}
+            className="!w-[360px] !max-w-[calc(100vw-32px)] !p-0 !rounded-[16px] !overflow-hidden !z-[200]"
+            style={{
+              background: "#FFFDF9",
+              border: `1px solid rgba(110,15,45,0.14)`,
+              boxShadow: "0 10px 36px rgba(44,24,16,0.18)",
+            }}
+          >
+            <div
+              style={{
+                padding: "16px 20px",
+                borderBottom: `1px solid rgba(110,15,45,0.08)`,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                background: "#FFFDF9",
+              }}
+            >
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: C.dark }}>Notifications</span>
-                <span style={{ background: "#6E0F2D", color: "#FFFFFF", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, borderRadius: 999, minWidth: 22, height: 22, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0 6px" }}>
+                <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: C.dark }}>
+                  Notifications
+                </span>
+                <span
+                  style={{
+                    background: "#6E0F2D",
+                    color: "#FFFFFF",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    borderRadius: 999,
+                    minWidth: 22,
+                    height: 22,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "0 6px",
+                  }}
+                >
                   {unreadCount > 0 ? unreadCount : notifications.length}
                 </span>
               </div>
@@ -145,14 +265,26 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
                   cursor: notifications.length > 0 ? "pointer" : "default",
                   transition: "color 0.15s ease",
                 }}
-                onMouseEnter={e => { if (notifications.length > 0) e.currentTarget.style.color = "#A87B27"; }}
-                onMouseLeave={e => { if (notifications.length > 0) e.currentTarget.style.color = "#C89B47"; }}
+                onMouseEnter={(e) => {
+                  if (notifications.length > 0) e.currentTarget.style.color = "#A87B27";
+                }}
+                onMouseLeave={(e) => {
+                  if (notifications.length > 0) e.currentTarget.style.color = "#C89B47";
+                }}
               >
                 Mark all read
               </button>
             </div>
             {notifications.length === 0 ? (
-              <div style={{ padding: "28px 20px", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
+              <div
+                style={{
+                  padding: "28px 20px",
+                  textAlign: "center",
+                  fontFamily: F.u,
+                  fontSize: 13,
+                  color: C.muted,
+                }}
+              >
                 No new notifications.
               </div>
             ) : (
@@ -166,10 +298,16 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
                       tabIndex={0}
                       aria-label={`${notificationTitle(n)}${isUnread ? " (unread)" : ""}`}
                       onClick={() => markRead(n.id)}
-                      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); markRead(n.id); } }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          markRead(n.id);
+                        }
+                      }}
                       style={{
                         padding: "12px 18px",
-                        borderBottom: i < notifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none",
+                        borderBottom:
+                          i < notifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none",
                         display: "flex",
                         gap: 12,
                         alignItems: "flex-start",
@@ -177,21 +315,58 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
                         background: isUnread ? "rgba(200,155,71,0.07)" : "transparent",
                         transition: "background 0.15s ease",
                       }}
-                      onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.03)"}
-                      onMouseLeave={e => e.currentTarget.style.background = isUnread ? "rgba(200,155,71,0.07)" : "transparent"}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = "rgba(110,15,45,0.03)")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = isUnread
+                          ? "rgba(200,155,71,0.07)"
+                          : "transparent")
+                      }
                     >
-                      <span style={{ fontSize: 15, flexShrink: 0, marginTop: 1 }}>{notifEmoji(n.type)}</span>
+                      <span style={{ fontSize: 15, flexShrink: 0, marginTop: 1 }}>
+                        {notifEmoji(n.type)}
+                      </span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: isUnread ? 700 : 500, color: C.dark, marginBottom: 2 }}>
+                        <div
+                          style={{
+                            fontFamily: F.u,
+                            fontSize: 13,
+                            fontWeight: isUnread ? 700 : 500,
+                            color: C.dark,
+                            marginBottom: 2,
+                          }}
+                        >
                           {notificationTitle(n)}
                         </div>
-                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, lineHeight: 1.4 }}>
+                        <div
+                          style={{ fontFamily: F.u, fontSize: 12, color: C.muted, lineHeight: 1.4 }}
+                        >
                           {notificationBody(n)}
                         </div>
                       </div>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
-                        <span style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>{formatRelativeTime(n.createdAt)}</span>
-                        {isUnread && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#6E0F2D" }} />}
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "flex-end",
+                          gap: 4,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <span style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>
+                          {formatRelativeTime(n.createdAt)}
+                        </span>
+                        {isUnread && (
+                          <span
+                            style={{
+                              width: 6,
+                              height: 6,
+                              borderRadius: "50%",
+                              background: "#6E0F2D",
+                            }}
+                          />
+                        )}
                       </div>
                     </div>
                   );
@@ -203,37 +378,93 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
 
         {/* Profile Avatar Button */}
         <div style={{ position: "relative" }}>
-          <div style={{ borderRadius: 10, border: `1px solid ${showProfileDropdown ? C.gold : "rgba(200,155,71,0.40)"}`, boxShadow: "0 3px 10px rgba(110,15,45,0.15)", display: "inline-block" }}>
+          <div
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${showProfileDropdown ? C.gold : "rgba(200,155,71,0.40)"}`,
+              boxShadow: "0 3px 10px rgba(110,15,45,0.15)",
+              display: "inline-block",
+            }}
+          >
             <Button
-              onClick={() => { setShowProfileDropdown(p => !p); if (!showProfileDropdown) setShowNotif(false); }}
+              onClick={() => {
+                setShowProfileDropdown((p) => !p);
+                if (!showProfileDropdown) setShowNotif(false);
+              }}
               variant="tertiary"
               className="!size-9 !rounded-[10px] !p-0 !border-none !bg-[#6E0F2D] hover:!bg-[#6E0F2D]"
             >
-              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>{toInitials(initials)}</span>
+              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>
+                {toInitials(initials)}
+              </span>
             </Button>
           </div>
 
           {showProfileDropdown && (
-            <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 200, background: "#FFFDF9", borderRadius: 14, border: `1px solid rgba(110,15,45,0.14)`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 210, overflow: "hidden" }}>
-              <div style={{ padding: "14px 16px", background: "rgba(196,146,58,0.06)", borderBottom: `1px solid rgba(110,15,45,0.10)` }}>
-                <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.dark }}>{userName}</div>
-                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{subtitleText}</div>
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 8px)",
+                right: 0,
+                zIndex: 200,
+                background: "#FFFDF9",
+                borderRadius: 14,
+                border: `1px solid rgba(110,15,45,0.14)`,
+                boxShadow: "0 8px 32px rgba(44,24,16,0.14)",
+                minWidth: 210,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  padding: "14px 16px",
+                  background: "rgba(196,146,58,0.06)",
+                  borderBottom: `1px solid rgba(110,15,45,0.10)`,
+                }}
+              >
+                <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.dark }}>
+                  {userName}
+                </div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>
+                  {subtitleText}
+                </div>
               </div>
               <div style={{ padding: "6px 0" }}>
-                <Button onClick={() => { setShowProfileDropdown(false); onProfile(); }} variant="tertiary" fullWidth
-                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
+                <Button
+                  onClick={() => {
+                    setShowProfileDropdown(false);
+                    onProfile();
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+                >
                   <UserRound size={14} color={C.muted} /> View Profile
                 </Button>
                 <div style={{ height: 1, background: "rgba(110,15,45,0.08)", margin: "4px 0" }} />
                 {isAdminViewing && (
-                  <Button onClick={() => { setShowProfileDropdown(false); returnToAdmin(); }} variant="tertiary" fullWidth
-                    className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#1A0A0F]">
+                  <Button
+                    onClick={() => {
+                      setShowProfileDropdown(false);
+                      returnToAdmin();
+                    }}
+                    variant="tertiary"
+                    fullWidth
+                    className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#1A0A0F]"
+                  >
                     <ChevronLeft size={14} color={C.muted} /> Return to {roleLabel(adminViewingAs)}
                   </Button>
                 )}
                 <PortalSwitchButtonRows onBeforeSwitch={() => setShowProfileDropdown(false)} />
-                <Button onClick={() => { setShowProfileDropdown(false); logout(); }} variant="tertiary" fullWidth
-                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]">
+                <Button
+                  onClick={() => {
+                    setShowProfileDropdown(false);
+                    logout();
+                  }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]"
+                >
                   <LogOut size={14} color="#C0392B" /> Logout
                 </Button>
               </div>
@@ -248,35 +479,123 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
 function MobileProfile({ onClose }: { onClose?: () => void }) {
   const { user, phone, logout } = useAuth();
   const userName = user?.name || "Ravindra Kumar";
-  const initials = userName.split(" ").filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase() || "RK";
+  const initials =
+    userName
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase() || "RK";
   const userPhone = user?.mobile || phone || "1234567890";
   const workerId = user?.empId || "STAFF-001";
 
   return (
     <div style={{ paddingBottom: 48, background: "#FDFBF7", minHeight: "100vh" }}>
       {/* Top Header Bar */}
-      <div style={{ height: 56, background: C.burg, display: "flex", alignItems: "center", padding: "0 16px" }}>
+      <div
+        style={{
+          height: 56,
+          background: C.burg,
+          display: "flex",
+          alignItems: "center",
+          padding: "0 16px",
+        }}
+      >
         {onClose && (
-          <IconButton icon={ChevronLeft} label="Back" variant="ghost" onClick={onClose} className="text-white" />
+          <IconButton
+            icon={ChevronLeft}
+            label="Back"
+            variant="ghost"
+            onClick={onClose}
+            className="text-white"
+          />
         )}
-        <span style={{ flex: 1, textAlign: "center", fontFamily: F.d, fontSize: 18, fontWeight: 600, color: "#FFF" }}>My Profile</span>
+        <span
+          style={{
+            flex: 1,
+            textAlign: "center",
+            fontFamily: F.d,
+            fontSize: 18,
+            fontWeight: 600,
+            color: "#FFF",
+          }}
+        >
+          My Profile
+        </span>
         {onClose && <div style={{ width: 36 }} />}
       </div>
 
       {/* Hero User Banner Card */}
-      <div style={{ background: C.burg, padding: "20px 20px 28px", borderBottom: "1px solid rgba(255,255,255,0.10)" }}>
+      <div
+        style={{
+          background: C.burg,
+          padding: "20px 20px 28px",
+          borderBottom: "1px solid rgba(255,255,255,0.10)",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
-          <div style={{ width: 68, height: 68, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.30)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: "#FFF" }}>{toInitials(initials)}</span>
+          <div
+            style={{
+              width: 68,
+              height: 68,
+              borderRadius: "50%",
+              background: "rgba(255,255,255,0.15)",
+              border: "2px solid rgba(255,255,255,0.30)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <span style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: "#FFF" }}>
+              {toInitials(initials)}
+            </span>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: F.d, fontSize: 22, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>{userName}</div>
-            <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.70)", marginTop: 3 }}>{userPhone}</div>
-            
+            <div
+              style={{
+                fontFamily: F.d,
+                fontSize: 22,
+                fontWeight: 700,
+                color: "#FFF",
+                lineHeight: 1.2,
+              }}
+            >
+              {userName}
+            </div>
+            <div
+              style={{
+                fontFamily: F.u,
+                fontSize: 13,
+                color: "rgba(255,255,255,0.70)",
+                marginTop: 3,
+              }}
+            >
+              {userPhone}
+            </div>
+
             {/* Single line with Worker Staff badge on left and Logout button on right */}
-            <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-              <div style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 999, padding: "3px 12px" }}>
-                <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF" }}>Worker Staff</span>
+            <div
+              style={{
+                marginTop: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 8,
+              }}
+            >
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.12)",
+                  border: "1px solid rgba(255,255,255,0.25)",
+                  borderRadius: 999,
+                  padding: "3px 12px",
+                }}
+              >
+                <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF" }}>
+                  Worker Staff
+                </span>
               </div>
 
               <Button
@@ -292,14 +611,40 @@ function MobileProfile({ onClose }: { onClose?: () => void }) {
       </div>
 
       {/* 3 Metric Stats strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#FFF", borderBottom: `1px solid ${C.bdr}`, padding: "16px 0", boxShadow: "0 2px 10px rgba(110,15,45,0.04)" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr 1fr",
+          background: "#FFF",
+          borderBottom: `1px solid ${C.bdr}`,
+          padding: "16px 0",
+          boxShadow: "0 2px 10px rgba(110,15,45,0.04)",
+        }}
+      >
         {[
           { val: "8 yrs", label: "Tenure" },
           { val: "Morning", label: "Shift" },
           { val: "Active", label: "Status" },
         ].map((s, i) => (
-          <div key={s.label} style={{ padding: "0 8px", textAlign: "center", borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.burg, marginBottom: 2 }}>{s.val}</div>
+          <div
+            key={s.label}
+            style={{
+              padding: "0 8px",
+              textAlign: "center",
+              borderRight: i < 2 ? `1px solid ${C.bdr}` : "none",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: F.d,
+                fontWeight: 700,
+                fontSize: 18,
+                color: C.burg,
+                marginBottom: 2,
+              }}
+            >
+              {s.val}
+            </div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{s.label}</div>
           </div>
         ))}
@@ -307,8 +652,28 @@ function MobileProfile({ onClose }: { onClose?: () => void }) {
 
       {/* Work Details Section */}
       <div style={{ margin: "24px 16px 0" }}>
-        <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 10 }}>WORK DETAILS</div>
-        <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.03)" }}>
+        <div
+          style={{
+            fontFamily: F.u,
+            fontSize: 12,
+            fontWeight: 700,
+            color: C.muted,
+            letterSpacing: "1px",
+            textTransform: "uppercase",
+            marginBottom: 10,
+          }}
+        >
+          WORK DETAILS
+        </div>
+        <div
+          style={{
+            background: "#FFF",
+            border: `1px solid ${C.bdr}`,
+            borderRadius: 16,
+            overflow: "hidden",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+          }}
+        >
           {[
             { label: "Worker ID", value: workerId, mono: true },
             { label: "Role", value: "Worker Staff", mono: false },
@@ -316,9 +681,27 @@ function MobileProfile({ onClose }: { onClose?: () => void }) {
             { label: "Factory", value: "Beere Kesava & Brothers Silks", mono: false },
             { label: "Joined", value: "March 2018", mono: false },
           ].map((item, i, arr) => (
-            <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: i < arr.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
+            <div
+              key={item.label}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "14px 18px",
+                borderBottom: i < arr.length - 1 ? `1px solid ${C.bdr}` : "none",
+              }}
+            >
               <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{item.label}</span>
-              <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: item.mono ? C.burg : C.dark }}>{item.value}</span>
+              <span
+                style={{
+                  fontFamily: F.u,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: item.mono ? C.burg : C.dark,
+                }}
+              >
+                {item.value}
+              </span>
             </div>
           ))}
         </div>
@@ -327,7 +710,20 @@ function MobileProfile({ onClose }: { onClose?: () => void }) {
   );
 }
 
-function HamburgerMenu({ open, onOpenChange, onProfile, activeTab, onSelectTab }: { open: boolean; onOpenChange: (open: boolean) => void; onProfile: () => void; onBack?: () => void; activeTab?: Tab; onSelectTab?: (t: Tab) => void }) {
+function HamburgerMenu({
+  open,
+  onOpenChange,
+  onProfile,
+  activeTab,
+  onSelectTab,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onProfile: () => void;
+  onBack?: () => void;
+  activeTab?: Tab;
+  onSelectTab?: (t: Tab) => void;
+}) {
   const { logout } = useAuth();
   const onClose = () => onOpenChange(false);
 
@@ -346,17 +742,63 @@ function HamburgerMenu({ open, onOpenChange, onProfile, activeTab, onSelectTab }
     <Drawer open={open} onOpenChange={onOpenChange} side="left" size="sm">
       <div style={{ display: "flex", flexDirection: "column", height: "100%", background: C.dark }}>
         {/* Header matching Superadmin drawer header */}
-        <div style={{ padding: "20px 20px 16px", borderBottom: `2px solid rgba(200,155,71,0.60)`, display: "flex", alignItems: "center", justifyContent: "space-between", background: `linear-gradient(135deg, ${C.dark} 0%, #6E0F2D 100%)`, flexShrink: 0 }}>
+        <div
+          style={{
+            padding: "20px 20px 16px",
+            borderBottom: `2px solid rgba(200,155,71,0.60)`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            background: `linear-gradient(135deg, ${C.dark} 0%, #6E0F2D 100%)`,
+            flexShrink: 0,
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 11, overflow: "hidden", border: "1.5px solid rgba(200,155,71,0.40)", flexShrink: 0 }}>
-              <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 11,
+                overflow: "hidden",
+                border: "1.5px solid rgba(200,155,71,0.40)",
+                flexShrink: 0,
+              }}
+            >
+              <img
+                src={imgBKLogo}
+                alt="BK"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
             </div>
             <div>
               <Dialog.Title asChild>
-                <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: "#FFFDF9", lineHeight: 1.1 }}>Beere Kesava</div>
+                <div
+                  style={{
+                    fontFamily: F.d,
+                    fontWeight: 700,
+                    fontSize: 14,
+                    color: "#FFFDF9",
+                    lineHeight: 1.1,
+                  }}
+                >
+                  Beere Kesava
+                </div>
               </Dialog.Title>
-              <Dialog.Description className="sr-only">Worker staff portal navigation menu</Dialog.Description>
-              <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 11, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>WORKER STAFF</div>
+              <Dialog.Description className="sr-only">
+                Worker staff portal navigation menu
+              </Dialog.Description>
+              <div
+                style={{
+                  fontFamily: F.u,
+                  fontWeight: 500,
+                  fontSize: 11,
+                  color: "rgba(231,201,131,0.85)",
+                  letterSpacing: "2px",
+                  textTransform: "uppercase",
+                }}
+              >
+                WORKER STAFF
+              </div>
             </div>
           </div>
           <Dialog.Close asChild>
@@ -372,7 +814,7 @@ function HamburgerMenu({ open, onOpenChange, onProfile, activeTab, onSelectTab }
 
         {/* Menu Navigation Items */}
         <div style={{ flex: 1, padding: "16px 12px", overflowY: "auto" }}>
-          {NAV_ITEMS.map(item => {
+          {NAV_ITEMS.map((item) => {
             const isActive = activeTab === item.id;
             const ItemIcon = item.Icon;
             return (
@@ -394,20 +836,43 @@ function HamburgerMenu({ open, onOpenChange, onProfile, activeTab, onSelectTab }
                     : "bg-transparent text-[rgba(255,255,255,0.75)] hover:bg-white/[0.08] hover:text-white"
                 }`}
               >
-                <span style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: F.u, fontSize: 14 }}>
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    fontFamily: F.u,
+                    fontSize: 14,
+                  }}
+                >
                   <ItemIcon size={18} color={isActive ? C.gold : "rgba(255,255,255,0.65)"} />
                   {item.label}
                 </span>
-                {isActive && <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.gold }} />}
+                {isActive && (
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.gold }} />
+                )}
               </Button>
             );
           })}
         </div>
 
         {/* Footer Logout Button */}
-        <div style={{ padding: "16px 16px 24px", borderTop: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
-          <Button variant="tertiary" fullWidth onClick={() => { onClose(); logout(); }}
-            className="justify-start gap-2.5 rounded-[12px] border-none bg-red-500/10 px-3.5 py-3 text-[13px] text-red-400 hover:bg-red-500/20">
+        <div
+          style={{
+            padding: "16px 16px 24px",
+            borderTop: "1px solid rgba(255,255,255,0.08)",
+            flexShrink: 0,
+          }}
+        >
+          <Button
+            variant="tertiary"
+            fullWidth
+            onClick={() => {
+              onClose();
+              logout();
+            }}
+            className="justify-start gap-2.5 rounded-[12px] border-none bg-red-500/10 px-3.5 py-3 text-[13px] text-red-400 hover:bg-red-500/20"
+          >
             <LogOut size={16} color="#FF6B6B" /> Logout
           </Button>
         </div>
@@ -432,22 +897,55 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
   const handleNavigate = (tab: Tab) => setActiveTab(tab);
 
   return (
-    <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto", minHeight: "100dvh", background: "#FFFFFF", display: "flex", flexDirection: "column", fontFamily: F.u, position: "relative" }}>
+    <div
+      style={{
+        width: "100%",
+        maxWidth: "100%",
+        margin: "0 auto",
+        minHeight: "100dvh",
+        background: "#FFFFFF",
+        display: "flex",
+        flexDirection: "column",
+        fontFamily: F.u,
+        position: "relative",
+      }}
+    >
       {/* Hamburger overlay */}
-      <HamburgerMenu open={showMenu} onOpenChange={setShowMenu} onProfile={() => setShowProfile(true)} onBack={onBack} activeTab={activeTab} onSelectTab={setActiveTab} />
+      <HamburgerMenu
+        open={showMenu}
+        onOpenChange={setShowMenu}
+        onProfile={() => setShowProfile(true)}
+        onBack={onBack}
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+      />
 
       {/* Profile slide */}
       <AnimatePresence>
         {showProfile && (
-          <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ duration: 0.22 }}
-            style={{ position: "fixed", inset: 0, background: "#FDFBF7", zIndex: "var(--z-tooltip)", overflowY: "auto" }}>
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ duration: 0.22 }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "#FDFBF7",
+              zIndex: "var(--z-tooltip)",
+              overflowY: "auto",
+            }}
+          >
             <MobileProfile onClose={() => setShowProfile(false)} />
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Global Header matching Superadmin mobile header */}
-      <WorkerMobileTopNav onMenuOpen={() => setShowMenu(true)} onProfile={() => setShowProfile(true)} />
+      <WorkerMobileTopNav
+        onMenuOpen={() => setShowMenu(true)}
+        onProfile={() => setShowProfile(true)}
+      />
       <AdminViewingBanner portalLabel="Worker Staff" />
 
       {/* Sticky Section Navigator — matching SuperadminDashboard layout */}
@@ -468,21 +966,36 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
       {/* Content — window scroll matching SuperadminDashboard */}
       <div style={{ flex: 1, paddingBottom: 80 }}>
         <AnimatePresence mode="wait">
-          <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-            {activeTab === "home"      && <WorkerHome onNavigate={handleNavigate} />}
-            {activeTab === "qc"       && <WorkerQC />}
-            {activeTab === "weavers"  && <WorkerWeavers />}
-            {activeTab === "finishing"&& <WorkerFinishing />}
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            {activeTab === "home" && <WorkerHome onNavigate={handleNavigate} />}
+            {activeTab === "qc" && <WorkerQC />}
+            {activeTab === "weavers" && <WorkerWeavers />}
+            {activeTab === "finishing" && <WorkerFinishing />}
             {activeTab === "dispatch" && <WorkerDispatch />}
-            {activeTab === "photos"   && <WorkerSareePhotos />}
+            {activeTab === "photos" && <WorkerSareePhotos />}
             {activeTab === "activity" && <WorkerActivity isDesktop={false} />}
-            {activeTab === "profile"  && <MobileProfile />}
+            {activeTab === "profile" && <MobileProfile />}
           </motion.div>
         </AnimatePresence>
       </div>
 
       {/* Floating quick-action button — QC and Finishing only */}
-      <div style={{ position: "fixed", bottom: 76, left: 0, width: "100%", zIndex: 110, pointerEvents: "none" }}>
+      <div
+        style={{
+          position: "fixed",
+          bottom: 76,
+          left: 0,
+          width: "100%",
+          zIndex: 110,
+          pointerEvents: "none",
+        }}
+      >
         <AnimatePresence>
           {(activeTab === "qc" || activeTab === "finishing") && (
             <motion.div
@@ -507,23 +1020,90 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
       </div>
 
       {/* Bottom Tab Bar — 5 tabs */}
-      <div style={{ height: 66, background: "#FFF", borderTop: `1px solid ${C.bdr}`, display: "flex", position: "fixed", bottom: 0, left: 0, width: "100%", zIndex: 100, boxShadow: "0 -4px 20px rgba(110,15,45,0.08)" }}>
-        {TABS.map(tab => {
+      <div
+        style={{
+          height: 66,
+          background: "#FFF",
+          borderTop: `1px solid ${C.bdr}`,
+          display: "flex",
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          width: "100%",
+          zIndex: 100,
+          boxShadow: "0 -4px 20px rgba(110,15,45,0.08)",
+        }}
+      >
+        {TABS.map((tab) => {
           const active = activeTab === tab.id;
           return (
-            <Button key={tab.id} variant="ghost" onClick={() => setActiveTab(tab.id)} className="relative flex-1 h-full justify-center rounded-none p-0">
-              <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
+            <Button
+              key={tab.id}
+              variant="ghost"
+              onClick={() => setActiveTab(tab.id)}
+              className="relative flex-1 h-full justify-center rounded-none p-0"
+            >
+              <div
+                style={{
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 4,
+                }}
+              >
                 {active && (
-                  <motion.div layoutId="worker-tab-indicator" transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                    style={{ position: "absolute", top: -9, left: "50%", marginLeft: -13, width: 26, height: 3, borderRadius: 4, background: C.burg }} />
+                  <motion.div
+                    layoutId="worker-tab-indicator"
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    style={{
+                      position: "absolute",
+                      top: -9,
+                      left: "50%",
+                      marginLeft: -13,
+                      width: 26,
+                      height: 3,
+                      borderRadius: 4,
+                      background: C.burg,
+                    }}
+                  />
                 )}
                 {tab.badge && (
-                  <span style={{ position: "absolute", top: -3, right: -7, minWidth: 16, height: 16, background: C.crim, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#FFF", fontFamily: F.u, padding: "0 3px" }}>
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: -3,
+                      right: -7,
+                      minWidth: 16,
+                      height: 16,
+                      background: C.crim,
+                      borderRadius: 999,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: "#FFF",
+                      fontFamily: F.u,
+                      padding: "0 3px",
+                    }}
+                  >
                     {tab.badge}
                   </span>
                 )}
                 <tab.Icon size={20} color={active ? C.burg : C.muted} />
-                <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: active ? 600 : 500, color: active ? C.burg : C.muted, transition: "color 0.2s" }}>{tab.label}</span>
+                <span
+                  style={{
+                    fontFamily: F.u,
+                    fontSize: 12,
+                    fontWeight: active ? 600 : 500,
+                    color: active ? C.burg : C.muted,
+                    transition: "color 0.2s",
+                  }}
+                >
+                  {tab.label}
+                </span>
               </div>
             </Button>
           );
@@ -570,7 +1150,12 @@ export function WorkerPortal({ onBack }: WorkerPortalProps) {
       {isMobile ? (
         <MobilePortal onBack={onBack} activeTab={activeTab} setActiveTab={setActiveTab} />
       ) : (
-        <WorkerPortalDesktop onBack={onBack} bp={bp} activeTab={activeTab} setActiveTab={setActiveTab} />
+        <WorkerPortalDesktop
+          onBack={onBack}
+          bp={bp}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
       )}
     </>
   );

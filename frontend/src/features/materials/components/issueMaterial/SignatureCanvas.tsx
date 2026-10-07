@@ -1,4 +1,11 @@
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { CheckCircle2, PenLine } from "lucide-react";
 import { F, T } from "./theme";
 import { Button } from "../../../../shared/ui/primitives";
@@ -31,182 +38,181 @@ export const SignatureCanvas = forwardRef<
   SignatureCanvasHandle,
   { weaverName: string; onChange?: (hasDrawn: boolean) => void }
 >(function SignatureCanvas({ weaverName, onChange }, ref) {
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const drawingRef = useRef(false);
-    const lastPointRef = useRef<Point | null>(null);
-    const [hasDrawn, setHasDrawnState] = useState(false);
-    // Held in a ref so resizeCanvas can notify the parent without taking
-    // `onChange` as a dependency (it's a fresh closure on every parent render,
-    // which would re-run the observer effect and clear the canvas constantly).
-    const onChangeRef = useRef(onChange);
-    onChangeRef.current = onChange;
-    const setHasDrawn = (v: boolean) => {
-      setHasDrawnState(v);
-      onChangeRef.current?.(v);
-    };
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const drawingRef = useRef(false);
+  const lastPointRef = useRef<Point | null>(null);
+  const [hasDrawn, setHasDrawnState] = useState(false);
+  // Held in a ref so resizeCanvas can notify the parent without taking
+  // `onChange` as a dependency (it's a fresh closure on every parent render,
+  // which would re-run the observer effect and clear the canvas constantly).
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const setHasDrawn = (v: boolean) => {
+    setHasDrawnState(v);
+    onChangeRef.current?.(v);
+  };
 
-    // The canvas is laid out at `width: 100%` but its backing store has a
-    // fixed pixel size. Left unsynced, a stroke drawn at the pointer lands
-    // somewhere else entirely (the box was 520px wide internally while
-    // displaying at whatever the column happened to be) — which is what made
-    // signing look broken. Size the buffer to the real box, times the device
-    // pixel ratio so the result isn't blurry on high-DPI screens.
-    const resizeCanvas = useCallback(() => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const cssWidth = canvas.clientWidth;
-      if (cssWidth === 0) return;
-      const dpr = window.devicePixelRatio || 1;
-      const nextWidth = Math.round(cssWidth * dpr);
-      const nextHeight = Math.round(CANVAS_CSS_HEIGHT * dpr);
-      if (canvas.width === nextWidth && canvas.height === nextHeight) return;
-      // Resizing a canvas clears it. Nothing has been drawn at the point this
-      // first runs, and a later resize (rotate/window drag) discarding an
-      // in-progress signature is preferable to silently misaligned strokes.
-      canvas.width = nextWidth;
-      canvas.height = nextHeight;
-      const ctx = canvas.getContext("2d");
-      if (ctx) ctx.scale(dpr, dpr);
-      setHasDrawnState(false);
-      onChangeRef.current?.(false);
-    }, []);
+  // The canvas is laid out at `width: 100%` but its backing store has a
+  // fixed pixel size. Left unsynced, a stroke drawn at the pointer lands
+  // somewhere else entirely (the box was 520px wide internally while
+  // displaying at whatever the column happened to be) — which is what made
+  // signing look broken. Size the buffer to the real box, times the device
+  // pixel ratio so the result isn't blurry on high-DPI screens.
+  const resizeCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const cssWidth = canvas.clientWidth;
+    if (cssWidth === 0) return;
+    const dpr = window.devicePixelRatio || 1;
+    const nextWidth = Math.round(cssWidth * dpr);
+    const nextHeight = Math.round(CANVAS_CSS_HEIGHT * dpr);
+    if (canvas.width === nextWidth && canvas.height === nextHeight) return;
+    // Resizing a canvas clears it. Nothing has been drawn at the point this
+    // first runs, and a later resize (rotate/window drag) discarding an
+    // in-progress signature is preferable to silently misaligned strokes.
+    canvas.width = nextWidth;
+    canvas.height = nextHeight;
+    const ctx = canvas.getContext("2d");
+    if (ctx) ctx.scale(dpr, dpr);
+    setHasDrawnState(false);
+    onChangeRef.current?.(false);
+  }, []);
 
-    useEffect(() => {
-      resizeCanvas();
-      const observer = new ResizeObserver(resizeCanvas);
-      if (canvasRef.current) observer.observe(canvasRef.current);
-      return () => observer.disconnect();
-    }, [resizeCanvas]);
+  useEffect(() => {
+    resizeCanvas();
+    const observer = new ResizeObserver(resizeCanvas);
+    if (canvasRef.current) observer.observe(canvasRef.current);
+    return () => observer.disconnect();
+  }, [resizeCanvas]);
 
-    useImperativeHandle(ref, () => ({
-      toBlob: () =>
-        new Promise((resolve) => {
-          const canvas = canvasRef.current;
-          if (!canvas || !hasDrawn) {
-            resolve(null);
-            return;
-          }
-          canvas.toBlob((blob) => resolve(blob), "image/png");
-        }),
-      clear: () => {
+  useImperativeHandle(ref, () => ({
+    toBlob: () =>
+      new Promise((resolve) => {
         const canvas = canvasRef.current;
-        const ctx = canvas?.getContext("2d");
-        if (canvas && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
-        setHasDrawn(false);
-      },
-    }));
-
-    function getContext(): CanvasRenderingContext2D | null {
-      return canvasRef.current?.getContext("2d") ?? null;
-    }
-
-    function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
+        if (!canvas || !hasDrawn) {
+          resolve(null);
+          return;
+        }
+        canvas.toBlob((blob) => resolve(blob), "image/png");
+      }),
+    clear: () => {
       const canvas = canvasRef.current;
-      if (!canvas) return;
-      canvas.setPointerCapture(e.pointerId);
-      drawingRef.current = true;
-      lastPointRef.current = pointFromEvent(canvas, e);
-    }
-
-    function handlePointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
-      if (!drawingRef.current) return;
-      const canvas = canvasRef.current;
-      const ctx = getContext();
-      if (!canvas || !ctx) return;
-      const point = pointFromEvent(canvas, e);
-      const last = lastPointRef.current;
-      if (last) {
-        ctx.strokeStyle = T.darkBurgundy;
-        ctx.lineWidth = 2.5;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        ctx.beginPath();
-        ctx.moveTo(last.x, last.y);
-        ctx.lineTo(point.x, point.y);
-        ctx.stroke();
-      }
-      lastPointRef.current = point;
-      if (!hasDrawn) setHasDrawn(true);
-    }
-
-    function handlePointerUp() {
-      drawingRef.current = false;
-      lastPointRef.current = null;
-    }
-
-    function handleClear() {
-      const canvas = canvasRef.current;
-      const ctx = getContext();
+      const ctx = canvas?.getContext("2d");
       if (canvas && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
       setHasDrawn(false);
-    }
+    },
+  }));
 
-    return (
-      <div style={{ position: "relative" as const }}>
-        <canvas
-          ref={canvasRef}
-          aria-label="Signature drawing area"
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
+  function getContext(): CanvasRenderingContext2D | null {
+    return canvasRef.current?.getContext("2d") ?? null;
+  }
+
+  function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    canvas.setPointerCapture(e.pointerId);
+    drawingRef.current = true;
+    lastPointRef.current = pointFromEvent(canvas, e);
+  }
+
+  function handlePointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
+    if (!drawingRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = getContext();
+    if (!canvas || !ctx) return;
+    const point = pointFromEvent(canvas, e);
+    const last = lastPointRef.current;
+    if (last) {
+      ctx.strokeStyle = T.darkBurgundy;
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(point.x, point.y);
+      ctx.stroke();
+    }
+    lastPointRef.current = point;
+    if (!hasDrawn) setHasDrawn(true);
+  }
+
+  function handlePointerUp() {
+    drawingRef.current = false;
+    lastPointRef.current = null;
+  }
+
+  function handleClear() {
+    const canvas = canvasRef.current;
+    const ctx = getContext();
+    if (canvas && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setHasDrawn(false);
+  }
+
+  return (
+    <div style={{ position: "relative" as const }}>
+      <canvas
+        ref={canvasRef}
+        aria-label="Signature drawing area"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+        style={{
+          width: "100%",
+          height: CANVAS_CSS_HEIGHT,
+          background: "#FFF",
+          border: `1.5px solid ${hasDrawn ? "rgba(30,102,64,0.35)" : T.borderDef}`,
+          borderRadius: 14,
+          cursor: "crosshair",
+          touchAction: "none",
+          display: "block",
+        }}
+      />
+      {!hasDrawn && (
+        <div
           style={{
-            width: "100%",
-            height: CANVAS_CSS_HEIGHT,
-            background: "#FFF",
-            border: `1.5px solid ${hasDrawn ? "rgba(30,102,64,0.35)" : T.borderDef}`,
-            borderRadius: 14,
-            cursor: "crosshair",
-            touchAction: "none",
-            display: "block",
+            position: "absolute" as const,
+            inset: 0,
+            display: "flex",
+            flexDirection: "column" as const,
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "none" as const,
           }}
-        />
-        {!hasDrawn && (
-          <div
-            style={{
-              position: "absolute" as const,
-              inset: 0,
-              display: "flex",
-              flexDirection: "column" as const,
-              alignItems: "center",
-              justifyContent: "center",
-              pointerEvents: "none" as const,
-            }}
-          >
-            <PenLine size={30} color={T.taupe} style={{ marginBottom: 10, opacity: 0.6 }} />
-            <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-              Sign here as {weaverName}
-            </span>
-          </div>
-        )}
-        {hasDrawn && (
-          <div
-            style={{
-              position: "absolute" as const,
-              bottom: 10,
-              left: 14,
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-              fontFamily: F.ui,
-              fontSize: 12,
-              color: T.green,
-            }}
-          >
-            <CheckCircle2 size={13} /> Signature captured
-          </div>
-        )}
-        {hasDrawn && (
-          <Button
-            variant="tertiary"
-            size="sm"
-            onClick={handleClear}
-            className="absolute bottom-[10px] right-[14px] text-[var(--text-accent)] hover:text-[var(--text-accent)]"
-          >
-            Clear
-          </Button>
-        )}
-      </div>
-    );
-  },
-);
+        >
+          <PenLine size={30} color={T.taupe} style={{ marginBottom: 10, opacity: 0.6 }} />
+          <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+            Sign here as {weaverName}
+          </span>
+        </div>
+      )}
+      {hasDrawn && (
+        <div
+          style={{
+            position: "absolute" as const,
+            bottom: 10,
+            left: 14,
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            fontFamily: F.ui,
+            fontSize: 12,
+            color: T.green,
+          }}
+        >
+          <CheckCircle2 size={13} /> Signature captured
+        </div>
+      )}
+      {hasDrawn && (
+        <Button
+          variant="tertiary"
+          size="sm"
+          onClick={handleClear}
+          className="absolute bottom-[10px] right-[14px] text-[var(--text-accent)] hover:text-[var(--text-accent)]"
+        >
+          Clear
+        </Button>
+      )}
+    </div>
+  );
+});

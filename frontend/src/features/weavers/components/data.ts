@@ -8,7 +8,16 @@
 // STATS/WARP_REQUESTS/TABLE_COLS/ImportedWeaver mock exports that used to
 // live here had no remaining importers and were removed.
 import type React from "react";
-import { Package, CheckCircle2 as CheckCircle, AlertCircle as WarningCircle, Medal, BarChart3 as ChartBar, LayoutGrid as SquaresFour, List as PhList, Table2 as PhTable } from "lucide-react";
+import {
+  Package,
+  CheckCircle2 as CheckCircle,
+  AlertCircle as WarningCircle,
+  Medal,
+  BarChart3 as ChartBar,
+  LayoutGrid as SquaresFour,
+  List as PhList,
+  Table2 as PhTable,
+} from "lucide-react";
 import { T } from "./theme";
 import type { Status } from "./types";
 
@@ -64,7 +73,12 @@ export interface WeaverActivity {
 }
 export const ACTIVITIES: WeaverActivity[] = [];
 
-export const FILTER_PILLS = ["All Weavers", "Currently Working", "Submitted — Waiting Quality Check", "Idle — No Active Batch"];
+export const FILTER_PILLS = [
+  "All Weavers",
+  "Currently Working",
+  "Submitted — Waiting Quality Check",
+  "Idle — No Active Batch",
+];
 export const VIEW_OPTIONS = [
   { key: "card", label: "Cards", PhIcon: SquaresFour },
   { key: "list", label: "List", PhIcon: PhList },
@@ -84,13 +98,22 @@ export const STATUS_MIX_META: Record<Status, { label: string; color: string }> =
   qc: { label: "Awaiting Quality Check", color: T.antiqueGold },
   idle: { label: "No Active Batch", color: T.taupe },
 };
-export const CLUSTER_FILLS = [T.royalBurgundy, T.antiqueGold, "#3D0E1A", "#5A3E6B", "#2D6B6B", "#8A2440"];
+export const CLUSTER_FILLS = [
+  T.royalBurgundy,
+  T.antiqueGold,
+  "#3D0E1A",
+  "#5A3E6B",
+  "#2D6B6B",
+  "#8A2440",
+];
 
-export const ACTIVITY_ICONS: Record<string, { PhIcon: React.ElementType; bg: string; color: string }> = {
+export const ACTIVITY_ICONS: Record<
+  string,
+  { PhIcon: React.ElementType; bg: string; color: string }
+> = {
   "📦": { PhIcon: Package, bg: "rgba(200,155,71,0.10)", color: T.antiqueGold },
   "✅": { PhIcon: CheckCircle, bg: "rgba(30,102,64,0.10)", color: T.green },
   "⚠️": { PhIcon: WarningCircle, bg: "rgba(192,57,43,0.09)", color: T.crimson },
   "💰": { PhIcon: Medal, bg: "rgba(110,15,45,0.07)", color: T.royalBurgundy },
   "🔄": { PhIcon: ChartBar, bg: "rgba(110,15,45,0.07)", color: T.royalBurgundy },
 };
-

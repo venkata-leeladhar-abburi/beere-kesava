@@ -38,7 +38,9 @@ export interface UpdateFinishingStaffPayload extends Partial<CreateFinishingStaf
 
 export const finishingStaffApi = {
   list: (pageSize = 100) =>
-    apiClient.get<PaginatedResponse<BackendFinishingStaff>>(`/finishing/staff?pageSize=${pageSize}`),
+    apiClient.get<PaginatedResponse<BackendFinishingStaff>>(
+      `/finishing/staff?pageSize=${pageSize}`
+    ),
 
   create: (payload: CreateFinishingStaffPayload) =>
     apiClient.post<BackendFinishingStaff>("/finishing/staff", payload),
@@ -106,7 +108,7 @@ export interface ReceiveFinishingReturnPayload {
 export const finishingAssignmentsApi = {
   list: (pageSize = 100) =>
     apiClient.get<PaginatedResponse<BackendFinishingAssignment>>(
-      `/finishing/assignments?pageSize=${pageSize}`,
+      `/finishing/assignments?pageSize=${pageSize}`
     ),
 
   create: (payload: CreateFinishingAssignmentPayload) =>

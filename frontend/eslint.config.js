@@ -435,43 +435,54 @@ export default tseslint.config(
         "warn",
         {
           selector: "JSXOpeningElement[name.name='table']",
-          message: "Use <DataTable> from shared/ui/data instead of a raw <table> — design-system/04-DATA-DISPLAY.md.",
+          message:
+            "Use <DataTable> from shared/ui/data instead of a raw <table> — design-system/04-DATA-DISPLAY.md.",
         },
         {
           selector: "JSXOpeningElement[name.name='th']",
-          message: "Columns are declared via ColumnDef, not <th> — design-system/04-DATA-DISPLAY.md Part C.",
+          message:
+            "Columns are declared via ColumnDef, not <th> — design-system/04-DATA-DISPLAY.md Part C.",
         },
         {
-          selector: "JSXAttribute[name.name='fill'] MemberExpression[property.name=/^(antiqueGold|goldLight)$/]",
-          message: "Gold is decorative, never a chart data colour. Use semantic.chart.series[i] from design-system/tokens — design-system/04-DATA-DISPLAY.md Part K.1.",
+          selector:
+            "JSXAttribute[name.name='fill'] MemberExpression[property.name=/^(antiqueGold|goldLight)$/]",
+          message:
+            "Gold is decorative, never a chart data colour. Use semantic.chart.series[i] from design-system/tokens — design-system/04-DATA-DISPLAY.md Part K.1.",
         },
         {
           selector: "Property[key.name='zIndex'] Literal[value=/^[0-9]{4,}$/]",
-          message: "Use the --z-* ladder from styles/tokens.css, not a raw literal — design-system/05-OVERLAYS.md Part C.1.",
+          message:
+            "Use the --z-* ladder from styles/tokens.css, not a raw literal — design-system/05-OVERLAYS.md Part C.1.",
         },
         {
           selector: "JSXAttribute[name.name='type'] Literal[value='date']",
-          message: "Use <DatePicker> from shared/ui/date, not a native type=\"date\" input — design-system/05-OVERLAYS.md Part K.4.",
+          message:
+            'Use <DatePicker> from shared/ui/date, not a native type="date" input — design-system/05-OVERLAYS.md Part K.4.',
         },
         {
           selector: "Literal[value=/₹/]",
-          message: "Use <Money> from shared/ui/domain instead of a hand-placed ₹ literal — design-system/06-DOMAIN.md Part E.4.",
+          message:
+            "Use <Money> from shared/ui/domain instead of a hand-placed ₹ literal — design-system/06-DOMAIN.md Part E.4.",
         },
         {
           selector: "TemplateElement[value.raw=/₹/]",
-          message: "Use <Money> from shared/ui/domain instead of a ₹ template literal — design-system/06-DOMAIN.md Part E.4.",
+          message:
+            "Use <Money> from shared/ui/domain instead of a ₹ template literal — design-system/06-DOMAIN.md Part E.4.",
         },
         {
           selector: "CallExpression[callee.property.name='toLocaleString'][arguments.length=0]",
-          message: "Bare toLocaleString() is locale-dependent (renders 1,00,000 as 100,000 in en-US). Use formatMoney/formatQuantity or an explicit en-IN formatter — design-system/06-DOMAIN.md Part F.3.",
+          message:
+            "Bare toLocaleString() is locale-dependent (renders 1,00,000 as 100,000 in en-US). Use formatMoney/formatQuantity or an explicit en-IN formatter — design-system/06-DOMAIN.md Part F.3.",
         },
         {
           selector: "Property[key.name='fontFamily'] MemberExpression[property.name='mono']",
-          message: "Mono is for entity codes only. Use <EntityCode> from shared/ui/domain, or Inter + tabular figures — design-system/06-DOMAIN.md Part C.4/M7.",
+          message:
+            "Mono is for entity codes only. Use <EntityCode> from shared/ui/domain, or Inter + tabular figures — design-system/06-DOMAIN.md Part C.4/M7.",
         },
         {
           selector: "CallExpression[callee.name='parseFloat']",
-          message: "If this is money, use lib/gst's integer-paise helpers instead — parseFloat on currency reintroduces float-drift totals that don't reconcile. design-system/07-DOCUMENTS.md Part A.4/I.5.",
+          message:
+            "If this is money, use lib/gst's integer-paise helpers instead — parseFloat on currency reintroduces float-drift totals that don't reconcile. design-system/07-DOCUMENTS.md Part A.4/I.5.",
         },
         {
           // PHASE R8 (design-system/09-RESPONSIVE.md §7/§8) — discourage new
@@ -482,7 +493,8 @@ export default tseslint.config(
           // same-selector-collision reason documented above this block.
           selector:
             "Property[key.name=/^(width|minWidth|maxWidth)$/] Literal[raw=/^(3[2-9][0-9]|[4-9][0-9]{2}|[1-9][0-9]{3,})$/]",
-          message: "Fixed pixel width ≥320 — this will overflow on mobile. Use a fluid/percentage width, a responsive className, or useResponsive() instead — design-system/09-RESPONSIVE.md §0/§3.",
+          message:
+            "Fixed pixel width ≥320 — this will overflow on mobile. Use a fluid/percentage width, a responsive className, or useResponsive() instead — design-system/09-RESPONSIVE.md §0/§3.",
         },
       ],
     },
@@ -516,7 +528,8 @@ export default tseslint.config(
         {
           object: "window",
           property: "print",
-          message: "Use useDocument().print() from shared/ui/document, not a raw window.print() — it prints the whole app (nav, scrim, modal chrome). design-system/07-DOCUMENTS.md Part C.3.",
+          message:
+            "Use useDocument().print() from shared/ui/document, not a raw window.print() — it prints the whole app (nav, scrim, modal chrome). design-system/07-DOCUMENTS.md Part C.3.",
         },
       ],
     },

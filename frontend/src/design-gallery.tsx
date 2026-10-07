@@ -30,8 +30,11 @@ const SECTIONS = [
 type SectionKey = (typeof SECTIONS)[number]["key"];
 
 function App() {
-  const initial = (new URLSearchParams(location.search).get("section") as SectionKey) ?? "foundations";
-  const [section, setSection] = useState<SectionKey>(SECTIONS.some(s => s.key === initial) ? initial : "foundations");
+  const initial =
+    (new URLSearchParams(location.search).get("section") as SectionKey) ?? "foundations";
+  const [section, setSection] = useState<SectionKey>(
+    SECTIONS.some((s) => s.key === initial) ? initial : "foundations"
+  );
 
   function go(key: SectionKey) {
     setSection(key);
@@ -41,28 +44,59 @@ function App() {
   }
 
   return (
-    <div style={{ minHeight: "100dvh", display: "flex", fontFamily: "Inter, sans-serif", background: "var(--surface-base, #F7F3EE)" }}>
+    <div
+      style={{
+        minHeight: "100dvh",
+        display: "flex",
+        fontFamily: "Inter, sans-serif",
+        background: "var(--surface-base, #F7F3EE)",
+      }}
+    >
       <nav
         aria-label="Design gallery sections"
         style={{
-          width: 220, flexShrink: 0, borderRight: "1px solid var(--border-default, #E5DED4)",
-          padding: "24px 12px", position: "sticky", top: 0, height: "100dvh", overflowY: "auto",
+          width: 220,
+          flexShrink: 0,
+          borderRight: "1px solid var(--border-default, #E5DED4)",
+          padding: "24px 12px",
+          position: "sticky",
+          top: 0,
+          height: "100dvh",
+          overflowY: "auto",
         }}
       >
-        <div style={{ padding: "0 12px 20px", fontWeight: 700, fontSize: 15, color: "var(--text-primary, #1A0A0F)" }}>
+        <div
+          style={{
+            padding: "0 12px 20px",
+            fontWeight: 700,
+            fontSize: 15,
+            color: "var(--text-primary, #1A0A0F)",
+          }}
+        >
           BK Loom — Design Gallery
         </div>
-        {SECTIONS.map(s => (
+        {SECTIONS.map((s) => (
           <button
             key={s.key}
             type="button"
             onClick={() => go(s.key)}
             aria-current={section === s.key ? "page" : undefined}
             style={{
-              display: "block", width: "100%", textAlign: "left", padding: "10px 12px", marginBottom: 2,
-              borderRadius: 8, border: "none", cursor: "pointer", fontSize: 14,
-              background: section === s.key ? "var(--surface-brand-subtle, rgba(110,15,45,0.08))" : "transparent",
-              color: section === s.key ? "var(--text-brand, #6E0F2D)" : "var(--text-secondary, #4A3B33)",
+              display: "block",
+              width: "100%",
+              textAlign: "left",
+              padding: "10px 12px",
+              marginBottom: 2,
+              borderRadius: 8,
+              border: "none",
+              cursor: "pointer",
+              fontSize: 14,
+              background:
+                section === s.key
+                  ? "var(--surface-brand-subtle, rgba(110,15,45,0.08))"
+                  : "transparent",
+              color:
+                section === s.key ? "var(--text-brand, #6E0F2D)" : "var(--text-secondary, #4A3B33)",
               fontWeight: section === s.key ? 600 : 400,
             }}
           >
@@ -78,6 +112,8 @@ function App() {
   );
 }
 
-const container = document.getElementById("root")! as HTMLElement & { _root?: ReturnType<typeof createRoot> };
+const container = document.getElementById("root")! as HTMLElement & {
+  _root?: ReturnType<typeof createRoot>;
+};
 container._root ??= createRoot(container);
 container._root.render(<App />);

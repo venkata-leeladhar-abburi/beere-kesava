@@ -20,7 +20,20 @@ export interface WeaverCardProps {
   className?: string;
 }
 
-export function WeaverCard({ code, name, avatarSrc, village, sarees, looms, currentBatch, status, progress, density, onClick, className }: WeaverCardProps) {
+export function WeaverCard({
+  code,
+  name,
+  avatarSrc,
+  village,
+  sarees,
+  looms,
+  currentBatch,
+  status,
+  progress,
+  density,
+  onClick,
+  className,
+}: WeaverCardProps) {
   return (
     <DomainCard
       avatarName={name}
@@ -32,7 +45,9 @@ export function WeaverCard({ code, name, avatarSrc, village, sarees, looms, curr
       stats={[
         { label: "Sarees", value: sarees },
         { label: "Looms", value: looms },
-        ...(currentBatch ? [{ label: "Batch", value: <EntityCode type="batch" value={currentBatch} size="sm" /> }] : []),
+        ...(currentBatch
+          ? [{ label: "Batch", value: <EntityCode type="batch" value={currentBatch} size="sm" /> }]
+          : []),
       ]}
       progress={progress}
       progressLabel="Batch progress"

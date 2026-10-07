@@ -34,7 +34,13 @@ export interface BackendInvoice {
   status: BackendInvoiceStatus;
   dispatchId: string | null;
   payments: BackendInvoicePayment[];
-  customer: { id: string; name: string; city: string | null; phone: string | null; type: "WHOLESALE" | "RETAIL" } | null;
+  customer: {
+    id: string;
+    name: string;
+    city: string | null;
+    phone: string | null;
+    type: "WHOLESALE" | "RETAIL";
+  } | null;
 }
 
 interface PaginatedResponse<T> {
@@ -65,8 +71,14 @@ export interface CreateInvoicePaymentPayload {
 const INVOICES_MAX_PAGE_SIZE = 100;
 
 export const invoicesApi = {
-  list: async (opts?: { pageSize?: number; customerId?: string }): Promise<PaginatedResponse<BackendInvoice>> => {
-    const pageSize = Math.min(Math.max(opts?.pageSize ?? INVOICES_MAX_PAGE_SIZE, 1), INVOICES_MAX_PAGE_SIZE);
+  list: async (opts?: {
+    pageSize?: number;
+    customerId?: string;
+  }): Promise<PaginatedResponse<BackendInvoice>> => {
+    const pageSize = Math.min(
+      Math.max(opts?.pageSize ?? INVOICES_MAX_PAGE_SIZE, 1),
+      INVOICES_MAX_PAGE_SIZE
+    );
     const fetchPage = (page: number) => {
       const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
       if (opts?.customerId) params.set("customerId", opts.customerId);

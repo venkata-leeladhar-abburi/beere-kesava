@@ -7,7 +7,10 @@
 import { Icon } from "../primitives/Icon";
 import type { SocketStatus } from "../../hooks/useSocketStatus";
 
-const COPY: Record<Exclude<SocketStatus, "connected">, { label: string; icon: "spinner" | "offline" }> = {
+const COPY: Record<
+  Exclude<SocketStatus, "connected">,
+  { label: string; icon: "spinner" | "offline" }
+> = {
   connecting: { label: "Connecting…", icon: "spinner" },
   reconnecting: { label: "Reconnecting…", icon: "spinner" },
   disconnected: { label: "Live updates paused — reconnecting", icon: "offline" },

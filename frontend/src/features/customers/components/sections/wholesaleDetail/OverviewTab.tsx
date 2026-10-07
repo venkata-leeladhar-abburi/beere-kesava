@@ -11,7 +11,7 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 const ORDER_STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
   "on-track": { label: "On Track", color: T.green, bg: T.greenBg },
   "at-risk": { label: "At Risk", color: "#8B6018", bg: "rgba(200,155,71,0.14)" },
-  "overdue": { label: "Overdue", color: T.crimson, bg: T.crimsonBg },
+  overdue: { label: "Overdue", color: T.crimson, bg: T.crimsonBg },
 };
 const PAY_STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
   paid: { label: "Paid", color: T.green, bg: T.greenBg },
@@ -21,8 +21,15 @@ const PAY_STATUS_META: Record<string, { label: string; color: string; bg: string
 const inr = (n: number) => formatMoney(rupees(n));
 
 export function OverviewTab({
-  customer, custOrders, custOrderMoney, custOutstanding, custSareesOrdered, custSareesDone,
-  custActiveOrders, setWholesaleTab, onViewBulkOrder,
+  customer,
+  custOrders,
+  custOrderMoney,
+  custOutstanding,
+  custSareesOrdered,
+  custSareesDone,
+  custActiveOrders,
+  setWholesaleTab,
+  onViewBulkOrder,
 }: {
   customer: WholesaleCustomer;
   custOrders: BulkOrder[];
@@ -32,42 +39,100 @@ export function OverviewTab({
   custSareesDone: number;
   custActiveOrders: BulkOrder[];
   setWholesaleTab: (t: WholesaleTab) => void;
-  onViewBulkOrder: (order: BulkOrder, tab: "overview" | "sarees" | "payments" | "quotations") => void;
+  onViewBulkOrder: (
+    order: BulkOrder,
+    tab: "overview" | "sarees" | "payments" | "quotations"
+  ) => void;
 }) {
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
 
   const orderColumns: ColumnDef<BulkOrder>[] = [
     {
-      id: "ref", header: "Order Ref", accessor: o => o.ref, priority: 1,
-      cell: (_v, o) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{o.ref}</span>,
+      id: "ref",
+      header: "Order Ref",
+      accessor: (o) => o.ref,
+      priority: 1,
+      cell: (_v, o) => (
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 13,
+            color: T.royalBurgundy,
+            fontWeight: 700,
+          }}
+        >
+          {o.ref}
+        </span>
+      ),
     },
     {
-      id: "invoice", header: "Invoice No", accessor: o => o.invoiceId, priority: 3,
+      id: "invoice",
+      header: "Invoice No",
+      accessor: (o) => o.invoiceId,
+      priority: 3,
       cell: (_v, o) => {
         const m = custOrderMoney.get(o.ref)!;
-        return <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{o.invoiceId || m.invoiceId || "—"}</span>;
+        return (
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
+            {o.invoiceId || m.invoiceId || "—"}
+          </span>
+        );
       },
     },
     {
-      id: "deadline", header: "Deadline", accessor: o => o.due, priority: 3,
-      cell: (_v, o) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{o.due}</span>,
+      id: "deadline",
+      header: "Deadline",
+      accessor: (o) => o.due,
+      priority: 3,
+      cell: (_v, o) => (
+        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{o.due}</span>
+      ),
     },
     {
-      id: "description", header: "Description", accessor: o => o.design,
-      cell: (_v, o) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{o.total}× {o.sareeType} · {o.design}</span>,
+      id: "description",
+      header: "Description",
+      accessor: (o) => o.design,
+      cell: (_v, o) => (
+        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
+          {o.total}× {o.sareeType} · {o.design}
+        </span>
+      ),
     },
     {
-      id: "value", header: "Order Value", accessor: o => custOrderMoney.get(o.ref)!.amountDue,
+      id: "value",
+      header: "Order Value",
+      accessor: (o) => custOrderMoney.get(o.ref)!.amountDue,
       cell: (_v, o) => {
         const m = custOrderMoney.get(o.ref)!;
-        return <span style={{ fontFamily: F.display, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{m.amountDue ? inr(m.amountDue) : "—"}</span>;
+        return (
+          <span
+            style={{ fontFamily: F.display, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}
+          >
+            {m.amountDue ? inr(m.amountDue) : "—"}
+          </span>
+        );
       },
     },
     {
-      id: "payment", header: "Payment", accessor: o => o.paymentStatus,
+      id: "payment",
+      header: "Payment",
+      accessor: (o) => o.paymentStatus,
       cell: (_v, o) => {
         const pay = PAY_STATUS_META[o.paymentStatus ?? "pending"];
-        return <span style={{ padding: "2px 8px", borderRadius: 5, fontSize: 12, fontWeight: 700, background: pay.bg, color: pay.color }}>{pay.label}</span>;
+        return (
+          <span
+            style={{
+              padding: "2px 8px",
+              borderRadius: 5,
+              fontSize: 12,
+              fontWeight: 700,
+              background: pay.bg,
+              color: pay.color,
+            }}
+          >
+            {pay.label}
+          </span>
+        );
       },
     },
   ];
@@ -77,13 +142,40 @@ export function OverviewTab({
       <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16 }}>
         {[
           { label: "Bulk Orders Placed", value: String(custOrders.length), color: T.luxuryBrown },
-          { label: "Sarees Ordered", value: `${custSareesDone}/${custSareesOrdered}`, color: T.antiqueGold },
-          { label: "Outstanding Balance", value: inr(custOutstanding), color: custOutstanding === 0 ? T.greenMid : T.crimson },
+          {
+            label: "Sarees Ordered",
+            value: `${custSareesDone}/${custSareesOrdered}`,
+            color: T.antiqueGold,
+          },
+          {
+            label: "Outstanding Balance",
+            value: inr(custOutstanding),
+            color: custOutstanding === 0 ? T.greenMid : T.crimson,
+          },
           { label: "Payment Terms", value: customer.terms, color: T.luxuryBrown, isMono: true },
         ].map((s) => (
           <div key={s.label} style={{ background: T.silkCream, padding: 24, borderRadius: 14 }}>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6, fontWeight: 500 }}>{s.label}</div>
-            <div style={{ fontFamily: s.isMono ? "var(--font-mono)" : F.display, fontSize: 24, fontWeight: 700, color: s.color }}>{s.value}</div>
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontSize: 12,
+                color: T.taupe,
+                marginBottom: 6,
+                fontWeight: 500,
+              }}
+            >
+              {s.label}
+            </div>
+            <div
+              style={{
+                fontFamily: s.isMono ? "var(--font-mono)" : F.display,
+                fontSize: 24,
+                fontWeight: 700,
+                color: s.color,
+              }}
+            >
+              {s.value}
+            </div>
           </div>
         ))}
       </div>
@@ -96,16 +188,22 @@ export function OverviewTab({
           </div>
 
           <div className="space-y-4">
-            {custActiveOrders.map(o => {
+            {custActiveOrders.map((o) => {
               const pct = o.total ? Math.round((o.done / o.total) * 100) : 0;
               const meta = ORDER_STATUS_META[o.status] ?? ORDER_STATUS_META["on-track"];
               return (
                 <div
                   key={o.ref}
                   onClick={() => onViewBulkOrder(o, "overview")}
-                  role="button" tabIndex={0}
+                  role="button"
+                  tabIndex={0}
                   aria-label={`Open bulk order ${o.ref}`}
-                  onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onViewBulkOrder(o, "overview"); } }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onViewBulkOrder(o, "overview");
+                    }
+                  }}
                   className="bg-[#F7F2EA] hover:bg-[#F0E8DC] p-3.5 sm:p-4 rounded-xl border border-[var(--border-default)] transition-all cursor-pointer space-y-2.5"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -178,7 +276,17 @@ export function OverviewTab({
         </div>
 
         {custOrders.length === 0 ? (
-          <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "36px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+          <div
+            style={{
+              border: `1px solid ${T.borderDef}`,
+              borderRadius: 12,
+              padding: "36px 20px",
+              textAlign: "center",
+              fontFamily: F.ui,
+              fontSize: 13,
+              color: T.taupe,
+            }}
+          >
             No bulk orders have been created for this customer yet.
           </div>
         ) : (
@@ -187,21 +295,31 @@ export function OverviewTab({
             <div className="sm:hidden min-w-0 max-w-full w-full">
               {viewMode === "card" ? (
                 <div className="grid grid-cols-1 gap-3.5">
-                  {custOrders.slice(0, 4).map(o => {
+                  {custOrders.slice(0, 4).map((o) => {
                     const money = custOrderMoney.get(o.ref);
                     const pay = PAY_STATUS_META[o.paymentStatus ?? "pending"];
                     return (
                       <div
                         key={o.ref}
                         onClick={() => onViewBulkOrder(o, "overview")}
-                        role="button" tabIndex={0}
+                        role="button"
+                        tabIndex={0}
                         aria-label={`Open bulk order ${o.ref}`}
-                        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onViewBulkOrder(o, "overview"); } }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onViewBulkOrder(o, "overview");
+                          }
+                        }}
                         className="bg-white rounded-2xl border border-[var(--border-default)] p-4 hover:border-[#6E0F2D] transition-all cursor-pointer shadow-sm hover:shadow-md flex flex-col justify-between"
                       >
                         <div className="flex items-center justify-between gap-2 mb-3">
-                          <span className="font-mono font-bold text-sm text-[#6E0F2D]">{o.ref}</span>
-                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${pay.bg} ${pay.color}`}>
+                          <span className="font-mono font-bold text-sm text-[#6E0F2D]">
+                            {o.ref}
+                          </span>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${pay.bg} ${pay.color}`}
+                          >
                             {pay.label}
                           </span>
                         </div>
@@ -209,11 +327,15 @@ export function OverviewTab({
                         <div className="space-y-2 text-xs mb-4">
                           <div className="flex justify-between">
                             <span className="text-[var(--text-tertiary)]">Description</span>
-                            <span className="font-medium text-[var(--text-primary)] text-right">{o.total}× {o.sareeType}</span>
+                            <span className="font-medium text-[var(--text-primary)] text-right">
+                              {o.total}× {o.sareeType}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-[var(--text-tertiary)]">Order Value</span>
-                            <span className="font-serif font-bold text-sm text-[var(--text-primary)]">{money?.amountDue ? inr(money.amountDue) : "—"}</span>
+                            <span className="font-serif font-bold text-sm text-[var(--text-primary)]">
+                              {money?.amountDue ? inr(money.amountDue) : "—"}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-[var(--text-tertiary)]">Payment Status</span>
@@ -222,7 +344,12 @@ export function OverviewTab({
                         </div>
 
                         <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                          <span className="text-[var(--text-tertiary)]">Progress: <strong>{o.done}/{o.total} sarees</strong></span>
+                          <span className="text-[var(--text-tertiary)]">
+                            Progress:{" "}
+                            <strong>
+                              {o.done}/{o.total} sarees
+                            </strong>
+                          </span>
                           <span className="text-[#6E0F2D] font-bold flex items-center gap-1">
                             <Eye size={13} /> View Details
                           </span>
@@ -241,8 +368,8 @@ export function OverviewTab({
                       responsive={false}
                       columns={orderColumns}
                       data={custOrders.slice(0, 4)}
-                      getRowId={o => o.ref}
-                      onRowClick={o => onViewBulkOrder(o, "payments")}
+                      getRowId={(o) => o.ref}
+                      onRowClick={(o) => onViewBulkOrder(o, "payments")}
                     />
                   </div>
                 </div>
@@ -259,10 +386,10 @@ export function OverviewTab({
                   responsive={false}
                   columns={orderColumns}
                   data={custOrders}
-                  getRowId={o => o.ref}
+                  getRowId={(o) => o.ref}
                   pageSize={5}
                   pagination={true}
-                  onRowClick={o => onViewBulkOrder(o, "payments")}
+                  onRowClick={(o) => onViewBulkOrder(o, "payments")}
                 />
               </div>
             </div>

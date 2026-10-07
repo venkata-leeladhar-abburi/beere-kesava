@@ -36,15 +36,9 @@ const SIDE_POSITION_CLASS: Record<DrawerSide, string> = {
 };
 
 const SIDE_ANIMATE_CLASS: Record<DrawerSide, string> = {
-  left: cn(
-    "data-[state=open]:slide-in-from-left data-[state=closed]:slide-out-to-left"
-  ),
-  right: cn(
-    "data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right"
-  ),
-  bottom: cn(
-    "data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom"
-  ),
+  left: cn("data-[state=open]:slide-in-from-left data-[state=closed]:slide-out-to-left"),
+  right: cn("data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right"),
+  bottom: cn("data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom"),
 };
 
 export interface DrawerProps {
@@ -58,7 +52,14 @@ export interface DrawerProps {
   onBeforeClose?: () => boolean;
 }
 
-export function Drawer({ open, onOpenChange, side = "right", size = "md", children, onBeforeClose }: DrawerProps) {
+export function Drawer({
+  open,
+  onOpenChange,
+  side = "right",
+  size = "md",
+  children,
+  onBeforeClose,
+}: DrawerProps) {
   const guardedChange = (next: boolean) => {
     if (!next && onBeforeClose && !onBeforeClose()) return;
     onOpenChange(next);
@@ -81,7 +82,7 @@ export function Drawer({ open, onOpenChange, side = "right", size = "md", childr
           style={{ zIndex: "var(--z-overlay)" }}
         />
         <Dialog.Content
-          onOpenAutoFocus={e => {
+          onOpenAutoFocus={(e) => {
             // Never autofocus a text input on mobile — it opens the keyboard
             // and hides the drawer (Part C.3).
             if (window.innerWidth < 768) e.preventDefault();
@@ -106,13 +107,26 @@ export function Drawer({ open, onOpenChange, side = "right", size = "md", childr
   );
 }
 
-function Header({ title, subtitle, onClose }: { title: string; subtitle?: string; onClose?: () => void }) {
+function Header({
+  title,
+  subtitle,
+  onClose,
+}: {
+  title: string;
+  subtitle?: string;
+  onClose?: () => void;
+}) {
   return (
     <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4 flex-shrink-0">
       <div className="min-w-0">
-        <Dialog.Title className="bk-title-md" style={{ color: "var(--text-primary)" }}>{title}</Dialog.Title>
+        <Dialog.Title className="bk-title-md" style={{ color: "var(--text-primary)" }}>
+          {title}
+        </Dialog.Title>
         {subtitle && (
-          <Dialog.Description className="mt-1 bk-body-sm" style={{ color: "var(--text-secondary)" }}>
+          <Dialog.Description
+            className="mt-1 bk-body-sm"
+            style={{ color: "var(--text-secondary)" }}
+          >
             {subtitle}
           </Dialog.Description>
         )}
@@ -137,7 +151,9 @@ function Body({ children, className }: { children: React.ReactNode; className?: 
     });
   }, []);
 
-  React.useEffect(() => { onScroll(); }, [onScroll, children]);
+  React.useEffect(() => {
+    onScroll();
+  }, [onScroll, children]);
 
   return (
     <div
@@ -145,10 +161,13 @@ function Body({ children, className }: { children: React.ReactNode; className?: 
       onScroll={onScroll}
       className={cn("flex-1 overflow-y-auto px-6 [overscroll-behavior:contain]", className)}
       style={{
-        boxShadow: [
-          scrolled.top ? "inset 0 8px 8px -8px rgba(0,0,0,0.12)" : "",
-          scrolled.bottom ? "inset 0 -8px 8px -8px rgba(0,0,0,0.12)" : "",
-        ].filter(Boolean).join(", ") || "none",
+        boxShadow:
+          [
+            scrolled.top ? "inset 0 8px 8px -8px rgba(0,0,0,0.12)" : "",
+            scrolled.bottom ? "inset 0 -8px 8px -8px rgba(0,0,0,0.12)" : "",
+          ]
+            .filter(Boolean)
+            .join(", ") || "none",
       }}
     >
       {children}
@@ -159,7 +178,10 @@ function Body({ children, className }: { children: React.ReactNode; className?: 
 function Footer({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={cn("flex items-center justify-end gap-2 px-6 pt-4 pb-6 flex-shrink-0 border-t", className)}
+      className={cn(
+        "flex items-center justify-end gap-2 px-6 pt-4 pb-6 flex-shrink-0 border-t",
+        className
+      )}
       style={{ borderColor: "var(--border-subtle)" }}
     >
       {children}

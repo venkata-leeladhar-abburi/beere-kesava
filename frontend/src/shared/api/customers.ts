@@ -80,12 +80,20 @@ export const customersApi = {
   /** Every customer, fetched page by page. A single page used to be the whole
    *  list, so once there were more than 100 customers the oldest silently
    *  vanished from every screen (e.g. wholesale codes -001 to -039). */
-  list: async (pageSize = 500, type?: BackendCustomerType): Promise<PaginatedResponse<BackendCustomer>> => {
+  list: async (
+    pageSize = 500,
+    type?: BackendCustomerType
+  ): Promise<PaginatedResponse<BackendCustomer>> => {
     const items: BackendCustomer[] = [];
     for (let page = 1; ; page++) {
-      const params = new URLSearchParams({ page: String(page), pageSize: String(Math.min(pageSize, 500)) });
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(Math.min(pageSize, 500)),
+      });
       if (type) params.set("type", type);
-      const res = await apiClient.get<PaginatedResponse<BackendCustomer>>(`/customers?${params.toString()}`);
+      const res = await apiClient.get<PaginatedResponse<BackendCustomer>>(
+        `/customers?${params.toString()}`
+      );
       items.push(...res.items);
       if (res.items.length === 0 || items.length >= res.total) {
         return { ...res, items, page: 1, pageSize: items.length };
@@ -95,7 +103,8 @@ export const customersApi = {
 
   findOne: (id: string) => apiClient.get<BackendCustomer>(`/customers/${id}`),
 
-  create: (payload: CreateCustomerPayload) => apiClient.post<BackendCustomer>("/customers", payload),
+  create: (payload: CreateCustomerPayload) =>
+    apiClient.post<BackendCustomer>("/customers", payload),
 
   update: (id: string, payload: UpdateCustomerPayload) =>
     apiClient.patch<BackendCustomer>(`/customers/${id}`, payload),

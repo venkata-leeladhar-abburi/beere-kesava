@@ -30,11 +30,11 @@ export function PurchaseBillBreakdown({
   // is shown as one un-itemised adjustment rather than guessed at.
   const hasBreakdown = purchase.subtotal !== undefined;
   const linesTotal = invoicedBuying(purchase.sarees);
-  const subtotal = hasBreakdown ? purchase.subtotal ?? 0 : linesTotal;
-  const discountAmount = hasBreakdown ? purchase.discountAmount ?? 0 : 0;
+  const subtotal = hasBreakdown ? (purchase.subtotal ?? 0) : linesTotal;
+  const discountAmount = hasBreakdown ? (purchase.discountAmount ?? 0) : 0;
   const discountValue = purchase.discountValue ?? 0;
-  const gstPercent = hasBreakdown ? purchase.gstPercent ?? 0 : 0;
-  const gstAmount = hasBreakdown ? purchase.gstAmount ?? 0 : 0;
+  const gstPercent = hasBreakdown ? (purchase.gstPercent ?? 0) : 0;
+  const gstAmount = hasBreakdown ? (purchase.gstAmount ?? 0) : 0;
   const taxable = subtotal - discountAmount;
   const unitemised = hasBreakdown ? 0 : bill - linesTotal;
 
@@ -45,32 +45,92 @@ export function PurchaseBillBreakdown({
       : `Discount (flat ${money(discountValue)} · ${pct(subtotal ? (discountAmount / subtotal) * 100 : 0)})`;
 
   const row = (label: string, value: string, color: string = T.luxuryBrown, strong = false) => (
-    <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "3px 0" }}>
-      <span style={{ fontFamily: F.ui, fontSize: 12, color: strong ? T.luxuryBrown : T.taupe, fontWeight: strong ? 700 : 400 }}>{label}</span>
-      <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: strong ? 700 : 600, color, whiteSpace: "nowrap" }}>{value}</span>
+    <div
+      key={label}
+      style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "3px 0" }}
+    >
+      <span
+        style={{
+          fontFamily: F.ui,
+          fontSize: 12,
+          color: strong ? T.luxuryBrown : T.taupe,
+          fontWeight: strong ? 700 : 400,
+        }}
+      >
+        {label}
+      </span>
+      <span
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 12,
+          fontWeight: strong ? 700 : 600,
+          color,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {value}
+      </span>
     </div>
   );
   const rule = { borderTop: `1px dashed ${T.borderDef}`, marginTop: 4, paddingTop: 4 };
 
   return (
-    <div style={{ background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 12px" }}>
+    <div
+      style={{
+        background: T.silkCream,
+        border: `1px solid ${T.borderDef}`,
+        borderRadius: 10,
+        padding: "10px 12px",
+      }}
+    >
       {/* ── Saree lines ── */}
       {purchase.sarees.length > 0 && (
         <div style={{ paddingBottom: 4 }}>
-          <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", paddingBottom: 2 }}>
+          <div
+            style={{
+              fontFamily: F.ui,
+              fontSize: 11,
+              fontWeight: 700,
+              color: T.taupe,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              paddingBottom: 2,
+            }}
+          >
             Sarees
           </div>
           {purchase.sarees.map((s, i) => {
             const qty = Number(s.quantity) > 0 ? Number(s.quantity) : 1;
             const name = [s.sareeType, s.color].filter(Boolean).join(" · ") || s.id;
             return (
-              <div key={s.lineId ?? s.id ?? i} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "2px 0" }}>
+              <div
+                key={s.lineId ?? s.id ?? i}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  padding: "2px 0",
+                }}
+              >
                 <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, minWidth: 0 }}>
                   {name}
-                  <span style={{ color: T.taupe }}> · {qty} × {money(Number(s.price) || 0)}</span>
-                  {!!s.returnedQuantity && <span style={{ color: T.crimson }}> · {s.returnedQuantity} returned</span>}
+                  <span style={{ color: T.taupe }}>
+                    {" "}
+                    · {qty} × {money(Number(s.price) || 0)}
+                  </span>
+                  {!!s.returnedQuantity && (
+                    <span style={{ color: T.crimson }}> · {s.returnedQuantity} returned</span>
+                  )}
                 </span>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.luxuryBrown, whiteSpace: "nowrap" }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: T.luxuryBrown,
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   {money((Number(s.price) || 0) * qty)}
                 </span>
               </div>
@@ -84,9 +144,17 @@ export function PurchaseBillBreakdown({
         {row("Sarees total", money(subtotal), T.luxuryBrown, true)}
         {hasBreakdown ? (
           <>
-            {row(discountLabel, discountAmount ? `− ${money(discountAmount)}` : money(0), discountAmount ? T.greenMid : T.taupe)}
+            {row(
+              discountLabel,
+              discountAmount ? `− ${money(discountAmount)}` : money(0),
+              discountAmount ? T.greenMid : T.taupe
+            )}
             {row("Taxable value (after discount)", money(taxable))}
-            {row(`GST (${pct(gstPercent)})`, gstAmount ? `+ ${money(gstAmount)}` : money(0), gstAmount ? T.luxuryBrown : T.taupe)}
+            {row(
+              `GST (${pct(gstPercent)})`,
+              gstAmount ? `+ ${money(gstAmount)}` : money(0),
+              gstAmount ? T.luxuryBrown : T.taupe
+            )}
           </>
         ) : unitemised === 0 ? (
           <>
@@ -98,10 +166,11 @@ export function PurchaseBillBreakdown({
             {row(
               unitemised > 0 ? "GST / charges (not itemised)" : "Discount (not itemised)",
               `${unitemised > 0 ? "+" : "−"} ${money(Math.abs(unitemised))}`,
-              unitemised > 0 ? T.luxuryBrown : T.greenMid,
+              unitemised > 0 ? T.luxuryBrown : T.greenMid
             )}
             <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, padding: "2px 0" }}>
-              This bill was entered before discount and GST were recorded separately — edit the purchase to itemise them.
+              This bill was entered before discount and GST were recorded separately — edit the
+              purchase to itemise them.
             </div>
           </>
         )}
@@ -111,12 +180,42 @@ export function PurchaseBillBreakdown({
       <div style={rule}>
         {row("Final bill", money(bill), T.royalBurgundy, true)}
         {paid !== undefined && row("Paid", money(paid), T.greenMid)}
-        {paid !== undefined && row("Balance", money(Math.max(0, bill - paid)), bill - paid > 0 ? T.crimson : T.greenMid, true)}
+        {paid !== undefined &&
+          row(
+            "Balance",
+            money(Math.max(0, bill - paid)),
+            bill - paid > 0 ? T.crimson : T.greenMid,
+            true
+          )}
       </div>
       {(purchase.gstNumber || purchase.invoiceNumber) && (
-        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 6, display: "flex", gap: 12, flexWrap: "wrap" }}>
-          {purchase.invoiceNumber && <span>Invoice <span style={{ fontFamily: "var(--font-mono)", color: T.luxuryBrown }}>{purchase.invoiceNumber}</span></span>}
-          {purchase.gstNumber && <span>GSTIN <span style={{ fontFamily: "var(--font-mono)", color: T.luxuryBrown }}>{purchase.gstNumber}</span></span>}
+        <div
+          style={{
+            fontFamily: F.ui,
+            fontSize: 11,
+            color: T.taupe,
+            marginTop: 6,
+            display: "flex",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          {purchase.invoiceNumber && (
+            <span>
+              Invoice{" "}
+              <span style={{ fontFamily: "var(--font-mono)", color: T.luxuryBrown }}>
+                {purchase.invoiceNumber}
+              </span>
+            </span>
+          )}
+          {purchase.gstNumber && (
+            <span>
+              GSTIN{" "}
+              <span style={{ fontFamily: "var(--font-mono)", color: T.luxuryBrown }}>
+                {purchase.gstNumber}
+              </span>
+            </span>
+          )}
         </div>
       )}
     </div>

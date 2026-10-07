@@ -92,76 +92,78 @@ function positionAfterAnchors(str: string, n: number): number {
   return str.length;
 }
 
-export const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(function NumberInput(
-  { value, onValueChange, min, max, step = 1, className, onKeyDown, ...props },
-  forwardedRef
-) {
-  const innerRef = React.useRef<HTMLInputElement>(null);
-  React.useImperativeHandle(forwardedRef, () => innerRef.current as HTMLInputElement);
+export const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
+  function NumberInput(
+    { value, onValueChange, min, max, step = 1, className, onKeyDown, ...props },
+    forwardedRef
+  ) {
+    const innerRef = React.useRef<HTMLInputElement>(null);
+    React.useImperativeHandle(forwardedRef, () => innerRef.current as HTMLInputElement);
 
-  const allowDecimal = !Number.isInteger(step);
-  const [display, setDisplay] = React.useState(() => formatForDisplay(value, allowDecimal));
-  // Anchor-character cursor position to restore once `display`'s DOM update
-  // commits — set in the same event as `setDisplay`, consumed by the layout
-  // effect below. Tied to React's own commit rather than an independent
-  // rAF/timeout, so it can't race other tests' fake timers or a slow paint.
-  const pendingCursorDigits = React.useRef<number | null>(null);
+    const allowDecimal = !Number.isInteger(step);
+    const [display, setDisplay] = React.useState(() => formatForDisplay(value, allowDecimal));
+    // Anchor-character cursor position to restore once `display`'s DOM update
+    // commits — set in the same event as `setDisplay`, consumed by the layout
+    // effect below. Tied to React's own commit rather than an independent
+    // rAF/timeout, so it can't race other tests' fake timers or a slow paint.
+    const pendingCursorDigits = React.useRef<number | null>(null);
 
-  // Resync from an externally-driven `value` (programmatic reset, another
-  // field feeding this one) — skipped while it already matches what's
-  // currently typed, so a mid-decimal edit like "12." isn't stomped back to
-  // "12" on every keystroke.
-  React.useEffect(() => {
-    const { numeric } = reformat(display, allowDecimal);
-    if (numeric !== value) {
-      setDisplay(formatForDisplay(value, allowDecimal));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+    // Resync from an externally-driven `value` (programmatic reset, another
+    // field feeding this one) — skipped while it already matches what's
+    // currently typed, so a mid-decimal edit like "12." isn't stomped back to
+    // "12" on every keystroke.
+    React.useEffect(() => {
+      const { numeric } = reformat(display, allowDecimal);
+      if (numeric !== value) {
+        setDisplay(formatForDisplay(value, allowDecimal));
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [value]);
 
-  React.useLayoutEffect(() => {
-    if (pendingCursorDigits.current === null) return;
-    const el = innerRef.current;
-    if (el) {
-      const pos = positionAfterAnchors(display, pendingCursorDigits.current);
-      el.setSelectionRange(pos, pos);
-    }
-    pendingCursorDigits.current = null;
-  }, [display]);
+    React.useLayoutEffect(() => {
+      if (pendingCursorDigits.current === null) return;
+      const el = innerRef.current;
+      if (el) {
+        const pos = positionAfterAnchors(display, pendingCursorDigits.current);
+        el.setSelectionRange(pos, pos);
+      }
+      pendingCursorDigits.current = null;
+    }, [display]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    const cursor = e.target.selectionStart ?? raw.length;
-    pendingCursorDigits.current = anchorsBefore(raw, cursor);
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value;
+      const cursor = e.target.selectionStart ?? raw.length;
+      pendingCursorDigits.current = anchorsBefore(raw, cursor);
 
-    const { formatted, numeric } = reformat(raw, allowDecimal);
-    setDisplay(formatted);
-    onValueChange?.(numeric);
-  };
+      const { formatted, numeric } = reformat(raw, allowDecimal);
+      setDisplay(formatted);
+      onValueChange?.(numeric);
+    };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (onValueChange && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
-      e.preventDefault();
-      const current = typeof value === "number" ? value : 0;
-      const delta = e.key === "ArrowUp" ? step : -step;
-      let next = current + delta;
-      if (min !== undefined) next = Math.max(min, next);
-      if (max !== undefined) next = Math.min(max, next);
-      onValueChange(next);
-    }
-    onKeyDown?.(e);
-  };
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (onValueChange && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+        e.preventDefault();
+        const current = typeof value === "number" ? value : 0;
+        const delta = e.key === "ArrowUp" ? step : -step;
+        let next = current + delta;
+        if (min !== undefined) next = Math.max(min, next);
+        if (max !== undefined) next = Math.min(max, next);
+        onValueChange(next);
+      }
+      onKeyDown?.(e);
+    };
 
-  return (
-    <Input
-      ref={innerRef}
-      type="text"
-      inputMode={allowDecimal ? "decimal" : "numeric"}
-      value={display}
-      onChange={handleChange}
-      onKeyDown={handleKeyDown}
-      className={cn("text-right tabular-nums", className)}
-      {...props}
-    />
-  );
-});
+    return (
+      <Input
+        ref={innerRef}
+        type="text"
+        inputMode={allowDecimal ? "decimal" : "numeric"}
+        value={display}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        className={cn("text-right tabular-nums", className)}
+        {...props}
+      />
+    );
+  }
+);

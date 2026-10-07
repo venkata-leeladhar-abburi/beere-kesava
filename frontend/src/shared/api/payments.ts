@@ -51,7 +51,7 @@ export const supplierPaymentsApi = {
     apiClient.post<BackendSupplierPayment>("/payments/suppliers", payload),
   list: (supplierId?: string) =>
     apiClient.get<PaginatedResponse<BackendSupplierPayment>>(
-      `/payments/suppliers?pageSize=100${supplierId ? `&supplierId=${supplierId}` : ""}`,
+      `/payments/suppliers?pageSize=100${supplierId ? `&supplierId=${supplierId}` : ""}`
     ),
 };
 
@@ -131,7 +131,7 @@ export const weaverPaymentsApi = {
     apiClient.post<BackendWeaverPayment>("/payments/weavers", payload),
   list: (weaverId?: string) =>
     apiClient.get<PaginatedResponse<BackendWeaverPayment>>(
-      `/payments/weavers?pageSize=100${weaverId ? `&weaverId=${weaverId}` : ""}`,
+      `/payments/weavers?pageSize=100${weaverId ? `&weaverId=${weaverId}` : ""}`
     ),
   /**
    * Every payment row, walking past the single capped page `list` returns.
@@ -154,7 +154,9 @@ export const weaverPaymentsApi = {
     return items;
   },
   earnings: (weaverId?: string) =>
-    apiClient.get<WeaverEarnings[]>(`/payments/weavers/earnings${weaverId ? `?weaverId=${weaverId}` : ""}`),
+    apiClient.get<WeaverEarnings[]>(
+      `/payments/weavers/earnings${weaverId ? `?weaverId=${weaverId}` : ""}`
+    ),
   productionRows: () => apiClient.get<WeaverProductionRow[]>("/payments/weavers/production-rows"),
 };
 
@@ -192,7 +194,7 @@ export const vendorPaymentsApi = {
     apiClient.post<BackendVendorPayment>("/payments/vendors", payload),
   list: (vendorId?: string) =>
     apiClient.get<PaginatedResponse<BackendVendorPayment>>(
-      `/payments/vendors?pageSize=100${vendorId ? `&vendorId=${vendorId}` : ""}`,
+      `/payments/vendors?pageSize=100${vendorId ? `&vendorId=${vendorId}` : ""}`
     ),
 };
 

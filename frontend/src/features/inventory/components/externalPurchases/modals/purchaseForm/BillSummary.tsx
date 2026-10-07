@@ -35,17 +35,52 @@ export function BillSummary({
   const discountValue = Number(form.discountValue) || 0;
 
   const row = (label: string, value: string, color: string = T.luxuryBrown, bold = false) => (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, padding: "5px 0" }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        gap: 12,
+        padding: "5px 0",
+      }}
+    >
       <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{label}</span>
-      <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: bold ? 700 : 600, color }}>{value}</span>
+      <span
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 13,
+          fontWeight: bold ? 700 : 600,
+          color,
+        }}
+      >
+        {value}
+      </span>
     </div>
   );
 
   return (
-    <div style={{ marginTop: 20, border: `1px solid ${T.borderGold}`, borderRadius: 12, overflow: "hidden" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: T.silkCream, borderBottom: `1px solid ${T.borderGold}` }}>
+    <div
+      style={{
+        marginTop: 20,
+        border: `1px solid ${T.borderGold}`,
+        borderRadius: 12,
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "10px 14px",
+          background: T.silkCream,
+          borderBottom: `1px solid ${T.borderGold}`,
+        }}
+      >
         <Receipt size={15} color={T.royalBurgundy} />
-        <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>Bill Summary</span>
+        <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>
+          Bill Summary
+        </span>
       </div>
 
       <div style={{ padding: "14px" }}>
@@ -55,20 +90,31 @@ export function BillSummary({
               <div
                 role="group"
                 aria-label="Discount type"
-                style={{ display: "flex", flexShrink: 0, border: `1px solid ${T.borderDef}`, borderRadius: 10, overflow: "hidden", height: 40 }}
+                style={{
+                  display: "flex",
+                  flexShrink: 0,
+                  border: `1px solid ${T.borderDef}`,
+                  borderRadius: 10,
+                  overflow: "hidden",
+                  height: 40,
+                }}
               >
-                {([
-                  ["percent", "%"],
-                  // eslint-disable-next-line no-restricted-syntax -- input adornment / unit toggle, not a rendered money value
-                  ["amount", "₹"],
-                ] as const).map(([value, label]) => {
+                {(
+                  [
+                    ["percent", "%"],
+                    // eslint-disable-next-line no-restricted-syntax -- input adornment / unit toggle, not a rendered money value
+                    ["amount", "₹"],
+                  ] as const
+                ).map(([value, label]) => {
                   const active = discountType === value;
                   return (
                     <button
                       key={value}
                       type="button"
                       aria-pressed={active}
-                      aria-label={value === "percent" ? "Discount as percentage" : "Discount as amount"}
+                      aria-label={
+                        value === "percent" ? "Discount as percentage" : "Discount as amount"
+                      }
                       onClick={() => setDiscountType(value)}
                       style={{
                         width: 40,
@@ -122,7 +168,12 @@ export function BillSummary({
         </div>
 
         {bill.error && (
-          <div role="alert" style={{ marginTop: 8, fontFamily: F.ui, fontSize: 12, color: T.crimson }}>{bill.error}</div>
+          <div
+            role="alert"
+            style={{ marginTop: 8, fontFamily: F.ui, fontSize: 12, color: T.crimson }}
+          >
+            {bill.error}
+          </div>
         )}
 
         <div style={{ marginTop: 14, borderTop: `1px dashed ${T.borderDef}`, paddingTop: 8 }}>
@@ -131,10 +182,13 @@ export function BillSummary({
             row(
               `Discount${discountType === "percent" ? ` (${discountValue}%)` : ""}`,
               `− ${formatMoneyExact(rupees(bill.discountAmount))}`,
-              T.green,
+              T.green
             )}
-          {bill.discountAmount > 0 && gstPercent > 0 && row("Total after discount", formatMoneyExact(rupees(bill.taxable)))}
-          {gstPercent > 0 && row(`GST (${gstPercent}%)`, `+ ${formatMoneyExact(rupees(bill.gstAmount))}`)}
+          {bill.discountAmount > 0 &&
+            gstPercent > 0 &&
+            row("Total after discount", formatMoneyExact(rupees(bill.taxable)))}
+          {gstPercent > 0 &&
+            row(`GST (${gstPercent}%)`, `+ ${formatMoneyExact(rupees(bill.gstAmount))}`)}
         </div>
 
         <div
@@ -150,16 +204,26 @@ export function BillSummary({
             padding: "12px 14px",
           }}
         >
-          <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Final Bill Amount</span>
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, fontWeight: 700, color: T.royalBurgundy }}>
+          <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>
+            Final Bill Amount
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 18,
+              fontWeight: 700,
+              color: T.royalBurgundy,
+            }}
+          >
             {formatMoneyExact(rupees(bill.billAmount))}
           </span>
         </div>
 
         {previousBill && (
           <div style={{ marginTop: 8, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-            Previously recorded bill: <strong style={{ color: T.luxuryBrown }}>{previousBill}</strong>. Saving replaces it with the
-            amount calculated above. Payments already made stay as they are.
+            Previously recorded bill:{" "}
+            <strong style={{ color: T.luxuryBrown }}>{previousBill}</strong>. Saving replaces it
+            with the amount calculated above. Payments already made stay as they are.
           </div>
         )}
       </div>

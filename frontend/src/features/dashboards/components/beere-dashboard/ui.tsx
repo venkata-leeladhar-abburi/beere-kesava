@@ -1,12 +1,19 @@
-
-import React, { useEffect, useState, useRef } from 'react';
-import { motion, useInView } from 'motion/react';
-import { T, F, G, EASE , DARK_MAROON } from './theme';
+import React, { useEffect, useState, useRef } from "react";
+import { motion, useInView } from "motion/react";
+import { T, F, G, EASE, DARK_MAROON } from "./theme";
 import { Button } from "../../../../shared/ui/primitives";
 
 function FadeUp({
-  children, delay = 0, style, className,
-}: { children: React.ReactNode; delay?: number; style?: React.CSSProperties; className?: string }) {
+  children,
+  delay = 0,
+  style,
+  className,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  style?: React.CSSProperties;
+  className?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px 0px" });
   return (
@@ -15,7 +22,13 @@ function FadeUp({
       className={className}
       initial={{ opacity: 0, y: 40, scale: 0.97 }}
       animate={inView ? { opacity: 1, y: 0, scale: 1 } : undefined}
-      transition={{ type: "spring", stiffness: 260, damping: 26, delay, opacity: { duration: 0.45 } }}
+      transition={{
+        type: "spring",
+        stiffness: 260,
+        damping: 26,
+        delay,
+        opacity: { duration: 0.45 },
+      }}
       style={style}
     >
       {children}
@@ -24,8 +37,14 @@ function FadeUp({
 }
 
 function FadeIn({
-  children, delay = 0, style,
-}: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
+  children,
+  delay = 0,
+  style,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  style?: React.CSSProperties;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });
   return (
@@ -42,8 +61,16 @@ function FadeIn({
 }
 
 function AnimatedBar({
-  pct, color, height = 5, trackBg = "rgba(110,15,45,0.07)",
-}: { pct: number; color: string; height?: number; trackBg?: string }) {
+  pct,
+  color,
+  height = 5,
+  trackBg = "rgba(110,15,45,0.07)",
+}: {
+  pct: number;
+  color: string;
+  height?: number;
+  trackBg?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px 0px" });
   return (
@@ -71,7 +98,10 @@ function AnimatedNumber({ raw }: { raw: string }) {
   useEffect(() => {
     if (!inView) return;
     const match = raw.match(/(\d+(?:\.\d+)?)/);
-    if (!match) { setDisplayed(raw); return; }
+    if (!match) {
+      setDisplayed(raw);
+      return;
+    }
     const numStr = match[1];
     const target = Number(numStr);
     const isFloat = numStr.includes(".");
@@ -97,13 +127,31 @@ function AnimatedNumber({ raw }: { raw: string }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // CUSTOM ICONS
 // ═══════════════════════════════════════════════════════════════════════════════
-import { IcoRawMaterial, IcoYarnInventory, IcoFabricRoll, IcoQualityCheck, IcoTruck, IcoInvoice, IcoResourceMgmt, IcoWarehouse, IcoHandshake, IcoProductionPlan } from './ui-icons';
+import {
+  IcoRawMaterial,
+  IcoYarnInventory,
+  IcoFabricRoll,
+  IcoQualityCheck,
+  IcoTruck,
+  IcoInvoice,
+  IcoResourceMgmt,
+  IcoWarehouse,
+  IcoHandshake,
+  IcoProductionPlan,
+} from "./ui-icons";
 
 function Lotus({ sz = 28, col = T.crimson }: { sz?: number; col?: string }) {
   return (
     <svg width={sz} height={sz} viewBox="0 0 32 32" fill="none">
-      <path d="M16 3C16 3 10 9 10 15C10 18.31 12.69 21 16 21C19.31 21 22 18.31 22 15C22 9 16 3 16 3Z" fill={col} opacity=".9" />
-      <path d="M16 21C16 21 7 15 3 18C3 18 6 26 16 28C26 26 29 18 29 18C25 15 16 21 16 21Z" fill={col} />
+      <path
+        d="M16 3C16 3 10 9 10 15C10 18.31 12.69 21 16 21C19.31 21 22 18.31 22 15C22 9 16 3 16 3Z"
+        fill={col}
+        opacity=".9"
+      />
+      <path
+        d="M16 21C16 21 7 15 3 18C3 18 6 26 16 28C26 26 29 18 29 18C25 15 16 21 16 21Z"
+        fill={col}
+      />
     </svg>
   );
 }
@@ -112,19 +160,30 @@ function Lotus({ sz = 28, col = T.crimson }: { sz?: number; col?: string }) {
 // CHARTS — with entrance animations
 // ═══════════════════════════════════════════════════════════════════════════════
 function Donut({ pct = 72, size }: { pct?: number; size?: number | string }) {
-  const r = 62, cx = 80, cy = 80;
+  const r = 62,
+    cx = 80,
+    cy = 80;
   const circ = 2 * Math.PI * r;
   const filled = (pct / 100) * circ;
   const wrapRef = useRef<HTMLDivElement>(null);
   const inView = useInView(wrapRef, { once: true });
 
   // Custom size style
-  const svgStyle: React.CSSProperties = size 
-    ? { width: size, height: size } 
+  const svgStyle: React.CSSProperties = size
+    ? { width: size, height: size }
     : { width: "100%", height: "100%", maxWidth: 250, maxHeight: 250 };
 
   return (
-    <div ref={wrapRef} style={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%", height: "100%" }}>
+    <div
+      ref={wrapRef}
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        width: "100%",
+        height: "100%",
+      }}
+    >
       <svg viewBox="0 0 160 160" style={svgStyle}>
         <defs>
           <linearGradient id="donutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -139,13 +198,27 @@ function Donut({ pct = 72, size }: { pct?: number; size?: number | string }) {
             </feMerge>
           </filter>
           <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-            <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor={T.royalBurgundy} floodOpacity="0.15" />
+            <feDropShadow
+              dx="0"
+              dy="3"
+              stdDeviation="3"
+              floodColor={T.royalBurgundy}
+              floodOpacity="0.15"
+            />
           </filter>
         </defs>
 
         {/* Outer decorative dashed ring */}
-        <circle cx={cx} cy={cy} r={74} fill="none" stroke="rgba(110,15,45,0.08)" strokeWidth="1" strokeDasharray="3 4" />
-        
+        <circle
+          cx={cx}
+          cy={cy}
+          r={74}
+          fill="none"
+          stroke="rgba(110,15,45,0.08)"
+          strokeWidth="1"
+          strokeDasharray="3 4"
+        />
+
         {/* Inner decorative fine ring */}
         <circle cx={cx} cy={cy} r={50} fill="none" stroke="rgba(110,15,45,0.04)" strokeWidth="1" />
 
@@ -155,7 +228,9 @@ function Donut({ pct = 72, size }: { pct?: number; size?: number | string }) {
 
         {/* Active progress track */}
         <motion.circle
-          cx={cx} cy={cy} r={r}
+          cx={cx}
+          cy={cy}
+          r={r}
           fill="none"
           stroke="url(#donutGrad)"
           strokeWidth={13}
@@ -177,17 +252,41 @@ function Donut({ pct = 72, size }: { pct?: number; size?: number | string }) {
           {/* Outer glowing halo */}
           <circle cx={cx} cy={cy - r} r="8.5" fill="#C89B47" opacity="0.6" filter="url(#glow)" />
           {/* Inner solid dot */}
-          <circle cx={cx} cy={cy - r} r="4.5" fill="#FFFDF9" stroke={T.royalBurgundy} strokeWidth="2.5" />
+          <circle
+            cx={cx}
+            cy={cy - r}
+            r="4.5"
+            fill="#FFFDF9"
+            stroke={T.royalBurgundy}
+            strokeWidth="2.5"
+          />
         </motion.g>
 
         {/* Center Typography */}
-        <text x={cx} y={cy - 5} textAnchor="middle" dominantBaseline="central"
-          fontFamily={F.display} fontWeight="800" fontSize="42" fill={T.royalBurgundy}
-          style={{ fontVariantNumeric: "tabular-nums", letterSpacing: "-1px" }}>
+        <text
+          x={cx}
+          y={cy - 5}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontFamily={F.display}
+          fontWeight="800"
+          fontSize="42"
+          fill={T.royalBurgundy}
+          style={{ fontVariantNumeric: "tabular-nums", letterSpacing: "-1px" }}
+        >
           {pct}%
         </text>
-        <text x={cx} y={cy + 19} textAnchor="middle" dominantBaseline="central"
-          fontFamily={F.ui} fontWeight="700" fontSize="8.5" fill={T.taupe} letterSpacing="1.5">
+        <text
+          x={cx}
+          y={cy + 19}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontFamily={F.ui}
+          fontWeight="700"
+          fontSize="8.5"
+          fill={T.taupe}
+          letterSpacing="1.5"
+        >
           IN PROGRESS
         </text>
       </svg>
@@ -203,15 +302,31 @@ export interface BarChartPoint {
 
 function BarChart({ data }: { data?: BarChartPoint[] }) {
   const BARS = data && data.length > 0 ? data : [];
-  const W = 380, H = 148, PB = 26, PT = 10, PL = 30;
-  const iW = W - PL, iH = H - PB - PT;
-  const maxV = Math.max(100, ...BARS.map(b => Math.max(b.p, b.d)));
+  const W = 380,
+    H = 148,
+    PB = 26,
+    PT = 10,
+    PL = 30;
+  const iW = W - PL,
+    iH = H - PB - PT;
+  const maxV = Math.max(100, ...BARS.map((b) => Math.max(b.p, b.d)));
   const yTicks = [0, Math.round(maxV / 3), Math.round((maxV / 3) * 2), maxV];
   const wrapRef = useRef<HTMLDivElement>(null);
   const inView = useInView(wrapRef, { once: true, margin: "-40px 0px" });
   if (BARS.length === 0) {
     return (
-      <div ref={wrapRef} style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 148, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+      <div
+        ref={wrapRef}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: 148,
+          fontFamily: F.ui,
+          fontSize: 12,
+          color: T.taupe,
+        }}
+      >
         No production data yet.
       </div>
     );
@@ -229,40 +344,65 @@ function BarChart({ data }: { data?: BarChartPoint[] }) {
             <stop offset="100%" stopColor={T.antiqueGold} />
           </linearGradient>
         </defs>
-        {yTicks.map(v => {
+        {yTicks.map((v) => {
           const y = PT + iH * (1 - v / maxV);
           return (
             <g key={v}>
               <line x1={PL} y1={y} x2={W} y2={y} stroke="rgba(0,0,0,0.05)" strokeWidth={1} />
-              <text x={PL - 5} y={y + 3.5} textAnchor="end"
-                fontFamily={F.ui} fontSize={8.5} fontWeight="500" fill={T.taupe}
-                style={{ fontVariantNumeric: "tabular-nums" }}>{v}</text>
+              <text
+                x={PL - 5}
+                y={y + 3.5}
+                textAnchor="end"
+                fontFamily={F.ui}
+                fontSize={8.5}
+                fontWeight="500"
+                fill={T.taupe}
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                {v}
+              </text>
             </g>
           );
         })}
         {BARS.map((d, i) => {
           const gW = iW / BARS.length;
           const gx = PL + i * gW + gW / 2;
-          const bW = 14, gap = 5;
+          const bW = 14,
+            gap = 5;
           const baseY = PT + iH;
           const h1 = (d.p / maxV) * iH;
           const h2 = (d.d / maxV) * iH;
           return (
             <g key={d.w}>
               <motion.rect
-                x={gx - bW - gap / 2} width={bW} rx={5} fill="url(#barGrad1)"
+                x={gx - bW - gap / 2}
+                width={bW}
+                rx={5}
+                fill="url(#barGrad1)"
                 initial={{ y: baseY, height: 0 }}
                 animate={inView ? { y: baseY - h1, height: h1 } : undefined}
                 transition={{ duration: 0.9, delay: 0.3 + i * 0.1, ease: EASE }}
               />
               <motion.rect
-                x={gx + gap / 2} width={bW} rx={5} fill="url(#barGrad2)"
+                x={gx + gap / 2}
+                width={bW}
+                rx={5}
+                fill="url(#barGrad2)"
                 initial={{ y: baseY, height: 0 }}
                 animate={inView ? { y: baseY - h2, height: h2 } : undefined}
                 transition={{ duration: 0.9, delay: 0.4 + i * 0.1, ease: EASE }}
               />
-              <text x={gx} y={H - 6} textAnchor="middle"
-                fontFamily={F.ui} fontSize={9} fontWeight="500" fill={T.taupe}>{d.w}</text>
+              <text
+                x={gx}
+                y={H - 6}
+                textAnchor="middle"
+                fontFamily={F.ui}
+                fontSize={9}
+                fontWeight="500"
+                fill={T.taupe}
+              >
+                {d.w}
+              </text>
             </g>
           );
         })}
@@ -277,9 +417,28 @@ function BarChart({ data }: { data?: BarChartPoint[] }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // SHARED DATA
 // ═══════════════════════════════════════════════════════════════════════════════
-function Label({ col, children, sz = 10, spacing = "2.5px" }: { col?: string; children: React.ReactNode; sz?: number; spacing?: string }) {
+function Label({
+  col,
+  children,
+  sz = 10,
+  spacing = "2.5px",
+}: {
+  col?: string;
+  children: React.ReactNode;
+  sz?: number;
+  spacing?: string;
+}) {
   return (
-    <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: sz, color: col ?? T.taupe, letterSpacing: spacing, textTransform: "uppercase" }}>
+    <span
+      style={{
+        fontFamily: F.ui,
+        fontWeight: 500,
+        fontSize: sz,
+        color: col ?? T.taupe,
+        letterSpacing: spacing,
+        textTransform: "uppercase",
+      }}
+    >
       {children}
     </span>
   );
@@ -287,14 +446,31 @@ function Label({ col, children, sz = 10, spacing = "2.5px" }: { col?: string; ch
 
 function Body({ col, children, s = 14 }: { col?: string; children: React.ReactNode; s?: number }) {
   return (
-    <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: s, color: col ?? T.burgundy, lineHeight: 1.75 }}>
+    <span
+      style={{
+        fontFamily: F.ui,
+        fontWeight: 400,
+        fontSize: s,
+        color: col ?? T.burgundy,
+        lineHeight: 1.75,
+      }}
+    >
       {children}
     </span>
   );
 }
 
-function SectionHeader({ title, actionText = "View All →", small, onAction }: {
-  title: string; action?: string; actionText?: string; small?: boolean; onAction?: () => void;
+function SectionHeader({
+  title,
+  actionText = "View All →",
+  small,
+  onAction,
+}: {
+  title: string;
+  action?: string;
+  actionText?: string;
+  small?: boolean;
+  onAction?: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });
@@ -304,16 +480,37 @@ function SectionHeader({ title, actionText = "View All →", small, onAction }: 
       initial={{ opacity: 0, y: 24 }}
       animate={inView ? { opacity: 1, y: 0 } : undefined}
       transition={{ duration: 0.65, ease: EASE }}
-      style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: small ? 18 : 32 }}
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: small ? 18 : 32,
+      }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <motion.div
           initial={{ scaleY: 0 }}
           animate={inView ? { scaleY: 1 } : undefined}
           transition={{ duration: 0.5, delay: 0.15, ease: EASE }}
-          style={{ width: 3, height: small ? 18 : 22, borderRadius: 2, background: G.gold, flexShrink: 0, transformOrigin: "top" }}
+          style={{
+            width: 3,
+            height: small ? 18 : 22,
+            borderRadius: 2,
+            background: G.gold,
+            flexShrink: 0,
+            transformOrigin: "top",
+          }}
         />
-        <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: small ? 22 : 30, color: T.luxuryBrown, lineHeight: 1.1, letterSpacing: "-0.3px" }}>
+        <span
+          style={{
+            fontFamily: F.display,
+            fontWeight: 400,
+            fontSize: small ? 22 : 30,
+            color: T.luxuryBrown,
+            lineHeight: 1.1,
+            letterSpacing: "-0.3px",
+          }}
+        >
           {title}
         </span>
       </div>
@@ -321,7 +518,10 @@ function SectionHeader({ title, actionText = "View All →", small, onAction }: 
         whileHover={{ scale: 1.04, backgroundColor: "rgba(110,15,45,0.06)", x: onAction ? 0 : 3 }}
         whileTap={onAction ? { scale: 0.97 } : undefined}
         transition={{ duration: 0.18 }}
-        style={{ borderRadius: 10, border: `1px solid ${onAction ? "rgba(110,15,45,0.16)" : "transparent"}` }}
+        style={{
+          borderRadius: 10,
+          border: `1px solid ${onAction ? "rgba(110,15,45,0.16)" : "transparent"}`,
+        }}
       >
         <Button
           onClick={onAction}
@@ -341,17 +541,38 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 48, scale: 0.92, filter: "blur(8px)", boxShadow: "0px 10px 40px rgba(74,6,27,0.07)" }}
-      animate={inView ? { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", boxShadow: "0px 10px 40px rgba(74,6,27,0.07)" } : undefined}
+      initial={{
+        opacity: 0,
+        y: 48,
+        scale: 0.92,
+        filter: "blur(8px)",
+        boxShadow: "0px 10px 40px rgba(74,6,27,0.07)",
+      }}
+      animate={
+        inView
+          ? {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              filter: "blur(0px)",
+              boxShadow: "0px 10px 40px rgba(74,6,27,0.07)",
+            }
+          : undefined
+      }
       whileHover={{ y: -7, scale: 1.008, boxShadow: "0px 32px 80px rgba(74,6,27,0.16)" }}
       transition={{
-        type: "spring", stiffness: 240, damping: 22,
+        type: "spring",
+        stiffness: 240,
+        damping: 22,
         opacity: { duration: 0.5 },
         filter: { duration: 0.55 },
       }}
       style={{
-        background: T.warmIvory, borderRadius: 28, border: `1px solid ${T.borderDef}`,
-        boxShadow: "0px 10px 40px rgba(74,6,27,0.07)", ...style,
+        background: T.warmIvory,
+        borderRadius: 28,
+        border: `1px solid ${T.borderDef}`,
+        boxShadow: "0px 10px 40px rgba(74,6,27,0.07)",
+        ...style,
       }}
     >
       {children}
@@ -363,5 +584,26 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
 // DESKTOP — TOP NAV (grouped)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-
-export { FadeUp, FadeIn, AnimatedBar, AnimatedNumber, IcoRawMaterial, IcoYarnInventory, IcoFabricRoll, IcoQualityCheck, IcoTruck, IcoInvoice, IcoResourceMgmt, IcoWarehouse, IcoHandshake, IcoProductionPlan, Lotus, Donut, BarChart, Label, Body, SectionHeader, Card };
+export {
+  FadeUp,
+  FadeIn,
+  AnimatedBar,
+  AnimatedNumber,
+  IcoRawMaterial,
+  IcoYarnInventory,
+  IcoFabricRoll,
+  IcoQualityCheck,
+  IcoTruck,
+  IcoInvoice,
+  IcoResourceMgmt,
+  IcoWarehouse,
+  IcoHandshake,
+  IcoProductionPlan,
+  Lotus,
+  Donut,
+  BarChart,
+  Label,
+  Body,
+  SectionHeader,
+  Card,
+};

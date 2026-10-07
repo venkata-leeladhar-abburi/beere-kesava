@@ -14,7 +14,9 @@ export type SocketStatus = "connecting" | "connected" | "reconnecting" | "discon
  * control of connect/disconnect lifecycle; this hook only observes.
  */
 export function useSocketStatus(socket: Socket | null | undefined): SocketStatus {
-  const [status, setStatus] = useState<SocketStatus>(socket?.connected ? "connected" : "connecting");
+  const [status, setStatus] = useState<SocketStatus>(
+    socket?.connected ? "connected" : "connecting"
+  );
 
   useEffect(() => {
     if (!socket) {

@@ -36,7 +36,13 @@ export class FrameScanner {
     ctx.imageSmoothingQuality = "high";
     ctx.drawImage(video, 0, 0, w, h);
     const found = locateBarcodes(toGray(ctx.getImageData(0, 0, w, h).data, w, h), 2);
-    return found.map(c => ({ ...c, cx: c.cx / s, cy: c.cy / s, length: c.length / s, thickness: c.thickness / s }));
+    return found.map((c) => ({
+      ...c,
+      cx: c.cx / s,
+      cy: c.cy / s,
+      length: c.length / s,
+      thickness: c.thickness / s,
+    }));
   }
 
   /**
@@ -69,7 +75,11 @@ export class FrameScanner {
 
   private gray(canvas: HTMLCanvasElement) {
     const ctx = this.cropCtx!;
-    return toGray(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+    return toGray(
+      ctx.getImageData(0, 0, canvas.width, canvas.height).data,
+      canvas.width,
+      canvas.height
+    );
   }
 
   /**

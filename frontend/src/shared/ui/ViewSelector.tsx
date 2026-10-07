@@ -21,19 +21,22 @@ export function ViewSelector<T extends string = string>({
   className = "",
 }: ViewSelectorProps<T>) {
   return (
-    <div className={`inline-flex items-center p-0.5 rounded-[12px] border border-[rgba(110,15,45,0.18)] bg-white shadow-2xs ${className}`}>
+    <div
+      className={`inline-flex items-center p-0.5 rounded-[12px] border border-[rgba(110,15,45,0.18)] bg-white shadow-2xs ${className}`}
+    >
       {options.map(({ key, label, Icon }, index) => {
         const isActive = activeView === key;
         const isFirst = index === 0;
         const isLast = index === options.length - 1;
 
-        const radiusClass = isFirst && isLast
-          ? "rounded-[10px]"
-          : isFirst
-          ? "rounded-l-[10px] rounded-r-[4px]"
-          : isLast
-          ? "rounded-r-[10px] rounded-l-[4px]"
-          : "rounded-[4px]";
+        const radiusClass =
+          isFirst && isLast
+            ? "rounded-[10px]"
+            : isFirst
+              ? "rounded-l-[10px] rounded-r-[4px]"
+              : isLast
+                ? "rounded-r-[10px] rounded-l-[4px]"
+                : "rounded-[4px]";
 
         return (
           <button

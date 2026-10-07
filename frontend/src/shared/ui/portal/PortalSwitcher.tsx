@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { ArrowLeftRight, LayoutDashboard, Crown, Hammer, Scissors, Store, Calculator, type LucideIcon } from "lucide-react";
+import {
+  ArrowLeftRight,
+  LayoutDashboard,
+  Crown,
+  Hammer,
+  Scissors,
+  Store,
+  Calculator,
+  type LucideIcon,
+} from "lucide-react";
 import { useAuth, type Role } from "@/contexts/AuthContext";
 import { ApiError } from "@/shared/api/client";
 import { ROLE_ROUTES } from "@/app/roleRoutes";
@@ -34,7 +43,9 @@ export function useSwitchPortal() {
       await switchPortal(target);
       navigate(ROLE_ROUTES[target], { replace: true });
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Could not switch portal. Please try again.");
+      toast.error(
+        err instanceof ApiError ? err.message : "Could not switch portal. Please try again."
+      );
     } finally {
       setSwitching(null);
     }
@@ -46,7 +57,7 @@ export function useSwitchPortal() {
 /** The portals this person can move to right now — empty unless they have 2+. */
 function useOtherPortals() {
   const { availableRoles, role } = useAuth();
-  return availableRoles.length < 2 ? [] : availableRoles.filter(r => r !== role);
+  return availableRoles.length < 2 ? [] : availableRoles.filter((r) => r !== role);
 }
 
 /**
@@ -54,7 +65,10 @@ function useOtherPortals() {
  * one row per other assigned portal. Renders nothing for someone with a single
  * portal, so call sites can mount it unconditionally.
  */
-export function PortalSwitchMenuItems({ onBeforeSwitch, itemClassName }: {
+export function PortalSwitchMenuItems({
+  onBeforeSwitch,
+  itemClassName,
+}: {
   /** Closes the host menu/panel before the route changes under it. */
   onBeforeSwitch?: () => void;
   /** The host menu's own row styling — these rows must not look grafted on. */
@@ -72,18 +86,23 @@ export function PortalSwitchMenuItems({ onBeforeSwitch, itemClassName }: {
           <ArrowLeftRight size={12} /> Switch Portal
         </span>
       </DropdownMenuLabel>
-      {others.map(r => {
+      {others.map((r) => {
         const Icon = PORTAL_ICONS[r];
         const busy = switching === r;
         return (
           <DropdownMenuItem
             key={r}
             disabled={switching !== null}
-            onClick={() => { onBeforeSwitch?.(); void go(r); }}
+            onClick={() => {
+              onBeforeSwitch?.();
+              void go(r);
+            }}
             className={itemClassName}
           >
             <Icon size={15} /> {roleLabel(r)} Portal
-            {busy && <span style={{ marginLeft: "auto", fontSize: 11, opacity: 0.7 }}>Opening…</span>}
+            {busy && (
+              <span style={{ marginLeft: "auto", fontSize: 11, opacity: 0.7 }}>Opening…</span>
+            )}
           </DropdownMenuItem>
         );
       })}
@@ -95,7 +114,10 @@ export function PortalSwitchMenuItems({ onBeforeSwitch, itemClassName }: {
  * The same rows for the hand-rolled dropdowns that aren't built on Radix
  * (the worker mobile header, the admin mobile drawer).
  */
-export function PortalSwitchButtonRows({ onBeforeSwitch, className }: {
+export function PortalSwitchButtonRows({
+  onBeforeSwitch,
+  className,
+}: {
   onBeforeSwitch?: () => void;
   className?: string;
 }) {
@@ -106,10 +128,22 @@ export function PortalSwitchButtonRows({ onBeforeSwitch, className }: {
   return (
     <>
       <div style={{ height: 1, background: "rgba(110,15,45,0.08)", margin: "4px 0" }} />
-      <div style={{ padding: "6px 16px 2px", fontSize: 11, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", opacity: 0.6, display: "flex", alignItems: "center", gap: 6 }}>
+      <div
+        style={{
+          padding: "6px 16px 2px",
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: "0.04em",
+          textTransform: "uppercase",
+          opacity: 0.6,
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+        }}
+      >
         <ArrowLeftRight size={11} /> Switch Portal
       </div>
-      {others.map(r => {
+      {others.map((r) => {
         const Icon = PORTAL_ICONS[r];
         return (
           <Button
@@ -117,11 +151,19 @@ export function PortalSwitchButtonRows({ onBeforeSwitch, className }: {
             variant="tertiary"
             fullWidth
             disabled={switching !== null}
-            onClick={() => { onBeforeSwitch?.(); void go(r); }}
-            className={className ?? "!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"}
+            onClick={() => {
+              onBeforeSwitch?.();
+              void go(r);
+            }}
+            className={
+              className ??
+              "!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]"
+            }
           >
             <Icon size={14} /> {roleLabel(r)} Portal
-            {switching === r && <span style={{ marginLeft: "auto", fontSize: 11, opacity: 0.7 }}>Opening…</span>}
+            {switching === r && (
+              <span style={{ marginLeft: "auto", fontSize: 11, opacity: 0.7 }}>Opening…</span>
+            )}
           </Button>
         );
       })}

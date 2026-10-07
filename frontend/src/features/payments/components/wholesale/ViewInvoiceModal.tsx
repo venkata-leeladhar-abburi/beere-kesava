@@ -6,21 +6,34 @@ import type { BulkOrder } from "@/features/production";
 import { Invoice } from "../../types";
 import { IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
-import { DocumentViewer, InvoiceDocument, DEFAULT_LETTERHEAD_FIRM, type InvoiceLineItem } from "../../../../shared/ui/document";
+import {
+  DocumentViewer,
+  InvoiceDocument,
+  DEFAULT_LETTERHEAD_FIRM,
+  type InvoiceLineItem,
+} from "../../../../shared/ui/document";
 import { toPaise, hsnRate, DEFAULT_SAREE_HSN } from "../../../../lib/gst";
 
 // ── View Invoice Modal ────────────────────────────────────────────────────────
 // Renders the real InvoiceDocument (design-system/07-DOCUMENTS.md Part H.1)
 // inside the shared DocumentViewer, so Print/Download produce the exact same
 // tree — via the print-isolated #document-print-root, not the modal chrome.
-export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice; bulkOrderData?: BulkOrder; onClose: () => void }) {
+export function ViewInvoiceModal({
+  inv,
+  bulkOrderData,
+  onClose,
+}: {
+  inv: Invoice;
+  bulkOrderData?: BulkOrder;
+  onClose: () => void;
+}) {
   const { dispatches, isError: dispatchesError } = useFinishing();
   // Matched by the real dispatch FK, not a string comparison against
   // inv.id — dispatch.invoiceNumber holds the human invoice code
   // ("INV-Sree-2-001"), so comparing it to inv.id (the UUID) never matched
   // and this modal silently lost the dispatch's sarees, phone, GST and
   // transport details on every invoice.
-  const dispatch = dispatches.find(d => d.id === inv.dispatchId);
+  const dispatch = dispatches.find((d) => d.id === inv.dispatchId);
   // Whoever recorded the most recent payment — the one that matters most
   // once the invoice is paid or partially paid. Not shown on the printed
   // tax invoice itself (a customer-facing document has no business naming
@@ -51,45 +64,97 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
         batchLabel: bulkOrderData?.batches?.[0],
         // Last row absorbs the rounding remainder so the line items always
         // foot to exactly taxableTotal, not a few paise short/over.
-        ratePaise: i === dispatch.sareeIds.length - 1
-          ? toPaise(taxableTotal) - toPaise(pricePerSaree) * (dispatch.sareeIds.length - 1)
-          : toPaise(pricePerSaree),
+        ratePaise:
+          i === dispatch.sareeIds.length - 1
+            ? toPaise(taxableTotal) - toPaise(pricePerSaree) * (dispatch.sareeIds.length - 1)
+            : toPaise(pricePerSaree),
       }))
-    : [{
-        id: bulkOrderData ? "Bulk Order Production" : inv.code,
-        description: bulkOrderData ? `${bulkOrderData.design || "Design"} · ${bulkOrderData.sareeType || "Sarees"}` : "Invoice",
-        ratePaise: toPaise(taxableTotal),
-      }];
+    : [
+        {
+          id: bulkOrderData ? "Bulk Order Production" : inv.code,
+          description: bulkOrderData
+            ? `${bulkOrderData.design || "Design"} · ${bulkOrderData.sareeType || "Sarees"}`
+            : "Invoice",
+          ratePaise: toPaise(taxableTotal),
+        },
+      ];
 
   return (
-    <Modal open onOpenChange={o => !o && onClose()} size="xl">
-      <div style={{ display: "flex", flexDirection: "column", height: "85vh", overflow: "hidden", borderRadius: "1rem", background: "#FFFDF9" }}>
-        {/* Royal Burgundy Banner */}
-        <div style={{
-          background: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
-          padding: "20px 24px",
+    <Modal open onOpenChange={(o) => !o && onClose()} size="xl">
+      <div
+        style={{
           display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexShrink: 0,
-          gap: 16,
-        }}>
+          flexDirection: "column",
+          height: "85vh",
+          overflow: "hidden",
+          borderRadius: "1rem",
+          background: "#FFFDF9",
+        }}
+      >
+        {/* Royal Burgundy Banner */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
+            padding: "20px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+            gap: 16,
+          }}
+        >
           <div>
-            <Dialog.Title style={{ fontFamily: "var(--font-display, serif)", fontSize: 20, fontWeight: 700, color: "#FFFDF9", margin: 0 }}>
+            <Dialog.Title
+              style={{
+                fontFamily: "var(--font-display, serif)",
+                fontSize: 20,
+                fontWeight: 700,
+                color: "#FFFDF9",
+                margin: 0,
+              }}
+            >
               Tax Invoice — {inv.code}
             </Dialog.Title>
-            <Dialog.Description style={{ fontFamily: "var(--font-ui, sans-serif)", fontSize: 13, color: "rgba(255,253,249,0.85)", marginTop: 4, margin: 0 }}>
-              {inv.customer} {recordedByLabel ? `· Payment recorded by ${recordedByLabel}` : "· Official Tax Invoice"}
+            <Dialog.Description
+              style={{
+                fontFamily: "var(--font-ui, sans-serif)",
+                fontSize: 13,
+                color: "rgba(255,253,249,0.85)",
+                marginTop: 4,
+                margin: 0,
+              }}
+            >
+              {inv.customer}{" "}
+              {recordedByLabel
+                ? `· Payment recorded by ${recordedByLabel}`
+                : "· Official Tax Invoice"}
             </Dialog.Description>
           </div>
           <Dialog.Close asChild>
-            <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose}
-              className="rounded-[8px] bg-[rgba(255,255,255,0.14)] text-[#FFFDF9] hover:bg-[rgba(255,255,255,0.25)]" />
+            <IconButton
+              icon={X}
+              label="Close"
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="rounded-[8px] bg-[rgba(255,255,255,0.14)] text-[#FFFDF9] hover:bg-[rgba(255,255,255,0.25)]"
+            />
           </Dialog.Close>
         </div>
 
         {dispatchesError && (
-          <div style={{ margin: "12px 20px 0", background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 8, padding: "10px 12px", fontSize: 12, color: "#C0392B", fontWeight: 600 }}>
+          <div
+            style={{
+              margin: "12px 20px 0",
+              background: "rgba(192,57,43,0.08)",
+              border: "1px solid rgba(192,57,43,0.25)",
+              borderRadius: 8,
+              padding: "10px 12px",
+              fontSize: 12,
+              color: "#C0392B",
+              fontWeight: 600,
+            }}
+          >
             Failed to load dispatch details — some fields below may be showing fallback values.
           </div>
         )}
@@ -109,13 +174,23 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
               items={items}
               applyGst={applyGst}
               bulkOrderRef={bulkOrderData?.ref}
-              dispatch={dispatch ? {
-                lrNumber: dispatch.lrNumber,
-                transportCompany: dispatch.transportCompany,
-                vehicleNumber: dispatch.vehicleNumber,
-                dispatchDate: dispatch.dispatchDate,
-              } : undefined}
-              statusLabel={inv.status === "Paid" ? "PAID" : inv.status === "Partial" ? "PARTIALLY PAID" : undefined}
+              dispatch={
+                dispatch
+                  ? {
+                      lrNumber: dispatch.lrNumber,
+                      transportCompany: dispatch.transportCompany,
+                      vehicleNumber: dispatch.vehicleNumber,
+                      dispatchDate: dispatch.dispatchDate,
+                    }
+                  : undefined
+              }
+              statusLabel={
+                inv.status === "Paid"
+                  ? "PAID"
+                  : inv.status === "Partial"
+                    ? "PARTIALLY PAID"
+                    : undefined
+              }
             />
           </DocumentViewer>
         </div>

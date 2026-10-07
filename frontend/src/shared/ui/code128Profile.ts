@@ -31,17 +31,113 @@
 
 /** Element widths (bar, space, bar, space, bar, space) of values 0–106. 106 is the stop's first six. */
 export const CODE128_PATTERNS: readonly string[] = [
-  "212222", "222122", "222221", "121223", "121322", "131222", "122213", "122312", "132212", "221213",
-  "221312", "231212", "112232", "122132", "122231", "113222", "123122", "123221", "223211", "221132",
-  "221231", "213212", "223112", "312131", "311222", "321122", "321221", "312212", "322112", "322211",
-  "212123", "212321", "232121", "111323", "131123", "131321", "112313", "132113", "132311", "211313",
-  "231113", "231311", "112133", "112331", "132131", "113123", "113321", "133121", "313121", "211331",
-  "231131", "213113", "213311", "213131", "311123", "311321", "331121", "312113", "312311", "332111",
-  "314111", "221411", "431111", "111224", "111422", "121124", "121421", "141122", "141221", "112214",
-  "112412", "122114", "122411", "142112", "142211", "241211", "221114", "413111", "241112", "134111",
-  "111242", "121142", "121241", "114212", "124112", "124211", "411212", "421112", "421211", "212141",
-  "214121", "412121", "111143", "111341", "131141", "114113", "114311", "411113", "411311", "113141",
-  "114131", "311141", "411131", "211412", "211214", "211232", "233111",
+  "212222",
+  "222122",
+  "222221",
+  "121223",
+  "121322",
+  "131222",
+  "122213",
+  "122312",
+  "132212",
+  "221213",
+  "221312",
+  "231212",
+  "112232",
+  "122132",
+  "122231",
+  "113222",
+  "123122",
+  "123221",
+  "223211",
+  "221132",
+  "221231",
+  "213212",
+  "223112",
+  "312131",
+  "311222",
+  "321122",
+  "321221",
+  "312212",
+  "322112",
+  "322211",
+  "212123",
+  "212321",
+  "232121",
+  "111323",
+  "131123",
+  "131321",
+  "112313",
+  "132113",
+  "132311",
+  "211313",
+  "231113",
+  "231311",
+  "112133",
+  "112331",
+  "132131",
+  "113123",
+  "113321",
+  "133121",
+  "313121",
+  "211331",
+  "231131",
+  "213113",
+  "213311",
+  "213131",
+  "311123",
+  "311321",
+  "331121",
+  "312113",
+  "312311",
+  "332111",
+  "314111",
+  "221411",
+  "431111",
+  "111224",
+  "111422",
+  "121124",
+  "121421",
+  "141122",
+  "141221",
+  "112214",
+  "112412",
+  "122114",
+  "122411",
+  "142112",
+  "142211",
+  "241211",
+  "221114",
+  "413111",
+  "241112",
+  "134111",
+  "111242",
+  "121142",
+  "121241",
+  "114212",
+  "124112",
+  "124211",
+  "411212",
+  "421112",
+  "421211",
+  "212141",
+  "214121",
+  "412121",
+  "111143",
+  "111341",
+  "131141",
+  "114113",
+  "114311",
+  "411113",
+  "411311",
+  "113141",
+  "114131",
+  "311141",
+  "411131",
+  "211412",
+  "211214",
+  "211232",
+  "233111",
 ];
 
 const START_A = 103;
@@ -107,7 +203,8 @@ export function symbolsToText(values: number[]): string | null {
       if (v < 100) out += v < 10 ? `0${v}` : String(v);
       else if (v === 100) set = "B";
       else if (v === 101) set = "A";
-      else if (v === 102) continue; // FNC1
+      else if (v === 102)
+        continue; // FNC1
       else return null;
       continue;
     }
@@ -117,10 +214,22 @@ export function symbolsToText(values: number[]): string | null {
       continue;
     }
     if (v === 96 || v === 97 || v === 102) continue; // FNC3 / FNC2 / FNC1
-    if (v === 98) { shift = true; continue; }
-    if (v === 99) { set = "C"; continue; }
-    if (v === 100) { if (cur === "A") set = "B"; continue; } // FNC4 in B
-    if (v === 101) { if (cur === "B") set = "A"; continue; } // FNC4 in A
+    if (v === 98) {
+      shift = true;
+      continue;
+    }
+    if (v === 99) {
+      set = "C";
+      continue;
+    }
+    if (v === 100) {
+      if (cur === "A") set = "B";
+      continue;
+    } // FNC4 in B
+    if (v === 101) {
+      if (cur === "B") set = "A";
+      continue;
+    } // FNC4 in A
     return null;
   }
   return out;
@@ -177,7 +286,10 @@ export function findEdges(profile: ArrayLike<number>): { pos: number[]; falling:
     const last = falling.length - 1;
     if (last >= 0 && falling[last] === isFalling) {
       // Two slopes the same way in a row: keep the stronger one.
-      if (a > strength[last]) { pos[last] = i + off; strength[last] = a; }
+      if (a > strength[last]) {
+        pos[last] = i + off;
+        strength[last] = a;
+      }
       continue;
     }
     pos.push(i + off);
@@ -273,7 +385,10 @@ function gaussianBlur(p: ArrayLike<number>, sigma: number): Float32Array {
   const r = Math.max(1, Math.ceil(sigma * 3));
   const k = new Float32Array(r * 2 + 1);
   let ks = 0;
-  for (let i = -r; i <= r; i++) { k[i + r] = Math.exp(-(i * i) / (2 * sigma * sigma)); ks += k[i + r]; }
+  for (let i = -r; i <= r; i++) {
+    k[i + r] = Math.exp(-(i * i) / (2 * sigma * sigma));
+    ks += k[i + r];
+  }
   const out = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     let acc = 0;
@@ -361,7 +476,10 @@ function barRows(data: ArrayLike<number>, W: number, H: number): [number, number
     for (let x = 0; x < W; x++) m += data[y * W + x];
     m /= W;
     let v = 0;
-    for (let x = 0; x < W; x++) { const q = data[y * W + x] - m; v += q * q; }
+    for (let x = 0; x < W; x++) {
+      const q = data[y * W + x] - m;
+      v += q * q;
+    }
     mean[y] = m;
     std[y] = Math.sqrt(v / W);
   }
@@ -376,7 +494,10 @@ function barRows(data: ArrayLike<number>, W: number, H: number): [number, number
   for (let y = 2; y + 4 < H; y++) {
     let sc = 0;
     for (let k = -2; k <= 2; k++) sc += std[y + k] - vdiff[y + k];
-    if (sc > best) { best = sc; seed = y; }
+    if (sc > best) {
+      best = sc;
+      seed = y;
+    }
   }
   if (seed < 0) return null;
   const ref = averageRows(data, W, Math.max(0, seed - 2), Math.min(H, seed + 3));
@@ -405,7 +526,10 @@ function barRows(data: ArrayLike<number>, W: number, H: number): [number, number
  * only when at least two bands agree, which makes a coincidental misread
  * effectively impossible.
  */
-export function decodeStraightCrop(gray: { data: ArrayLike<number>; width: number; height: number }, scale = 1): string | null {
+export function decodeStraightCrop(
+  gray: { data: ArrayLike<number>; width: number; height: number },
+  scale = 1
+): string | null {
   const { data, width: W, height: H } = gray;
   if (W < 40 || H < 6) return null;
   const votes = new Map<string, number>();
@@ -417,9 +541,19 @@ export function decodeStraightCrop(gray: { data: ArrayLike<number>; width: numbe
   if (run) {
     const [r0, r1] = run;
     const h = r1 - r0;
-    bands.push([r0, r1], [r0 + Math.floor(h * 0.2), r1 - Math.floor(h * 0.2)], [r0, r0 + Math.ceil(h / 2)], [r0 + Math.floor(h / 2), r1]);
+    bands.push(
+      [r0, r1],
+      [r0 + Math.floor(h * 0.2), r1 - Math.floor(h * 0.2)],
+      [r0, r0 + Math.ceil(h / 2)],
+      [r0 + Math.floor(h / 2), r1]
+    );
   }
-  for (const [a, b] of [[0.3, 0.45], [0.4, 0.6], [0.55, 0.7], [0.2, 0.8]]) {
+  for (const [a, b] of [
+    [0.3, 0.45],
+    [0.4, 0.6],
+    [0.55, 0.7],
+    [0.2, 0.8],
+  ]) {
     bands.push([Math.floor(H * a), Math.ceil(H * b)]);
   }
   // Plain reads of every band first (cheap); the deblurring passes, which

@@ -253,13 +253,15 @@ export const salesApi = {
    */
   list: async (
     pageSize = 100,
-    opts?: { customerId?: string; channel?: SalesChannel; page?: number },
+    opts?: { customerId?: string; channel?: SalesChannel; page?: number }
   ): Promise<PaginatedResponse<BackendSaleRecord>> => {
     const params = new URLSearchParams({ pageSize: String(pageSize) });
     if (opts?.page) params.set("page", String(opts.page));
     if (opts?.customerId) params.set("customerId", opts.customerId);
     if (opts?.channel) params.set("channel", opts.channel);
-    const res = await apiClient.get<PaginatedResponse<RawSaleRecord>>(`/sales?${params.toString()}`);
+    const res = await apiClient.get<PaginatedResponse<RawSaleRecord>>(
+      `/sales?${params.toString()}`
+    );
     return { ...res, items: res.items.map(normalizeSale) };
   },
 
@@ -294,9 +296,7 @@ export const salesApi = {
 
   /** GET /sales/returns/stock — every return, categorised, for Inventory */
   listReturnStock: (limit?: number) =>
-    apiClient.get<ReturnStockItem[]>(
-      `/sales/returns/stock${limit ? `?limit=${limit}` : ""}`,
-    ),
+    apiClient.get<ReturnStockItem[]>(`/sales/returns/stock${limit ? `?limit=${limit}` : ""}`),
 
   /** POST /sales/returns/:ref/restock — make a held return sellable */
   sendReturnToInventory: (returnRef: string) =>
@@ -306,7 +306,9 @@ export const salesApi = {
   listReturns: async (pageSize = 100, page = 1): Promise<PaginatedResponse<BackendSaleReturn>> => {
     const params = new URLSearchParams({ pageSize: String(pageSize) });
     if (page > 1) params.set("page", String(page));
-    const res = await apiClient.get<PaginatedResponse<RawReturnRecord>>(`/sales/returns/all?${params.toString()}`);
+    const res = await apiClient.get<PaginatedResponse<RawReturnRecord>>(
+      `/sales/returns/all?${params.toString()}`
+    );
     return { ...res, items: res.items.map(normalizeReturn) };
   },
 
@@ -320,9 +322,12 @@ export const salesApi = {
     const pages = Math.min(Math.ceil(first.total / ALL_PAGE_SIZE), maxPages);
     if (pages <= 1) return first.items;
     const rest = await Promise.all(
-      Array.from({ length: pages - 1 }, (_, i) => salesApi.list(ALL_PAGE_SIZE, { page: i + 2 })),
+      Array.from({ length: pages - 1 }, (_, i) => salesApi.list(ALL_PAGE_SIZE, { page: i + 2 }))
     );
-    return dedupeBy([first, ...rest].flatMap(r => r.items), s => s.saleRef);
+    return dedupeBy(
+      [first, ...rest].flatMap((r) => r.items),
+      (s) => s.saleRef
+    );
   },
 
   /** Every return on record — same page walk as `listAll`. */
@@ -331,9 +336,12 @@ export const salesApi = {
     const pages = Math.min(Math.ceil(first.total / ALL_PAGE_SIZE), maxPages);
     if (pages <= 1) return first.items;
     const rest = await Promise.all(
-      Array.from({ length: pages - 1 }, (_, i) => salesApi.listReturns(ALL_PAGE_SIZE, i + 2)),
+      Array.from({ length: pages - 1 }, (_, i) => salesApi.listReturns(ALL_PAGE_SIZE, i + 2))
     );
-    return dedupeBy([first, ...rest].flatMap(r => r.items), r => r.returnRef);
+    return dedupeBy(
+      [first, ...rest].flatMap((r) => r.items),
+      (r) => r.returnRef
+    );
   },
 };
 
@@ -343,7 +351,7 @@ const ALL_PAGE_SIZE = 500;
  *  so the same record can arrive twice — keep the first copy. */
 function dedupeBy<T>(items: T[], key: (item: T) => string): T[] {
   const seen = new Set<string>();
-  return items.filter(item => {
+  return items.filter((item) => {
     const k = key(item);
     if (seen.has(k)) return false;
     seen.add(k);

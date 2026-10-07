@@ -10,8 +10,18 @@
 import type * as React from "react";
 
 export type ColumnType =
-  | "text" | "number" | "currency" | "percent" | "date" | "datetime"
-  | "code" | "status" | "badge" | "avatar" | "actions" | "boolean";
+  | "text"
+  | "number"
+  | "currency"
+  | "percent"
+  | "date"
+  | "datetime"
+  | "code"
+  | "status"
+  | "badge"
+  | "avatar"
+  | "actions"
+  | "boolean";
 
 export type ColumnAlign = "start" | "center" | "end";
 

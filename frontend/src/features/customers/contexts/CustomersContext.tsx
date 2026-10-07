@@ -1,7 +1,12 @@
 import React, { createContext, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { BackendCustomer, CreateCustomerPayload, customersApi, UpdateCustomerPayload } from "../../../shared/api/customers";
+import {
+  BackendCustomer,
+  CreateCustomerPayload,
+  customersApi,
+  UpdateCustomerPayload,
+} from "../../../shared/api/customers";
 import { useAuthGate } from "../../../contexts/AuthContext";
 import { removeFromList, upsertInList } from "../../../lib/cacheUpdates";
 
@@ -40,7 +45,12 @@ export function CustomersProvider({ children }: { children: React.ReactNode }) {
   // nothing but a "your role is not permitted" 403.
   const enabled = useAuthGate("shop", "accountant", "admin", "superadmin");
 
-  const { data: customers = [], isLoading, error, refetch } = useQuery({
+  const {
+    data: customers = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => (await customersApi.list()).items,
     enabled,
@@ -94,13 +104,26 @@ export function CustomersProvider({ children }: { children: React.ReactNode }) {
   const addCustomer = (payload: CreateCustomerPayload) => addCustomerMutation.mutateAsync(payload);
   const updateCustomer = (id: string, payload: UpdateCustomerPayload) =>
     updateCustomerMutation.mutate({ id, payload });
-  const deleteCustomer = (id: string) => deleteCustomerMutation.mutateAsync(id).then(() => undefined);
+  const deleteCustomer = (id: string) =>
+    deleteCustomerMutation.mutateAsync(id).then(() => undefined);
 
-  const wholesaleCustomers = customers.filter(c => c.type === "WHOLESALE");
-  const retailCustomers = customers.filter(c => c.type === "RETAIL");
+  const wholesaleCustomers = customers.filter((c) => c.type === "WHOLESALE");
+  const retailCustomers = customers.filter((c) => c.type === "RETAIL");
 
   return (
-    <CustomersContext.Provider value={{ customers, wholesaleCustomers, retailCustomers, isLoading, error, refetch: () => void refetch(), addCustomer, updateCustomer, deleteCustomer }}>
+    <CustomersContext.Provider
+      value={{
+        customers,
+        wholesaleCustomers,
+        retailCustomers,
+        isLoading,
+        error,
+        refetch: () => void refetch(),
+        addCustomer,
+        updateCustomer,
+        deleteCustomer,
+      }}
+    >
       {children}
     </CustomersContext.Provider>
   );
@@ -113,7 +136,7 @@ const FALLBACK_CUSTOMERS: CustomersContextValue = {
   isLoading: false,
   error: null,
   refetch: () => {},
-  addCustomer: async () => ({ id: "", name: "", type: "WHOLESALE" } as Customer),
+  addCustomer: async () => ({ id: "", name: "", type: "WHOLESALE" }) as Customer,
   updateCustomer: () => {},
   deleteCustomer: async () => {},
 };

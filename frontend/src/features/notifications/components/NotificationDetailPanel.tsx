@@ -5,16 +5,16 @@ import { EntityCode } from "../../../shared/ui/domain";
 import { UnifiedNotif, PRIORITY, CATEGORIES } from "./notifTypes";
 
 const T = {
-  silkCream:     "#F7F2EA",
-  warmIvory:     "#FFFDF9",
-  luxuryBrown:   "#3B2314",
-  taupe:         "#69635E",
-  borderDef:     "rgba(110,15,45,0.10)",
+  silkCream: "#F7F2EA",
+  warmIvory: "#FFFDF9",
+  luxuryBrown: "#3B2314",
+  taupe: "#69635E",
+  borderDef: "rgba(110,15,45,0.10)",
 };
 const F = {
   display: "'Plus Jakarta Sans', sans-serif",
-  ui:      "'Inter', sans-serif",
-  mono:    "'JetBrains Mono', monospace",
+  ui: "'Inter', sans-serif",
+  mono: "'JetBrains Mono', monospace",
 };
 interface NotificationDetailPanelProps {
   selected: UnifiedNotif;
@@ -22,10 +22,14 @@ interface NotificationDetailPanelProps {
   markRead: (id: string) => void;
 }
 
-export function NotificationDetailPanel({ selected, setSelected, markRead }: NotificationDetailPanelProps) {
+export function NotificationDetailPanel({
+  selected,
+  setSelected,
+  markRead,
+}: NotificationDetailPanelProps) {
   const cfg = PRIORITY[selected.priority];
   const PriorityIcon = cfg.Icon;
-  const catCfg = CATEGORIES.find(c => c.key === selected.category) || CATEGORIES[0];
+  const catCfg = CATEGORIES.find((c) => c.key === selected.category) || CATEGORIES[0];
   const CatIcon = catCfg.Icon;
 
   return (
@@ -35,55 +39,165 @@ export function NotificationDetailPanel({ selected, setSelected, markRead }: Not
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 32, scale: 0.97 }}
       transition={{ type: "spring", stiffness: 280, damping: 28 }}
-      style={{ flex: "0 0 380px", position: "sticky", top: 148 }}>
-      <div style={{ background: T.warmIvory, borderRadius: 24, border: `1px solid ${T.borderDef}`, boxShadow: "0 16px 56px rgba(110,15,45,0.10)", overflow: "hidden" }}>
-        <div style={{ height: 4, background: `linear-gradient(90deg, ${cfg.color}, ${cfg.color}55)` }} />
+      style={{ flex: "0 0 380px", position: "sticky", top: 148 }}
+    >
+      <div
+        style={{
+          background: T.warmIvory,
+          borderRadius: 24,
+          border: `1px solid ${T.borderDef}`,
+          boxShadow: "0 16px 56px rgba(110,15,45,0.10)",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{ height: 4, background: `linear-gradient(90deg, ${cfg.color}, ${cfg.color}55)` }}
+        />
 
-        <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 999, padding: "4px 12px" }}>
+        <div
+          style={{
+            padding: "20px 24px",
+            borderBottom: `1px solid ${T.borderDef}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              fontFamily: F.ui,
+              fontSize: 12,
+              fontWeight: 600,
+              color: cfg.color,
+              background: cfg.bg,
+              border: `1px solid ${cfg.border}`,
+              borderRadius: 999,
+              padding: "4px 12px",
+            }}
+          >
             <PriorityIcon size={12} /> {cfg.label}
           </span>
-          <IconButton icon={X} label="Close" variant="secondary" size="sm" className="rounded-full" onClick={() => setSelected(null)} />
+          <IconButton
+            icon={X}
+            label="Close"
+            variant="secondary"
+            size="sm"
+            className="rounded-full"
+            onClick={() => setSelected(null)}
+          />
         </div>
 
         <div style={{ padding: "24px 24px 28px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-            <div style={{ width: 56, height: 56, borderRadius: 18, background: catCfg.color + "14", border: `1px solid ${catCfg.color}28`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 18,
+                background: catCfg.color + "14",
+                border: `1px solid ${catCfg.color}28`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
               <CatIcon size={24} color={catCfg.color} />
             </div>
             <div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: catCfg.color, textTransform: "uppercase", marginBottom: 4 }}>{catCfg.label}</div>
+              <div
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  letterSpacing: "2px",
+                  color: catCfg.color,
+                  textTransform: "uppercase",
+                  marginBottom: 4,
+                }}
+              >
+                {catCfg.label}
+              </div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{selected.time}</div>
             </div>
           </div>
 
-          <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, lineHeight: 1.35, marginBottom: 16, letterSpacing: "-0.2px" }}>
+          <div
+            style={{
+              fontFamily: F.display,
+              fontWeight: 400,
+              fontSize: 20,
+              color: T.luxuryBrown,
+              lineHeight: 1.35,
+              marginBottom: 16,
+              letterSpacing: "-0.2px",
+            }}
+          >
             {selected.title}
           </div>
 
-          <div style={{ background: T.silkCream, borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "18px 20px", marginBottom: 20 }}>
-            <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.85, margin: 0 }}>
+          <div
+            style={{
+              background: T.silkCream,
+              borderRadius: 14,
+              border: `1px solid ${T.borderDef}`,
+              padding: "18px 20px",
+              marginBottom: 20,
+            }}
+          >
+            <p
+              style={{
+                fontFamily: F.ui,
+                fontWeight: 400,
+                fontSize: 14,
+                color: T.luxuryBrown,
+                lineHeight: 1.85,
+                margin: 0,
+              }}
+            >
               {selected.body}
             </p>
           </div>
 
           {selected.details && selected.details.length > 0 && (
-            <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden", marginBottom: 20 }}>
+            <div
+              style={{
+                border: `1px solid ${T.borderDef}`,
+                borderRadius: 14,
+                overflow: "hidden",
+                marginBottom: 20,
+              }}
+            >
               {selected.details.map((d, i) => (
                 <div
                   key={d.label}
                   style={{
-                    display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
+                    gap: 12,
                     padding: "9px 14px",
                     borderTop: i === 0 ? "none" : `1px solid ${T.borderDef}`,
                     background: d.strong ? T.silkCream : T.warmIvory,
                   }}
                 >
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, flexShrink: 0 }}>{d.label}</span>
-                  <span style={{
-                    fontFamily: F.ui, fontSize: d.strong ? 15 : 13, fontWeight: d.strong ? 700 : 500,
-                    color: T.luxuryBrown, textAlign: "right", overflowWrap: "anywhere", fontVariantNumeric: "tabular-nums",
-                  }}>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, flexShrink: 0 }}>
+                    {d.label}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: d.strong ? 15 : 13,
+                      fontWeight: d.strong ? 700 : 500,
+                      color: T.luxuryBrown,
+                      textAlign: "right",
+                      overflowWrap: "anywhere",
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
                     {d.value}
                   </span>
                 </div>
@@ -93,18 +207,49 @@ export function NotificationDetailPanel({ selected, setSelected, markRead }: Not
 
           {selected.sarees && selected.sarees.length > 0 && (
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontFamily: F.ui, fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: T.taupe, marginBottom: 8 }}>
+              <div
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: 12,
+                  letterSpacing: "1.5px",
+                  textTransform: "uppercase",
+                  color: T.taupe,
+                  marginBottom: 8,
+                }}
+              >
                 Sarees ({selected.sarees.length})
               </div>
-              <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, maxHeight: 320, overflowY: "auto" }}>
+              <div
+                style={{
+                  border: `1px solid ${T.borderDef}`,
+                  borderRadius: 14,
+                  maxHeight: 320,
+                  overflowY: "auto",
+                }}
+              >
                 {selected.sarees.map((sr, i) => (
-                  <div key={sr.sareeId} style={{ padding: "9px 14px", borderTop: i === 0 ? "none" : `1px solid ${T.borderDef}` }}>
+                  <div
+                    key={sr.sareeId}
+                    style={{
+                      padding: "9px 14px",
+                      borderTop: i === 0 ? "none" : `1px solid ${T.borderDef}`,
+                    }}
+                  >
                     <EntityCode type="saree" value={sr.sareeId} size="sm" />
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
                       {[sr.sareeType, sr.source].filter(Boolean).join(" · ") || "—"}
                     </div>
                     {sr.price && (
-                      <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, marginTop: 2, fontVariantNumeric: "tabular-nums" }}>
+                      <div
+                        style={{
+                          fontFamily: F.ui,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: T.luxuryBrown,
+                          marginTop: 2,
+                          fontVariantNumeric: "tabular-nums",
+                        }}
+                      >
                         {sr.price}
                       </div>
                     )}
@@ -116,13 +261,34 @@ export function NotificationDetailPanel({ selected, setSelected, markRead }: Not
 
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, marginBottom: 22 }}>
             {[
-              { label: "Priority",  value: cfg.label,     color: cfg.color },
-              { label: "Category",  value: catCfg.label,  color: catCfg.color },
-              { label: "Received",  value: selected.time, color: T.luxuryBrown },
+              { label: "Priority", value: cfg.label, color: cfg.color },
+              { label: "Category", value: catCfg.label, color: catCfg.color },
+              { label: "Received", value: selected.time, color: T.luxuryBrown },
             ].map(({ label, value, color }) => (
-              <div key={label} style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 14px" }}>
-                <div style={{ fontFamily: F.ui, fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: T.taupe, marginBottom: 5 }}>{label}</div>
-                <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color }}>{value}</div>
+              <div
+                key={label}
+                style={{
+                  background: T.warmIvory,
+                  border: `1px solid ${T.borderDef}`,
+                  borderRadius: 12,
+                  padding: "12px 14px",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 12,
+                    letterSpacing: "1.5px",
+                    textTransform: "uppercase",
+                    color: T.taupe,
+                    marginBottom: 5,
+                  }}
+                >
+                  {label}
+                </div>
+                <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color }}>
+                  {value}
+                </div>
               </div>
             ))}
           </div>
@@ -132,7 +298,16 @@ export function NotificationDetailPanel({ selected, setSelected, markRead }: Not
               {selected.action}
             </Button>
           )}
-          <Button variant="secondary" size="md" fullWidth iconLeft={Check} onClick={() => { markRead(selected.id); setSelected(null); }}>
+          <Button
+            variant="secondary"
+            size="md"
+            fullWidth
+            iconLeft={Check}
+            onClick={() => {
+              markRead(selected.id);
+              setSelected(null);
+            }}
+          >
             Mark as read
           </Button>
         </div>

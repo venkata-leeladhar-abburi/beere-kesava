@@ -12,7 +12,12 @@ export interface SeparatorProps extends React.ComponentProps<typeof SeparatorPri
   label?: React.ReactNode;
 }
 
-export function Separator({ orientation = "horizontal", label, className, ...props }: SeparatorProps) {
+export function Separator({
+  orientation = "horizontal",
+  label,
+  className,
+  ...props
+}: SeparatorProps) {
   if (label && orientation === "horizontal") {
     return (
       <div className="flex items-center gap-3" role="separator" aria-orientation="horizontal">

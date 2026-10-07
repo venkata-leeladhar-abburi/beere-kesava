@@ -2,7 +2,11 @@ import { useState } from "react";
 import { Eye, AlertTriangle, ImageOff } from "lucide-react";
 import { T, F, DefectiveLogItem } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";
-import { DateFilterBar, type DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import {
+  DateFilterBar,
+  type DateFilterState,
+  matchesDateFilter,
+} from "../../../../shared/ui/DateFilterBar";
 import { WorkerQCDefectiveDetailModal } from "./WorkerQCDefectiveDetailModal";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
 import { DataTable, ViewToggle, type ColumnDef } from "../../../../shared/ui/data";
@@ -26,7 +30,7 @@ export function WorkerQCSemiDefectiveSection({
   isTablet,
 }: WorkerQCSemiDefectiveSectionProps) {
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
-  const filteredSemiLog = semiLog.filter(d => matchesDateFilter(d.isoDate || d.date, semiFilter));
+  const filteredSemiLog = semiLog.filter((d) => matchesDateFilter(d.isoDate || d.date, semiFilter));
   const [viewing, setViewing] = useState<DefectiveLogItem | null>(null);
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
   const ITEMS_PER_PAGE = isDesktop ? 20 : isTablet ? 10 : 5;
@@ -36,7 +40,7 @@ export function WorkerQCSemiDefectiveSection({
     {
       id: "photo",
       header: "Photo",
-      accessor: d => d.photoUrl ?? "",
+      accessor: (d) => d.photoUrl ?? "",
       priority: 3,
       cell: (_v, d) =>
         d.photoUrl ? (
@@ -61,35 +65,45 @@ export function WorkerQCSemiDefectiveSection({
     {
       id: "sareeId",
       header: "Saree ID",
-      accessor: d => d.id,
+      accessor: (d) => d.id,
       priority: 1,
       cell: (_v, d) => <EntityCode type="saree" value={d.id} size="sm" />,
     },
     {
       id: "weaver",
       header: "Weaver",
-      accessor: d => d.weaver,
+      accessor: (d) => d.weaver,
       priority: 2,
-      cell: (_v, d) => <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: T.brown }}>{d.weaver}</span>,
+      cell: (_v, d) => (
+        <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: T.brown }}>
+          {d.weaver}
+        </span>
+      ),
     },
     {
       id: "sareeType",
       header: "Saree Type",
-      accessor: d => d.sareeType ?? "—",
+      accessor: (d) => d.sareeType ?? "—",
       priority: 2,
-      cell: (_v, d) => <span style={{ fontFamily: F.u, fontSize: 13, color: T.brown }}>{d.sareeType ?? "—"}</span>,
+      cell: (_v, d) => (
+        <span style={{ fontFamily: F.u, fontSize: 13, color: T.brown }}>{d.sareeType ?? "—"}</span>
+      ),
     },
     {
       id: "date",
       header: "Inspection Date",
-      accessor: d => d.date,
+      accessor: (d) => d.date,
       priority: 3,
-      cell: (_v, d) => <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>{d.date}</span>,
+      cell: (_v, d) => (
+        <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>
+          {d.date}
+        </span>
+      ),
     },
     {
       id: "defects",
       header: "Rework Note / Defects",
-      accessor: d => d.defects?.join(", ") || d.notes || "—",
+      accessor: (d) => d.defects?.join(", ") || d.notes || "—",
       priority: 2,
       cell: (_v, d) => (
         <span style={{ fontFamily: F.u, fontSize: 12, color: "#8B6018", fontWeight: 500 }}>
@@ -100,23 +114,31 @@ export function WorkerQCSemiDefectiveSection({
     {
       id: "deduction",
       header: "Deduction",
-      accessor: d => d.deduction ?? "—",
+      accessor: (d) => d.deduction ?? "—",
       priority: 3,
-      cell: (_v, d) => <span style={{ fontFamily: F.m, fontSize: 12, color: T.muted }}>{d.deduction || "—"}</span>,
+      cell: (_v, d) => (
+        <span style={{ fontFamily: F.m, fontSize: 12, color: T.muted }}>{d.deduction || "—"}</span>
+      ),
     },
     {
       id: "batch",
       header: "Batch",
-      accessor: d => d.batchId ?? "—",
+      accessor: (d) => d.batchId ?? "—",
       priority: 3,
-      cell: (_v, d) => <span style={{ fontFamily: F.m, fontSize: 12, color: T.muted }}>{d.batchId || "—"}</span>,
+      cell: (_v, d) => (
+        <span style={{ fontFamily: F.m, fontSize: 12, color: T.muted }}>{d.batchId || "—"}</span>
+      ),
     },
     {
       id: "inspectedBy",
       header: "Defected By",
-      accessor: d => d.inspectedBy ?? "—",
+      accessor: (d) => d.inspectedBy ?? "—",
       priority: 3,
-      cell: (_v, d) => <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted }}>{d.inspectedBy ?? "—"}</span>,
+      cell: (_v, d) => (
+        <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted }}>
+          {d.inspectedBy ?? "—"}
+        </span>
+      ),
     },
     {
       id: "status",
@@ -124,7 +146,22 @@ export function WorkerQCSemiDefectiveSection({
       accessor: () => "Semi Defective",
       type: "status",
       cell: () => (
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.32)", borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            fontFamily: F.u,
+            fontSize: 12,
+            fontWeight: 700,
+            color: "#8B6018",
+            background: "rgba(200,155,71,0.14)",
+            border: "1px solid rgba(200,155,71,0.32)",
+            borderRadius: 999,
+            padding: "3px 10px",
+            whiteSpace: "nowrap",
+          }}
+        >
           <AlertTriangle size={12} /> Semi Defective
         </span>
       ),
@@ -154,7 +191,18 @@ export function WorkerQCSemiDefectiveSection({
         title="Semi Defective Sarees"
         subtitle="Semi-approved — sent back to the weaver for rework."
         actions={
-          <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
+          <span
+            style={{
+              fontFamily: F.u,
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#FFFDF9",
+              background: "rgba(255,255,255,0.14)",
+              border: "1px solid rgba(255,255,255,0.20)",
+              padding: "5px 12px",
+              borderRadius: 999,
+            }}
+          >
             {filteredSemiLog.length} of {semiLog.length}
           </span>
         }
@@ -162,21 +210,32 @@ export function WorkerQCSemiDefectiveSection({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
           <ViewToggle value={viewMode} onChange={setViewMode} />
 
-          <DateFilterBar filter={semiFilter} onChange={(f) => { setSemiFilter(f); pag.setPage(1); }} />
+          <DateFilterBar
+            filter={semiFilter}
+            onChange={(f) => {
+              setSemiFilter(f);
+              pag.setPage(1);
+            }}
+          />
         </div>
 
         {filteredSemiLog.length === 0 ? (
           <div style={{ padding: "32px 0", textAlign: "center" }}>
-            <div style={{ fontFamily: F.u, fontSize: 14, color: T.muted }}>No semi defective sarees in this range.</div>
+            <div style={{ fontFamily: F.u, fontSize: 14, color: T.muted }}>
+              No semi defective sarees in this range.
+            </div>
           </div>
         ) : (
           <>
             {viewMode === "table" ? (
-              <div className="w-full overflow-x-auto" style={{ border: `1.5px solid ${T.bdr}`, borderRadius: 12, overflow: "hidden" }}>
+              <div
+                className="w-full overflow-x-auto"
+                style={{ border: `1.5px solid ${T.bdr}`, borderRadius: 12, overflow: "hidden" }}
+              >
                 <DataTable
                   columns={columns}
                   data={pag.pageItems}
-                  getRowId={d => d.recordId || d.id}
+                  getRowId={(d) => d.recordId || d.id}
                   view="table"
                   pagination={false}
                 />
@@ -185,7 +244,7 @@ export function WorkerQCSemiDefectiveSection({
               <DataTable
                 columns={columns}
                 data={pag.pageItems}
-                getRowId={d => d.recordId || d.id}
+                getRowId={(d) => d.recordId || d.id}
                 view="cards"
                 pagination={false}
               />

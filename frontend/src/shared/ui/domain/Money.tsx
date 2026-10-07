@@ -34,14 +34,26 @@ export interface MoneyProps {
   className?: string;
 }
 
-export function Money({ value, compact, decimals, sign, colorBySign, gate, className }: MoneyProps) {
+export function Money({
+  value,
+  compact,
+  decimals,
+  sign,
+  colorBySign,
+  gate,
+  className,
+}: MoneyProps) {
   // Always resolved and enforced, even when `gate` is omitted — every <Money>
   // defaults to the "sell" scope rather than silently skipping the check.
   const allowed = useDataAccess(gate ?? "sell");
 
   if (!allowed) {
     return (
-      <span className={cn("text-[var(--text-tertiary)]", className)} style={tabular} aria-label="Hidden">
+      <span
+        className={cn("text-[var(--text-tertiary)]", className)}
+        style={tabular}
+        aria-label="Hidden"
+      >
         &bull;&bull;&bull;&bull;
       </span>
     );
@@ -65,7 +77,11 @@ export function Money({ value, compact, decimals, sign, colorBySign, gate, class
 
   const display = formatMoney(value, { compact, decimals, sign });
   const exact = compact ? formatMoney(value, { decimals: 2 }) : undefined;
-  const signColor = colorBySign ? (value > 0 ? "text-[var(--text-success)]" : "text-[var(--text-danger)]") : "text-[var(--text-primary)]";
+  const signColor = colorBySign
+    ? value > 0
+      ? "text-[var(--text-success)]"
+      : "text-[var(--text-danger)]"
+    : "text-[var(--text-primary)]";
 
   return (
     <span className={cn(signColor, className)} style={tabular} title={exact}>

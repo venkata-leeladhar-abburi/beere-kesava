@@ -27,13 +27,15 @@ function crc32(bytes: Uint8Array): number {
 
 /** Escapes text for XML content, and strips the control chars XML forbids. */
 function esc(value: string): string {
-  return value
-    // eslint-disable-next-line no-control-regex
-    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+  return (
+    value
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+  );
 }
 
 /** 0 -> A, 25 -> Z, 26 -> AA. */
@@ -49,7 +51,10 @@ export function columnName(index: number): string {
 
 /** Excel caps sheet names at 31 chars and forbids : \ / ? * [ ]. */
 export function safeSheetName(name: string): string {
-  const cleaned = name.replace(/[:\\/?*[\]]/g, " ").replace(/\s+/g, " ").trim();
+  const cleaned = name
+    .replace(/[:\\/?*[\]]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   return (cleaned || "Report").slice(0, 31);
 }
 
@@ -65,7 +70,7 @@ function cellXml(ref: string, value: CellValue, styleIndex: number): string {
 }
 
 function sheetXml(headers: string[], rows: CellValue[][]): string {
-  const colCount = Math.max(headers.length, ...rows.map(r => r.length), 1);
+  const colCount = Math.max(headers.length, ...rows.map((r) => r.length), 1);
 
   // Column widths sized to the widest value seen, within sane bounds.
   const widths: number[] = [];
@@ -82,7 +87,7 @@ function sheetXml(headers: string[], rows: CellValue[][]): string {
     .join("")}</cols>`;
 
   const headerRow = `<row r="1">${Array.from({ length: colCount }, (_, c) =>
-    cellXml(`${columnName(c)}1`, headers[c] ?? "", 1),
+    cellXml(`${columnName(c)}1`, headers[c] ?? "", 1)
   ).join("")}</row>`;
 
   const bodyRows = rows

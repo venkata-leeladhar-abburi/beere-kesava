@@ -45,17 +45,17 @@ export const analyticsApi = {
   getCashFlow: () => apiClient.get<{ items: CashFlowPoint[] }>("/analytics/cash-flow"),
   getCashFlowMonthly: (months?: number) =>
     apiClient.get<{ items: CashFlowMonthlyPoint[] }>(
-      `/analytics/cash-flow-monthly${months ? `?months=${months}` : ""}`,
+      `/analytics/cash-flow-monthly${months ? `?months=${months}` : ""}`
     ),
   getProductionTrends: () => apiClient.get<ProductionTrends>("/analytics/production-trends"),
   getProductionTrendMonthly: (months?: number) =>
     apiClient.get<{ items: ProductionTrendMonthlyPoint[] }>(
-      `/analytics/production-trend-monthly${months ? `?months=${months}` : ""}`,
+      `/analytics/production-trend-monthly${months ? `?months=${months}` : ""}`
     ),
   getRevenueSplit: () => apiClient.get<RevenueSplit>("/analytics/revenue-split"),
   getTopWeavers: () => apiClient.get<{ items: TopWeaverStat[] }>("/analytics/top-weavers"),
   getCustomersNewVsReturningMonthly: (months?: number) =>
     apiClient.get<{ items: CustomersNewVsReturningMonthlyPoint[] }>(
-      `/analytics/customers-new-vs-returning-monthly${months ? `?months=${months}` : ""}`,
+      `/analytics/customers-new-vs-returning-monthly${months ? `?months=${months}` : ""}`
     ),
 };

@@ -2,8 +2,14 @@ import { ExternalLink, Lock } from "lucide-react";
 import { CardSection, F, T, Toggle } from "./primitives";
 
 export type ScanFields = {
-  photo: boolean; code: boolean; weaver: boolean; fabric: boolean;
-  colour: boolean; jari: boolean; dispatchDate: boolean; productionStatus: boolean;
+  photo: boolean;
+  code: boolean;
+  weaver: boolean;
+  fabric: boolean;
+  colour: boolean;
+  jari: boolean;
+  dispatchDate: boolean;
+  productionStatus: boolean;
 };
 
 const scanFieldRows: { key: keyof ScanFields; label: string; note?: string }[] = [
@@ -17,14 +23,14 @@ const scanFieldRows: { key: keyof ScanFields; label: string; note?: string }[] =
   { key: "productionStatus", label: "Production Status" },
 ];
 
-const lockedFields = [
-  "Cost Price",
-  "Supplier Details",
-  "Profit Margin",
-];
+const lockedFields = ["Cost Price", "Supplier Details", "Profit Margin"];
 
-export function ScanPageSettingsCard({ scanFields, toggleScanField }: {
-  scanFields: ScanFields; toggleScanField: (key: keyof ScanFields) => void;
+export function ScanPageSettingsCard({
+  scanFields,
+  toggleScanField,
+}: {
+  scanFields: ScanFields;
+  toggleScanField: (key: keyof ScanFields) => void;
 }) {
   return (
     <CardSection title="What Customers See When They Scan">
@@ -36,10 +42,7 @@ export function ScanPageSettingsCard({ scanFields, toggleScanField }: {
               justifyContent: "space-between",
               alignItems: "center",
               padding: "10px 0",
-              borderBottom:
-                idx < scanFieldRows.length - 1
-                  ? `1px solid ${T.borderDef}`
-                  : "none",
+              borderBottom: idx < scanFieldRows.length - 1 ? `1px solid ${T.borderDef}` : "none",
             }}
           >
             <div>
@@ -66,10 +69,7 @@ export function ScanPageSettingsCard({ scanFields, toggleScanField }: {
                 </div>
               )}
             </div>
-            <Toggle
-              value={scanFields[row.key]}
-              onChange={() => toggleScanField(row.key)}
-            />
+            <Toggle value={scanFields[row.key]} onChange={() => toggleScanField(row.key)} />
           </div>
         </div>
       ))}

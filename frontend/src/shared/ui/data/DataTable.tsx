@@ -92,25 +92,42 @@ function nextDirection(current: SortDirection | undefined): SortDirection {
 }
 
 export function DataTable<T>({
-  columns, data, getRowId, caption, density = "default",
-  loading, error, onRetry,
-  isFiltered, onClearFilters, emptyTitle = "Nothing here yet", emptyDescription,
-  sort, onSortChange,
-  onRowClick, rowClassName,
-  selectedIds, onSelectionChange,
+  columns,
+  data,
+  getRowId,
+  caption,
+  density = "default",
+  loading,
+  error,
+  onRetry,
+  isFiltered,
+  onClearFilters,
+  emptyTitle = "Nothing here yet",
+  emptyDescription,
+  sort,
+  onSortChange,
+  onRowClick,
+  rowClassName,
+  selectedIds,
+  onSelectionChange,
   responsive,
   view = "auto",
-  expandedIds, renderExpandedRow,
-  pageSize = 10, pagination = false, itemLabel = "items",
+  expandedIds,
+  renderExpandedRow,
+  pageSize = 10,
+  pagination = false,
+  itemLabel = "items",
   className,
 }: DataTableProps<T>) {
-  const [internalSort, setInternalSort] = useState<{ columnId: string; direction: SortDirection } | undefined>(sort);
+  const [internalSort, setInternalSort] = useState<
+    { columnId: string; direction: SortDirection } | undefined
+  >(sort);
   const activeSort = sort ?? internalSort;
   const selectable = !!onSelectionChange;
 
   const sortedData = useMemo(() => {
     if (!activeSort || activeSort.direction === "none") return data;
-    const col = columns.find(c => c.id === activeSort.columnId);
+    const col = columns.find((c) => c.id === activeSort.columnId);
     if (!col) return data;
     const cmp = col.sortFn ?? defaultSort(col);
     return [...data].sort((a, b) => (activeSort.direction === "desc" ? -cmp(a, b) : cmp(a, b)));
@@ -122,7 +139,9 @@ export function DataTable<T>({
 
   function handleSortClick(col: ColumnDef<T>) {
     if (!col.sortable) return;
-    const direction = nextDirection(activeSort?.columnId === col.id ? activeSort.direction : undefined);
+    const direction = nextDirection(
+      activeSort?.columnId === col.id ? activeSort.direction : undefined
+    );
     const next = { columnId: col.id, direction };
     if (onSortChange) {
       onSortChange(next);
@@ -133,7 +152,9 @@ export function DataTable<T>({
       // the misconfiguration instead of failing silently (same convention
       // React uses for a controlled <input> with no onChange).
       if (process.env.NODE_ENV !== "production") {
-        console.warn(`DataTable: column "${col.id}" is sortable and \`sort\` is controlled, but no \`onSortChange\` was passed — sort clicks will have no effect. Pass \`onSortChange\` or omit \`sort\` to use uncontrolled sorting.`);
+        console.warn(
+          `DataTable: column "${col.id}" is sortable and \`sort\` is controlled, but no \`onSortChange\` was passed — sort clicks will have no effect. Pass \`onSortChange\` or omit \`sort\` to use uncontrolled sorting.`
+        );
       }
     } else {
       setInternalSort(next);
@@ -141,7 +162,7 @@ export function DataTable<T>({
   }
 
   useEffect(() => {
-    if (process.env.NODE_ENV === "production" || !columns.some(c => c.mergeKey)) return;
+    if (process.env.NODE_ENV === "production" || !columns.some((c) => c.mergeKey)) return;
     // mergeKey spans a cell across consecutive rows that share a key, which
     // only makes sense when those rows are already adjacent — a header click
     // that sorts by a *different* column scatters them and the merged span
@@ -150,18 +171,22 @@ export function DataTable<T>({
     // has a real fix without redesigning around a concrete use case (no
     // caller uses mergeKey today), so this is a loud heads-up for whoever
     // adopts it rather than a silent trap.
-    if (columns.some(c => c.sortable)) {
-      console.warn("DataTable: a column uses `mergeKey` alongside sortable columns — sorting by a non-merge column will scatter merged rows and break their rowSpan.");
+    if (columns.some((c) => c.sortable)) {
+      console.warn(
+        "DataTable: a column uses `mergeKey` alongside sortable columns — sorting by a non-merge column will scatter merged rows and break their rowSpan."
+      );
     }
     if (renderExpandedRow) {
-      console.warn("DataTable: a column uses `mergeKey` alongside `renderExpandedRow` — an expanded row inserted between two rows of the same merge run will split the merged cell.");
+      console.warn(
+        "DataTable: a column uses `mergeKey` alongside `renderExpandedRow` — an expanded row inserted between two rows of the same merge run will split the merged cell."
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columns, !!renderExpandedRow]);
 
   const mergeRuns = useMemo(() => {
     const runs = new Map<string, { span: number; skip: boolean }[]>();
-    columns.forEach(col => {
+    columns.forEach((col) => {
       if (!col.mergeKey) return;
       const info: { span: number; skip: boolean }[] = [];
       let i = 0;
@@ -169,9 +194,11 @@ export function DataTable<T>({
         const key = col.mergeKey!(sortedData[i]);
         let span = 1;
         if (key != null) {
-          while (i + span < sortedData.length && col.mergeKey!(sortedData[i + span]) === key) span++;
+          while (i + span < sortedData.length && col.mergeKey!(sortedData[i + span]) === key)
+            span++;
         }
-        for (let j = 0; j < span; j++) info.push(j === 0 ? { span, skip: false } : { span: 0, skip: true });
+        for (let j = 0; j < span; j++)
+          info.push(j === 0 ? { span, skip: false } : { span: 0, skip: true });
         i += span;
       }
       runs.set(col.id, info);
@@ -180,15 +207,15 @@ export function DataTable<T>({
   }, [columns, sortedData]);
 
   const pageIds = useMemo(() => sortedData.map(getRowId), [sortedData, getRowId]);
-  const selectedOnPage = selectable ? pageIds.filter(id => selectedIds?.has(id)).length : 0;
+  const selectedOnPage = selectable ? pageIds.filter((id) => selectedIds?.has(id)).length : 0;
   const allOnPageSelected = selectable && pageIds.length > 0 && selectedOnPage === pageIds.length;
   const someOnPageSelected = selectable && selectedOnPage > 0 && !allOnPageSelected;
 
   function toggleAllOnPage() {
     if (!onSelectionChange) return;
     const next = new Set(selectedIds ?? []);
-    if (allOnPageSelected) pageIds.forEach(id => next.delete(id));
-    else pageIds.forEach(id => next.add(id));
+    if (allOnPageSelected) pageIds.forEach((id) => next.delete(id));
+    else pageIds.forEach((id) => next.add(id));
     onSelectionChange(next);
   }
 
@@ -204,15 +231,25 @@ export function DataTable<T>({
   const colSpan = columns.length + (selectable ? 1 : 0);
 
   const stateBody = loading ? (
-    <tr><td colSpan={colSpan} style={{ padding: 0 }}><TableSkeleton columns={colSpan} /></td></tr>
+    <tr>
+      <td colSpan={colSpan} style={{ padding: 0 }}>
+        <TableSkeleton columns={colSpan} />
+      </td>
+    </tr>
   ) : error ? (
-    <tr><td colSpan={colSpan}><TableError onRetry={onRetry ?? (() => {})} /></td></tr>
+    <tr>
+      <td colSpan={colSpan}>
+        <TableError onRetry={onRetry ?? (() => {})} />
+      </td>
+    </tr>
   ) : sortedData.length === 0 ? (
     <tr>
       <td colSpan={colSpan}>
-        {isFiltered
-          ? <TableFilteredEmpty onClearFilters={onClearFilters ?? (() => {})} />
-          : <TableEmpty title={emptyTitle} description={emptyDescription} />}
+        {isFiltered ? (
+          <TableFilteredEmpty onClearFilters={onClearFilters ?? (() => {})} />
+        ) : (
+          <TableEmpty title={emptyTitle} description={emptyDescription} />
+        )}
       </td>
     </tr>
   ) : null;
@@ -231,20 +268,38 @@ export function DataTable<T>({
         <thead>
           <tr>
             {selectable && (
-              <th scope="col" style={{ width: 44, background: "var(--surface-sunken)", borderBottom: "1px solid var(--border-default)", position: "sticky", top: 0, zIndex: 10 }}>
+              <th
+                scope="col"
+                style={{
+                  width: 44,
+                  background: "var(--surface-sunken)",
+                  borderBottom: "1px solid var(--border-default)",
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 10,
+                }}
+              >
                 <span className="flex items-center justify-center" style={{ height: 44 }}>
                   <Checkbox
-                    checked={allOnPageSelected ? true : someOnPageSelected ? "indeterminate" : false}
+                    checked={
+                      allOnPageSelected ? true : someOnPageSelected ? "indeterminate" : false
+                    }
                     onCheckedChange={toggleAllOnPage}
                     aria-label="Select all rows on this page"
                   />
                 </span>
               </th>
             )}
-            {columns.map(col => {
+            {columns.map((col) => {
               const align = columnAlign(col);
               const isSorted = activeSort?.columnId === col.id && activeSort.direction !== "none";
-              const ariaSort = !col.sortable ? undefined : isSorted ? (activeSort!.direction === "asc" ? "ascending" : "descending") : "none";
+              const ariaSort = !col.sortable
+                ? undefined
+                : isSorted
+                  ? activeSort!.direction === "asc"
+                    ? "ascending"
+                    : "descending"
+                  : "none";
               return (
                 <th
                   key={col.id}
@@ -276,11 +331,18 @@ export function DataTable<T>({
                       type="button"
                       onClick={() => handleSortClick(col)}
                       className="inline-flex items-center gap-1 bg-transparent border-0 p-0 m-0 cursor-pointer"
-                      style={{ font: "inherit", color: "inherit", justifyContent: align === "end" ? "flex-end" : "flex-start", minHeight: 44 }}
+                      style={{
+                        font: "inherit",
+                        color: "inherit",
+                        justifyContent: align === "end" ? "flex-end" : "flex-start",
+                        minHeight: 44,
+                      }}
                     >
                       {col.header}
                       <Icon
-                        name={isSorted && activeSort!.direction === "desc" ? "expandDown" : "expandUp"}
+                        name={
+                          isSorted && activeSort!.direction === "desc" ? "expandDown" : "expandUp"
+                        }
                         size="xs"
                         className={isSorted ? "opacity-100" : "opacity-40"}
                       />
@@ -294,73 +356,82 @@ export function DataTable<T>({
           </tr>
         </thead>
         <tbody>
-          {stateBody ?? displayData.map((row, rowIndex) => {
+          {stateBody ??
+            displayData.map((row, rowIndex) => {
               const id = getRowId(row);
               const isExpanded = !!(renderExpandedRow && expandedIds?.has(id));
               return (
                 <Fragment key={id}>
-                <tr
-                  onClick={onRowClick ? () => onRowClick(row) : undefined}
-                  onKeyDown={
-                    onRowClick
-                      ? e => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            onRowClick(row);
+                  <tr
+                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                    onKeyDown={
+                      onRowClick
+                        ? (e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              onRowClick(row);
+                            }
                           }
-                        }
-                      : undefined
-                  }
-                  role={onRowClick ? "button" : undefined}
-                  tabIndex={onRowClick ? 0 : undefined}
-                  className={cn(
-                    "transition-colors duration-[var(--duration-fast)]",
-                    onRowClick && "cursor-pointer hover:bg-[var(--surface-raised-hover)]",
-                    rowClassName?.(row)
-                  )}
-                  style={{ height: rowHeight, borderBottom: "1px solid var(--border-subtle)" }}
-                >
-                  {selectable && (
-                    <td style={{ padding: "0 var(--pad-cell-x, 16px)", verticalAlign: "middle" }} onClick={e => e.stopPropagation()}>
-                      <span className="flex items-center justify-center">
-                        <Checkbox
-                          checked={!!selectedIds?.has(id)}
-                          onCheckedChange={() => toggleRow(id)}
-                          aria-label="Select row"
-                        />
-                      </span>
-                    </td>
-                  )}
-                  {columns.map(col => {
-                    const merge = col.mergeKey ? mergeRuns.get(col.id)?.[rowIndex] : undefined;
-                    if (merge?.skip) return null;
-                    const value = col.accessor(row);
-                    const align = columnAlign(col);
-                    return (
+                        : undefined
+                    }
+                    role={onRowClick ? "button" : undefined}
+                    tabIndex={onRowClick ? 0 : undefined}
+                    className={cn(
+                      "transition-colors duration-[var(--duration-fast)]",
+                      onRowClick && "cursor-pointer hover:bg-[var(--surface-raised-hover)]",
+                      rowClassName?.(row)
+                    )}
+                    style={{ height: rowHeight, borderBottom: "1px solid var(--border-subtle)" }}
+                  >
+                    {selectable && (
                       <td
-                        key={col.id}
-                        rowSpan={merge && merge.span > 1 ? merge.span : undefined}
-                        style={{
-                          padding: "var(--pad-cell-y, 12px) var(--pad-cell-x, 16px)",
-                          textAlign: align,
-                          color: "var(--text-primary)",
-                          verticalAlign: "middle",
-                          whiteSpace: col.type === "code" ? "nowrap" : undefined,
-                          width: col.width === "auto" ? undefined : col.width,
-                        }}
+                        style={{ padding: "0 var(--pad-cell-x, 16px)", verticalAlign: "middle" }}
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        {col.cell ? col.cell(value, row, sortedData.indexOf(row)) : defaultCell(col, value)}
+                        <span className="flex items-center justify-center">
+                          <Checkbox
+                            checked={!!selectedIds?.has(id)}
+                            onCheckedChange={() => toggleRow(id)}
+                            aria-label="Select row"
+                          />
+                        </span>
                       </td>
-                    );
-                  })}
-                </tr>
-                {isExpanded && (
-                  <tr>
-                    <td colSpan={colSpan} style={{ padding: 0, borderBottom: "1px solid var(--border-subtle)" }}>
-                      {renderExpandedRow!(row)}
-                    </td>
+                    )}
+                    {columns.map((col) => {
+                      const merge = col.mergeKey ? mergeRuns.get(col.id)?.[rowIndex] : undefined;
+                      if (merge?.skip) return null;
+                      const value = col.accessor(row);
+                      const align = columnAlign(col);
+                      return (
+                        <td
+                          key={col.id}
+                          rowSpan={merge && merge.span > 1 ? merge.span : undefined}
+                          style={{
+                            padding: "var(--pad-cell-y, 12px) var(--pad-cell-x, 16px)",
+                            textAlign: align,
+                            color: "var(--text-primary)",
+                            verticalAlign: "middle",
+                            whiteSpace: col.type === "code" ? "nowrap" : undefined,
+                            width: col.width === "auto" ? undefined : col.width,
+                          }}
+                        >
+                          {col.cell
+                            ? col.cell(value, row, sortedData.indexOf(row))
+                            : defaultCell(col, value)}
+                        </td>
+                      );
+                    })}
                   </tr>
-                )}
+                  {isExpanded && (
+                    <tr>
+                      <td
+                        colSpan={colSpan}
+                        style={{ padding: 0, borderBottom: "1px solid var(--border-subtle)" }}
+                      >
+                        {renderExpandedRow!(row)}
+                      </td>
+                    </tr>
+                  )}
                 </Fragment>
               );
             })}
@@ -413,21 +484,42 @@ export function DataTable<T>({
  *  body label/value pairs, 3 stays hidden. One source of truth: a column
  *  added to the table appears on the card automatically. */
 function CardList<T>({
-  columns, data, getRowId, loading, error, onRetry,
-  isFiltered, onClearFilters, emptyTitle, emptyDescription,
-  onRowClick, selectable, selectedIds, onToggleRow,
-  className, visibilityClass,
+  columns,
+  data,
+  getRowId,
+  loading,
+  error,
+  onRetry,
+  isFiltered,
+  onClearFilters,
+  emptyTitle,
+  emptyDescription,
+  onRowClick,
+  selectable,
+  selectedIds,
+  onToggleRow,
+  className,
+  visibilityClass,
 }: {
-  columns: ColumnDef<T>[]; data: T[]; getRowId: (row: T) => string;
-  loading?: boolean; error?: boolean; onRetry?: () => void;
-  isFiltered?: boolean; onClearFilters?: () => void; emptyTitle?: string; emptyDescription?: string;
+  columns: ColumnDef<T>[];
+  data: T[];
+  getRowId: (row: T) => string;
+  loading?: boolean;
+  error?: boolean;
+  onRetry?: () => void;
+  isFiltered?: boolean;
+  onClearFilters?: () => void;
+  emptyTitle?: string;
+  emptyDescription?: string;
   onRowClick?: (row: T) => void;
-  selectable: boolean; selectedIds?: Set<string>; onToggleRow: (id: string) => void;
+  selectable: boolean;
+  selectedIds?: Set<string>;
+  onToggleRow: (id: string) => void;
   className?: string;
   /** Breakpoint gate — "md:hidden" in auto mode, absent when the view is forced. */
   visibilityClass?: string;
 }) {
-  const titleCol = columns.find(c => c.priority === 1);
+  const titleCol = columns.find((c) => c.priority === 1);
   // A consumer-defined `id: "select"` column (a manual checkbox column, used
   // instead of DataTable's own selectedIds/onSelectionChange props when the
   // selection logic needs extra per-row rules e.g. "only dispatchable rows
@@ -435,101 +527,157 @@ function CardList<T>({
   // bodyCols below — rendering its *header* cell (the select-all checkbox)
   // as if it were a row's label. Route it into the leading-checkbox slot by
   // id instead, using its per-row cell, so it behaves like a real checkbox.
-  const selectCol = columns.find(c => c.id === "select");
-  const bodyCols = columns.filter(c => (c.priority ?? 2) === 2 && c !== titleCol && c !== selectCol);
+  const selectCol = columns.find((c) => c.id === "select");
+  const bodyCols = columns.filter(
+    (c) => (c.priority ?? 2) === 2 && c !== titleCol && c !== selectCol
+  );
 
-  if (loading) return <div className={visibilityClass} style={{ padding: "var(--pad-cell-y, 12px) 0" }}><TableSkeleton columns={1} /></div>;
-  if (error) return <div className={visibilityClass}><TableError onRetry={onRetry ?? (() => {})} /></div>;
+  if (loading)
+    return (
+      <div className={visibilityClass} style={{ padding: "var(--pad-cell-y, 12px) 0" }}>
+        <TableSkeleton columns={1} />
+      </div>
+    );
+  if (error)
+    return (
+      <div className={visibilityClass}>
+        <TableError onRetry={onRetry ?? (() => {})} />
+      </div>
+    );
   if (data.length === 0) {
     return (
       <div className={visibilityClass}>
-        {isFiltered
-          ? <TableFilteredEmpty onClearFilters={onClearFilters ?? (() => {})} />
-          : <TableEmpty title={emptyTitle} description={emptyDescription} />}
+        {isFiltered ? (
+          <TableFilteredEmpty onClearFilters={onClearFilters ?? (() => {})} />
+        ) : (
+          <TableEmpty title={emptyTitle} description={emptyDescription} />
+        )}
       </div>
     );
   }
 
   return (
     <div className={cn(visibilityClass, "flex flex-col gap-3", className)}>
-      {data.map(row => {
-          const id = getRowId(row);
-          const cardClassName = cn("rounded-[var(--radius-md,8px)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4", onRowClick && "cursor-pointer");
-          return onRowClick ? (
-            <div
-              key={id}
-              onClick={() => onRowClick(row)}
-              onKeyDown={e => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onRowClick(row);
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              className={cardClassName}
-            >
-              <div className="flex items-start justify-between gap-3">
-                {selectCol ? (
-                  // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- this span only stops click bubbling to the row; it wraps an already-interactive cell/checkbox that has its own keyboard handling.
-                  <span onClick={e => e.stopPropagation()}>
-                    {selectCol.cell ? selectCol.cell(selectCol.accessor(row), row, data.indexOf(row)) : defaultCell(selectCol, selectCol.accessor(row))}
-                  </span>
-                ) : selectable && (
+      {data.map((row) => {
+        const id = getRowId(row);
+        const cardClassName = cn(
+          "rounded-[var(--radius-md,8px)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4",
+          onRowClick && "cursor-pointer"
+        );
+        return onRowClick ? (
+          <div
+            key={id}
+            onClick={() => onRowClick(row)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onRowClick(row);
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            className={cardClassName}
+          >
+            <div className="flex items-start justify-between gap-3">
+              {selectCol ? (
+                // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- this span only stops click bubbling to the row; it wraps an already-interactive cell/checkbox that has its own keyboard handling.
+                <span onClick={(e) => e.stopPropagation()}>
+                  {selectCol.cell
+                    ? selectCol.cell(selectCol.accessor(row), row, data.indexOf(row))
+                    : defaultCell(selectCol, selectCol.accessor(row))}
+                </span>
+              ) : (
+                selectable && (
                   // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- this span only stops click bubbling to the row; the nested Checkbox is the real interactive control.
-                  <span onClick={e => e.stopPropagation()}>
-                    <Checkbox checked={!!selectedIds?.has(id)} onCheckedChange={() => onToggleRow(id)} aria-label="Select row" />
+                  <span onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={!!selectedIds?.has(id)}
+                      onCheckedChange={() => onToggleRow(id)}
+                      aria-label="Select row"
+                    />
                   </span>
-                )}
-                {titleCol && (
-                  <div className="flex-1 min-w-0" style={{ fontWeight: 600, color: "var(--text-primary)" }}>
-                    {titleCol.cell ? titleCol.cell(titleCol.accessor(row), row, data.indexOf(row)) : defaultCell(titleCol, titleCol.accessor(row))}
-                  </div>
-                )}
-              </div>
-              <div className="mt-2 flex flex-col gap-1.5">
-                {bodyCols.map(col => (
-                  <div key={col.id} className="flex items-center justify-between gap-3" style={{ fontSize: "var(--text-body-sm, 13px)" }}>
-                    <span style={{ color: "var(--text-tertiary)" }}>{col.header}</span>
-                    <span style={{ color: "var(--text-primary)" }}>{col.cell ? col.cell(col.accessor(row), row, data.indexOf(row)) : defaultCell(col, col.accessor(row))}</span>
-                  </div>
-                ))}
-              </div>
+                )
+              )}
+              {titleCol && (
+                <div
+                  className="flex-1 min-w-0"
+                  style={{ fontWeight: 600, color: "var(--text-primary)" }}
+                >
+                  {titleCol.cell
+                    ? titleCol.cell(titleCol.accessor(row), row, data.indexOf(row))
+                    : defaultCell(titleCol, titleCol.accessor(row))}
+                </div>
+              )}
             </div>
-          ) : (
-            <div
-              key={id}
-              className={cardClassName}
-            >
-              <div className="flex items-start justify-between gap-3">
-                {selectCol ? (
-                  // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- this span only stops click bubbling to the row; it wraps an already-interactive cell/checkbox that has its own keyboard handling.
-                  <span onClick={e => e.stopPropagation()}>
-                    {selectCol.cell ? selectCol.cell(selectCol.accessor(row), row, data.indexOf(row)) : defaultCell(selectCol, selectCol.accessor(row))}
+            <div className="mt-2 flex flex-col gap-1.5">
+              {bodyCols.map((col) => (
+                <div
+                  key={col.id}
+                  className="flex items-center justify-between gap-3"
+                  style={{ fontSize: "var(--text-body-sm, 13px)" }}
+                >
+                  <span style={{ color: "var(--text-tertiary)" }}>{col.header}</span>
+                  <span style={{ color: "var(--text-primary)" }}>
+                    {col.cell
+                      ? col.cell(col.accessor(row), row, data.indexOf(row))
+                      : defaultCell(col, col.accessor(row))}
                   </span>
-                ) : selectable && (
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div key={id} className={cardClassName}>
+            <div className="flex items-start justify-between gap-3">
+              {selectCol ? (
+                // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- this span only stops click bubbling to the row; it wraps an already-interactive cell/checkbox that has its own keyboard handling.
+                <span onClick={(e) => e.stopPropagation()}>
+                  {selectCol.cell
+                    ? selectCol.cell(selectCol.accessor(row), row, data.indexOf(row))
+                    : defaultCell(selectCol, selectCol.accessor(row))}
+                </span>
+              ) : (
+                selectable && (
                   // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- this span only stops click bubbling to the row; the nested Checkbox is the real interactive control.
-                  <span onClick={e => e.stopPropagation()}>
-                    <Checkbox checked={!!selectedIds?.has(id)} onCheckedChange={() => onToggleRow(id)} aria-label="Select row" />
+                  <span onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={!!selectedIds?.has(id)}
+                      onCheckedChange={() => onToggleRow(id)}
+                      aria-label="Select row"
+                    />
                   </span>
-                )}
-                {titleCol && (
-                  <div className="flex-1 min-w-0" style={{ fontWeight: 600, color: "var(--text-primary)" }}>
-                    {titleCol.cell ? titleCol.cell(titleCol.accessor(row), row, data.indexOf(row)) : defaultCell(titleCol, titleCol.accessor(row))}
-                  </div>
-                )}
-              </div>
-              <div className="mt-2 flex flex-col gap-1.5">
-                {bodyCols.map(col => (
-                  <div key={col.id} className="flex items-center justify-between gap-3" style={{ fontSize: "var(--text-body-sm, 13px)" }}>
-                    <span style={{ color: "var(--text-tertiary)" }}>{col.header}</span>
-                    <span style={{ color: "var(--text-primary)" }}>{col.cell ? col.cell(col.accessor(row), row, data.indexOf(row)) : defaultCell(col, col.accessor(row))}</span>
-                  </div>
-                ))}
-              </div>
+                )
+              )}
+              {titleCol && (
+                <div
+                  className="flex-1 min-w-0"
+                  style={{ fontWeight: 600, color: "var(--text-primary)" }}
+                >
+                  {titleCol.cell
+                    ? titleCol.cell(titleCol.accessor(row), row, data.indexOf(row))
+                    : defaultCell(titleCol, titleCol.accessor(row))}
+                </div>
+              )}
             </div>
-          );
-        })}
+            <div className="mt-2 flex flex-col gap-1.5">
+              {bodyCols.map((col) => (
+                <div
+                  key={col.id}
+                  className="flex items-center justify-between gap-3"
+                  style={{ fontSize: "var(--text-body-sm, 13px)" }}
+                >
+                  <span style={{ color: "var(--text-tertiary)" }}>{col.header}</span>
+                  <span style={{ color: "var(--text-primary)" }}>
+                    {col.cell
+                      ? col.cell(col.accessor(row), row, data.indexOf(row))
+                      : defaultCell(col, col.accessor(row))}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

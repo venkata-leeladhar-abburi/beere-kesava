@@ -20,7 +20,11 @@ import { cn } from "../utils";
 export type PopoverProps = React.ComponentProps<typeof RadixPopover.Root>;
 
 function Root({ children, modal = false, ...props }: PopoverProps) {
-  return <RadixPopover.Root modal={modal} {...props}>{children}</RadixPopover.Root>;
+  return (
+    <RadixPopover.Root modal={modal} {...props}>
+      {children}
+    </RadixPopover.Root>
+  );
 }
 
 const Trigger = RadixPopover.Trigger;
@@ -54,7 +58,7 @@ function Content({
         side={side}
         sideOffset={sideOffset}
         collisionPadding={collisionPadding}
-        onOpenAutoFocus={e => {
+        onOpenAutoFocus={(e) => {
           // Never autofocus into the popover on mobile (Part C.3 parity with Modal).
           if (window.innerWidth < 768) e.preventDefault();
         }}

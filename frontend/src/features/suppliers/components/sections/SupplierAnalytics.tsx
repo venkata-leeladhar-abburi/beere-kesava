@@ -4,7 +4,12 @@
 
 import React, { useMemo, useState } from "react";
 import { Building2, BarChart3 as ChartBar } from "lucide-react";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import {
+  DateFilterBar,
+  DateFilterState,
+  DEFAULT_DATE_FILTER,
+  matchesDateFilter,
+} from "../../../../shared/ui/DateFilterBar";
 import { MobileFilterBar } from "../../../../shared/ui/filter/MobileFilterBar";
 import { T, F } from "../theme";
 import { MONTH_ABBR, TYPE_FILLS, MODE_FILLS } from "../data";
@@ -22,13 +27,34 @@ export function SupplierAnalytics() {
   const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [search, setSearch] = useState("");
 
-  const buys = useMemo(() => purchases.filter(p => matchesDateFilter(p.date, filter) && (!search || p.supplier.toLowerCase().includes(search.toLowerCase()) || p.id.toLowerCase().includes(search.toLowerCase()))), [purchases, filter, search]);
-  const pays = useMemo(() => payments.filter(p => matchesDateFilter(p.date, filter)), [payments, filter]);
+  const buys = useMemo(
+    () =>
+      purchases.filter(
+        (p) =>
+          matchesDateFilter(p.date, filter) &&
+          (!search ||
+            p.supplier.toLowerCase().includes(search.toLowerCase()) ||
+            p.id.toLowerCase().includes(search.toLowerCase()))
+      ),
+    [purchases, filter, search]
+  );
+  const pays = useMemo(
+    () => payments.filter((p) => matchesDateFilter(p.date, filter)),
+    [payments, filter]
+  );
 
   const periodLabel = useMemo(() => {
-    if (filter.mode === "day" && filter.day) return new Date(filter.day).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    if (filter.mode === "day" && filter.day)
+      return new Date(filter.day).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
     if (filter.mode === "range") return `${filter.from || "start"} → ${filter.to || "today"}`;
-    if (filter.mode === "month" && filter.month) { const [y, m] = filter.month.split("-"); return `${MONTH_ABBR[+m - 1]} ${y}`; }
+    if (filter.mode === "month" && filter.month) {
+      const [y, m] = filter.month.split("-");
+      return `${MONTH_ABBR[+m - 1]} ${y}`;
+    }
     if (filter.mode === "year" && filter.year) return filter.year;
     return "All time";
   }, [filter]);
@@ -40,18 +66,21 @@ export function SupplierAnalytics() {
 
   // Cost vs expected retail across every saree line — the real margin picture.
   const margin = useMemo(() => {
-    let cost = 0, retail = 0;
-    buys.forEach(p => p.sarees.forEach(s => {
-      const qty = Number(s.quantity) || 1;
-      cost += s.price * qty;
-      retail += s.finalAmount;
-    }));
+    let cost = 0,
+      retail = 0;
+    buys.forEach((p) =>
+      p.sarees.forEach((s) => {
+        const qty = Number(s.quantity) || 1;
+        cost += s.price * qty;
+        retail += s.finalAmount;
+      })
+    );
     return { cost, retail, gross: retail - cost, pct: cost ? ((retail - cost) / cost) * 100 : 0 };
   }, [buys]);
 
   const monthly = useMemo(() => {
     const m = new Map<string, { spend: number; pieces: number; orders: number }>();
-    buys.forEach(p => {
+    buys.forEach((p) => {
       const d = new Date(p.date);
       if (isNaN(d.getTime())) return;
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -61,28 +90,35 @@ export function SupplierAnalytics() {
       e.orders += 1;
       m.set(key, e);
     });
-    return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+    return [...m.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([key, v]) => ({ month: `${MONTH_ABBR[+key.slice(5) - 1]} ${key.slice(2, 4)}`, ...v }));
   }, [buys]);
 
   const trendDelta = useMemo(() => {
     if (monthly.length < 2) return null;
-    const a = monthly[monthly.length - 1].spend, b = monthly[monthly.length - 2].spend;
+    const a = monthly[monthly.length - 1].spend,
+      b = monthly[monthly.length - 2].spend;
     return b ? Math.round(((a - b) / b) * 100) : null;
   }, [monthly]);
 
   // Purchase value + margin per saree type, from the individual saree lines.
   const byType = useMemo(() => {
     const m = new Map<string, { cost: number; retail: number; qty: number }>();
-    buys.forEach(p => p.sarees.forEach(s => {
-      const qty = Number(s.quantity) || 1;
-      const e = m.get(s.sareeType) || { cost: 0, retail: 0, qty: 0 };
-      e.cost += s.price * qty; e.retail += s.finalAmount; e.qty += qty;
-      m.set(s.sareeType, e);
-    }));
+    buys.forEach((p) =>
+      p.sarees.forEach((s) => {
+        const qty = Number(s.quantity) || 1;
+        const e = m.get(s.sareeType) || { cost: 0, retail: 0, qty: 0 };
+        e.cost += s.price * qty;
+        e.retail += s.finalAmount;
+        e.qty += qty;
+        m.set(s.sareeType, e);
+      })
+    );
     return [...m.entries()]
       .map(([type, v], i) => ({
-        type, ...v,
+        type,
+        ...v,
         markup: v.cost ? Math.round(((v.retail - v.cost) / v.cost) * 100) : 0,
         avgCost: v.qty ? Math.round(v.cost / v.qty) : 0,
         fill: TYPE_FILLS[i % TYPE_FILLS.length],
@@ -96,41 +132,49 @@ export function SupplierAnalytics() {
       if (!m.has(id)) m.set(id, { billed: 0, pieces: 0, orders: 0, paid: 0 });
       return m.get(id)!;
     };
-    buys.forEach(p => {
-      const id = p.supplierId ?? suppliers.find(s => s.name === p.supplier)?.id;
+    buys.forEach((p) => {
+      const id = p.supplierId ?? suppliers.find((s) => s.name === p.supplier)?.id;
       if (!id) return;
       const e = touch(id);
       e.billed += parseINR(p.billAmount);
       e.pieces += purchasePieces(p);
       e.orders += 1;
     });
-    pays.forEach(p => { if (m.has(p.supplierId)) touch(p.supplierId).paid += p.amount; });
-    return [...m.entries()].map(([id, v]) => {
-      const s = suppliers.find(x => x.id === id);
-      const name = s?.name || id;
-      return {
-        id,
-        name,
-        short: name.length > 17 ? name.slice(0, 16) + "…" : name,
-        initials: s?.initials ?? "??",
-        specialty: s?.specialty ?? "—",
-        terms: s?.terms ?? "—",
-        rating: s?.rating ?? 0,
-        ...v,
-        outstanding: Math.max(0, v.billed - v.paid),
-        avgPiece: v.pieces ? Math.round(v.billed / v.pieces) : 0,
-      };
-    }).sort((a, b) => b.billed - a.billed);
+    pays.forEach((p) => {
+      if (m.has(p.supplierId)) touch(p.supplierId).paid += p.amount;
+    });
+    return [...m.entries()]
+      .map(([id, v]) => {
+        const s = suppliers.find((x) => x.id === id);
+        const name = s?.name || id;
+        return {
+          id,
+          name,
+          short: name.length > 17 ? name.slice(0, 16) + "…" : name,
+          initials: s?.initials ?? "??",
+          specialty: s?.specialty ?? "—",
+          terms: s?.terms ?? "—",
+          rating: s?.rating ?? 0,
+          ...v,
+          outstanding: Math.max(0, v.billed - v.paid),
+          avgPiece: v.pieces ? Math.round(v.billed / v.pieces) : 0,
+        };
+      })
+      .sort((a, b) => b.billed - a.billed);
   }, [buys, pays, suppliers]);
 
   const topSuppliers = perSupplier.slice(0, 5);
-  const top5Share = billed ? Math.round((topSuppliers.reduce((a, s) => a + s.billed, 0) / billed) * 100) : 0;
-  const dueList = perSupplier.filter(s => s.outstanding > 0);
+  const top5Share = billed
+    ? Math.round((topSuppliers.reduce((a, s) => a + s.billed, 0) / billed) * 100)
+    : 0;
+  const dueList = perSupplier.filter((s) => s.outstanding > 0);
   const totalDue = dueList.reduce((a, s) => a + s.outstanding, 0);
 
   const byMode = useMemo(() => {
     const m = new Map<string, number>();
-    pays.forEach(p => m.set(p.mode || "Bank Transfer", (m.get(p.mode || "Bank Transfer") || 0) + p.amount));
+    pays.forEach((p) =>
+      m.set(p.mode || "Bank Transfer", (m.get(p.mode || "Bank Transfer") || 0) + p.amount)
+    );
 
     return [...m.entries()]
       .map(([mode, amount]) => ({ mode, amount, fill: MODE_FILLS[mode] ?? T.taupe }))
@@ -139,122 +183,269 @@ export function SupplierAnalytics() {
 
   const L = (n: number) => formatMoney(rupees(n), { compact: true });
   const card: React.CSSProperties = {
-    background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.royalBurgundy}`,
-    padding: "24px 28px", boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)",
-    position: "relative", overflow: "hidden", display: "flex", flexDirection: "column",
+    background: "#FFFFFF",
+    borderRadius: 16,
+    border: `1.5px solid ${T.royalBurgundy}`,
+    padding: "24px 28px",
+    boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)",
+    position: "relative",
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
   };
-  const cardTitle: React.CSSProperties = { fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown };
-  const cardSub: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 };
-  const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid rgba(200,155,71,0.25)`, boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)" };
+  const cardTitle: React.CSSProperties = {
+    fontFamily: F.display,
+    fontSize: 16,
+    fontWeight: 600,
+    color: T.luxuryBrown,
+  };
+  const cardSub: React.CSSProperties = {
+    fontFamily: F.ui,
+    fontSize: 12,
+    color: T.taupe,
+    marginTop: 3,
+  };
+  const tip = {
+    fontFamily: F.ui,
+    fontSize: 12,
+    borderRadius: 10,
+    border: `1px solid rgba(200,155,71,0.25)`,
+    boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)",
+  };
 
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 48 }}>
       <FadeUp>
-      <SectionCard
-        icon={ChartBar}
-        title="Supplier Analytics"
-        subtitle="Spend, top suppliers, outstanding dues, and settlement health across your raw-material suppliers."
-        actions={
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "#FFFDF9", background: "rgba(255,255,255,0.14)", padding: "6px 14px", borderRadius: 20, textTransform: "uppercase" }}>{periodLabel}</span>
-        }
-      >
-        {/* Mobile Flipkart-style Filter Bar */}
-        <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
-          <MobileFilterBar
-            search={search}
-            onSearchChange={setSearch}
-            searchPlaceholder="Search supplier analytics..."
-            filterGroups={[
-              {
-                id: "time",
-                label: "Time Period",
-                value: filter.mode,
-                defaultValue: "all",
-                options: [
-                  { value: "all", label: "All Time" },
-                  { value: "day", label: "Specific Date" },
-                  { value: "range", label: "Date Range" },
-                  { value: "month", label: "Monthly" },
-                  { value: "year", label: "Yearly" },
-                ],
-                onChange: (m: string) => {
-                  const mode = m as DateFilterState["mode"];
-                  if (mode === "day") setFilter({ mode, day: new Date().toISOString().slice(0, 10), from: "", to: "", month: "", year: "" });
-                  else if (mode === "month") setFilter({ mode, day: "", from: "", to: "", month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`, year: "" });
-                  else if (mode === "year") setFilter({ mode, day: "", from: "", to: "", month: "", year: String(new Date().getFullYear()) });
-                  else setFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+        <SectionCard
+          icon={ChartBar}
+          title="Supplier Analytics"
+          subtitle="Spend, top suppliers, outstanding dues, and settlement health across your raw-material suppliers."
+          actions={
+            <span
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "1px",
+                color: "#FFFDF9",
+                background: "rgba(255,255,255,0.14)",
+                padding: "6px 14px",
+                borderRadius: 20,
+                textTransform: "uppercase",
+              }}
+            >
+              {periodLabel}
+            </span>
+          }
+        >
+          {/* Mobile Flipkart-style Filter Bar */}
+          <div className="md:hidden mb-4 bg-white p-3.5 rounded-2xl border border-[var(--border-default)] shadow-xs">
+            <MobileFilterBar
+              search={search}
+              onSearchChange={setSearch}
+              searchPlaceholder="Search supplier analytics..."
+              filterGroups={[
+                {
+                  id: "time",
+                  label: "Time Period",
+                  value: filter.mode,
+                  defaultValue: "all",
+                  options: [
+                    { value: "all", label: "All Time" },
+                    { value: "day", label: "Specific Date" },
+                    { value: "range", label: "Date Range" },
+                    { value: "month", label: "Monthly" },
+                    { value: "year", label: "Yearly" },
+                  ],
+                  onChange: (m: string) => {
+                    const mode = m as DateFilterState["mode"];
+                    if (mode === "day")
+                      setFilter({
+                        mode,
+                        day: new Date().toISOString().slice(0, 10),
+                        from: "",
+                        to: "",
+                        month: "",
+                        year: "",
+                      });
+                    else if (mode === "month")
+                      setFilter({
+                        mode,
+                        day: "",
+                        from: "",
+                        to: "",
+                        month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`,
+                        year: "",
+                      });
+                    else if (mode === "year")
+                      setFilter({
+                        mode,
+                        day: "",
+                        from: "",
+                        to: "",
+                        month: "",
+                        year: String(new Date().getFullYear()),
+                      });
+                    else setFilter({ mode, day: "", from: "", to: "", month: "", year: "" });
+                  },
                 },
-              },
-            ]}
-            onResetAll={() => {
-              setSearch("");
-              setFilter(DEFAULT_DATE_FILTER);
-            }}
-          />
-        </div>
-
-        {/* Desktop Filter Bar */}
-        <div className="hidden md:flex items-center justify-between gap-4 mb-4 flex-wrap">
-          <DateFilterBar filter={filter} onChange={setFilter} />
-          <div style={{ display: "flex", gap: 24, marginBottom: 16 }}>
-            {[
-              { label: "PURCHASED", value: L(billed), color: T.royalBurgundy },
-              { label: "SAREES IN", value: String(pieces), color: T.luxuryBrown },
-              { label: "EXPECTED MARGIN", value: `${margin.pct.toFixed(0)}%`, color: T.greenMid },
-            ].map(k => (
-              <div key={k.label}>
-                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
-                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.color }}>{k.value}</div>
-              </div>
-            ))}
+              ]}
+              onResetAll={() => {
+                setSearch("");
+                setFilter(DEFAULT_DATE_FILTER);
+              }}
+            />
           </div>
-        </div>
 
-      {isError ? (
-        <div style={{ ...card, textAlign: "center", padding: "48px 24px" }}>
-          <Building2 size={40} color={T.crimson} style={{ marginBottom: 12 }} />
-          <div style={{ fontFamily: F.display, fontSize: 16, color: T.crimson }}>Failed to load supplier analytics.</div>
-          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Please retry or check your connection.</div>
-        </div>
-      ) : buys.length === 0 ? (
-        <div style={{ ...card, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "48px 24px" }}>
-          <Building2 size={40} color={T.taupe} style={{ marginBottom: 12 }} />
-          <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe }}>No supplier purchases recorded in this period.</div>
-          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Widen the date range to see analytics.</div>
-        </div>
-      ) : (
-        <>
-          {/* ── Row 1: purchase trend + saree type mix ── */}
-          <FadeUp delay={0.04}>
-            <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 24, marginBottom: 24 }}>
-              <PurchaseTrendCard card={card} cardTitle={cardTitle} cardSub={cardSub} tip={tip}
-                billed={billed} buysCount={buys.length} pieces={pieces} monthly={monthly} trendDelta={trendDelta} />
-              <TypeMixCard card={card} cardTitle={cardTitle} cardSub={cardSub} tip={tip} byType={byType} />
+          {/* Desktop Filter Bar */}
+          <div className="hidden md:flex items-center justify-between gap-4 mb-4 flex-wrap">
+            <DateFilterBar filter={filter} onChange={setFilter} />
+            <div style={{ display: "flex", gap: 24, marginBottom: 16 }}>
+              {[
+                { label: "PURCHASED", value: L(billed), color: T.royalBurgundy },
+                { label: "SAREES IN", value: String(pieces), color: T.luxuryBrown },
+                { label: "EXPECTED MARGIN", value: `${margin.pct.toFixed(0)}%`, color: T.greenMid },
+              ].map((k) => (
+                <div key={k.label}>
+                  <div
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      letterSpacing: "1px",
+                      color: T.taupe,
+                    }}
+                  >
+                    {k.label}
+                  </div>
+                  <div
+                    style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.color }}
+                  >
+                    {k.value}
+                  </div>
+                </div>
+              ))}
             </div>
-          </FadeUp>
+          </div>
 
-          {/* ── Row 2: top suppliers + outstanding ── */}
-          <FadeUp delay={0.08}>
-            <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 24, marginBottom: 24 }}>
-              <TopSuppliersCard card={card} cardTitle={cardTitle} cardSub={cardSub} tip={tip}
-                topSuppliers={topSuppliers} top5Share={top5Share} billed={billed} />
-              <OutstandingCard card={card} cardTitle={cardTitle} cardSub={cardSub}
-                dueList={dueList} totalDue={totalDue} perSupplierCount={perSupplier.length} />
+          {isError ? (
+            <div style={{ ...card, textAlign: "center", padding: "48px 24px" }}>
+              <Building2 size={40} color={T.crimson} style={{ marginBottom: 12 }} />
+              <div style={{ fontFamily: F.display, fontSize: 16, color: T.crimson }}>
+                Failed to load supplier analytics.
+              </div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>
+                Please retry or check your connection.
+              </div>
             </div>
-          </FadeUp>
+          ) : buys.length === 0 ? (
+            <div
+              style={{
+                ...card,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+                padding: "48px 24px",
+              }}
+            >
+              <Building2 size={40} color={T.taupe} style={{ marginBottom: 12 }} />
+              <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe }}>
+                No supplier purchases recorded in this period.
+              </div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>
+                Widen the date range to see analytics.
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* ── Row 1: purchase trend + saree type mix ── */}
+              <FadeUp delay={0.04}>
+                <div
+                  className="grid grid-cols-1 md:grid-cols-[2fr_1fr]"
+                  style={{ gap: 24, marginBottom: 24 }}
+                >
+                  <PurchaseTrendCard
+                    card={card}
+                    cardTitle={cardTitle}
+                    cardSub={cardSub}
+                    tip={tip}
+                    billed={billed}
+                    buysCount={buys.length}
+                    pieces={pieces}
+                    monthly={monthly}
+                    trendDelta={trendDelta}
+                  />
+                  <TypeMixCard
+                    card={card}
+                    cardTitle={cardTitle}
+                    cardSub={cardSub}
+                    tip={tip}
+                    byType={byType}
+                  />
+                </div>
+              </FadeUp>
 
-          {/* ── Row 3: margin, payment modes, settlement health ── */}
-          <FadeUp delay={0.12}>
-            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 24 }}>
-              <RatingCard card={card} cardTitle={cardTitle} cardSub={cardSub} tip={tip} suppliers={suppliers} />
-              <PaymentModeCard card={card} cardTitle={cardTitle} cardSub={cardSub} tip={tip} byMode={byMode} settled={settled} />
-              <SettlementHealthCard card={card} cardTitle={cardTitle} cardSub={cardSub}
-                settlementRate={settlementRate} pieces={pieces} billed={billed} buysCount={buys.length} perSuppliers={perSupplier} />
-            </div>
-          </FadeUp>
-        </>
-      )}
-      </SectionCard>
+              {/* ── Row 2: top suppliers + outstanding ── */}
+              <FadeUp delay={0.08}>
+                <div
+                  className="grid grid-cols-1 md:grid-cols-[2fr_1fr]"
+                  style={{ gap: 24, marginBottom: 24 }}
+                >
+                  <TopSuppliersCard
+                    card={card}
+                    cardTitle={cardTitle}
+                    cardSub={cardSub}
+                    tip={tip}
+                    topSuppliers={topSuppliers}
+                    top5Share={top5Share}
+                    billed={billed}
+                  />
+                  <OutstandingCard
+                    card={card}
+                    cardTitle={cardTitle}
+                    cardSub={cardSub}
+                    dueList={dueList}
+                    totalDue={totalDue}
+                    perSupplierCount={perSupplier.length}
+                  />
+                </div>
+              </FadeUp>
+
+              {/* ── Row 3: margin, payment modes, settlement health ── */}
+              <FadeUp delay={0.12}>
+                <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 24 }}>
+                  <RatingCard
+                    card={card}
+                    cardTitle={cardTitle}
+                    cardSub={cardSub}
+                    tip={tip}
+                    suppliers={suppliers}
+                  />
+                  <PaymentModeCard
+                    card={card}
+                    cardTitle={cardTitle}
+                    cardSub={cardSub}
+                    tip={tip}
+                    byMode={byMode}
+                    settled={settled}
+                  />
+                  <SettlementHealthCard
+                    card={card}
+                    cardTitle={cardTitle}
+                    cardSub={cardSub}
+                    settlementRate={settlementRate}
+                    pieces={pieces}
+                    billed={billed}
+                    buysCount={buys.length}
+                    perSuppliers={perSupplier}
+                  />
+                </div>
+              </FadeUp>
+            </>
+          )}
+        </SectionCard>
       </FadeUp>
     </div>
   );

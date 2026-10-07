@@ -32,7 +32,12 @@ function toRecord(r: BackendMaterialReturnRecord): MyMaterialReturnRecord {
     id: r.id,
     batchId: r.batchId ?? undefined,
     receivedAt: r.receivedAt,
-    status: r.status === "PENDING_SIGNATURE" ? "pending-signature" : r.status === "APPROVED" ? "approved" : "cancelled",
+    status:
+      r.status === "PENDING_SIGNATURE"
+        ? "pending-signature"
+        : r.status === "APPROVED"
+          ? "approved"
+          : "cancelled",
     signatureCaptured: r.signatureCaptured,
     signatureTimestamp: r.signatureTimestamp ?? undefined,
     signatureUrl: r.signatureUrl ?? undefined,
@@ -61,7 +66,7 @@ export function useMyMaterialReturns() {
   // weaver's own view — a still-pending return hasn't been acted on by
   // admin yet and isn't "confirmed".
   const confirmedRecords = records
-    .filter(r => r.status === "approved")
+    .filter((r) => r.status === "approved")
     .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
 
   return {

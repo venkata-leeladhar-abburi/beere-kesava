@@ -9,36 +9,40 @@
 // site migrated (design-system Phase 6 — one money formatter, Part J.4).
 
 // ── Date & Time ────────────────────────────────────────────────────────────────
-export function formatDate(date: Date | string, style: "short" | "medium" | "long" = "medium"): string {
+export function formatDate(
+  date: Date | string,
+  style: "short" | "medium" | "long" = "medium"
+): string {
   const d = typeof date === "string" ? new Date(date) : date;
-  if (style === "short")  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
-  if (style === "long")   return d.toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
+  if (style === "short") return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+  if (style === "long")
+    return d.toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
   return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 export function formatDateTime(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   return d.toLocaleString("en-IN", {
-    day:    "2-digit",
-    month:  "short",
-    year:   "numeric",
-    hour:   "2-digit",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
     minute: "2-digit",
   });
 }
 
 export function formatRelativeTime(date: Date | string): string {
-  const d   = typeof date === "string" ? new Date(date) : date;
+  const d = typeof date === "string" ? new Date(date) : date;
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
-  const diffMin  = Math.floor(diffMs / 60_000);
+  const diffMin = Math.floor(diffMs / 60_000);
   const diffHour = Math.floor(diffMs / 3_600_000);
-  const diffDay  = Math.floor(diffMs / 86_400_000);
+  const diffDay = Math.floor(diffMs / 86_400_000);
 
-  if (diffMin < 1)    return "Just now";
-  if (diffMin < 60)   return `${diffMin}m ago`;
-  if (diffHour < 24)  return `${diffHour}h ago`;
-  if (diffDay < 7)    return `${diffDay}d ago`;
+  if (diffMin < 1) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHour < 24) return `${diffHour}h ago`;
+  if (diffDay < 7) return `${diffDay}d ago`;
   return formatDate(d, "short");
 }
 

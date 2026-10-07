@@ -54,10 +54,34 @@ function SareeSelectionCard({
   const loom = s.weaverLoom ?? currentBatch.loomNumber;
   const loomText = loom != null ? `Loom ${loom}` : loomLabel;
 
-  const statusCfg = s.status === "received" ? { label: "Received", bg: "rgba(30,102,64,0.10)", col: C.green, border: "rgba(30,102,64,0.25)" }
-    : s.status === "defective" ? { label: "Defective", bg: "rgba(220,53,69,0.10)", col: C.crim, border: "rgba(220,53,69,0.25)" }
-    : s.isRework ? { label: "Rework — Receive Again", bg: "rgba(110,15,45,0.10)", col: C.burg, border: "rgba(110,15,45,0.25)" }
-    : { label: "Awaiting Receipt", bg: "rgba(200,155,71,0.14)", col: "#8D5802", border: "rgba(200,155,71,0.30)" };
+  const statusCfg =
+    s.status === "received"
+      ? {
+          label: "Received",
+          bg: "rgba(30,102,64,0.10)",
+          col: C.green,
+          border: "rgba(30,102,64,0.25)",
+        }
+      : s.status === "defective"
+        ? {
+            label: "Defective",
+            bg: "rgba(220,53,69,0.10)",
+            col: C.crim,
+            border: "rgba(220,53,69,0.25)",
+          }
+        : s.isRework
+          ? {
+              label: "Rework — Receive Again",
+              bg: "rgba(110,15,45,0.10)",
+              col: C.burg,
+              border: "rgba(110,15,45,0.25)",
+            }
+          : {
+              label: "Awaiting Receipt",
+              bg: "rgba(200,155,71,0.14)",
+              col: "#8D5802",
+              border: "rgba(200,155,71,0.30)",
+            };
 
   return (
     <div
@@ -69,8 +93,15 @@ function SareeSelectionCard({
       tabIndex={0}
       aria-pressed={isSel}
       aria-disabled={!isPending}
-      onClick={() => { if (isPending) onSelect(); }}
-      onKeyDown={e => { if (isPending && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onSelect(); } }}
+      onClick={() => {
+        if (isPending) onSelect();
+      }}
+      onKeyDown={(e) => {
+        if (isPending && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
       style={{
         background: isSel ? "linear-gradient(135deg, #FFFDF9 0%, #FDF7ED 100%)" : "#FFFFFF",
         border: `1.5px solid ${isSel ? C.burg : C.bdr}`,
@@ -83,11 +114,25 @@ function SareeSelectionCard({
       }}
     >
       {/* Header: Checkbox + Saree Code + Serial No */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+          marginBottom: 12,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {isPending ? (
-            <div style={{ color: isSel ? C.burg : "rgba(110,15,45,0.30)", transition: "color 0.2s" }}>
-              {isSel ? <CheckCircle2 size={20} className="fill-[#6E0F2D] text-white" /> : <Square size={20} />}
+            <div
+              style={{ color: isSel ? C.burg : "rgba(110,15,45,0.30)", transition: "color 0.2s" }}
+            >
+              {isSel ? (
+                <CheckCircle2 size={20} className="fill-[#6E0F2D] text-white" />
+              ) : (
+                <Square size={20} />
+              )}
             </div>
           ) : (
             <div style={{ color: s.status === "received" ? C.green : C.crim }}>
@@ -112,44 +157,119 @@ function SareeSelectionCard({
           </span>
         </div>
 
-        <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 6, padding: "2px 8px" }}>
+        <span
+          style={{
+            fontFamily: F.u,
+            fontSize: 12,
+            fontWeight: 700,
+            color: C.muted,
+            background: C.bg,
+            border: `1px solid ${C.bdr}`,
+            borderRadius: 6,
+            padding: "2px 8px",
+          }}
+        >
           #{s.no}
         </span>
       </div>
 
       {/* Grid details: Weaver + Saree Type + Status */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "10px 12px", background: C.bg, borderRadius: 12, border: `1px solid ${C.bdr}` }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 10,
+          padding: "10px 12px",
+          background: C.bg,
+          borderRadius: 12,
+          border: `1px solid ${C.bdr}`,
+        }}
+      >
         <div>
-          <div style={{ fontFamily: F.u, fontSize: 10, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>
+          <div
+            style={{
+              fontFamily: F.u,
+              fontSize: 10,
+              fontWeight: 600,
+              color: C.muted,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              marginBottom: 3,
+            }}
+          >
             Weaver / Loom
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <div style={{ width: 18, height: 18, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <span style={{ fontFamily: F.u, fontSize: 9, fontWeight: 700, color: "#FFF" }}>{entityAvatar}</span>
+            <div
+              style={{
+                width: 18,
+                height: 18,
+                borderRadius: "50%",
+                background: C.burg,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ fontFamily: F.u, fontSize: 9, fontWeight: 700, color: "#FFF" }}>
+                {entityAvatar}
+              </span>
             </div>
-            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <span
+              style={{
+                fontFamily: F.u,
+                fontSize: 12,
+                fontWeight: 600,
+                color: C.text,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
               {entityName}
             </span>
           </div>
           {entityCode && (
-            <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, marginTop: 2 }}>{entityCode}</div>
+            <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, marginTop: 2 }}>
+              {entityCode}
+            </div>
           )}
         </div>
 
         <div>
-          <div style={{ fontFamily: F.u, fontSize: 10, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>
+          <div
+            style={{
+              fontFamily: F.u,
+              fontSize: 10,
+              fontWeight: 600,
+              color: C.muted,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              marginBottom: 3,
+            }}
+          >
             Saree Type / Loom
           </div>
           <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04" }}>
-            {currentBatch.sareeTypeCode}{loomText ? ` · ${loomText}` : ""}
+            {currentBatch.sareeTypeCode}
+            {loomText ? ` · ${loomText}` : ""}
           </div>
         </div>
       </div>
 
       {/* Status Footer */}
-      <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div
+        style={{
+          marginTop: 10,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>
-          Batch: <span style={{ fontFamily: F.m, color: C.burg, fontWeight: 600 }}>{currentBatch.id}</span>
+          Batch:{" "}
+          <span style={{ fontFamily: F.m, color: C.burg, fontWeight: 600 }}>{currentBatch.id}</span>
           {currentBatch.bulkOrderLabel ? ` · Bulk Order: ${currentBatch.bulkOrderLabel}` : ""}
         </span>
         <span
@@ -186,14 +306,18 @@ export function SareeSelectionTable({
   onToggleAll,
 }: SareeSelectionTableProps) {
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
-  const sortedSarees = [...currentBatch.sarees]
-    .sort((a, b) => sareeSort === "status" ? a.status.localeCompare(b.status) : a.no - b.no);
-  const pendingSarees = currentBatch.sarees.filter(s => s.status === "pending");
-  const allPendingSelected = pendingSarees.length > 0 && pendingSarees.every(s => selectedSareeNos.has(s.no));
+  const sortedSarees = [...currentBatch.sarees].sort((a, b) =>
+    sareeSort === "status" ? a.status.localeCompare(b.status) : a.no - b.no
+  );
+  const pendingSarees = currentBatch.sarees.filter((s) => s.status === "pending");
+  const allPendingSelected =
+    pendingSarees.length > 0 && pendingSarees.every((s) => selectedSareeNos.has(s.no));
 
   const columns: ColumnDef<(typeof sortedSarees)[number]>[] = [
     {
-      id: "select", header: "", accessor: () => null,
+      id: "select",
+      header: "",
+      accessor: () => null,
       cell: (_v, s) => {
         const isSel = selectedSareeNos.has(s.no);
         return s.status === "pending" ? (
@@ -202,7 +326,10 @@ export function SareeSelectionTable({
             label={isSel ? "Deselect saree" : "Select saree"}
             variant="ghost"
             size="sm"
-            onClick={e => { e.stopPropagation(); selectSareeSlot(s.no); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              selectSareeSlot(s.no);
+            }}
             className={isSel ? "text-[#6E0F2D]" : "text-[rgba(110,15,45,0.20)]"}
           />
         ) : (
@@ -218,104 +345,327 @@ export function SareeSelectionTable({
       },
     },
     {
-      id: "no", header: "#", accessor: s => s.no,
-      cell: (_v, s) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted, fontVariantNumeric: "tabular-nums" }}>{s.no}</span>,
+      id: "no",
+      header: "#",
+      accessor: (s) => s.no,
+      cell: (_v, s) => (
+        <span
+          style={{
+            fontFamily: F.u,
+            fontSize: 13,
+            color: C.muted,
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {s.no}
+        </span>
+      ),
     },
     {
-      id: "sareeId", header: "Saree ID", accessor: s => s.no, priority: 1,
+      id: "sareeId",
+      header: "Saree ID",
+      accessor: (s) => s.no,
+      priority: 1,
       cell: (_v, s) => {
         const isSel = selectedSareeNos.has(s.no);
         const rowSareeId = s.sareeId;
         return s.status === "pending" ? (
-          <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 500, color: isSel ? "#FFF" : C.burg, background: isSel ? C.burg : "rgba(110,15,45,0.08)", borderRadius: 8, padding: "4px 9px" }}>
+          <span
+            style={{
+              fontFamily: F.m,
+              fontSize: 12,
+              fontWeight: 500,
+              color: isSel ? "#FFF" : C.burg,
+              background: isSel ? C.burg : "rgba(110,15,45,0.08)",
+              borderRadius: 8,
+              padding: "4px 9px",
+            }}
+          >
             {rowSareeId}
           </span>
         ) : (
-          <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 500, color: C.text, background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "4px 9px" }}>{rowSareeId}</span>
+          <span
+            style={{
+              fontFamily: F.m,
+              fontSize: 12,
+              fontWeight: 500,
+              color: C.text,
+              background: C.bg,
+              border: `1px solid ${C.bdr}`,
+              borderRadius: 8,
+              padding: "4px 9px",
+            }}
+          >
+            {rowSareeId}
+          </span>
         );
       },
     },
     {
-      id: "batch", header: "Batch", accessor: () => currentBatch.id, priority: 2,
+      id: "batch",
+      header: "Batch",
+      accessor: () => currentBatch.id,
+      priority: 2,
       cell: () => (
-        <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.wine, background: "rgba(74,6,27,0.06)", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "4px 9px", whiteSpace: "nowrap" }}>
+        <span
+          style={{
+            fontFamily: F.m,
+            fontSize: 12,
+            fontWeight: 600,
+            color: C.wine,
+            background: "rgba(74,6,27,0.06)",
+            border: `1px solid ${C.bdr}`,
+            borderRadius: 8,
+            padding: "4px 9px",
+            whiteSpace: "nowrap",
+          }}
+        >
           {currentBatch.id}
         </span>
       ),
     },
     {
-      id: "weaverLoom", header: columnHeader, accessor: () => entityName, priority: 3,
+      id: "weaverLoom",
+      header: columnHeader,
+      accessor: () => entityName,
+      priority: 3,
       cell: () => (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <div style={{ width: 26, height: 26, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF", lineHeight: 1 }}>{entityAvatar}</span>
+          <div
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: "50%",
+              background: C.burg,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <span
+              style={{
+                fontFamily: F.u,
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#FFF",
+                lineHeight: 1,
+              }}
+            >
+              {entityAvatar}
+            </span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-            <span style={{ fontFamily: F.u, fontSize: 13, color: C.text, whiteSpace: "nowrap" }}>{entityName}</span>
-            {entityCode && <span style={{ fontFamily: F.m, fontSize: 10, color: C.muted, whiteSpace: "nowrap" }}>{entityCode}</span>}
+            <span style={{ fontFamily: F.u, fontSize: 13, color: C.text, whiteSpace: "nowrap" }}>
+              {entityName}
+            </span>
+            {entityCode && (
+              <span style={{ fontFamily: F.m, fontSize: 10, color: C.muted, whiteSpace: "nowrap" }}>
+                {entityCode}
+              </span>
+            )}
           </div>
         </div>
       ),
     },
     {
-      id: "loomNo", header: "Loom No.", accessor: s => s.weaverLoom ?? currentBatch.loomNumber ?? loomLabel ?? "—", priority: 3,
+      id: "loomNo",
+      header: "Loom No.",
+      accessor: (s) => s.weaverLoom ?? currentBatch.loomNumber ?? loomLabel ?? "—",
+      priority: 3,
       cell: (_v, s) => {
         const loom = s.weaverLoom ?? currentBatch.loomNumber;
         const label = loom != null ? `Loom ${loom}` : loomLabel;
         return label ? (
-          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px", whiteSpace: "nowrap" }}>{label}</span>
+          <span
+            style={{
+              fontFamily: F.u,
+              fontSize: 12,
+              fontWeight: 600,
+              color: "#845E04",
+              background: "rgba(200,155,71,0.12)",
+              border: "1px solid rgba(200,155,71,0.30)",
+              borderRadius: 8,
+              padding: "4px 9px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {label}
+          </span>
         ) : (
           <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>—</span>
         );
       },
     },
     {
-      id: "sareeType", header: "Saree Type", accessor: () => currentBatch.sareeTypeCode, priority: 3,
-      cell: () => <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 500, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px" }}>{currentBatch.sareeTypeCode}</span>,
+      id: "sareeType",
+      header: "Saree Type",
+      accessor: () => currentBatch.sareeTypeCode,
+      priority: 3,
+      cell: () => (
+        <span
+          style={{
+            fontFamily: F.m,
+            fontSize: 12,
+            fontWeight: 500,
+            color: "#845E04",
+            background: "rgba(200,155,71,0.12)",
+            border: "1px solid rgba(200,155,71,0.30)",
+            borderRadius: 8,
+            padding: "4px 9px",
+          }}
+        >
+          {currentBatch.sareeTypeCode}
+        </span>
+      ),
     },
     {
-      id: "bulkOrder", header: "Bulk Order", accessor: () => currentBatch.bulkOrderLabel, priority: 3,
+      id: "bulkOrder",
+      header: "Bulk Order",
+      accessor: () => currentBatch.bulkOrderLabel,
+      priority: 3,
       cell: () => (
-        <span style={{ fontFamily: F.u, fontSize: 12, color: currentBatch.bulkOrderLabel ? C.burg : C.muted }}>
+        <span
+          style={{
+            fontFamily: F.u,
+            fontSize: 12,
+            color: currentBatch.bulkOrderLabel ? C.burg : C.muted,
+          }}
+        >
           {currentBatch.bulkOrderLabel ?? "—"}
         </span>
       ),
     },
     {
-      id: "status", header: "Status", accessor: s => s.status, type: "status",
+      id: "status",
+      header: "Status",
+      accessor: (s) => s.status,
+      type: "status",
       cell: (_v, s) => {
-        const statusCfg = s.status === "received" ? { label: "Received", bg: "rgba(30,102,64,0.10)", col: C.green }
-          : s.status === "defective" ? { label: "Defective", bg: "rgba(220,53,69,0.10)", col: C.crim }
-          : s.isRework ? { label: "Rework — Receive Again", bg: "rgba(110,15,45,0.10)", col: C.burg }
-          : { label: "Pending", bg: "rgba(200,155,71,0.14)", col: "#8D5802" };
-        return <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: statusCfg.col, background: statusCfg.bg, borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" }}>{statusCfg.label}</span>;
+        const statusCfg =
+          s.status === "received"
+            ? { label: "Received", bg: "rgba(30,102,64,0.10)", col: C.green }
+            : s.status === "defective"
+              ? { label: "Defective", bg: "rgba(220,53,69,0.10)", col: C.crim }
+              : s.isRework
+                ? { label: "Rework — Receive Again", bg: "rgba(110,15,45,0.10)", col: C.burg }
+                : { label: "Pending", bg: "rgba(200,155,71,0.14)", col: "#8D5802" };
+        return (
+          <span
+            style={{
+              fontFamily: F.u,
+              fontSize: 12,
+              fontWeight: 600,
+              color: statusCfg.col,
+              background: statusCfg.bg,
+              borderRadius: 999,
+              padding: "4px 10px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {statusCfg.label}
+          </span>
+        );
       },
     },
   ];
 
   return (
     <div style={{ margin: "20px 0 0" }}>
-      <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>
+      <div
+        style={{
+          fontFamily: F.u,
+          fontSize: 12,
+          fontWeight: 600,
+          color: C.muted,
+          textTransform: "uppercase",
+          letterSpacing: "0.06em",
+          marginBottom: 10,
+        }}
+      >
         Sarees in {currentBatch.id}
       </div>
-      <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${C.bdr}`, boxShadow: "0 2px 12px rgba(74,6,27,0.07)", overflow: "hidden" }}>
-        <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.bdr}`, background: C.bg, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+      <div
+        style={{
+          background: "#FFF",
+          borderRadius: 16,
+          border: `1px solid ${C.bdr}`,
+          boxShadow: "0 2px 12px rgba(74,6,27,0.07)",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            padding: "16px 20px",
+            borderBottom: `1px solid ${C.bdr}`,
+            background: C.bg,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 12,
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <span style={{ fontFamily: F.u, fontSize: 18, fontWeight: 600, color: C.wine, letterSpacing: "-0.01em" }}>{currentBatch.total} Sarees</span>
-            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.green, background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.22)", borderRadius: 999, padding: "4px 10px" }}>
+            <span
+              style={{
+                fontFamily: F.u,
+                fontSize: 18,
+                fontWeight: 600,
+                color: C.wine,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              {currentBatch.total} Sarees
+            </span>
+            <span
+              style={{
+                fontFamily: F.u,
+                fontSize: 12,
+                fontWeight: 600,
+                color: C.green,
+                background: "rgba(30,102,64,0.10)",
+                border: "1px solid rgba(30,102,64,0.22)",
+                borderRadius: 999,
+                padding: "4px 10px",
+              }}
+            >
               {doneCount} complete
             </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, whiteSpace: "nowrap" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              flexShrink: 0,
+              whiteSpace: "nowrap",
+            }}
+          >
             {pendingSarees.length > 0 && (
-              <Button variant="link" onClick={onToggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E] shrink-0">
-                {allPendingSelected ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
+              <Button
+                variant="link"
+                onClick={onToggleAll}
+                className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E] shrink-0"
+              >
+                {allPendingSelected ? (
+                  <CheckSquare size={15} color={C.burg} />
+                ) : (
+                  <Square size={15} color={C.muted} />
+                )}
                 {allPendingSelected ? "Deselect All" : "Select All"}
               </Button>
             )}
-            <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, whiteSpace: "nowrap" }}>Sort by</span>
-            <Select value={sareeSort} onValueChange={v => setSareeSort(v as "serial" | "status")} size="sm" className="shrink-0">
+            <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, whiteSpace: "nowrap" }}>
+              Sort by
+            </span>
+            <Select
+              value={sareeSort}
+              onValueChange={(v) => setSareeSort(v as "serial" | "status")}
+              size="sm"
+              className="shrink-0"
+            >
               <SelectItem value="serial">Default (#)</SelectItem>
               <SelectItem value="status">Status</SelectItem>
             </Select>
@@ -356,9 +706,13 @@ export function SareeSelectionTable({
             <DataTable
               columns={columns}
               data={sortedSarees}
-              getRowId={s => String(s.no)}
-              onRowClick={s => { if (s.status === "pending") selectSareeSlot(s.no); }}
-              rowClassName={s => (selectedSareeNos.has(s.no) ? "bk-saree-row-selected" : undefined)}
+              getRowId={(s) => String(s.no)}
+              onRowClick={(s) => {
+                if (s.status === "pending") selectSareeSlot(s.no);
+              }}
+              rowClassName={(s) =>
+                selectedSareeNos.has(s.no) ? "bk-saree-row-selected" : undefined
+              }
               pagination
             />
           </div>
@@ -369,7 +723,7 @@ export function SareeSelectionTable({
         <div className="block md:hidden p-3.5">
           {viewMode === "card" ? (
             <div className="flex flex-col gap-3">
-              {sortedSarees.map(s => (
+              {sortedSarees.map((s) => (
                 <SareeSelectionCard
                   key={s.no}
                   s={s}
@@ -389,9 +743,13 @@ export function SareeSelectionTable({
                 <DataTable
                   columns={columns}
                   data={sortedSarees}
-                  getRowId={s => String(s.no)}
-                  onRowClick={s => { if (s.status === "pending") selectSareeSlot(s.no); }}
-                  rowClassName={s => (selectedSareeNos.has(s.no) ? "bk-saree-row-selected" : undefined)}
+                  getRowId={(s) => String(s.no)}
+                  onRowClick={(s) => {
+                    if (s.status === "pending") selectSareeSlot(s.no);
+                  }}
+                  rowClassName={(s) =>
+                    selectedSareeNos.has(s.no) ? "bk-saree-row-selected" : undefined
+                  }
                 />
               </div>
             </div>

@@ -52,7 +52,7 @@ export function Modal({ open, onOpenChange, size = "md", children, onBeforeClose
           style={{ zIndex: "var(--z-overlay)" }}
         />
         <Dialog.Content
-          onOpenAutoFocus={e => {
+          onOpenAutoFocus={(e) => {
             // Never autofocus a text input on mobile — it opens the keyboard
             // and hides the dialog (Part C.3).
             if (window.innerWidth < 768) e.preventDefault();
@@ -67,7 +67,11 @@ export function Modal({ open, onOpenChange, size = "md", children, onBeforeClose
             "max-md:left-0 max-md:top-auto max-md:bottom-0 max-md:translate-x-0 max-md:translate-y-0",
             "max-md:w-full max-md:rounded-b-none max-md:max-h-[92dvh]"
           )}
-          style={{ maxWidth: SIZE_WIDTH[size], maxHeight: "calc(100dvh - 96px)", zIndex: "var(--z-modal)" }}
+          style={{
+            maxWidth: SIZE_WIDTH[size],
+            maxHeight: "calc(100dvh - 96px)",
+            zIndex: "var(--z-modal)",
+          }}
         >
           {children}
         </Dialog.Content>
@@ -93,18 +97,59 @@ function Header({
 }) {
   if (banner) {
     return (
-      <div style={{ background: bannerGradient, padding: "24px 28px 22px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexShrink: 0 }}>
+      <div
+        style={{
+          background: bannerGradient,
+          padding: "24px 28px 22px",
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 16,
+          flexShrink: 0,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
           {Icon && (
-            <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(255,255,255,0.15)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid rgba(255,255,255,0.22)" }}>
+            <div
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 12,
+                background: "rgba(255,255,255,0.15)",
+                backdropFilter: "blur(4px)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                border: "1px solid rgba(255,255,255,0.22)",
+              }}
+            >
               <Icon size={20} color="#FFFDF9" />
             </div>
           )}
           <div className="min-w-0">
-            <Dialog.Title style={{ fontFamily: "'Cinzel', serif", fontWeight: 700, fontSize: 19, color: "#FFFDF9", margin: 0, lineHeight: 1.2 }}>{title}</Dialog.Title>
+            <Dialog.Title
+              style={{
+                fontFamily: "'Cinzel', serif",
+                fontWeight: 700,
+                fontSize: 19,
+                color: "#FFFDF9",
+                margin: 0,
+                lineHeight: 1.2,
+              }}
+            >
+              {title}
+            </Dialog.Title>
             {subtitle ? (
               <Dialog.Description asChild>
-                <div style={{ fontFamily: "var(--font-sans)", fontSize: 13, color: "rgba(255,253,249,0.75)", marginTop: 3 }}>
+                <div
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: 13,
+                    color: "rgba(255,253,249,0.75)",
+                    marginTop: 3,
+                  }}
+                >
                   {subtitle}
                 </div>
               </Dialog.Description>
@@ -129,9 +174,14 @@ function Header({
   return (
     <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4 flex-shrink-0">
       <div className="min-w-0">
-        <Dialog.Title className="bk-title-md" style={{ color: "var(--text-primary)" }}>{title}</Dialog.Title>
+        <Dialog.Title className="bk-title-md" style={{ color: "var(--text-primary)" }}>
+          {title}
+        </Dialog.Title>
         {subtitle ? (
-          <Dialog.Description className="mt-1 bk-body-sm" style={{ color: "var(--text-secondary)" }}>
+          <Dialog.Description
+            className="mt-1 bk-body-sm"
+            style={{ color: "var(--text-secondary)" }}
+          >
             {subtitle}
           </Dialog.Description>
         ) : (
@@ -158,7 +208,9 @@ function Body({ children, className }: { children: React.ReactNode; className?: 
     });
   }, []);
 
-  React.useEffect(() => { onScroll(); }, [onScroll, children]);
+  React.useEffect(() => {
+    onScroll();
+  }, [onScroll, children]);
 
   return (
     <div
@@ -166,10 +218,13 @@ function Body({ children, className }: { children: React.ReactNode; className?: 
       onScroll={onScroll}
       className={cn("flex-1 overflow-y-auto px-6 [overscroll-behavior:contain]", className)}
       style={{
-        boxShadow: [
-          scrolled.top ? "inset 0 8px 8px -8px rgba(0,0,0,0.12)" : "",
-          scrolled.bottom ? "inset 0 -8px 8px -8px rgba(0,0,0,0.12)" : "",
-        ].filter(Boolean).join(", ") || "none",
+        boxShadow:
+          [
+            scrolled.top ? "inset 0 8px 8px -8px rgba(0,0,0,0.12)" : "",
+            scrolled.bottom ? "inset 0 -8px 8px -8px rgba(0,0,0,0.12)" : "",
+          ]
+            .filter(Boolean)
+            .join(", ") || "none",
       }}
     >
       {children}
@@ -180,7 +235,10 @@ function Body({ children, className }: { children: React.ReactNode; className?: 
 function Footer({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={cn("flex items-center justify-end gap-2 px-6 pt-4 pb-6 flex-shrink-0 border-t", className)}
+      className={cn(
+        "flex items-center justify-end gap-2 px-6 pt-4 pb-6 flex-shrink-0 border-t",
+        className
+      )}
       style={{ borderColor: "var(--border-subtle)" }}
     >
       {children}

@@ -18,22 +18,22 @@ import { formatRecordedBy } from "@/lib/domain/actor";
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface SareeRow {
   serial: number;
-  sareeId: string | null;        // null until weaver or factory loom is assigned
+  sareeId: string | null; // null until weaver or factory loom is assigned
   recipientType?: "weaver" | "factoryLoom";
   weaverId: string | null;
   /** Human-facing weaver code ("Ramarao-001") — the only weaver id shown in the UI. */
   weaverCode: string | null;
   weaverName: string | null;
   weaverInitials: string | null;
-  weaverLoom: number | null;     // which of the weaver's own looms (1..weaver's loom count)
-  factoryLoomId?: string | null;      // set when recipientType === "factoryLoom"
-  factoryLoomNumber?: string | null;  // e.g. "Loom F-02"
+  weaverLoom: number | null; // which of the weaver's own looms (1..weaver's loom count)
+  factoryLoomId?: string | null; // set when recipientType === "factoryLoom"
+  factoryLoomNumber?: string | null; // e.g. "Loom F-02"
   designCode: string | null;
   sareeTypeCode: string | null;
   sareeTypeName: string | null;
-  bulkOrderRef: string | null;   // null = General Stock
+  bulkOrderRef: string | null; // null = General Stock
   bulkOrderLabel: string | null;
-  qcPassed?: boolean;            // true once Worker Staff confirms QC passed for this saree
+  qcPassed?: boolean; // true once Worker Staff confirms QC passed for this saree
   // Current QC verdict — the latest of possibly several, since anything short
   // of a pass sends the saree back to the weaver to be inspected again.
   // undefined until it has been inspected at all, which qcPassed alone
@@ -52,7 +52,7 @@ export interface SareeRow {
   // credit a saree to the month it actually finished, not the month it
   // originally passed QC.
   finishedAt?: string | null;
-  receivedAt: string | null;     // set once Worker Staff receives the finished saree from the weaver/loom
+  receivedAt: string | null; // set once Worker Staff receives the finished saree from the weaver/loom
   /** Worker Staff who physically received this saree — null on endpoints that don't select it. */
   receivedBy: string | null;
   receivedWeight: string | null;
@@ -112,8 +112,11 @@ interface BatchContextValue {
   updateBatch: (batchId: string, patch: Partial<BatchRecord>) => void;
   receiveRow: (batchId: string, serial: number, payload: ReceiveBatchRowPayload) => Promise<void>;
   tallyRow: (
-    batchId: string, serial: number, tallied: boolean, talliedBy?: string,
-    corrections?: { weight?: number; warpG?: number; reshamG?: number; jariReels?: number },
+    batchId: string,
+    serial: number,
+    tallied: boolean,
+    talliedBy?: string,
+    corrections?: { weight?: number; warpG?: number; reshamG?: number; jariReels?: number }
   ) => Promise<void>;
   finalizeBatch: (batchId: string) => Promise<void>;
   /** True while finalizeBatch's request is in flight. */
@@ -147,7 +150,7 @@ function backendBatchToRecord(
   b: BackendBatch,
   weaverLookup: Map<string, { code: string; name: string; initials: string }>,
   loomLookup: Map<string, string>,
-  sareeTypeNameLookup: Map<string, string>,
+  sareeTypeNameLookup: Map<string, string>
 ): BatchRecord {
   return {
     batchId: b.id,
@@ -168,7 +171,12 @@ function backendBatchToRecord(
       return {
         serial: r.serial,
         sareeId: r.sareeId,
-        recipientType: r.recipientType === "WEAVER" ? "weaver" : r.recipientType === "FACTORY_LOOM" ? "factoryLoom" : undefined,
+        recipientType:
+          r.recipientType === "WEAVER"
+            ? "weaver"
+            : r.recipientType === "FACTORY_LOOM"
+              ? "factoryLoom"
+              : undefined,
         weaverId: r.weaverId,
         weaverCode: weaver?.code ?? null,
         weaverName: weaver?.name ?? null,
@@ -178,7 +186,9 @@ function backendBatchToRecord(
         factoryLoomNumber: r.factoryLoomId ? (loomLookup.get(r.factoryLoomId) ?? null) : null,
         designCode: r.designCode,
         sareeTypeCode: r.sareeTypeCode,
-        sareeTypeName: r.sareeTypeCode ? (sareeTypeNameLookup.get(r.sareeTypeCode) ?? r.sareeTypeCode) : null,
+        sareeTypeName: r.sareeTypeCode
+          ? (sareeTypeNameLookup.get(r.sareeTypeCode) ?? r.sareeTypeCode)
+          : null,
         bulkOrderRef: r.bulkOrderRef,
         bulkOrderLabel: r.bulkOrderRef,
         qcPassed: r.qcPassed ?? undefined,
@@ -188,7 +198,8 @@ function backendBatchToRecord(
         // is exactly the out-for-rework state.
         awaitingRework: (qcResult === "semi" || qcResult === "defective") && !r.receivedAt,
         finished: r.finishingAssignment?.status === "RETURNED",
-        finishedAt: r.finishingAssignment?.status === "RETURNED" ? r.finishingAssignment.updatedAt : null,
+        finishedAt:
+          r.finishingAssignment?.status === "RETURNED" ? r.finishingAssignment.updatedAt : null,
         receivedAt: r.receivedAt,
         receivedBy: r.receivedByUser ? formatRecordedBy(r.receivedByUser) : null,
         receivedWeight: r.receivedWeight,
@@ -229,7 +240,13 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   // nothing but a "your role is not permitted" 403.
   const enabled = useAuthGate("worker", "weaver", "admin", "superadmin");
 
-  const { data: batches = [], isError, error, isLoading, refetch } = useQuery({
+  const {
+    data: batches = [],
+    isError,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: QUERY_KEY,
     enabled,
     // Retry transient failures (429 burst on a hard refresh, network blip)
@@ -237,7 +254,8 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
     // failure (401/403), which won't resolve itself no matter how many
     // times it's retried.
     retry: (failureCount, err) =>
-      failureCount < 2 && !(err instanceof ApiError && (err.statusCode === 401 || err.statusCode === 403)),
+      failureCount < 2 &&
+      !(err instanceof ApiError && (err.statusCode === 401 || err.statusCode === 403)),
     queryFn: async () => {
       // The batch list itself is NOT swallowed: if it fails, the query must
       // fail so consumers can tell "you have no batches" apart from "we
@@ -253,16 +271,33 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       // portal load; queryClient.fetchQuery() dedupes concurrent callers and
       // reuses the cached result within its staleTime.
       const [weaversRes, loomsRes, ratesRes] = await Promise.all([
-        queryClient.fetchQuery({ queryKey: WEAVERS_LIST_QUERY_KEY, queryFn: () => weaversApi.list(), staleTime: 60_000 }).catch(() => ({ items: [] })),
-        canReadFactoryLooms ? factoryLoomsApi.list().catch(() => ({ items: [] })) : Promise.resolve({ items: [] }),
-        canReadRates ? ratesApi.list().catch(() => ({ items: [] })) : Promise.resolve({ items: [] }),
+        queryClient
+          .fetchQuery({
+            queryKey: WEAVERS_LIST_QUERY_KEY,
+            queryFn: () => weaversApi.list(),
+            staleTime: 60_000,
+          })
+          .catch(() => ({ items: [] })),
+        canReadFactoryLooms
+          ? factoryLoomsApi.list().catch(() => ({ items: [] }))
+          : Promise.resolve({ items: [] }),
+        canReadRates
+          ? ratesApi.list().catch(() => ({ items: [] }))
+          : Promise.resolve({ items: [] }),
       ]);
       const weaverLookup = new Map(
-        (weaversRes?.items || []).map(w => [w.id, { code: w.code, name: w.name, initials: w.initials }]),
+        (weaversRes?.items || []).map((w) => [
+          w.id,
+          { code: w.code, name: w.name, initials: w.initials },
+        ])
       );
-      const loomLookup = new Map((loomsRes?.items || []).map(l => [l.id, l.code || l.loomNumber]));
-      const sareeTypeNameLookup = new Map((ratesRes?.items || []).map(r => [r.code, r.type]));
-      return (batchesRes?.items || []).map(b => backendBatchToRecord(b, weaverLookup, loomLookup, sareeTypeNameLookup));
+      const loomLookup = new Map(
+        (loomsRes?.items || []).map((l) => [l.id, l.code || l.loomNumber])
+      );
+      const sareeTypeNameLookup = new Map((ratesRes?.items || []).map((r) => [r.code, r.type]));
+      return (batchesRes?.items || []).map((b) =>
+        backendBatchToRecord(b, weaverLookup, loomLookup, sareeTypeNameLookup)
+      );
     },
   });
 
@@ -276,11 +311,17 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
     mutationFn: async (batch: BatchRecord) => {
       const existing = queryClient
         .getQueryData<BatchRecord[]>(QUERY_KEY)
-        ?.find(b => b.batchId === batch.batchId);
+        ?.find((b) => b.batchId === batch.batchId);
 
       const realBatchId = existing
         ? batch.batchId
-        : (await batchesApi.create({ totalCount: batch.totalCount, dueDate: batch.dueDate, actorId: user?.id })).id;
+        : (
+            await batchesApi.create({
+              totalCount: batch.totalCount,
+              dueDate: batch.dueDate,
+              actorId: user?.id,
+            })
+          ).id;
 
       // One bulk request for every assignable row, instead of one
       // PATCH-per-row round trip — a 50-row batch used to mean 50 sequential
@@ -288,8 +329,12 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       // of its own lookups server-side), which is what made saving/
       // finalizing a batch feel hung. See BatchesService.assignRows.
       const assignable = batch.rows
-        .map(row => {
-          const recipientType = row.weaverId ? "WEAVER" as const : row.factoryLoomId ? "FACTORY_LOOM" as const : null;
+        .map((row) => {
+          const recipientType = row.weaverId
+            ? ("WEAVER" as const)
+            : row.factoryLoomId
+              ? ("FACTORY_LOOM" as const)
+              : null;
           // Recipient and saree type are assigned in separate steps in the
           // UI (weaver picker vs. saree-type picker), so a row can reach
           // Save with a weaver/loom set but no type yet — that must still be
@@ -331,7 +376,6 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       toast.success("Batch saved");
     },
     onError: (err) => {
-       
       console.error("Failed to save batch draft:", err);
       toast.error(err instanceof Error ? err.message : "Failed to save batch draft");
     },
@@ -343,18 +387,32 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const updateBatchMutation = useMutation({
     mutationFn: (args: { batchId: string; patch: Partial<BatchRecord> }) => Promise.resolve(args),
     onSuccess: ({ batchId, patch }) =>
-      queryClient.setQueryData<BatchRecord[]>(QUERY_KEY, prev =>
-        (prev ?? []).map(b => b.batchId === batchId ? { ...b, ...patch, updatedAt: new Date().toISOString() } : b)
+      queryClient.setQueryData<BatchRecord[]>(QUERY_KEY, (prev) =>
+        (prev ?? []).map((b) =>
+          b.batchId === batchId ? { ...b, ...patch, updatedAt: new Date().toISOString() } : b
+        )
       ),
   });
 
   const tallyRowMutation = useMutation({
     // talliedBy isn't sent to the backend — it derives the actor from the
     // authenticated request, same as receivedByUser on receive.
-    mutationFn: (args: { batchId: string; serial: number; tallied: boolean; talliedBy?: string; weight?: number; warpG?: number; reshamG?: number; jariReels?: number }) =>
+    mutationFn: (args: {
+      batchId: string;
+      serial: number;
+      tallied: boolean;
+      talliedBy?: string;
+      weight?: number;
+      warpG?: number;
+      reshamG?: number;
+      jariReels?: number;
+    }) =>
       batchesApi.tallyRow(args.batchId, args.serial, {
         tallied: args.tallied,
-        weight: args.weight, warpG: args.warpG, reshamG: args.reshamG, jariReels: args.jariReels,
+        weight: args.weight,
+        warpG: args.warpG,
+        reshamG: args.reshamG,
+        jariReels: args.jariReels,
       }),
     onSuccess: (_row, args) => {
       // Flip the checkbox immediately — tallying is a rapid row-by-row pass, and
@@ -363,18 +421,27 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       // weights are re-serialised by the backend (decimal strings), so echoing
       // the raw entered numbers here would render one format and then visibly
       // snap to another when the invalidate below lands.
-      patchListItems<BatchRecord>(queryClient, QUERY_KEY, b => b.batchId === args.batchId, batch => ({
-        ...batch,
-        rows: batch.rows.map(row =>
-          row.serial === args.serial
-            ? { ...row, tallied: args.tallied, talliedAt: args.tallied ? new Date().toISOString() : null }
-            : row),
-      }));
+      patchListItems<BatchRecord>(
+        queryClient,
+        QUERY_KEY,
+        (b) => b.batchId === args.batchId,
+        (batch) => ({
+          ...batch,
+          rows: batch.rows.map((row) =>
+            row.serial === args.serial
+              ? {
+                  ...row,
+                  tallied: args.tallied,
+                  talliedAt: args.tallied ? new Date().toISOString() : null,
+                }
+              : row
+          ),
+        })
+      );
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       void queryClient.invalidateQueries({ queryKey: ["bulkOrders"] });
     },
     onError: (err) => {
-       
       console.error("Failed to tally saree:", err);
       toast.error(err instanceof Error ? err.message : "Failed to tally saree");
     },
@@ -388,29 +455,40 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       // list query uses (see backendBatchToRecord), so the weights render in
       // the backend's own decimal formatting and don't visibly re-render when
       // the invalidate below lands.
-      patchListItems<BatchRecord>(queryClient, QUERY_KEY, b => b.batchId === args.batchId, batch => ({
-        ...batch,
-        rows: batch.rows.map(r => r.serial === args.serial ? {
-          ...r,
-          receivedAt: row.receivedAt,
-          receivedBy: row.receivedByUser ? formatRecordedBy(row.receivedByUser) : r.receivedBy,
-          receivedWeight: row.receivedWeight,
-          receivedColor: row.receivedColor,
-          receivedPhotoUrl: resolveAssetUrl(row.receivedPhotoUrl),
-          receivedWarpG: row.receivedWarpG,
-          receivedReshamG: row.receivedReshamG,
-          receivedJariReels: row.receivedJariReels,
-          // Worker Staff can correct the saree type at receipt, so this is a
-          // receive field like the rest — without it the type shown reverts to
-          // the batch's original until the invalidate below lands.
-          sareeTypeCode: row.sareeTypeCode,
-          // The rate-name lookup lives in the list query's scope, so on a
-          // change the code stands in as the label until the invalidate below
-          // refetches and resolves it properly.
-          sareeTypeName:
-            row.sareeTypeCode === r.sareeTypeCode ? r.sareeTypeName : row.sareeTypeCode,
-        } : r),
-      }));
+      patchListItems<BatchRecord>(
+        queryClient,
+        QUERY_KEY,
+        (b) => b.batchId === args.batchId,
+        (batch) => ({
+          ...batch,
+          rows: batch.rows.map((r) =>
+            r.serial === args.serial
+              ? {
+                  ...r,
+                  receivedAt: row.receivedAt,
+                  receivedBy: row.receivedByUser
+                    ? formatRecordedBy(row.receivedByUser)
+                    : r.receivedBy,
+                  receivedWeight: row.receivedWeight,
+                  receivedColor: row.receivedColor,
+                  receivedPhotoUrl: resolveAssetUrl(row.receivedPhotoUrl),
+                  receivedWarpG: row.receivedWarpG,
+                  receivedReshamG: row.receivedReshamG,
+                  receivedJariReels: row.receivedJariReels,
+                  // Worker Staff can correct the saree type at receipt, so this is a
+                  // receive field like the rest — without it the type shown reverts to
+                  // the batch's original until the invalidate below lands.
+                  sareeTypeCode: row.sareeTypeCode,
+                  // The rate-name lookup lives in the list query's scope, so on a
+                  // change the code stands in as the label until the invalidate below
+                  // refetches and resolves it properly.
+                  sareeTypeName:
+                    row.sareeTypeCode === r.sareeTypeCode ? r.sareeTypeName : row.sareeTypeCode,
+                }
+              : r
+          ),
+        })
+      );
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       // Receiving a saree auto-draws its weight down from the weaver's
       // outstanding material (BatchesService.receiveRow ->
@@ -420,7 +498,6 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       void queryClient.invalidateQueries({ queryKey: ["materialIssue", "receivedSarees"] });
     },
     onError: (err) => {
-
       console.error("Failed to receive batch row:", err);
       toast.error(err instanceof Error ? err.message : "Failed to receive saree");
       // The row is likely stale (e.g. already received from another tab/device) —
@@ -432,14 +509,13 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const finalizeBatchMutation = useMutation({
     mutationFn: (batchId: string) => batchesApi.finalize(batchId),
     onSuccess: (_finalized, batchId) => {
-      patchListItems<BatchRecord>(queryClient, QUERY_KEY, b => b.batchId === batchId, {
+      patchListItems<BatchRecord>(queryClient, QUERY_KEY, (b) => b.batchId === batchId, {
         status: "completed",
       });
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Batch finalized");
     },
     onError: (err) => {
-       
       console.error("Failed to finalize batch:", err);
       toast.error(err instanceof Error ? err.message : "Failed to finalize batch");
     },
@@ -448,7 +524,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const deleteBatchMutation = useMutation({
     mutationFn: (batchId: string) => batchesApi.remove(batchId),
     onSuccess: (_result, batchId) => {
-      removeFromListWhere<BatchRecord>(queryClient, QUERY_KEY, b => b.batchId === batchId);
+      removeFromListWhere<BatchRecord>(queryClient, QUERY_KEY, (b) => b.batchId === batchId);
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       // The backend cascades the delete onto that batch's QC records,
       // finishing assignments, and inventory/saree rows — so anything
@@ -470,15 +546,22 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   });
 
   const saveDraft = (batch: BatchRecord) => saveDraftMutation.mutateAsync(batch);
-  const updateBatch = (batchId: string, patch: Partial<BatchRecord>) => updateBatchMutation.mutate({ batchId, patch });
+  const updateBatch = (batchId: string, patch: Partial<BatchRecord>) =>
+    updateBatchMutation.mutate({ batchId, patch });
   const receiveRow = (batchId: string, serial: number, payload: ReceiveBatchRowPayload) =>
     receiveRowMutation.mutateAsync({ batchId, serial, payload }).then(() => undefined);
   const tallyRow = (
-    batchId: string, serial: number, tallied: boolean, talliedBy?: string,
-    corrections?: { weight?: number; warpG?: number; reshamG?: number; jariReels?: number },
+    batchId: string,
+    serial: number,
+    tallied: boolean,
+    talliedBy?: string,
+    corrections?: { weight?: number; warpG?: number; reshamG?: number; jariReels?: number }
   ) =>
-    tallyRowMutation.mutateAsync({ batchId, serial, tallied, talliedBy, ...corrections }).then(() => undefined);
-  const finalizeBatch = (batchId: string) => finalizeBatchMutation.mutateAsync(batchId).then(() => undefined);
+    tallyRowMutation
+      .mutateAsync({ batchId, serial, tallied, talliedBy, ...corrections })
+      .then(() => undefined);
+  const finalizeBatch = (batchId: string) =>
+    finalizeBatchMutation.mutateAsync(batchId).then(() => undefined);
   // A 404 here means the batch is already gone (another tab deleted it, or
   // it's a stale entry) — that's the caller's desired end state either way,
   // so resolve instead of rejecting; just make sure the stale list clears.
@@ -491,14 +574,17 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
           return undefined;
         }
         throw err;
-      },
+      }
     );
 
   const nextBatchId = useMemo(() => {
     const batchList = Array.isArray(batches) ? batches : [];
     const allNums = batchList
-      .map(b => { const m = b.batchId?.match(/BATCH-(\d+)/); return m ? parseInt(m[1] ?? "0", 10) : 0; })
-      .filter(n => n > 0);
+      .map((b) => {
+        const m = b.batchId?.match(/BATCH-(\d+)/);
+        return m ? parseInt(m[1] ?? "0", 10) : 0;
+      })
+      .filter((n) => n > 0);
     const maxNum = allNums.length > 0 ? Math.max(...allNums) : 0;
     return `BATCH-${String(maxNum + 1).padStart(3, "0")}`;
   }, [batches]);
@@ -506,7 +592,26 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const safeBatches = Array.isArray(batches) ? batches : [];
 
   return (
-    <BatchContext.Provider value={{ batches: safeBatches, saveDraft, isSaving: saveDraftMutation.isPending, updateBatch, receiveRow, tallyRow, finalizeBatch, isFinalizing: finalizeBatchMutation.isPending, deleteBatch, isError, error, isLoading, refetch: () => void refetch(), nextBatchId, pendingOpenBatchId, setPendingOpenBatchId }}>
+    <BatchContext.Provider
+      value={{
+        batches: safeBatches,
+        saveDraft,
+        isSaving: saveDraftMutation.isPending,
+        updateBatch,
+        receiveRow,
+        tallyRow,
+        finalizeBatch,
+        isFinalizing: finalizeBatchMutation.isPending,
+        deleteBatch,
+        isError,
+        error,
+        isLoading,
+        refetch: () => void refetch(),
+        nextBatchId,
+        pendingOpenBatchId,
+        setPendingOpenBatchId,
+      }}
+    >
       {children}
     </BatchContext.Provider>
   );

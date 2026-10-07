@@ -29,10 +29,16 @@ export interface CreateRateRequestPayload {
 
 export const rateRequestsApi = {
   list: (status?: string) =>
-    apiClient.get<{ items: BackendRateChangeRequest[] }>(`/rate-requests${status ? `?status=${status}` : ""}`),
-  create: (payload: CreateRateRequestPayload) => apiClient.post<BackendRateChangeRequest>("/rate-requests", payload),
+    apiClient.get<{ items: BackendRateChangeRequest[] }>(
+      `/rate-requests${status ? `?status=${status}` : ""}`
+    ),
+  create: (payload: CreateRateRequestPayload) =>
+    apiClient.post<BackendRateChangeRequest>("/rate-requests", payload),
   approve: (id: string, decidedById?: string) =>
     apiClient.patch<BackendRateChangeRequest>(`/rate-requests/${id}/approve`, { decidedById }),
   reject: (id: string, decidedById?: string, reason?: string) =>
-    apiClient.patch<BackendRateChangeRequest>(`/rate-requests/${id}/reject`, { decidedById, reason }),
+    apiClient.patch<BackendRateChangeRequest>(`/rate-requests/${id}/reject`, {
+      decidedById,
+      reason,
+    }),
 };

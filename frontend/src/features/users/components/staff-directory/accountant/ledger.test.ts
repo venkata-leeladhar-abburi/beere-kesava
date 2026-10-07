@@ -1,7 +1,13 @@
 import { describe, expect, test } from "vitest";
 import type { StaffLedgerRow } from "@/shared/api/staff-finance";
 import { DEFAULT_DATE_FILTER, type DateFilterState } from "@/shared/ui/DateFilterBar";
-import { dailySeries, dateFilterToRange, groupByRecorder, matchesLedgerSearch, summarise } from "./ledger";
+import {
+  dailySeries,
+  dateFilterToRange,
+  groupByRecorder,
+  matchesLedgerSearch,
+  summarise,
+} from "./ledger";
 
 function row(over: Partial<StaffLedgerRow>): StaffLedgerRow {
   return {
@@ -79,7 +85,7 @@ describe("dailySeries", () => {
     const series = dailySeries(
       [row({ id: "a", date: "2024-03-15T10:00:00.000Z", amount: 700 })],
       30,
-      "2024-03-20T10:00:00.000Z",
+      "2024-03-20T10:00:00.000Z"
     );
     expect(series).toHaveLength(30);
     expect(series[series.length - 1].date).toBe("2024-03-20");
@@ -93,7 +99,7 @@ describe("dailySeries", () => {
         row({ id: "b", date: "2023-01-01T10:00:00.000Z", amount: 999 }),
       ],
       14,
-      "2024-03-20T10:00:00.000Z",
+      "2024-03-20T10:00:00.000Z"
     );
     expect(series.reduce((sum, d) => sum + d.out + d.in, 0)).toBe(100);
   });
@@ -101,7 +107,7 @@ describe("dailySeries", () => {
   test("quiet days stay in the series as real zeroes", () => {
     const series = dailySeries([], 7, "2024-03-20T10:00:00.000Z");
     expect(series).toHaveLength(7);
-    expect(series.every(d => d.out === 0 && d.in === 0)).toBe(true);
+    expect(series.every((d) => d.out === 0 && d.in === 0)).toBe(true);
   });
 });
 
@@ -121,7 +127,10 @@ describe("matchesLedgerSearch", () => {
 });
 
 describe("dateFilterToRange", () => {
-  const filter = (over: Partial<DateFilterState>): DateFilterState => ({ ...DEFAULT_DATE_FILTER, ...over });
+  const filter = (over: Partial<DateFilterState>): DateFilterState => ({
+    ...DEFAULT_DATE_FILTER,
+    ...over,
+  });
   /** Local-calendar fields, since the bounds are built in the reader's zone. */
   const local = (iso: string) => {
     const d = new Date(iso);

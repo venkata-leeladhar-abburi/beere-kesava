@@ -1,6 +1,17 @@
 import { useMemo } from "react";
 import { ReceiptText, Banknote, CheckCircle2, BellRing, Boxes } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 import { useBulkOrders } from "@/features/bulk-orders";
@@ -29,7 +40,15 @@ function WholesaleWeeklyTooltip({ active, payload, label }: TooltipProps<ValueTy
   if (!active || !payload || !payload.length) return null;
   const d = payload[0].payload as { sarees: number; revenue: number };
   return (
-    <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
+    <div
+      style={{
+        background: "#FFFFFF",
+        border: `1px solid ${T.borderDef}`,
+        borderRadius: 8,
+        padding: "8px 12px",
+        boxShadow: "0 4px 16px rgba(74,6,27,0.12)",
+      }}
+    >
       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>
         {label} — {d.sarees} sarees dispatched — {formatMoney(rupees(d.revenue))} revenue
       </span>
@@ -44,13 +63,52 @@ function WholesaleWeeklyTooltip({ active, payload, label }: TooltipProps<ValueTy
 function MoneyChartTip({ active, payload, label }: TooltipProps<ValueType, NameType>) {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "10px 14px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
-      {label && <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginBottom: 5, textTransform: "uppercase" }}>{label}</div>}
+    <div
+      style={{
+        background: "#FFFDF9",
+        border: `1px solid ${T.borderDef}`,
+        borderRadius: 9,
+        padding: "10px 14px",
+        boxShadow: "0 4px 16px rgba(74,6,27,0.12)",
+      }}
+    >
+      {label && (
+        <div
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            color: T.taupe,
+            marginBottom: 5,
+            textTransform: "uppercase",
+          }}
+        >
+          {label}
+        </div>
+      )}
       {payload.map((p) => (
-        <div key={p.name ?? p.dataKey} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color || p.fill || p.stroke }} />
+        <div
+          key={p.name ?? p.dataKey}
+          style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}
+        >
+          <div
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: p.color || p.fill || p.stroke,
+            }}
+          />
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.name}:</span>
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{typeof p.value === "number" ? formatMoney(rupees(p.value)) : p.value}</span>
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              fontWeight: 700,
+              color: T.luxuryBrown,
+            }}
+          >
+            {typeof p.value === "number" ? formatMoney(rupees(p.value)) : p.value}
+          </span>
         </div>
       ))}
     </div>
@@ -62,8 +120,8 @@ export function WholesaleSalesReport() {
   const { inCurrent, label: periodLabel } = useReportPeriod();
 
   const bulkOrders = useMemo(
-    () => allBulkOrders.filter(o => inCurrent(o.createdDate)),
-    [allBulkOrders, inCurrent],
+    () => allBulkOrders.filter((o) => inCurrent(o.createdDate)),
+    [allBulkOrders, inCurrent]
   );
 
   // Dynamic calculation for wholesale weekly breakdown
@@ -78,7 +136,7 @@ export function WholesaleSalesReport() {
       { week: "Week 4", from: 23, to: 31 },
     ];
 
-    return weeks.map(w => {
+    return weeks.map((w) => {
       let sarees = 0;
       let revenue = 0;
 
@@ -109,27 +167,61 @@ export function WholesaleSalesReport() {
       const d = new Date(order.createdDate);
       if (isNaN(d.getTime())) continue;
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      const label = d.toLocaleString("en-US", { month: "short", year: "2-digit" }).replace(" ", " '");
+      const label = d
+        .toLocaleString("en-US", { month: "short", year: "2-digit" })
+        .replace(" ", " '");
       const entry = map.get(key) ?? { month: label, rev: 0 };
       entry.rev += order.amountDue || 0;
       map.set(key, entry);
     }
 
-    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0])).slice(-6).map(([, v]) => v);
+    return Array.from(map.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .slice(-6)
+      .map(([, v]) => v);
   }, [bulkOrders]);
 
   // Registered before the loading/error early-returns so the hook order stays
   // stable across renders.
-  useRegisterExport(useMemo(() => ({
-    name: "Wholesale Sales Report",
-    headers: ["Bulk Order Ref", "Customer", "Sarees Ordered", "Sarees Dispatched", "Invoiced", "Collected", "Outstanding", "Payment Status", "Created"],
-    rows: bulkOrders.map(o => [o.ref, o.customer, o.total, o.done ?? 0, o.amountDue ?? 0, o.amountPaid ?? 0, Math.max(0, (o.amountDue ?? 0) - (o.amountPaid ?? 0)), o.paymentStatus ?? "pending", o.createdDate]),
-  }), [bulkOrders]));
+  useRegisterExport(
+    useMemo(
+      () => ({
+        name: "Wholesale Sales Report",
+        headers: [
+          "Bulk Order Ref",
+          "Customer",
+          "Sarees Ordered",
+          "Sarees Dispatched",
+          "Invoiced",
+          "Collected",
+          "Outstanding",
+          "Payment Status",
+          "Created",
+        ],
+        rows: bulkOrders.map((o) => [
+          o.ref,
+          o.customer,
+          o.total,
+          o.done ?? 0,
+          o.amountDue ?? 0,
+          o.amountPaid ?? 0,
+          Math.max(0, (o.amountDue ?? 0) - (o.amountPaid ?? 0)),
+          o.paymentStatus ?? "pending",
+          o.createdDate,
+        ]),
+      }),
+      [bulkOrders]
+    )
+  );
 
   if (isLoading) {
     return (
       <div id="rep-wholesale" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
-        <SectionCard icon={Boxes} title="Wholesale Sales Report" subtitle="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer.">
+        <SectionCard
+          icon={Boxes}
+          title="Wholesale Sales Report"
+          subtitle="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer."
+        >
           <LoadingState variant="skeleton" rows={4} />
         </SectionCard>
       </div>
@@ -139,28 +231,42 @@ export function WholesaleSalesReport() {
   if (isError) {
     return (
       <div id="rep-wholesale" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
-        <SectionCard icon={Boxes} title="Wholesale Sales Report" subtitle="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer.">
+        <SectionCard
+          icon={Boxes}
+          title="Wholesale Sales Report"
+          subtitle="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer."
+        >
           <ErrorState error={undefined} onRetry={() => void refetch()} />
         </SectionCard>
       </div>
     );
   }
 
-  const maxOutstanding = Math.max(1, ...bulkOrders.map(o => (o.amountDue ?? 0) - (o.amountPaid ?? 0)));
-  const wsOutstanding = bulkOrders.map(o => {
+  const maxOutstanding = Math.max(
+    1,
+    ...bulkOrders.map((o) => (o.amountDue ?? 0) - (o.amountPaid ?? 0))
+  );
+  const wsOutstanding = bulkOrders.map((o) => {
     const amt = Math.max(0, (o.amountDue ?? 0) - (o.amountPaid ?? 0));
     // One row per ORDER, not per customer — a customer with several bulk
     // orders (e.g. repeat business) would otherwise produce duplicate
     // `customer` values, so `ref` (the order's own unique reference) is the
     // list key below rather than the customer name.
-    return { customer: o.customer, ref: o.ref, amt, color: amt === 0 ? T.green : (o.status === "overdue" ? T.crimson : T.antiqueGold) };
+    return {
+      customer: o.customer,
+      ref: o.ref,
+      amt,
+      color: amt === 0 ? T.green : o.status === "overdue" ? T.crimson : T.antiqueGold,
+    };
   });
 
-  const wsInvStatus = (["paid", "partial", "pending"] as const).map(status => ({
-    name: status === "paid" ? "Paid" : status === "partial" ? "Partially Paid" : "Pending",
-    value: bulkOrders.filter(o => (o.paymentStatus ?? "pending") === status).length,
-    color: status === "paid" ? T.green : status === "partial" ? T.antiqueGold : T.crimson,
-  })).filter(d => d.value > 0);
+  const wsInvStatus = (["paid", "partial", "pending"] as const)
+    .map((status) => ({
+      name: status === "paid" ? "Paid" : status === "partial" ? "Partially Paid" : "Pending",
+      value: bulkOrders.filter((o) => (o.paymentStatus ?? "pending") === status).length,
+      color: status === "paid" ? T.green : status === "partial" ? T.antiqueGold : T.crimson,
+    }))
+    .filter((d) => d.value > 0);
 
   const totalInvoiced = bulkOrders.reduce((s, o) => s + (o.amountDue ?? 0), 0);
   const totalCollected = bulkOrders.reduce((s, o) => s + (o.amountPaid ?? 0), 0);
@@ -168,186 +274,500 @@ export function WholesaleSalesReport() {
 
   const bulkOrderColumns: ColumnDef<BulkOrder>[] = [
     {
-      id: "ref", header: "Bulk Order Ref", accessor: o => o.ref,
-      cell: (_v, o) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy }}>{o.ref}</span>,
+      id: "ref",
+      header: "Bulk Order Ref",
+      accessor: (o) => o.ref,
+      cell: (_v, o) => (
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy }}>
+          {o.ref}
+        </span>
+      ),
     },
     {
-      id: "customer", header: "Customer Name", accessor: o => o.customer,
+      id: "customer",
+      header: "Customer Name",
+      accessor: (o) => o.customer,
       cell: (_v, o) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{o.customer}</span>,
     },
     {
-      id: "sarees", header: "Sarees", accessor: o => o.total, align: "center",
-      cell: (_v, o) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{o.total}</span>,
+      id: "sarees",
+      header: "Sarees",
+      accessor: (o) => o.total,
+      align: "center",
+      cell: (_v, o) => (
+        <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{o.total}</span>
+      ),
     },
     {
-      id: "invoiceAmt", header: "Invoice Amount", accessor: o => o.amountDue ?? 0, type: "number",
+      id: "invoiceAmt",
+      header: "Invoice Amount",
+      accessor: (o) => o.amountDue ?? 0,
+      type: "number",
       cell: (_v, o) => {
         const invoiceAmt = o.amountDue ?? 0;
-        return <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{invoiceAmt > 0 ? formatMoney(rupees(invoiceAmt)) : "—"}</span>;
+        return (
+          <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>
+            {invoiceAmt > 0 ? formatMoney(rupees(invoiceAmt)) : "—"}
+          </span>
+        );
       },
     },
     {
-      id: "collected", header: "Collected", accessor: o => o.amountPaid ?? 0, type: "number",
+      id: "collected",
+      header: "Collected",
+      accessor: (o) => o.amountPaid ?? 0,
+      type: "number",
       cell: (_v, o) => {
         const collected = o.amountPaid ?? 0;
-        return <span style={{ fontFamily: "var(--font-mono)", color: T.green, fontWeight: 600 }}>{collected > 0 ? formatMoney(rupees(collected)) : "—"}</span>;
+        return (
+          <span style={{ fontFamily: "var(--font-mono)", color: T.green, fontWeight: 600 }}>
+            {collected > 0 ? formatMoney(rupees(collected)) : "—"}
+          </span>
+        );
       },
     },
     {
-      id: "balance", header: "Balance Due", accessor: o => (o.amountDue ?? 0) - (o.amountPaid ?? 0), type: "number",
+      id: "balance",
+      header: "Balance Due",
+      accessor: (o) => (o.amountDue ?? 0) - (o.amountPaid ?? 0),
+      type: "number",
       cell: (_v, o) => {
         const balance = (o.amountDue ?? 0) - (o.amountPaid ?? 0);
-        return <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: balance <= 0 ? T.green : T.crimson }}>{balance > 0 ? formatMoney(rupees(balance)) : "— Paid"}</span>;
+        return (
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontWeight: 700,
+              color: balance <= 0 ? T.green : T.crimson,
+            }}
+          >
+            {balance > 0 ? formatMoney(rupees(balance)) : "— Paid"}
+          </span>
+        );
       },
     },
     {
-      id: "dispatchDate", header: "Dispatch Date", accessor: o => o.dispatchDate,
-      cell: (_v, o) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{o.dispatchDate || "—"}</span>,
+      id: "dispatchDate",
+      header: "Dispatch Date",
+      accessor: (o) => o.dispatchDate,
+      cell: (_v, o) => (
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
+          {o.dispatchDate || "—"}
+        </span>
+      ),
     },
     {
-      id: "status", header: "Status", accessor: o => o.paymentStatus, type: "status", align: "center",
-      cell: (_v, o) => <StatusPill taxonomy="payment" status={PAYMENT_STATUS_KEY[o.paymentStatus ?? "pending"] ?? "unpaid"} />,
+      id: "status",
+      header: "Status",
+      accessor: (o) => o.paymentStatus,
+      type: "status",
+      align: "center",
+      cell: (_v, o) => (
+        <StatusPill
+          taxonomy="payment"
+          status={PAYMENT_STATUS_KEY[o.paymentStatus ?? "pending"] ?? "unpaid"}
+        />
+      ),
     },
   ];
 
   return (
     <div id="rep-wholesale" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
-    <SectionCard
-      icon={Boxes}
-      title="Wholesale Sales Report"
-      subtitle="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer."
-    >
-      <ReportDLBar />
+      <SectionCard
+        icon={Boxes}
+        title="Wholesale Sales Report"
+        subtitle="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer."
+      >
+        <ReportDLBar />
 
-      {/* Weekly sarees dispatched — summary strip + bar chart */}
-      <FadeUp>
-        <ChartCard style={{ marginBottom: 24 }}>
-          <ChartBand tone="output" icon={<Boxes size={19} color={BAND.output.icon} />} title="Wholesale Sarees Dispatched Each Week" sub={`${periodLabel} — weekly breakdown`} />
-          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 14, flexWrap: "wrap", gap: 12 }}>
-            <div style={{ display: "flex", gap: 24 }}>
-              <div>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Sarees Dispatched</div>
-                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{wholesaleWeeklyData.reduce((s, w) => s + w.sarees, 0)}</div>
-              </div>
-              <div>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Invoiced</div>
-                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}><Money value={rupees(wholesaleWeeklyData.reduce((s, w) => s + w.revenue, 0))} /></div>
-              </div>
-            </div>
-          </div>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={wholesaleWeeklyData}>
-              <CartesianGrid key="wsw-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="wsw-x" dataKey="week" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="wsw-y" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={30} />
-              <Tooltip key="wsw-tip" content={<WholesaleWeeklyTooltip />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
-              <Bar key="wsw-bar" dataKey="sarees" name="Sarees Dispatched" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-          </div>
-        </ChartCard>
-      </FadeUp>
-
-      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}>
-        <ChartCard>
-          <ChartBand tone="pipeline" icon={<Banknote size={19} color={BAND.pipeline.icon} />} title="Wholesale Revenue — Last 6 Months" sub="Monthly invoiced amount" />
-          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-          {wsMonthlyRev.length === 0 ? (
-            <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-              No wholesale orders recorded yet.
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={wsMonthlyRev}>
-                <CartesianGrid key="ws-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-                <XAxis key="ws-x" dataKey="month" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis key="ws-y" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v))} width={55} />
-                <Tooltip key="ws-tip" content={<MoneyChartTip />} />
-                <Bar key="ws-rev" dataKey="rev" name="Revenue">
-                  {wsMonthlyRev.map((e, i) => <Cell key={`ws-cell-${e.month}`} fill={i === wsMonthlyRev.length - 1 ? semantic.chart.series[0] : "rgba(154,45,74,0.35)"} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-          </div>
-        </ChartCard>
-
-        <ChartCard>
-          <ChartBand tone="weavers" icon={<ReceiptText size={19} color={BAND.weavers.icon} />} title="How Much Each Customer Still Owes" sub="Outstanding balance per customer" />
-          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 11, padding: "8px 0" }}>
-            {wsOutstanding.length === 0 && (
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bulk orders recorded yet.</div>
-            )}
-            {wsOutstanding.map((d, i) => (
-              <div key={d.ref}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{d.customer}</span>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: d.color }}>{d.amt === 0 ? "Paid ✓" : formatMoney(rupees(d.amt))}</span>
+        {/* Weekly sarees dispatched — summary strip + bar chart */}
+        <FadeUp>
+          <ChartCard style={{ marginBottom: 24 }}>
+            <ChartBand
+              tone="output"
+              icon={<Boxes size={19} color={BAND.output.icon} />}
+              title="Wholesale Sarees Dispatched Each Week"
+              sub={`${periodLabel} — weekly breakdown`}
+            />
+            <div
+              className="p-5 sm:p-6"
+              style={{ display: "flex", flexDirection: "column", flex: 1 }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  marginBottom: 14,
+                  flexWrap: "wrap",
+                  gap: 12,
+                }}
+              >
+                <div style={{ display: "flex", gap: 24 }}>
+                  <div>
+                    <div
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 12,
+                        color: T.taupe,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                      }}
+                    >
+                      Sarees Dispatched
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: F.display,
+                        fontSize: 20,
+                        fontWeight: 700,
+                        color: T.royalBurgundy,
+                      }}
+                    >
+                      {wholesaleWeeklyData.reduce((s, w) => s + w.sarees, 0)}
+                    </div>
+                  </div>
+                  <div>
+                    <div
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 12,
+                        color: T.taupe,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                      }}
+                    >
+                      Invoiced
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: F.display,
+                        fontSize: 20,
+                        fontWeight: 700,
+                        color: T.green,
+                      }}
+                    >
+                      <Money
+                        value={rupees(wholesaleWeeklyData.reduce((s, w) => s + w.revenue, 0))}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <TrackBar pct={d.amt === 0 ? 100 : Math.round((d.amt / maxOutstanding) * 100)} fill={d.color} height={9} delay={i * 0.08} />
               </div>
-            ))}
-          </div>
-          </div>
-        </ChartCard>
-
-        <ChartCard>
-          <ChartBand tone="orders" icon={<CheckCircle2 size={19} color={BAND.orders.icon} />} title="Invoice Status — All Bulk Orders" sub="Live payment status breakdown" />
-          <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-          {wsInvStatus.length === 0 ? (
-            <div style={{ padding: "20px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bulk orders recorded yet.</div>
-          ) : (
-          <>
-          <ResponsiveContainer width="100%" height={150}>
-            <PieChart>
-              <Pie key="ws-inv-pie" data={wsInvStatus} cx="50%" cy="50%" innerRadius={45} outerRadius={65} dataKey="value" stroke="none" paddingAngle={3}>
-                {wsInvStatus.map(e => <Cell key={`ws-inv-cell-${e.name}`} fill={e.color} />)}
-              </Pie>
-              <Tooltip key="ws-inv-tip" formatter={(v: ValueType, n: NameType) => [`${v} invoices`, n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "0 8px" }}>
-            {wsInvStatus.map(d => (
-              <div key={d.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
-                </div>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: d.color }}>{d.value}</span>
-              </div>
-            ))}
-          </div>
-          </>
-          )}
-          </div>
-        </ChartCard>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4" style={{ gap: 22, marginBottom: 28, alignItems: "stretch" }}>
-        <SilkSumCard icon={<ReceiptText size={22} color={T.antiqueGold} />} label="Total Bulk Orders" value={`${bulkOrders.length} orders`} sub="In the selected period" gid="wsr-b" />
-        <SilkSumCard icon={<Banknote size={22} color={T.antiqueGold} />} label="Total Invoiced Amount" value={formatMoney(rupees(totalInvoiced))} sub="Across all customers" gid="wsr-i" />
-        <SilkSumCard icon={<CheckCircle2 size={22} color={T.antiqueGold} />} label="Total Collected" value={formatMoney(rupees(totalCollected))} sub="Payments received" gid="wsr-c" />
-        <SilkSumCard icon={<BellRing size={22} color={T.antiqueGold} />} label="Total Outstanding" value={formatMoney(rupees(Math.max(totalOutstanding, 0)))} sub="Yet to be collected" gid="wsr-o" />
-      </div>
-
-      <FadeUp>
-        <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div className="w-full">
-            <div className="min-w-[850px]">
-              <DataTable
-                columns={bulkOrderColumns}
-                data={bulkOrders}
-                getRowId={o => o.ref}
-                emptyTitle="No bulk orders recorded yet"
-                pagination
-              />
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={wholesaleWeeklyData}>
+                  <CartesianGrid
+                    key="wsw-grid"
+                    strokeDasharray="3 3"
+                    stroke="rgba(110,15,45,0.07)"
+                    vertical={false}
+                  />
+                  <XAxis
+                    key="wsw-x"
+                    dataKey="week"
+                    tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    key="wsw-y"
+                    tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={30}
+                  />
+                  <Tooltip
+                    key="wsw-tip"
+                    content={<WholesaleWeeklyTooltip />}
+                    cursor={{ fill: "rgba(110,15,45,0.04)" }}
+                  />
+                  <Bar
+                    key="wsw-bar"
+                    dataKey="sarees"
+                    name="Sarees Dispatched"
+                    fill={T.royalBurgundy}
+                    radius={[6, 6, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-          </div>
+          </ChartCard>
+        </FadeUp>
+
+        <div
+          className="grid grid-cols-1 md:grid-cols-3"
+          style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}
+        >
+          <ChartCard>
+            <ChartBand
+              tone="pipeline"
+              icon={<Banknote size={19} color={BAND.pipeline.icon} />}
+              title="Wholesale Revenue — Last 6 Months"
+              sub="Monthly invoiced amount"
+            />
+            <div
+              className="p-5 sm:p-6"
+              style={{ display: "flex", flexDirection: "column", flex: 1 }}
+            >
+              {wsMonthlyRev.length === 0 ? (
+                <div
+                  style={{
+                    padding: "40px 0",
+                    textAlign: "center" as const,
+                    fontFamily: F.ui,
+                    fontSize: 13,
+                    color: T.taupe,
+                  }}
+                >
+                  No wholesale orders recorded yet.
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={wsMonthlyRev}>
+                    <CartesianGrid
+                      key="ws-grid"
+                      strokeDasharray="3 3"
+                      stroke="rgba(110,15,45,0.07)"
+                      vertical={false}
+                    />
+                    <XAxis
+                      key="ws-x"
+                      dataKey="month"
+                      tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      key="ws-y"
+                      tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(v: number) => formatMoney(rupees(v))}
+                      width={55}
+                    />
+                    <Tooltip key="ws-tip" content={<MoneyChartTip />} />
+                    <Bar key="ws-rev" dataKey="rev" name="Revenue">
+                      {wsMonthlyRev.map((e, i) => (
+                        <Cell
+                          key={`ws-cell-${e.month}`}
+                          fill={
+                            i === wsMonthlyRev.length - 1
+                              ? semantic.chart.series[0]
+                              : "rgba(154,45,74,0.35)"
+                          }
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </ChartCard>
+
+          <ChartCard>
+            <ChartBand
+              tone="weavers"
+              icon={<ReceiptText size={19} color={BAND.weavers.icon} />}
+              title="How Much Each Customer Still Owes"
+              sub="Outstanding balance per customer"
+            />
+            <div
+              className="p-5 sm:p-6"
+              style={{ display: "flex", flexDirection: "column", flex: 1 }}
+            >
+              <div style={{ display: "flex", flexDirection: "column", gap: 11, padding: "8px 0" }}>
+                {wsOutstanding.length === 0 && (
+                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                    No bulk orders recorded yet.
+                  </div>
+                )}
+                {wsOutstanding.map((d, i) => (
+                  <div key={d.ref}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "baseline",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+                        {d.customer}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color: d.color,
+                        }}
+                      >
+                        {d.amt === 0 ? "Paid ✓" : formatMoney(rupees(d.amt))}
+                      </span>
+                    </div>
+                    <TrackBar
+                      pct={d.amt === 0 ? 100 : Math.round((d.amt / maxOutstanding) * 100)}
+                      fill={d.color}
+                      height={9}
+                      delay={i * 0.08}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </ChartCard>
+
+          <ChartCard>
+            <ChartBand
+              tone="orders"
+              icon={<CheckCircle2 size={19} color={BAND.orders.icon} />}
+              title="Invoice Status — All Bulk Orders"
+              sub="Live payment status breakdown"
+            />
+            <div
+              className="p-5 sm:p-6"
+              style={{ display: "flex", flexDirection: "column", flex: 1 }}
+            >
+              {wsInvStatus.length === 0 ? (
+                <div
+                  style={{
+                    padding: "20px 0",
+                    textAlign: "center" as const,
+                    fontFamily: F.ui,
+                    fontSize: 13,
+                    color: T.taupe,
+                  }}
+                >
+                  No bulk orders recorded yet.
+                </div>
+              ) : (
+                <>
+                  <ResponsiveContainer width="100%" height={150}>
+                    <PieChart>
+                      <Pie
+                        key="ws-inv-pie"
+                        data={wsInvStatus}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={45}
+                        outerRadius={65}
+                        dataKey="value"
+                        stroke="none"
+                        paddingAngle={3}
+                      >
+                        {wsInvStatus.map((e) => (
+                          <Cell key={`ws-inv-cell-${e.name}`} fill={e.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        key="ws-inv-tip"
+                        formatter={(v: ValueType, n: NameType) => [`${v} invoices`, n]}
+                        contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 6, padding: "0 8px" }}
+                  >
+                    {wsInvStatus.map((d) => (
+                      <div
+                        key={d.name}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <div
+                            style={{
+                              width: 9,
+                              height: 9,
+                              borderRadius: "50%",
+                              background: d.color,
+                            }}
+                          />
+                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                            {d.name}
+                          </span>
+                        </div>
+                        <span
+                          style={{
+                            fontFamily: "var(--font-mono)",
+                            fontSize: 12,
+                            fontWeight: 700,
+                            color: d.color,
+                          }}
+                        >
+                          {d.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </ChartCard>
         </div>
-      </FadeUp>
-    </SectionCard>
+
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4"
+          style={{ gap: 22, marginBottom: 28, alignItems: "stretch" }}
+        >
+          <SilkSumCard
+            icon={<ReceiptText size={22} color={T.antiqueGold} />}
+            label="Total Bulk Orders"
+            value={`${bulkOrders.length} orders`}
+            sub="In the selected period"
+            gid="wsr-b"
+          />
+          <SilkSumCard
+            icon={<Banknote size={22} color={T.antiqueGold} />}
+            label="Total Invoiced Amount"
+            value={formatMoney(rupees(totalInvoiced))}
+            sub="Across all customers"
+            gid="wsr-i"
+          />
+          <SilkSumCard
+            icon={<CheckCircle2 size={22} color={T.antiqueGold} />}
+            label="Total Collected"
+            value={formatMoney(rupees(totalCollected))}
+            sub="Payments received"
+            gid="wsr-c"
+          />
+          <SilkSumCard
+            icon={<BellRing size={22} color={T.antiqueGold} />}
+            label="Total Outstanding"
+            value={formatMoney(rupees(Math.max(totalOutstanding, 0)))}
+            sub="Yet to be collected"
+            gid="wsr-o"
+          />
+        </div>
+
+        <FadeUp>
+          <div
+            style={{
+              background: "#FFFFFF",
+              borderRadius: 12,
+              border: `1px solid ${T.borderDef}`,
+              overflow: "hidden",
+              boxShadow: "0 2px 14px rgba(74,6,27,0.06)",
+            }}
+          >
+            <div className="w-full">
+              <div className="min-w-[850px]">
+                <DataTable
+                  columns={bulkOrderColumns}
+                  data={bulkOrders}
+                  getRowId={(o) => o.ref}
+                  emptyTitle="No bulk orders recorded yet"
+                  pagination
+                />
+              </div>
+            </div>
+          </div>
+        </FadeUp>
+      </SectionCard>
     </div>
   );
 }

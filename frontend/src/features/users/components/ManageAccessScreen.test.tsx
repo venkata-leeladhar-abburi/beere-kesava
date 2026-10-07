@@ -6,9 +6,16 @@ import { ManageAccessScreen } from "./ManageAccessScreen";
 import { TableRow } from "./utils";
 
 const worker: TableRow = {
-  empId: "EMP-004", firstName: "Ravi", lastName: "Kumar", role: "Worker Staff",
-  mobile: "9876543210", portal: "Worker Staff Portal", dateAdded: "01 Jan 2026",
-  status: "Active", additionalRoles: [], backendId: "u1",
+  empId: "EMP-004",
+  firstName: "Ravi",
+  lastName: "Kumar",
+  role: "Worker Staff",
+  mobile: "9876543210",
+  portal: "Worker Staff Portal",
+  dateAdded: "01 Jan 2026",
+  status: "Active",
+  additionalRoles: [],
+  backendId: "u1",
 };
 
 /** The label carries both the role name and its portal, so match on the start. */
@@ -63,7 +70,9 @@ describe("ManageAccessScreen", () => {
 
   it("says a single-portal account skips the login picker", () => {
     setup();
-    expect(screen.getByText(/goes straight to the Worker Staff Portal at login/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/goes straight to the Worker Staff Portal at login/)
+    ).toBeInTheDocument();
   });
 
   it("offers no extra portals to a weaver", () => {

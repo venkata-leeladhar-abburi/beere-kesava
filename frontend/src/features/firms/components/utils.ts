@@ -11,7 +11,12 @@ export function fmtFull(n: number): string {
 }
 
 export function initials(name: string): string {
-  return name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 }
 
 // Was `parseInt(id.replace("FIRM-",""), 10) % 5` — only worked for the old

@@ -41,8 +41,14 @@ export type { InventoryRecord };
  * exactly what moved where.
  */
 export function InventoryPage({
-  canRaiseQuotation = true, canDispatchWholesale = true, canDispatchShop = true, canSeeMoney = true,
-  showQuickDispatch = true, showCategorySplit = true, showQuotationsSection = true, showDispatchHistory = true,
+  canRaiseQuotation = true,
+  canDispatchWholesale = true,
+  canDispatchShop = true,
+  canSeeMoney = true,
+  showQuickDispatch = true,
+  showCategorySplit = true,
+  showQuotationsSection = true,
+  showDispatchHistory = true,
 }: {
   canRaiseQuotation?: boolean;
   /** Wholesale dispatch always involves per-saree pricing and GST, so it's tied
@@ -116,209 +122,239 @@ export function InventoryPage({
 
   return (
     <MoneyAccessProvider allowed={canSeeMoney}>
-    <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: F.ui }}>
+      <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: F.ui }}>
+        {/* ── PAGE HEADER & FLOATING STAT STRIP ──────────────────────────────── */}
+        <PageHeaderAndStats
+          total={total}
+          pendingCount={pendingCount}
+          ready={ready}
+          thisMonth={thisMonth}
+          damaged={damaged}
+        />
 
-      {/* ── PAGE HEADER & FLOATING STAT STRIP ──────────────────────────────── */}
-      <PageHeaderAndStats
-        total={total}
-        pendingCount={pendingCount}
-        ready={ready}
-        thisMonth={thisMonth}
-        damaged={damaged}
-      />
+        {/* ── BODY ──────────────────────────────────────────────────────────── */}
+        <div
+          className="px-4 md:px-7 xl:px-14"
+          style={{ paddingTop: 96, paddingBottom: 40, width: "100%" }}
+        >
+          <div
+            className={
+              hasSidebar
+                ? "grid grid-cols-1 xl:[grid-template-columns:minmax(0,1fr)_300px]"
+                : "grid grid-cols-1"
+            }
+            style={{ gap: 28, alignItems: "start" }}
+          >
+            {/* ── MAIN TABLE SECTION ──────────────────────────────────────── */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              {/* Action Bar (Barcode Scanner + Bulk Dispatch Buttons) */}
+              <ActionBar
+                hasAnyDispatchAction={hasAnyDispatchAction}
+                selectedCount={selected.size}
+                dispatchableSelectedCount={dispatchableSelected.length}
+                scanMsg={scanMsg}
+                scanDetail={scanDetail}
+                onScan={handleScan}
+                canDispatchShop={canDispatchShop}
+                canDispatchWholesale={canDispatchWholesale}
+                canRaiseQuotation={canRaiseQuotation}
+                onOpenModal={setModal}
+                onClearSelection={() => setSelected(new Set())}
+              />
 
-      {/* ── BODY ──────────────────────────────────────────────────────────── */}
-      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 96, paddingBottom: 40, width: "100%" }}>
-        <div className={hasSidebar ? "grid grid-cols-1 xl:[grid-template-columns:minmax(0,1fr)_300px]" : "grid grid-cols-1"} style={{ gap: 28, alignItems: "start" }}>
-
-          {/* ── MAIN TABLE SECTION ──────────────────────────────────────── */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            {/* Action Bar (Barcode Scanner + Bulk Dispatch Buttons) */}
-            <ActionBar
-              hasAnyDispatchAction={hasAnyDispatchAction}
-              selectedCount={selected.size}
-              dispatchableSelectedCount={dispatchableSelected.length}
-              scanMsg={scanMsg}
-              scanDetail={scanDetail}
-              onScan={handleScan}
-              canDispatchShop={canDispatchShop}
-              canDispatchWholesale={canDispatchWholesale}
-              canRaiseQuotation={canRaiseQuotation}
-              onOpenModal={setModal}
-              onClearSelection={() => setSelected(new Set())}
-            />
-
-            {/* All Sarees Inventory — same table used on the Production page.
+              {/* All Sarees Inventory — same table used on the Production page.
                 id is scrollIntoView's target after a scan (see handleScan in
                 useInventoryPageState) so a saree scanned from anywhere on the
                 page — its selected row sorts to the top of page 1 there —
                 actually ends up on screen instead of just reordering off
                 past the current scroll position. */}
-            <div id="inv-all-sarees" style={{ ...card, borderRadius: 16, padding: 20 }}>
-              <WeaverSareesSection
-                ownerType="all"
-                persistKey="inventory-all-sarees"
-                selectable={hasAnyDispatchAction}
-                selectedIds={selected}
-                onToggleRow={toggleSareeRow}
-                onToggleAll={toggleAllVisible}
-                onVisibleChange={rememberVisibleRows}
-                onAllRowsChange={rememberAllRows}
-                onUploadPhoto={canUploadPhotos ? r => setPhotoSareeId(r.sareeId) : undefined}
-              />
+              <div id="inv-all-sarees" style={{ ...card, borderRadius: 16, padding: 20 }}>
+                <WeaverSareesSection
+                  ownerType="all"
+                  persistKey="inventory-all-sarees"
+                  selectable={hasAnyDispatchAction}
+                  selectedIds={selected}
+                  onToggleRow={toggleSareeRow}
+                  onToggleAll={toggleAllVisible}
+                  onVisibleChange={rememberVisibleRows}
+                  onAllRowsChange={rememberAllRows}
+                  onUploadPhoto={canUploadPhotos ? (r) => setPhotoSareeId(r.sareeId) : undefined}
+                />
+              </div>
             </div>
+
+            {/* ── QUICK ACTIONS SIDEBAR ───────────────────────────────────── */}
+            <QuickActionsSidebar
+              showQuickDispatch={showQuickDispatch}
+              showCategorySplit={showCategorySplit}
+              canDispatchShop={canDispatchShop}
+              canDispatchWholesale={canDispatchWholesale}
+              canRaiseQuotation={canRaiseQuotation}
+              selectedCount={selected.size}
+              pendingCount={pendingCount}
+              ready={ready}
+              dispatched={dispatched}
+              damaged={damaged}
+              total={total}
+              onOpenModal={setModal}
+            />
           </div>
-
-          {/* ── QUICK ACTIONS SIDEBAR ───────────────────────────────────── */}
-          <QuickActionsSidebar
-            showQuickDispatch={showQuickDispatch}
-            showCategorySplit={showCategorySplit}
-            canDispatchShop={canDispatchShop}
-            canDispatchWholesale={canDispatchWholesale}
-            canRaiseQuotation={canRaiseQuotation}
-            selectedCount={selected.size}
-            pendingCount={pendingCount}
-            ready={ready}
-            dispatched={dispatched}
-            damaged={damaged}
-            total={total}
-            onOpenModal={setModal}
-          />
         </div>
-      </div>
 
-      {/* ── QUOTATIONS ───────────────────────────────────────────────────── */}
-      {showQuotationsSection && (
-        <div className="px-4 md:px-7 xl:px-14" style={{ marginTop: 40 }}>
-          <QuotationsSection
-            quotations={quotations}
-            onDispatch={q => { setQuotationDispatch(q); setModal("wholesale"); }}
-          />
-        </div>
-      )}
-
-      {/* ── DISPATCH HISTORY ─────────────────────────────────────────────── */}
-      {showDispatchHistory && (
-        <div className="px-4 md:px-7 xl:px-14" style={{ paddingBottom: 80, marginTop: 24 }}>
-          <DispatchHistorySection 
-            dispatches={dispatches} 
-            firms={firms} 
-            onResume={setResumeDispatch} 
-            onDelete={(d) => deleteDispatch(d.id, "admin-staff")}
-            onViewInvoice={setViewingInvoice}
-          />
-        </div>
-      )}
-
-      {/* ── MODALS ──────────────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {modal === "shop" && (
-          <DispatchShopModal
-            key="shop-modal"
-            sarees={selectedSarees}
-            available={availableSarees}
-            onConfirm={handleShopConfirm}
-            onClose={() => setModal(null)}
-          />
+        {/* ── QUOTATIONS ───────────────────────────────────────────────────── */}
+        {showQuotationsSection && (
+          <div className="px-4 md:px-7 xl:px-14" style={{ marginTop: 40 }}>
+            <QuotationsSection
+              quotations={quotations}
+              onDispatch={(q) => {
+                setQuotationDispatch(q);
+                setModal("wholesale");
+              }}
+            />
+          </div>
         )}
-        {modal === "wholesale" && canDispatchWholesale && quotationDispatch && (
-          <DispatchWholesaleModal
-            key="wholesale-modal-quotation"
-            sarees={quotationDispatchSarees}
-            available={availableSarees}
-            initialCustomerId={quotationDispatch.customerId}
-            initialBulkOrderRef={quotationDispatch.bulkOrderRef}
-            onConfirm={handleWholesaleConfirm}
-            onClose={() => { setModal(null); setQuotationDispatch(null); }}
-          />
+
+        {/* ── DISPATCH HISTORY ─────────────────────────────────────────────── */}
+        {showDispatchHistory && (
+          <div className="px-4 md:px-7 xl:px-14" style={{ paddingBottom: 80, marginTop: 24 }}>
+            <DispatchHistorySection
+              dispatches={dispatches}
+              firms={firms}
+              onResume={setResumeDispatch}
+              onDelete={(d) => deleteDispatch(d.id, "admin-staff")}
+              onViewInvoice={setViewingInvoice}
+            />
+          </div>
         )}
-        {/* Opens with or without a prior selection — sarees can be added inside. */}
-        {modal === "wholesale" && canDispatchWholesale && !quotationDispatch && (() => {
-          // Auto-detect bulk order from selected sarees
-          const selectedRecords = allRecords.filter(r => dispatchableSelected.some(d => d.id === r.id));
-          const detectedRef = selectedRecords.find(r => r.bulkOrderRef)?.bulkOrderRef;
-          const detectedOrder = detectedRef ? bulkOrders.find(o => o.ref === detectedRef) : undefined;
-          const detectedCustomerId = detectedOrder?.customerId;
-          return (
+
+        {/* ── MODALS ──────────────────────────────────────────────────────── */}
+        <AnimatePresence>
+          {modal === "shop" && (
+            <DispatchShopModal
+              key="shop-modal"
+              sarees={selectedSarees}
+              available={availableSarees}
+              onConfirm={handleShopConfirm}
+              onClose={() => setModal(null)}
+            />
+          )}
+          {modal === "wholesale" && canDispatchWholesale && quotationDispatch && (
             <DispatchWholesaleModal
-              key="wholesale-modal"
-              sarees={selectedSarees}
+              key="wholesale-modal-quotation"
+              sarees={quotationDispatchSarees}
               available={availableSarees}
-              initialBulkOrderRef={detectedRef}
-              initialCustomerId={detectedCustomerId}
+              initialCustomerId={quotationDispatch.customerId}
+              initialBulkOrderRef={quotationDispatch.bulkOrderRef}
               onConfirm={handleWholesaleConfirm}
-              onClose={() => setModal(null)}
+              onClose={() => {
+                setModal(null);
+                setQuotationDispatch(null);
+              }}
             />
-          );
-        })()}
-        {modal === "quotation" && canRaiseQuotation && (() => {
-          const selectedRecords = allRecords.filter(r => dispatchableSelected.some(d => d.id === r.id));
-          const detectedRef = selectedRecords.find(r => r.bulkOrderRef)?.bulkOrderRef;
-          const detectedOrder = detectedRef ? bulkOrders.find(o => o.ref === detectedRef) : undefined;
-          const detectedCustomerId = detectedOrder?.customerId;
-          return (
-            <RaiseQuotationModal
-              key="quotation-modal"
-              sarees={selectedSarees}
-              available={availableSarees}
-              initialBulkOrderRef={detectedRef}
-              initialCustomerId={detectedCustomerId}
-              onConfirm={handleRaiseQuotation}
-              onClose={() => setModal(null)}
+          )}
+          {/* Opens with or without a prior selection — sarees can be added inside. */}
+          {modal === "wholesale" &&
+            canDispatchWholesale &&
+            !quotationDispatch &&
+            (() => {
+              // Auto-detect bulk order from selected sarees
+              const selectedRecords = allRecords.filter((r) =>
+                dispatchableSelected.some((d) => d.id === r.id)
+              );
+              const detectedRef = selectedRecords.find((r) => r.bulkOrderRef)?.bulkOrderRef;
+              const detectedOrder = detectedRef
+                ? bulkOrders.find((o) => o.ref === detectedRef)
+                : undefined;
+              const detectedCustomerId = detectedOrder?.customerId;
+              return (
+                <DispatchWholesaleModal
+                  key="wholesale-modal"
+                  sarees={selectedSarees}
+                  available={availableSarees}
+                  initialBulkOrderRef={detectedRef}
+                  initialCustomerId={detectedCustomerId}
+                  onConfirm={handleWholesaleConfirm}
+                  onClose={() => setModal(null)}
+                />
+              );
+            })()}
+          {modal === "quotation" &&
+            canRaiseQuotation &&
+            (() => {
+              const selectedRecords = allRecords.filter((r) =>
+                dispatchableSelected.some((d) => d.id === r.id)
+              );
+              const detectedRef = selectedRecords.find((r) => r.bulkOrderRef)?.bulkOrderRef;
+              const detectedOrder = detectedRef
+                ? bulkOrders.find((o) => o.ref === detectedRef)
+                : undefined;
+              const detectedCustomerId = detectedOrder?.customerId;
+              return (
+                <RaiseQuotationModal
+                  key="quotation-modal"
+                  sarees={selectedSarees}
+                  available={availableSarees}
+                  initialBulkOrderRef={detectedRef}
+                  initialCustomerId={detectedCustomerId}
+                  onConfirm={handleRaiseQuotation}
+                  onClose={() => setModal(null)}
+                />
+              );
+            })()}
+        </AnimatePresence>
+        <AnimatePresence>
+          {resumeDispatch && (
+            <ResumeDispatchModal
+              record={resumeDispatch}
+              onSave={(patch) => {
+                updateDispatch(resumeDispatch.id, patch);
+                setResumeDispatch(null);
+                toast.success("Dispatch details completed");
+              }}
+              onClose={() => setResumeDispatch(null)}
             />
-          );
-        })()}
-      </AnimatePresence>
-      <AnimatePresence>
-        {resumeDispatch && (
-          <ResumeDispatchModal
-            record={resumeDispatch}
-            onSave={patch => {
-              updateDispatch(resumeDispatch.id, patch);
-              setResumeDispatch(null);
-              toast.success("Dispatch details completed");
-            }}
-            onClose={() => setResumeDispatch(null)}
-          />
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {/* Wholesale bills a customer, so it prints a tax invoice. A shop
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {/* Wholesale bills a customer, so it prints a tax invoice. A shop
             dispatch is our own stock moving to our own showroom — no sale, no
             GST, no amount payable — so it prints a delivery challan instead. */}
-        {viewingInvoice && viewingInvoice.type === "shop" && (
-          <DispatchChallanModal
-            dispatch={viewingInvoice}
-            onClose={() => setViewingInvoice(null)}
-          />
+          {viewingInvoice && viewingInvoice.type === "shop" && (
+            <DispatchChallanModal
+              dispatch={viewingInvoice}
+              onClose={() => setViewingInvoice(null)}
+            />
+          )}
+          {viewingInvoice && viewingInvoice.type !== "shop" && (
+            <DispatchInvoiceModal
+              dispatch={viewingInvoice}
+              onClose={() => setViewingInvoice(null)}
+            />
+          )}
+        </AnimatePresence>
+        <AnimatePresence></AnimatePresence>
+        <AnimatePresence>
+          {viewingItem && (
+            <InventoryDetailModal
+              item={viewingItem}
+              dispatches={dispatches}
+              returns={returns}
+              onClose={() => setViewingItem(null)}
+            />
+          )}
+        </AnimatePresence>
+        {photoSareeId && (
+          <SareePhotoUploadDialog sareeId={photoSareeId} onClose={() => setPhotoSareeId(null)} />
         )}
-        {viewingInvoice && viewingInvoice.type !== "shop" && (
-          <DispatchInvoiceModal
-            dispatch={viewingInvoice}
-            onClose={() => setViewingInvoice(null)}
-          />
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-      </AnimatePresence>
-      <AnimatePresence>
-        {viewingItem && (
-          <InventoryDetailModal
-            item={viewingItem}
-            dispatches={dispatches}
-            returns={returns}
-            onClose={() => setViewingItem(null)}
-          />
-        )}
-      </AnimatePresence>
-      {photoSareeId && (
-        <SareePhotoUploadDialog sareeId={photoSareeId} onClose={() => setPhotoSareeId(null)} />
-      )}
-      <AnimatePresence>
-        {openDesign && <DesignCodeCard design={openDesign} onClose={() => setOpenDesignCode(null)} />}
-        {openSareeType && <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />}
-      </AnimatePresence>
-    </div>
+        <AnimatePresence>
+          {openDesign && (
+            <DesignCodeCard design={openDesign} onClose={() => setOpenDesignCode(null)} />
+          )}
+          {openSareeType && (
+            <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />
+          )}
+        </AnimatePresence>
+      </div>
     </MoneyAccessProvider>
   );
 }

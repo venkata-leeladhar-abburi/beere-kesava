@@ -156,7 +156,11 @@ function SiteEditor({ site }: { site: GeofenceSite }) {
             </div>
           )}
           <div style={{ marginTop: 10 }}>
-            <QuietButton onClick={() => void moveToMyLocation()} disabled={locating} icon={Crosshair}>
+            <QuietButton
+              onClick={() => void moveToMyLocation()}
+              disabled={locating}
+              icon={Crosshair}
+            >
               {locating ? "Reading location…" : "Move pin to my location"}
             </QuietButton>
           </div>
@@ -176,7 +180,7 @@ function SiteEditor({ site }: { site: GeofenceSite }) {
             <FieldRow label="Latitude">
               <input
                 value={draft.latitude}
-              aria-label="Latitude"
+                aria-label="Latitude"
                 onChange={(e) => setDraft({ ...draft, latitude: e.target.value })}
                 inputMode="decimal"
                 style={{ ...inputStyle, fontVariantNumeric: "tabular-nums" }}
@@ -185,7 +189,7 @@ function SiteEditor({ site }: { site: GeofenceSite }) {
             <FieldRow label="Longitude">
               <input
                 value={draft.longitude}
-              aria-label="Longitude"
+                aria-label="Longitude"
                 onChange={(e) => setDraft({ ...draft, longitude: e.target.value })}
                 inputMode="decimal"
                 style={{ ...inputStyle, fontVariantNumeric: "tabular-nums" }}
@@ -197,7 +201,7 @@ function SiteEditor({ site }: { site: GeofenceSite }) {
             <FieldRow label="Radius (metres)">
               <input
                 value={draft.radiusMeters}
-              aria-label="Radius in metres"
+                aria-label="Radius in metres"
                 onChange={(e) => setDraft({ ...draft, radiusMeters: e.target.value })}
                 inputMode="numeric"
                 style={inputStyle}
@@ -207,7 +211,7 @@ function SiteEditor({ site }: { site: GeofenceSite }) {
             <FieldRow label="Accuracy limit (metres)">
               <input
                 value={draft.maxAccuracyMeters}
-              aria-label="Accuracy limit in metres"
+                aria-label="Accuracy limit in metres"
                 onChange={(e) => setDraft({ ...draft, maxAccuracyMeters: e.target.value })}
                 inputMode="numeric"
                 style={inputStyle}
@@ -239,7 +243,11 @@ function SiteEditor({ site }: { site: GeofenceSite }) {
             <div className="flex items-center gap-2.5">
               <QuietButton
                 onClick={() => {
-                  if (window.confirm(`Remove "${site.label}"? Staff will no longer be able to sign in from there.`)) {
+                  if (
+                    window.confirm(
+                      `Remove "${site.label}"? Staff will no longer be able to sign in from there.`
+                    )
+                  ) {
                     remove.mutate();
                   }
                 }}
@@ -275,7 +283,13 @@ const inputStyle: React.CSSProperties = {
 
 export function SitesCard() {
   const queryClient = useQueryClient();
-  const { data: sites, isLoading, isError, error, refetch } = useQuery({
+  const {
+    data: sites,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["geofence", "sites"],
     queryFn: () => geofenceApi.listSites(),
   });
@@ -285,7 +299,10 @@ export function SitesCard() {
   const create = useMutation({
     mutationFn: async () => {
       const fix = await getCurrentFix();
-      if (!fix) throw new Error("Could not read this device's location. Allow location access and try again.");
+      if (!fix)
+        throw new Error(
+          "Could not read this device's location. Allow location access and try again."
+        );
       return geofenceApi.createSite({
         label: "New site",
         latitude: fix.latitude,
@@ -334,7 +351,8 @@ export function SitesCard() {
           }}
         >
           No site is configured yet, so the location check is not being applied to anyone — everyone
-          can sign in from anywhere. Stand at the premises and press <strong>Add my location</strong>.
+          can sign in from anywhere. Stand at the premises and press{" "}
+          <strong>Add my location</strong>.
         </div>
       )}
       <div className="flex flex-col gap-4">

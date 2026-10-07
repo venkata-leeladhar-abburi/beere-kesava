@@ -148,7 +148,11 @@ export interface FinishingContextValue {
   assignments: FinishingAssignment[];
   returns: FinishingReturn[];
   dispatches: DispatchRecord[];
-  assignSarees: (sareeIds: string[], staff: { id: string; name: string }, assignedBy: string) => void;
+  assignSarees: (
+    sareeIds: string[],
+    staff: { id: string; name: string },
+    assignedBy: string
+  ) => void;
   addReadySaree: (saree: ReadySaree) => void;
   receiveReturn: (params: {
     assignmentId: string;
@@ -163,13 +167,23 @@ export interface FinishingContextValue {
   }) => void;
   // Resolves once the backend has created the record, so callers can read the
   // server-assigned id and invoice number rather than inventing their own.
-  dispatchSarees: (sareeIds: string[], record: Omit<DispatchRecord, "id">) => Promise<{ id: string; invoiceNumber?: string }>;
+  dispatchSarees: (
+    sareeIds: string[],
+    record: Omit<DispatchRecord, "id">
+  ) => Promise<{ id: string; invoiceNumber?: string }>;
   updateDispatch: (id: string, patch: Partial<DispatchRecord>) => void;
   deleteDispatch: (id: string, actorId: string) => void;
   quotations: Quotation[];
   // Resolves with the backend-assigned quotation number.
-  raiseQuotation: (q: Omit<Quotation, "id" | "createdAt">) => Promise<{ id: string; quotationNumber: string }>;
-  assignQuotationFinishing: (quotationId: string, sareeIds: string[], staff: { id: string; name: string }, assignedBy: string) => void;
+  raiseQuotation: (
+    q: Omit<Quotation, "id" | "createdAt">
+  ) => Promise<{ id: string; quotationNumber: string }>;
+  assignQuotationFinishing: (
+    quotationId: string,
+    sareeIds: string[],
+    staff: { id: string; name: string },
+    assignedBy: string
+  ) => void;
   receiveQuotationSarees: (quotationId: string, sareeIds: string[], receivedBy: string) => void;
   markQuotationDispatched: (quotationId: string) => void;
   isError: boolean;

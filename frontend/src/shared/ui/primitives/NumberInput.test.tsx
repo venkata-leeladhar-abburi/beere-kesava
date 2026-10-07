@@ -18,7 +18,7 @@ describe("NumberInput", () => {
         <NumberInput
           aria-label="Amount"
           value={value}
-          onValueChange={v => {
+          onValueChange={(v) => {
             setValue(v);
             onValueChange(v);
           }}

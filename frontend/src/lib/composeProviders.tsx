@@ -11,7 +11,7 @@ export function composeProviders(providers: ProviderComponent[]): ProviderCompon
   return function ComposedProviders({ children }: { children: React.ReactNode }) {
     return providers.reduceRight(
       (acc, Provider) => <Provider>{acc}</Provider>,
-      children as React.ReactElement | React.ReactNode,
+      children as React.ReactElement | React.ReactNode
     ) as React.ReactElement;
   };
 }

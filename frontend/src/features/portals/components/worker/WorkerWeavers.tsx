@@ -26,23 +26,34 @@ export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) 
   const setPage = onSubPageChange ?? setLocalPage;
 
   const pendingReceiptCount = batches
-    .filter(b => b.status === "active")
-    .flatMap(b => b.rows)
-    .filter(r => r.sareeId && !r.receivedAt).length;
+    .filter((b) => b.status === "active")
+    .flatMap((b) => b.rows)
+    .filter((r) => r.sareeId && !r.receivedAt).length;
 
   const pendingQcCount = batches
-    .filter(b => b.status === "active")
-    .flatMap(b => b.rows)
-    .filter(r => r.sareeId && r.receivedAt && r.qcPassed == null).length;
+    .filter((b) => b.status === "active")
+    .flatMap((b) => b.rows)
+    .filter((r) => r.sareeId && r.receivedAt && r.qcPassed == null).length;
 
   const stats: WorkerStat[] = [
-    { label: "Awaiting Receipt", value: pendingReceiptCount, sub: "From active batches", icon: Package, highlight: true },
-    { label: "Received Today", value: liveRecords.length, sub: "Recorded today", icon: PackageCheck },
+    {
+      label: "Awaiting Receipt",
+      value: pendingReceiptCount,
+      sub: "From active batches",
+      icon: Package,
+      highlight: true,
+    },
+    {
+      label: "Received Today",
+      value: liveRecords.length,
+      sub: "Recorded today",
+      icon: PackageCheck,
+    },
     { label: "Pending QC", value: pendingQcCount, sub: "Waiting inspection", icon: ShieldAlert },
   ];
 
   const handleSareeReceived = (rec: ReceivedSareeLog) => {
-    setLiveRecords(prev => [rec, ...prev]);
+    setLiveRecords((prev) => [rec, ...prev]);
     // The material ledger itself now updates from the real backend: receiving
     // a saree (BatchesService.receiveRow) auto-creates a MaterialReturnRecord
     // that draws the weight down from the weaver's outstanding balance, and

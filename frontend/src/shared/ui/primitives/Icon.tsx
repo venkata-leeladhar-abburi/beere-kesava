@@ -23,7 +23,14 @@ type IconProps =
   | (IconPropsBase & { name: IconName; icon?: never })
   | (IconPropsBase & { icon: LucideIcon; name?: never });
 
-export function Icon({ name, icon, size = "md", className, decorative = true, ...rest }: IconProps) {
+export function Icon({
+  name,
+  icon,
+  size = "md",
+  className,
+  decorative = true,
+  ...rest
+}: IconProps) {
   const Component = name ? Icons[name] : icon!;
   const px = ICON_SIZE[size];
   const strokeWidth = size === "xs" || size === "sm" ? 1.5 : 2;

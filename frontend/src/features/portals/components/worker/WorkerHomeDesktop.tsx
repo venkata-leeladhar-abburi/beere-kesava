@@ -1,8 +1,6 @@
 import React, { useRef } from "react";
 import { motion, useInView } from "motion/react";
-import {
-  ChevronRight, Package, Shield, CheckCircle2, ClipboardList, Camera,
-} from "lucide-react";
+import { ChevronRight, Package, Shield, CheckCircle2, ClipboardList, Camera } from "lucide-react";
 import { C, F } from "./tokens";
 import { PageHero, StatsStrip, SectionHeading, type WorkerStat } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
@@ -21,39 +19,51 @@ interface WorkerHomeDesktopProps {
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
+function FadeUp({
+  children,
+  delay = 0,
+  style,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  style?: React.CSSProperties;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px 0px" });
   return (
-    <motion.div ref={ref}
+    <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 28 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, ease: EASE, delay }}
-      style={style}>
+      style={style}
+    >
       {children}
     </motion.div>
   );
 }
 
-
-
 export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
   const { user } = useAuth();
-  const { batches, isLoading: batchesLoading, isError: batchesError, refetch: refetchBatches } = useBatches();
+  const {
+    batches,
+    isLoading: batchesLoading,
+    isError: batchesError,
+    refetch: refetchBatches,
+  } = useBatches();
   const { qcRecords, isLoading: qcLoading, isError: qcError, refetch: refetchQc } = useQc();
 
   const firstName = user?.name ? user.name.split(" ")[0] : "Staff";
 
   const pendingReceiptCount = batches
-    .filter(b => b.status === "active")
-    .flatMap(b => b.rows)
-    .filter(r => r.sareeId && !r.receivedAt).length;
+    .filter((b) => b.status === "active")
+    .flatMap((b) => b.rows)
+    .filter((r) => r.sareeId && !r.receivedAt).length;
 
   const pendingQcCount = batches
-    .filter(b => b.status === "active")
-    .flatMap(b => b.rows)
-    .filter(r => r.sareeId && r.receivedAt && r.qcPassed == null).length;
-
+    .filter((b) => b.status === "active")
+    .flatMap((b) => b.rows)
+    .filter((r) => r.sareeId && r.receivedAt && r.qcPassed == null).length;
 
   const totalTasks = (pendingReceiptCount > 0 ? 1 : 0) + (pendingQcCount > 0 ? 1 : 0);
 
@@ -62,10 +72,15 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
   // "failed", and repeated a saree re-inspected within the same minute.
   const activities = React.useMemo(
     () => buildWorkerActivity(qcRecords, batches).slice(0, 6),
-    [qcRecords, batches],
+    [qcRecords, batches]
   );
 
-  const today = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+  const today = new Date().toLocaleDateString("en-IN", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
@@ -82,11 +97,27 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
   const stats: WorkerStat[] = [
     {
       label: "Active tasks today",
-      value: batchesUnavailable || qcUnavailable ? (batchesLoading || qcLoading ? "…" : "Error") : totalTasks,
-      sub: batchesError || qcError ? "Tap to retry" : totalTasks > 0 ? "Waiting on you right now" : "All caught up",
+      value:
+        batchesUnavailable || qcUnavailable
+          ? batchesLoading || qcLoading
+            ? "…"
+            : "Error"
+          : totalTasks,
+      sub:
+        batchesError || qcError
+          ? "Tap to retry"
+          : totalTasks > 0
+            ? "Waiting on you right now"
+            : "All caught up",
       icon: ClipboardList,
       highlight: totalTasks > 0,
-      onClick: (batchesError || qcError) ? () => { if (batchesError) refetchBatches(); if (qcError) refetchQc(); } : undefined,
+      onClick:
+        batchesError || qcError
+          ? () => {
+              if (batchesError) refetchBatches();
+              if (qcError) refetchQc();
+            }
+          : undefined,
     },
     {
       label: "Sarees to record",
@@ -98,7 +129,11 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
     {
       label: "Awaiting quality check",
       value: batchesUnavailable ? (batchesLoading ? "…" : "Error") : pendingQcCount,
-      sub: batchesError ? "Tap to retry" : pendingQcCount > 0 ? "⚠ Need inspection" : "All inspected",
+      sub: batchesError
+        ? "Tap to retry"
+        : pendingQcCount > 0
+          ? "⚠ Need inspection"
+          : "All inspected",
       icon: Shield,
       alert: pendingQcCount > 0,
       onClick: batchesError ? () => refetchBatches() : undefined,
@@ -114,31 +149,32 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
 
   return (
     <div style={{ background: C.bg }}>
-
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <PageHero
         eyebrow="Worker Staff Portal · Beere Kesava & Brothers Silks"
         title={greeting + ","}
         titleAccent={firstName}
         description={`Here's what needs your attention today. You have ${totalTasks} active task${totalTasks === 1 ? "" : "s"} waiting.`}
-        actions={<>
-          <Button
-            variant="primary"
-            iconRight={ChevronRight}
-            onClick={() => onNavigate("qc")}
-            className="rounded-[14px] bg-gradient-to-br from-[#6E0F2D] to-[#4A061B] px-6 py-[13px] text-[#FFFDF9] shadow-[0_8px_28px_rgba(110,15,45,0.45)] hover:from-[#6E0F2D] hover:to-[#4A061B]"
-          >
-            Start Today's Work
-          </Button>
-          <Button
-            variant="secondary"
-            iconLeft={Camera}
-            onClick={() => onNavigate("photos")}
-            className="rounded-[14px] border border-[rgba(245,232,208,0.35)] bg-transparent px-5 py-[13px] text-[#F5E8D0] hover:!bg-[rgba(245,232,208,0.10)] hover:!text-[#E7C983]"
-          >
-            Saree Photos
-          </Button>
-        </>}
+        actions={
+          <>
+            <Button
+              variant="primary"
+              iconRight={ChevronRight}
+              onClick={() => onNavigate("qc")}
+              className="rounded-[14px] bg-gradient-to-br from-[#6E0F2D] to-[#4A061B] px-6 py-[13px] text-[#FFFDF9] shadow-[0_8px_28px_rgba(110,15,45,0.45)] hover:from-[#6E0F2D] hover:to-[#4A061B]"
+            >
+              Start Today's Work
+            </Button>
+            <Button
+              variant="secondary"
+              iconLeft={Camera}
+              onClick={() => onNavigate("photos")}
+              className="rounded-[14px] border border-[rgba(245,232,208,0.35)] bg-transparent px-5 py-[13px] text-[#F5E8D0] hover:!bg-[rgba(245,232,208,0.10)] hover:!text-[#E7C983]"
+            >
+              Saree Photos
+            </Button>
+          </>
+        }
       />
 
       {/* Date chip, pinned to the hero like admin's */}
@@ -147,7 +183,19 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          style={{ position: "absolute", top: -308, right: 48, fontFamily: F.m, fontSize: 12, color: "rgba(255,253,249,0.45)", background: "rgba(255,253,249,0.08)", border: "1px solid rgba(255,253,249,0.12)", padding: "6px 14px", borderRadius: 8, zIndex: 21 }}
+          style={{
+            position: "absolute",
+            top: -308,
+            right: 48,
+            fontFamily: F.m,
+            fontSize: 12,
+            color: "rgba(255,253,249,0.45)",
+            background: "rgba(255,253,249,0.08)",
+            border: "1px solid rgba(255,253,249,0.12)",
+            padding: "6px 14px",
+            borderRadius: 8,
+            zIndex: 21,
+          }}
         >
           {today}
         </motion.div>
@@ -168,14 +216,26 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
                   onClick={() => onNavigate("activity")}
                   className="p-0 h-auto"
                 >
-                  <span style={{ fontFamily: F.u, fontSize: 13, color: C.gold, fontWeight: 600 }}>View All →</span>
+                  <span style={{ fontFamily: F.u, fontSize: 13, color: C.gold, fontWeight: 600 }}>
+                    View All →
+                  </span>
                 </Button>
               }
             />
-            <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: "hidden", boxShadow: "0 6px 32px rgba(74,6,27,0.08)" }}>
+            <div
+              style={{
+                background: "#FFF",
+                border: `1px solid ${C.bdr}`,
+                borderRadius: 20,
+                overflow: "hidden",
+                boxShadow: "0 6px 32px rgba(74,6,27,0.08)",
+              }}
+            >
               {activityLoading && (
                 <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
-                  {[0, 1, 2, 3].map(i => <Skeleton key={i} className="h-10 w-full" />)}
+                  {[0, 1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-10 w-full" />
+                  ))}
                 </div>
               )}
 
@@ -184,40 +244,88 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
                   <div style={{ fontFamily: F.u, fontSize: 14, color: C.dark, marginBottom: 10 }}>
                     Couldn't load recent activity.
                   </div>
-                  <Button variant="secondary" onClick={retryActivity}>Try again</Button>
+                  <Button variant="secondary" onClick={retryActivity}>
+                    Try again
+                  </Button>
                 </div>
               )}
 
               {!activityLoading && !activityError && activities.length === 0 && (
                 <div style={{ padding: "28px 20px", textAlign: "center" }}>
-                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.dark, marginBottom: 4 }}>No activity yet</div>
+                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.dark, marginBottom: 4 }}>
+                    No activity yet
+                  </div>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
                     Quality checks and saree receipts will show up here as you record them.
                   </div>
                 </div>
               )}
 
-              {!activityLoading && !activityError && activities.map((a, i) => (
-                <div
-                  key={a.id}
-                  style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 20px", borderBottom: i < activities.length - 1 ? `1px solid rgba(110,15,45,0.07)` : "none" }}
-                >
-                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: dotColor(a.tone), marginTop: 5, flexShrink: 0, boxShadow: `0 0 8px ${dotColor(a.tone)}60` }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: F.u, fontSize: 14, color: C.dark, lineHeight: 1.5, marginBottom: 3 }}>{a.description}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{formatActivityTime(a.isoDate)}</span>
-                      <StatusPill tone={a.tone} label={a.label} size="sm" />
+              {!activityLoading &&
+                !activityError &&
+                activities.map((a, i) => (
+                  <div
+                    key={a.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 14,
+                      padding: "16px 20px",
+                      borderBottom:
+                        i < activities.length - 1 ? `1px solid rgba(110,15,45,0.07)` : "none",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: "50%",
+                        background: dotColor(a.tone),
+                        marginTop: 5,
+                        flexShrink: 0,
+                        boxShadow: `0 0 8px ${dotColor(a.tone)}60`,
+                      }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontFamily: F.u,
+                          fontSize: 14,
+                          color: C.dark,
+                          lineHeight: 1.5,
+                          marginBottom: 3,
+                        }}
+                      >
+                        {a.description}
+                      </div>
+                      <div
+                        style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}
+                      >
+                        <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>
+                          {formatActivityTime(a.isoDate)}
+                        </span>
+                        <StatusPill tone={a.tone} label={a.label} size="sm" />
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: F.m,
+                        fontSize: 12,
+                        color: C.burg,
+                        flexShrink: 0,
+                        background: "rgba(110,15,45,0.06)",
+                        padding: "2px 8px",
+                        borderRadius: 6,
+                      }}
+                    >
+                      {a.batchId || "—"}
                     </div>
                   </div>
-                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 8px", borderRadius: 6 }}>{a.batchId || "—"}</div>
-                </div>
-              ))}
+                ))}
             </div>
           </FadeUp>
         </div>
       </div>
-
     </div>
   );
 }

@@ -43,7 +43,15 @@ export function GeofenceSettingsPage() {
             SINCE 1999 · SUPERADMIN · SIGN-IN LOCATION
           </div>
 
-          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: 12,
+              flexWrap: "wrap",
+              marginBottom: 8,
+            }}
+          >
             <h1
               style={{
                 fontFamily: "'DM Serif Display', serif",

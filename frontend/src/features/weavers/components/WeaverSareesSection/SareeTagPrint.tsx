@@ -1,7 +1,13 @@
 import * as React from "react";
 import {
-  useDocument, LabelSheet, useLabelStock, useTileStock, monoFitEm, innerWidthEm,
-  DEFAULT_LABEL_STOCK, type LabelStock,
+  useDocument,
+  LabelSheet,
+  useLabelStock,
+  useTileStock,
+  monoFitEm,
+  innerWidthEm,
+  DEFAULT_LABEL_STOCK,
+  type LabelStock,
 } from "../../../../shared/ui/document";
 import { ScannableCode } from "../../../../shared/ui/domain";
 import { formatMoney, rupees } from "@/lib/domain/money";
@@ -70,11 +76,17 @@ function TileFrame({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        width: "100%", height: "100%", boxSizing: "border-box",
-        border: "0.25mm solid #000", borderRadius: "0.8em",
+        width: "100%",
+        height: "100%",
+        boxSizing: "border-box",
+        border: "0.25mm solid #000",
+        borderRadius: "0.8em",
         padding: "1em 1.2em",
-        display: "flex", alignItems: "center", gap: `${TAG_GAP_EM}em`,
-        overflow: "hidden", lineHeight: 1.15,
+        display: "flex",
+        alignItems: "center",
+        gap: `${TAG_GAP_EM}em`,
+        overflow: "hidden",
+        lineHeight: 1.15,
       }}
     >
       {children}
@@ -121,7 +133,10 @@ export function tagIdFit(len: number, columnEm: number): { em: number; lines: 1 
   if (oneLine >= 1.7) return { em: oneLine, lines: 1 };
   // The slack keeps a break that lands one character late from spilling
   // onto a third line.
-  return { em: monoFitEm(Math.ceil(len / 2) + 1, columnEm, 2.2, 1.1, ID_LETTER_SPACING_EM), lines: 2 };
+  return {
+    em: monoFitEm(Math.ceil(len / 2) + 1, columnEm, 2.2, 1.1, ID_LETTER_SPACING_EM),
+    lines: 2,
+  };
 }
 
 /** The big figure's size: what was asked for, shrunk until it fits the column
@@ -146,7 +161,9 @@ export function tagFigureEm(text: string, columnEm: number, wanted: number): num
  *  more room than it earned, and these are read at the counter where the shop
  *  is not in doubt. */
 function TagLayout({
-  code, lines, feature,
+  code,
+  lines,
+  feature,
 }: {
   code: string;
   /** Rendered top to bottom under the id; `mono` for codes and ciphers,
@@ -171,15 +188,21 @@ function TagLayout({
 
       <div
         style={{
-          minWidth: 0, flex: 1, alignSelf: "stretch",
-          display: "flex", flexDirection: "column", justifyContent: "space-between",
+          minWidth: 0,
+          flex: 1,
+          alignSelf: "stretch",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
         }}
       >
         <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: "0.1em" }}>
           <span
             style={{
-              fontFamily: "var(--font-code, ui-monospace, monospace)", fontWeight: 700,
-              fontSize: `${id.em}em`, letterSpacing: `${ID_LETTER_SPACING_EM}em`,
+              fontFamily: "var(--font-code, ui-monospace, monospace)",
+              fontWeight: 700,
+              fontSize: `${id.em}em`,
+              letterSpacing: `${ID_LETTER_SPACING_EM}em`,
               ...(id.lines === 1
                 ? { whiteSpace: "nowrap" }
                 : { overflowWrap: "anywhere", wordBreak: "break-all", lineHeight: 1.1 }),
@@ -189,8 +212,12 @@ function TagLayout({
           </span>
           <div
             style={{
-              minWidth: 0, display: "flex", flexDirection: "column", gap: "0.1em",
-              fontFamily: "var(--font-ui, sans-serif)", fontSize: "2.3em",
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.1em",
+              fontFamily: "var(--font-ui, sans-serif)",
+              fontSize: "2.3em",
             }}
           >
             {lines.map((line, i) => (
@@ -199,7 +226,13 @@ function TagLayout({
                 key={i}
                 style={{
                   ...ellipsis,
-                  ...(line.mono ? { fontFamily: "var(--font-code, ui-monospace, monospace)", fontWeight: 700, letterSpacing: "0.04em" } : null),
+                  ...(line.mono
+                    ? {
+                        fontFamily: "var(--font-code, ui-monospace, monospace)",
+                        fontWeight: 700,
+                        letterSpacing: "0.04em",
+                      }
+                    : null),
                   ...(line.emphasis ? { fontSize: "1.45em" } : null),
                 }}
               >
@@ -213,8 +246,11 @@ function TagLayout({
           {feature.label && (
             <span
               style={{
-                fontFamily: "var(--font-ui, sans-serif)", fontSize: "1.7em",
-                fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase",
+                fontFamily: "var(--font-ui, sans-serif)",
+                fontSize: "1.7em",
+                fontWeight: 600,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
               }}
             >
               {feature.label}
@@ -226,9 +262,13 @@ function TagLayout({
               shifting between one tag and the next. */}
           <span
             style={{
-              fontFamily: "var(--font-ui, sans-serif)", fontWeight: 700,
-              fontSize: `${tagFigureEm(feature.text, columnEm, feature.em ?? 6.4)}em`, lineHeight: 1,
-              fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em", whiteSpace: "nowrap",
+              fontFamily: "var(--font-ui, sans-serif)",
+              fontWeight: 700,
+              fontSize: `${tagFigureEm(feature.text, columnEm, feature.em ?? 6.4)}em`,
+              lineHeight: 1,
+              fontVariantNumeric: "tabular-nums",
+              letterSpacing: "-0.01em",
+              whiteSpace: "nowrap",
             }}
           >
             {feature.text}
@@ -248,7 +288,9 @@ function TagCard({ r }: { r: SareeTagData }) {
   if (r.isExternal) return <ExternalTagCard r={r} />;
 
   const typeLabel = [r.sareeTypeCode || null, r.sareeTypeName || null].filter(Boolean).join(" · ");
-  const weaverLine = [r.weaverName || null, r.loomNumber != null ? `Loom ${r.loomNumber}` : null].filter(Boolean).join(" · ");
+  const weaverLine = [r.weaverName || null, r.loomNumber != null ? `Loom ${r.loomNumber}` : null]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <TagLayout
@@ -258,7 +300,7 @@ function TagCard({ r }: { r: SareeTagData }) {
         // Falls back to the weaver and loom when a piece carries no saree
         // type, so the line is never blank on a printed sticker.
         { text: typeLabel || weaverLine || "—" },
-        { text: r.weight != null ? `${r.weight}g` : (r.color || "—") },
+        { text: r.weight != null ? `${r.weight}g` : r.color || "—" },
       ]}
       // DDMMYY, e.g. 20 Sep 2026 -> 200926 — the form the designers already
       // use on their own paperwork.
@@ -274,8 +316,9 @@ function TagCard({ r }: { r: SareeTagData }) {
 function ExternalTagCard({ r }: { r: SareeTagData }) {
   const typeLabel = r.sareeTypeCode
     ? `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}`
-    : (r.sareeTypeName || "");
-  const invoiceLine = [r.invoiceNumber || null, r.serial || null].filter(Boolean).join(" · ") || typeLabel || "—";
+    : r.sareeTypeName || "";
+  const invoiceLine =
+    [r.invoiceNumber || null, r.serial || null].filter(Boolean).join(" · ") || typeLabel || "—";
 
   return (
     <TagLayout
@@ -286,9 +329,16 @@ function ExternalTagCard({ r }: { r: SareeTagData }) {
         // GANESH letter cipher (see costCipher.ts) so a customer can't read it
         // while staff who know the phrase can decode it back. Printed larger
         // than the invoice line: it is what staff actually read off the tag.
-        { text: r.costPrice != null ? encodeCostCipher(r.costPrice) : "—", mono: true, emphasis: true },
+        {
+          text: r.costPrice != null ? encodeCostCipher(r.costPrice) : "—",
+          mono: true,
+          emphasis: true,
+        },
       ]}
-      feature={{ label: "Net Price", text: r.sellingPrice != null ? formatMoney(rupees(r.sellingPrice)) : "" }}
+      feature={{
+        label: "Net Price",
+        text: r.sellingPrice != null ? formatMoney(rupees(r.sellingPrice)) : "",
+      }}
     />
   );
 }
@@ -302,8 +352,10 @@ export function SareeTagSheet({ rows, stock }: { rows: SareeTagData[]; stock?: L
 function TagSheet({ rows, stock }: { rows: SareeTagData[]; stock: LabelStock }) {
   return (
     <LabelSheet stock={stock}>
-      {/* eslint-disable-next-line react/no-array-index-key -- extra copies of one saree id are intentionally identical */}
-      {rows.map((r, i) => <TagCard key={`${r.sareeId}-${i}`} r={r} />)}
+      {rows.map((r, i) => (
+        // eslint-disable-next-line react/no-array-index-key -- extra copies of one saree id are intentionally identical
+        <TagCard key={`${r.sareeId}-${i}`} r={r} />
+      ))}
     </LabelSheet>
   );
 }
@@ -314,7 +366,15 @@ function TagSheet({ rows, stock }: { rows: SareeTagData[]; stock: LabelStock }) 
  * superadmin's "Live Preview" is the real label rather than a hand-drawn
  * approximation that could drift from it.
  */
-export function SareeTagPreview({ tag, stock, zoom = 3 }: { tag: SareeTagData; stock?: LabelStock; zoom?: number }) {
+export function SareeTagPreview({
+  tag,
+  stock,
+  zoom = 3,
+}: {
+  tag: SareeTagData;
+  stock?: LabelStock;
+  zoom?: number;
+}) {
   return (
     <div style={{ ["--label-zoom" as string]: zoom, zoom, width: "fit-content" }}>
       <TagSheet rows={[tag]} stock={stock ?? DEFAULT_LABEL_STOCK} />
@@ -333,8 +393,11 @@ export function SareeTagPreview({ tag, stock, zoom = 3 }: { tag: SareeTagData; s
 export function usePrintSareeTags() {
   const { print } = useDocument();
   const stock = useLabelStock();
-  return React.useCallback((rows: SareeTagData[], stockOverride?: LabelStock) => {
-    if (rows.length === 0) return;
-    print(<TagSheet rows={rows} stock={stockOverride ?? stock} />);
-  }, [print, stock]);
+  return React.useCallback(
+    (rows: SareeTagData[], stockOverride?: LabelStock) => {
+      if (rows.length === 0) return;
+      print(<TagSheet rows={rows} stock={stockOverride ?? stock} />);
+    },
+    [print, stock]
+  );
 }

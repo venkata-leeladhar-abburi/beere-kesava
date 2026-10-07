@@ -5,14 +5,33 @@ import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 export * from "./supplier-types";
 export * from "./usePurchasePhotos";
-import { Supplier, Purchase, SareeTag, SupplierPayment, PurchaseRequest, DiscountType, initialsOf, totalPieces, purchasePieces, parseINR } from "./supplier-types";
+import {
+  Supplier,
+  Purchase,
+  SareeTag,
+  SupplierPayment,
+  PurchaseRequest,
+  DiscountType,
+  initialsOf,
+  totalPieces,
+  purchasePieces,
+  parseINR,
+} from "./supplier-types";
 import { BackendSupplier, suppliersApi } from "../../../shared/api/suppliers";
 import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
 import { supplierPaymentsApi } from "../../../shared/api/payments";
-import { BackendPurchaseRequest, purchaseRequestsApi, STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
 import {
-  BackendPurchase, BackendPurchaseSareeLine, CreatePurchasePayload,
-  CreatePurchaseSareeLinePayload, UpdatePurchasePayload, purchasesApi,
+  BackendPurchaseRequest,
+  purchaseRequestsApi,
+  STOPGAP_ACTING_USER_ID,
+} from "../../../shared/api/purchase-requests";
+import {
+  BackendPurchase,
+  BackendPurchaseSareeLine,
+  CreatePurchasePayload,
+  CreatePurchaseSareeLinePayload,
+  UpdatePurchasePayload,
+  purchasesApi,
 } from "../../../shared/api/purchases";
 import { rupees, formatMoneyExact } from "@/lib/domain/money";
 
@@ -65,7 +84,7 @@ function toSareeTag(l: BackendPurchaseSareeLine): SareeTag {
     finalAmount: Number(l.finalAmount),
     notes: l.notes ?? "",
     imageUrl: resolveAssetUrl(l.imageUrl) ?? undefined,
-    pieceImageUrls: l.pieceImageUrls?.map(u => resolveAssetUrl(u) ?? ""),
+    pieceImageUrls: l.pieceImageUrls?.map((u) => resolveAssetUrl(u) ?? ""),
     returnedQuantity: l.returnedQuantity ?? 0,
     returnedPieceNos: l.returnedPieceNos ?? [],
   };
@@ -76,7 +95,11 @@ function toPurchase(p: BackendPurchase): Purchase {
     id: p.id,
     supplierId: p.supplierId ?? undefined,
     supplier: p.supplier?.name ?? p.supplierName ?? "",
-    location: p.location ?? (p.supplier ? `${p.supplier.city ?? ""}, ${p.supplier.state ?? ""}`.replace(/^, |, $/, "") : ""),
+    location:
+      p.location ??
+      (p.supplier
+        ? `${p.supplier.city ?? ""}, ${p.supplier.state ?? ""}`.replace(/^, |, $/, "")
+        : ""),
     date: p.date.split("T")[0],
     sareeCount: p.sareeCount,
     gstNumber: p.gstNumber ?? "",
@@ -85,7 +108,8 @@ function toPurchase(p: BackendPurchase): Purchase {
     // paid-vs-owed comparisons parse this string back.
     billAmount: formatMoneyExact(rupees(Number(p.billAmount))),
     subtotal: p.subtotal != null ? Number(p.subtotal) : undefined,
-    discountType: p.discountType === "PERCENT" ? "percent" : p.discountType === "AMOUNT" ? "amount" : undefined,
+    discountType:
+      p.discountType === "PERCENT" ? "percent" : p.discountType === "AMOUNT" ? "amount" : undefined,
     discountValue: Number(p.discountValue ?? 0),
     discountAmount: Number(p.discountAmount ?? 0),
     gstPercent: Number(p.gstPercent ?? 0),
@@ -104,7 +128,10 @@ function cleanDate(d: string | undefined): string | undefined {
 }
 
 /** A discount only exists when a positive value was entered. */
-function toDiscountTypePayload(type: DiscountType | undefined, value: number | undefined): "PERCENT" | "AMOUNT" | null {
+function toDiscountTypePayload(
+  type: DiscountType | undefined,
+  value: number | undefined
+): "PERCENT" | "AMOUNT" | null {
   if (!type || !(Number(value) > 0)) return null;
   return type === "percent" ? "PERCENT" : "AMOUNT";
 }
@@ -125,13 +152,16 @@ function toSareeLinePayload(s: SareeTag): CreatePurchaseSareeLinePayload {
     imageUrl: toStoredAssetPath(s.imageUrl) ?? undefined,
     // Per-piece photos were silently dropped here before, so a piece photo
     // never survived a reload — the column exists on the backend DTO.
-    pieceImageUrls: s.pieceImageUrls?.map(u => toStoredAssetPath(u) ?? ""),
+    pieceImageUrls: s.pieceImageUrls?.map((u) => toStoredAssetPath(u) ?? ""),
     returnedQuantity: s.returnedQuantity ?? 0,
     returnedPieceNos: s.returnedPieceNos ?? [],
   };
 }
 
-function toCreatePurchasePayload(p: Omit<Purchase, "id">, addedById: string): CreatePurchasePayload {
+function toCreatePurchasePayload(
+  p: Omit<Purchase, "id">,
+  addedById: string
+): CreatePurchasePayload {
   return {
     supplierId: p.supplierId || undefined,
     supplierName: p.supplierId ? undefined : p.supplier,
@@ -162,7 +192,9 @@ function toUpdatePurchasePayload(patch: Partial<Purchase>): UpdatePurchasePayloa
     invoiceNumber: patch.invoiceNumber,
     // Pricing is only sent by the purchase form; a saree-only edit (photo,
     // return) leaves it out so the server keeps the stored discount/GST.
-    ...(patch.discountType !== undefined || patch.discountValue !== undefined || patch.gstPercent !== undefined
+    ...(patch.discountType !== undefined ||
+    patch.discountValue !== undefined ||
+    patch.gstPercent !== undefined
       ? {
           discountType: toDiscountTypePayload(patch.discountType, patch.discountValue),
           discountValue: Number(patch.discountValue) || 0,
@@ -204,7 +236,12 @@ interface SupplierContextValue {
 
   addPayment: (p: Omit<SupplierPayment, "id">) => void;
   raiseRequest: (r: Omit<PurchaseRequest, "id" | "status">) => void;
-  decideRequest: (id: string, status: "approved" | "rejected", decidedBy: string, note?: string) => void;
+  decideRequest: (
+    id: string,
+    status: "approved" | "rejected",
+    decidedBy: string,
+    note?: string
+  ) => void;
 
   /** Purchases + payment totals + outstanding for one supplier. */
   statsFor: (supplierId: string) => {
@@ -265,7 +302,13 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const enabled = useAuthGate("accountant", "admin", "superadmin");
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
 
-  const { data: suppliers = [], isError: isSuppliersError, error: suppliersError, isLoading: isSuppliersLoading, refetch: refetchSuppliers } = useQuery({
+  const {
+    data: suppliers = [],
+    isError: isSuppliersError,
+    error: suppliersError,
+    isLoading: isSuppliersLoading,
+    refetch: refetchSuppliers,
+  } = useQuery({
     queryKey: SUPPLIERS_KEY,
     queryFn: async () => (await suppliersApi.list()).items.map(toSupplier),
     enabled,
@@ -276,12 +319,23 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   // per-line price/quantity for the buying/selling/profit columns; photos
   // are fetched on demand per-purchase (see getPurchaseDetail) when a user
   // opens its detail drawer or saree list.
-  const { data: purchases = [], isError: isPurchasesError, error: purchasesError, refetch: refetchPurchases } = useQuery({
+  const {
+    data: purchases = [],
+    isError: isPurchasesError,
+    error: purchasesError,
+    refetch: refetchPurchases,
+  } = useQuery({
     queryKey: PURCHASES_KEY,
-    queryFn: async () => (await purchasesApi.list(100, 1, undefined, undefined, "summary")).items.map(toPurchase),
+    queryFn: async () =>
+      (await purchasesApi.list(100, 1, undefined, undefined, "summary")).items.map(toPurchase),
     enabled,
   });
-  const { data: payments = [], isError: isPaymentsError, error: paymentsError, refetch: refetchPayments } = useQuery({
+  const {
+    data: payments = [],
+    isError: isPaymentsError,
+    error: paymentsError,
+    refetch: refetchPayments,
+  } = useQuery({
     queryKey: PAYMENTS_KEY,
     queryFn: async () => {
       const res = await supplierPaymentsApi.list();
@@ -299,7 +353,12 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     },
     enabled,
   });
-  const { data: rawRequests = [], isError: isRequestsError, error: requestsError, refetch: refetchRequests } = useQuery({
+  const {
+    data: rawRequests = [],
+    isError: isRequestsError,
+    error: requestsError,
+    refetch: refetchRequests,
+  } = useQuery({
     queryKey: REQUESTS_KEY,
     queryFn: async () => (await purchaseRequestsApi.list()).items,
     enabled,
@@ -313,26 +372,38 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   );
 
   const setSuppliers = (updater: (prev: Supplier[]) => Supplier[]) =>
-    qc.setQueryData<Supplier[]>(SUPPLIERS_KEY, prev => updater(prev ?? []));
+    qc.setQueryData<Supplier[]>(SUPPLIERS_KEY, (prev) => updater(prev ?? []));
   const setPurchases = (updater: (prev: Purchase[]) => Purchase[]) =>
-    qc.setQueryData<Purchase[]>(PURCHASES_KEY, prev => updater(prev ?? []));
+    qc.setQueryData<Purchase[]>(PURCHASES_KEY, (prev) => updater(prev ?? []));
   const setPayments = (updater: (prev: SupplierPayment[]) => SupplierPayment[]) =>
-    qc.setQueryData<SupplierPayment[]>(PAYMENTS_KEY, prev => updater(prev ?? []));
+    qc.setQueryData<SupplierPayment[]>(PAYMENTS_KEY, (prev) => updater(prev ?? []));
   const setRawRequests = (updater: (prev: BackendPurchaseRequest[]) => BackendPurchaseRequest[]) =>
-    qc.setQueryData<BackendPurchaseRequest[]>(REQUESTS_KEY, prev => updater(prev ?? []));
+    qc.setQueryData<BackendPurchaseRequest[]>(REQUESTS_KEY, (prev) => updater(prev ?? []));
 
   const addSupplierMutation = useMutation({
     mutationFn: (s: Omit<Supplier, "id" | "initials">) =>
       suppliersApi.create({
-        name: s.name, shortName: s.shortName, contactName: s.contactName, phone: s.phone, whatsapp: s.whatsapp,
-        city: s.city, state: s.state, address: s.address, gstCode: s.gstCode,
-        specialty: s.specialty, terms: s.terms, bankName: s.bankName, accountNo: s.accountNo, ifscCode: s.ifscCode,
-        notes: s.notes || undefined, rating: s.rating || undefined,
+        name: s.name,
+        shortName: s.shortName,
+        contactName: s.contactName,
+        phone: s.phone,
+        whatsapp: s.whatsapp,
+        city: s.city,
+        state: s.state,
+        address: s.address,
+        gstCode: s.gstCode,
+        specialty: s.specialty,
+        terms: s.terms,
+        bankName: s.bankName,
+        accountNo: s.accountNo,
+        ifscCode: s.ifscCode,
+        notes: s.notes || undefined,
+        rating: s.rating || undefined,
         visitingCardUrl: toStoredAssetPath(s.visitingCard) ?? undefined,
         firmId: s.firmId || undefined,
       }),
     onSuccess: (created) => {
-      setSuppliers(prev => [toSupplier(created), ...prev]);
+      setSuppliers((prev) => [toSupplier(created), ...prev]);
       toast.success("Supplier added");
     },
     onError: (err: unknown) => {
@@ -343,11 +414,22 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const updateSupplierMutation = useMutation({
     mutationFn: (args: { id: string; patch: Partial<Supplier> }) =>
       suppliersApi.update(args.id, {
-        name: args.patch.name, shortName: args.patch.shortName, contactName: args.patch.contactName, phone: args.patch.phone,
-        whatsapp: args.patch.whatsapp, city: args.patch.city, state: args.patch.state,
-        address: args.patch.address, gstCode: args.patch.gstCode, specialty: args.patch.specialty,
-        terms: args.patch.terms, bankName: args.patch.bankName, accountNo: args.patch.accountNo, ifscCode: args.patch.ifscCode,
-        notes: args.patch.notes, rating: args.patch.rating,
+        name: args.patch.name,
+        shortName: args.patch.shortName,
+        contactName: args.patch.contactName,
+        phone: args.patch.phone,
+        whatsapp: args.patch.whatsapp,
+        city: args.patch.city,
+        state: args.patch.state,
+        address: args.patch.address,
+        gstCode: args.patch.gstCode,
+        specialty: args.patch.specialty,
+        terms: args.patch.terms,
+        bankName: args.patch.bankName,
+        accountNo: args.patch.accountNo,
+        ifscCode: args.patch.ifscCode,
+        notes: args.patch.notes,
+        rating: args.patch.rating,
         visitingCardUrl: toStoredAssetPath(args.patch.visitingCard) ?? undefined,
         status: args.patch.status ? args.patch.status.toUpperCase() : undefined,
         // "" from the form's "Not connected" choice disconnects (null);
@@ -355,11 +437,12 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         firmId: args.patch.firmId === undefined ? undefined : args.patch.firmId || null,
       }),
     onSuccess: (updated, args) => {
-      setSuppliers(prev => prev.map(s => s.id === updated.id ? toSupplier(updated) : s));
+      setSuppliers((prev) => prev.map((s) => (s.id === updated.id ? toSupplier(updated) : s)));
       // A new short name (or name) re-codes this supplier's sarees on the
       // server — purchases, stock, dispatches, sales. Refetch everything so no
       // screen keeps showing or printing the old codes.
-      if (args.patch.shortName !== undefined || args.patch.name !== undefined) void qc.invalidateQueries();
+      if (args.patch.shortName !== undefined || args.patch.name !== undefined)
+        void qc.invalidateQueries();
       toast.success("Supplier updated");
     },
     onError: (err: unknown) => {
@@ -370,7 +453,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const deleteSupplierMutation = useMutation({
     mutationFn: (id: string) => suppliersApi.remove(id),
     onSuccess: (_void, id) => {
-      setSuppliers(prev => prev.filter(s => s.id !== id));
+      setSuppliers((prev) => prev.filter((s) => s.id !== id));
       toast.success("Supplier deleted");
     },
     onError: (err: unknown) => {
@@ -378,15 +461,13 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  const getSupplier = useCallback(
-    (id: string) => suppliers.find(s => s.id === id),
-    [suppliers]
-  );
+  const getSupplier = useCallback((id: string) => suppliers.find((s) => s.id === id), [suppliers]);
 
   const addPurchaseMutation = useMutation({
-    mutationFn: (p: Omit<Purchase, "id">) => purchasesApi.create(toCreatePurchasePayload(p, actingUserId)),
+    mutationFn: (p: Omit<Purchase, "id">) =>
+      purchasesApi.create(toCreatePurchasePayload(p, actingUserId)),
     onSuccess: (created) => {
-      setPurchases(prev => [toPurchase(created), ...prev]);
+      setPurchases((prev) => [toPurchase(created), ...prev]);
       toast.success("Purchase recorded");
     },
     onError: (err: unknown) => {
@@ -398,7 +479,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     mutationFn: (args: { id: string; patch: Partial<Purchase> }) =>
       purchasesApi.update(args.id, toUpdatePurchasePayload(args.patch)),
     onSuccess: (updated) => {
-      setPurchases(prev => prev.map(p => p.id === updated.id ? toPurchase(updated) : p));
+      setPurchases((prev) => prev.map((p) => (p.id === updated.id ? toPurchase(updated) : p)));
       // A changed invoice number re-codes this purchase's sarees everywhere on
       // the server; refetch so stock, dispatch and sales screens follow.
       void qc.invalidateQueries();
@@ -416,7 +497,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const deletePurchaseMutation = useMutation({
     mutationFn: (id: string) => purchasesApi.remove(id),
     onSuccess: (_void, id) => {
-      setPurchases(prev => prev.filter(p => p.id !== id));
+      setPurchases((prev) => prev.filter((p) => p.id !== id));
       toast.success("Purchase deleted");
     },
     onError: (err: unknown) => {
@@ -427,17 +508,28 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const addPaymentMutation = useMutation({
     mutationFn: (p: Omit<SupplierPayment, "id">) =>
       supplierPaymentsApi.create({
-        supplierId: p.supplierId, amount: p.amount, date: p.date, utr: p.reference, method: p.mode,
-        purchaseId: p.purchaseId, firmId: p.firmId,
+        supplierId: p.supplierId,
+        amount: p.amount,
+        date: p.date,
+        utr: p.reference,
+        method: p.mode,
+        purchaseId: p.purchaseId,
+        firmId: p.firmId,
       }),
     onSuccess: (created) => {
-      setPayments(prev => [{
-        id: created.id, supplierId: created.supplierId, date: created.date,
-        amount: Number(created.amount), mode: (created.method as SupplierPayment["mode"]) ?? "Bank Transfer",
-        reference: created.utr ?? "",
-        purchaseId: created.purchaseId ?? undefined,
-        firmId: created.firmId ?? undefined,
-      }, ...prev]);
+      setPayments((prev) => [
+        {
+          id: created.id,
+          supplierId: created.supplierId,
+          date: created.date,
+          amount: Number(created.amount),
+          mode: (created.method as SupplierPayment["mode"]) ?? "Bank Transfer",
+          reference: created.utr ?? "",
+          purchaseId: created.purchaseId ?? undefined,
+          firmId: created.firmId ?? undefined,
+        },
+        ...prev,
+      ]);
       // A payment linked to a purchase may have flipped that purchase's
       // Pending/Partial/Paid status server-side (PurchasesService.
       // recomputeStatus) — the cached purchase list doesn't know that yet.
@@ -462,7 +554,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         reason: r.reason,
       }),
     onSuccess: (created) => {
-      setRawRequests(prev => [created, ...prev]);
+      setRawRequests((prev) => [created, ...prev]);
       toast.success("Purchase request raised");
     },
     onError: (err: unknown) => {
@@ -484,7 +576,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
       // an older local-only flow) turns it into a real external purchase — the
       // backend PurchaseRequest has no such payload itself, so this only fires
       // when the caller-side `requests` entry still carries local `sarees` data.
-      const local = requests.find(r => r.id === updated.id);
+      const local = requests.find((r) => r.id === updated.id);
       if (updated.status === "APPROVED" && local?.sarees && local.sarees.length > 0) {
         const purchase: Omit<Purchase, "id"> = {
           supplierId: local.supplierId || undefined,
@@ -502,23 +594,32 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
           sarees: local.sarees,
         };
         try {
-          const created = await purchasesApi.create(toCreatePurchasePayload(purchase, actingUserId));
-          setPurchases(prevP => [toPurchase(created), ...prevP]);
+          const created = await purchasesApi.create(
+            toCreatePurchasePayload(purchase, actingUserId)
+          );
+          setPurchases((prevP) => [toPurchase(created), ...prevP]);
         } catch (err) {
-          toast.error(err instanceof Error ? err.message : "Approved, but failed to record the purchase");
+          toast.error(
+            err instanceof Error ? err.message : "Approved, but failed to record the purchase"
+          );
         }
       }
-      setRawRequests(prev => prev.map(r => (r.id === updated.id ? updated : r)));
-      toast.success(updated.status === "APPROVED" ? "Purchase request approved" : "Purchase request rejected");
+      setRawRequests((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+      toast.success(
+        updated.status === "APPROVED" ? "Purchase request approved" : "Purchase request rejected"
+      );
     },
   });
 
   const addSupplier = (s: Omit<Supplier, "id" | "initials">) => addSupplierMutation.mutate(s);
-  const updateSupplier = (id: string, patch: Partial<Supplier>) => updateSupplierMutation.mutate({ id, patch });
-  const deleteSupplier = (id: string) => deleteSupplierMutation.mutateAsync(id).then(() => undefined);
+  const updateSupplier = (id: string, patch: Partial<Supplier>) =>
+    updateSupplierMutation.mutate({ id, patch });
+  const deleteSupplier = (id: string) =>
+    deleteSupplierMutation.mutateAsync(id).then(() => undefined);
 
   const addPurchase = (p: Omit<Purchase, "id">) => addPurchaseMutation.mutate(p);
-  const updatePurchase = (id: string, patch: Partial<Purchase>) => updatePurchaseMutation.mutate({ id, patch });
+  const updatePurchase = (id: string, patch: Partial<Purchase>) =>
+    updatePurchaseMutation.mutate({ id, patch });
   const deletePurchase = (id: string) => deletePurchaseMutation.mutate(id);
   const getPurchaseDetail = async (id: string) =>
     toPurchase(
@@ -526,7 +627,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         queryKey: [...PURCHASES_KEY, "detail", id],
         queryFn: () => purchasesApi.getOne(id),
         staleTime: 60_000,
-      }),
+      })
     );
 
   const updatePurchaseSarees = async (id: string, apply: (sarees: SareeTag[]) => SareeTag[]) => {
@@ -539,34 +640,59 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addPayment = (p: Omit<SupplierPayment, "id">) => addPaymentMutation.mutate(p);
-  const raiseRequest = (r: Omit<PurchaseRequest, "id" | "status">) => raiseRequestMutation.mutate(r);
-  const decideRequest = (id: string, status: "approved" | "rejected", _decidedBy: string, note?: string) =>
-    decideRequestMutation.mutate({ id, status, note });
+  const raiseRequest = (r: Omit<PurchaseRequest, "id" | "status">) =>
+    raiseRequestMutation.mutate(r);
+  const decideRequest = (
+    id: string,
+    status: "approved" | "rejected",
+    _decidedBy: string,
+    note?: string
+  ) => decideRequestMutation.mutate({ id, status, note });
 
-  const statsFor = useCallback((supplierId: string) => {
-    const supplier = suppliers.find(s => s.id === supplierId);
-    // Older purchases may predate supplierId, so fall back to matching on the name.
-    const mine = purchases.filter(p =>
-      p.supplierId === supplierId || (!!supplier && p.supplier === supplier.name)
-    );
-    const totalPurchased = mine.reduce((sum, p) => sum + parseINR(p.billAmount), 0);
-    const totalPaid = payments.filter(p => p.supplierId === supplierId).reduce((sum, p) => sum + p.amount, 0);
-    return {
-      purchases: mine,
-      totalPurchased,
-      totalPaid,
-      outstanding: Math.max(0, totalPurchased - totalPaid),
-      sareeCount: mine.reduce((sum, p) => sum + purchasePieces(p), 0),
-      lastPurchaseDate: mine[0]?.date ?? "—",
-    };
-  }, [purchases, payments, suppliers]);
+  const statsFor = useCallback(
+    (supplierId: string) => {
+      const supplier = suppliers.find((s) => s.id === supplierId);
+      // Older purchases may predate supplierId, so fall back to matching on the name.
+      const mine = purchases.filter(
+        (p) => p.supplierId === supplierId || (!!supplier && p.supplier === supplier.name)
+      );
+      const totalPurchased = mine.reduce((sum, p) => sum + parseINR(p.billAmount), 0);
+      const totalPaid = payments
+        .filter((p) => p.supplierId === supplierId)
+        .reduce((sum, p) => sum + p.amount, 0);
+      return {
+        purchases: mine,
+        totalPurchased,
+        totalPaid,
+        outstanding: Math.max(0, totalPurchased - totalPaid),
+        sareeCount: mine.reduce((sum, p) => sum + purchasePieces(p), 0),
+        lastPurchaseDate: mine[0]?.date ?? "—",
+      };
+    },
+    [purchases, payments, suppliers]
+  );
 
   const value: SupplierContextValue = {
-    suppliers, purchases, payments, requests,
-    addSupplier, updateSupplier, deleteSupplier, getSupplier,
-    addPurchase, updatePurchase, deletePurchase, getPurchaseDetail, updatePurchaseSarees,
-    addPayment, raiseRequest, decideRequest, statsFor,
-    isError, error, isLoading,
+    suppliers,
+    purchases,
+    payments,
+    requests,
+    addSupplier,
+    updateSupplier,
+    deleteSupplier,
+    getSupplier,
+    addPurchase,
+    updatePurchase,
+    deletePurchase,
+    getPurchaseDetail,
+    updatePurchaseSarees,
+    addPayment,
+    raiseRequest,
+    decideRequest,
+    statsFor,
+    isError,
+    error,
+    isLoading,
     refetch: () => {
       void refetchSuppliers();
       void refetchPurchases();

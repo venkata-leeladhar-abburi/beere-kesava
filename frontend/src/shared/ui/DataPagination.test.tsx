@@ -69,7 +69,9 @@ function Harness({ initial = [] as string[] }) {
   const pag = usePagination(items, 10);
   return (
     <div>
-      <button onClick={() => setItems(Array.from({ length: 25 }, (_, i) => `row-${i}`))}>load</button>
+      <button onClick={() => setItems(Array.from({ length: 25 }, (_, i) => `row-${i}`))}>
+        load
+      </button>
       <button onClick={() => setItems([])}>clear</button>
       <span data-testid="shown">{pag.pageItems.join(",")}</span>
       <Pagination

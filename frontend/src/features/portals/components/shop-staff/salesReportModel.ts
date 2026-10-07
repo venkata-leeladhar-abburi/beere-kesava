@@ -12,10 +12,15 @@
  */
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { salesApi, type BackendSaleRecord, type BackendSaleReturn } from "../../../../shared/api/sales";
+import {
+  salesApi,
+  type BackendSaleRecord,
+  type BackendSaleReturn,
+} from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
 import {
-  DEFAULT_DATE_FILTER, matchesDateFilter,
+  DEFAULT_DATE_FILTER,
+  matchesDateFilter,
   type DateFilterState,
 } from "../../../../shared/ui/DateFilterBar";
 import { saleGstAmount, saleGstRate } from "../../../../lib/domain/saleGst";
@@ -37,16 +42,33 @@ export function timeLabel(iso: string) {
 export function dateFilterLabel(f: DateFilterState): string {
   switch (f.mode) {
     case "day":
-      return f.day ? new Date(f.day).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "Selected date";
+      return f.day
+        ? new Date(f.day).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
+        : "Selected date";
     case "range": {
-      const from = f.from ? new Date(f.from).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "Start";
-      const to = f.to ? new Date(f.to).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "Today";
+      const from = f.from
+        ? new Date(f.from).toLocaleDateString("en-IN", { day: "numeric", month: "short" })
+        : "Start";
+      const to = f.to
+        ? new Date(f.to).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
+        : "Today";
       return `${from} – ${to}`;
     }
     case "month": {
       if (!f.month) return "Selected month";
       const [y = "", m = ""] = f.month.split("-");
-      return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+      return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString("en-IN", {
+        month: "long",
+        year: "numeric",
+      });
     }
     case "year":
       return f.year || "Selected year";
@@ -89,7 +111,7 @@ function paymentLabel(method: string | null | undefined) {
   return method
     .toLowerCase()
     .split(/[\s_]+/)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 }
 
@@ -114,47 +136,65 @@ export function useSalesReportModel() {
   });
 
   const customerMap = React.useMemo(
-    () => new Map((customersQuery.data?.items ?? []).map(c => [c.id, c.name])),
-    [customersQuery.data],
+    () => new Map((customersQuery.data?.items ?? []).map((c) => [c.id, c.name])),
+    [customersQuery.data]
   );
 
-  const allSales: BackendSaleRecord[] = React.useMemo(() => salesQuery.data?.items ?? [], [salesQuery.data]);
-  const allReturns: BackendSaleReturn[] = React.useMemo(() => returnsQuery.data?.items ?? [], [returnsQuery.data]);
+  const allSales: BackendSaleRecord[] = React.useMemo(
+    () => salesQuery.data?.items ?? [],
+    [salesQuery.data]
+  );
+  const allReturns: BackendSaleReturn[] = React.useMemo(
+    () => returnsQuery.data?.items ?? [],
+    [returnsQuery.data]
+  );
 
-  const salesRows = React.useMemo<SalesReportRow[]>(() => allSales
-    .filter(s => matchesDateFilter(s.saleDate, filter))
-    .sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime())
-    .map(s => ({
-      key: s.saleRef,
-      saleRef: s.saleRef,
-      sareeId: s.sareeId,
-      date: s.saleDate,
-      dateText: dateLabel(s.saleDate),
-      time: timeLabel(s.saleDate),
-      customer: s.customerId
-        ? (s.customer?.name ?? customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`)
-        : "Walk-in Customer",
-      design: s.channel === "WHOLESALE" ? "Wholesale" : "Retail",
-      channel: s.channel,
-      pay: paymentLabel(s.paymentMethod),
-      amount: Number(s.amount) || 0,
-      gst: saleGstAmount(s),
-      gstRate: saleGstRate(s),
-      soldBy: s.soldBy ? `${s.soldBy.firstName ?? ""} ${s.soldBy.lastName ?? ""}`.trim() || null : null,
-    })), [allSales, customerMap, filter]);
+  const salesRows = React.useMemo<SalesReportRow[]>(
+    () =>
+      allSales
+        .filter((s) => matchesDateFilter(s.saleDate, filter))
+        .sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime())
+        .map((s) => ({
+          key: s.saleRef,
+          saleRef: s.saleRef,
+          sareeId: s.sareeId,
+          date: s.saleDate,
+          dateText: dateLabel(s.saleDate),
+          time: timeLabel(s.saleDate),
+          customer: s.customerId
+            ? (s.customer?.name ??
+              customerMap.get(s.customerId) ??
+              `Customer ${s.customerId.slice(0, 6)}`)
+            : "Walk-in Customer",
+          design: s.channel === "WHOLESALE" ? "Wholesale" : "Retail",
+          channel: s.channel,
+          pay: paymentLabel(s.paymentMethod),
+          amount: Number(s.amount) || 0,
+          gst: saleGstAmount(s),
+          gstRate: saleGstRate(s),
+          soldBy: s.soldBy
+            ? `${s.soldBy.firstName ?? ""} ${s.soldBy.lastName ?? ""}`.trim() || null
+            : null,
+        })),
+    [allSales, customerMap, filter]
+  );
 
-  const returnRows = React.useMemo<ReturnReportRow[]>(() => allReturns
-    .filter(r => matchesDateFilter(r.returnDate, filter))
-    .sort((a, b) => new Date(b.returnDate).getTime() - new Date(a.returnDate).getTime())
-    .map(r => ({
-      key: r.returnRef,
-      returnRef: r.returnRef,
-      sareeId: r.sareeId,
-      date: r.returnDate,
-      dateText: dateLabel(r.returnDate),
-      reason: r.reason || "Not specified",
-      amount: Number(r.refundAmount ?? 0) || 0,
-    })), [allReturns, filter]);
+  const returnRows = React.useMemo<ReturnReportRow[]>(
+    () =>
+      allReturns
+        .filter((r) => matchesDateFilter(r.returnDate, filter))
+        .sort((a, b) => new Date(b.returnDate).getTime() - new Date(a.returnDate).getTime())
+        .map((r) => ({
+          key: r.returnRef,
+          returnRef: r.returnRef,
+          sareeId: r.sareeId,
+          date: r.returnDate,
+          dateText: dateLabel(r.returnDate),
+          reason: r.reason || "Not specified",
+          amount: Number(r.refundAmount ?? 0) || 0,
+        })),
+    [allReturns, filter]
+  );
 
   // ── Headline metrics ──────────────────────────────────────────────────────
   const totalSalesCount = salesRows.length;
@@ -164,11 +204,15 @@ export function useSalesReportModel() {
   const netRevenue = totalRevenue - refundTotal;
   const returnRate = totalSalesCount > 0 ? (returnRows.length / totalSalesCount) * 100 : 0;
   const highestSale = salesRows.reduce((max, s) => Math.max(max, s.amount), 0);
-  const uniqueCustomers = new Set(salesRows.map(s => s.customer)).size;
-  const wholesaleCount = salesRows.filter(s => s.channel === "WHOLESALE").length;
-  const retailCount = salesRows.filter(s => s.channel === "RETAIL").length;
-  const wholesaleRevenue = salesRows.filter(s => s.channel === "WHOLESALE").reduce((a, s) => a + s.amount, 0);
-  const retailRevenue = salesRows.filter(s => s.channel === "RETAIL").reduce((a, s) => a + s.amount, 0);
+  const uniqueCustomers = new Set(salesRows.map((s) => s.customer)).size;
+  const wholesaleCount = salesRows.filter((s) => s.channel === "WHOLESALE").length;
+  const retailCount = salesRows.filter((s) => s.channel === "RETAIL").length;
+  const wholesaleRevenue = salesRows
+    .filter((s) => s.channel === "WHOLESALE")
+    .reduce((a, s) => a + s.amount, 0);
+  const retailRevenue = salesRows
+    .filter((s) => s.channel === "RETAIL")
+    .reduce((a, s) => a + s.amount, 0);
 
   /** Revenue + count per calendar day, oldest → newest, for the trend chart. */
   const trend = React.useMemo(() => {
@@ -209,14 +253,20 @@ export function useSalesReportModel() {
     return Array.from(map.values()).sort((a, b) => b.count - a.count);
   }, [returnRows]);
 
-  const channelData = React.useMemo(() => ([
-    { design: "Retail", count: retailCount },
-    { design: "Wholesale", count: wholesaleCount },
-    { design: "Returns", count: returnRows.length },
-  ]), [retailCount, wholesaleCount, returnRows.length]);
+  const channelData = React.useMemo(
+    () => [
+      { design: "Retail", count: retailCount },
+      { design: "Wholesale", count: wholesaleCount },
+      { design: "Returns", count: returnRows.length },
+    ],
+    [retailCount, wholesaleCount, returnRows.length]
+  );
 
   const topCustomers = React.useMemo(() => {
-    const map = new Map<string, { custId: string; name: string; purchases: number; total: number }>();
+    const map = new Map<
+      string,
+      { custId: string; name: string; purchases: number; total: number }
+    >();
     for (const s of salesRows) {
       const key = s.customer;
       const existing = map.get(key) ?? { custId: key, name: key, purchases: 0, total: 0 };
@@ -224,20 +274,28 @@ export function useSalesReportModel() {
       existing.total += s.amount;
       map.set(key, existing);
     }
-    return Array.from(map.values()).sort((a, b) => b.total - a.total).slice(0, 5);
+    return Array.from(map.values())
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
   }, [salesRows]);
 
   /** Best trading day inside the current filter window. */
   const bestDay = React.useMemo(
-    () => trend.reduce<{ day: string; label: string; revenue: number; count: number } | null>(
-      (best, d) => (!best || d.revenue > best.revenue ? d : best), null),
-    [trend],
+    () =>
+      trend.reduce<{ day: string; label: string; revenue: number; count: number } | null>(
+        (best, d) => (!best || d.revenue > best.revenue ? d : best),
+        null
+      ),
+    [trend]
   );
 
   return {
-    filter, setFilter, filterLabel: dateFilterLabel(filter),
+    filter,
+    setFilter,
+    filterLabel: dateFilterLabel(filter),
 
-    salesRows, returnRows,
+    salesRows,
+    returnRows,
     unfilteredSalesCount: allSales.length,
 
     isLoading: salesQuery.isLoading || returnsQuery.isLoading || customersQuery.isLoading,
@@ -252,14 +310,27 @@ export function useSalesReportModel() {
     refetchCustomers: () => void customersQuery.refetch(),
 
     metrics: {
-      totalSalesCount, totalRevenue, avgRevenue, refundTotal, netRevenue,
-      returnRate, highestSale, uniqueCustomers,
-      retailCount, wholesaleCount, retailRevenue, wholesaleRevenue,
+      totalSalesCount,
+      totalRevenue,
+      avgRevenue,
+      refundTotal,
+      netRevenue,
+      returnRate,
+      highestSale,
+      uniqueCustomers,
+      retailCount,
+      wholesaleCount,
+      retailRevenue,
+      wholesaleRevenue,
       returnsCount: returnRows.length,
       bestDay,
     },
 
-    trend, paymentMix, returnReasons, channelData, topCustomers,
+    trend,
+    paymentMix,
+    returnReasons,
+    channelData,
+    topCustomers,
   };
 }
 

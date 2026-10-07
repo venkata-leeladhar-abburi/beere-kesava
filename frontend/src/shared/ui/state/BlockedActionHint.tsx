@@ -43,7 +43,8 @@ export function BlockedActionHint({ blockers, hint, className }: BlockedActionHi
     >
       <AlertCircle size={14} color={brand.gold[500]} style={{ flexShrink: 0, marginTop: 1 }} />
       <span>
-        To continue, {blockers.join(", ")}{hint ? ` — ${hint}` : "."}
+        To continue, {blockers.join(", ")}
+        {hint ? ` — ${hint}` : "."}
       </span>
     </div>
   );

@@ -32,7 +32,12 @@ export function LineItemTable<T>({ columns, rows }: LineItemTableProps<T>) {
       <thead>
         <tr>
           {columns.map((c) => (
-            <th key={c.header} style={{ textAlign: c.align === "end" ? "end" : c.align === "center" ? "center" : "start" }}>
+            <th
+              key={c.header}
+              style={{
+                textAlign: c.align === "end" ? "end" : c.align === "center" ? "center" : "start",
+              }}
+            >
               {c.header}
             </th>
           ))}
@@ -45,7 +50,13 @@ export function LineItemTable<T>({ columns, rows }: LineItemTableProps<T>) {
           // eslint-disable-next-line react/no-array-index-key
           <tr key={`row-${ri}`}>
             {columns.map((c) => (
-              <td key={c.header} data-num={c.align === "end" || undefined} style={{ textAlign: c.align === "end" ? "end" : c.align === "center" ? "center" : "start" }}>
+              <td
+                key={c.header}
+                data-num={c.align === "end" || undefined}
+                style={{
+                  textAlign: c.align === "end" ? "end" : c.align === "center" ? "center" : "start",
+                }}
+              >
                 {c.cell(row, ri)}
               </td>
             ))}

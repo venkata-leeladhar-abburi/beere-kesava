@@ -18,12 +18,23 @@
  */
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { salesApi, type BackendSaleRecord, type BackendSaleReturn } from "../../../../shared/api/sales";
 import {
-  DEFAULT_DATE_FILTER, matchesDateFilter, type DateFilterState,
+  salesApi,
+  type BackendSaleRecord,
+  type BackendSaleReturn,
+} from "../../../../shared/api/sales";
+import {
+  DEFAULT_DATE_FILTER,
+  matchesDateFilter,
+  type DateFilterState,
 } from "../../../../shared/ui/DateFilterBar";
 import { sareeTypeText } from "./stock-format";
-import { billGstFromSales, saleGstAmount, saleGstRate, saleTaxable } from "../../../../lib/domain/saleGst";
+import {
+  billGstFromSales,
+  saleGstAmount,
+  saleGstRate,
+  saleTaxable,
+} from "../../../../lib/domain/saleGst";
 import { dateFilterLabel } from "./salesReportModel";
 
 const BILL_WINDOW_MS = 5 * 60 * 1000;
@@ -132,7 +143,7 @@ function paymentLabel(method: string | null | undefined): string {
   return m
     .toLowerCase()
     .split(/[\s_]+/)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 }
 
@@ -148,7 +159,10 @@ function toTime(iso: string): number {
 
 /** A return counts against a sale when it is for the same saree and was
  *  recorded after that sale — a saree resold after a return is a new sale. */
-function latestReturnAfter(returns: BackendSaleReturn[] | undefined, saleTime: number): BackendSaleReturn | null {
+function latestReturnAfter(
+  returns: BackendSaleReturn[] | undefined,
+  saleTime: number
+): BackendSaleReturn | null {
   if (!returns) return null;
   let best: BackendSaleReturn | null = null;
   for (const r of returns) {
@@ -158,7 +172,10 @@ function latestReturnAfter(returns: BackendSaleReturn[] | undefined, saleTime: n
   return best;
 }
 
-function toLine(s: BackendSaleRecord, returnsBySaree: Map<string, BackendSaleReturn[]>): Omit<SaleLineRow, "billRef"> {
+function toLine(
+  s: BackendSaleRecord,
+  returnsBySaree: Map<string, BackendSaleReturn[]>
+): Omit<SaleLineRow, "billRef"> {
   const time = toTime(s.saleDate);
   const ret = latestReturnAfter(returnsBySaree.get(s.sareeId), time);
   const channel = s.channel === "WHOLESALE" ? "WHOLESALE" : "RETAIL";
@@ -173,7 +190,9 @@ function toLine(s: BackendSaleRecord, returnsBySaree: Map<string, BackendSaleRet
     date: s.saleDate,
     time,
     customerId: s.customerId,
-    customer: s.customer?.name?.trim() || (s.customerId ? `Customer ${s.customerId.slice(0, 6)}` : "Walk-in Customer"),
+    customer:
+      s.customer?.name?.trim() ||
+      (s.customerId ? `Customer ${s.customerId.slice(0, 6)}` : "Walk-in Customer"),
     customerPhone: s.customer?.phone ?? null,
     customerAddress: [s.customer?.address, s.customer?.city].filter(Boolean).join(", ") || null,
     customerCode: s.customer?.code ?? null,
@@ -200,7 +219,10 @@ function toLine(s: BackendSaleRecord, returnsBySaree: Map<string, BackendSaleRet
 }
 
 /** Groups sale lines into counter bills — see the file header. */
-export function groupIntoBills(lines: Omit<SaleLineRow, "billRef">[]): { lines: SaleLineRow[]; bills: BillRow[] } {
+export function groupIntoBills(lines: Omit<SaleLineRow, "billRef">[]): {
+  lines: SaleLineRow[];
+  bills: BillRow[];
+} {
   const ordered = [...lines].sort((a, b) => a.time - b.time || a.saleRef.localeCompare(b.saleRef));
   const open = new Map<string, { bill: BillRow; lastTime: number }>();
   const bills: BillRow[] = [];
@@ -252,10 +274,15 @@ export function groupIntoBills(lines: Omit<SaleLineRow, "billRef">[]): { lines: 
   // Money totals on paise: GST shares carry paise, and float sums would not.
   for (const bill of bills) {
     bill.total = bill.lines.reduce((sum, l) => sum + Math.round(l.amount * 100), 0) / 100;
-    const tax = billGstFromSales(bill.lines.map(l => ({
-      amount: l.amount, gstRate: l.gstRate, gstAmount: l.gst,
-      customerGstin: l.customerGstin, sellerGstin: l.sellerGstin,
-    })));
+    const tax = billGstFromSales(
+      bill.lines.map((l) => ({
+        amount: l.amount,
+        gstRate: l.gstRate,
+        gstAmount: l.gst,
+        customerGstin: l.customerGstin,
+        sellerGstin: l.sellerGstin,
+      }))
+    );
     if (tax) {
       bill.gst = tax.amount;
       bill.gstRate = tax.rate;
@@ -266,7 +293,13 @@ export function groupIntoBills(lines: Omit<SaleLineRow, "billRef">[]): { lines: 
   return { lines: out, bills };
 }
 
-function lineMatches(l: SaleLineRow, f: AllSalesFilters, q: string, min: number | null, max: number | null): boolean {
+function lineMatches(
+  l: SaleLineRow,
+  f: AllSalesFilters,
+  q: string,
+  min: number | null,
+  max: number | null
+): boolean {
   if (!matchesDateFilter(l.date, f.date)) return false;
   if (f.channel !== ALL && l.channel !== f.channel) return false;
   if (f.payment !== ALL && l.payKey !== f.payment) return false;
@@ -279,10 +312,21 @@ function lineMatches(l: SaleLineRow, f: AllSalesFilters, q: string, min: number 
   if (max !== null && l.amount > max) return false;
   if (q) {
     const hay = [
-      l.saleRef, l.billRef, l.sareeId, l.customer, l.customerPhone, l.customerCode,
-      l.sareeType, l.design, l.pay, l.payRef, l.soldBy, l.returnRef, l.customerGstin,
+      l.saleRef,
+      l.billRef,
+      l.sareeId,
+      l.customer,
+      l.customerPhone,
+      l.customerCode,
+      l.sareeType,
+      l.design,
+      l.pay,
+      l.payRef,
+      l.soldBy,
+      l.returnRef,
+      l.customerGstin,
     ];
-    if (!hay.some(v => (v ?? "").toLowerCase().includes(q))) return false;
+    if (!hay.some((v) => (v ?? "").toLowerCase().includes(q))) return false;
   }
   return true;
 }
@@ -295,36 +339,52 @@ function parseAmount(v: string): number | null {
 function compare<T extends { time: number }>(sort: SortKey, amount: (x: T) => number) {
   return (a: T, b: T) => {
     switch (sort) {
-      case "oldest": return a.time - b.time;
-      case "amount-desc": return amount(b) - amount(a) || b.time - a.time;
-      case "amount-asc": return amount(a) - amount(b) || b.time - a.time;
-      default: return b.time - a.time;
+      case "oldest":
+        return a.time - b.time;
+      case "amount-desc":
+        return amount(b) - amount(a) || b.time - a.time;
+      case "amount-asc":
+        return amount(a) - amount(b) || b.time - a.time;
+      default:
+        return b.time - a.time;
     }
   };
 }
 
-export interface Option { value: string; label: string; hint?: string; keywords?: string[] }
+export interface Option {
+  value: string;
+  label: string;
+  hint?: string;
+  keywords?: string[];
+}
 
 export function useAllSalesModel(canSeePrices: boolean) {
   const [filters, setFilters] = React.useState<AllSalesFilters>(DEFAULT_FILTERS);
   const patch = React.useCallback(
-    (p: Partial<AllSalesFilters>) => setFilters(prev => ({ ...prev, ...p })),
-    [],
+    (p: Partial<AllSalesFilters>) => setFilters((prev) => ({ ...prev, ...p })),
+    []
   );
   const reset = React.useCallback(() => setFilters(DEFAULT_FILTERS), []);
 
-  const salesQ = useQuery({ queryKey: ["shop-all-sales", "sales"], queryFn: () => salesApi.listAll() });
+  const salesQ = useQuery({
+    queryKey: ["shop-all-sales", "sales"],
+    queryFn: () => salesApi.listAll(),
+  });
   // Returns only drive the "Returned" badge — a failure here must not take
   // the sales list down with it.
-  const returnsQ = useQuery({ queryKey: ["shop-all-sales", "returns"], queryFn: () => salesApi.listAllReturns() });
+  const returnsQ = useQuery({
+    queryKey: ["shop-all-sales", "returns"],
+    queryFn: () => salesApi.listAllReturns(),
+  });
 
   const { lines: allLines, bills: allBills } = React.useMemo(() => {
     const bySaree = new Map<string, BackendSaleReturn[]>();
     for (const r of returnsQ.data ?? []) {
       const arr = bySaree.get(r.sareeId);
-      if (arr) arr.push(r); else bySaree.set(r.sareeId, [r]);
+      if (arr) arr.push(r);
+      else bySaree.set(r.sareeId, [r]);
     }
-    return groupIntoBills((salesQ.data ?? []).map(s => toLine(s, bySaree)));
+    return groupIntoBills((salesQ.data ?? []).map((s) => toLine(s, bySaree)));
   }, [salesQ.data, returnsQ.data]);
 
   // ── Dropdown options, built from what is actually on record ──────────────
@@ -338,10 +398,13 @@ export function useAllSalesModel(canSeePrices: boolean) {
       const cid = l.customerId ?? "";
       const c = cust.get(cid);
       if (c) c.count += 1;
-      else cust.set(cid, {
-        value: cid, label: l.customer, count: 1,
-        keywords: [l.customerPhone, l.customerCode].filter((x): x is string => !!x),
-      });
+      else
+        cust.set(cid, {
+          value: cid,
+          label: l.customer,
+          count: 1,
+          keywords: [l.customerPhone, l.customerCode].filter((x): x is string => !!x),
+        });
       types.set(l.sareeType, (types.get(l.sareeType) ?? 0) + 1);
       staff.set(l.soldById ?? "none", l.soldBy ?? "Not recorded");
     }
@@ -349,9 +412,16 @@ export function useAllSalesModel(canSeePrices: boolean) {
     return {
       payments: [...pay].map(([value, label]) => ({ value, label })).sort(byLabel),
       customers: [...cust.values()]
-        .map(c => ({ value: c.value, label: c.label, hint: `${c.count} saree${c.count === 1 ? "" : "s"}${c.keywords?.[0] ? ` · ${c.keywords[0]}` : ""}`, keywords: c.keywords }))
+        .map((c) => ({
+          value: c.value,
+          label: c.label,
+          hint: `${c.count} saree${c.count === 1 ? "" : "s"}${c.keywords?.[0] ? ` · ${c.keywords[0]}` : ""}`,
+          keywords: c.keywords,
+        }))
         .sort(byLabel),
-      sareeTypes: [...types].map(([value, n]) => ({ value, label: value, hint: String(n) })).sort(byLabel),
+      sareeTypes: [...types]
+        .map(([value, n]) => ({ value, label: value, hint: String(n) }))
+        .sort(byLabel),
       staff: [...staff].map(([value, label]) => ({ value, label })).sort(byLabel),
     };
   }, [allLines]);
@@ -360,28 +430,32 @@ export function useAllSalesModel(canSeePrices: boolean) {
   const q = filters.search.trim().toLowerCase();
   const min = canSeePrices ? parseAmount(filters.minAmount) : null;
   const max = canSeePrices ? parseAmount(filters.maxAmount) : null;
-  const sort: SortKey = !canSeePrices && filters.sort.startsWith("amount") ? "newest" : filters.sort;
+  const sort: SortKey =
+    !canSeePrices && filters.sort.startsWith("amount") ? "newest" : filters.sort;
 
   const lines = React.useMemo(
-    () => allLines.filter(l => lineMatches(l, filters, q, min, max)).sort(compare<SaleLineRow>(sort, l => l.amount)),
-    [allLines, filters, q, min, max, sort],
+    () =>
+      allLines
+        .filter((l) => lineMatches(l, filters, q, min, max))
+        .sort(compare<SaleLineRow>(sort, (l) => l.amount)),
+    [allLines, filters, q, min, max, sort]
   );
 
   // A bill is shown when any of its sarees match; its totals stay whole so a
   // reprinted bill always reads exactly as the customer received it.
   const bills = React.useMemo(() => {
-    const hit = new Set(lines.map(l => l.billRef));
-    return allBills.filter(b => hit.has(b.billRef)).sort(compare<BillRow>(sort, b => b.total));
+    const hit = new Set(lines.map((l) => l.billRef));
+    return allBills.filter((b) => hit.has(b.billRef)).sort(compare<BillRow>(sort, (b) => b.total));
   }, [allBills, lines, sort]);
 
-  const billByRef = React.useMemo(() => new Map(allBills.map(b => [b.billRef, b])), [allBills]);
+  const billByRef = React.useMemo(() => new Map(allBills.map((b) => [b.billRef, b])), [allBills]);
 
   const metrics = React.useMemo(() => {
     const revenue = lines.reduce((s, l) => s + Math.round(l.amount * 100), 0) / 100;
     const gst = lines.reduce((s, l) => s + Math.round(l.gst * 100), 0) / 100;
-    const returned = lines.filter(l => l.returned);
+    const returned = lines.filter((l) => l.returned);
     const refunded = returned.reduce((s, l) => s + l.refund, 0);
-    const billCount = new Set(lines.map(l => l.billRef)).size;
+    const billCount = new Set(lines.map((l) => l.billRef)).size;
     return {
       sarees: lines.length,
       bills: billCount,
@@ -390,10 +464,10 @@ export function useAllSalesModel(canSeePrices: boolean) {
       refunded,
       net: revenue - refunded,
       returned: returned.length,
-      customers: new Set(lines.map(l => l.customerId ?? l.customer)).size,
+      customers: new Set(lines.map((l) => l.customerId ?? l.customer)).size,
       avgBill: billCount ? Math.round(revenue / billCount) : 0,
-      retail: lines.filter(l => l.channel === "RETAIL").length,
-      wholesale: lines.filter(l => l.channel === "WHOLESALE").length,
+      retail: lines.filter((l) => l.channel === "RETAIL").length,
+      wholesale: lines.filter((l) => l.channel === "WHOLESALE").length,
     };
   }, [lines]);
 
@@ -410,16 +484,25 @@ export function useAllSalesModel(canSeePrices: boolean) {
     (max !== null ? 1 : 0);
 
   return {
-    filters, patch, reset, activeFilterCount,
+    filters,
+    patch,
+    reset,
+    activeFilterCount,
     dateLabel: dateFilterLabel(filters.date),
     options,
-    lines, bills, billByRef, metrics,
+    lines,
+    bills,
+    billByRef,
+    metrics,
     totalOnRecord: allLines.length,
     loading: salesQ.isLoading,
     error: salesQ.isError,
     fetching: salesQ.isFetching || returnsQ.isFetching,
     returnsError: returnsQ.isError,
-    refetch: () => { void salesQ.refetch(); void returnsQ.refetch(); },
+    refetch: () => {
+      void salesQ.refetch();
+      void returnsQ.refetch();
+    },
   };
 }
 

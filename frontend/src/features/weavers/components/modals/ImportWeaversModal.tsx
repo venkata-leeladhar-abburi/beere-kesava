@@ -9,8 +9,14 @@ import { Modal } from "../../../../shared/ui/overlay";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { IMPORT_FILE_ACCEPT } from "@/features/payments";
 
-export function ImportWeaversModal({ open, onClose, onImported }: {
-  open: boolean; onClose: () => void; onImported: () => void;
+export function ImportWeaversModal({
+  open,
+  onClose,
+  onImported,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onImported: () => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -20,16 +26,34 @@ export function ImportWeaversModal({ open, onClose, onImported }: {
   const [parsing, setParsing] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const normalize = (s: unknown) => String(s ?? "").trim().toLowerCase().replace(/[\s_-]+/g, "");
+  const normalize = (s: unknown) =>
+    String(s ?? "")
+      .trim()
+      .toLowerCase()
+      .replace(/[\s_-]+/g, "");
   const HEADER_MAP: Record<string, keyof ParsedWeaverRow> = {
-    name: "name", weavername: "name", fullname: "name",
-    village: "village", villagearea: "village", area: "village",
-    mobile: "mobile", mobilenumber: "mobile", phone: "mobile", contact: "mobile",
-    looms: "looms", numberoflooms: "looms", noofooms: "looms",
+    name: "name",
+    weavername: "name",
+    fullname: "name",
+    village: "village",
+    villagearea: "village",
+    area: "village",
+    mobile: "mobile",
+    mobilenumber: "mobile",
+    phone: "mobile",
+    contact: "mobile",
+    looms: "looms",
+    numberoflooms: "looms",
+    noofooms: "looms",
     status: "status",
   };
 
-  const reset = () => { setFileName(null); setError(null); setValid([]); setInvalid([]); };
+  const reset = () => {
+    setFileName(null);
+    setError(null);
+    setValid([]);
+    setInvalid([]);
+  };
 
   const parseFile = (file: File) => {
     setParsing(true);
@@ -44,19 +68,25 @@ export function ImportWeaversModal({ open, onClose, onImported }: {
         const ws = wb.Sheets[wb.SheetNames[0]];
         const raw: Record<string, unknown>[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
-        if (raw.length === 0) { setError("The uploaded file is empty or has no data rows."); setParsing(false); return; }
+        if (raw.length === 0) {
+          setError("The uploaded file is empty or has no data rows.");
+          setParsing(false);
+          return;
+        }
 
         const firstRowKeys = Object.keys(raw[0]);
         const colMap: Record<string, keyof ParsedWeaverRow> = {};
-        firstRowKeys.forEach(k => {
+        firstRowKeys.forEach((k) => {
           const norm = normalize(k);
           if (HEADER_MAP[norm]) colMap[k] = HEADER_MAP[norm];
         });
 
         const required: (keyof ParsedWeaverRow)[] = ["name", "village", "mobile"];
-        const missing = required.filter(k => !Object.values(colMap).includes(k));
+        const missing = required.filter((k) => !Object.values(colMap).includes(k));
         if (missing.length > 0) {
-          setError(`Missing required columns: ${missing.map(k => k === "name" ? "Name" : k === "village" ? "Village" : "Mobile").join(", ")}. Expected Name, Village, Mobile (Looms and Status are optional).`);
+          setError(
+            `Missing required columns: ${missing.map((k) => (k === "name" ? "Name" : k === "village" ? "Village" : "Mobile")).join(", ")}. Expected Name, Village, Mobile (Looms and Status are optional).`
+          );
           setParsing(false);
           return;
         }
@@ -73,7 +103,8 @@ export function ImportWeaversModal({ open, onClose, onImported }: {
         raw.forEach((r, i) => {
           const out: Partial<ParsedWeaverRow> = { looms: 1, status: "active" as Status };
           Object.entries(colMap).forEach(([col, key]) => {
-            if (key === "looms") out.looms = parseInt(String(r[col]).replace(/[^\d]/g, ""), 10) || 1;
+            if (key === "looms")
+              out.looms = parseInt(String(r[col]).replace(/[^\d]/g, ""), 10) || 1;
             else if (key === "status") {
               const s = normalize(r[col]);
               out.status = s.includes("qc") ? "qc" : s.includes("idle") ? "idle" : "active";
@@ -103,7 +134,13 @@ export function ImportWeaversModal({ open, onClose, onImported }: {
   // state, so an imported roster looked fine until the next refresh and was
   // never actually saved.
   const handleConfirm = async () => {
-    const initialsOf = (name: string) => name.split(" ").filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase() ?? "").join("") || "WV";
+    const initialsOf = (name: string) =>
+      name
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((s) => s[0]?.toUpperCase() ?? "")
+        .join("") || "WV";
     setSaving(true);
     setError(null);
 
@@ -129,8 +166,10 @@ export function ImportWeaversModal({ open, onClose, onImported }: {
 
     setSaving(false);
     if (failures.length) {
-      setError(`Could not import ${failures.length} of ${valid.length} weavers: ${failures.join(", ")}. The rest were saved.`);
-      setValid(valid.filter(v => failures.includes(v.name)));
+      setError(
+        `Could not import ${failures.length} of ${valid.length} weavers: ${failures.join(", ")}. The rest were saved.`
+      );
+      setValid(valid.filter((v) => failures.includes(v.name)));
       onImported();
       return;
     }
@@ -140,43 +179,112 @@ export function ImportWeaversModal({ open, onClose, onImported }: {
   };
 
   return (
-    <Modal open={open} onOpenChange={o => { if (!o) { reset(); onClose(); } }} size="md">
-      <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "20px 28px", paddingRight: 56, position: "relative", flexShrink: 0 }}>
+    <Modal
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) {
+          reset();
+          onClose();
+        }
+      }}
+      size="md"
+    >
+      <div
+        style={{
+          background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`,
+          padding: "20px 28px",
+          paddingRight: 56,
+          position: "relative",
+          flexShrink: 0,
+        }}
+      >
         <Dialog.Title asChild>
           <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>
             Import Weavers from Excel
           </div>
         </Dialog.Title>
-        <Dialog.Description style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.85)", marginTop: 4, margin: 0 }}>
-          Upload a .xlsx or .csv file with columns Name, Village, Mobile, and optionally Looms and Status.
+        <Dialog.Description
+          style={{
+            fontFamily: F.ui,
+            fontSize: 13,
+            color: "rgba(255,253,249,0.85)",
+            marginTop: 4,
+            margin: 0,
+          }}
+        >
+          Upload a .xlsx or .csv file with columns Name, Village, Mobile, and optionally Looms and
+          Status.
         </Dialog.Description>
         <Dialog.Close asChild>
-          <IconButton onClick={() => reset()} variant="ghost" icon={X} label="Close" size="sm"
-            className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />
+          <IconButton
+            onClick={() => reset()}
+            variant="ghost"
+            icon={X}
+            label="Close"
+            size="sm"
+            className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]"
+          />
         </Dialog.Close>
       </div>
 
       <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1, minHeight: 0 }}>
-
         <div
-          onClick={() => fileInputRef.current?.click()} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => fileInputRef.current?.click())?.(); } }}
-          style={{ border: `2px dashed rgba(110,15,45,0.25)`, background: "rgba(110,15,45,0.03)", borderRadius: 14, padding: "32px 20px", textAlign: "center", cursor: "pointer" }}
+          onClick={() => fileInputRef.current?.click()}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              (() => fileInputRef.current?.click())?.();
+            }
+          }}
+          style={{
+            border: `2px dashed rgba(110,15,45,0.25)`,
+            background: "rgba(110,15,45,0.03)",
+            borderRadius: 14,
+            padding: "32px 20px",
+            textAlign: "center",
+            cursor: "pointer",
+          }}
         >
           <UploadSimple size={28} color={T.royalBurgundy} style={{ marginBottom: 10 }} />
           <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
             {fileName ? fileName : "Click to choose a file"}
           </div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>.xlsx, .xls, or .csv</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>
+            .xlsx, .xls, or .csv
+          </div>
           <Input
-            ref={fileInputRef} type="file" accept={IMPORT_FILE_ACCEPT} containerClassName="hidden"
-            onChange={e => { const f = e.target.files?.[0]; if (f) parseFile(f); }}
+            ref={fileInputRef}
+            type="file"
+            accept={IMPORT_FILE_ACCEPT}
+            containerClassName="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) parseFile(f);
+            }}
           />
         </div>
 
-        {parsing && <div style={{ marginTop: 16, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Reading file…</div>}
+        {parsing && (
+          <div style={{ marginTop: 16, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+            Reading file…
+          </div>
+        )}
 
         {error && (
-          <div style={{ marginTop: 16, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 12, padding: "14px 16px", fontFamily: F.ui, fontSize: 13, color: "#C0392B" }}>
+          <div
+            style={{
+              marginTop: 16,
+              background: "rgba(192,57,43,0.08)",
+              border: "1px solid rgba(192,57,43,0.25)",
+              borderRadius: 12,
+              padding: "14px 16px",
+              fontFamily: F.ui,
+              fontSize: 13,
+              color: "#C0392B",
+            }}
+          >
             {error}
           </div>
         )}
@@ -184,19 +292,70 @@ export function ImportWeaversModal({ open, onClose, onImported }: {
         {!error && !parsing && (valid.length > 0 || invalid.length > 0) && (
           <div style={{ marginTop: 20 }}>
             <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green, background: "rgba(30,102,64,0.10)", borderRadius: 99, padding: "5px 14px" }}>{valid.length} ready to import</span>
+              <span
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: T.green,
+                  background: "rgba(30,102,64,0.10)",
+                  borderRadius: 99,
+                  padding: "5px 14px",
+                }}
+              >
+                {valid.length} ready to import
+              </span>
               {invalid.length > 0 && (
-                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#C0392B", background: "rgba(192,57,43,0.10)", borderRadius: 99, padding: "5px 14px" }}>{invalid.length} skipped</span>
+                <span
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "#C0392B",
+                    background: "rgba(192,57,43,0.10)",
+                    borderRadius: 99,
+                    padding: "5px 14px",
+                  }}
+                >
+                  {invalid.length} skipped
+                </span>
               )}
             </div>
 
             {valid.length > 0 && (
-              <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", marginBottom: invalid.length > 0 ? 14 : 0 }}>
+              <div
+                style={{
+                  border: `1px solid ${T.borderDef}`,
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  marginBottom: invalid.length > 0 ? 14 : 0,
+                }}
+              >
                 <div style={{ maxHeight: 220, overflowY: "auto" }}>
                   {valid.map((v, i) => (
-                    <div key={v.mobile} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", borderBottom: i < valid.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 1 ? "rgba(247,242,234,0.5)" : "#FFF" }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{v.name}</span>
-                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{v.village} · {v.mobile} · {v.looms} loom{v.looms !== 1 ? "s" : ""}</span>
+                    <div
+                      key={v.mobile}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        padding: "10px 14px",
+                        borderBottom: i < valid.length - 1 ? `1px solid ${T.borderDef}` : "none",
+                        background: i % 2 === 1 ? "rgba(247,242,234,0.5)" : "#FFF",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: F.ui,
+                          fontSize: 13,
+                          color: T.luxuryBrown,
+                          fontWeight: 600,
+                        }}
+                      >
+                        {v.name}
+                      </span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                        {v.village} · {v.mobile} · {v.looms} loom{v.looms !== 1 ? "s" : ""}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -205,20 +364,49 @@ export function ImportWeaversModal({ open, onClose, onImported }: {
 
             {invalid.length > 0 && (
               <div style={{ fontFamily: F.ui, fontSize: 12, color: "#C0392B" }}>
-                {invalid.map((b) => <div key={b.row}>Row {b.row}: {b.reason}</div>)}
+                {invalid.map((b) => (
+                  <div key={b.row}>
+                    Row {b.row}: {b.reason}
+                  </div>
+                ))}
               </div>
             )}
           </div>
         )}
 
-        <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 28, borderTop: `1px solid ${T.borderDef}`, paddingTop: 20 }}>
-          <Button onClick={() => { reset(); onClose(); }} variant="secondary" className="rounded-[10px]">Cancel</Button>
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            justifyContent: "flex-end",
+            marginTop: 28,
+            borderTop: `1px solid ${T.borderDef}`,
+            paddingTop: 20,
+          }}
+        >
           <Button
-            disabled={valid.length === 0 || saving} onClick={handleConfirm}
+            onClick={() => {
+              reset();
+              onClose();
+            }}
+            variant="secondary"
+            className="rounded-[10px]"
+          >
+            Cancel
+          </Button>
+          <Button
+            disabled={valid.length === 0 || saving}
+            onClick={handleConfirm}
             variant="primary"
             className="rounded-[10px] bg-[#6E0F2D]"
           >
-            {saving ? "Importing…" : <>Import {valid.length > 0 ? valid.length : ""} Weaver{valid.length !== 1 ? "s" : ""}</>}
+            {saving ? (
+              "Importing…"
+            ) : (
+              <>
+                Import {valid.length > 0 ? valid.length : ""} Weaver{valid.length !== 1 ? "s" : ""}
+              </>
+            )}
           </Button>
         </div>
       </div>

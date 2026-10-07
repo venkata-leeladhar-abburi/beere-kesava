@@ -21,7 +21,14 @@ describe("formatMoney compact — design-system/06-DOMAIN.md Part E.2 worked exa
       const shown = formatMoney(rupees(r), { compact: true });
       const numeric = Number(shown.replace(/[₹,+]/g, "").replace(/[KLCr]+$/, ""));
       const suffix = shown.match(/[A-Za-z]+$/)?.[0] ?? "";
-      const magnitude = suffix === "Cr" ? numeric * 1e7 : suffix === "L" ? numeric * 1e5 : suffix === "K" ? numeric * 1e3 : numeric;
+      const magnitude =
+        suffix === "Cr"
+          ? numeric * 1e7
+          : suffix === "L"
+            ? numeric * 1e5
+            : suffix === "K"
+              ? numeric * 1e3
+              : numeric;
       // Allow rounding slack within a single step, but the displayed
       // magnitude must never decrease as the true value increases.
       expect(magnitude).toBeGreaterThanOrEqual(prevAbs - 1);

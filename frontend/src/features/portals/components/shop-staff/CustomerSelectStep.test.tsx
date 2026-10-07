@@ -36,7 +36,7 @@ function renderStep(overrides: Partial<React.ComponentProps<typeof CustomerSelec
       canProceedStep1={isPhoneEntryComplete(phone)}
       onNext={noop}
       {...overrides}
-    />,
+    />
   );
 }
 
@@ -58,7 +58,9 @@ describe("isPhoneEntryComplete", () => {
 describe("CustomerSelectStep phone field", () => {
   it("marks the phone as optional and lets a name-only customer continue", () => {
     renderStep();
-    expect(screen.getByText("(Optional)", { selector: "label[for='cust-phone'] span" })).toBeInTheDocument();
+    expect(
+      screen.getByText("(Optional)", { selector: "label[for='cust-phone'] span" })
+    ).toBeInTheDocument();
     expect(screen.queryByText("Enter all 10 digits, or leave it empty")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Next — Scan Saree/ })).toBeEnabled();
   });
@@ -72,7 +74,13 @@ describe("CustomerSelectStep phone field", () => {
 
   it("shows 'No phone' for a customer on file without one, not '+91 —'", () => {
     const customer: Customer = {
-      id: "c1", name: "Padma", phone: "", purchases: 2, total: "₹4,000", lastPurchase: "Sep 12", initials: "Padma",
+      id: "c1",
+      name: "Padma",
+      phone: "",
+      purchases: 2,
+      total: "₹4,000",
+      lastPurchase: "Sep 12",
+      initials: "Padma",
     };
     renderStep({ isNewCustomer: false, selectedCustomer: customer, canProceedStep1: true });
     expect(screen.getByText("No phone")).toBeInTheDocument();

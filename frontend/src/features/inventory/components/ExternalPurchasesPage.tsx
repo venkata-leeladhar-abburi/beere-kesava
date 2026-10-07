@@ -1,9 +1,17 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {
-  useSuppliers, SareeTag, Purchase,
-  totalPieces, purchasePieces, serialFromLineCode,
+  useSuppliers,
+  SareeTag,
+  Purchase,
+  totalPieces,
+  purchasePieces,
+  serialFromLineCode,
 } from "@/features/suppliers";
-import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import {
+  DateFilterState,
+  DEFAULT_DATE_FILTER,
+  matchesDateFilter,
+} from "../../../shared/ui/DateFilterBar";
 
 import { T } from "./externalPurchases/theme";
 import { FormState } from "./externalPurchases/types";
@@ -35,7 +43,17 @@ export type { FormState };
 export function ExternalPurchasesPage() {
   // Purchases live in the shared supplier context so the Suppliers page sees the
   // same inventory, spend and payment history that gets entered here.
-  const { purchases, payments, addPurchase, updatePurchase, deletePurchase, getPurchaseDetail, isLoading, isError, refetch } = useSuppliers();
+  const {
+    purchases,
+    payments,
+    addPurchase,
+    updatePurchase,
+    deletePurchase,
+    getPurchaseDetail,
+    isLoading,
+    isError,
+    refetch,
+  } = useSuppliers();
   // getPurchaseDetail is redefined every SupplierProvider render, so it can't
   // sit in a dependency array without re-firing this effect on every render —
   // a ref sidesteps that without missing a real formModal change.
@@ -48,7 +66,10 @@ export function ExternalPurchasesPage() {
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
-  const [formModal, setFormModal] = useState<{ mode: "add" | "edit" | "request" | "request"; editId?: string } | null>(null);
+  const [formModal, setFormModal] = useState<{
+    mode: "add" | "edit" | "request" | "request";
+    editId?: string;
+  } | null>(null);
   const [sareeListPurchase, setSareeListPurchase] = useState<Purchase | null>(null);
   // Saree photos (imageUrl/pieceImageUrls) aren't in the list's "summary"
   // view — fetch the full purchase on demand once a user actually opens its
@@ -59,14 +80,18 @@ export function ExternalPurchasesPage() {
     setDetailRow(row);
     getPurchaseDetail(row.id)
       .then((full) => setDetailRow((prev) => (prev && prev.id === row.id ? full : prev)))
-      .catch(() => { /* keep the summary row on failure */ });
+      .catch(() => {
+        /* keep the summary row on failure */
+      });
   };
 
   const openSareeList = (row: Purchase) => {
     setSareeListPurchase(row);
     getPurchaseDetail(row.id)
       .then((full) => setSareeListPurchase((prev) => (prev && prev.id === row.id ? full : prev)))
-      .catch(() => { /* keep the summary row on failure */ });
+      .catch(() => {
+        /* keep the summary row on failure */
+      });
   };
 
   useEffect(() => {
@@ -76,10 +101,17 @@ export function ExternalPurchasesPage() {
     }
     let cancelled = false;
     setEditingFull(null);
-    getPurchaseDetailRef.current(formModal.editId)
-      .then((full) => { if (!cancelled) setEditingFull(full); })
-      .catch(() => { /* falls back to the summary row below */ });
-    return () => { cancelled = true; };
+    getPurchaseDetailRef
+      .current(formModal.editId)
+      .then((full) => {
+        if (!cancelled) setEditingFull(full);
+      })
+      .catch(() => {
+        /* falls back to the summary row below */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [formModal]);
 
   const [fSupplier, setFSupplier] = useState("All Suppliers");
@@ -93,10 +125,10 @@ export function ExternalPurchasesPage() {
     const po = new Set<string>();
     const types = new Set<string>();
     const colors = new Set<string>();
-    purchases.forEach(p => {
+    purchases.forEach((p) => {
       if (p.supplier) s.add(p.supplier);
       if (p.id) po.add(p.id);
-      p.sarees.forEach(saree => {
+      p.sarees.forEach((saree) => {
         if (saree.sareeType) types.add(saree.sareeType);
         if (saree.color) colors.add(saree.color);
       });
@@ -111,10 +143,10 @@ export function ExternalPurchasesPage() {
 
   const poSerialOpts = useMemo(() => {
     if (fPurchaseOrder === "All Purchase Orders") return ["All Serial No.s"];
-    const p = purchases.find(x => x.id === fPurchaseOrder);
+    const p = purchases.find((x) => x.id === fPurchaseOrder);
     if (!p) return ["All Serial No.s"];
     const s = new Set<string>();
-    p.sarees.forEach(x => {
+    p.sarees.forEach((x) => {
       const serial = serialFromLineCode(x.id);
       if (serial) s.add(serial);
     });
@@ -125,7 +157,7 @@ export function ExternalPurchasesPage() {
   // table's Paid and Balance columns.
   const paidByPurchase = useMemo(() => {
     const map = new Map<string, number>();
-    payments.forEach(pay => {
+    payments.forEach((pay) => {
       if (!pay.purchaseId) return;
       map.set(pay.purchaseId, (map.get(pay.purchaseId) ?? 0) + pay.amount);
     });
@@ -145,21 +177,29 @@ export function ExternalPurchasesPage() {
     const matchDate = matchesDateFilter(p.date, dateFilter);
     const matchSupplier = fSupplier === "All Suppliers" || p.supplier === fSupplier;
     const matchPO = fPurchaseOrder === "All Purchase Orders" || p.id === fPurchaseOrder;
-    const matchType = fType === "All Saree Types" || p.sarees.some(s => s.sareeType === fType);
-    const matchColor = fColor === "All Colours" || p.sarees.some(s => s.color === fColor);
-    const matchSerial = fSerial === "All Serial No.s" || p.sarees.some(s => {
-      return serialFromLineCode(s.id) === fSerial;
-    });
+    const matchType = fType === "All Saree Types" || p.sarees.some((s) => s.sareeType === fType);
+    const matchColor = fColor === "All Colours" || p.sarees.some((s) => s.color === fColor);
+    const matchSerial =
+      fSerial === "All Serial No.s" ||
+      p.sarees.some((s) => {
+        return serialFromLineCode(s.id) === fSerial;
+      });
 
-    return matchSearch && matchDate && matchSupplier && matchPO && matchType && matchColor && matchSerial;
+    return (
+      matchSearch && matchDate && matchSupplier && matchPO && matchType && matchColor && matchSerial
+    );
   };
-
 
   const filtered = purchases.filter(matchesFilters);
 
-  const filtersActive = search !== "" || dateFilter.mode !== "all"
-    || fSupplier !== "All Suppliers" || fPurchaseOrder !== "All Purchase Orders"
-    || fSerial !== "All Serial No.s" || fType !== "All Saree Types" || fColor !== "All Colours";
+  const filtersActive =
+    search !== "" ||
+    dateFilter.mode !== "all" ||
+    fSupplier !== "All Suppliers" ||
+    fPurchaseOrder !== "All Purchase Orders" ||
+    fSerial !== "All Serial No.s" ||
+    fType !== "All Saree Types" ||
+    fColor !== "All Colours";
 
   const clearFilters = () => {
     setSearch("");
@@ -219,7 +259,8 @@ export function ExternalPurchasesPage() {
   const handleDelete = async (id: string) => {
     const confirmed = await confirm({
       title: `Delete purchase ${id}?`,
-      description: "This permanently removes the purchase and cannot be undone. Type the purchase ID to confirm.",
+      description:
+        "This permanently removes the purchase and cannot be undone. Type the purchase ID to confirm.",
       typeToConfirm: id,
       confirmLabel: "Delete",
     });
@@ -228,9 +269,10 @@ export function ExternalPurchasesPage() {
     setDetailRow((d) => (d && d.id === id ? null : d));
   };
 
-  const editingPurchase = formModal?.mode === "edit"
-    ? editingFull ?? purchases.find((p) => p.id === formModal.editId)
-    : null;
+  const editingPurchase =
+    formModal?.mode === "edit"
+      ? (editingFull ?? purchases.find((p) => p.id === formModal.editId))
+      : null;
   const editingFormInitial: FormState | null = editingPurchase
     ? {
         supplierId: editingPurchase.supplierId || "",
@@ -258,41 +300,51 @@ export function ExternalPurchasesPage() {
         paddingBottom: 80,
       }}
     >
-      <div id="ep-form"><PageHeader onAdd={() => setFormModal({ mode: "add" })} /></div>
+      <div id="ep-form">
+        <PageHeader onAdd={() => setFormModal({ mode: "add" })} />
+      </div>
 
       <div id="ep-history">
         <SummaryCards purchases={purchases} totalSarees={totalSarees} />
 
-      <FilterBar
-        search={search} setSearch={setSearch}
-        dateFilter={dateFilter} setDateFilter={setDateFilter}
-        viewMode={viewMode} setViewMode={setViewMode}
-        fSupplier={fSupplier} setFSupplier={setFSupplier}
-        fPurchaseOrder={fPurchaseOrder} setFPurchaseOrder={setFPurchaseOrder}
-        fSerial={fSerial} setFSerial={setFSerial}
-        poSerialOpts={poSerialOpts}
-        fType={fType} setFType={setFType}
-        fColor={fColor} setFColor={setFColor}
-        opts={opts}
-        filtersActive={filtersActive}
-        clearFilters={clearFilters}
-      >
-        <PurchasesTable
-          filtered={filtered}
-          paidFor={paidFor}
-          totalCount={purchases.length}
+        <FilterBar
+          search={search}
+          setSearch={setSearch}
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
           viewMode={viewMode}
-          hoveredRow={hoveredRow}
-          setHoveredRow={setHoveredRow}
-          onView={openDetail}
-          onViewSarees={openSareeList}
-          onEdit={(id) => setFormModal({ mode: "edit", editId: id })}
-          onDelete={handleDelete}
-          loading={isLoading}
-          loadError={isError}
-          onRetry={refetch}
-          onClearFilters={clearFilters}
-        />
+          setViewMode={setViewMode}
+          fSupplier={fSupplier}
+          setFSupplier={setFSupplier}
+          fPurchaseOrder={fPurchaseOrder}
+          setFPurchaseOrder={setFPurchaseOrder}
+          fSerial={fSerial}
+          setFSerial={setFSerial}
+          poSerialOpts={poSerialOpts}
+          fType={fType}
+          setFType={setFType}
+          fColor={fColor}
+          setFColor={setFColor}
+          opts={opts}
+          filtersActive={filtersActive}
+          clearFilters={clearFilters}
+        >
+          <PurchasesTable
+            filtered={filtered}
+            paidFor={paidFor}
+            totalCount={purchases.length}
+            viewMode={viewMode}
+            hoveredRow={hoveredRow}
+            setHoveredRow={setHoveredRow}
+            onView={openDetail}
+            onViewSarees={openSareeList}
+            onEdit={(id) => setFormModal({ mode: "edit", editId: id })}
+            onDelete={handleDelete}
+            loading={isLoading}
+            loadError={isError}
+            onRetry={refetch}
+            onClearFilters={clearFilters}
+          />
         </FilterBar>
       </div>
 
@@ -326,10 +378,7 @@ export function ExternalPurchasesPage() {
 
       {/* SAREE BARCODE LIST MODAL */}
       {sareeListPurchase && (
-        <SareeListModal
-          purchase={sareeListPurchase}
-          onClose={() => setSareeListPurchase(null)}
-        />
+        <SareeListModal purchase={sareeListPurchase} onClose={() => setSareeListPurchase(null)} />
       )}
     </div>
   );

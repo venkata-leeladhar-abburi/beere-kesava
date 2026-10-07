@@ -1,4 +1,4 @@
-import { brand, fonts, semantic } from '@/design-system/tokens';
+import { brand, fonts, semantic } from "@/design-system/tokens";
 // ── Design Tokens ──────────────────────────────────────────────────────────
 export const T = {
   silkCream: semantic.surface.canvas,

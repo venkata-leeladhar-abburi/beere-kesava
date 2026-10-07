@@ -55,39 +55,130 @@ const MOCK_BACKEND_ORDERS: BackendBulkOrder[] = [
     talliedDate: null,
   },
   {
-    ref: "ORD-2026-040", customerId: "CUST-001", dueDate: "2026-12-31T00:00:00.000Z", createdDate: "2026-01-01",
-    status: "ON_TRACK", sareeTypeCode: "KS", designCode: "DS-01", total: 10, done: 10, shortage: 0,
-    dispatchStatus: "DISPATCHED", paymentStatus: "PAID", amountDue: "5000", amountPaid: "5000",
-    gstCode: null, address: null, phone: null, visitingCardUrl: null, photoUrls: [], tallied: true, talliedBy: "Admin", talliedDate: null,
+    ref: "ORD-2026-040",
+    customerId: "CUST-001",
+    dueDate: "2026-12-31T00:00:00.000Z",
+    createdDate: "2026-01-01",
+    status: "ON_TRACK",
+    sareeTypeCode: "KS",
+    designCode: "DS-01",
+    total: 10,
+    done: 10,
+    shortage: 0,
+    dispatchStatus: "DISPATCHED",
+    paymentStatus: "PAID",
+    amountDue: "5000",
+    amountPaid: "5000",
+    gstCode: null,
+    address: null,
+    phone: null,
+    visitingCardUrl: null,
+    photoUrls: [],
+    tallied: true,
+    talliedBy: "Admin",
+    talliedDate: null,
   },
   {
-    ref: "ORD-2026-039", customerId: "CUST-001", dueDate: "2026-12-31T00:00:00.000Z", createdDate: "2026-01-01",
-    status: "ON_TRACK", sareeTypeCode: "KS", designCode: "DS-01", total: 10, done: 0, shortage: 0,
-    dispatchStatus: "PENDING", paymentStatus: "PENDING", amountDue: "5000", amountPaid: "0",
-    gstCode: null, address: null, phone: null, visitingCardUrl: null, photoUrls: [], tallied: false, talliedBy: null, talliedDate: null,
+    ref: "ORD-2026-039",
+    customerId: "CUST-001",
+    dueDate: "2026-12-31T00:00:00.000Z",
+    createdDate: "2026-01-01",
+    status: "ON_TRACK",
+    sareeTypeCode: "KS",
+    designCode: "DS-01",
+    total: 10,
+    done: 0,
+    shortage: 0,
+    dispatchStatus: "PENDING",
+    paymentStatus: "PENDING",
+    amountDue: "5000",
+    amountPaid: "0",
+    gstCode: null,
+    address: null,
+    phone: null,
+    visitingCardUrl: null,
+    photoUrls: [],
+    tallied: false,
+    talliedBy: null,
+    talliedDate: null,
   },
   {
-    ref: "ORD-2026-038", customerId: "CUST-001", dueDate: "2026-12-31T00:00:00.000Z", createdDate: "2026-01-01",
-    status: "ON_TRACK", sareeTypeCode: "KS", designCode: "DS-01", total: 10, done: 0, shortage: 0,
-    dispatchStatus: "PENDING", paymentStatus: "PENDING", amountDue: "5000", amountPaid: "0",
-    gstCode: null, address: null, phone: null, visitingCardUrl: null, photoUrls: [], tallied: false, talliedBy: null, talliedDate: null,
+    ref: "ORD-2026-038",
+    customerId: "CUST-001",
+    dueDate: "2026-12-31T00:00:00.000Z",
+    createdDate: "2026-01-01",
+    status: "ON_TRACK",
+    sareeTypeCode: "KS",
+    designCode: "DS-01",
+    total: 10,
+    done: 0,
+    shortage: 0,
+    dispatchStatus: "PENDING",
+    paymentStatus: "PENDING",
+    amountDue: "5000",
+    amountPaid: "0",
+    gstCode: null,
+    address: null,
+    phone: null,
+    visitingCardUrl: null,
+    photoUrls: [],
+    tallied: false,
+    talliedBy: null,
+    talliedDate: null,
   },
   {
-    ref: "ORD-2026-037", customerId: "CUST-001", dueDate: "2026-12-31T00:00:00.000Z", createdDate: "2026-01-01",
-    status: "ON_TRACK", sareeTypeCode: "KS", designCode: "DS-01", total: 10, done: 0, shortage: 0,
-    dispatchStatus: "PENDING", paymentStatus: "PENDING", amountDue: "5000", amountPaid: "0",
-    gstCode: null, address: null, phone: null, visitingCardUrl: null, photoUrls: [], tallied: false, talliedBy: null, talliedDate: null,
+    ref: "ORD-2026-037",
+    customerId: "CUST-001",
+    dueDate: "2026-12-31T00:00:00.000Z",
+    createdDate: "2026-01-01",
+    status: "ON_TRACK",
+    sareeTypeCode: "KS",
+    designCode: "DS-01",
+    total: 10,
+    done: 0,
+    shortage: 0,
+    dispatchStatus: "PENDING",
+    paymentStatus: "PENDING",
+    amountDue: "5000",
+    amountPaid: "0",
+    gstCode: null,
+    address: null,
+    phone: null,
+    visitingCardUrl: null,
+    photoUrls: [],
+    tallied: false,
+    talliedBy: null,
+    talliedDate: null,
   },
   {
-    ref: "ORD-2026-036", customerId: "CUST-001", dueDate: "2026-12-31T00:00:00.000Z", createdDate: "2026-01-01",
-    status: "ON_TRACK", sareeTypeCode: "KS", designCode: "DS-01", total: 10, done: 0, shortage: 0,
-    dispatchStatus: "PENDING", paymentStatus: "PENDING", amountDue: "5000", amountPaid: "0",
-    gstCode: null, address: null, phone: null, visitingCardUrl: null, photoUrls: [], tallied: false, talliedBy: null, talliedDate: null,
+    ref: "ORD-2026-036",
+    customerId: "CUST-001",
+    dueDate: "2026-12-31T00:00:00.000Z",
+    createdDate: "2026-01-01",
+    status: "ON_TRACK",
+    sareeTypeCode: "KS",
+    designCode: "DS-01",
+    total: 10,
+    done: 0,
+    shortage: 0,
+    dispatchStatus: "PENDING",
+    paymentStatus: "PENDING",
+    amountDue: "5000",
+    amountPaid: "0",
+    gstCode: null,
+    address: null,
+    phone: null,
+    visitingCardUrl: null,
+    photoUrls: [],
+    tallied: false,
+    talliedBy: null,
+    talliedDate: null,
   },
 ];
 
 function Harness() {
-  const { bulkOrders, nextOrderRef, addBulkOrder, markDispatched, recordPayment, tallyOrder } = useBulkOrders();
+  const { bulkOrders, nextOrderRef, addBulkOrder, markDispatched, recordPayment, tallyOrder } =
+    useBulkOrders();
   return (
     <div>
       <div data-testid="count">{bulkOrders.length}</div>
@@ -95,8 +186,15 @@ function Harness() {
       <button
         onClick={() =>
           addBulkOrder({
-            customer: "Test Silks", ref: nextOrderRef, due: "01 Jan 2027", status: "on-track",
-            sareeType: "Test Type", design: "TEST-001", done: 0, total: 10, customerId: "CUST-001"
+            customer: "Test Silks",
+            ref: nextOrderRef,
+            due: "01 Jan 2027",
+            status: "on-track",
+            sareeType: "Test Type",
+            design: "TEST-001",
+            done: 0,
+            total: 10,
+            customerId: "CUST-001",
           } as BulkOrder)
         }
       >
@@ -105,9 +203,10 @@ function Harness() {
       <button onClick={() => markDispatched("ORD-2026-041", "INV-999")}>Dispatch</button>
       <button onClick={() => recordPayment("ORD-2026-041", 5000)}>Pay</button>
       <button onClick={() => tallyOrder("ORD-2026-041", "Admin")}>Tally</button>
-      {bulkOrders.map(o => (
+      {bulkOrders.map((o) => (
         <div key={o.ref} data-testid={`order-${o.ref}`}>
-          {o.ref}: {o.dispatchStatus} / paid={o.amountPaid ?? 0} / tallied={String(o.tallied ?? false)}
+          {o.ref}: {o.dispatchStatus} / paid={o.amountPaid ?? 0} / tallied=
+          {String(o.tallied ?? false)}
         </div>
       ))}
     </div>
@@ -118,7 +217,7 @@ function renderHarness() {
   return renderWithQueryClient(
     <BulkOrderProvider>
       <Harness />
-    </BulkOrderProvider>,
+    </BulkOrderProvider>
   );
 }
 
@@ -159,7 +258,7 @@ describe("BulkOrderContext", () => {
     await waitFor(() => expect(screen.getByTestId("count")).toHaveTextContent("6"));
     fireEvent.click(screen.getByText("Dispatch"));
     await waitFor(() =>
-      expect(screen.getByTestId("order-ORD-2026-041")).toHaveTextContent("dispatched"),
+      expect(screen.getByTestId("order-ORD-2026-041")).toHaveTextContent("dispatched")
     );
   });
 
@@ -167,14 +266,23 @@ describe("BulkOrderContext", () => {
     renderHarness();
     await waitFor(() => expect(screen.getByTestId("count")).toHaveTextContent("6"));
     fireEvent.click(screen.getByText("Pay"));
-    await waitFor(() => expect(bulkOrdersApi.update).toHaveBeenCalledWith("ORD-2026-041", expect.objectContaining({ amountPaid: 5000 })));
+    await waitFor(() =>
+      expect(bulkOrdersApi.update).toHaveBeenCalledWith(
+        "ORD-2026-041",
+        expect.objectContaining({ amountPaid: 5000 })
+      )
+    );
   });
 
   it("tallyOrder marks the order as tallied", async () => {
     renderHarness();
     await waitFor(() => expect(screen.getByTestId("count")).toHaveTextContent("6"));
     fireEvent.click(screen.getByText("Tally"));
-    await waitFor(() => expect(bulkOrdersApi.update).toHaveBeenCalledWith("ORD-2026-041", expect.objectContaining({ tallied: true })));
+    await waitFor(() =>
+      expect(bulkOrdersApi.update).toHaveBeenCalledWith(
+        "ORD-2026-041",
+        expect.objectContaining({ tallied: true })
+      )
+    );
   });
 });
-
