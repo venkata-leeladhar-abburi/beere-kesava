@@ -247,9 +247,21 @@ export class WhatsAppSalesService {
   }
 }
 
+/**
+ * The shop's clock. The server runs in UTC, so without this a sale rung up at
+ * 5:52 pm reached the owners stamped 12:22 pm — and one made before 5:30 am
+ * carried the previous day's date.
+ */
+const SHOP_TIME_ZONE = "Asia/Kolkata";
+
 /** "27 Aug 2026" */
 function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: SHOP_TIME_ZONE,
+  });
 }
 
 /** "27 Aug 2026, 04:35 PM" */
@@ -261,6 +273,7 @@ function formatDateTime(date: Date): string {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
+    timeZone: SHOP_TIME_ZONE,
   });
 }
 

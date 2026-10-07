@@ -46,7 +46,13 @@ export class WhatsAppDocumentsService {
         this.whatsapp.sanitiseParam(po.vendor.contactName || po.vendor.name),
         "Purchase Order",
         po.poNumber,
-        new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+        new Date().toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          // The shop's date, not the UTC server's.
+          timeZone: "Asia/Kolkata",
+        }),
         "Beere Kesava Silks",
       ],
       media: { url: mediaUrl, filename: `${po.poNumber}.pdf` },
