@@ -83,6 +83,11 @@ services:
       # Country code prefix for the 10-digit numbers stored in the DB.
       - key: WHATSAPP_DEFAULT_COUNTRY_CODE
         value: "91"
+      # Owners' numbers for the per-bill sale alert, comma-separated. Active
+      # super admins are always alerted from their own mobile on file; this
+      # adds anyone else who should be on the feed.
+      - key: ADMIN_WHATSAPP_NUMBERS
+        sync: false
     # NOTE: free-tier Render services don't support persistent disks, so there
     # is no 'uploads' disk mount here and backend/uploads/ is wiped on every
     # deploy and on free-tier spin-down. That no longer matters as long as the

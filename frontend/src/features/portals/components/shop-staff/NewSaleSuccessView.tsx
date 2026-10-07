@@ -36,8 +36,8 @@ interface NewSaleSuccessViewProps {
 /**
  * A phone is optional on a retail sale — a cash walk-in who won't leave a
  * number is a legitimate customer — and the customer list stores a literal
- * "—" for anyone without one. Either way there is nobody to send a bill to,
- * so the button explains itself rather than failing on click.
+ * "—" for anyone without one. The bill still goes to the admin team; only
+ * the customer's copy has nobody to go to.
  */
 function hasSendablePhone(phone: string): boolean {
   return /\d/.test(phone.trim());
@@ -61,7 +61,8 @@ export function NewSaleSuccessView({
   const [sending, setSending] = React.useState(false);
   const [sent, setSent] = React.useState(false);
 
-  const canSend = hasSendablePhone(phone) && saleRefs.length > 0;
+  const hasPhone = hasSendablePhone(phone);
+  const canSend = saleRefs.length > 0;
   const billRef = saleRefs[0] ?? "";
   const soldAt = React.useMemo(() => new Date(), []);
 
@@ -113,6 +114,19 @@ export function NewSaleSuccessView({
       setSending(false);
     }
   };
+
+  // The bill goes out as soon as the sale is confirmed, without waiting for
+  // the button: left to a click, a busy counter skipped it and neither the
+  // customer nor the owners heard about the sale. The button stays as the
+  // retry when this send fails. The ref keeps a remount (StrictMode) from
+  // sending the same bill twice.
+  const autoSent = React.useRef(false);
+  React.useEffect(() => {
+    if (autoSent.current || !canSend) return;
+    autoSent.current = true;
+    void handleSend();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per bill
+  }, [canSend]);
 
   return (
     <div style={{ paddingBottom: 32 }}>
@@ -187,16 +201,15 @@ export function NewSaleSuccessView({
       <div style={{ padding: "0 20px", display: "flex", flexDirection: "column" as const, gap: 10, marginBottom: 16 }}>
         <Btn label="Print Bill" icon={<Printer size={16} />} onClick={onShowBill} style={{ width: "100%", background: C.burg }} />
         <Btn
-          label={sending ? "Sending…" : sent ? "Sent on WhatsApp" : "Send to Customer on WhatsApp"}
+          label={sending ? "Sending…" : sent ? "Sent on WhatsApp" : hasPhone ? "Send to Customer on WhatsApp" : "Send to Admin on WhatsApp"}
           icon={<MessageSquare size={16} />}
           onClick={handleSend}
           disabled={!canSend || sending || sent}
-          title={canSend ? undefined : "This customer has no phone number on file"}
           style={{ width: "100%", background: C.green }}
         />
-        {!canSend && (
+        {!hasPhone && (
           <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textAlign: "center" as const }}>
-            No phone number on file for this customer — add one on their profile to send the bill.
+            No phone number on file for this customer — the bill goes to the admin team only.
           </div>
         )}
       </div>

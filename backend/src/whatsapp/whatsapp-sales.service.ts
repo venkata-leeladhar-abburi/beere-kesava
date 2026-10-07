@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { WhatsAppMessage, WhatsAppMessageKind } from "../generated/prisma/client";
+import { UserRole, WhatsAppMessage, WhatsAppMessageKind } from "../generated/prisma/client";
 import { StorageService } from "../common/storage/storage.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { WhatsAppService } from "./whatsapp.service";
@@ -33,10 +33,31 @@ export class WhatsAppSalesService {
     private readonly whatsapp: WhatsAppService,
   ) {}
 
-  /** Numbers on the owners' sale feed. Blank/duplicate entries are dropped. */
-  private get adminNumbers(): string[] {
+  /**
+   * Numbers on the owners' sale feed: ADMIN_WHATSAPP_NUMBERS plus every active
+   * super admin's own mobile. The super admins are read from the database so
+   * the feed cannot go silent because a deploy lost the env var — which is how
+   * three bills in a row reached the customer and no owner. Compared on the
+   * last ten digits, so "98480 12345" and "919848012345" are one recipient.
+   */
+  private async adminNumbers(): Promise<string[]> {
     const raw = this.config.get<string>("ADMIN_WHATSAPP_NUMBERS") ?? "";
-    return [...new Set(raw.split(",").map((n) => n.trim()).filter(Boolean))];
+    const superAdmins = await this.prisma.user.findMany({
+      where: {
+        status: "ACTIVE",
+        OR: [{ role: UserRole.SUPERADMIN }, { additionalRoles: { has: UserRole.SUPERADMIN } }],
+      },
+      select: { mobile: true },
+    });
+    const byNumber = new Map<string, string>();
+    for (const number of [...raw.split(","), ...superAdmins.map((u) => u.mobile)]) {
+      const trimmed = number.trim();
+      const digits = trimmed.replace(/\D/g, "");
+      if (!digits) continue;
+      const key = digits.slice(-10);
+      if (!byNumber.has(key)) byNumber.set(key, trimmed);
+    }
+    return [...byNumber.values()];
   }
 
   async sendSaleBill(
@@ -178,9 +199,11 @@ export class WhatsAppSalesService {
     media: { url: string; filename: string };
     sentById?: string;
   }) {
-    const numbers = this.adminNumbers;
+    const numbers = await this.adminNumbers();
     if (numbers.length === 0) {
-      this.logger.warn(`ADMIN_WHATSAPP_NUMBERS is unset — no sale alert sent for ${args.billRef}`);
+      this.logger.warn(
+        `No ADMIN_WHATSAPP_NUMBERS and no active super admin — no sale alert sent for ${args.billRef}`,
+      );
       return [];
     }
 
