@@ -42,6 +42,6 @@ export interface SendSaleBillResult {
   mediaUrl: string;
   /** null when the customer has no phone number on file. */
   customer: WhatsAppMessage | null;
-  /** One per number on ADMIN_WHATSAPP_NUMBERS. */
+  /** One per admin / super admin mobile and number on ADMIN_WHATSAPP_NUMBERS. */
   admins: WhatsAppMessage[];
 }

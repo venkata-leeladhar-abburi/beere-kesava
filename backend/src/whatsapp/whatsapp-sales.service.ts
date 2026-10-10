@@ -20,7 +20,7 @@ const DEFAULT_OUTLET_NAME = "Main Showroom";
  *
  * Two templates, one upload:
  *   bk_retail_bill_       → the customer, their own receipt
- *   bk_admin_sale_alert_  → ADMIN_WHATSAPP_NUMBERS, the owners' live feed
+ *   bk_admin_sale_alert_  → admins and super admins, the owners' live feed
  */
 @Injectable()
 export class WhatsAppSalesService {
@@ -34,23 +34,24 @@ export class WhatsAppSalesService {
   ) {}
 
   /**
-   * Numbers on the owners' sale feed: ADMIN_WHATSAPP_NUMBERS plus every active
-   * super admin's own mobile. The super admins are read from the database so
-   * the feed cannot go silent because a deploy lost the env var — which is how
+   * Numbers on the owners' sale feed: ADMIN_WHATSAPP_NUMBERS plus the mobile of
+   * every active admin and super admin. They are read from the database so the
+   * feed cannot go silent because a deploy lost the env var — which is how
    * three bills in a row reached the customer and no owner. Compared on the
    * last ten digits, so "98480 12345" and "919848012345" are one recipient.
    */
   private async adminNumbers(): Promise<string[]> {
     const raw = this.config.get<string>("ADMIN_WHATSAPP_NUMBERS") ?? "";
-    const superAdmins = await this.prisma.user.findMany({
+    const feedRoles = [UserRole.SUPERADMIN, UserRole.ADMIN];
+    const admins = await this.prisma.user.findMany({
       where: {
         status: "ACTIVE",
-        OR: [{ role: UserRole.SUPERADMIN }, { additionalRoles: { has: UserRole.SUPERADMIN } }],
+        OR: [{ role: { in: feedRoles } }, { additionalRoles: { hasSome: feedRoles } }],
       },
       select: { mobile: true },
     });
     const byNumber = new Map<string, string>();
-    for (const number of [...raw.split(","), ...superAdmins.map((u) => u.mobile)]) {
+    for (const number of [...raw.split(","), ...admins.map((u) => u.mobile)]) {
       const trimmed = number.trim();
       const digits = trimmed.replace(/\D/g, "");
       if (!digits) continue;
@@ -202,7 +203,7 @@ export class WhatsAppSalesService {
     const numbers = await this.adminNumbers();
     if (numbers.length === 0) {
       this.logger.warn(
-        `No ADMIN_WHATSAPP_NUMBERS and no active super admin — no sale alert sent for ${args.billRef}`,
+        `No ADMIN_WHATSAPP_NUMBERS and no active admin or super admin — no sale alert sent for ${args.billRef}`,
       );
       return [];
     }
