@@ -100,6 +100,8 @@ function toPurchase(p: BackendPurchase): Purchase {
       (p.supplier
         ? `${p.supplier.city ?? ""}, ${p.supplier.state ?? ""}`.replace(/^, |, $/, "")
         : ""),
+    firmId: p.firmId ?? undefined,
+    firmName: p.firm?.firmName ?? undefined,
     date: p.date.split("T")[0]!,
     sareeCount: p.sareeCount,
     gstNumber: p.gstNumber ?? "",
@@ -166,6 +168,9 @@ function toCreatePurchasePayload(
     supplierId: p.supplierId || undefined,
     supplierName: p.supplierId ? undefined : p.supplier,
     location: p.location || undefined,
+    // The form refuses to submit without one; "" reaches the server as a
+    // clear "select the firm" error rather than a silently unbooked purchase.
+    firmId: p.firmId ?? "",
     date: cleanDate(p.date),
     sareeCount: p.sareeCount,
     gstNumber: p.gstNumber || undefined,
@@ -186,6 +191,7 @@ function toUpdatePurchasePayload(patch: Partial<Purchase>): UpdatePurchasePayloa
     supplierId: patch.supplierId || undefined,
     supplierName: patch.supplierId ? undefined : patch.supplier,
     location: patch.location,
+    firmId: patch.firmId || undefined,
     date: cleanDate(patch.date),
     sareeCount: patch.sareeCount,
     gstNumber: patch.gstNumber,

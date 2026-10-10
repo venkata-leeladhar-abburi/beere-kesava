@@ -3,6 +3,7 @@ import { T } from "../../theme";
 import { WholesaleCustomer, WholesaleTab } from "../../types";
 import { Button, Field, Input, PhoneInput, Textarea } from "../../../../../shared/ui/primitives";
 import { VisitingCardUploadField } from "../../../../../shared/ui/VisitingCardUploadField";
+import { ConnectedFirmField } from "@/features/firms";
 
 export function EditProfileTab({
   customer,
@@ -27,6 +28,7 @@ export function EditProfileTab({
   const [ifscCode, setIfscCode] = React.useState(customer.ifscCode);
   const [gstNumber, setGstNumber] = React.useState(customer.gstNumber || "");
   const [notes, setNotes] = React.useState(customer.notes || "");
+  const [firmId, setFirmId] = React.useState(customer.firmId || "");
   const [error, setError] = React.useState<string | null>(null);
 
   const handleSave = () => {
@@ -50,6 +52,7 @@ export function EditProfileTab({
       ifscCode,
       gstNumber,
       notes,
+      firmId,
       visitingCard: cardUrl || "",
     });
     setWholesaleTab("Overview");
@@ -127,6 +130,11 @@ export function EditProfileTab({
               placeholder="e.g. 30 days"
             />
           </Field>
+          <ConnectedFirmField
+            value={firmId}
+            onChange={setFirmId}
+            hint="Pre-selected as the billing firm on this customer's invoices. Each invoice can still pick a different firm."
+          />
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             <Field label="Bank Name *">
               <Input

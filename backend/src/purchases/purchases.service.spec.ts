@@ -133,6 +133,25 @@ describe("PurchasesService.update — saree lines", () => {
     expect(sareeCodes.recodePurchases).toHaveBeenCalledWith(prisma, ["EXT-1"]);
   });
 
+  it("refuses to move a purchase to another firm once a different firm has paid against it", async () => {
+    prisma.firm = { findUnique: jest.fn().mockResolvedValue({ id: "FIRM-002" }) };
+    prisma.supplierPayment.findFirst = jest.fn().mockResolvedValue({ firm: { firmName: "Kesava Silks" } });
+
+    await expect(service.update("EXT-1", { firmId: "FIRM-002" })).rejects.toThrow(/Kesava Silks has already paid/);
+    expect(prisma.purchase.update).not.toHaveBeenCalled();
+  });
+
+  it("sets the firm on a purchase nobody has paid from another firm", async () => {
+    prisma.firm = { findUnique: jest.fn().mockResolvedValue({ id: "FIRM-002" }) };
+    prisma.supplierPayment.findFirst = jest.fn().mockResolvedValue(null);
+
+    await service.update("EXT-1", { firmId: "FIRM-002" });
+
+    expect(prisma.purchase.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ firmId: "FIRM-002" }) }),
+    );
+  });
+
   it("refuses to remove a line that has a return raised against it", async () => {
     prisma.supplierReturnRequest.findMany.mockResolvedValue([{ sareeLine: { code: "RAVI-001" } }]);
 

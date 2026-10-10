@@ -11,6 +11,9 @@ import { ListInvoicesQueryDto } from "./dto/list-invoices-query.dto";
 
 const include = {
   customer: true,
+  // The firm an invoice is raised under lives on its dispatch — the invoice
+  // has no firm column of its own.
+  dispatch: { select: { firmId: true, firm: { select: { id: true, firmName: true } } } },
   payments: {
     orderBy: { date: "desc" },
     include: { recordedBy: { select: { id: true, firstName: true, lastName: true, role: true } } },
@@ -107,9 +110,21 @@ export class InvoicesService {
   }
 
   async recordPayment(invoiceId: string, dto: CreatePaymentDto) {
-    const invoice = await this.prisma.invoice.findUnique({ where: { id: invoiceId } });
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id: invoiceId },
+      include: { dispatch: { select: { firmId: true } } },
+    });
     if (!invoice) {
       throw new NotFoundException(`Invoice ${invoiceId} not found`);
+    }
+    // An invoice is collected only by the firm that raised it. One raised
+    // before firms were recorded on dispatches has none, and takes whichever
+    // firm the accountant names.
+    const invoiceFirmId = invoice.dispatch?.firmId;
+    if (invoiceFirmId && dto.firmId && dto.firmId !== invoiceFirmId) {
+      throw new BadRequestException(
+        `This payment must be received by the firm on invoice ${invoice.code ?? invoiceId} — it can't be booked to a different firm.`,
+      );
     }
     if (invoice.status === InvoiceStatus.PAID) {
       throw new BadRequestException(`Invoice ${invoiceId} is already fully paid`);
@@ -131,7 +146,7 @@ export class InvoicesService {
           amount: dto.amount,
           utr: dto.utr,
           method: dto.method,
-          firmId: dto.firmId,
+          firmId: invoiceFirmId ?? dto.firmId,
           recordedById: dto.actorId,
         },
       }),

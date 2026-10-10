@@ -1285,8 +1285,9 @@ model Supplier {
   visitingCardUrl String?
   status          PartyStatus @default(ACTIVE)
   rating          Int?
-  // Optional link to one of our own firms. Suppliers that predate this
-  // column stay unlinked (null) and can be connected later from Edit Profile.
+  // Optional default firm. Never binds the supplier to it — an external
+  // purchase carries its own firm (Purchase.firmId); this only pre-selects
+  // that picker. Set from Edit Profile, null when not chosen.
   firmId          String?
   firm            Firm?       @relation(fields: [firmId], references: [id])
   createdAt       DateTime    @default(now())
@@ -1357,6 +1358,10 @@ model Vendor {
   visitingCardUrl String?
   status          PartyStatus @default(ACTIVE)
   rating          Int?
+  // Optional default firm. Never binds the vendor to it — a purchase order
+  // carries its own firm; this only pre-selects that picker.
+  firmId          String?
+  firm            Firm?       @relation(fields: [firmId], references: [id])
   createdAt       DateTime    @default(now())
 
   purchaseOrders PurchaseOrder[]
@@ -1364,6 +1369,8 @@ model Vendor {
   vendorBills    VendorBill[]
   rawStock       RawMaterialStock[]
   grnReceipts    GrnReceipt[]
+
+  @@index([firmId])
 }
 
 model Purchase {
@@ -1409,6 +1416,12 @@ model Purchase {
   invoiceFileUrl  String?
   addedById       String?
   addedBy         User?                 @relation("PurchaseAddedBy", fields: [addedById], references: [id])
+  // Which of our firms bought this. Required on every new purchase
+  // (PurchasesService.create); null only on purchases recorded before the
+  // column existed, until someone sets it from Edit. Payments against the
+  // purchase must come from this firm (PaymentsService.createSupplierPayment).
+  firmId          String?
+  firm            Firm?                 @relation(fields: [firmId], references: [id])
   createdAt       DateTime              @default(now())
 
   sarees                 Saree[]
@@ -1418,6 +1431,7 @@ model Purchase {
   payments               SupplierPayment[]
 
   @@index([supplierId])
+  @@index([firmId])
 }
 
 // One line of a Purchase's per-saree detail (SareeTag on the frontend) — the
@@ -1690,6 +1704,9 @@ model Firm {
   createdAt          DateTime @default(now())
 
   suppliers        Supplier[]
+  vendors          Vendor[]
+  customers        Customer[]
+  purchases        Purchase[]
   financialEntries FirmFinancialEntry[]
   retailSales      SaleRecord[]         @relation("FirmRetailSales")
   weaverPayments   WeaverPayment[]
@@ -1830,6 +1847,11 @@ model Customer {
   state           String?
   paymentTerms    String?
   notes           String?
+  // Optional default firm for a wholesale customer. Never binds them to it —
+  // each dispatch invoice carries its own firm; this only pre-selects that
+  // picker.
+  firmId          String?
+  firm            Firm?        @relation(fields: [firmId], references: [id])
   createdAt       DateTime     @default(now())
 
   bulkOrders      BulkOrder[]
@@ -1839,6 +1861,7 @@ model Customer {
   sales           SaleRecord[]
 
   @@index([type])
+  @@index([firmId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────

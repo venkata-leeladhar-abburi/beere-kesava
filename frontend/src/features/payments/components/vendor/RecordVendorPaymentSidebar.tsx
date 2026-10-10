@@ -28,6 +28,8 @@ interface RecordVendorPaymentSidebarProps {
   firms: Firm[];
   firmId: string;
   setFirmId: (v: string) => void;
+  /** True when the selected order names its firm — only that firm pays its bill. */
+  firmLocked: boolean;
   selVP: VendorPayment;
   selBalance: number;
   afterPay: number;
@@ -51,6 +53,7 @@ export function RecordVendorPaymentSidebar({
   firms,
   firmId,
   setFirmId,
+  firmLocked,
   selVP,
   selBalance,
   afterPay,
@@ -199,8 +202,14 @@ export function RecordVendorPaymentSidebar({
             placeholder="Bank transaction reference..."
           />
         </Field>
-        <Field label="Paying from Firm" id="paying-from-firm">
-          <Select value={firmId} onValueChange={setFirmId}>
+        <Field
+          label="Paying from Firm"
+          id="paying-from-firm"
+          hint={
+            firmLocked ? "The firm on this purchase order — only it can pay the bill" : undefined
+          }
+        >
+          <Select value={firmId} onValueChange={setFirmId} disabled={firmLocked}>
             {firms.map((f) => (
               <SelectItem key={f.id} value={f.id}>
                 {f.firmName}

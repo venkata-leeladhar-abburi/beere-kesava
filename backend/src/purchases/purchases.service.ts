@@ -11,7 +11,8 @@ import { UpdatePurchaseDto } from "./dto/update-purchase.dto";
 
 const EXT_PURCHASE_ID_PREFIX = "EXT";
 
-const include = { supplier: true, sareeLines: true } satisfies Prisma.PurchaseInclude;
+const firmSelect = { select: { id: true, firmName: true } } as const;
+const include = { supplier: true, sareeLines: true, firm: firmSelect } satisfies Prisma.PurchaseInclude;
 // "summary" list view (see ListPurchasesQueryDto.view) — keeps sareeLines
 // (callers like the External Purchases table derive buying/selling/profit
 // totals from price/sellPercent/quantity per line) but excludes the
@@ -25,6 +26,7 @@ const summarySareeLineSelect = {
 } satisfies Prisma.PurchaseSareeLineSelect;
 const summaryInclude = {
   supplier: true,
+  firm: firmSelect,
   sareeLines: { select: summarySareeLineSelect },
 } satisfies Prisma.PurchaseInclude;
 
@@ -182,6 +184,7 @@ export class PurchasesService {
     } else if (!dto.supplierName) {
       throw new BadRequestException("Provide either supplierId or supplierName");
     }
+    await this.assertFirmExists(dto.firmId);
 
     const sareeCount = dto.sarees.length > 0 ? piecesWithUs(dto.sarees) : (dto.sareeCount ?? 0);
     // Scoped per supplier (registered or not) — an unregistered ("Other,
@@ -204,6 +207,7 @@ export class PurchasesService {
           supplierId: dto.supplierId,
           supplierName: dto.supplierId ? undefined : dto.supplierName,
           location: dto.location,
+          firmId: dto.firmId,
           date: dto.date ? new Date(dto.date) : undefined,
           sareeCount,
           gstNumber: dto.gstNumber,
@@ -230,6 +234,7 @@ export class PurchasesService {
     const where: Prisma.PurchaseWhereInput = {
       supplierId: query.supplierId,
       status: query.status,
+      firmId: query.firmId,
     };
     const summary = query.view === "summary";
 
@@ -256,6 +261,31 @@ export class PurchasesService {
       : (items as Prisma.PurchaseGetPayload<{ include: typeof include }>[]);
 
     return { items: shaped, total, page: query.page, pageSize: query.pageSize };
+  }
+
+  private async assertFirmExists(firmId: string) {
+    const firm = await this.prisma.firm.findUnique({ where: { id: firmId }, select: { id: true } });
+    if (!firm) {
+      throw new NotFoundException(`Firm ${firmId} not found`);
+    }
+  }
+
+  /**
+   * A purchase is paid only by the firm it is booked to, so its firm can't
+   * move out from under payments already made: once a different firm has paid
+   * against it, the books would show one firm owing and another paying.
+   */
+  private async assertFirmChangeAllowed(purchaseId: string, firmId: string) {
+    await this.assertFirmExists(firmId);
+    const paidElsewhere = await this.prisma.supplierPayment.findFirst({
+      where: { purchaseId, firmId: { not: null }, NOT: { firmId } },
+      select: { firm: { select: { firmName: true } } },
+    });
+    if (paidElsewhere) {
+      throw new BadRequestException(
+        `Can't change the firm — ${paidElsewhere.firm?.firmName ?? "another firm"} has already paid against this purchase.`,
+      );
+    }
   }
 
   async findOne(id: string) {
@@ -327,6 +357,9 @@ export class PurchasesService {
         throw new NotFoundException(`Supplier ${dto.supplierId} not found`);
       }
     }
+    if (dto.firmId && dto.firmId !== existing.firmId) {
+      await this.assertFirmChangeAllowed(id, dto.firmId);
+    }
 
     // Lines are matched to the stored ones and updated in place (see
     // planLineChanges) rather than deleted and recreated — return requests
@@ -366,6 +399,8 @@ export class PurchasesService {
           supplierId: dto.supplierId,
           supplierName: dto.supplierId ? null : dto.supplierName,
           location: dto.location,
+          // "" is never a valid firm; an omitted or blank value leaves it as is.
+          firmId: dto.firmId || undefined,
           date: dto.date ? new Date(dto.date) : undefined,
           sareeCount,
           gstNumber: dto.gstNumber,

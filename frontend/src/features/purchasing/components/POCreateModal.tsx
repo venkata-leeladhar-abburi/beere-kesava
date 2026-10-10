@@ -76,6 +76,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
             gstCode: v.gstCode ?? "",
             address: v.address ?? "",
             contactName: v.contactName ?? "",
+            firmId: v.firmId ?? undefined,
           }))
         )
       )
@@ -123,6 +124,17 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
 
   const vendor = selectedVendorIdx >= 0 ? vendors[selectedVendorIdx]! : null;
   const selectedFirm = firms.find((f) => f.id === selectedFirmId) ?? null;
+
+  // Picking a vendor pre-selects their connected firm. It is only a starting
+  // point — the firm stays changeable, and a vendor with none leaves the
+  // firm already picked alone.
+  const vendorFirmId = vendor?.firmId;
+  useEffect(() => {
+    if (vendorFirmId) {
+      setSelectedFirmId(vendorFirmId);
+      setErrors((prev) => ({ ...prev, firm: "" }));
+    }
+  }, [vendor?.id, vendorFirmId]);
 
   const validate = (): boolean => {
     const result = poFormSchema.safeParse({

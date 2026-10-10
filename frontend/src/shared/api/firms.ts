@@ -66,13 +66,17 @@ export interface CreateFinancialEntryPayload {
 }
 
 // ── Firm activity (auto-tracked) ──────────────────────────────────────────────
-// Documents that NAME this firm (purchase orders, goods receipts, dispatch
-// invoices) plus the payments actually recorded against it. Committed
+// Documents that NAME this firm (purchase orders, goods receipts, external
+// purchases, dispatch invoices) plus the payments actually recorded against it. Committed
 // and realized money are kept apart — see FirmActivityService on the backend.
 
 export type FirmActivityDirection = "INCOME" | "EXPENSE";
 export type FirmActivityStatus = "PENDING" | "PARTIAL" | "PAID";
-export type FirmDocumentType = "PURCHASE_ORDER" | "GOODS_RECEIPT" | "DISPATCH_INVOICE";
+export type FirmDocumentType =
+  "PURCHASE_ORDER" | "GOODS_RECEIPT" | "EXTERNAL_PURCHASE" | "DISPATCH_INVOICE";
+/** Who a document or payment is with. A firm is never tied to a party as such
+ *  — only through the documents and payments that name both. */
+export type FirmPartyType = "SUPPLIER" | "VENDOR" | "CUSTOMER" | "WEAVER";
 export type FirmPaymentType = "WEAVER" | "VENDOR" | "SUPPLIER" | "INVOICE" | "RETAIL_SALE";
 
 export interface FirmDocument {
@@ -81,6 +85,9 @@ export interface FirmDocument {
   direction: FirmActivityDirection;
   reference: string;
   party: string;
+  partyType: FirmPartyType;
+  /** Null when the document names nobody on file (an unregistered supplier, a shop transfer). */
+  partyId: string | null;
   date: string;
   amount: number;
   paidAmount: number;
@@ -95,9 +102,30 @@ export interface FirmPayment {
   direction: FirmActivityDirection;
   reference: string;
   party: string;
+  partyType: FirmPartyType;
+  partyId: string | null;
+  /** The document this payment settles (PO number, purchase id, invoice code), if any. */
+  documentRef: string | null;
   date: string;
   amount: number;
   category: string;
+}
+
+/** One supplier, vendor or wholesale customer a firm has dealt with, and
+ *  everything that passed between them. */
+export interface FirmConnection {
+  partyType: Exclude<FirmPartyType, "WEAVER">;
+  partyId: string;
+  name: string;
+  documents: FirmDocument[];
+  payments: FirmPayment[];
+  totals: {
+    documentCount: number;
+    amount: number;
+    paid: number;
+    outstanding: number;
+    lastActivity: string;
+  };
 }
 
 export interface FirmActivity {
@@ -241,6 +269,10 @@ export const firmsApi = {
   ledgerSummary: (firmId: string) =>
     apiClient.get<LedgerSummary>(`/firms/${firmId}/ledger-summary`),
   activity: (firmId: string) => apiClient.get<FirmActivity>(`/firms/${firmId}/activity`),
+  connections: (firmId: string) =>
+    apiClient.get<{ firmId: string; connections: FirmConnection[] }>(
+      `/firms/${firmId}/connections`
+    ),
 
   /** Retail sales already booked to this firm. */
   listRetailSales: async (

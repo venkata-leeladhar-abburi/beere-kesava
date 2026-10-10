@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   CheckCircle2,
@@ -98,6 +98,14 @@ export function DispatchWholesaleModal({
       c.city.toLowerCase().includes(customerSearch.toLowerCase())
   );
   const selectedCustomer = wholesaleCustomersList.find((c) => c.id === customerId) ?? null;
+
+  // Picking a customer pre-selects their connected firm as the billing firm.
+  // It is only a starting point — the firm stays changeable on the invoice
+  // step, and a quotation chosen afterwards still brings its own.
+  const customerFirmId = selectedCustomer?.firmId;
+  useEffect(() => {
+    if (customerFirmId) setInv((prev) => ({ ...prev, firmId: customerFirmId }));
+  }, [customerId, customerFirmId]);
 
   // Quotations already raised for this customer and not yet dispatched.
   const customerQuotations = useMemo(

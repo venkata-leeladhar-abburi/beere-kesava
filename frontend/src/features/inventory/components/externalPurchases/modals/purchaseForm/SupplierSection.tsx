@@ -1,6 +1,7 @@
 import React from "react";
 import { FileText, UploadCloud } from "lucide-react";
 import { Supplier } from "@/features/suppliers";
+import type { Firm } from "@/features/firms";
 import { T, F } from "../../theme";
 import { FormState } from "../../types";
 import { inputStyle, labelStyle } from "../../common/primitives";
@@ -24,6 +25,8 @@ export function SupplierSection({
   setForm,
   set,
   suppliers,
+  firms,
+  firmRequired,
   selectedSupplier,
   pieceCount,
   sareeDetailsCount,
@@ -35,6 +38,9 @@ export function SupplierSection({
   setForm: React.Dispatch<React.SetStateAction<FormState>>;
   set: (key: keyof FormState, value: string) => void;
   suppliers: Supplier[];
+  firms: Firm[];
+  /** A new purchase must name its firm; an older one being edited may still have none. */
+  firmRequired: boolean;
   selectedSupplier: Supplier | null;
   pieceCount: number;
   sareeDetailsCount: number;
@@ -65,6 +71,10 @@ export function SupplierSection({
               supplier: s.name,
               location: `${s.city}, ${s.state}`,
               gstNumber: s.gstCode,
+              // The supplier's connected firm is only a starting point — it
+              // stays changeable below. A supplier with none leaves the firm
+              // already picked alone.
+              firmId: s.firmId || f.firmId,
             }));
           }}
         >
@@ -140,6 +150,31 @@ export function SupplierSection({
             onChange={(e) => set("location", e.target.value)}
             placeholder="e.g. Dharmavaram, AP"
           />
+        </Field>
+        <Field
+          label="Firm"
+          required={firmRequired}
+          id="purchase-firm"
+          hint={
+            selectedSupplier?.firmId && selectedSupplier.firmId === form.firmId
+              ? "From this supplier's connected firm — change it if this purchase is under another"
+              : "Which of our firms is buying this. Only this firm can pay for it."
+          }
+        >
+          <Select
+            placeholder="— Select firm —"
+            value={form.firmId}
+            onValueChange={(v) => set("firmId", v)}
+          >
+            {firms.map((f) => (
+              <SelectItem key={f.id} value={f.id}>
+                {f.firmName}
+              </SelectItem>
+            ))}
+            {form.firmId && !firms.some((f) => f.id === form.firmId) && (
+              <SelectItem value={form.firmId}>{form.firmId}</SelectItem>
+            )}
+          </Select>
         </Field>
         <Field label="Purchase Date">
           <DatePicker

@@ -38,7 +38,11 @@ export function RecordPaymentModal({
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [utr, setUtr] = useState("");
   const [method, setMethod] = useState("Bank Transfer");
-  const [firmId, setFirmId] = useState(firms[0]?.id ?? "");
+  // An invoice is collected only by the firm it was raised under. The picker
+  // only decides for an invoice whose dispatch named no firm.
+  const firmLocked = !!inv.firmId;
+  const [chosenFirmId, setFirmId] = useState(firms[0]?.id ?? "");
+  const firmId = inv.firmId || chosenFirmId;
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -281,7 +285,9 @@ export function RecordPaymentModal({
                             letterSpacing: "0.5px",
                           }}
                         >
-                          {p.firmName ?? "Beere Kesava & Brothers Silks"}
+                          {p.firmName ??
+                            firms.find((f) => f.id === p.firmId)?.firmName ??
+                            "Firm not recorded"}
                         </span>
                         <div
                           style={{
@@ -343,8 +349,17 @@ export function RecordPaymentModal({
               ))}
             </Select>
           </Field>
-          <Field label="Firm Receiving Payment" required id="firm-receiving-payment">
-            <Select value={firmId} onValueChange={setFirmId}>
+          <Field
+            label="Firm Receiving Payment"
+            required
+            id="firm-receiving-payment"
+            hint={
+              firmLocked
+                ? "The firm this invoice is raised under — only it can collect on it"
+                : undefined
+            }
+          >
+            <Select value={firmId} onValueChange={setFirmId} disabled={firmLocked}>
               {firms.map((f) => (
                 <SelectItem key={f.id} value={f.id}>
                   {f.firmName}

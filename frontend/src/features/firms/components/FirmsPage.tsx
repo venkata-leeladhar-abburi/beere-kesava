@@ -1014,7 +1014,11 @@ export function FirmsPage() {
       <>
         <FirmDetailPage
           firm={openFirm}
-          initialTab={openFirmTab === "retail" || openFirmTab === "info" ? openFirmTab : "finance"}
+          initialTab={
+            openFirmTab === "parties" || openFirmTab === "retail" || openFirmTab === "info"
+              ? openFirmTab
+              : "finance"
+          }
           onBack={closeFirmView}
           onEdit={() => setModal({ type: "edit", firm: openFirm })}
           onGoToPayments={goToPayments}

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import * as ExcelJS from "exceljs";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
@@ -36,6 +36,26 @@ export interface ImportResult {
 // to explain it (required columns at least failed loudly).
 function normalizeHeader(value: string): string {
   return value.trim().toLowerCase().replace(/[\s_-]+/g, "");
+}
+
+/**
+ * The firm a payment against a document is booked to. A document that names
+ * a firm is settled only by that firm: a payment that names a different one is
+ * refused, and one that names none inherits the document's. A document with
+ * no firm (recorded before firms were tracked on it) leaves the choice open.
+ */
+export function documentFirm(
+  documentFirmId: string | null | undefined,
+  requestedFirmId: string | null | undefined,
+  documentLabel: string,
+): string | undefined {
+  if (!documentFirmId) return requestedFirmId ?? undefined;
+  if (requestedFirmId && requestedFirmId !== documentFirmId) {
+    throw new BadRequestException(
+      `This payment must come from the firm on ${documentLabel} — it can't be paid from a different firm.`,
+    );
+  }
+  return documentFirmId;
 }
 
 @Injectable()
@@ -118,6 +138,7 @@ export class PaymentsService {
     if (!supplier) {
       throw new NotFoundException(`Supplier ${dto.supplierId} not found`);
     }
+    let firmId = dto.firmId;
 
     if (dto.purchaseId) {
       // Validates existence and supplier ownership up front so a payment is
@@ -129,6 +150,10 @@ export class PaymentsService {
       if (purchase.supplierId !== dto.supplierId) {
         throw new NotFoundException(`Purchase ${dto.purchaseId} does not belong to this supplier`);
       }
+      // A purchase is paid only by the firm it is booked to. A purchase from
+      // before firms were recorded on purchases has none yet, and takes
+      // whichever firm the accountant names.
+      firmId = documentFirm(purchase.firmId, dto.firmId, `purchase ${purchase.id}`);
     }
 
     const supplierPaymentId = await this.idGenerator.nextScoped("SP", supplier.code ?? businessSegment(supplier.name, "Supplier"));
@@ -140,7 +165,7 @@ export class PaymentsService {
         date: dto.date ? new Date(dto.date) : undefined,
         utr: dto.utr,
         method: dto.method,
-        firmId: dto.firmId,
+        firmId,
         purchaseId: dto.purchaseId,
         recordedById: dto.recordedById,
       },
@@ -197,16 +222,30 @@ export class PaymentsService {
     if (!vendor) {
       throw new NotFoundException(`Vendor ${dto.vendorId} not found`);
     }
+    let firmId = dto.firmId;
 
     if (dto.billId) {
       // Validates existence and vendor ownership up front so a payment is
       // never recorded against a bill that doesn't belong to this vendor.
-      const bill = await this.prisma.vendorBill.findUnique({ where: { id: dto.billId } });
+      const bill = await this.prisma.vendorBill.findUnique({
+        where: { id: dto.billId },
+        include: { purchaseOrder: { select: { poNumber: true, firmId: true } } },
+      });
       if (!bill) {
         throw new NotFoundException(`Vendor bill ${dto.billId} not found`);
       }
       if (bill.vendorId !== dto.vendorId) {
         throw new NotFoundException(`Vendor bill ${dto.billId} does not belong to this vendor`);
+      }
+      // A bill raised from a purchase order is paid only by that order's
+      // firm. A bill with no order behind it (rent, services) names no firm,
+      // and takes whichever the accountant picks.
+      if (bill.purchaseOrder) {
+        firmId = documentFirm(
+          bill.purchaseOrder.firmId,
+          dto.firmId,
+          `purchase order ${bill.purchaseOrder.poNumber}`,
+        );
       }
     }
 
@@ -219,7 +258,7 @@ export class PaymentsService {
         date: dto.date ? new Date(dto.date) : undefined,
         utr: dto.utr,
         method: dto.method,
-        firmId: dto.firmId,
+        firmId,
         billId: dto.billId,
         recordedById: dto.recordedById,
       },

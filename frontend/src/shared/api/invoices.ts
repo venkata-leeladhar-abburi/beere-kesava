@@ -33,6 +33,9 @@ export interface BackendInvoice {
   paid: string;
   status: BackendInvoiceStatus;
   dispatchId: string | null;
+  /** The dispatch the invoice was raised from — carries the firm it is raised
+   *  under (an invoice has no firm column of its own). */
+  dispatch?: { firmId: string | null; firm: { id: string; firmName: string } | null } | null;
   payments: BackendInvoicePayment[];
   customer: {
     id: string;

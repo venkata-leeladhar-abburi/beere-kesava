@@ -215,6 +215,17 @@ export class DispatchService {
     if (dto.raiseInvoice && !customer) {
       throw new BadRequestException("raiseInvoice requires a wholesale customerId");
     }
+    // Every invoice is booked to one of our firms, and only that firm collects
+    // on it — so one can't be raised without naming the firm.
+    if (dto.raiseInvoice && !dto.firmId) {
+      throw new BadRequestException("Select the firm this invoice is raised under");
+    }
+    if (dto.firmId) {
+      const firm = await this.prisma.firm.findUnique({ where: { id: dto.firmId }, select: { id: true } });
+      if (!firm) {
+        throw new NotFoundException(`Firm ${dto.firmId} not found`);
+      }
+    }
     const invoiceNumber = dto.raiseInvoice
       ? await this.idGenerator.nextScoped("INV", customer!.code ?? businessSegment(customer!.name, "Customer"))
       : undefined;

@@ -5,6 +5,7 @@ import {
   IsDateString,
   IsEnum,
   IsInt,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsPositive,
@@ -32,6 +33,12 @@ export class CreatePurchaseDto {
   @IsOptional()
   @IsString()
   location?: string;
+
+  /** Firm.id ("FIRM-NNN") buying this purchase. Required — every external
+   *  purchase is booked to one of our firms, and only that firm pays for it. */
+  @IsString()
+  @IsNotEmpty({ message: "Select the firm this purchase is made under" })
+  firmId!: string;
 
   @IsOptional()
   @IsDateString()

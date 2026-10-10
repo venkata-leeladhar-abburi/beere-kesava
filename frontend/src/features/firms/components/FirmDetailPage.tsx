@@ -31,6 +31,7 @@ import { T, F } from "./theme";
 import { fmtFull, initials } from "./utils";
 import { FinSection, MiscSection } from "./FirmFinanceSections";
 import { FirmRetailSalesTab } from "./retailSales/FirmRetailSalesTab";
+import { FirmConnectionsTab } from "./FirmConnectionsTab";
 import {
   Button,
   Select,
@@ -53,6 +54,7 @@ import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 const DOC_CFG: Record<FirmDocumentType, { label: string; icon: React.ElementType }> = {
   PURCHASE_ORDER: { label: "Purchase Order", icon: Package },
   GOODS_RECEIPT: { label: "Goods Receipt", icon: Receipt },
+  EXTERNAL_PURCHASE: { label: "External Purchase", icon: ShoppingBag },
   DISPATCH_INVOICE: { label: "Dispatch / Invoice", icon: Truck },
 };
 
@@ -71,6 +73,7 @@ const PAYMENT_LABEL: Record<FirmPayment["type"], string> = {
 };
 
 type DirectionFilter = "all" | "INCOME" | "EXPENSE";
+export type FirmTab = "finance" | "parties" | "retail" | "info";
 
 function SectionShell({
   title,
@@ -319,7 +322,7 @@ export function FirmDetailPage({
   onBack: () => void;
   onEdit: () => void;
   /** Which sub-tab to open on — driven by the ?tab= URL param. */
-  initialTab?: "finance" | "retail" | "info";
+  initialTab?: FirmTab;
   /** Jumps to the Payments page — payment entry stays owned by that one screen. */
   onGoToPayments?: () => void;
 }) {
@@ -336,7 +339,7 @@ export function FirmDetailPage({
   const { documents, payments, isLoading, isError, error, refetch } = useFirmActivity(firm.id);
   const fin = getFirmFinancials(firm.id);
 
-  const [tab, setTab] = useState<"finance" | "retail" | "info">(initialTab);
+  const [tab, setTab] = useState<FirmTab>(initialTab);
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [direction, setDirection] = useState<DirectionFilter>("all");
   const [status, setStatus] = useState<"all" | FirmActivityStatus>("all");
@@ -853,6 +856,7 @@ export function FirmDetailPage({
               label: "Financial Tracking",
               icon: <CreditCard size={18} />,
             },
+            { key: "parties" as const, label: "Connected Parties", icon: <Link2 size={18} /> },
             { key: "retail" as const, label: "Retail Sales", icon: <ShoppingBag size={18} /> },
             { key: "info" as const, label: "Firm Info", icon: <Building2 size={18} /> },
           ]}
@@ -867,7 +871,9 @@ export function FirmDetailPage({
           className="w-full"
           style={{ paddingTop: 24, paddingBottom: 72 }}
         >
-          {tab === "retail" ? (
+          {tab === "parties" ? (
+            <FirmConnectionsTab firm={firm} />
+          ) : tab === "retail" ? (
             <FirmRetailSalesTab firm={firm} firms={firms} />
           ) : tab === "info" ? (
             <div className="w-full mb-6 rounded-2xl border border-[#E8DCC4] overflow-hidden bg-white shadow-sm">
@@ -981,8 +987,8 @@ export function FirmDetailPage({
                       <strong style={{ color: T.antiqueGold }}>
                         How this firm&rsquo;s ledger works:
                       </strong>{" "}
-                      Purchase orders, goods receipts and dispatch invoices that name this firm
-                      appear automatically under{" "}
+                      Purchase orders, goods receipts, external purchases and dispatch invoices that
+                      name this firm appear automatically under{" "}
                       <strong style={{ color: T.luxuryBrown }}>Linked Documents</strong> as soon as
                       they&rsquo;re raised — as <em>committed</em>, not yet spent or earned. When a
                       payment is recorded against one, it moves into{" "}

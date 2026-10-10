@@ -25,6 +25,10 @@ export class PurchaseOrdersService {
     if (!vendor) {
       throw new NotFoundException(`Vendor ${dto.vendorId} not found`);
     }
+    const firm = await this.prisma.firm.findUnique({ where: { id: dto.firmId }, select: { id: true } });
+    if (!firm) {
+      throw new NotFoundException(`Firm ${dto.firmId} not found`);
+    }
 
     // Scoped on vendor.code when present, falling back to the vendor's own
     // (always-unique) id — never to a name-derived slug, which several
@@ -36,7 +40,7 @@ export class PurchaseOrdersService {
       data: {
         poNumber,
         vendorId: dto.vendorId,
-        firmId: dto.firmId ?? null,
+        firmId: dto.firmId,
         deliveryDate: dto.deliveryDate ? new Date(dto.deliveryDate) : undefined,
         totalValue: dto.totalValue ?? 0,
         urgency: dto.urgency,

@@ -6,7 +6,7 @@ import { PrismaService } from "../prisma/prisma.service";
  * ledger.
  *
  * A firm is named on real business documents (purchase orders, goods
- * receipts, wholesale dispatch invoices) long before any money
+ * receipts, external purchases, wholesale dispatch invoices) long before any money
  * actually moves. Those documents were previously invisible on the Firms
  * page, which showed only manually-typed FirmFinancialEntry rows — so a firm
  * carrying ₹4L of raised purchase orders read as ₹0 until somebody
@@ -32,7 +32,12 @@ export type FirmActivityStatus = "PENDING" | "PARTIAL" | "PAID";
 export type FirmDocumentType =
   | "PURCHASE_ORDER"
   | "GOODS_RECEIPT"
+  | "EXTERNAL_PURCHASE"
   | "DISPATCH_INVOICE";
+
+/** Who a document or payment is with. A firm is never tied to a party as
+ *  such — only through the documents and payments that name both. */
+export type FirmPartyType = "SUPPLIER" | "VENDOR" | "CUSTOMER" | "WEAVER";
 
 export type FirmPaymentType = "WEAVER" | "VENDOR" | "SUPPLIER" | "INVOICE" | "RETAIL_SALE";
 
@@ -44,6 +49,10 @@ export interface FirmDocument {
   reference: string;
   /** Who the document is with — vendor, supplier or customer name. */
   party: string;
+  partyType: FirmPartyType;
+  /** The party's record id; null when the document names nobody on file (an
+   *  unregistered supplier, a shop transfer). */
+  partyId: string | null;
   date: string;
   amount: number;
   paidAmount: number;
@@ -59,9 +68,34 @@ export interface FirmPayment {
   direction: FirmActivityDirection;
   reference: string;
   party: string;
+  partyType: FirmPartyType;
+  partyId: string | null;
+  /** The document this payment settles (PO number, purchase id, invoice
+   *  code); null for a payment made against no particular document. */
+  documentRef: string | null;
   date: string;
   amount: number;
   category: string;
+}
+
+/** One supplier, vendor or wholesale customer this firm has dealt with, and
+ *  everything that passed between them. */
+export interface FirmConnection {
+  partyType: Exclude<FirmPartyType, "WEAVER">;
+  partyId: string;
+  name: string;
+  documents: FirmDocument[];
+  payments: FirmPayment[];
+  totals: {
+    documentCount: number;
+    /** Value of every document raised between the firm and this party. */
+    amount: number;
+    /** Money that actually moved between this firm and the party. */
+    paid: number;
+    outstanding: number;
+    /** Most recent document or payment, yyyy-mm-dd. */
+    lastActivity: string;
+  };
 }
 
 const num = (v: unknown): number => Number(v ?? 0);
@@ -88,6 +122,7 @@ export class FirmActivityService {
     const [
       purchaseOrders,
       grnReceipts,
+      purchases,
       dispatches,
       weaverPayments,
       vendorPayments,
@@ -115,6 +150,13 @@ export class FirmActivityService {
           purchaseOrders: { select: { id: true } },
         },
       }),
+      this.prisma.purchase.findMany({
+        where: { firmId },
+        include: {
+          supplier: { select: { name: true } },
+          payments: { select: { amount: true } },
+        },
+      }),
       this.prisma.dispatchRecord.findMany({
         where: { firmId },
         include: {
@@ -128,7 +170,10 @@ export class FirmActivityService {
       }),
       this.prisma.vendorPayment.findMany({
         where: { firmId },
-        include: { vendor: { select: { name: true } } },
+        include: {
+          vendor: { select: { name: true } },
+          bill: { select: { purchaseOrder: { select: { poNumber: true } } } },
+        },
       }),
       this.prisma.supplierPayment.findMany({
         where: { firmId },
@@ -163,6 +208,8 @@ export class FirmActivityService {
         direction: "EXPENSE",
         reference: po.poNumber,
         party: po.vendor.name,
+        partyType: "VENDOR",
+        partyId: po.vendorId,
         date: iso(po.createdAt),
         amount,
         paidAmount: paid,
@@ -206,12 +253,36 @@ export class FirmActivityService {
         direction: "EXPENSE",
         reference: grn.id,
         party: grn.vendor.name || grn.supplierName,
+        partyType: "VENDOR",
+        partyId: grn.vendorId,
         date: iso(grn.receivedDate),
         amount,
         paidAmount: paid,
         outstanding: Math.max(0, amount - paid),
         status: statusOf(amount, paid),
         category: "Material Purchase",
+      });
+    }
+
+    // An external purchase is settled by the supplier payments linked to it,
+    // the same way a purchase order is settled through its bills.
+    for (const purchase of purchases) {
+      const amount = num(purchase.billAmount);
+      const paid = purchase.payments.reduce((s, p) => s + num(p.amount), 0);
+      documents.push({
+        id: purchase.id,
+        type: "EXTERNAL_PURCHASE",
+        direction: "EXPENSE",
+        reference: purchase.id,
+        party: purchase.supplier?.name ?? purchase.supplierName ?? "—",
+        partyType: "SUPPLIER",
+        partyId: purchase.supplierId,
+        date: iso(purchase.date),
+        amount,
+        paidAmount: paid,
+        outstanding: Math.max(0, amount - paid),
+        status: statusOf(amount, paid),
+        category: "Saree Purchase",
       });
     }
 
@@ -226,6 +297,8 @@ export class FirmActivityService {
         direction: "INCOME",
         reference: d.invoice?.code ?? d.invoiceNumber ?? d.lrNumber ?? d.id,
         party: d.customer?.name ?? "—",
+        partyType: "CUSTOMER",
+        partyId: d.customerId,
         date: iso(d.invoiceDate ?? d.dispatchDate),
         amount,
         paidAmount: paid,
@@ -242,6 +315,9 @@ export class FirmActivityService {
         direction: "EXPENSE" as const,
         reference: p.utrNumber ?? p.id,
         party: p.weaver.name,
+        partyType: "WEAVER" as const,
+        partyId: p.weaverId,
+        documentRef: p.batchNo ?? null,
         date: iso(p.paymentDate),
         amount: num(p.amountPaid),
         category: "Weaver Payments",
@@ -252,6 +328,9 @@ export class FirmActivityService {
         direction: "EXPENSE" as const,
         reference: p.utr ?? p.id,
         party: p.vendor.name,
+        partyType: "VENDOR" as const,
+        partyId: p.vendorId,
+        documentRef: p.bill?.purchaseOrder?.poNumber ?? null,
         date: iso(p.date),
         amount: num(p.amount),
         category: "Material Purchase",
@@ -262,9 +341,12 @@ export class FirmActivityService {
         direction: "EXPENSE" as const,
         reference: p.utr ?? p.id,
         party: p.supplier.name,
+        partyType: "SUPPLIER" as const,
+        partyId: p.supplierId,
+        documentRef: p.purchaseId ?? null,
         date: iso(p.date),
         amount: num(p.amount),
-        category: "Material Purchase",
+        category: "Saree Purchase",
       })),
       ...invoicePayments.map((p) => ({
         id: p.id,
@@ -272,6 +354,9 @@ export class FirmActivityService {
         direction: "INCOME" as const,
         reference: p.utr ?? p.invoice.code ?? p.id,
         party: p.invoice.customer.name,
+        partyType: "CUSTOMER" as const,
+        partyId: p.invoice.customerId,
+        documentRef: p.invoice.code ?? null,
         date: iso(p.date),
         amount: num(p.amount),
         category: "Wholesale Sale",
@@ -282,6 +367,9 @@ export class FirmActivityService {
         direction: "INCOME" as const,
         reference: sale.saleRef,
         party: sale.customer?.name ?? "Walk-in Customer",
+        partyType: "CUSTOMER" as const,
+        partyId: sale.customerId,
+        documentRef: null,
         date: iso(sale.date),
         amount: num(sale.amount),
         category: "Retail Sale",
@@ -325,6 +413,66 @@ export class FirmActivityService {
         pendingIncome,
         pendingExpense,
       },
+    };
+  }
+
+  /**
+   * The suppliers, vendors and wholesale customers this firm has dealt with.
+   *
+   * Nobody is connected to a firm by a setting: a party appears here because
+   * a purchase, purchase order or invoice was raised under this firm with
+   * them, or this firm paid or was paid by them. The same supplier can
+   * therefore appear under several firms, each with only its own share.
+   * Weavers and counter sales are left out — they are not trading parties.
+   */
+  async getConnections(firmId: string): Promise<{ firmId: string; connections: FirmConnection[] }> {
+    const { documents, payments } = await this.getActivity(firmId);
+    const byParty = new Map<string, FirmConnection>();
+
+    const connectionFor = (row: { partyType: FirmPartyType; partyId: string | null; party: string }) => {
+      if (row.partyType === "WEAVER" || !row.partyId) return undefined;
+      const key = `${row.partyType}:${row.partyId}`;
+      let connection = byParty.get(key);
+      if (!connection) {
+        connection = {
+          partyType: row.partyType,
+          partyId: row.partyId,
+          name: row.party,
+          documents: [],
+          payments: [],
+          totals: { documentCount: 0, amount: 0, paid: 0, outstanding: 0, lastActivity: "" },
+        };
+        byParty.set(key, connection);
+      }
+      return connection;
+    };
+    const touch = (connection: FirmConnection, date: string) => {
+      if (date > connection.totals.lastActivity) connection.totals.lastActivity = date;
+    };
+
+    for (const document of documents) {
+      const connection = connectionFor(document);
+      if (!connection) continue;
+      connection.documents.push(document);
+      connection.totals.documentCount += 1;
+      connection.totals.amount += document.amount;
+      connection.totals.outstanding += document.outstanding;
+      touch(connection, document.date);
+    }
+    for (const payment of payments) {
+      if (payment.type === "RETAIL_SALE") continue;
+      const connection = connectionFor(payment);
+      if (!connection) continue;
+      connection.payments.push(payment);
+      connection.totals.paid += payment.amount;
+      touch(connection, payment.date);
+    }
+
+    return {
+      firmId,
+      connections: [...byParty.values()].sort((a, b) =>
+        b.totals.lastActivity.localeCompare(a.totals.lastActivity),
+      ),
     };
   }
 }

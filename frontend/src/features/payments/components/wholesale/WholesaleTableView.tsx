@@ -197,6 +197,23 @@ export function WholesaleTableView({
       ),
     },
     {
+      id: "firm",
+      header: "Firm",
+      accessor: (inv) => inv.firmName ?? "",
+      priority: 2,
+      cell: (_v, inv) => (
+        <span
+          className="whitespace-nowrap text-[13px]"
+          style={{
+            fontWeight: inv.firmName ? 600 : 400,
+            color: inv.firmName ? "#3B2314" : "#8C7A6B",
+          }}
+        >
+          {inv.firmName ?? "Not set"}
+        </span>
+      ),
+    },
+    {
       id: "invoiceDate",
       header: "Invoice Date",
       accessor: (inv) => inv.invoiceDate,

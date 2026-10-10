@@ -5,6 +5,8 @@ export interface FormState {
   supplierId: string;
   supplier: string;
   location: string;
+  /** Firm.id of our firm buying this purchase — required on a new purchase. */
+  firmId: string;
   date: string;
   gstNumber: string;
   invoiceNumber: string;

@@ -69,4 +69,10 @@ export class UpdateCustomerDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  /** Firm.id ("FIRM-NNN") pre-selected on this wholesale customer's invoices.
+   *  Only a default — each dispatch invoice carries its own firm. */
+  @IsOptional()
+  @IsString()
+  firmId?: string | null;
 }

@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
-import { CreatePartyDto } from "../common/dto/create-party.dto";
 import { ListPartyQueryDto } from "../common/dto/list-party-query.dto";
-import { UpdatePartyDto } from "../common/dto/update-party.dto";
 import { UserRole } from "../generated/prisma/client";
+import { CreateVendorDto } from "./dto/create-vendor.dto";
+import { UpdateVendorDto } from "./dto/update-vendor.dto";
 import { VendorsService } from "./vendors.service";
 
 // Vendor master data / vendor payments — financial, ACCOUNTANT, ADMIN, SUPERADMIN access.
@@ -13,7 +13,7 @@ export class VendorsController {
   constructor(private readonly vendorsService: VendorsService) {}
 
   @Post()
-  create(@Body() dto: CreatePartyDto) {
+  create(@Body() dto: CreateVendorDto) {
     return this.vendorsService.create(dto);
   }
 
@@ -28,7 +28,7 @@ export class VendorsController {
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() dto: UpdatePartyDto) {
+  update(@Param("id") id: string, @Body() dto: UpdateVendorDto) {
     return this.vendorsService.update(id, dto);
   }
 

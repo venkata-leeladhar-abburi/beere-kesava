@@ -16,8 +16,19 @@ export class CustomersService {
     private readonly idGenerator: IdGeneratorService,
   ) {}
 
+  /** A default firm must point at a real firm — checked up front so a stale id
+   *  reads as a clear 404 rather than a foreign-key failure. */
+  private async assertFirmExists(firmId: string | null | undefined) {
+    if (!firmId) return;
+    const firm = await this.prisma.firm.findUnique({ where: { id: firmId }, select: { id: true } });
+    if (!firm) {
+      throw new NotFoundException(`Firm ${firmId} not found`);
+    }
+  }
+
   async create(dto: CreateCustomerDto) {
     const { actorId, ...data } = dto;
+    await this.assertFirmExists(data.firmId);
     // A retail walk-in is identified by name + mobile. Adding the same person
     // again returns the record already on file rather than a second one — a
     // retried counter sale used to leave a new empty customer behind each time.
@@ -42,7 +53,7 @@ export class CustomersService {
       data.type === CustomerType.WHOLESALE
         ? await this.idGenerator.nextNamed("WHL", businessSegment(data.name, "Customer"))
         : await this.idGenerator.nextNamed("CUST", nameSegment(data.name, "Customer"));
-    const customer = await this.prisma.customer.create({ data: { ...data, code } });
+    const customer = await this.prisma.customer.create({ data: { ...data, firmId: data.firmId || null, code } });
 
     await this.auditLog.recordAction({
       actorId,
@@ -134,7 +145,12 @@ export class CustomersService {
   async update(id: string, dto: UpdateCustomerDto) {
     const before = await this.findOne(id);
     const { actorId, ...data } = dto;
-    const updated = await this.prisma.customer.update({ where: { id }, data });
+    await this.assertFirmExists(data.firmId);
+    const updated = await this.prisma.customer.update({
+      where: { id },
+      // "" from a cleared picker means "no default firm", same as null.
+      data: { ...data, ...(data.firmId !== undefined ? { firmId: data.firmId || null } : {}) },
+    });
 
     await this.auditLog.recordAction({
       actorId,

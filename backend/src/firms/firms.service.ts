@@ -84,6 +84,10 @@ export class FirmsService {
         this.prisma.grnReceipt.count({ where: { firmId: id } }),
       ]);
     const linkedRetailSales = await this.prisma.saleRecord.count({ where: { firmId: id } });
+    const [purchases, purchaseOrders] = await Promise.all([
+      this.prisma.purchase.count({ where: { firmId: id } }),
+      this.prisma.purchaseOrder.count({ where: { firmId: id } }),
+    ]);
 
     const blockers: string[] = [];
     if (entries > 0) blockers.push(`${entries} financial entr${entries === 1 ? "y" : "ies"}`);
@@ -94,6 +98,8 @@ export class FirmsService {
     if (vendorPayments > 0) blockers.push(`${vendorPayments} vendor payment${vendorPayments === 1 ? "" : "s"}`);
     if (invoicePayments > 0) blockers.push(`${invoicePayments} invoice payment${invoicePayments === 1 ? "" : "s"}`);
     if (grnReceipts > 0) blockers.push(`${grnReceipts} GRN receipt${grnReceipts === 1 ? "" : "s"}`);
+    if (purchases > 0) blockers.push(`${purchases} external purchase${purchases === 1 ? "" : "s"}`);
+    if (purchaseOrders > 0) blockers.push(`${purchaseOrders} purchase order${purchaseOrders === 1 ? "" : "s"}`);
     if (linkedRetailSales > 0)
       blockers.push(
         `${linkedRetailSales} connected retail sale${linkedRetailSales === 1 ? "" : "s"}`,

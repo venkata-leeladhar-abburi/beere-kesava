@@ -41,6 +41,7 @@ describe("PaymentsService", () => {
     prisma = {
       weaver: { findUnique: jest.fn(), findMany: jest.fn().mockResolvedValue([]) },
       supplier: { findUnique: jest.fn() },
+      purchase: { findUnique: jest.fn() },
       vendor: { findUnique: jest.fn() },
       vendorBill: { findUnique: jest.fn() },
       firm: { findMany: jest.fn().mockResolvedValue([]) },
@@ -140,11 +141,74 @@ describe("PaymentsService", () => {
       expect(vendorBills.recomputeStatus).toHaveBeenCalledWith("b-1");
     });
 
+    it("books a bill payment to its purchase order's firm when none is named", async () => {
+      prisma.vendorBill.findUnique.mockResolvedValue({
+        id: "b-1",
+        vendorId: "v-1",
+        purchaseOrder: { poNumber: "PO-001", firmId: "FIRM-001" },
+      });
+
+      await service.createVendorPayment({ vendorId: "v-1", amount: 1000, billId: "b-1" });
+
+      expect(prisma.vendorPayment.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ firmId: "FIRM-001" }),
+      });
+    });
+
+    it("refuses to pay a purchase order's bill from a different firm", async () => {
+      prisma.vendorBill.findUnique.mockResolvedValue({
+        id: "b-1",
+        vendorId: "v-1",
+        purchaseOrder: { poNumber: "PO-001", firmId: "FIRM-001" },
+      });
+
+      await expect(
+        service.createVendorPayment({ vendorId: "v-1", amount: 1000, billId: "b-1", firmId: "FIRM-002" }),
+      ).rejects.toThrow(/must come from the firm on purchase order PO-001/);
+      expect(prisma.vendorPayment.create).not.toHaveBeenCalled();
+    });
+
     it("leaves bill status alone for a standalone payment with no bill", async () => {
       await service.createVendorPayment({ vendorId: "v-1", amount: 1000 });
 
       expect(prisma.vendorPayment.create).toHaveBeenCalled();
       expect(vendorBills.recomputeStatus).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("createSupplierPayment", () => {
+    beforeEach(() => {
+      prisma.supplier.findUnique.mockResolvedValue({ id: "s-1", name: "Ravi Silks", code: "Ravi-001" });
+    });
+
+    it("books a purchase payment to the purchase's firm when none is named", async () => {
+      prisma.purchase.findUnique.mockResolvedValue({ id: "EXT-1", supplierId: "s-1", firmId: "FIRM-001" });
+
+      await service.createSupplierPayment({ supplierId: "s-1", amount: 500, purchaseId: "EXT-1" });
+
+      expect(prisma.supplierPayment.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ firmId: "FIRM-001", purchaseId: "EXT-1" }),
+      });
+    });
+
+    it("refuses to pay a purchase from a different firm", async () => {
+      prisma.purchase.findUnique.mockResolvedValue({ id: "EXT-1", supplierId: "s-1", firmId: "FIRM-001" });
+
+      await expect(
+        service.createSupplierPayment({ supplierId: "s-1", amount: 500, purchaseId: "EXT-1", firmId: "FIRM-002" }),
+      ).rejects.toThrow(/must come from the firm on purchase EXT-1/);
+      expect(prisma.supplierPayment.create).not.toHaveBeenCalled();
+      expect(purchases.recomputeStatus).not.toHaveBeenCalled();
+    });
+
+    it("lets the accountant choose the firm for a purchase recorded without one", async () => {
+      prisma.purchase.findUnique.mockResolvedValue({ id: "EXT-1", supplierId: "s-1", firmId: null });
+
+      await service.createSupplierPayment({ supplierId: "s-1", amount: 500, purchaseId: "EXT-1", firmId: "FIRM-002" });
+
+      expect(prisma.supplierPayment.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ firmId: "FIRM-002" }),
+      });
     });
   });
 

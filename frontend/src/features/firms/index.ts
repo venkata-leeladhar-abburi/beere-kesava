@@ -6,3 +6,4 @@
 
 export * from "./components/FirmsPage";
 export * from "./contexts/FirmsContext";
+export * from "./components/ConnectedFirmField";

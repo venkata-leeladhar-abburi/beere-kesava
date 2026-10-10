@@ -20,6 +20,8 @@ export interface BackendCustomer {
   state: string | null;
   paymentTerms: string | null;
   notes: string | null;
+  /** Firm.id pre-selected on this wholesale customer's invoices; null when none. */
+  firmId: string | null;
   createdAt: string;
   // Real purchase count/lifetime spend/last-visit computed off SaleRecord
   // (CustomersService.findAll) — always present on list responses.
@@ -51,6 +53,8 @@ export interface CreateCustomerPayload {
   state?: string;
   paymentTerms?: string;
   notes?: string;
+  /** Default firm for this wholesale customer's invoices. */
+  firmId?: string | null;
   /** User who performed this — recorded on the action log so the history
    *  names the real person, including an admin working inside a staff portal. */
   actorId?: string;
@@ -71,6 +75,8 @@ export interface UpdateCustomerPayload {
   state?: string;
   paymentTerms?: string;
   notes?: string;
+  /** Default firm for this wholesale customer's invoices; null clears it. */
+  firmId?: string | null;
   /** User who performed this — recorded on the action log so the history
    *  names the real person, including an admin working inside a staff portal. */
   actorId?: string;

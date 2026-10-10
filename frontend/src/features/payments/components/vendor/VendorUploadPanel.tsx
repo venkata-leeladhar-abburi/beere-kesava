@@ -46,6 +46,9 @@ export interface VendorTemplateRow {
   totalAmount: number;
   /** invoiceAmt - paidSoFar as of this download — still owed, reference only. */
   remaining: number;
+  /** The purchase order's firm — the only firm that can pay its bill, so the
+   *  template arrives with it filled in. Blank for an order with none. */
+  firmId?: string;
 }
 
 // Real, live-data template — replaces the old static example-row download.
@@ -65,7 +68,7 @@ async function downloadVendorPaymentTemplate(rows: VendorTemplateRow[]) {
     r.remaining,
     "",
     "",
-    "",
+    r.firmId ?? "",
     "",
   ]);
   const ws = XLSX.utils.aoa_to_sheet([TEMPLATE_HEADERS, ...dataRows]);

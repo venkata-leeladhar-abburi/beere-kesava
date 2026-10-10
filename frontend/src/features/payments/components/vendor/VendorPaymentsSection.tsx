@@ -53,6 +53,8 @@ import { prependToEnvelope } from "../../../../lib/cacheUpdates";
 
 const SHOW_OVERDUE_ALERT = false;
 
+const ALL_FIRMS = "All Firms";
+
 export function VendorPaymentsSection() {
   const { pos } = usePO();
   const { firms, addExpenseEntry } = useFirms();
@@ -126,11 +128,13 @@ export function VendorPaymentsSection() {
         utr: bill ? utrByBillId.get(bill.id) : undefined,
         vendorId: po.vendorId,
         billId: bill?.id,
+        firmId: po.firmId,
+        firmName: po.firmName ?? firms.find((f) => f.id === po.firmId)?.firmName,
         invoiceFileUrl: bill?.invoiceFileUrl ?? undefined,
         invoiceFileName: bill?.invoiceFileName ?? undefined,
       };
     });
-  }, [pos, vendorBillsRes, vendorPaymentsRes]);
+  }, [pos, firms, vendorBillsRes, vendorPaymentsRes]);
 
   const refreshVendorLedger = () => {
     void refetchVendorPayments();
@@ -150,6 +154,7 @@ export function VendorPaymentsSection() {
   const [savingSidebarPayment, setSavingSidebarPayment] = useState(false);
   const [statusFilter, setStatusFilter] = useState("All Bill Status");
   const [vendorFilter, setVendorFilter] = useState("All Vendors");
+  const [firmFilter, setFirmFilter] = useState(ALL_FIRMS);
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
@@ -223,7 +228,10 @@ export function VendorPaymentsSection() {
   const handleSidebarSavePayment = async () => {
     if (!selVP?.billId) return;
     const amount = Number(payAmount);
-    if (!amount || amount <= 0 || !utrNumber.trim() || !sidebarFirmId) return;
+    // A purchase order's bill is paid only by the order's own firm; the
+    // sidebar's picker only decides for an order raised without one.
+    const payingFirmId = selVP.firmId || sidebarFirmId;
+    if (!amount || amount <= 0 || !utrNumber.trim() || !payingFirmId) return;
     setSavingSidebarPayment(true);
     try {
       const created = await vendorPaymentsApi.create({
@@ -231,7 +239,7 @@ export function VendorPaymentsSection() {
         amount,
         utr: utrNumber.trim(),
         method: payMethod,
-        firmId: sidebarFirmId,
+        firmId: payingFirmId,
         date: payDate || undefined,
         billId: selVP.billId,
       });
@@ -244,7 +252,7 @@ export function VendorPaymentsSection() {
         ["vendor-payments-section-totals"],
         [created]
       );
-      addExpenseEntry(sidebarFirmId, {
+      addExpenseEntry(payingFirmId, {
         description: `Vendor payment — ${selVP.vendor} (${selVP.poNumber})`,
         amount,
         date: payDate || new Date().toISOString().slice(0, 10),
@@ -273,6 +281,8 @@ export function VendorPaymentsSection() {
     [vendorPayments]
   );
 
+  const firmFilterOptions = useMemo(() => [ALL_FIRMS, ...firms.map((f) => f.firmName)], [firms]);
+
   const overdueVendors = vendorPayments.filter((v) => v.status === "Overdue");
   const maxDaysOverdue =
     overdueVendors.length > 0 ? Math.max(...overdueVendors.map((v) => v.daysOverdue ?? 0)) : 0;
@@ -282,12 +292,13 @@ export function VendorPaymentsSection() {
   const filtered = vendorPayments.filter((v) => {
     const matchStatus = statusFilter === "All Bill Status" || v.status === statusFilter;
     const matchVendor = vendorFilter === "All Vendors" || v.vendor === vendorFilter;
+    const matchFirm = firmFilter === ALL_FIRMS || v.firmName === firmFilter;
     const matchSearch =
       !search ||
       v.vendor.toLowerCase().includes(search.toLowerCase()) ||
       v.poNumber.toLowerCase().includes(search.toLowerCase());
     const matchDate = matchesDateFilter(v.dueDate, dateFilter);
-    return matchSearch && matchStatus && matchVendor && matchDate;
+    return matchSearch && matchStatus && matchVendor && matchFirm && matchDate;
   });
 
   const pag = usePagination(filtered, 8);
@@ -339,6 +350,24 @@ export function VendorPaymentsSection() {
             className="whitespace-nowrap"
           />
         </div>
+      ),
+    },
+    {
+      id: "firm",
+      header: "Firm",
+      accessor: (vp) => vp.firmName ?? "",
+      cell: (_v, vp) => (
+        <span
+          style={{
+            fontFamily: F.ui,
+            fontSize: 13,
+            whiteSpace: "nowrap",
+            fontWeight: vp.firmName ? 600 : 400,
+            color: vp.firmName ? T.luxuryBrown : T.taupe,
+          }}
+        >
+          {vp.firmName ?? "Not set"}
+        </span>
       ),
     },
     {
@@ -861,6 +890,7 @@ export function VendorPaymentsSection() {
               vendorName: v.vendor,
               totalAmount: v.invoiceAmt,
               remaining: v.invoiceAmt - v.paidAmt,
+              firmId: v.firmId,
             }))}
           />
 
@@ -924,6 +954,14 @@ export function VendorPaymentsSection() {
                   onChange: setVendorFilter,
                 },
                 {
+                  id: "firm",
+                  label: "Firm",
+                  value: firmFilter,
+                  defaultValue: ALL_FIRMS,
+                  options: firmFilterOptions.map((v) => ({ value: v, label: v })),
+                  onChange: setFirmFilter,
+                },
+                {
                   id: "status",
                   label: "Bill Status",
                   value: statusFilter,
@@ -937,6 +975,7 @@ export function VendorPaymentsSection() {
               onResetAll={() => {
                 setSearch("");
                 setVendorFilter(vendorFilterOptions[0] ?? "All Vendors");
+                setFirmFilter(ALL_FIRMS);
                 setStatusFilter("All Bill Status");
                 setDateFilter(DEFAULT_DATE_FILTER);
               }}
@@ -952,6 +991,7 @@ export function VendorPaymentsSection() {
               options={vendorFilterOptions}
               onChange={setVendorFilter}
             />
+            <DropBtn value={firmFilter} options={firmFilterOptions} onChange={setFirmFilter} />
             <Select
               value={statusFilter}
               onValueChange={setStatusFilter}
@@ -1217,8 +1257,9 @@ export function VendorPaymentsSection() {
                   utrNumber={utrNumber}
                   setUtrNumber={setUtrNumber}
                   firms={firms}
-                  firmId={sidebarFirmId}
+                  firmId={selVP.firmId || sidebarFirmId}
                   setFirmId={setSidebarFirmId}
+                  firmLocked={!!selVP.firmId}
                   selVP={selVP}
                   selBalance={selBalance}
                   afterPay={afterPay}

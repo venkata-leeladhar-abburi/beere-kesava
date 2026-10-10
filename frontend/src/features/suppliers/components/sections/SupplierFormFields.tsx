@@ -6,12 +6,9 @@ import { Star } from "lucide-react";
 import { T } from "../theme";
 import { inp, lbl } from "../common/primitives";
 import { SupplierFormValues } from "../types";
-import { Field, Input, PhoneInput, Select, SelectItem } from "../../../../shared/ui/primitives";
-import { useFirms } from "@/features/firms";
+import { Field, Input, PhoneInput } from "../../../../shared/ui/primitives";
+import { ConnectedFirmField } from "@/features/firms";
 import { VisitingCardUploadField } from "../../../../shared/ui/VisitingCardUploadField";
-
-/** Select value for "no firm" — Radix Select can't use an empty string. */
-const NO_FIRM = "__none__";
 
 export function SupplierFormFields({
   form,
@@ -27,11 +24,7 @@ export function SupplierFormFields({
   /** Receives the stored path of the uploaded card, or null when cleared. */
   onCardChange: (url: string | null) => void;
 }) {
-  const { firms } = useFirms();
   const set = (k: keyof SupplierFormValues, v: string) => setForm({ ...form, [k]: v });
-  // A supplier linked to a firm that has since been removed still shows as
-  // connected until it's changed, rather than silently reading "not connected".
-  const firmMissing = !!form.firmId && !firms.some((f) => f.id === form.firmId);
   const setRating = (v: number) => setForm({ ...form, rating: v });
 
   return (
@@ -134,28 +127,11 @@ export function SupplierFormFields({
             />
           </Field>
         </div>
-        <Field
-          label="Connected Firm (optional)"
-          hint="Which of our firms buys from this supplier. Can be connected or changed later."
-        >
-          <Select
-            id="connected-firm"
-            // Full width and left-aligned: firm names are long, and the
-            // default right alignment pushed the list off the left edge.
-            className="w-full"
-            align="start"
-            value={form.firmId || NO_FIRM}
-            onValueChange={(v) => set("firmId", v === NO_FIRM ? "" : v)}
-          >
-            <SelectItem value={NO_FIRM}>Not connected</SelectItem>
-            {firms.map((f) => (
-              <SelectItem key={f.id} value={f.id}>
-                {f.firmName}
-              </SelectItem>
-            ))}
-            {firmMissing && <SelectItem value={form.firmId}>{form.firmId}</SelectItem>}
-          </Select>
-        </Field>
+        <ConnectedFirmField
+          value={form.firmId}
+          onChange={(v) => set("firmId", v)}
+          hint="Pre-selected as the firm on this supplier's purchases. Each purchase can still pick a different firm."
+        />
       </div>
 
       {/* Right */}

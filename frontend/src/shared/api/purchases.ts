@@ -37,6 +37,9 @@ export interface BackendPurchase {
   supplier: BackendPurchaseSupplier | null;
   supplierName: string | null;
   location: string | null;
+  /** Firm.id this purchase is booked to; null on purchases older than the column. */
+  firmId: string | null;
+  firm: { id: string; firmName: string } | null;
   date: string;
   sareeCount: number;
   gstNumber: string | null;
@@ -90,6 +93,8 @@ export interface CreatePurchasePayload {
   supplierId?: string;
   supplierName?: string;
   location?: string;
+  /** Firm.id buying this purchase — required by the server on create. */
+  firmId: string;
   date?: string;
   sareeCount?: number;
   gstNumber?: string;

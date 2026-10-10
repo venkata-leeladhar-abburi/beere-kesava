@@ -151,4 +151,11 @@ export class FirmsController {
   getActivity(@Param("id") id: string) {
     return this.firmActivityService.getActivity(id);
   }
+
+  // The suppliers, vendors and wholesale customers this firm has documents or
+  // payments with — the same activity, grouped by who it is with.
+  @Get(":id/connections")
+  getConnections(@Param("id") id: string) {
+    return this.firmActivityService.getConnections(id);
+  }
 }

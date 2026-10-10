@@ -96,6 +96,7 @@ export function SuppliersPage() {
       supplierId: s?.id || "",
       supplier: s?.name || "",
       location: s ? `${s.city}, ${s.state}` : "",
+      firmId: s?.firmId || "",
       date: new Date().toISOString().slice(0, 10),
       gstNumber: s?.gstCode || "",
     };
@@ -106,6 +107,7 @@ export function SuppliersPage() {
       supplierId: form.supplierId || undefined,
       supplier: form.supplier,
       location: form.location,
+      firmId: form.firmId || undefined,
       date: form.date || "—",
       sareeCount: totalPieces(sarees),
       gstNumber: form.gstNumber,

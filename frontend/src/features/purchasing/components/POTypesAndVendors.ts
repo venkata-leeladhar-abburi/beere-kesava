@@ -35,6 +35,8 @@ export interface Vendor {
   gstCode: string;
   address: string;
   contactName: string;
+  /** The vendor's connected firm — pre-selects "Purchasing Firm" on a new order. */
+  firmId?: string;
 }
 
 // Real vendors are now fetched from GET /vendors (see shared/api/vendors.ts)

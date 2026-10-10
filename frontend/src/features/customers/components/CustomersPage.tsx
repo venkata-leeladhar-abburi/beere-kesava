@@ -106,6 +106,7 @@ export function CustomersPage() {
         whatsapp: c.whatsapp || "",
         state: c.state || "",
         notes: c.notes || "",
+        firmId: c.firmId || "",
       };
     });
     return mapped;
@@ -341,6 +342,8 @@ export function CustomersPage() {
                 state: updated.state || undefined,
                 paymentTerms: updated.terms || undefined,
                 notes: updated.notes || undefined,
+                // "" clears the default firm; the server stores it as null.
+                firmId: updated.firmId || null,
                 // Skip the shared placeholder: it is display-only filler for a
                 // customer with no card, not something to persist.
                 visitingCardUrl:

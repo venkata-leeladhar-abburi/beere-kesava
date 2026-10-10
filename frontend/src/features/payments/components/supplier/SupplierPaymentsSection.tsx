@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { useSuppliers } from "@/features/suppliers";
 import { useFirms } from "@/features/firms";
 import { ViewSelector } from "@/shared/ui/ViewSelector";
-import { Supplier, Purchase } from "@/features/suppliers";
+import { Supplier, Purchase, parseINR } from "@/features/suppliers";
 import { F, T, EASE } from "../../theme";
 import {
   DateFilterBar,
@@ -36,8 +36,13 @@ import { Pagination, usePagination } from "../../../../shared/ui/DataPagination"
 
 type SupplierStatusKey = "Paid" | "Pending" | "Overdue";
 
+const ALL_FIRMS = "All Firms";
+
 interface SupplierRow {
   supplier: Supplier;
+  /** Firms this supplier's purchases are booked to — a supplier isn't tied to
+   *  one firm, each purchase names its own. */
+  firmNames: string[];
   totalPurchased: number;
   totalPaid: number;
   outstanding: number;
@@ -83,8 +88,8 @@ export function SupplierPaymentsSection() {
   const [detailForId, setDetailForId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const { firms } = useFirms();
-  const firmNameOf = (s: Supplier) =>
-    s.firmId ? (firms.find((f) => f.id === s.firmId)?.firmName ?? s.firmId) : null;
+  const [firmFilter, setFirmFilter] = useState(ALL_FIRMS);
+  const filterFirmId = firms.find((f) => f.firmName === firmFilter)?.id;
   // Paid so far against each purchase — the sum of its linked payments.
   const paidByPurchase = useMemo(() => {
     const m = new Map<string, number>();
@@ -96,22 +101,48 @@ export function SupplierPaymentsSection() {
   const paidFor = (purchaseId: string) => paidByPurchase.get(purchaseId) ?? 0;
 
   const rows: SupplierRow[] = useMemo(() => {
-    return suppliers.map((s): SupplierRow => {
-      const stats = statsFor(s.id);
+    const firmLabel = (p: Purchase) =>
+      p.firmId ? (p.firmName ?? firms.find((f) => f.id === p.firmId)?.firmName ?? p.firmId) : null;
+    return suppliers.flatMap((s): SupplierRow[] => {
+      const own = purchases.filter((p) => p.supplierId === s.id);
+      const firmNames = [...new Set(own.map(firmLabel).filter((n): n is string => !!n))].sort();
+      // With a firm picked, a supplier's figures cover only the purchases
+      // booked to that firm — what that firm bought, paid and still owes.
+      let stats = statsFor(s.id);
+      if (filterFirmId) {
+        const scoped = own.filter((p) => p.firmId === filterFirmId);
+        if (scoped.length === 0) return [];
+        const totalPurchased = scoped.reduce((sum, p) => sum + parseINR(p.billAmount), 0);
+        const totalPaid = scoped.reduce((sum, p) => sum + (paidByPurchase.get(p.id) ?? 0), 0);
+        stats = {
+          ...stats,
+          totalPurchased,
+          totalPaid,
+          outstanding: Math.max(0, totalPurchased - totalPaid),
+          lastPurchaseDate:
+            scoped
+              .map((p) => p.date)
+              .sort()
+              .pop() ?? "—",
+        };
+      }
       let status: SupplierStatusKey;
       if (stats.outstanding <= 0 && stats.totalPurchased > 0) status = "Paid";
       else if (s.status === "overdue") status = "Overdue";
       else status = "Pending";
-      return {
-        supplier: s,
-        totalPurchased: stats.totalPurchased,
-        totalPaid: stats.totalPaid,
-        outstanding: stats.outstanding,
-        lastPurchaseDate: stats.lastPurchaseDate,
-        status,
-      };
+      return [
+        {
+          supplier: s,
+          firmNames,
+          totalPurchased: stats.totalPurchased,
+          totalPaid: stats.totalPaid,
+          outstanding: stats.outstanding,
+          lastPurchaseDate: stats.lastPurchaseDate,
+          status,
+        },
+      ];
     });
-  }, [suppliers, statsFor]);
+  }, [suppliers, purchases, firms, filterFirmId, paidByPurchase, statsFor]);
 
   const totalSupplierPaymentsRecorded = payments.reduce((s, p) => s + p.amount, 0);
   const totalInvoiced = rows.reduce((s, r) => s + r.totalPurchased, 0);
@@ -133,7 +164,12 @@ export function SupplierPaymentsSection() {
 
   const payFor = payForId ? (rows.find((r) => r.supplier.id === payForId) ?? null) : null;
   const openPurchasesForPayFor: Purchase[] = payFor
-    ? purchases.filter((p) => p.supplierId === payFor.supplier.id && p.status !== "Paid")
+    ? purchases.filter(
+        (p) =>
+          p.supplierId === payFor.supplier.id &&
+          p.status !== "Paid" &&
+          (!filterFirmId || p.firmId === filterFirmId)
+      )
     : [];
 
   const detailFor = detailForId ? (rows.find((r) => r.supplier.id === detailForId) ?? null) : null;
@@ -201,23 +237,20 @@ export function SupplierPaymentsSection() {
     },
     {
       id: "firm",
-      header: "Connected Firm",
-      accessor: (r) => firmNameOf(r.supplier) ?? "",
-      cell: (_v, r) => {
-        const name = firmNameOf(r.supplier);
-        return (
-          <span
-            style={{
-              fontFamily: F.ui,
-              fontSize: 13,
-              color: name ? T.luxuryBrown : T.taupe,
-              fontWeight: name ? 600 : 400,
-            }}
-          >
-            {name ?? "Not connected"}
-          </span>
-        );
-      },
+      header: "Purchased Under",
+      accessor: (r) => r.firmNames.join(", "),
+      cell: (_v, r) => (
+        <span
+          style={{
+            fontFamily: F.ui,
+            fontSize: 13,
+            color: r.firmNames.length ? T.luxuryBrown : T.taupe,
+            fontWeight: r.firmNames.length ? 600 : 400,
+          }}
+        >
+          {r.firmNames.length ? r.firmNames.join(", ") : "—"}
+        </span>
+      ),
     },
     {
       id: "totalPurchased",
@@ -710,6 +743,17 @@ export function SupplierPaymentsSection() {
                   onChange: setSupplierFilter,
                 },
                 {
+                  id: "firm",
+                  label: "Firm",
+                  value: firmFilter,
+                  defaultValue: ALL_FIRMS,
+                  options: [ALL_FIRMS, ...firms.map((f) => f.firmName)].map((s) => ({
+                    value: s,
+                    label: s,
+                  })),
+                  onChange: setFirmFilter,
+                },
+                {
                   id: "status",
                   label: "Bill Status",
                   value: statusFilter,
@@ -724,6 +768,7 @@ export function SupplierPaymentsSection() {
               onResetAll={() => {
                 setSearch("");
                 setSupplierFilter("All Suppliers");
+                setFirmFilter(ALL_FIRMS);
                 setStatusFilter("All Bill Status");
                 setDateFilter(DEFAULT_DATE_FILTER);
               }}
@@ -745,6 +790,11 @@ export function SupplierPaymentsSection() {
               value={supplierFilter}
               options={["All Suppliers", ...suppliers.map((s) => s.name)]}
               onChange={setSupplierFilter}
+            />
+            <DropBtn
+              value={firmFilter}
+              options={[ALL_FIRMS, ...firms.map((f) => f.firmName)]}
+              onChange={setFirmFilter}
             />
             <Select
               value={statusFilter}
@@ -947,11 +997,9 @@ export function SupplierPaymentsSection() {
                           <div
                             style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}
                           >
-                            Firm:{" "}
-                            <strong
-                              style={{ color: firmNameOf(r.supplier) ? T.luxuryBrown : T.taupe }}
-                            >
-                              {firmNameOf(r.supplier) ?? "Not connected"}
+                            Purchased under:{" "}
+                            <strong style={{ color: r.firmNames.length ? T.luxuryBrown : T.taupe }}>
+                              {r.firmNames.length ? r.firmNames.join(", ") : "—"}
                             </strong>
                           </div>
                         </div>
@@ -1305,7 +1353,7 @@ export function SupplierPaymentsSection() {
               supplier={detailFor.supplier}
               purchases={purchasesForDetail}
               payments={paymentsForDetail}
-              firmName={firmNameOf(detailFor.supplier)}
+              firmNames={detailFor.firmNames}
               paidFor={paidFor}
               onClose={() => setDetailForId(null)}
             />

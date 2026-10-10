@@ -90,6 +90,25 @@ export function PurchasesTable({
       ),
     },
     {
+      id: "firm",
+      header: "Firm",
+      accessor: (row) => row.firmName ?? "",
+      priority: 2,
+      cell: (_v, row) => (
+        <span
+          style={{
+            fontFamily: F.ui,
+            fontSize: 12,
+            fontWeight: row.firmName ? 600 : 400,
+            color: row.firmName ? T.luxuryBrown : T.taupe,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {row.firmName ?? "Not set"}
+        </span>
+      ),
+    },
+    {
       id: "date",
       header: "Purchase Date",
       accessor: (row) => row.date,

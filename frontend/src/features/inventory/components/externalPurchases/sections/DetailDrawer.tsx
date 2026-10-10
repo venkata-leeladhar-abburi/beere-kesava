@@ -86,6 +86,7 @@ export function DetailDrawer({
               { label: "Serial Number", value: detailRow.id, mono: true, gold: true },
               { label: "Supplier Name", value: detailRow.supplier },
               { label: "Location", value: detailRow.location },
+              { label: "Firm", value: detailRow.firmName || "Not set — add it from Edit" },
               { label: "Purchase Date", value: detailRow.date },
               { label: "Number of Sarees", value: String(purchasePieces(detailRow)) },
               { label: "GST Number", value: detailRow.gstNumber || "—", mono: true },

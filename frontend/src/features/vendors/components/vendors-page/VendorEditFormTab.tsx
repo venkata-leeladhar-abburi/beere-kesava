@@ -11,6 +11,7 @@ import {
   CheckboxField,
 } from "../../../../shared/ui/primitives";
 import { VisitingCardUploadField } from "../../../../shared/ui/VisitingCardUploadField";
+import { ConnectedFirmField } from "@/features/firms";
 
 export function VendorEditFormTab({
   vendor,
@@ -187,6 +188,11 @@ export function VendorEditFormTab({
               </div>
             </div>
           </div>
+          <ConnectedFirmField
+            value={form.firmId ?? ""}
+            onChange={(v) => set("firmId", v || undefined)}
+            hint="Pre-selected as the firm on this vendor's purchase orders. Each order can still pick a different firm."
+          />
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>

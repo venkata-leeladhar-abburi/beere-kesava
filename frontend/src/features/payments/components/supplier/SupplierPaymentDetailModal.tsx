@@ -28,15 +28,15 @@ export function SupplierPaymentDetailModal({
   supplier,
   purchases,
   payments,
-  firmName,
+  firmNames,
   paidFor,
   onClose,
 }: {
   supplier: Supplier;
   purchases: Purchase[];
   payments: SupplierPayment[];
-  /** Name of the firm this supplier is connected to, or null when not connected. */
-  firmName: string | null;
+  /** Firms this supplier's purchases are booked to — each purchase names its own. */
+  firmNames: string[];
   /** Paid so far against one purchase (sum of its linked payments). */
   paidFor: (purchaseId: string) => number;
   onClose: () => void;
@@ -98,7 +98,8 @@ export function SupplierPaymentDetailModal({
                   className="bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.9)]"
                 />
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                  <Link2 size={12} /> {firmName ?? "Not connected to a firm"}
+                  <Link2 size={12} />{" "}
+                  {firmNames.length ? firmNames.join(", ") : "No firm on any purchase yet"}
                 </span>
               </div>
             </Dialog.Description>
@@ -185,6 +186,12 @@ export function SupplierPaymentDetailModal({
                         <EntityCode type="order" value={p.id} size="sm" copyable />
                         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                           {p.date} · {purchasePieces(p)} saree{purchasePieces(p) !== 1 ? "s" : ""}
+                        </span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                          Firm:{" "}
+                          <strong style={{ color: p.firmId ? T.luxuryBrown : T.taupe }}>
+                            {p.firmName ?? firmLabel(p.firmId) ?? "Not set"}
+                          </strong>
                         </span>
                       </div>
                       <div style={{ textAlign: "right" }}>

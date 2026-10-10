@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsEnum, IsIn, IsInt, IsOptional, IsUUID, Max, Min } from "class-validator";
+import { IsEnum, IsIn, IsInt, IsOptional, IsString, IsUUID, Max, Min } from "class-validator";
 import { PurchasePaymentStatus } from "../../generated/prisma/client";
 
 export class ListPurchasesQueryDto {
@@ -23,6 +23,11 @@ export class ListPurchasesQueryDto {
   @IsOptional()
   @IsEnum(PurchasePaymentStatus)
   status?: PurchasePaymentStatus;
+
+  /** Only purchases booked to this firm (Firm.id, "FIRM-NNN"). */
+  @IsOptional()
+  @IsString()
+  firmId?: string;
 
   /**
    * "full" (default, unchanged behaviour) includes every sareeLine —

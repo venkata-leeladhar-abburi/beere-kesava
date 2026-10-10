@@ -42,6 +42,10 @@ export interface Purchase {
   supplierId?: string;
   supplier: string;
   location: string;
+  /** Firm.id of our firm that bought this — undefined only on purchases
+   *  recorded before a firm was required. Only this firm pays for it. */
+  firmId?: string;
+  firmName?: string;
   date: string;
   sareeCount: number;
   gstNumber: string;

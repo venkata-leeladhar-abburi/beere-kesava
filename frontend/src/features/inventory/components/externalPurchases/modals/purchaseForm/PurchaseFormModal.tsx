@@ -10,6 +10,7 @@ import {
   computePurchaseBill,
   purchaseTotals,
 } from "@/features/suppliers";
+import { useFirms } from "@/features/firms";
 import { T, F } from "../../theme";
 import { Button, IconButton } from "../../../../../../shared/ui/primitives";
 import { FormState } from "../../types";
@@ -42,6 +43,11 @@ export function PurchaseFormModal({
   onSubmit: (data: FormState, sarees: SareeTag[]) => void;
 }) {
   const { suppliers } = useSuppliers();
+  const { firms } = useFirms();
+  // Every new purchase is booked to a firm. One recorded before firms were
+  // tracked may still have none, and saving other edits to it must not be
+  // blocked on that.
+  const firmRequired = mode !== "edit" || !!initial.firmId;
   const {
     upload: uploadInvoiceFile,
     uploading: uploadingInvoice,
@@ -112,6 +118,7 @@ export function PurchaseFormModal({
     form.supplier.trim() !== "" &&
     form.location.trim() !== "" &&
     form.date.trim() !== "" &&
+    (!firmRequired || form.firmId !== "") &&
     sareeDetails.length > 0 &&
     bill.error === null;
 
@@ -178,6 +185,8 @@ export function PurchaseFormModal({
           setForm={setForm}
           set={set}
           suppliers={suppliers}
+          firms={firms}
+          firmRequired={firmRequired}
           selectedSupplier={selectedSupplier}
           pieceCount={pieceCount}
           sareeDetailsCount={sareeDetails.length}

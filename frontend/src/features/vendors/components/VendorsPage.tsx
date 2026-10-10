@@ -55,6 +55,7 @@ function toVendor(v: BackendVendor): Vendor {
     outstanding: "0",
     lastOrder: "—",
     rating: v.rating ?? 0,
+    firmId: v.firmId ?? undefined,
     createdAt: v.createdAt,
   };
 }
@@ -209,6 +210,8 @@ export function VendorsPage() {
       notes: v.notes,
       rating: v.rating,
       status: v.status.toUpperCase(),
+      // "" clears the default firm; the server stores it as null.
+      firmId: v.firmId || null,
       visitingCardUrl: toStoredAssetPath(v.visitingCard) ?? undefined,
     });
     const merged = {

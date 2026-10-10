@@ -29,6 +29,9 @@ export interface Vendor {
   outstanding: string;
   lastOrder: string;
   rating: number;
+  /** Firm.id pre-selected on this vendor's purchase orders — undefined when
+   *  none is set. Only a default; each order names its own firm. */
+  firmId?: string;
   createdAt?: string;
 }
 

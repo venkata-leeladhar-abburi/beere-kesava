@@ -65,20 +65,25 @@ function backendInvoiceToFrontend(inv: BackendInvoice): Invoice {
     paid: Number(inv.paid),
     status: backendStatusToFrontend(inv.status),
     dispatchId: inv.dispatchId,
+    firmId: inv.dispatch?.firmId ?? undefined,
+    firmName: inv.dispatch?.firm?.firmName ?? undefined,
     payments: inv.payments.map((p) => ({
       amount: Number(p.amount),
       date: new Date(p.date).toLocaleDateString("en-IN"),
       utr: p.utr ?? "",
       method: p.method ?? "",
+      firmId: p.firmId ?? undefined,
       recordedBy: p.recordedBy ?? null,
     })),
   };
 }
 
+const ALL_FIRMS = "All Firms";
+
 export function WholesaleCollectionsSection() {
   const { dispatches } = useFinishing();
   const { bulkOrders } = useBulkOrders();
-  const { addIncomeEntry } = useFirms();
+  const { firms, addIncomeEntry } = useFirms();
   const queryClient = useQueryClient();
 
   // Scoped to wholesale customers only — invoicesApi.list() returns every
@@ -106,6 +111,8 @@ export function WholesaleCollectionsSection() {
   const [filterState, setFilterState] = useState("All States");
   const [filterCust, setFilterCust] = useState("All Customers");
   const [filterType, setFilterType] = useState("All Invoice Types");
+  const [filterFirm, setFilterFirm] = useState(ALL_FIRMS);
+  const firmFilterOptions = [ALL_FIRMS, ...firms.map((f) => f.firmName)];
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   const createInvoiceMutation = useMutation({
@@ -182,6 +189,7 @@ export function WholesaleCollectionsSection() {
           date: new Date(pmt.date).toLocaleDateString("en-IN"),
           utr: pmt.utr ?? "",
           method: pmt.method ?? "",
+          firmId: pmt.firmId ?? undefined,
           recordedBy: pmt.recordedBy ?? null,
         })),
       });
@@ -234,8 +242,9 @@ export function WholesaleCollectionsSection() {
       inv.customer.toLowerCase().includes(search.toLowerCase()) ||
       inv.id.toLowerCase().includes(search.toLowerCase());
     const matchState = filterState === "All States" || inv.city === filterState;
+    const matchFirm = filterFirm === ALL_FIRMS || inv.firmName === filterFirm;
     const matchDate = matchesDateFilter(inv.invoiceDate, dateFilter);
-    return matchSearch && matchState && matchDate;
+    return matchSearch && matchState && matchFirm && matchDate;
   });
 
   const pag = usePagination(filtered, 8);
@@ -765,12 +774,21 @@ export function WholesaleCollectionsSection() {
                       })),
                       onChange: setFilterType,
                     },
+                    {
+                      id: "firm",
+                      label: "Firm",
+                      value: filterFirm,
+                      defaultValue: ALL_FIRMS,
+                      options: firmFilterOptions.map((f) => ({ value: f, label: f })),
+                      onChange: setFilterFirm,
+                    },
                   ]}
                   onResetAll={() => {
                     setSearch("");
                     setFilterState("All States");
                     setFilterCust("All Customers");
                     setFilterType("All Invoice Types");
+                    setFilterFirm(ALL_FIRMS);
                     setDateFilter(DEFAULT_DATE_FILTER);
                   }}
                 />
@@ -810,6 +828,7 @@ export function WholesaleCollectionsSection() {
                   options={["All Invoice Types", "Wholesale", "Retail", "Export"]}
                   onChange={setFilterType}
                 />
+                <DropBtn value={filterFirm} options={firmFilterOptions} onChange={setFilterFirm} />
                 <div style={{ flex: 1, minWidth: 200 }}>
                   <SearchInput
                     aria-label="Search invoice or customer"

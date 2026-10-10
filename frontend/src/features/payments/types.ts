@@ -80,6 +80,8 @@ export interface InvoicePayment {
   date: string;
   utr: string;
   method: string;
+  /** Firm.id the payment was received by. */
+  firmId?: string;
   firmName?: string;
   /** Accountant / Shop Staff who recorded this collection; undefined if unattributed. */
   recordedBy?: { firstName: string; lastName: string; role: string } | null;
@@ -102,6 +104,10 @@ export interface Invoice {
   daysOverdue?: number;
   payments?: InvoicePayment[];
   dispatchId?: string | null;
+  /** Firm.id the invoice is raised under — the only firm that collects on it.
+   *  Undefined on invoices whose dispatch named no firm. */
+  firmId?: string;
+  firmName?: string;
 }
 
 // PAYMENT_STATUS values, same deferral — threaded through out-of-scope files
@@ -122,6 +128,10 @@ export interface VendorPayment {
   vendorId?: string;
   /** Real VendorBill.id — undefined until a bill has been raised against this PO. */
   billId?: string;
+  /** Firm.id the purchase order is raised under — the only firm that pays its
+   *  bill. Undefined on orders raised before a firm was required. */
+  firmId?: string;
+  firmName?: string;
   invoiceFileUrl?: string;
   invoiceFileName?: string;
 }

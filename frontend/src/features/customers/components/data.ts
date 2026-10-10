@@ -31,6 +31,9 @@ export interface WholesaleCustomerRow {
   whatsapp: string;
   state: string;
   notes: string;
+  /** Firm.id pre-selected on this customer's invoices, or "" when none. Only
+   *  a default — each invoice names its own firm. */
+  firmId: string;
 }
 
 // Shape mirrors the objects CustomersPage.tsx builds for its `retailList`

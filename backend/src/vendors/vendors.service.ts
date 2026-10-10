@@ -1,14 +1,14 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
-import { CreatePartyDto } from "../common/dto/create-party.dto";
 import { ListPartyQueryDto } from "../common/dto/list-party-query.dto";
-import { UpdatePartyDto } from "../common/dto/update-party.dto";
 import { PaginatedResult } from "../common/pagination";
 import { normalizeMobile } from "../common/phone.util";
 import { PartyStatus, Prisma, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { CreateVendorDto } from "./dto/create-vendor.dto";
+import { UpdateVendorDto } from "./dto/update-vendor.dto";
 
 @Injectable()
 export class VendorsService {
@@ -25,7 +25,7 @@ export class VendorsService {
   // — matched on the normalised last 10 digits, since "+91…" and bare forms
   // are the same number — with an exact name match as the fallback for
   // vendors recorded without one.
-  private async assertNotDuplicate(dto: CreatePartyDto) {
+  private async assertNotDuplicate(dto: CreateVendorDto) {
     const phone = dto.phone ? normalizeMobile(dto.phone) : "";
     const existing = await this.prisma.vendor.findFirst({
       where: phone
@@ -40,12 +40,23 @@ export class VendorsService {
     }
   }
 
-  async create(dto: CreatePartyDto) {
+  /** A default firm must point at a real firm — checked up front so a stale id
+   *  reads as a clear 404 rather than a foreign-key failure. */
+  private async assertFirmExists(firmId: string | null | undefined) {
+    if (!firmId) return;
+    const firm = await this.prisma.firm.findUnique({ where: { id: firmId }, select: { id: true } });
+    if (!firm) {
+      throw new NotFoundException(`Firm ${firmId} not found`);
+    }
+  }
+
+  async create(dto: CreateVendorDto) {
     await this.assertNotDuplicate(dto);
+    await this.assertFirmExists(dto.firmId);
     // "<BusinessName>-NNN", e.g. "ShivaTraders-001" — the sequence is a single
     // counter shared across all vendors, not per name.
     const code = await this.idGenerator.nextNamed("VENDOR", businessSegment(dto.name));
-    const vendor = await this.prisma.vendor.create({ data: { ...dto, code } });
+    const vendor = await this.prisma.vendor.create({ data: { ...dto, firmId: dto.firmId || null, code } });
 
     // A new trading party is who the company's money and material now flow
     // through, so it is announced rather than left to be noticed in a list.
@@ -99,9 +110,14 @@ export class VendorsService {
     return vendor;
   }
 
-  async update(id: string, dto: UpdatePartyDto) {
+  async update(id: string, dto: UpdateVendorDto) {
     const existing = await this.findOne(id);
-    const updated = await this.prisma.vendor.update({ where: { id }, data: dto });
+    await this.assertFirmExists(dto.firmId);
+    const updated = await this.prisma.vendor.update({
+      where: { id },
+      // "" from a cleared picker means "no default firm", same as null.
+      data: { ...dto, ...(dto.firmId !== undefined ? { firmId: dto.firmId || null } : {}) },
+    });
 
     // Only a real status transition is announced. update() is the generic
     // edit endpoint, so a phone-number correction that re-sends the same

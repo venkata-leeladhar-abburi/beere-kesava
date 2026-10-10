@@ -1,5 +1,6 @@
 import { Type } from "class-transformer";
 import {
+  IsNotEmpty,
   IsArray,
   IsDateString,
   IsEnum,
@@ -48,10 +49,11 @@ export class CreatePurchaseOrderDto {
   vendorId!: string;
 
   /** Which of the company's legal firms this order is raised under — copied onto the GrnReceipt when the goods arrive.
+   *  Required — every order is booked to a firm, and only that firm pays its bills.
    *  Firm.id is a formatted string ("FIRM-NNN"), not a UUID — see [[schema.prisma]]. */
-  @IsOptional()
   @IsString()
-  firmId?: string;
+  @IsNotEmpty({ message: "Select the firm this purchase order is raised under" })
+  firmId!: string;
 
   @IsOptional()
   @IsDateString()

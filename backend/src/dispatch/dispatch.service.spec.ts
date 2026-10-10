@@ -181,6 +181,7 @@ describe("DispatchService.create — challan numbering", () => {
   beforeEach(() => {
     prisma = {
       customer: { findUnique: jest.fn().mockResolvedValue({ code: "Sree", name: "Sree Kesava" }) },
+      firm: { findUnique: jest.fn().mockResolvedValue({ id: "FIRM-001" }) },
       inventoryRecord: {
         findMany: jest.fn().mockResolvedValue([{ sareeId: "S-1", status: "FINISHING_COMPLETE" }]),
         createMany: jest.fn(),
@@ -216,7 +217,7 @@ describe("DispatchService.create — challan numbering", () => {
       type: DispatchType.WHOLESALE,
       sareeIds: ["S-1"],
       customerId: "c1",
-      raiseInvoice: true,
+      raiseInvoice: true, firmId: "FIRM-001",
     });
 
     expect(prisma.dispatchRecord.create).toHaveBeenCalledWith({
@@ -246,7 +247,7 @@ describe("DispatchService.create — challan numbering", () => {
       type: DispatchType.WHOLESALE,
       sareeIds: ["RAMOJI-L1-B001-008"],
       customerId: "c1",
-      raiseInvoice: true,
+      raiseInvoice: true, firmId: "FIRM-001",
       pricePerSaree: 2000,
     });
 
@@ -267,13 +268,13 @@ describe("DispatchService.create — challan numbering", () => {
     notifications.notifyRole.mockRejectedValueOnce(new Error("feed down"));
 
     await expect(
-      service.create({ type: DispatchType.WHOLESALE, sareeIds: ["S-1"], customerId: "c1", raiseInvoice: true }),
+      service.create({ type: DispatchType.WHOLESALE, sareeIds: ["S-1"], customerId: "c1", raiseInvoice: true, firmId: "FIRM-001" }),
     ).resolves.toEqual(expect.objectContaining({ id: "d1" }));
   });
 
   describe("wholesale invoice total", () => {
     const wholesale = (extra: Record<string, unknown>) =>
-      service.create({ type: DispatchType.WHOLESALE, sareeIds: ["S-1", "S-2"], customerId: "c1", raiseInvoice: true, ...extra });
+      service.create({ type: DispatchType.WHOLESALE, sareeIds: ["S-1", "S-2"], customerId: "c1", raiseInvoice: true, firmId: "FIRM-001", ...extra });
 
     beforeEach(() => {
       idGenerator.nextScoped.mockResolvedValue("INV-Sree-001");

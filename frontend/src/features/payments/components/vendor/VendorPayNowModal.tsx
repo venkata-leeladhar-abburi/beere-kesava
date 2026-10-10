@@ -56,7 +56,11 @@ export function VendorPayNowModal({
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [utr, setUtr] = useState("");
   const [method, setMethod] = useState("Bank Transfer");
-  const [firmId, setFirmId] = useState(firms[0]?.id ?? "");
+  // A purchase order's bill is paid only by the order's own firm. The picker
+  // only decides for an order raised before a firm was required.
+  const firmLocked = !!vp.firmId;
+  const [chosenFirmId, setFirmId] = useState(firms[0]?.id ?? "");
+  const firmId = vp.firmId || chosenFirmId;
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -415,8 +419,15 @@ export function VendorPayNowModal({
               ))}
             </Select>
           </Field>
-          <Field label="Paying from Firm" required id="paying-from-firm">
-            <Select value={firmId} onValueChange={setFirmId}>
+          <Field
+            label="Paying from Firm"
+            required
+            id="paying-from-firm"
+            hint={
+              firmLocked ? "The firm on this purchase order — only it can pay the bill" : undefined
+            }
+          >
+            <Select value={firmId} onValueChange={setFirmId} disabled={firmLocked}>
               {firms.map((f) => (
                 <SelectItem key={f.id} value={f.id}>
                   {f.firmName}

@@ -29,6 +29,8 @@ export interface WholesaleCustomer {
   phone: string;
   address: string;
   gstCode: string;
+  /** The customer's connected firm — pre-selects the billing firm on a new invoice. */
+  firmId?: string;
 }
 
 export function useAllWholesaleCustomers(): WholesaleCustomer[] {
@@ -47,6 +49,7 @@ export function useAllWholesaleCustomers(): WholesaleCustomer[] {
       phone: c.phone || "—",
       address: c.address || "—",
       gstCode: c.gstCode || "—",
+      firmId: c.firmId ?? undefined,
     }));
   }, [ctx?.wholesaleCustomers]);
 }

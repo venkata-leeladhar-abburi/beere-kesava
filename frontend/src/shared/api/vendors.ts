@@ -21,6 +21,8 @@ export interface BackendVendor {
   visitingCardUrl: string | null;
   status: "ACTIVE" | "INACTIVE" | "OVERDUE";
   rating: number | null;
+  /** Firm.id pre-selected on this vendor's purchase orders; null when none. */
+  firmId: string | null;
   createdAt: string;
 }
 
@@ -43,6 +45,8 @@ export interface CreateVendorPayload {
   /** Server-relative path from POST /uploads/photo — never a base64 data URL. */
   visitingCardUrl?: string;
   rating?: number;
+  /** Default firm for this vendor's purchase orders; null (on update) clears it. */
+  firmId?: string | null;
 }
 
 interface PaginatedResponse<T> {

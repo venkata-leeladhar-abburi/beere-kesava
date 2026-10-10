@@ -47,9 +47,8 @@ export function SupplierPayNowModal({
   saving: boolean;
 }) {
   const { firms } = useFirms();
-  const connectedFirm = supplier.firmId ? firms.find((f) => f.id === supplier.firmId) : undefined;
-  // Defaults to the supplier's connected firm — still changeable per payment.
-  const [firmId, setFirmId] = useState<string>(supplier.firmId ?? "");
+  // Only used for a payment the purchase doesn't decide — see `payingFirmId`.
+  const [chosenFirmId, setChosenFirmId] = useState<string>("");
   const [amount, setAmount] = useState(String(outstanding > 0 ? outstanding : ""));
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [mode, setMode] = useState<"Cash" | "Bank Transfer" | "UPI" | "Cheque">("Bank Transfer");
@@ -57,6 +56,12 @@ export function SupplierPayNowModal({
   const [purchaseId, setPurchaseId] = useState<string>("");
   const selectedPurchase = openPurchases.find((p) => p.id === purchaseId) ?? null;
   const balanceOf = (p: Purchase) => Math.max(0, parseINR(p.billAmount) - paidFor(p.id));
+  // A purchase is paid only by the firm it is booked to, so picking one fixes
+  // the paying firm. The picker stays open for a general payment, and for a
+  // purchase recorded before firms were tracked on purchases.
+  const lockedFirmId = selectedPurchase?.firmId ?? "";
+  const payingFirmId = lockedFirmId || chosenFirmId;
+  const firmNameOf = (id: string) => firms.find((f) => f.id === id)?.firmName ?? id;
 
   // Picking a bill pre-fills what's left on it; going back to a general
   // payment restores the supplier's whole outstanding.
@@ -129,12 +134,6 @@ export function SupplierPayNowModal({
           >
             <Money value={rupees(outstanding)} />
           </div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>
-            Connected firm:{" "}
-            <strong style={{ color: connectedFirm ? T.luxuryBrown : T.taupe }}>
-              {connectedFirm?.firmName ?? (supplier.firmId || "Not connected")}
-            </strong>
-          </div>
         </div>
 
         {openPurchases.length > 0 && (
@@ -154,6 +153,7 @@ export function SupplierPayNowModal({
                 <SelectItem key={p.id} value={p.id}>
                   {p.id} — {p.billAmount}
                   {p.invoiceNumber ? ` · Inv ${p.invoiceNumber}` : ""}
+                  {p.firmId ? ` · ${p.firmName ?? firmNameOf(p.firmId)}` : ""}
                 </SelectItem>
               ))}
             </Select>
@@ -212,14 +212,17 @@ export function SupplierPayNowModal({
           label="Paid from Firm"
           id="supplier-paid-from-firm"
           hint={
-            connectedFirm
-              ? "Defaults to this supplier's connected firm"
-              : "Which of our firms this payment is made from"
+            lockedFirmId
+              ? "This purchase is booked to this firm — only it can pay for it"
+              : selectedPurchase
+                ? "This purchase has no firm yet. Set one from the purchase's Edit, or choose who pays here"
+                : "Which of our firms this payment is made from"
           }
         >
           <Select
-            value={firmId || "__none__"}
-            onValueChange={(v) => setFirmId(v === "__none__" ? "" : v)}
+            value={payingFirmId || "__none__"}
+            onValueChange={(v) => setChosenFirmId(v === "__none__" ? "" : v)}
+            disabled={!!lockedFirmId}
             className="w-full"
             align="start"
           >
@@ -229,6 +232,9 @@ export function SupplierPayNowModal({
                 {f.firmName}
               </SelectItem>
             ))}
+            {payingFirmId && !firms.some((f) => f.id === payingFirmId) && (
+              <SelectItem value={payingFirmId}>{payingFirmId}</SelectItem>
+            )}
           </Select>
         </Field>
       </div>
@@ -262,7 +268,7 @@ export function SupplierPayNowModal({
               mode,
               reference: reference.trim(),
               purchaseId: purchaseId || undefined,
-              firmId: firmId || undefined,
+              firmId: payingFirmId || undefined,
             })
           }
         >

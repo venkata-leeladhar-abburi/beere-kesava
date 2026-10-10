@@ -30,6 +30,12 @@ export class UpdatePurchaseDto {
   @IsString()
   location?: string;
 
+  /** Firm.id to book this purchase to. Omitted leaves it unchanged; it can't
+   *  be cleared, and can't move once another firm has paid against it. */
+  @IsOptional()
+  @IsString()
+  firmId?: string;
+
   @IsOptional()
   @IsDateString()
   date?: string;
