@@ -18,6 +18,22 @@ export class CustomersService {
 
   async create(dto: CreateCustomerDto) {
     const { actorId, ...data } = dto;
+    // A retail walk-in is identified by name + mobile. Adding the same person
+    // again returns the record already on file rather than a second one — a
+    // retried counter sale used to leave a new empty customer behind each time.
+    // Without a phone there is nothing to tell two same-named people apart, so
+    // those are always created.
+    if ((data.type ?? CustomerType.RETAIL) === CustomerType.RETAIL && data.phone) {
+      const existing = await this.prisma.customer.findFirst({
+        where: {
+          type: CustomerType.RETAIL,
+          phone: data.phone,
+          name: { equals: data.name.trim(), mode: "insensitive" },
+        },
+        orderBy: { createdAt: "asc" },
+      });
+      if (existing) return existing;
+    }
     // Wholesale trades as a business, so its code carries the whole business
     // name ("SreeGaneshSilks-001"); retail is a person, so it carries a first
     // name ("Padma-001"). Each type has its own counter, so the two sequences

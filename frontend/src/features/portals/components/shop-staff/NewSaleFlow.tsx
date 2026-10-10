@@ -326,8 +326,15 @@ export function NewSaleFlow() {
   // failure, so the sarees that go through second time join the same one.
   const billId = useRef<string | null>(null);
 
+  // The Customer record created for a new walk-in on this sale. Kept across a
+  // retry, so confirming again after a failed saree reuses it instead of
+  // adding the same person a second time. `key` is the name and phone it was
+  // created with — editing either one means a different customer.
+  const createdCustomer = useRef<{ key: string; id: string } | null>(null);
+
   const resetSale = () => {
     billId.current = null;
+    createdCustomer.current = null;
     setStep(1);
     setCart([]);
     setBillDiscount(NO_BILL_DISCOUNT);
@@ -914,16 +921,23 @@ export function NewSaleFlow() {
                 // in that customer's purchase history/lifetime spend — a new
                 // walk-in customer gets a Customer record created first,
                 // an existing one is reused as-is.
-                const customerId = selectedCustomer
-                  ? selectedCustomer.id
-                  : (
-                      await customersApi.create({
-                        name: custName.trim(),
-                        phone: phone.trim() || undefined,
-                        address: custAddress.trim() || undefined,
-                        type: "RETAIL",
-                      })
-                    ).id;
+                let customerId: string;
+                if (selectedCustomer) {
+                  customerId = selectedCustomer.id;
+                } else {
+                  const key = `${custName.trim().toLowerCase()}|${phone.trim()}`;
+                  if (createdCustomer.current?.key !== key) {
+                    const created = await customersApi.create({
+                      name: custName.trim(),
+                      phone: phone.trim() || undefined,
+                      address: custAddress.trim() || undefined,
+                      type: "RETAIL",
+                    });
+                    createdCustomer.current = { key, id: created.id };
+                    void queryClient.invalidateQueries({ queryKey: ["customers-list-newsale"] });
+                  }
+                  customerId = createdCustomer.current.id;
+                }
                 // The backend records one SaleRecord per saree, so a basket
                 // is submitted line by line. Sequential, not parallel: each
                 // call mutates that saree's inventory status, and a partial
