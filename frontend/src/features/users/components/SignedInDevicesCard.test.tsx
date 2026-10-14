@@ -15,6 +15,12 @@ vi.mock("../../../shared/api/users", () => ({
 
 const api = vi.mocked(usersApi);
 
+// The dialog's confirm button comes after every row's own "Sign out".
+const lastSignOutButton = () => {
+  const buttons = screen.getAllByRole("button", { name: "Sign out" });
+  return buttons[buttons.length - 1];
+};
+
 const session = (id: string, device: string) => ({
   id,
   device,
@@ -47,7 +53,7 @@ describe("SignedInDevicesCard", () => {
     expect(api.revokeSession).not.toHaveBeenCalled();
     expect(screen.getByText("Sign out this device?")).toBeInTheDocument();
 
-    await user.click(screen.getAllByRole("button", { name: "Sign out" }).at(-1)!);
+    await user.click(lastSignOutButton());
     expect(api.revokeSession).toHaveBeenCalledWith("u1", "s1");
   });
 
@@ -60,7 +66,7 @@ describe("SignedInDevicesCard", () => {
     renderWithQueryClient(<SignedInDevicesCard userId="u1" fullName="Ravi Kumar" />);
 
     await user.click(await screen.findByRole("button", { name: /sign out of all 2 devices/i }));
-    await user.click(screen.getAllByRole("button", { name: "Sign out" }).at(-1)!);
+    await user.click(lastSignOutButton());
     expect(api.revokeAllSessions).toHaveBeenCalledWith("u1");
   });
 });
