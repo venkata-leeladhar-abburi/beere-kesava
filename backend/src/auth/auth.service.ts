@@ -106,9 +106,6 @@ export class AuthService {
   async requestOtp(dto: RequestOtpDto) {
     const phone = this.cleanPhone(dto.phone);
 
-    // Seed default SuperAdmin and Admin if requested or missing
-    await this.ensureDefaultUsers();
-
     const user = await this.prisma.user.findFirst({
       where: { mobile: { contains: phone } },
     });
@@ -313,8 +310,6 @@ export class AuthService {
       data: { consumedAt: new Date() },
     });
 
-    await this.ensureDefaultUsers();
-
     const user = await this.prisma.user.findFirst({
       where: { mobile: { contains: phone } },
       include: { portalAccess: true },
@@ -483,52 +478,4 @@ export class AuthService {
     }
     return { ok: true };
   }
-
-  async ensureDefaultUsers() {
-    // NOTE: empId here uses a "SEED-" prefix, deliberately distinct from the
-    // sequential "EMP-xxx" ids the general Add User flow generates via
-    // IdGeneratorService (see users.service.ts). Reusing "EMP-001"/"EMP-002"
-    // previously caused a real bug: whichever claimed that id first (a normal
-    // user created through the UI, or this seed) silently blocked the other,
-    // so the SuperAdmin/Admin seed could end up never created. Existence is
-    // checked by mobile number only, since that's the real unique identity
-    // used for OTP login.
-
-    // Seed SuperAdmin if not existing
-    const superAdmin = await this.prisma.user.findFirst({
-      where: { mobile: "9392757489" },
-    });
-    if (!superAdmin) {
-      await this.prisma.user.create({
-        data: {
-          empId: "SEED-SUPERADMIN",
-          firstName: "Super",
-          lastName: "Admin",
-          mobile: "9392757489",
-          email: "superadmin@beerekesava.com",
-          role: UserRole.SUPERADMIN,
-          accessLevel: AccessLevel.FULL_ACCESS,
-        },
-      });
-    }
-
-    // Seed Admin if not existing
-    const admin = await this.prisma.user.findFirst({
-      where: { mobile: "8888888888" },
-    });
-    if (!admin) {
-      await this.prisma.user.create({
-        data: {
-          empId: "SEED-ADMIN",
-          firstName: "Store",
-          lastName: "Admin",
-          mobile: "8888888888",
-          email: "admin@beerekesava.com",
-          role: UserRole.ADMIN,
-          accessLevel: AccessLevel.FULL_ACCESS,
-        },
-      });
-    }
-  }
 }
-

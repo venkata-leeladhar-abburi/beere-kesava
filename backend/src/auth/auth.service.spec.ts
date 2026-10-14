@@ -246,7 +246,7 @@ describe("AuthService", () => {
         expiresAt: new Date(Date.now() + 60_000),
         attempts: 0,
       });
-      // ensureDefaultUsers lookups, then the real identity lookup — all empty.
+      // The identity lookups — all empty.
       prisma.user.findFirst.mockResolvedValue(null);
       prisma.weaver.findFirst.mockResolvedValue(null);
 
@@ -270,8 +270,6 @@ describe("AuthService", () => {
         // verifyOtp resolves the caller's role first, to judge the location
         // check against the portal the token will actually open.
         .mockResolvedValueOnce({ id: "u1", role: UserRole.ADMIN })
-        .mockResolvedValueOnce({ id: "seed-sa" }) // ensureDefaultUsers: superadmin lookup
-        .mockResolvedValueOnce({ id: "seed-ad" }) // ensureDefaultUsers: admin lookup
         .mockResolvedValueOnce({
           id: "u1",
           empId: "EMP-001",
@@ -366,50 +364,15 @@ describe("AuthService", () => {
     });
   });
 
-  describe("ensureDefaultUsers", () => {
-    it("seeds SuperAdmin and Admin by mobile when neither exists", async () => {
+  describe("account creation", () => {
+    // Login used to recreate a SUPERADMIN and a placeholder ADMIN
+    // (8888888888) whenever either was missing, so deleting them never stuck.
+    it("never creates users, even when the number is unknown", async () => {
       prisma.user.findFirst.mockResolvedValue(null);
+      prisma.weaver.findFirst.mockResolvedValue(null);
 
-      await service.ensureDefaultUsers();
-
-      expect(prisma.user.create).toHaveBeenCalledTimes(2);
-      expect(prisma.user.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            mobile: "9392757489",
-            role: UserRole.SUPERADMIN,
-            accessLevel: AccessLevel.FULL_ACCESS,
-          }),
-        }),
-      );
-      expect(prisma.user.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ mobile: "8888888888", role: UserRole.ADMIN }),
-        }),
-      );
-    });
-
-    it("does not reseed SuperAdmin/Admin when they already exist by mobile", async () => {
-      prisma.user.findFirst.mockResolvedValue({ status: "ACTIVE", id: "existing" });
-
-      await service.ensureDefaultUsers();
-
+      await expect(service.requestOtp({ phone: "8888888888" })).rejects.toThrow(UnauthorizedException);
       expect(prisma.user.create).not.toHaveBeenCalled();
-    });
-
-    it("regression: a normal user created earlier with empId EMP-001 must not block the SuperAdmin seed (lookup is by mobile, not empId)", async () => {
-      // Simulate: a regular user with empId "EMP-001" already exists, but no
-      // user has mobile 9999999999 or 8888888888 yet.
-      prisma.user.findFirst.mockResolvedValue(null);
-
-      await service.ensureDefaultUsers();
-
-      // The seed must look up existence by mobile only — it should never
-      // query/filter by empId "EMP-001"/"EMP-002" (that was the historical bug).
-      for (const call of prisma.user.findFirst.mock.calls) {
-        expect(call[0]).toEqual({ where: { mobile: expect.any(String) } });
-      }
-      expect(prisma.user.create).toHaveBeenCalledTimes(2);
     });
   });
 });

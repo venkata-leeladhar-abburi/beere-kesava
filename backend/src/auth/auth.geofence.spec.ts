@@ -59,9 +59,6 @@ function setup() {
     }),
   };
   const service = new AuthService(prisma, jwtService, whatsapp, auditLog, geofence);
-  // ensureDefaultUsers() does its own user.create calls on every entry point;
-  // stubbed out so the assertions below are about the flow under test.
-  jest.spyOn(service, "ensureDefaultUsers").mockResolvedValue();
   return { service, prisma, jwtService, whatsapp, auditLog, geofence };
 }
 

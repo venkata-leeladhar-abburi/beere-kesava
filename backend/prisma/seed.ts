@@ -1,4 +1,4 @@
-import { GeofenceMode, PrismaClient, UserRole } from "../src/generated/prisma/client";
+import { AccessLevel, GeofenceMode, PrismaClient, UserRole } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import "dotenv/config";
 
@@ -203,6 +203,39 @@ async function seedGeofence(): Promise<void> {
   }
 }
 
+/**
+ * The first superadmin of a fresh database, from SEED_SUPERADMIN_MOBILE.
+ *
+ * This used to happen on every login (AuthService.ensureDefaultUsers), along
+ * with a placeholder ADMIN on 8888888888, which meant neither account could
+ * ever be deleted and whoever held that number on WhatsApp could sign in as
+ * an admin. Now it is an explicit, one-off bootstrap: skipped when the var is
+ * unset, and when any SUPERADMIN already exists.
+ */
+async function seedSuperAdmin(): Promise<void> {
+  const mobile = process.env.SEED_SUPERADMIN_MOBILE?.trim();
+  if (!mobile) {
+    console.log("SEED_SUPERADMIN_MOBILE unset: no superadmin bootstrapped");
+    return;
+  }
+  const existing = await prisma.user.findFirst({ where: { role: UserRole.SUPERADMIN } });
+  if (existing) {
+    console.log("A superadmin already exists: none bootstrapped");
+    return;
+  }
+  await prisma.user.create({
+    data: {
+      empId: "SEED-SUPERADMIN",
+      firstName: "Super",
+      lastName: "Admin",
+      mobile,
+      role: UserRole.SUPERADMIN,
+      accessLevel: AccessLevel.FULL_ACCESS,
+    },
+  });
+  console.log(`Bootstrapped superadmin on ${mobile}`);
+}
+
 async function main(): Promise<void> {
   const keyToId = await seedPermissions();
   console.log(`Seeded ${keyToId.size} permissions`);
@@ -224,6 +257,8 @@ async function main(): Promise<void> {
 
   await seedGeofence();
   console.log("Seeded geofence site + role policies (all roles start in OBSERVE)");
+
+  await seedSuperAdmin();
 }
 
 main()
