@@ -235,10 +235,10 @@ export function MaterialRowEditor({
                   }}
                 >
                   ={" "}
+                  {/* A weight conversion (kg <-> g), reusing the parsed quantity above. */}
                   {(row.warpReshamUnit || "kg") === "kg"
-                    ? // eslint-disable-next-line no-restricted-syntax -- material weight (kg/g) conversion, not currency
-                      `${(parseFloat(row.quantity) * 1000).toFixed(0)} g`
-                    : `${(parseFloat(row.quantity) / 1000).toFixed(3)} kg`}
+                    ? `${(qtyNum * 1000).toFixed(0)} g`
+                    : `${(qtyNum / 1000).toFixed(3)} kg`}
                 </div>
               )}
             </div>

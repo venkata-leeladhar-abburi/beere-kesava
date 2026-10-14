@@ -445,7 +445,7 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
     priority: "critical",
     title: (p) => `Scheduled Job Failed${suffix(JOB_LABEL[String(p.job)] ?? p.job)}`,
     body: (p) =>
-      `${str(p.error) ?? "Unknown error."} ` +
+      `${(str(p.error) ?? "Unknown error").replace(/([^.!?])$/, "$1.")} ` +
       (p.willRetry
         ? `It will be retried automatically (attempt ${num(p.attempt)} of ${num(p.maxAttempts)}).`
         : "No further retries for this run."),
