@@ -167,3 +167,39 @@ describe("PurchasesService.update — saree lines", () => {
     ).rejects.toThrow(/can't go below 3/);
   });
 });
+
+describe("PurchasesService — supplier must be registered", () => {
+  let prisma: any;
+  let service: PurchasesService;
+
+  beforeEach(() => {
+    const existing = { id: "EXT-1", supplierId: null, supplierName: "RAVI SILKS", subtotal: 0, discountType: null, discountValue: 0, gstPercent: 0, billAmount: 0, sareeLines: [] };
+    prisma = {
+      purchase: {
+        findUnique: jest.fn().mockResolvedValue(existing),
+        findUniqueOrThrow: jest.fn().mockResolvedValue(existing),
+        update: jest.fn().mockResolvedValue(existing),
+      },
+      supplier: { findUnique: jest.fn() },
+      $transaction: jest.fn().mockImplementation((fn: any) => fn(prisma)),
+    };
+    service = new PurchasesService(prisma, {} as any, { recodePurchases: jest.fn().mockResolvedValue([]) } as any);
+  });
+
+  it("refuses a new purchase with only a typed supplier name", async () => {
+    await expect(
+      service.create({ supplierName: "RAVI SILKS", sarees: [] } as any),
+    ).rejects.toThrow(/registered supplier/);
+    expect(prisma.supplier.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("refuses to switch a purchase to a different typed name", async () => {
+    await expect(service.update("EXT-1", { supplierName: "SOMEONE ELSE" })).rejects.toThrow(/registered supplier/);
+    expect(prisma.purchase.update).not.toHaveBeenCalled();
+  });
+
+  it("still lets an older unlinked purchase be saved with its own name unchanged", async () => {
+    await service.update("EXT-1", { supplierName: "RAVI SILKS", notes: "photo added" } as any);
+    expect(prisma.purchase.update).toHaveBeenCalled();
+  });
+});

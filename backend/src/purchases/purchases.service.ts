@@ -175,24 +175,24 @@ export class PurchasesService {
   ) {}
 
   async create(dto: CreatePurchaseDto) {
-    let supplier: { code: string | null; name: string } | null = null;
-    if (dto.supplierId) {
-      supplier = await this.prisma.supplier.findUnique({ where: { id: dto.supplierId } });
-      if (!supplier) {
-        throw new NotFoundException(`Supplier ${dto.supplierId} not found`);
-      }
-    } else if (!dto.supplierName) {
-      throw new BadRequestException("Provide either supplierId or supplierName");
+    // Every new purchase must name a registered supplier. A free-typed name
+    // left the purchase unlinked, so it could never be returned on a debit
+    // note and didn't count toward the supplier's account.
+    if (!dto.supplierId) {
+      throw new BadRequestException(
+        "Pick a registered supplier — add them under People → Suppliers first if they aren't listed.",
+      );
+    }
+    const supplier = await this.prisma.supplier.findUnique({ where: { id: dto.supplierId } });
+    if (!supplier) {
+      throw new NotFoundException(`Supplier ${dto.supplierId} not found`);
     }
     await this.assertFirmExists(dto.firmId);
 
     const sareeCount = dto.sarees.length > 0 ? piecesWithUs(dto.sarees) : (dto.sareeCount ?? 0);
-    // Scoped per supplier (registered or not) — an unregistered ("Other,
-    // enter manually") supplier still gets its own independent sequence,
-    // keyed off its free-text name rather than a real Tier-1 code.
-    const supplierSegment = supplier
-      ? supplier.code ?? businessSegment(supplier.name, "Supplier")
-      : businessSegment(dto.supplierName!, "Supplier");
+    // Scoped per supplier — its code, or its name segment for suppliers that
+    // predate codes.
+    const supplierSegment = supplier.code ?? businessSegment(supplier.name, "Supplier");
     const bill = computeBill(dto.sarees, dto.discountType, dto.discountValue, dto.gstPercent);
     const id = await this.idGenerator.nextScoped(EXT_PURCHASE_ID_PREFIX, supplierSegment);
 
@@ -356,6 +356,13 @@ export class PurchasesService {
       if (!supplier) {
         throw new NotFoundException(`Supplier ${dto.supplierId} not found`);
       }
+    } else if (dto.supplierName !== undefined && dto.supplierName !== existing.supplierName) {
+      // An older unlinked purchase may still send back its own typed name
+      // unchanged (e.g. a photo-only edit); switching a purchase to a typed
+      // name, or to a different one, is no longer allowed.
+      throw new BadRequestException(
+        "Pick a registered supplier — add them under People → Suppliers first if they aren't listed.",
+      );
     }
     if (dto.firmId && dto.firmId !== existing.firmId) {
       await this.assertFirmChangeAllowed(id, dto.firmId);

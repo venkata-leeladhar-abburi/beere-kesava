@@ -17,8 +17,9 @@ import { DatePicker, formatDate } from "../../../../../../shared/ui/date";
 
 /**
  * Supplier picker + basic purchase fields (top half of the Add/Edit Purchase
- * form) — picking a registered supplier fills in every detail below;
- * "Other" leaves the fields free for a one-off buy.
+ * form) — picking a registered supplier fills in every detail below. There is
+ * no free-typed supplier: a purchase not linked to a supplier record can't be
+ * paid against or returned on a debit note, so the supplier must exist first.
  */
 export function SupplierSection({
   form,
@@ -50,19 +51,22 @@ export function SupplierSection({
 }) {
   return (
     <>
-      <Field label="Select Supplier" className="mb-3.5">
+      <Field
+        label="Select Supplier"
+        required
+        className="mb-3.5"
+        hint={
+          form.supplierId
+            ? undefined
+            : form.supplier
+              ? `Saved as "${form.supplier}", which isn't linked to a registered supplier — pick it from the list.`
+              : "Not in the list? Add them under People → Suppliers first."
+        }
+      >
         <Select
           placeholder="— Choose a registered supplier —"
-          value={form.supplierId || (form.supplier ? "__other__" : "")}
+          value={form.supplierId}
           onValueChange={(val) => {
-            if (val === "" || val === "__other__") {
-              setForm((f) => ({
-                ...f,
-                supplierId: "",
-                ...(val === "" ? { supplier: "", location: "", gstNumber: "" } : {}),
-              }));
-              return;
-            }
             const s = suppliers.find((x) => x.id === val);
             if (!s) return;
             setForm((f) => ({
@@ -83,7 +87,6 @@ export function SupplierSection({
               {s.name} · {s.city} · {s.specialty}
             </SelectItem>
           ))}
-          <SelectItem value="__other__">Other (enter manually)</SelectItem>
         </Select>
       </Field>
 
@@ -138,11 +141,7 @@ export function SupplierSection({
 
       <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
         <Field label="Supplier Name">
-          <Input
-            value={form.supplier}
-            onChange={(e) => set("supplier", e.target.value)}
-            placeholder="e.g. Ravi Silks"
-          />
+          <Input value={form.supplier} readOnly placeholder="Filled in from the supplier above" />
         </Field>
         <Field label="Location">
           <Input

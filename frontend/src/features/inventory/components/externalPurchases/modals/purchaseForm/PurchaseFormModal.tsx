@@ -115,6 +115,7 @@ export function PurchaseFormModal({
       : undefined;
 
   const valid =
+    form.supplierId !== "" &&
     form.supplier.trim() !== "" &&
     form.location.trim() !== "" &&
     form.date.trim() !== "" &&
