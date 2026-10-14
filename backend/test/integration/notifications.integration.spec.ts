@@ -95,13 +95,14 @@ describe("Notifications (integration)", () => {
       const id = created.body.data.id as string;
 
       // SHOP is not the WORKER this was addressed to — this is the exact
-      // scenario the IDOR fix closes. 404, not 403: the caller should not be
-      // able to distinguish "not yours" from "does not exist".
+      // scenario the IDOR fix closes. 403 FORBIDDEN_SCOPE since the typed
+      // error-code work (notifications.service.spec.ts pins the same); ids
+      // are random UUIDs, so telling "not yours" from "missing" leaks nothing.
       const res = await testApp.http
         .patch(`/notifications/${id}/read`)
         .set("Authorization", `Bearer ${shopToken}`);
 
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(403);
 
       const stillUnread = await testApp.prisma.notification.findUniqueOrThrow({ where: { id } });
       expect(stillUnread.readAt).toBeNull();
@@ -117,7 +118,7 @@ describe("Notifications (integration)", () => {
       const deniedForOther = await testApp.http
         .patch(`/notifications/${id}/read`)
         .set("Authorization", `Bearer ${workerToken}`);
-      expect(deniedForOther.status).toBe(404);
+      expect(deniedForOther.status).toBe(403);
 
       const allowedForOwner = await testApp.http
         .patch(`/notifications/${id}/read`)

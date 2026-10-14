@@ -172,6 +172,151 @@ jobs:
       - run: npm run build
 
   # -
+  # The backend against a real Postgres: the integration specs boot the whole
+  # Nest app and drive it over HTTP (test/integration). They cover what the
+  # mocked unit specs cannot: Decimal money columns, the session lookup on
+  # every request, and the unique-index claims that stop a scheduled job or
+  # an invoice payment from running twice.
+  # -
+  backend-integration:
+    name: Backend integration (real Postgres)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Write .env.test
+        # Read by test/utils/global-setup.ts and test-app.ts. Every value is a
+        # throwaway: the database is this job's own container, WhatsApp is
+        # off, and R2 is never called.
+        run: |
+          cat > .env.test <<'ENV'
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable
+          DIRECT_URL=postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable
+          NODE_ENV=test
+          PORT=3000
+          E2E_TEST_MODE=true
+          JWT_SECRET=ci-integration-secret
+          CORS_ORIGIN=http://localhost:5175
+          WHATSAPP_ENABLED=false
+          READ_CACHE_ENABLED=false
+          R2_ACCOUNT_ID=ci
+          R2_ACCESS_KEY_ID=ci
+          R2_SECRET_ACCESS_KEY=ci
+          R2_BUCKET=ci
+          R2_ENDPOINT=http://localhost:9
+          ENV
+      - run: npm run test:integration
+
+  # -
+  # Playwright through the real UI, production build, real backend, real
+  # database. Logs in via the OTP flow (the backend's E2E_TEST_MODE exposes
+  # the code), so it catches a broken login before a deploy does.
+  # -
+  e2e:
+    name: End-to-end (Playwright)
+    runs-on: ubuntu-latest
+    needs: [backend, build]
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Backend - install, migrate, seed, build
+        working-directory: backend
+        run: |
+          npm ci
+          npx prisma migrate deploy
+          npx ts-node -O '{"module":"commonjs","target":"ES2021","esModuleInterop":true}' prisma/seed.ts
+          npx ts-node -O '{"module":"commonjs","target":"ES2021","esModuleInterop":true}' prisma/seed-test-users.ts
+          npm run build
+
+      - name: Backend - start
+        working-directory: backend
+        env:
+          NODE_ENV: development
+          PORT: "3000"
+          E2E_TEST_MODE: "true"
+          JWT_SECRET: ci-e2e-secret
+          CORS_ORIGIN: http://localhost:5175
+          WHATSAPP_ENABLED: "false"
+          READ_CACHE_ENABLED: "false"
+          R2_ACCOUNT_ID: ci
+          R2_ACCESS_KEY_ID: ci
+          R2_SECRET_ACCESS_KEY: ci
+          R2_BUCKET: ci
+          R2_ENDPOINT: http://localhost:9
+        run: |
+          nohup node dist/main.js > ../backend.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://localhost:3000/health && exit 0; sleep 1; done
+          cat ../backend.log; exit 1
+
+      - name: Frontend - build and serve
+        working-directory: frontend
+        env:
+          VITE_API_URL: http://localhost:3000
+        run: |
+          npm ci
+          npm run build
+          nohup npx vite preview --port 5175 --strictPort > ../frontend.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:5175 >/dev/null && exit 0; sleep 1; done
+          cat ../frontend.log; exit 1
+
+      - name: Playwright
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_SKIP_WEBSERVER: "1"
+          E2E_BASE_URL: http://localhost:5175
+          VITE_API_URL: http://localhost:3000
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test
+
+      - name: Keep the report and server logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            frontend/playwright-report
+            frontend/test-results
+            backend.log
+            frontend.log
+          retention-days: 7
+
+  # -
   # Supply chain and secrets. Both are cheap and catch a class of problem no
   # amount of unit testing will: a vulnerable transitive dependency, or a
   # credential pasted into a commit.

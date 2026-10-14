@@ -122,20 +122,26 @@ describe("Users (integration)", () => {
     });
   });
 
-  describe("GET /users (unguarded — open to any authenticated role)", () => {
-    it("WORKER can list users despite lacking users.create", async () => {
+  describe("GET /users (requires users.read)", () => {
+    // The list carries every employee's mobile number; only admins read it.
+    it("WORKER is denied", async () => {
       const res = await testApp.http.get("/users").set("Authorization", `Bearer ${workerToken}`);
+      expect(res.status).toBe(403);
+    });
+
+    it("SUPERADMIN can list users", async () => {
+      const res = await testApp.http.get("/users").set("Authorization", `Bearer ${superadminToken}`);
       expect(res.status).toBe(200);
     });
   });
 
-  describe("PATCH /users/:id/access-level (requires users.roles.manage)", () => {
+  describe("PATCH /users/:id/access-levels (requires users.roles.manage)", () => {
     it("WORKER cannot escalate their own access level", async () => {
       const me = await testApp.prisma.user.findUniqueOrThrow({ where: { mobile: workerPhone } });
       const res = await testApp.http
-        .patch(`/users/${me.id}/access-level`)
+        .patch(`/users/${me.id}/access-levels`)
         .set("Authorization", `Bearer ${workerToken}`)
-        .send({ accessLevel: "FULL_ACCESS" });
+        .send({ levels: [{ role: "WORKER", accessLevel: "FULL_ACCESS" }] });
 
       expect(res.status).toBe(403);
     });
@@ -143,9 +149,9 @@ describe("Users (integration)", () => {
     it("SUPERADMIN can change another user's access level", async () => {
       const me = await testApp.prisma.user.findUniqueOrThrow({ where: { mobile: workerPhone } });
       const res = await testApp.http
-        .patch(`/users/${me.id}/access-level`)
+        .patch(`/users/${me.id}/access-levels`)
         .set("Authorization", `Bearer ${superadminToken}`)
-        .send({ accessLevel: "MONEY_HIDDEN" });
+        .send({ levels: [{ role: "WORKER", accessLevel: "MONEY_HIDDEN" }] });
 
       expect(res.status).toBe(200);
       const updated = await testApp.prisma.user.findUniqueOrThrow({ where: { id: me.id } });

@@ -2,12 +2,11 @@ import { expect, test as base, type Page } from "@playwright/test";
 
 /**
  * Logs a real user through the real /auth/request-otp -> /auth/verify-otp
- * flow, the same path a human takes. Two accounts are guaranteed to exist in
- * any environment without seeding: SUPERADMIN (9392757489) and ADMIN
- * (8888888888) are upserted idempotently by AuthService.ensureDefaultUsers()
- * on first login (see backend/src/auth/auth.service.ts). Every other role
- * needs a real seeded user or weaver with a matching phone number - see each
- * journey spec for what it expects to already exist.
+ * flow, the same path a human takes. SUPERADMIN (9999999999) and ADMIN
+ * (8888888888) come from backend/prisma/seed-test-users.ts, which the e2e
+ * database must be seeded with (CI does this; see .github/workflows/ci.yml).
+ * Every other role needs a real seeded user or weaver with a matching phone
+ * number - see each journey spec for what it expects to already exist.
  *
  * The OTP itself is retrieved from GET /auth/testing/otp, which only exists
  * when the backend was started with E2E_TEST_MODE=true outside production
@@ -16,16 +15,15 @@ import { expect, test as base, type Page } from "@playwright/test";
  * that will never arrive.
  */
 export const SEEDED_USERS = {
-  superadmin: { phone: "9392757489", dashboardPath: "/superadmin" },
+  superadmin: { phone: "9999999999", dashboardPath: "/superadmin" },
   admin: { phone: "8888888888", dashboardPath: "/admin" },
 } as const;
 
 export async function fetchOtp(page: Page, apiURL: string, phone: string): Promise<string> {
   // Only ever reads the code an already-issued request produced — never
-  // requests one itself. The 60-second resend cooldown in
-  // AuthService.requestOtp counts per phone number regardless of caller, so
+  // requests one itself. A new request invalidates the previous code, so
   // calling POST /auth/request-otp here as well as clicking the UI's own
-  // "Send OTP" button would race that cooldown and 429 one of the two.
+  // "Send OTP" button would void the code the UI is about to submit.
   const codeResponse = await page.request.get(`${apiURL}/auth/testing/otp`, {
     params: { phone },
   });

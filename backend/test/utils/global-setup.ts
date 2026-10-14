@@ -54,4 +54,6 @@ export default function globalSetup(): void {
 
   run(["prisma", "db", "push", "--force-reset", "--accept-data-loss"]);
   run(["ts-node", "prisma/seed.ts"]);
+  // The SEEDED accounts in test-app.ts: login no longer creates anyone.
+  run(["ts-node", "prisma/seed-test-users.ts"]);
 }

@@ -55,6 +55,9 @@ describe("Weavers (integration)", () => {
       photoUrl: "https://example.com/photo.jpg",
       email: `weaver-${unique()}@example.com`,
       phone,
+      bankName: "Test Bank",
+      accountNo: "000123456789",
+      ifsc: "TEST0000001",
     };
   }
 

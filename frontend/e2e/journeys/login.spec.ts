@@ -8,11 +8,10 @@ import { expect, test, SEEDED_USERS } from "../fixtures/auth";
  * harness itself — the test-only OTP endpoint, the login UI, the role ->
  * route mapping — actually works end to end.
  */
-// Only two phone numbers are guaranteed registered (SEEDED_USERS), and
-// AuthService.requestOtp enforces a real 60s-per-phone resend cooldown.
-// Running these in parallel would have two tests race that cooldown against
-// the same number, so this file trades its cross-test parallelism for a
-// state constraint the backend itself enforces.
+// Only two phone numbers are registered (SEEDED_USERS), and requesting an OTP
+// invalidates any code already issued for that number. Two tests running in
+// parallel on the same number would void each other's code, so this file
+// runs serially.
 test.describe.configure({ mode: "serial" });
 
 test.describe("Login", () => {
@@ -43,16 +42,9 @@ test.describe("Login", () => {
   });
 
   test("an incorrect code is rejected and the session stays unauthenticated", async ({ page }) => {
-    // Reuses the admin phone, which the earlier "admin logs in" test already
-    // requested an OTP for. AuthService.requestOtp enforces a real 60s resend
-    // cooldown per phone number - there is no way around it with only two
-    // guaranteed-registered numbers to test against, so this test waits it
-    // out explicitly rather than flake on a 429. A disposable per-run
-    // database (Phase 1's Testcontainers item) removes this constraint by
-    // letting each test seed its own throwaway phone number instead.
-    test.setTimeout(90_000);
-    await page.waitForTimeout(61_000);
-
+    // Reuses the admin phone from the test above. AuthService no longer has
+    // a resend cooldown (only the lockout after three wrong guesses), so a
+    // fresh OTP can be requested straight away.
     await page.goto("/login");
     await page.getByPlaceholder("98765 43210").fill(SEEDED_USERS.admin.phone);
     await page.getByRole("button", { name: /Send OTP/i }).click();
@@ -66,7 +58,8 @@ test.describe("Login", () => {
     // fixtures/auth.ts's loginAs().
     await page.getByRole("button", { name: "Verify and Login" }).click();
 
-    await expect(page.getByText(/incorrect code/i)).toBeVisible();
+    // AuthService.verifyOtp's message for a wrong code.
+    await expect(page.getByText(/invalid otp code/i)).toBeVisible();
     await expect(page).toHaveURL(/\/login/);
   });
 });
