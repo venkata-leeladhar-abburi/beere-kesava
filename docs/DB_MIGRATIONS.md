@@ -23,3 +23,8 @@ Schema changes ship as committed Prisma migrations (`backend/prisma/migrations`)
 ## Rules
 - Never edit or delete an applied migration; add a new one.
 - Never run `migrate dev` or `migrate reset` against production.
+- Every new table gets `ALTER TABLE "<table>" ENABLE ROW LEVEL SECURITY;` in
+  the migration that creates it. Prisma doesn't model RLS, so `migrate dev`
+  never adds it; without it Supabase's Data API serves the table to anyone
+  with the public anon key. `src/prisma/migrations-rls.spec.ts` fails CI if
+  it's missing.
