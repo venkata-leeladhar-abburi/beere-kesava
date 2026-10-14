@@ -178,7 +178,11 @@ export function NewSaleFlow() {
             ? "already dispatched to a wholesale customer"
             : result.saleEligibility === "SOLD"
               ? "already sold"
-              : result.saleEligibility === "DAMAGED_REVIEW_NEEDED"
+              : // A purchased piece sent back on a debit note also comes
+                // through as DAMAGED_REVIEW_NEEDED — say what really happened.
+                result.inventoryStatus === "RETURNED_TO_SUPPLIER"
+                ? "already returned to the supplier"
+                : result.saleEligibility === "DAMAGED_REVIEW_NEEDED"
                 ? "flagged for damage review"
                 : "has not passed QC yet";
         return `Saree ${id} is ${reason} — it can't be sold from the counter.`;
