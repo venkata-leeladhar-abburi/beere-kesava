@@ -292,8 +292,9 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
     setPhone(p);
     setStep("otp");
   };
-  const handleVerify = (verifyRes?: { token: string; user: AuthState["user"] }) => {
-    if (verifyRes?.token && verifyRes?.user) {
+  const handleVerify = (verifyRes?: { token?: string; user: AuthState["user"] }) => {
+    // No token in cookie mode: the session arrived as an httpOnly cookie.
+    if (verifyRes?.user) {
       login(phone, verifyRes.token, verifyRes.user);
     } else {
       login(phone);

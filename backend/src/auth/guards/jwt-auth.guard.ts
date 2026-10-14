@@ -43,7 +43,18 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
     user: TUser,
     info: unknown,
   ): TUser {
-    if (err || !user) {
+    // Thrown by JwtStrategy.validate: an ended session, a deactivated
+    // account, a missing CSRF header. Each already carries the right code.
+    if (err instanceof AppException) {
+      throw err;
+    }
+    // Anything else thrown while checking the session is the database, not
+    // the caller. Reporting it as a 401 would sign a working user out over a
+    // blip, so it surfaces as a retryable 503 instead.
+    if (err) {
+      throw new AppException(503, "UPSTREAM_UNAVAILABLE", "Could not check your session. Please try again.");
+    }
+    if (!user) {
       const isExpired =
         info instanceof Error && info.name === "TokenExpiredError";
 

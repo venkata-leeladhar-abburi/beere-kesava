@@ -1,9 +1,12 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { HttpStatus, Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
+import type { Request } from "express";
 import { ExtractJwt, Strategy } from "passport-jwt";
+import { AppException } from "../../common/errors";
 import { UserRole, AccessLevel } from "../../generated/prisma/client";
 import { JWT_SECRET } from "../jwt-secret";
 import { PrismaService } from "../../prisma/prisma.service";
+import { CSRF_HEADER, SESSION_COOKIE, readCookie, resolveSession } from "../session";
 
 export interface JwtPayload {
   sub: string | undefined;
@@ -12,10 +15,14 @@ export interface JwtPayload {
   name: string;
   accessLevel?: AccessLevel;
   weaverId?: string | null;
+  /** AuthSession.id. Absent only on tokens issued before sessions existed. */
+  sid?: string;
 }
 
 export interface AuthenticatedUser {
   id: string | undefined;
+  /** The AuthSession this request belongs to: what logout and revocation end. */
+  sessionId?: string;
   mobile: string;
   role: UserRole;
   name: string;
@@ -28,38 +35,37 @@ export interface AuthenticatedUser {
   weaverId?: string | null;
 }
 
+const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+
+function cookieToken(req: Request): string | null {
+  return readCookie(req.headers.cookie, SESSION_COOKIE) ?? null;
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly prisma: PrismaService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      // Bearer first: scripts, integration tests and bearer-mode clients send
+      // the header; cookie-mode browsers send the httpOnly cookie instead.
+      jwtFromRequest: ExtractJwt.fromExtractors([ExtractJwt.fromAuthHeaderAsBearerToken(), cookieToken]),
       ignoreExpiration: false,
       secretOrKey: JWT_SECRET,
+      passReqToCallback: true,
     });
   }
 
-  // Whatever is returned here becomes req.user.
-  async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
-    if (payload.sub) {
-      // `sub` is User.id whenever a User row exists for this session (including
-      // linked-weaver User rows with role=WEAVER); only the weaver-only fallback
-      // login path puts a real Weaver.id in `sub`. Check User first, then Weaver.
-      const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
-      if (!user) {
-        const weaver = await this.prisma.weaver.findUnique({ where: { id: payload.sub } });
-        if (!weaver) {
-          throw new UnauthorizedException("Session invalid or user no longer exists");
-        }
-      }
+  // Whatever is returned here becomes req.user. Account status, role and
+  // access level are re-read from the database here on every request; see
+  // auth/session.ts for why.
+  async validate(req: Request, payload: JwtPayload): Promise<AuthenticatedUser> {
+    // A cookie rides along on any request the browser makes to this host, so
+    // a cookie-authenticated write must also prove it came from our own app.
+    // Bearer requests need no such check: only our own script can set that
+    // header.
+    const viaCookie = !req.headers.authorization;
+    if (viaCookie && !SAFE_METHODS.has(req.method) && !req.headers[CSRF_HEADER]) {
+      throw new AppException(HttpStatus.FORBIDDEN, "FORBIDDEN_ROLE", "Request blocked: missing CSRF header.");
     }
-
-    return {
-      id: payload.sub,
-      mobile: payload.mobile,
-      role: payload.role,
-      name: payload.name,
-      accessLevel: payload.accessLevel,
-      weaverId: payload.weaverId ?? null,
-    };
+    return resolveSession(this.prisma, payload);
   }
 }

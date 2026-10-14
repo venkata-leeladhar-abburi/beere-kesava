@@ -176,4 +176,22 @@ export const usersApi = {
     apiClient.patch<BackendUser>(`/users/${id}/access-levels`, { levels }),
 
   remove: (id: string) => apiClient.delete<void>(`/users/${id}`),
+
+  /** Devices this person is signed in on right now, most recently used first. */
+  listSessions: (id: string) => apiClient.get<UserSession[]>(`/users/${id}/sessions`),
+
+  /** Signs one device out immediately — the "lost phone" control. */
+  revokeSession: (id: string, sessionId: string) =>
+    apiClient.delete<{ revoked: number }>(`/users/${id}/sessions/${sessionId}`),
+
+  /** Signs this person out on every device. */
+  revokeAllSessions: (id: string) => apiClient.delete<{ revoked: number }>(`/users/${id}/sessions`),
 };
+
+export interface UserSession {
+  id: string;
+  /** Browser/OS label from the sign-in, e.g. "Chrome on Android". */
+  device: string | null;
+  createdAt: string;
+  lastSeenAt: string;
+}

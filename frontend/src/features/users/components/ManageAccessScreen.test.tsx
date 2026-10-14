@@ -1,9 +1,15 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { renderWithQueryClient } from "../../../test/render";
 import { ManageAccessScreen } from "./ManageAccessScreen";
 import { TableRow } from "./utils";
+
+// The Signed-in Devices card fetches on mount; these tests are about portals.
+vi.mock("../../../shared/api/users", () => ({
+  usersApi: { listSessions: vi.fn().mockResolvedValue([]) },
+}));
 
 const worker: TableRow = {
   empId: "EMP-004",
@@ -30,7 +36,7 @@ const levelPicker = (portal: string) =>
 function setup(row: TableRow = worker) {
   const onSave = vi.fn();
   const onBack = vi.fn();
-  render(<ManageAccessScreen row={row} onBack={onBack} onSave={onSave} />);
+  renderWithQueryClient(<ManageAccessScreen row={row} onBack={onBack} onSave={onSave} />);
   return { onSave, onBack, user: userEvent.setup() };
 }
 

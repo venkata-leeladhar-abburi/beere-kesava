@@ -1,5 +1,6 @@
 import { ExecutionContext } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
+import { AppException } from "../../common/errors";
 import { JwtAuthGuard } from "./jwt-auth.guard";
 
 describe("JwtAuthGuard", () => {
@@ -51,5 +52,38 @@ describe("JwtAuthGuard", () => {
     void guard.canActivate(buildContext());
 
     expect(superCanActivate).toHaveBeenCalledTimes(1);
+  });
+
+  describe("handleRequest", () => {
+    const codeOf = (fn: () => unknown) => {
+      try {
+        fn();
+      } catch (e) {
+        return { status: (e as AppException).getStatus(), code: (e as AppException).code };
+      }
+      throw new Error("expected a throw");
+    };
+
+    it("passes an ended session through with its own code", () => {
+      const ended = new AppException(401, "AUTH_SESSION_EXPIRED", "You were signed out.");
+      expect(codeOf(() => guard.handleRequest(ended, false, undefined))).toEqual({
+        status: 401,
+        code: "AUTH_SESSION_EXPIRED",
+      });
+    });
+
+    it("reports a database failure as a retryable 503, not a sign-out", () => {
+      expect(codeOf(() => guard.handleRequest(new Error("connection terminated"), false, undefined))).toEqual({
+        status: 503,
+        code: "UPSTREAM_UNAVAILABLE",
+      });
+    });
+
+    it("still reports a missing or garbage token as AUTH_REQUIRED", () => {
+      expect(codeOf(() => guard.handleRequest(null, false, new Error("jwt malformed")))).toEqual({
+        status: 401,
+        code: "AUTH_REQUIRED",
+      });
+    });
   });
 });

@@ -2077,13 +2077,17 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "route": "POST /users",
   },
   {
-    "permissions": [],
+    "permissions": [
+      "users.read",
+    ],
     "public": false,
     "roles": [],
     "route": "GET /users",
   },
   {
-    "permissions": [],
+    "permissions": [
+      "users.read",
+    ],
     "public": false,
     "roles": [],
     "route": "GET /users/:id",
@@ -2111,6 +2115,33 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "public": false,
     "roles": [],
     "route": "DELETE /users/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "GET /users/:id/sessions",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "DELETE /users/:id/sessions/:sessionId",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "DELETE /users/:id/sessions",
   },
   {
     "permissions": [

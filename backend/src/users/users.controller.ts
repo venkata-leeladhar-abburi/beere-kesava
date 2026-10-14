@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { RequirePermissions } from "../auth/decorators/require-permissions.decorator";
+import { AdminOnly } from "../auth/decorators/require-roles.decorator";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { ListUsersQueryDto } from "./dto/list-users-query.dto";
 import { UpdateAccessLevelsDto } from "./dto/update-access-level.dto";
@@ -12,8 +13,9 @@ import { UsersService } from "./users.service";
 // unconditionally — see permissions.guard.ts), enforced for any other role
 // via the granular keys below (must match prisma/seed.ts's PERMISSIONS
 // catalog exactly — a key that isn't seeded fails closed for every role,
-// see PermissionsGuard.hasAllPermissions). Read-only listing is left open to
-// any authenticated user.
+// see PermissionsGuard.hasAllPermissions). Reading is guarded too
+// (users.read): the list carries every employee's mobile number, and every
+// screen that shows it is an admin screen.
 @Controller("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -24,11 +26,13 @@ export class UsersController {
     return this.usersService.create(dto);
   }
 
+  @RequirePermissions("users.read")
   @Get()
   findAll(@Query() query: ListUsersQueryDto) {
     return this.usersService.findAll(query);
   }
 
+  @RequirePermissions("users.read")
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.usersService.findOne(id);
@@ -52,5 +56,25 @@ export class UsersController {
   @Delete(":id")
   remove(@Param("id") id: string) {
     return this.usersService.remove(id);
+  }
+
+  // Signed-in devices, newest first. Admin-only: ending someone's session is
+  // the "lost phone" control, and it signs that person out immediately.
+  @AdminOnly()
+  @Get(":id/sessions")
+  listSessions(@Param("id") id: string) {
+    return this.usersService.listSessions(id);
+  }
+
+  @AdminOnly()
+  @Delete(":id/sessions/:sessionId")
+  revokeSession(@Param("id") id: string, @Param("sessionId") sessionId: string) {
+    return this.usersService.revokeSessions(id, sessionId);
+  }
+
+  @AdminOnly()
+  @Delete(":id/sessions")
+  revokeAllSessions(@Param("id") id: string) {
+    return this.usersService.revokeSessions(id);
   }
 }

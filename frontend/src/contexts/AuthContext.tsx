@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { authApi } from "@/shared/api/auth";
+import { COOKIE_AUTH } from "@/shared/api/authMode";
 
 export type Role = "admin" | "superadmin" | "worker" | "weaver" | "shop" | "accountant";
 
@@ -93,7 +94,14 @@ function loadState(): AuthState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      return JSON.parse(raw) as AuthState;
+      const parsed = JSON.parse(raw) as AuthState;
+      if (COOKIE_AUTH) {
+        // Left over from bearer mode. The backend no longer accepts it (it
+        // predates server-side sessions), and it must not sit in storage.
+        localStorage.removeItem("token");
+        return { ...parsed, token: null };
+      }
+      return parsed;
     }
   } catch {
     // ignore
@@ -103,8 +111,9 @@ function loadState(): AuthState {
 
 function saveState(state: AuthState) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    if (state.token) {
+    // Cookie mode never holds a token; the profile alone is persisted.
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(COOKIE_AUTH ? { ...state, token: null } : state));
+    if (state.token && !COOKIE_AUTH) {
       localStorage.setItem("token", state.token);
     } else {
       localStorage.removeItem("token");
@@ -164,7 +173,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const normalizedRole = user?.role ? (user.role.toLowerCase() as Role) : null;
     // Several portals assigned → no role yet; /select-role asks which one.
     const roles = toRoles(user?.roles, normalizedRole);
-    const effectiveToken = token || "demo-token-" + Date.now();
+    // Cookie mode: the session is an httpOnly cookie the login response set.
+    const effectiveToken = COOKIE_AUTH ? null : token || "demo-token-" + Date.now();
     setState({
       isAuthenticated: true,
       role: roles.length > 1 ? null : normalizedRole,
@@ -186,7 +196,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Written synchronously so requests fired by the next portal's first
     // render already carry the new token (saveState runs a tick later).
     try {
-      localStorage.setItem("token", res.token);
+      // No token in cookie mode: the response re-set the cookie instead.
+      if (res.token) localStorage.setItem("token", res.token);
       localStorage.removeItem(ADMIN_VIEW_KEY);
     } catch {
       /* ignore */
@@ -195,7 +206,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({
       ...prev,
       role: target,
-      token: res.token,
+      token: res.token ?? prev.token,
       // accessLevel is per-portal (MoneyValue/DownloadAccess read it), so the
       // one cached from login would be the wrong portal's after a switch.
       user: prev.user
@@ -282,7 +293,9 @@ export function useAuthGate(...allowedRoles: Role[]): boolean {
   // disabled on the render that signs the user in, with no state change left
   // to re-enable them. Storage is only the fallback for a session restored
   // before `token` was part of the persisted blob.
+  // Cookie mode: the browser holds the session, so being signed in is enough.
   const hasToken =
+    COOKIE_AUTH ||
     !!token ||
     (typeof window !== "undefined" &&
       !!(localStorage.getItem("token") || sessionStorage.getItem("token")));

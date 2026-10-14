@@ -1,7 +1,7 @@
-import { BadRequestException, ConflictException } from "@nestjs/common";
+import { BadRequestException, ConflictException, NotFoundException } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
-import { AccessLevel, UserRole } from "../generated/prisma/client";
+import { AccessLevel, ActiveStatus, UserRole } from "../generated/prisma/client";
 
 /**
  * Stands in for both shapes the service uses: `$transaction(fn)` for create,
@@ -193,5 +193,66 @@ describe("UsersService per-portal access levels", () => {
     expect(prisma.userPortalAccess.deleteMany).toHaveBeenCalledWith({
       where: { userId: "u1", role: { notIn: [UserRole.ACCOUNTANT] } },
     });
+  });
+});
+
+describe("UsersService sessions", () => {
+  const prisma = {
+    user: { findFirst: jest.fn(), findUnique: jest.fn(), update: jest.fn() },
+    userPortalAccess: { deleteMany: jest.fn() },
+    authSession: { findMany: jest.fn(), updateMany: jest.fn() },
+    $transaction: jest.fn(),
+  };
+  const service = new UsersService(prisma as never, { nextNamed: jest.fn() } as never);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    prisma.user.findUnique.mockResolvedValue({ id: "u1", role: UserRole.WORKER, additionalRoles: [] });
+    prisma.$transaction.mockImplementation((ops: unknown[]) => Promise.all(ops));
+  });
+
+  it("ends every open session when an account is deactivated", async () => {
+    prisma.user.update.mockResolvedValue({ id: "u1" });
+    prisma.authSession.updateMany.mockResolvedValue({ count: 2 });
+
+    await service.update("u1", { status: ActiveStatus.INACTIVE });
+
+    expect(prisma.authSession.updateMany).toHaveBeenCalledWith({
+      where: { userId: "u1", revokedAt: null },
+      data: { revokedAt: expect.any(Date), revokedReason: "DEACTIVATED" },
+    });
+  });
+
+  it("leaves sessions alone on an ordinary edit", async () => {
+    prisma.user.update.mockResolvedValue({ id: "u1" });
+
+    await service.update("u1", { firstName: "New" });
+
+    expect(prisma.authSession.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("revokes one named session, scoped to that user", async () => {
+    prisma.authSession.updateMany.mockResolvedValue({ count: 1 });
+
+    await expect(service.revokeSessions("u1", "s1")).resolves.toEqual({ revoked: 1 });
+    expect(prisma.authSession.updateMany).toHaveBeenCalledWith({
+      where: { userId: "u1", id: "s1", revokedAt: null },
+      data: { revokedAt: expect.any(Date), revokedReason: "REVOKED" },
+    });
+  });
+
+  it("404s a session that is someone else's or already ended", async () => {
+    prisma.authSession.updateMany.mockResolvedValue({ count: 0 });
+
+    await expect(service.revokeSessions("u1", "s-other")).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it("revokes every open session when none is named", async () => {
+    prisma.authSession.updateMany.mockResolvedValue({ count: 3 });
+
+    await expect(service.revokeSessions("u1")).resolves.toEqual({ revoked: 3 });
+    expect(prisma.authSession.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: "u1", revokedAt: null } }),
+    );
   });
 });

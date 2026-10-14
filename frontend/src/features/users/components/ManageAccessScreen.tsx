@@ -14,6 +14,7 @@ import {
 import { TableRow } from "./utils";
 import { RoleBadge, AccessBadge, StatusBadge, SectionCard } from "./UserBadges";
 import { AdditionalPortalsField } from "./AdditionalPortalsField";
+import { SignedInDevicesCard } from "./SignedInDevicesCard";
 
 export interface ManageAccessChanges {
   additionalRoles: string[];
@@ -347,6 +348,9 @@ export function ManageAccessScreen({
               </div>
             </div>
           </SectionCard>
+
+          {/* Only accounts with a User row have sessions to list here. */}
+          {row.backendId && <SignedInDevicesCard userId={row.backendId} fullName={fullName} />}
         </div>
       </div>
     </div>

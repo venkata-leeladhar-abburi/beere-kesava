@@ -1,3 +1,4 @@
+import { COOKIE_AUTH } from "./authMode";
 import { defaultCodeForStatus, isErrorCode, type ErrorCode } from "./errors";
 import { acquireSlot, isPriorityRequest } from "./requestQueue";
 import { notifyRequestSettled, notifyRequestStarted } from "./requestActivity";
@@ -109,6 +110,11 @@ export function isRetryable(error: unknown): boolean {
 }
 
 function getAuthHeaders(): Record<string, string> {
+  // Cookie mode: the browser attaches the httpOnly session cookie itself. The
+  // CSRF header proves to the backend that the request came from this app
+  // (see backend auth/session.ts), and X-Auth-Mode asks login and
+  // switch-role to answer with a cookie instead of a token in the body.
+  if (COOKIE_AUTH) return { "X-BK-CSRF": "1", "X-Auth-Mode": "cookie" };
   const token =
     typeof window !== "undefined"
       ? localStorage.getItem("token") || sessionStorage.getItem("token")
@@ -167,7 +173,11 @@ function handleUnauthorized(code: ErrorCode) {
     return;
   }
 
-  const hasToken = !!(localStorage.getItem("token") || sessionStorage.getItem("token"));
+  // Cookie mode has none of the races described above: the cookie is set by
+  // the login response itself, before the app marks anyone signed in. So
+  // AUTH_REQUIRED there means the cookie is really gone and so is the session.
+  const hasToken =
+    !COOKIE_AUTH && !!(localStorage.getItem("token") || sessionStorage.getItem("token"));
   if (hasToken) return;
   clearSession();
   if (window.location.pathname !== "/login") {
@@ -201,7 +211,12 @@ async function fetchWithTimeout(url: string, init: RequestInit): Promise<Respons
   const requestId = notifyRequestStarted();
 
   try {
-    return await fetch(url, { ...init, signal: controller.signal });
+    return await fetch(url, {
+      ...init,
+      // Cross-origin fetches leave cookies out unless asked; cookie mode needs them.
+      ...(COOKIE_AUTH ? { credentials: "include" as const } : {}),
+      signal: controller.signal,
+    });
   } catch {
     if (controller.signal.aborted) {
       throw new NetworkError("NETWORK_TIMEOUT", "The server took too long to respond.");

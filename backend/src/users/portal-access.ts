@@ -41,3 +41,8 @@ export function accessLevelMap(
   const roles = [...new Set([user.role, ...(user.additionalRoles ?? [])])];
   return roles.map((role) => ({ role, accessLevel: accessLevelFor(user, role) }));
 }
+
+/** Every portal this person holds: primary role first, then extras, no duplicates. */
+export function rolesOf(user: { role: UserRole; additionalRoles?: UserRole[] | null }): UserRole[] {
+  return [...new Set([user.role, ...(user.additionalRoles ?? [])])];
+}

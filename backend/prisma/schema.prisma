@@ -432,6 +432,7 @@ model User {
   recordedWeaverPayments    WeaverPayment[]          @relation("WeaverPaymentRecordedBy")
   recordedVendorPayments    VendorPayment[]          @relation("VendorPaymentRecordedBy")
   recordedInvoicePayments   InvoicePayment[]         @relation("InvoicePaymentRecordedBy")
+  authSessions              AuthSession[]
 
   @@index([role])
 }
@@ -557,6 +558,7 @@ model Weaver {
   payments        WeaverPayment[]
   warpRequests    WarpRequest[]
   linkedUser      User?
+  authSessions    AuthSession[]
 
   @@index([status])
 }
@@ -1892,6 +1894,32 @@ model LabelSettings {
 // ─────────────────────────────────────────────────────────────────────────
 // Platform — audit, notifications
 // ─────────────────────────────────────────────────────────────────────────
+
+// One signed-in device. Every token carries its session's id (`sid`), and
+// JwtStrategy looks the row up on each request, so ending a session here ends
+// it everywhere at once. Tokens have no expiry (see auth.module.ts), which
+// makes this the only way to cut off a lost phone.
+//
+// Exactly one of userId / weaverId is set: weaverId only on the weaver-only
+// login path, where a Weaver signs in with no User row behind them.
+model AuthSession {
+  id            String    @id @default(uuid())
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weaverId      String?
+  weaver        Weaver?   @relation(fields: [weaverId], references: [id], onDelete: Cascade)
+  device        String?
+  createdAt     DateTime  @default(now())
+  // Refreshed at most every few minutes (see auth/session.ts), not per request.
+  lastSeenAt    DateTime  @default(now())
+  revokedAt     DateTime?
+  // "LOGOUT" (the person signed out), "REVOKED" (an admin ended it) or
+  // "DEACTIVATED" (the account was switched off).
+  revokedReason String?
+
+  @@index([userId])
+  @@index([weaverId])
+}
 
 model AuditLog {
   id         String      @id @default(uuid())

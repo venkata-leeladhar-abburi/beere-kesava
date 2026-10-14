@@ -1,4 +1,5 @@
 import { io, Socket } from "socket.io-client";
+import { COOKIE_AUTH } from "./authMode";
 import { apiClient } from "./client";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
@@ -53,6 +54,9 @@ export const notificationsApi = {
 export function connectNotificationsSocket(
   _params: { userId?: string; role?: string } = {}
 ): Socket {
+  // Cookie mode: the handshake carries the httpOnly cookie, and the gateway
+  // checks the Origin header since WebSockets are outside CORS.
+  if (COOKIE_AUTH) return io(API_BASE_URL, { transports: ["websocket"], withCredentials: true });
   const token = localStorage.getItem("token") || sessionStorage.getItem("token") || undefined;
   return io(API_BASE_URL, { transports: ["websocket"], auth: { token } });
 }

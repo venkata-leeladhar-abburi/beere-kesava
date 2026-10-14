@@ -32,6 +32,7 @@ function setup() {
   const prisma: any = {
     user: { findFirst: jest.fn(), findUnique: jest.fn(), create: jest.fn() },
     weaver: { findFirst: jest.fn().mockResolvedValue(null) },
+    authSession: { create: jest.fn().mockResolvedValue({ id: "sess-1" }) },
     otpCode: {
       findFirst: jest.fn(),
       findMany: jest.fn().mockResolvedValue([]),
@@ -67,7 +68,7 @@ function setup() {
 describe("requestOtp location check", () => {
   it("does not send a billable OTP to someone who will be refused", async () => {
     const { service, prisma, whatsapp, geofence } = setup();
-    prisma.user.findFirst.mockResolvedValue({ id: "u1", mobile: "9999999999", role: UserRole.WORKER });
+    prisma.user.findFirst.mockResolvedValue({ status: "ACTIVE", id: "u1", mobile: "9999999999", role: UserRole.WORKER });
     geofence.evaluate.mockResolvedValue(BLOCKED);
 
     await expect(service.requestOtp({ phone: "9999999999", ...OFF_SITE })).rejects.toMatchObject({
@@ -80,7 +81,7 @@ describe("requestOtp location check", () => {
 
   it("judges the request against the caller's own role", async () => {
     const { service, prisma, geofence } = setup();
-    prisma.user.findFirst.mockResolvedValue({ id: "u1", mobile: "9999999999", role: UserRole.ACCOUNTANT });
+    prisma.user.findFirst.mockResolvedValue({ status: "ACTIVE", id: "u1", mobile: "9999999999", role: UserRole.ACCOUNTANT });
 
     await service.requestOtp({ phone: "9999999999", ...OFF_SITE });
 
@@ -93,7 +94,7 @@ describe("requestOtp location check", () => {
 
   it("sends no coordinates at all when the client supplied none", async () => {
     const { service, prisma, geofence } = setup();
-    prisma.user.findFirst.mockResolvedValue({ id: "u1", mobile: "9999999999", role: UserRole.ADMIN });
+    prisma.user.findFirst.mockResolvedValue({ status: "ACTIVE", id: "u1", mobile: "9999999999", role: UserRole.ADMIN });
 
     await service.requestOtp({ phone: "9999999999" });
 
@@ -108,7 +109,7 @@ describe("verifyOtp location check", () => {
     // The point of ordering the check first. Being in the wrong place is not a
     // wrong guess, and must not cost one of the three the account has.
     const { service, prisma, geofence } = setup();
-    prisma.user.findFirst.mockResolvedValue({ id: "u1", role: UserRole.WEAVER });
+    prisma.user.findFirst.mockResolvedValue({ status: "ACTIVE", id: "u1", role: UserRole.WEAVER });
     geofence.evaluate.mockResolvedValue(BLOCKED);
 
     await expect(
@@ -122,7 +123,7 @@ describe("verifyOtp location check", () => {
 
   it("records the refusal to the login history with its position", async () => {
     const { service, prisma, auditLog, geofence } = setup();
-    prisma.user.findFirst.mockResolvedValue({ id: "u1", role: UserRole.WORKER });
+    prisma.user.findFirst.mockResolvedValue({ status: "ACTIVE", id: "u1", role: UserRole.WORKER });
     geofence.evaluate.mockResolvedValue(BLOCKED);
 
     await expect(
@@ -143,7 +144,7 @@ describe("verifyOtp location check", () => {
 
   it("surfaces the server's own wording, which carries the distance", async () => {
     const { service, prisma, geofence } = setup();
-    prisma.user.findFirst.mockResolvedValue({ id: "u1", role: UserRole.WORKER });
+    prisma.user.findFirst.mockResolvedValue({ status: "ACTIVE", id: "u1", role: UserRole.WORKER });
     geofence.evaluate.mockResolvedValue(BLOCKED);
 
     await expect(

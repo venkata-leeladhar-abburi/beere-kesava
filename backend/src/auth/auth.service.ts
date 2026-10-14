@@ -21,8 +21,18 @@ import { RequestOtpDto } from "./dto/request-otp.dto";
 import { VerifyOtpDto } from "./dto/verify-otp.dto";
 import type { AuthenticatedUser } from "./strategies/jwt.strategy";
 import { OtpInspectorService } from "./testing/otp-inspector.service";
-import { accessLevelFor } from "../users/portal-access";
-import { AuditStatus, UserRole, AccessLevel, WhatsAppMessageKind, WhatsAppMessageStatus } from "../generated/prisma/client";
+import { accessLevelFor, rolesOf } from "../users/portal-access";
+import {
+  ActiveStatus,
+  AuditStatus,
+  UserRole,
+  AccessLevel,
+  WhatsAppMessageKind,
+  WhatsAppMessageStatus,
+} from "../generated/prisma/client";
+import { createSession, revokeSessions, SessionEndReason } from "./session";
+
+const DEACTIVATED_MESSAGE = "This account has been deactivated. Contact your administrator.";
 
 @Injectable()
 export class AuthService {
@@ -110,6 +120,11 @@ export class AuthService {
     // billable authentication conversations and is an open relay for abuse.
     if (!user && !weaver) {
       throw new UnauthorizedException("This mobile number is not registered.");
+    }
+    // Checked before sending, not only at verify: every OTP is a billable
+    // WhatsApp conversation, and a switched-off account cannot use it anyway.
+    if ((user ?? weaver)!.status !== ActiveStatus.ACTIVE) {
+      throw new UnauthorizedException(DEACTIVATED_MESSAGE);
     }
 
     // Refused here as well as at verify so a person who cannot sign in never
@@ -305,8 +320,15 @@ export class AuthService {
       include: { portalAccess: true },
     });
 
+    // Repeated from requestOtp, which is a courtesy: this endpoint can be
+    // called on its own with an OTP issued before the account was switched off.
+    if (user && user.status !== ActiveStatus.ACTIVE) {
+      await audit(AuditStatus.FAILED, { userId: user.id, failReason: "Account is deactivated" });
+      throw new UnauthorizedException(DEACTIVATED_MESSAGE);
+    }
+
     let role = user?.role || UserRole.ADMIN;
-    let roles: UserRole[] = user ? this.rolesOf(user) : [role];
+    let roles: UserRole[] = user ? rolesOf(user) : [role];
     let userId = user?.id;
     let name = user ? `${user.firstName} ${user.lastName}` : "";
     let email = user?.email || "";
@@ -334,6 +356,10 @@ export class AuthService {
         await audit(AuditStatus.FAILED, { failReason: "Account not found for this phone number" });
         throw new UnauthorizedException("Account not found for this phone number.");
       }
+      if (weaver.status !== ActiveStatus.ACTIVE) {
+        await audit(AuditStatus.FAILED, { failReason: "Account is deactivated" });
+        throw new UnauthorizedException(DEACTIVATED_MESSAGE);
+      }
 
       role = UserRole.WEAVER;
       roles = [UserRole.WEAVER];
@@ -348,6 +374,15 @@ export class AuthService {
       weaverId = weaver.id;
     }
 
+    // One row per signed-in device; the token names it, so ending the row
+    // ends the token (see session.ts). userId is the Weaver.id on the
+    // weaver-only path above, which has no User row to hang it on.
+    const sid = await createSession(
+      this.prisma,
+      user ? { userId: user.id } : { weaverId: userId! },
+      device,
+    );
+
     // weaverId must travel in the token, not just the response body: every
     // weaver-scoped backend query (batches, payments, ...) filters on
     // Weaver.id, which is NOT the same value as `sub` (User.id).
@@ -358,6 +393,7 @@ export class AuthService {
       name,
       accessLevel,
       weaverId,
+      sid,
     };
 
     const token = this.jwtService.sign(payload);
@@ -383,11 +419,6 @@ export class AuthService {
     };
   }
 
-  /** Primary role first, then any extra portals, without duplicates. */
-  private rolesOf(user: { role: UserRole; additionalRoles?: UserRole[] | null }): UserRole[] {
-    return [...new Set([user.role, ...(user.additionalRoles ?? [])])];
-  }
-
   /**
    * Re-issues the caller's token for another of their assigned portals.
    * Roles are re-read from the database, never trusted from the old token,
@@ -398,7 +429,7 @@ export class AuthService {
       ? await this.prisma.user.findUnique({ where: { id: current.id }, include: { portalAccess: true } })
       : null;
     // Weaver-only sessions (no User row) have exactly one portal.
-    const roles = user ? this.rolesOf(user) : [current.role];
+    const roles = user ? rolesOf(user) : [current.role];
     if (!roles.includes(target)) {
       throw new ForbiddenException("That portal is not assigned to your account.");
     }
@@ -420,6 +451,8 @@ export class AuthService {
       // The target portal's level, not the one the old token was issued for.
       accessLevel: user ? accessLevelFor(user, target) : current.accessLevel,
       weaverId: user ? user.linkedWeaverId : (current.weaverId ?? null),
+      // Same device, same session: switching portal is not a new sign-in.
+      sid: current.sessionId,
     };
     // accessLevel travels back too: the client caches it for MoneyValue /
     // DownloadAccess, and it is per-portal, so it changes with the switch.
@@ -432,13 +465,15 @@ export class AuthService {
   }
 
   /**
-   * Closes the caller's session in the login history.
-   *
-   * Logging out is otherwise entirely client-side (the token is simply
-   * dropped), so without this the history would only ever contain LOGIN rows
-   * and every session would read as "Ongoing" forever.
+   * Ends the caller's session, so the token stops working everywhere, and
+   * closes it in the login history (without which every session would read
+   * as "Ongoing" forever).
    */
-  async logout(userId: string | undefined, userAgent?: string) {
+  async logout(current: AuthenticatedUser, userAgent?: string) {
+    if (current.sessionId) {
+      await revokeSessions(this.prisma, { id: current.sessionId }, SessionEndReason.LOGOUT);
+    }
+    const userId = current.id;
     // Undefined for a session with no User row behind it — see
     // AuthenticatedUser.id, which carries a Weaver.id on the weaver fallback
     // path. Those never produced a LOGIN row either, so there is nothing to

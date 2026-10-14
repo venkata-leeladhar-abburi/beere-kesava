@@ -9,7 +9,8 @@ export interface RequestOtpResponse {
 }
 
 export interface VerifyOtpResponse {
-  token: string;
+  /** Absent in cookie mode: the session is in an httpOnly cookie instead. */
+  token?: string;
   user: {
     id: string;
     /** Real Weaver.id for WEAVER-role sessions — distinct from `id` (the User.id), since batches/payments/etc are FK'd to Weaver.id. Null for every other role. */
@@ -76,12 +77,12 @@ export const authApi = {
     // Location-checked too: the target portal may be geofenced even when the
     // one the current token was issued for is not.
     withLocationIfRequired((fix) =>
-      apiClient.post<{ token: string; role: string; roles: string[]; accessLevel: string }>(
+      apiClient.post<{ token?: string; role: string; roles: string[]; accessLevel: string }>(
         "/auth/switch-role",
         { role, ...fix }
       )
     ),
-  /** Closes the session in the login history. Needs the token, so it must be
-   *  called before local credentials are cleared. */
+  /** Ends the session on the server, so the token stops working everywhere.
+   *  Needs the token, so it must be called before local credentials are cleared. */
   logout: () => apiClient.post<{ ok: boolean }>("/auth/logout", {}),
 };

@@ -2,6 +2,8 @@
 
 interface ImportMetaEnv {
   readonly VITE_API_URL: string;
+  /** "cookie" for httpOnly-cookie sessions; anything else keeps Bearer tokens. */
+  readonly VITE_AUTH_MODE?: string;
 }
 
 interface ImportMeta {

@@ -25,6 +25,10 @@ describe("AuthService", () => {
       weaver: {
         findFirst: jest.fn(),
       },
+      authSession: {
+        create: jest.fn().mockResolvedValue({ id: "sess-1" }),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+      },
       otpCode: {
         findFirst: jest.fn(),
         findMany: jest.fn().mockResolvedValue([]),
@@ -69,7 +73,7 @@ describe("AuthService", () => {
     });
 
     it("issues a random 6-digit OTP, stores it hashed, and sends it via WhatsApp", async () => {
-      prisma.user.findFirst.mockResolvedValue({ id: "u1", mobile: "9999999999" });
+      prisma.user.findFirst.mockResolvedValue({ status: "ACTIVE", id: "u1", mobile: "9999999999" });
 
       const result = await service.requestOtp({ phone: "9999999999" });
 
@@ -88,7 +92,7 @@ describe("AuthService", () => {
     });
 
     it("invalidates outstanding OTPs before issuing a new one", async () => {
-      prisma.user.findFirst.mockResolvedValue({ id: "u1" });
+      prisma.user.findFirst.mockResolvedValue({ status: "ACTIVE", id: "u1" });
 
       await service.requestOtp({ phone: "9999999999" });
 
@@ -101,7 +105,7 @@ describe("AuthService", () => {
     });
 
     it("allows a resend immediately — no cooldown or per-hour cap", async () => {
-      prisma.user.findFirst.mockResolvedValue({ id: "u1" });
+      prisma.user.findFirst.mockResolvedValue({ status: "ACTIVE", id: "u1" });
       prisma.otpCode.findFirst.mockResolvedValue({ id: "otp-0", createdAt: new Date(), attempts: 0, updatedAt: new Date() });
 
       await expect(service.requestOtp({ phone: "9999999999" })).resolves.toBeDefined();
@@ -109,7 +113,7 @@ describe("AuthService", () => {
     });
 
     it("consumes the OTP row and surfaces an error when the WhatsApp send fails", async () => {
-      prisma.user.findFirst.mockResolvedValue({ id: "u1" });
+      prisma.user.findFirst.mockResolvedValue({ status: "ACTIVE", id: "u1" });
       whatsapp.sendTemplate.mockResolvedValue({ status: WhatsAppMessageStatus.FAILED });
 
       await expect(service.requestOtp({ phone: "9999999999" })).rejects.toThrow(
@@ -177,7 +181,7 @@ describe("AuthService", () => {
         attempts: 0,
         updatedAt: new Date(),
       });
-      prisma.user.findFirst.mockResolvedValue({ id: "user-1" });
+      prisma.user.findFirst.mockResolvedValue({ status: "ACTIVE", id: "user-1" });
 
       await expect(
         service.verifyOtp({ phone: "9999999999", code: "123456" }, "Mozilla/5.0 (iPhone) Safari/605"),
@@ -276,10 +280,17 @@ describe("AuthService", () => {
           email: "admin@beerekesava.com",
           role: UserRole.ADMIN,
           accessLevel: AccessLevel.FULL_ACCESS,
+          status: "ACTIVE",
         });
       prisma.weaver.findFirst.mockResolvedValue(null);
 
       const result = await service.verifyOtp({ phone: "9999999999", code: "123456" });
+
+      // The token names a fresh session row, which is what makes it revocable.
+      expect(prisma.authSession.create).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ userId: "u1" }) }),
+      );
+      expect(jwtService.sign).toHaveBeenCalledWith(expect.objectContaining({ sid: "sess-1" }));
 
       expect(prisma.otpCode.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -296,6 +307,62 @@ describe("AuthService", () => {
           user: expect.objectContaining({ id: "u1" }),
         }),
       );
+    });
+  });
+
+  describe("deactivated accounts", () => {
+    it("are refused an OTP, so no billable message is sent", async () => {
+      prisma.user.findFirst.mockResolvedValue({ id: "u1", status: "INACTIVE" });
+
+      await expect(service.requestOtp({ phone: "9999999999" })).rejects.toThrow(/deactivated/);
+      expect(whatsapp.sendTemplate).not.toHaveBeenCalled();
+    });
+
+    it("cannot sign in with an OTP issued before they were switched off", async () => {
+      prisma.otpCode.findFirst.mockResolvedValue({
+        id: "otp-1",
+        code: bcrypt.hashSync("123456", 10),
+        expiresAt: new Date(Date.now() + 60_000),
+        attempts: 0,
+      });
+      prisma.user.findFirst.mockResolvedValue({ id: "u1", role: UserRole.WORKER, status: "INACTIVE" });
+
+      await expect(service.verifyOtp({ phone: "9999999999", code: "123456" })).rejects.toThrow(
+        /deactivated/,
+      );
+      expect(prisma.authSession.create).not.toHaveBeenCalled();
+      expect(jwtService.sign).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("sessions", () => {
+    it("switching portal keeps the same session", async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: "u1",
+        role: UserRole.ADMIN,
+        additionalRoles: [UserRole.WORKER],
+        accessLevel: AccessLevel.FULL_ACCESS,
+        portalAccess: [],
+        linkedWeaverId: null,
+      });
+
+      await service.switchRole(
+        { id: "u1", sessionId: "sess-9", mobile: "9999999999", role: UserRole.ADMIN, name: "A" },
+        UserRole.WORKER,
+      );
+
+      expect(jwtService.sign).toHaveBeenCalledWith(expect.objectContaining({ sid: "sess-9" }));
+      expect(prisma.authSession.create).not.toHaveBeenCalled();
+    });
+
+    it("logout ends the session server-side", async () => {
+      await service.logout({ id: "u1", sessionId: "sess-9", mobile: "9", role: UserRole.ADMIN, name: "A" });
+
+      expect(prisma.authSession.updateMany).toHaveBeenCalledWith({
+        where: { id: "sess-9", revokedAt: null },
+        data: { revokedAt: expect.any(Date), revokedReason: "LOGOUT" },
+      });
+      expect(auditLog.recordLogout).toHaveBeenCalledWith("u1", undefined);
     });
   });
 
@@ -323,7 +390,7 @@ describe("AuthService", () => {
     });
 
     it("does not reseed SuperAdmin/Admin when they already exist by mobile", async () => {
-      prisma.user.findFirst.mockResolvedValue({ id: "existing" });
+      prisma.user.findFirst.mockResolvedValue({ status: "ACTIVE", id: "existing" });
 
       await service.ensureDefaultUsers();
 

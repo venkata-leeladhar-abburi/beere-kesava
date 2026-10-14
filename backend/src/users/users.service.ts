@@ -2,7 +2,8 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { PaginatedResult } from "../common/pagination";
 import { normalizeMobile } from "../common/phone.util";
 import { nextSequenceId } from "../common/sequence-id.util";
-import { AccessLevel, Prisma, UserRole } from "../generated/prisma/client";
+import { AccessLevel, ActiveStatus, Prisma, UserRole } from "../generated/prisma/client";
+import { revokeSessions, SessionEndReason } from "../auth/session";
 import { IdGeneratorService, nameSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -210,6 +211,17 @@ export class UsersService {
           },
           include: { portalAccess: true },
         }),
+        // Switching an account off ends its sessions too. The per-request
+        // status check already locks it out; this also means switching it
+        // back on later does not quietly revive every old device.
+        ...(dto.status === ActiveStatus.INACTIVE
+          ? [
+              this.prisma.authSession.updateMany({
+                where: { userId: id, revokedAt: null },
+                data: { revokedAt: new Date(), revokedReason: SessionEndReason.DEACTIVATED },
+              }),
+            ]
+          : []),
         ...(keep
           ? [
               this.prisma.userPortalAccess.deleteMany({
@@ -283,6 +295,30 @@ export class UsersService {
     } catch (error) {
       throw this.mapPrismaError(error);
     }
+  }
+
+  /** Open sessions only: ended ones are history, and the login log already has it. */
+  async listSessions(id: string) {
+    await this.findOne(id);
+    return this.prisma.authSession.findMany({
+      where: { userId: id, revokedAt: null },
+      orderBy: { lastSeenAt: "desc" },
+      select: { id: true, device: true, createdAt: true, lastSeenAt: true },
+    });
+  }
+
+  /** One session when `sessionId` is given, otherwise every open one. */
+  async revokeSessions(id: string, sessionId?: string) {
+    await this.findOne(id);
+    const revoked = await revokeSessions(
+      this.prisma,
+      { userId: id, ...(sessionId ? { id: sessionId } : {}) },
+      SessionEndReason.REVOKED,
+    );
+    if (sessionId && revoked === 0) {
+      throw new NotFoundException(`Session ${sessionId} not found or already ended`);
+    }
+    return { revoked };
   }
 
   private mapPrismaError(error: unknown): Error {

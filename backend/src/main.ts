@@ -48,6 +48,9 @@ async function bootstrap() {
   const corsOrigin = configService.get<string>("CORS_ORIGIN");
   app.enableCors({
     origin: corsOrigin ? corsOrigin.split(",").map((o) => o.trim()) : !isProduction,
+    // Lets a cookie-mode frontend send the httpOnly session cookie. Safe only
+    // because `origin` above is an explicit allow-list, never "*".
+    credentials: true,
   });
   // Photos/imports travel as multipart (multer), not JSON, so JSON bodies are
   // small. Raise JSON_BODY_LIMIT (e.g. "20mb") if a screen ever needs more.

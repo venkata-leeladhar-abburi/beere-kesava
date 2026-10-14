@@ -21,3 +21,29 @@ Set `SENTRY_DSN` (backend) and `VITE_SENTRY_DSN` (frontend build) to enable erro
 
 ## Load test
 `k6 run backend/loadtest/health.js` against staging, never production.
+
+## Sessions and cookie mode
+
+Every token names an `AuthSession` row, and the backend re-reads that row and
+the account behind it on every request (`backend/src/auth/session.ts`). An
+admin can sign a device out from **Users → Manage Access → Signed-in
+Devices**, and deactivating an account ends all of its sessions.
+
+**First deploy of this change:** run `npm run db:migrate:deploy` (it adds the
+`AuthSession` table) *before* the backend deploy. Tokens issued before it carry
+no session, so every user signs in once more; they land on the "signed out"
+screen, not an error.
+
+**Moving the token into an httpOnly cookie** (`VITE_AUTH_MODE=cookie`) needs the
+app and the API on the same site, because browsers (Safari always) withhold the
+cookie between unrelated domains such as `*.vercel.app` and `*.onrender.com`:
+
+1. Add custom domains, e.g. `app.example.com` on Vercel and `api.example.com` on Render.
+2. Render: set `CORS_ORIGIN=https://app.example.com` (exact, no trailing slash).
+3. Vercel: set `VITE_API_URL=https://api.example.com` and `VITE_AUTH_MODE=cookie`,
+   then trigger a fresh build (both are build-time).
+4. Sign in on an iPhone and an Android phone and check the Network tab: no
+   `token` in the verify-otp response, and a `bk_session` cookie on the API host.
+
+Rolling back is unsetting `VITE_AUTH_MODE` and rebuilding; the backend serves
+both modes.
