@@ -183,8 +183,8 @@ export function NewSaleFlow() {
                 result.inventoryStatus === "RETURNED_TO_SUPPLIER"
                 ? "already returned to the supplier"
                 : result.saleEligibility === "DAMAGED_REVIEW_NEEDED"
-                ? "flagged for damage review"
-                : "has not passed QC yet";
+                  ? "flagged for damage review"
+                  : "has not passed QC yet";
         return `Saree ${id} is ${reason} — it can't be sold from the counter.`;
       }
       const typeCode = result.sareeType?.code ?? "";

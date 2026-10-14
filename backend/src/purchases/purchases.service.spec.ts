@@ -199,7 +199,7 @@ describe("PurchasesService — supplier must be registered", () => {
   });
 
   it("still lets an older unlinked purchase be saved with its own name unchanged", async () => {
-    await service.update("EXT-1", { supplierName: "RAVI SILKS", notes: "photo added" } as any);
+    await service.update("EXT-1", { supplierName: "RAVI SILKS", notes: "photo added" });
     expect(prisma.purchase.update).toHaveBeenCalled();
   });
 });
