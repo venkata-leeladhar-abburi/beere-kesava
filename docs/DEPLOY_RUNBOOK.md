@@ -13,8 +13,35 @@ Render builds, runs `npm run db:migrate:deploy` (paid plans: `preDeployCommand`;
 - **With a migration:** migrations are additive (expand/contract), so the previous code keeps working against the new schema. Never roll the schema back by hand; ship a corrective migration.
 - **Data damage:** restore from Supabase point-in-time recovery into a *new* project, verify, then copy back the affected rows.
 
-## Restore drill (quarterly)
-Restore the latest backup into a scratch database, run `npx prisma migrate status` and spot-check row counts of users, sarees, invoices.
+## Backups
+`.github/workflows/backup.yml` runs nightly at 03:00 IST: an encrypted dump of
+the `public` schema goes to R2 under `backups/db/` (30 days kept), and that
+same file is restored into a throwaway Postgres in the same run. A green run
+means last night's backup restores. Its secrets are listed at the top of the
+workflow. Keep a copy of `BACKUP_PASSPHRASE` outside GitHub: without it no
+backup can be decrypted.
+
+## Restoring a backup
+1. Download the file you want from R2 (`backups/db/bk-<timestamp>.dump.enc`).
+2. Restore into a scratch database first, never straight into production:
+   ```
+   docker run -d --name scratch -e POSTGRES_PASSWORD=postgres -p 55432:5432 postgres:17
+   RESTORE_DATABASE_URL=postgresql://postgres:postgres@localhost:55432/postgres \
+   BACKUP_PASSPHRASE=... backend/scripts/db-restore.sh bk-<timestamp>.dump.enc
+   ```
+   It prints row counts for the main tables. Look at the data you care about.
+3. Data damage: copy the affected rows from the scratch database back. Total
+   loss: restore into the production database itself (the script refuses a
+   Supabase URL unless you add `--into-supabase`), then `npm run db:status`.
+
+## Scheduled jobs
+`.github/workflows/scheduler.yml` calls `POST /jobs/tick` every 10 minutes,
+and the server also ticks itself every 15. Each job runs once per slot
+(`JobRun` table): overdue-payment scan from 06:30 IST, ops alerts from 07:30,
+scheduled reports every 15 minutes, health check from 09:00. A job missed while
+the server slept runs on the next tick; a failed one is retried up to 3 times
+and raised under Notifications > System Alerts. Setup: set the same
+`JOBS_TRIGGER_SECRET` on Render and as a GitHub secret.
 
 ## Monitoring
 Set `SENTRY_DSN` (backend) and `VITE_SENTRY_DSN` (frontend build) to enable error tracking. Point an uptime monitor (UptimeRobot/BetterStack) at `GET /health`. Every response carries `X-Request-Id`; quote it when searching logs.
