@@ -9,7 +9,7 @@ import {
   DEFAULT_LABEL_STOCK,
   type LabelStock,
 } from "../../../../shared/ui/document";
-import { ScannableCode } from "../../../../shared/ui/domain";
+import { ScannableCode } from "../../../../shared/ui/domain/ScannableCode";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { encodeCostCipher } from "@/lib/domain/costCipher";
 

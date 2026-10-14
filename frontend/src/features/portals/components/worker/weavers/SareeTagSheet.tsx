@@ -11,7 +11,7 @@
  * stacked: a QR wide enough to scan is most of a 25mm-tall sticker's height,
  * so a vertical layout left no room for anything else.
  */
-import { ScannableCode } from "@/shared/ui/domain";
+import { ScannableCode } from "@/shared/ui/domain/ScannableCode";
 import {
   LabelSheet,
   useTileStock,

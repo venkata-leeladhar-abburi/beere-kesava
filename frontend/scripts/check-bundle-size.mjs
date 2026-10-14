@@ -27,7 +27,10 @@ const DIST_ASSETS = path.join(DIST, "assets");
 // Re-baselined 2026-10-03: manual vendor chunking was removed (commit 894a1e4c, to fix
 // load-order crashes), so the old 250 KB target no longer holds. Measured: ~740 KB gzip.
 // Ratchet this DOWN as code is split out; never raise it without a comment here.
-const INITIAL_BUDGET_KB = 780;
+// Lowered from 780 on 2026-10-14: an app-wide provider imported the suppliers
+// barrel, which put nearly every screen in the entry chunk (743 KB). Measured
+// 253 KB after the fix (features/suppliers/model.ts).
+const INITIAL_BUDGET_KB = 270;
 const TOTAL_BUDGET_KB = 2050; // re-baselined 2026-10-03: measured ~1940 KB gzip across all chunks.
 
 function gzipKB(file) {

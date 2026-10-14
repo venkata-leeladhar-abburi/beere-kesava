@@ -3,8 +3,10 @@ import { C, F } from "./tokens";
 import { GrnReceiptItem } from "../../../../shared/api/rawMaterials";
 import { Button } from "../../../../shared/ui/primitives";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
-import { useDocument, useLabelStock, needsQrFallback } from "../../../../shared/ui/document";
-import { Code128Bars, ScannableCode } from "../../../../shared/ui/domain";
+import { useDocument, useLabelStock } from "../../../../shared/ui/document";
+import { needsQrFallback } from "../../../../shared/ui/document/TileCode";
+import { Code128Bars } from "../../../../shared/ui/domain/Code128Bars";
+import { ScannableCode } from "../../../../shared/ui/domain/ScannableCode";
 import { GrnLabelSheet, type GrnLabel } from "./GrnLabelSheet";
 
 /** DDMMYY, e.g. 2026-09-02 -> "020926" — same format the saree tags use. */

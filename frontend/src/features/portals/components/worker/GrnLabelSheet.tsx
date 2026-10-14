@@ -18,7 +18,8 @@
  * the printer and a QR when they will not, which for most GRN labels means a
  * QR. The scanner reads either.
  */
-import { LabelSheet, TileCode, type LabelStock } from "@/shared/ui/document";
+import { LabelSheet, type LabelStock } from "@/shared/ui/document";
+import { TileCode } from "@/shared/ui/document/TileCode";
 
 export interface GrnLabel {
   /** The scannable line code — also the human-readable id printed below it. */

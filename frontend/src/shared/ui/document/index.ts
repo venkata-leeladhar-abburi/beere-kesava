@@ -64,7 +64,8 @@ export {
   type LabelStock,
   type LabelSheetProps,
 } from "./LabelSheet";
-export { TileCode, needsQrFallback, code128Modules, innerWidthMm, MIN_MODULE_MM } from "./TileCode";
+// TileCode is imported by path, not from here: it carries the barcode
+// encoders (see shared/ui/domain/index.ts for why that matters).
 export {
   DebitNoteDocument,
   type DebitNoteItem,

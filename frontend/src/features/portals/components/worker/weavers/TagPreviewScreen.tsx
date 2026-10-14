@@ -4,7 +4,7 @@ import { C, F } from "../tokens";
 import { PageHeader } from "./shared";
 import { Button, Input } from "../../../../../shared/ui/primitives";
 import { useDocument, useLabelStock } from "../../../../../shared/ui/document";
-import { ScannableCode } from "../../../../../shared/ui/domain";
+import { ScannableCode } from "../../../../../shared/ui/domain/ScannableCode";
 import { SareeTagSheet } from "./SareeTagSheet";
 
 // ─── Tag Preview — shared by the outsourced-weaver and own-factory receive

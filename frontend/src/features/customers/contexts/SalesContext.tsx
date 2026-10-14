@@ -18,7 +18,7 @@ import { SEED_PURCHASE_SUMMARIES } from "./sales-seed";
 import { inventoryApi } from "../../../shared/api/inventory";
 import { salesApi } from "../../../shared/api/sales";
 import { purchasesApi, type BackendPurchase } from "../../../shared/api/purchases";
-import { pieceCodeFromLineCode, computeFinalAmount, returnedPieceSet } from "@/features/suppliers";
+import { pieceCodeFromLineCode, computeFinalAmount, returnedPieceSet } from "@/features/suppliers/model";
 import { useAuthGate } from "../../../contexts/AuthContext";
 
 const PURCHASE_STATUS: Record<BackendPurchase["status"], PurchaseSummary["status"]> = {
