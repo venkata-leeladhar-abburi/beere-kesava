@@ -22,6 +22,14 @@ const withReason = (body: string, reason: unknown): string => {
   return s ? `${body} Reason: ${s}` : body;
 };
 
+/** Backend job names (src/jobs/job-schedule.ts) as people would say them. */
+const JOB_LABEL: Record<string, string> = {
+  "overdue-payments": "Overdue Payments Scan",
+  "ops-alerts": "Operations Alerts",
+  "scheduled-reports": "Scheduled Reports",
+  watchdog: "Daily Health Check",
+};
+
 interface TypeConfig {
   /** A function when the same type files differently by payload — an old
    *  SHOP_SALE_RECORDED is retail or wholesale depending on its channel. */
@@ -429,6 +437,24 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
     priority: "warning",
     title: (p) => `Supplier Removed${suffix(p.name)}`,
     body: (p) => `${str(p.code) ?? "The supplier"} has been deleted.`,
+  },
+
+  // ── System ───────────────────────────────────────────────────────────
+  SYSTEM_JOB_FAILED: {
+    category: "system",
+    priority: "critical",
+    title: (p) => `Scheduled Job Failed${suffix(JOB_LABEL[String(p.job)] ?? p.job)}`,
+    body: (p) =>
+      `${str(p.error) ?? "Unknown error."} ` +
+      (p.willRetry
+        ? `It will be retried automatically (attempt ${num(p.attempt)} of ${num(p.maxAttempts)}).`
+        : "No further retries for this run."),
+  },
+  SYSTEM_HEALTH_ALERT: {
+    category: "system",
+    priority: "warning",
+    title: () => "Daily Health Check Found Problems",
+    body: (p) => (Array.isArray(p.problems) ? p.problems.map(String).join(" · ") : "See details."),
   },
 
   // ── Payments & Invoices ──────────────────────────────────────────────

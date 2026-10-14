@@ -1921,6 +1921,35 @@ model AuthSession {
   @@index([weaverId])
 }
 
+// One run of a scheduled job (src/jobs). The unique (job, slot) pair is the
+// claim: the server's own timer and the GitHub Actions trigger can both try
+// to start the same run, and only one insert wins. A slot is the IST day for
+// daily jobs, so a job missed while the free-tier server slept runs on the
+// next tick instead of being skipped.
+model JobRun {
+  id         String       @id @default(uuid())
+  job        String
+  slot       String
+  // "timer" (the server's own 15-minute tick) or "external" (POST /jobs/tick).
+  trigger    String
+  status     JobRunStatus @default(RUNNING)
+  // A failed run is retried on later ticks, up to a cap (see job-runner.ts).
+  attempts   Int          @default(1)
+  startedAt  DateTime     @default(now())
+  finishedAt DateTime?
+  error      String?
+  summary    Json?
+
+  @@unique([job, slot])
+  @@index([job, startedAt])
+}
+
+enum JobRunStatus {
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
 model AuditLog {
   id         String      @id @default(uuid())
   userId     String?

@@ -19,7 +19,15 @@ export type Priority = "critical" | "warning" | "info" | "success";
 export interface UnifiedNotif {
   id: string;
   priority: Priority;
-  category: "weaver" | "production" | "material" | "payment" | "dispatch" | "retail" | "wholesale";
+  category:
+    | "weaver"
+    | "production"
+    | "material"
+    | "payment"
+    | "dispatch"
+    | "retail"
+    | "wholesale"
+    | "system";
   title: string;
   body: string;
   time: string;
@@ -112,4 +120,6 @@ export const CATEGORIES = [
   { key: "retail", label: "Retail Sales", color: "#8A1C3F", Icon: ShoppingBag },
   { key: "wholesale", label: "Wholesale Sales", color: "#5B3A8C", Icon: Truck },
   { key: "dispatch", label: "Shop & Dispatch", color: T.antiqueGold, Icon: ShoppingCart },
+  // Scheduled-job failures and the daily watchdog (backend src/jobs).
+  { key: "system", label: "System Alerts", color: "#B91C1C", Icon: AlertTriangle },
 ];

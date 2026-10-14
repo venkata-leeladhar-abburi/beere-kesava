@@ -1,5 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { Cron, CronExpression } from "@nestjs/schedule";
+import { Injectable } from "@nestjs/common";
 import {
   BatchStatus,
   DispatchReceiptStatus,
@@ -31,24 +30,13 @@ const SHOP_STOCK_LOW_THRESHOLD = 20;
  */
 @Injectable()
 export class OpsAlertsService {
-  private readonly logger = new Logger(OpsAlertsService.name);
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly inventory: InventoryService,
     private readonly notifications: NotificationsService,
   ) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_2AM)
-  async scanOperationalAlerts() {
-    const result = await this.runScan();
-    this.logger.log(
-      `Ops scan: ${result.overdueBatches} overdue batch(es), ${result.unconfirmedDispatches} unconfirmed dispatch(es), shop stock ${result.shopStockCount}`,
-    );
-    return result;
-  }
-
-  /** Exposed separately so it can be triggered manually via an endpoint, not just the cron. */
+  /** Run daily by the job scheduler (src/jobs), or by hand from OpsJobsController. */
   async runScan() {
     const [overdueBatches, unconfirmedDispatches, shopStockCount] = await Promise.all([
       this.scanOverdueBatches(),

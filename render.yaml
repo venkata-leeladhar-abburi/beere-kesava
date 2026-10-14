@@ -73,6 +73,12 @@ services:
       # Optional error tracking; unset = disabled.
       - key: SENTRY_DSN
         sync: false
+      # Shared secret for POST /jobs/tick, called by
+      # .github/workflows/scheduler.yml. Use the same value as the GitHub
+      # secret of the same name. Unset = the route answers 404, and scheduled
+      # jobs only run on the server's own timer (missed while it sleeps).
+      - key: JOBS_TRIGGER_SECRET
+        sync: false
       - key: AISENSY_API_URL
         value: https://backend.aisensy.com/campaign/t1/api/v2
       - key: AISENSY_SENDER_NAME

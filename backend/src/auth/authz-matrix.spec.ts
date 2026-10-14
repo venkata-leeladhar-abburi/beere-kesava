@@ -217,6 +217,10 @@ describe("authz matrix / guard coverage", () => {
       "GET /uploads/:folder/:filename",
       "POST /auth/request-otp",
       "POST /auth/verify-otp",
+      // The scheduled-jobs trigger, called by a GitHub Actions workflow that
+      // has no user session. Authenticated by the JOBS_TRIGGER_SECRET header
+      // instead, and answers 404 when that secret is not configured.
+      "POST /jobs/tick",
     ]);
   });
 });

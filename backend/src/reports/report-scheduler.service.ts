@@ -1,6 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { Cron } from "@nestjs/schedule";
 import { ReportFrequency, WhatsAppMessageKind } from "../generated/prisma/client";
 import { StorageService } from "../common/storage/storage.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -67,8 +66,13 @@ export class ReportSchedulerService {
     return [...new Set(raw.split(",").map((n) => n.trim()).filter(Boolean))];
   }
 
-  @Cron("0 */15 * * * *")
-  async checkDueSchedules(): Promise<void> {
+  /**
+   * Run every 15 minutes by the job scheduler (src/jobs). One schedule
+   * failing does not stop the others: it is logged, advanced so it is not
+   * retried every 15 minutes, and reported in the thrown error at the end so
+   * the run is recorded as failed and admins are alerted.
+   */
+  async checkDueSchedules(): Promise<{ due: number; failed: string[] }> {
     const schedules = await this.prisma.scheduledReport.findMany({
       where: { active: true },
     });
@@ -81,14 +85,26 @@ export class ReportSchedulerService {
     );
 
     if (due.length === 0) {
-      return;
+      return { due: 0, failed: [] };
     }
 
     this.logger.log(`Generating ${due.length} due scheduled report(s)`);
 
+    const failed: string[] = [];
     for (const schedule of due) {
-      await this.generateReport(schedule.id);
+      try {
+        await this.generateReport(schedule.id);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.error(`Scheduled report "${schedule.reportName}" (${schedule.id}) failed: ${message}`);
+        failed.push(`${schedule.reportName}: ${message}`);
+        await this.advanceSchedule(schedule).catch(() => undefined);
+      }
     }
+    if (failed.length) {
+      throw new Error(`${failed.length} of ${due.length} scheduled report(s) failed — ${failed.join("; ")}`);
+    }
+    return { due: due.length, failed };
   }
 
   private async generateReport(scheduleId: string): Promise<void> {

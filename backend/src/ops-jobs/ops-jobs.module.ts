@@ -8,5 +8,6 @@ import { OpsJobsController } from "./ops-jobs.controller";
   imports: [NotificationsModule, InventoryModule],
   controllers: [OpsJobsController],
   providers: [OpsAlertsService],
+  exports: [OpsAlertsService],
 })
 export class OpsJobsModule {}

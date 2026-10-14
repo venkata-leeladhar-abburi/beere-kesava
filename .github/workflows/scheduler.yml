@@ -1,0 +1,54 @@
+name: Scheduler
+
+# Runs the backend's scheduled jobs from outside the server.
+#
+# Render's free plan sleeps the backend after ~15 idle minutes, and a sleeping
+# server misses its own timers. Every 10 minutes this wakes it (which also
+# keeps it warm for users, the job keep-alive.yml used to do) and calls
+# POST /jobs/tick, which runs whatever is due: the daily overdue-payment and
+# operations scans, due scheduled reports, and the daily health check. The
+# server's own 15-minute timer still runs too; each job's slot can only be
+# claimed once, so the two never double up (backend/src/jobs).
+#
+# A run fails, and GitHub emails you, when a job failed or the daily health
+# check found a problem. The same problems appear in the app under
+# Notifications > System Alerts.
+#
+# Setup (Settings > Secrets and variables > Actions):
+#   Variable RENDER_HEALTH_URL  e.g. https://beere-kesava-backend.onrender.com/health
+#   Secret   JOBS_TRIGGER_SECRET  same value as JOBS_TRIGGER_SECRET on Render
+# Skipped while either is missing. GitHub may start scheduled runs late;
+# jobs catch up on the next tick.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: scheduler
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ vars.RENDER_HEALTH_URL != '' }}
+    env:
+      HEALTH_URL: ${{ vars.RENDER_HEALTH_URL }}
+      JOBS_TRIGGER_SECRET: ${{ secrets.JOBS_TRIGGER_SECRET }}
+    steps:
+      - name: Wake the backend
+        # A cold start takes 30-60s; retries cover a slow one.
+        run: curl --fail --silent --show-error --max-time 90 --retry 2 --retry-delay 10 "$HEALTH_URL"
+
+      - name: Run due jobs
+        if: ${{ env.JOBS_TRIGGER_SECRET != '' }}
+        run: |
+          base="${HEALTH_URL%/health}"
+          body=$(curl --fail-with-body --silent --show-error --max-time 480 \
+            -X POST -H "x-jobs-secret: $JOBS_TRIGGER_SECRET" "$base/jobs/tick")
+          echo "$body" | jq '.data'
+          if [ "$(echo "$body" | jq -r '.data.ok')" != "true" ]; then
+            echo "::error::A scheduled job failed or the daily health check found a problem. See the output above, or System Alerts in the app."
+            exit 1
+          fi

@@ -7,5 +7,6 @@ import { OverduePaymentsService } from "./overdue-payments.service";
   imports: [NotificationsModule],
   controllers: [FinanceJobsController],
   providers: [OverduePaymentsService],
+  exports: [OverduePaymentsService],
 })
 export class FinanceJobsModule {}

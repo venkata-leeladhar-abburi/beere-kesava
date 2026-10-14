@@ -928,6 +928,12 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "permissions": [],
     "public": true,
     "roles": [],
+    "route": "POST /jobs/tick",
+  },
+  {
+    "permissions": [],
+    "public": true,
+    "roles": [],
     "route": "GET /labels/settings",
   },
   {

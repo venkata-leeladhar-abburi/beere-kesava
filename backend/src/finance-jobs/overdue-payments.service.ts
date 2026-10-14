@@ -1,5 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { Cron, CronExpression } from "@nestjs/schedule";
+import { Injectable } from "@nestjs/common";
 import {
   InvoiceStatus,
   NotificationTargetType,
@@ -13,23 +12,12 @@ const OVERDUE_THRESHOLD_DAYS = 45;
 
 @Injectable()
 export class OverduePaymentsService {
-  private readonly logger = new Logger(OverduePaymentsService.name);
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
   ) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_1AM)
-  async scanOverduePayments() {
-    const result = await this.runScan();
-    this.logger.log(
-      `Day-45 overdue scan: ${result.invoicesFlagged} invoices flagged, ${result.bulkOrdersFlagged} bulk orders flagged`,
-    );
-    return result;
-  }
-
-  /** Exposed separately so it can be triggered manually via an endpoint, not just the cron. */
+  /** Run daily by the job scheduler (src/jobs), or by hand from FinanceJobsController. */
   async runScan() {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - OVERDUE_THRESHOLD_DAYS);

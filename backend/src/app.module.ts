@@ -33,6 +33,7 @@ import { ShopReceiptsModule } from "./shop-receipts/shop-receipts.module";
 import { FactoryLoomsModule } from "./factory-looms/factory-looms.module";
 import { FinanceJobsModule } from "./finance-jobs/finance-jobs.module";
 import { OpsJobsModule } from "./ops-jobs/ops-jobs.module";
+import { JobsModule } from "./jobs/jobs.module";
 import { FinishingModule } from "./finishing/finishing.module";
 import { FirmsModule } from "./firms/firms.module";
 import { IdGeneratorModule } from "./id-generator/id-generator.module";
@@ -132,6 +133,7 @@ import { WhatsAppModule } from "./whatsapp/whatsapp.module";
     VendorBillsModule,
     FinanceJobsModule,
     OpsJobsModule,
+    JobsModule,
     NotificationsModule,
     LabelsModule,
     ScanModule,
