@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import * as ExcelJS from "exceljs";
 import { AuditLogService } from "../audit-log/audit-log.service";
+import { fromPaise, toPaise } from "../common/money.util";
 import { PaginatedResult } from "../common/pagination";
 import { loadImportWorkbook } from "../common/storage/import-workbook";
 import { Prisma, UserRole } from "../generated/prisma/client";
@@ -687,8 +688,10 @@ export class PaymentsService {
       // for them PLUS everything already accepted earlier in this same sheet.
       const owed = owedByWeaver.get(resolvedWeaverId) ?? 0;
       const paidSoFar = runningPaidByWeaver.get(resolvedWeaverId) ?? 0;
-      const remaining = owed - paidSoFar;
-      if (row.amountPaid > remaining) {
+      // Compared in paise (money.util.ts): as floats, paying exactly the
+      // remaining balance could read as a fraction of a paisa too much.
+      const remaining = fromPaise(toPaise(owed) - toPaise(paidSoFar));
+      if (toPaise(row.amountPaid) > toPaise(remaining)) {
         const weaverName = weaverNameById.get(resolvedWeaverId) ?? resolvedWeaverId;
         errors.push({
           row: row.rowNumber,
@@ -696,7 +699,7 @@ export class PaymentsService {
         });
         continue;
       }
-      runningPaidByWeaver.set(resolvedWeaverId, paidSoFar + row.amountPaid);
+      runningPaidByWeaver.set(resolvedWeaverId, fromPaise(toPaise(paidSoFar) + toPaise(row.amountPaid)));
 
       row.data.id = await this.idGenerator.nextFormatted("REFERENCE");
       validRows.push(row.data);

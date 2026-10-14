@@ -5,6 +5,7 @@ import {
   OrderPaymentStatus,
   UserRole,
 } from "../generated/prisma/client";
+import { fromPaise, toPaise } from "../common/money.util";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -54,7 +55,7 @@ export class OverduePaymentsService {
           invoiceNumber: invoice.code,
           customerId: invoice.customerId,
           dueDate: invoice.dueDate,
-          outstanding: Number(invoice.total) - Number(invoice.paid),
+          outstanding: fromPaise(toPaise(invoice.total) - toPaise(invoice.paid)),
         },
       });
     }
@@ -76,7 +77,7 @@ export class OverduePaymentsService {
           bulkOrderRef: order.ref,
           customerId: order.customerId,
           dueDate: order.dueDate,
-          outstanding: Number(order.amountDue) - Number(order.amountPaid),
+          outstanding: fromPaise(toPaise(order.amountDue) - toPaise(order.amountPaid)),
         },
       });
     }

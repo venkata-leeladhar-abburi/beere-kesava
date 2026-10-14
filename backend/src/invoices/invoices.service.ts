@@ -1,5 +1,6 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
+import { fromPaise, toPaise } from "../common/money.util";
 import { PaginatedResult } from "../common/pagination";
 import { CustomerType, InvoiceStatus, Prisma, UserRole } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
@@ -130,17 +131,31 @@ export class InvoicesService {
       throw new BadRequestException(`Invoice ${invoiceId} is already fully paid`);
     }
 
-    const newPaid = Number(invoice.paid) + dto.amount;
-    if (newPaid > Number(invoice.total)) {
+    // In paise: see money.util.ts for the float drift this avoids.
+    const totalPaise = toPaise(invoice.total);
+    const newPaidPaise = toPaise(invoice.paid) + toPaise(dto.amount);
+    if (newPaidPaise > totalPaise) {
       throw new BadRequestException(
         `Payment of ${dto.amount} exceeds the outstanding balance on invoice ${invoiceId}`,
       );
     }
-    const newStatus =
-      newPaid >= Number(invoice.total) ? InvoiceStatus.PAID : InvoiceStatus.PARTIAL;
+    const newPaid = fromPaise(newPaidPaise);
+    const newStatus = newPaidPaise === totalPaise ? InvoiceStatus.PAID : InvoiceStatus.PARTIAL;
 
-    await this.prisma.$transaction([
-      this.prisma.invoicePayment.create({
+    await this.prisma.$transaction(async (tx) => {
+      // Applied only if `paid` is still what was read above. Two accountants
+      // recording against the same invoice at once would otherwise both pass
+      // the balance check and together overpay it.
+      const { count } = await tx.invoice.updateMany({
+        where: { id: invoiceId, paid: invoice.paid },
+        data: { paid: newPaid, status: newStatus },
+      });
+      if (count === 0) {
+        throw new ConflictException(
+          `Invoice ${invoice.code ?? invoiceId} was just updated by someone else. Reload it and try again.`,
+        );
+      }
+      await tx.invoicePayment.create({
         data: {
           invoiceId,
           amount: dto.amount,
@@ -149,12 +164,8 @@ export class InvoicesService {
           firmId: invoiceFirmId ?? dto.firmId,
           recordedById: dto.actorId,
         },
-      }),
-      this.prisma.invoice.update({
-        where: { id: invoiceId },
-        data: { paid: newPaid, status: newStatus },
-      }),
-    ]);
+      });
+    });
 
     await this.auditLog.recordAction({
       actorId: dto.actorId,
@@ -178,7 +189,7 @@ export class InvoicesService {
         amount: dto.amount,
         paid: newPaid,
         total: Number(invoice.total),
-        outstanding: Number(invoice.total) - newPaid,
+        outstanding: fromPaise(totalPaise - newPaidPaise),
       },
     );
 

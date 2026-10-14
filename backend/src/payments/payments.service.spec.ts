@@ -421,6 +421,22 @@ describe("PaymentsService", () => {
       expect(prisma.weaverPayment.createMany).not.toHaveBeenCalled();
     });
 
+    it("accepts paying exactly what is owed when the charges carry paise", async () => {
+      // 100.10 + 200.20 owed sums to 300.29999999999995 as floats, which used
+      // to make an exact ₹300.30 payment "exceed" the balance.
+      prisma.weaver.findMany.mockResolvedValue([{ id: "w-1", code: "WV-001", name: "Ramesh" }]);
+      prisma.qcRecord.findMany.mockResolvedValue([
+        { sareeId: "S-1", weaverId: "w-1", makingCharge: 100.1, deduction: 0, qcDate: new Date("2026-01-01") },
+        { sareeId: "S-2", weaverId: "w-1", makingCharge: 200.2, deduction: 0, qcDate: new Date("2026-01-02") },
+      ]);
+      const buffer = await sheetBuffer(HEADERS, [{ weaverId: "w-1", amountPaid: 300.3 }]);
+
+      const result = await service.importWeaverPaymentsFromExcel(buffer);
+
+      expect(result.created).toBe(1);
+      expect(result.errors).toEqual([]);
+    });
+
     it("counts payments already saved from earlier uploads against the balance", async () => {
       weaverOwed10k();
       prisma.weaverPayment.findMany.mockResolvedValue([{ weaverId: "w-1", amountPaid: 9000 }]);
