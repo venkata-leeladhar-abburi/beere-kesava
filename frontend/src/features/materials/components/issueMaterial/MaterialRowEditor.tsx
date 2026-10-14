@@ -234,8 +234,7 @@ export function MaterialRowEditor({
                     color: T.antiqueGold,
                   }}
                 >
-                  ={" "}
-                  {/* A weight conversion (kg <-> g), reusing the parsed quantity above. */}
+                  = {/* A weight conversion (kg <-> g), reusing the parsed quantity above. */}
                   {(row.warpReshamUnit || "kg") === "kg"
                     ? `${(qtyNum * 1000).toFixed(0)} g`
                     : `${(qtyNum / 1000).toFixed(3)} kg`}

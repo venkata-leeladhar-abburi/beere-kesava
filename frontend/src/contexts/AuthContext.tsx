@@ -112,7 +112,10 @@ function loadState(): AuthState {
 function saveState(state: AuthState) {
   try {
     // Cookie mode never holds a token; the profile alone is persisted.
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(COOKIE_AUTH ? { ...state, token: null } : state));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(COOKIE_AUTH ? { ...state, token: null } : state)
+    );
     if (state.token && !COOKIE_AUTH) {
       localStorage.setItem("token", state.token);
     } else {
