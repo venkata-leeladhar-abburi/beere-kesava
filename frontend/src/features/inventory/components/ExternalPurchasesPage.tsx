@@ -212,50 +212,57 @@ export function ExternalPurchasesPage() {
   };
 
   const handleAddSubmit = (form: FormState, sarees: SareeTag[]) => {
-    addPurchase({
-      supplierId: form.supplierId || undefined,
-      supplier: form.supplier,
-      location: form.location,
-      firmId: form.firmId || undefined,
-      date: form.date || "—",
-      sareeCount: totalPieces(sarees),
-      gstNumber: form.gstNumber,
-      invoiceNumber: form.invoiceNumber,
-      // Calculated from the sarees + discount + GST (server recalculates on save).
-      billAmount: "",
-      discountType: form.discountType,
-      discountValue: Number(form.discountValue) || 0,
-      gstPercent: Number(form.gstPercent) || 0,
-      status: "Pending",
-      notes: form.notes,
-      addedBy: "Admin",
-      invoiceFileName: form.invoiceFileName || undefined,
-      invoiceFileUrl: form.invoiceFileUrl || undefined,
-      sarees,
-    });
-    setFormModal(null);
+    addPurchase(
+      {
+        supplierId: form.supplierId || undefined,
+        supplier: form.supplier,
+        location: form.location,
+        firmId: form.firmId || undefined,
+        date: form.date || "—",
+        sareeCount: totalPieces(sarees),
+        gstNumber: form.gstNumber,
+        invoiceNumber: form.invoiceNumber,
+        // Calculated from the sarees + discount + GST (server recalculates on save).
+        billAmount: "",
+        discountType: form.discountType,
+        discountValue: Number(form.discountValue) || 0,
+        gstPercent: Number(form.gstPercent) || 0,
+        status: "Pending",
+        notes: form.notes,
+        addedBy: "Admin",
+        invoiceFileName: form.invoiceFileName || undefined,
+        invoiceFileUrl: form.invoiceFileUrl || undefined,
+        sarees,
+      },
+      () => setFormModal(null)
+    );
   };
 
   const handleEditSubmit = (id: string, form: FormState, sarees: SareeTag[]) => {
-    updatePurchase(id, {
-      supplierId: form.supplierId || undefined,
-      supplier: form.supplier,
-      location: form.location,
-      firmId: form.firmId || undefined,
-      date: form.date || undefined,
-      sareeCount: totalPieces(sarees),
-      gstNumber: form.gstNumber,
-      invoiceNumber: form.invoiceNumber,
-      discountType: form.discountType,
-      discountValue: Number(form.discountValue) || 0,
-      gstPercent: Number(form.gstPercent) || 0,
-      notes: form.notes,
-      invoiceFileName: form.invoiceFileName || undefined,
-      invoiceFileUrl: form.invoiceFileUrl || undefined,
-      sarees,
-    });
-    setFormModal(null);
-    setDetailRow((d) => (d && d.id === id ? null : d));
+    updatePurchase(
+      id,
+      {
+        supplierId: form.supplierId || undefined,
+        supplier: form.supplier,
+        location: form.location,
+        firmId: form.firmId || undefined,
+        date: form.date || undefined,
+        sareeCount: totalPieces(sarees),
+        gstNumber: form.gstNumber,
+        invoiceNumber: form.invoiceNumber,
+        discountType: form.discountType,
+        discountValue: Number(form.discountValue) || 0,
+        gstPercent: Number(form.gstPercent) || 0,
+        notes: form.notes,
+        invoiceFileName: form.invoiceFileName || undefined,
+        invoiceFileUrl: form.invoiceFileUrl || undefined,
+        sarees,
+      },
+      () => {
+        setFormModal(null);
+        setDetailRow((d) => (d && d.id === id ? null : d));
+      }
+    );
   };
 
   const handleDelete = async (id: string) => {

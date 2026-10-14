@@ -84,7 +84,17 @@ export class SareeCodesService {
       }
     }
     if (candidates.size === 0) return codes;
-    const aliases = await client.sareeCodeAlias.findMany({ where: { oldCode: { in: [...candidates] } } });
+    const found = await client.sareeCodeAlias.findMany({ where: { oldCode: { in: [...candidates] } } });
+    if (found.length === 0) return codes;
+    // A live code always means that line, never an alias: when a re-code
+    // freed a code another purchase still uses, following the alias would
+    // send that purchase's tags to the wrong saree.
+    const live = await client.purchaseSareeLine.findMany({
+      where: { code: { in: found.map((a) => a.oldCode) } },
+      select: { code: true },
+    });
+    const liveCodes = new Set(live.map((l) => l.code));
+    const aliases = found.filter((a) => !liveCodes.has(a.oldCode));
     if (aliases.length === 0) return codes;
     const byOld = new Map(aliases.map((a) => [a.oldCode, a.newCode]));
     return codes.map((c) => {
@@ -139,6 +149,7 @@ export class SareeCodesService {
       await this.rewrite(tx, renames.map((r) => ({ id: r.id, from: tmp(r), to: r.newCode })));
     }
     await this.updateAliases(tx, renames, purchaseIds);
+    await this.assertCodesUnique(tx, purchaseIds);
     // Drop cached resolutions for every code this re-code touched (best effort;
     // the 30s TTL covers a concurrent scan that re-fills before commit).
     await this.redis?.del(
@@ -168,6 +179,38 @@ export class SareeCodesService {
         `This change would re-code sarees to ${clash.code}, which purchase ${clash.purchaseId} already uses. ` +
           `Use a different short name or invoice number.`,
       );
+    }
+  }
+
+  /**
+   * Refuses a purchase whose saree codes another line already has. The form
+   * builds codes as {short name}-{invoice}-{serial} with the serial starting
+   * at 001 on every purchase, so two purchases from one supplier entered
+   * with the same invoice number (or none) would mint identical codes —
+   * identical barcodes for different sarees.
+   */
+  private async assertCodesUnique(tx: Prisma.TransactionClient, purchaseIds: string[] | "all") {
+    const lines = await tx.purchaseSareeLine.findMany({
+      where: purchaseIds === "all" ? {} : { purchaseId: { in: purchaseIds } },
+      select: { id: true, code: true, purchaseId: true },
+    });
+    const seen = new Map<string, { code: string; purchaseId: string }>();
+    for (const l of lines) {
+      const other = seen.get(l.code.toUpperCase());
+      if (other) throw new BadRequestException(duplicateCodeMessage(l.code, other.purchaseId, l.purchaseId));
+      seen.set(l.code.toUpperCase(), l);
+    }
+    if (purchaseIds === "all" || lines.length === 0) return;
+    const clash = await tx.purchaseSareeLine.findFirst({
+      where: {
+        id: { notIn: lines.map((l) => l.id) },
+        OR: lines.map((l) => ({ code: { equals: l.code, mode: "insensitive" as const } })),
+      },
+      select: { code: true, purchaseId: true },
+    });
+    if (clash) {
+      const mine = seen.get(clash.code.toUpperCase())!;
+      throw new BadRequestException(duplicateCodeMessage(clash.code, clash.purchaseId, mine.purchaseId));
     }
   }
 
@@ -205,16 +248,22 @@ export class SareeCodesService {
     renames: RecodeResult[],
     purchaseIds: string[] | "all",
   ) {
-    const live = await tx.purchaseSareeLine.findMany({
+    const own = await tx.purchaseSareeLine.findMany({
       where: purchaseIds === "all" ? {} : { purchaseId: { in: purchaseIds } },
       select: { code: true },
     });
-    const liveCodes = new Set(live.map((l) => l.code));
-    const touched = [...new Set([...renames.map((r) => r.oldCode), ...liveCodes])];
+    const touched = [...new Set([...renames.map((r) => r.oldCode), ...own.map((l) => l.code)])];
     if (touched.length === 0) return;
     const existing = await tx.sareeCodeAlias.findMany({
       where: { OR: [{ newCode: { in: renames.map((r) => r.oldCode) } }, { oldCode: { in: touched } }] },
     });
+    // Live in any purchase, not just these: a re-code that moves one of two
+    // purchases off a shared code leaves the other still using it.
+    const live = await tx.purchaseSareeLine.findMany({
+      where: { code: { in: [...new Set([...touched, ...existing.map((a) => a.oldCode)])] } },
+      select: { code: true },
+    });
+    const liveCodes = new Set(live.map((l) => l.code));
     const { upsert, remove } = mergeAliases(existing, renames, liveCodes);
     if (remove.length > 0) await tx.sareeCodeAlias.deleteMany({ where: { oldCode: { in: remove } } });
     for (const a of upsert) {
@@ -225,4 +274,14 @@ export class SareeCodesService {
       });
     }
   }
+}
+
+function duplicateCodeMessage(code: string, otherPurchaseId: string, purchaseId: string): string {
+  if (otherPurchaseId === purchaseId) {
+    return `Two sarees in this purchase would get the same code ${code}. Check the saree codes and save again.`;
+  }
+  return (
+    `Saree code ${code} is already used by purchase ${otherPurchaseId}, so the tags would clash. ` +
+    `Two purchases from the same supplier can't share an invoice number — give this purchase a different one (e.g. add -2).`
+  );
 }

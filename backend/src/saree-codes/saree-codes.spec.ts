@@ -73,8 +73,13 @@ describe("mergeAliases", () => {
 describe("SareeCodesService.resolveMany", () => {
   const prisma = {
     sareeCodeAlias: {
-      findMany: jest.fn().mockResolvedValue([{ oldCode: "SABO-EXCHNG-001", newCode: "SABO-EXG-001" }]),
+      findMany: jest.fn().mockResolvedValue([
+        { oldCode: "SABO-EXCHNG-001", newCode: "SABO-EXG-001" },
+        { oldCode: "RML-EXOL-001", newCode: "RML-EXOL1-001" },
+      ]),
     },
+    // RML-EXOL-001 still belongs to another purchase's line.
+    purchaseSareeLine: { findMany: jest.fn().mockResolvedValue([{ code: "RML-EXOL-001" }]) },
   };
   const service = new SareeCodesService(prisma as never);
 
@@ -82,6 +87,92 @@ describe("SareeCodesService.resolveMany", () => {
     await expect(
       service.resolveMany(["SABO-EXCHNG-001", "SABO-EXCHNG-001-02", " sabo-exchng-001-01 ", "OTHER-1-001-01"]),
     ).resolves.toEqual(["SABO-EXG-001", "SABO-EXG-001-02", "SABO-EXG-001-01", "OTHER-1-001-01"]);
+  });
+
+  it("ignores an alias whose old code is still a live line", async () => {
+    await expect(service.resolveMany(["RML-EXOL-001-08", "rml-exol-001"])).resolves.toEqual([
+      "RML-EXOL-001-08",
+      "rml-exol-001",
+    ]);
+  });
+});
+
+describe("SareeCodesService.recodePurchases", () => {
+  // Purchase P2 (invoice EXOL1) re-coded off RML-EXOL-001, which purchase P1
+  // still uses — plus duplicate-code checks on what's left.
+  function txWith(lines: { id: string; code: string; purchaseId: string }[]) {
+    const upsert = jest.fn();
+    const deleteMany = jest.fn();
+    const tx = {
+      purchase: { findMany: jest.fn().mockResolvedValue([]) },
+      purchaseSareeLine: {
+        findMany: jest.fn(({ where }: { where: { purchaseId?: { in: string[] }; code?: { in: string[] } } }) =>
+          Promise.resolve(
+            lines.filter((l) =>
+              where.purchaseId ? where.purchaseId.in.includes(l.purchaseId) : where.code ? where.code.in.includes(l.code) : true,
+            ),
+          ),
+        ),
+        findFirst: jest.fn(
+          ({ where }: { where: { id: { notIn: string[] }; code?: { in: string[] }; OR?: { code: { equals: string } }[] } }) =>
+            Promise.resolve(
+              lines.find(
+                (l) =>
+                  !where.id.notIn.includes(l.id) &&
+                  (where.code
+                    ? where.code.in.includes(l.code)
+                    : where.OR!.some((o) => o.code.equals.toUpperCase() === l.code.toUpperCase())),
+              ) ?? null,
+            ),
+        ),
+      },
+      sareeCodeAlias: { findMany: jest.fn().mockResolvedValue([]), upsert, deleteMany },
+    };
+    return { tx, upsert, deleteMany };
+  }
+
+  it("records no alias for an old code another purchase still uses", async () => {
+    const { tx, upsert } = txWith([
+      { id: "a", code: "RML-EXOL-001", purchaseId: "P1" },
+      { id: "b", code: "RML-EXOL1-001", purchaseId: "P2" },
+    ]);
+    const service = new SareeCodesService({} as never);
+    jest.spyOn(service, "planPurchases").mockResolvedValue([
+      { id: "b", oldCode: "RML-EXOL-001", newCode: "RML-EXOL1-001", purchaseId: "P2" },
+    ]);
+    // The rewrite itself is SQL; the lines above already show "b" at its new code.
+    jest.spyOn(service as never, "rewrite").mockResolvedValue(undefined as never);
+    await service.recodePurchases(tx as never, ["P2"]);
+    expect(upsert).not.toHaveBeenCalled();
+  });
+
+  it("refuses a purchase whose codes another purchase already has", async () => {
+    const { tx } = txWith([
+      { id: "a", code: "PSG-EXOL-001", purchaseId: "P1" },
+      { id: "b", code: "PSG-EXOL-001", purchaseId: "P2" },
+    ]);
+    const service = new SareeCodesService({} as never);
+    await expect(service.recodePurchases(tx as never, ["P2"])).rejects.toThrow(
+      "Saree code PSG-EXOL-001 is already used by purchase P1",
+    );
+  });
+
+  it("refuses two lines with the same code inside one purchase", async () => {
+    const { tx } = txWith([
+      { id: "a", code: "PSG-X-001", purchaseId: "P1" },
+      { id: "b", code: "psg-x-001", purchaseId: "P1" },
+    ]);
+    const service = new SareeCodesService({} as never);
+    await expect(service.recodePurchases(tx as never, ["P1"])).rejects.toThrow("Two sarees in this purchase");
+  });
+
+  it("accepts a purchase whose codes are its own", async () => {
+    const { tx } = txWith([
+      { id: "a", code: "PSG-EXOL-001", purchaseId: "P1" },
+      { id: "b", code: "PSG-EXOL1-001", purchaseId: "P2" },
+    ]);
+    const service = new SareeCodesService({} as never);
+    await expect(service.recodePurchases(tx as never, ["P2"])).resolves.toEqual([]);
   });
 });
 

@@ -103,29 +103,33 @@ export function SuppliersPage() {
   };
 
   const handleRaiseRequest = (form: PurchaseFormState, sarees: SareeTag[]) => {
-    addPurchase({
-      supplierId: form.supplierId || undefined,
-      supplier: form.supplier,
-      location: form.location,
-      firmId: form.firmId || undefined,
-      date: form.date || "—",
-      sareeCount: totalPieces(sarees),
-      gstNumber: form.gstNumber,
-      invoiceNumber: form.invoiceNumber,
-      // Calculated from the sarees + discount + GST (server recalculates on save).
-      billAmount: "",
-      discountType: form.discountType,
-      discountValue: Number(form.discountValue) || 0,
-      gstPercent: Number(form.gstPercent) || 0,
-      status: "Pending",
-      notes: form.notes,
-      invoiceFileName: form.invoiceFileName || undefined,
-      invoiceFileUrl: form.invoiceFileUrl || undefined,
-      sarees,
-    });
-    setRequestFor(null);
-    setToast(`External purchase added for ${form.supplier}`);
-    setTimeout(() => setToast(""), 3200);
+    addPurchase(
+      {
+        supplierId: form.supplierId || undefined,
+        supplier: form.supplier,
+        location: form.location,
+        firmId: form.firmId || undefined,
+        date: form.date || "—",
+        sareeCount: totalPieces(sarees),
+        gstNumber: form.gstNumber,
+        invoiceNumber: form.invoiceNumber,
+        // Calculated from the sarees + discount + GST (server recalculates on save).
+        billAmount: "",
+        discountType: form.discountType,
+        discountValue: Number(form.discountValue) || 0,
+        gstPercent: Number(form.gstPercent) || 0,
+        status: "Pending",
+        notes: form.notes,
+        invoiceFileName: form.invoiceFileName || undefined,
+        invoiceFileUrl: form.invoiceFileUrl || undefined,
+        sarees,
+      },
+      () => {
+        setRequestFor(null);
+        setToast(`External purchase added for ${form.supplier}`);
+        setTimeout(() => setToast(""), 3200);
+      }
+    );
   };
   return (
     <div

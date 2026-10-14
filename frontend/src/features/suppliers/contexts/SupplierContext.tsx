@@ -229,8 +229,10 @@ interface SupplierContextValue {
   deleteSupplier: (id: string) => Promise<void>;
   getSupplier: (id: string) => Supplier | undefined;
 
-  addPurchase: (p: Omit<Purchase, "id">) => void;
-  updatePurchase: (id: string, patch: Partial<Purchase>) => void;
+  /** `onSaved` runs only once the server accepts it — a form should stay
+   *  open on a rejected save so nothing typed is lost. */
+  addPurchase: (p: Omit<Purchase, "id">, onSaved?: () => void) => void;
+  updatePurchase: (id: string, patch: Partial<Purchase>, onSaved?: () => void) => void;
   deletePurchase: (id: string) => void;
   /** Full purchase incl. saree photos — `purchases` only carries the "summary" view. */
   getPurchaseDetail: (id: string) => Promise<Purchase>;
@@ -623,9 +625,10 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const deleteSupplier = (id: string) =>
     deleteSupplierMutation.mutateAsync(id).then(() => undefined);
 
-  const addPurchase = (p: Omit<Purchase, "id">) => addPurchaseMutation.mutate(p);
-  const updatePurchase = (id: string, patch: Partial<Purchase>) =>
-    updatePurchaseMutation.mutate({ id, patch });
+  const addPurchase = (p: Omit<Purchase, "id">, onSaved?: () => void) =>
+    addPurchaseMutation.mutate(p, { onSuccess: () => onSaved?.() });
+  const updatePurchase = (id: string, patch: Partial<Purchase>, onSaved?: () => void) =>
+    updatePurchaseMutation.mutate({ id, patch }, { onSuccess: () => onSaved?.() });
   const deletePurchase = (id: string) => deletePurchaseMutation.mutate(id);
   const getPurchaseDetail = async (id: string) =>
     toPurchase(
