@@ -101,7 +101,7 @@ describe("PurchasesService.update — saree lines", () => {
       supplierPayment: { count: jest.fn().mockResolvedValue(0) },
       $transaction: jest.fn().mockImplementation((fn: any) => fn(prisma)),
     };
-    sareeCodes = { recodePurchases: jest.fn().mockResolvedValue([]) };
+    sareeCodes = { recodePurchases: jest.fn().mockResolvedValue([]), assertCodesFree: jest.fn() };
     service = new PurchasesService(prisma, {} as any, sareeCodes);
   });
 
@@ -183,7 +183,7 @@ describe("PurchasesService — supplier must be registered", () => {
       supplier: { findUnique: jest.fn() },
       $transaction: jest.fn().mockImplementation((fn: any) => fn(prisma)),
     };
-    service = new PurchasesService(prisma, {} as any, { recodePurchases: jest.fn().mockResolvedValue([]) } as any);
+    service = new PurchasesService(prisma, {} as any, { recodePurchases: jest.fn().mockResolvedValue([]), assertCodesFree: jest.fn() } as any);
   });
 
   it("refuses a new purchase with only a typed supplier name", async () => {

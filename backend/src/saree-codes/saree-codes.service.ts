@@ -197,7 +197,11 @@ export class SareeCodesService {
     const seen = new Map<string, { code: string; purchaseId: string }>();
     for (const l of lines) {
       const other = seen.get(l.code.toUpperCase());
-      if (other) throw new BadRequestException(duplicateCodeMessage(l.code, other.purchaseId, l.purchaseId));
+      if (other) {
+        throw new BadRequestException(
+          duplicateCodeMessage(l.code, other.purchaseId === l.purchaseId ? null : other.purchaseId),
+        );
+      }
       seen.set(l.code.toUpperCase(), l);
     }
     if (purchaseIds === "all" || lines.length === 0) return;
@@ -208,10 +212,35 @@ export class SareeCodesService {
       },
       select: { code: true, purchaseId: true },
     });
-    if (clash) {
-      const mine = seen.get(clash.code.toUpperCase())!;
-      throw new BadRequestException(duplicateCodeMessage(clash.code, clash.purchaseId, mine.purchaseId));
+    if (clash) throw new BadRequestException(duplicateCodeMessage(clash.code, clash.purchaseId));
+  }
+
+  /**
+   * The same refusal, made before new lines are written: the unique index on
+   * PurchaseSareeLine.code would otherwise turn a clash into a bare server
+   * error. `codes` are the lines about to be inserted; `purchaseId` is the
+   * purchase they join (null for a new one), whose lines in `keptCodes`
+   * stay alongside them.
+   */
+  async assertCodesFree(
+    client: Client,
+    codes: string[],
+    { purchaseId = null, keptCodes = [] }: { purchaseId?: string | null; keptCodes?: string[] } = {},
+  ) {
+    if (codes.length === 0) return;
+    const taken = new Set(keptCodes.map((c) => c.toUpperCase()));
+    for (const code of codes) {
+      if (taken.has(code.toUpperCase())) throw new BadRequestException(duplicateCodeMessage(code, null));
+      taken.add(code.toUpperCase());
     }
+    const clash = await client.purchaseSareeLine.findFirst({
+      where: {
+        OR: codes.map((code) => ({ code: { equals: code, mode: "insensitive" as const } })),
+        ...(purchaseId ? { purchaseId: { not: purchaseId } } : {}),
+      },
+      select: { code: true, purchaseId: true },
+    });
+    if (clash) throw new BadRequestException(duplicateCodeMessage(clash.code, clash.purchaseId));
   }
 
   /** Moves line codes, and every piece code under them, from → to. */
@@ -276,8 +305,9 @@ export class SareeCodesService {
   }
 }
 
-function duplicateCodeMessage(code: string, otherPurchaseId: string, purchaseId: string): string {
-  if (otherPurchaseId === purchaseId) {
+/** `otherPurchaseId` null: the clash is between two lines of the same purchase. */
+function duplicateCodeMessage(code: string, otherPurchaseId: string | null): string {
+  if (otherPurchaseId === null) {
     return `Two sarees in this purchase would get the same code ${code}. Check the saree codes and save again.`;
   }
   return (

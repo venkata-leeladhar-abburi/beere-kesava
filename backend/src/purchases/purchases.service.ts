@@ -200,7 +200,9 @@ export class PurchasesService {
     // loaded; recodePurchases normalises them against what's stored now (a
     // stale cached short name would otherwise mint a mismatched code) and
     // retires any alias that pointed at one of these codes.
+    const lines = dto.sarees.map((l, idx) => lineData(l, idx));
     return this.prisma.$transaction(async (tx) => {
+      await this.sareeCodes.assertCodesFree(tx, lines.map((l) => l.code));
       await tx.purchase.create({
         data: {
           id,
@@ -220,7 +222,7 @@ export class PurchasesService {
           invoiceFileName: dto.invoiceFileName,
           invoiceFileUrl: dto.invoiceFileUrl,
           addedById: dto.addedById,
-          sareeLines: { create: dto.sarees.map((l, idx) => lineData(l, idx)) },
+          sareeLines: { create: lines },
         },
       });
       await this.sareeCodes.recodePurchases(tx, [id]);
@@ -396,8 +398,13 @@ export class PurchasesService {
         )
       : undefined;
 
+    const createdLines = linePlan?.created.map(({ line, idx }) => lineData(line, idx)) ?? [];
     const updated = await this.prisma.$transaction(async (tx) => {
       if (linePlan) {
+        await this.sareeCodes.assertCodesFree(tx, createdLines.map((l) => l.code), {
+          purchaseId: id,
+          keptCodes: linePlan.kept.map((k) => k.existing.code),
+        });
         await this.applyLineChanges(tx, id, linePlan);
       }
       await tx.purchase.update({
@@ -416,9 +423,7 @@ export class PurchasesService {
           notes: dto.notes,
           invoiceFileName: dto.invoiceFileName,
           invoiceFileUrl: dto.invoiceFileUrl,
-          ...(linePlan && linePlan.created.length > 0
-            ? { sareeLines: { create: linePlan.created.map(({ line, idx }) => lineData(line, idx)) } }
-            : {}),
+          ...(createdLines.length > 0 ? { sareeLines: { create: createdLines } } : {}),
         },
       });
       // A changed invoice number or supplier re-codes this purchase's sarees

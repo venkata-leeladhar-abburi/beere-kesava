@@ -1463,7 +1463,10 @@ model PurchaseSareeLine {
   // SareeCodesService changes it, re-coding the line (and every table holding
   // its pieces' ids) when the short name or invoice number is edited, and
   // recording the old code in SareeCodeAlias so printed tags still scan.
-  code             String
+  // Unique: it is the barcode on every piece's tag, so two lines sharing it
+  // would print identical tags for different sarees. (SareeCodesService also
+  // refuses case-only duplicates, which this index can't see.)
+  code             String    @unique
   weight           String?
   // Renamed from the frontend's `date` (which is per-line, defaulting to the
   // purchase date) to avoid confusion with Purchase.date.

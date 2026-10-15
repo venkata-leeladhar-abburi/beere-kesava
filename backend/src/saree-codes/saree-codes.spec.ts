@@ -196,3 +196,35 @@ describe("SareeCodesService.resolve with Redis cache", () => {
     expect(redis.get).not.toHaveBeenCalled();
   });
 });
+
+describe("SareeCodesService.assertCodesFree (before new lines are written)", () => {
+  const service = new SareeCodesService({} as never);
+  const clientFinding = (hit: { code: string; purchaseId: string } | null) => ({
+    purchaseSareeLine: { findFirst: jest.fn().mockResolvedValue(hit) },
+  });
+
+  it("refuses a code another purchase already has", async () => {
+    const client = clientFinding({ code: "PSG-EXOL-001", purchaseId: "P1" });
+    await expect(service.assertCodesFree(client as never, ["PSG-EXOL-001"])).rejects.toThrow(
+      "Saree code PSG-EXOL-001 is already used by purchase P1",
+    );
+  });
+
+  it("refuses two new lines with the same code, or one matching a kept line", async () => {
+    const client = clientFinding(null);
+    await expect(service.assertCodesFree(client as never, ["A-1-001", "a-1-001"])).rejects.toThrow(
+      "Two sarees in this purchase",
+    );
+    await expect(
+      service.assertCodesFree(client as never, ["A-1-002"], { purchaseId: "P2", keptCodes: ["A-1-002"] }),
+    ).rejects.toThrow("Two sarees in this purchase");
+  });
+
+  it("looks only outside the purchase being edited", async () => {
+    const client = clientFinding(null);
+    await service.assertCodesFree(client as never, ["A-1-003"], { purchaseId: "P2", keptCodes: ["A-1-001"] });
+    expect(client.purchaseSareeLine.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ purchaseId: { not: "P2" } }) }),
+    );
+  });
+});
