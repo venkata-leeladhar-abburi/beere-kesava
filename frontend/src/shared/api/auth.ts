@@ -1,4 +1,4 @@
-import { apiClient, isApiError } from "./client";
+import { apiClient, isApiError, SLOW_REQUEST_TIMEOUT_MS } from "./client";
 import { getCurrentFix, type LocationFix } from "../lib/geolocation";
 
 export interface RequestOtpResponse {
@@ -63,11 +63,19 @@ async function withLocationIfRequired<T>(
 export const authApi = {
   requestOtp: (phone: string) =>
     withLocationIfRequired((fix) =>
-      apiClient.post<RequestOtpResponse>("/auth/request-otp", { phone, ...fix })
+      apiClient.post<RequestOtpResponse>(
+        "/auth/request-otp",
+        { phone, ...fix },
+        { timeoutMs: SLOW_REQUEST_TIMEOUT_MS }
+      )
     ),
   verifyOtp: (phone: string, code: string) =>
     withLocationIfRequired((fix) =>
-      apiClient.post<VerifyOtpResponse>("/auth/verify-otp", { phone, code, ...fix })
+      apiClient.post<VerifyOtpResponse>(
+        "/auth/verify-otp",
+        { phone, code, ...fix },
+        { timeoutMs: SLOW_REQUEST_TIMEOUT_MS }
+      )
     ),
   /** Re-issues the token for another portal assigned to the same person. */
   switchRole: (role: string) =>

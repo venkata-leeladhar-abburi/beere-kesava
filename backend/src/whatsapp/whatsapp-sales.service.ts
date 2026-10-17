@@ -107,18 +107,16 @@ export class WhatsAppSalesService {
 
     // Uploaded once and shared by both templates — the customer's receipt and
     // the admin alert are the same bill, and rasterising costs a round trip.
-    const key = await this.storage.upload(file, "documents");
-    const mediaUrl = await this.storage.resolveUrl(key.replace(/^\/uploads\//, ""));
-    const media = { url: mediaUrl, filename: `${billRef}.pdf` };
     // The admin copy names each saree's source (weaver / loom / supplier),
     // which the customer's copy doesn't carry. Falls back to the customer's
-    // copy for an older client that sends only one file.
-    let adminMedia = media;
-    if (adminFile) {
-      const adminKey = await this.storage.upload(adminFile, "documents");
-      const adminUrl = await this.storage.resolveUrl(adminKey.replace(/^\/uploads\//, ""));
-      adminMedia = { url: adminUrl, filename: `${billRef}-admin.pdf` };
-    }
+    // copy for an older client that sends only one file. The two uploads are
+    // independent, so they run side by side rather than one after the other.
+    const [mediaUrl, adminUrl] = await Promise.all([
+      this.uploadDocument(file),
+      adminFile ? this.uploadDocument(adminFile) : Promise.resolve(null),
+    ]);
+    const media = { url: mediaUrl, filename: `${billRef}.pdf` };
+    const adminMedia = adminUrl ? { url: adminUrl, filename: `${billRef}-admin.pdf` } : media;
 
     const customerMessage = await this.sendCustomerCopy({
       customer,
@@ -131,7 +129,15 @@ export class WhatsAppSalesService {
       sentById,
     });
 
-    const adminMessages = await this.sendAdminAlerts({
+    // The admin alerts go out after the response, not before it. Each one is a
+    // separate AiSensy call (up to 15s apiece, sent one at a time — see
+    // sendAdminAlerts), so with a few admins on the feed the counter used to
+    // wait well past the browser's timeout and show "The server took too long
+    // to respond" for a bill that had in fact reached the customer — and the
+    // retry then sent it twice. Every alert still records its own
+    // WhatsAppMessage row, so a failure is as visible as before.
+    const adminNumbers = await this.adminNumbers();
+    void this.sendAdminAlerts(adminNumbers, {
       customerName: customer?.name ?? null,
       billRef,
       date: first.date,
@@ -140,14 +146,22 @@ export class WhatsAppSalesService {
       staffName,
       media: adminMedia,
       sentById,
+    }).catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Bill ${billRef}: admin sale alerts failed: ${message}`);
     });
 
     return {
       billRef,
       mediaUrl,
       customer: customerMessage,
-      admins: adminMessages,
+      adminAlerts: adminNumbers.length,
     };
+  }
+
+  private async uploadDocument(file: Express.Multer.File): Promise<string> {
+    const key = await this.storage.upload(file, "documents");
+    return this.storage.resolveUrl(key.replace(/^\/uploads\//, ""));
   }
 
   private async sendCustomerCopy(args: {
@@ -190,17 +204,19 @@ export class WhatsAppSalesService {
     });
   }
 
-  private async sendAdminAlerts(args: {
-    customerName: string | null;
-    billRef: string;
-    date: Date;
-    total: number;
-    payment: string;
-    staffName: string;
-    media: { url: string; filename: string };
-    sentById?: string;
-  }) {
-    const numbers = await this.adminNumbers();
+  private async sendAdminAlerts(
+    numbers: string[],
+    args: {
+      customerName: string | null;
+      billRef: string;
+      date: Date;
+      total: number;
+      payment: string;
+      staffName: string;
+      media: { url: string; filename: string };
+      sentById?: string;
+    },
+  ) {
     if (numbers.length === 0) {
       this.logger.warn(
         `No ADMIN_WHATSAPP_NUMBERS and no active admin or super admin — no sale alert sent for ${args.billRef}`,

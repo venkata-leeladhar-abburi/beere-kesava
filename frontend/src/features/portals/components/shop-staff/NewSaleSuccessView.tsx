@@ -107,6 +107,18 @@ export function NewSaleSuccessView({
       });
 
       const result = await whatsappApi.sendSaleBill(saleRefs, pdf, billRef, adminPdf);
+
+      // The backend answers 200 with a FAILED row when AiSensy refused or
+      // timed out on the customer's copy. Reporting that as "sent" left the
+      // customer without a bill and nobody aware of it; leave the button up
+      // as the retry instead.
+      if (result.customer?.status === "FAILED") {
+        toast.error(
+          `Couldn't send the bill to ${custName || "the customer"} on WhatsApp — tap the button to try again.`,
+          { id: toastId }
+        );
+        return;
+      }
       setSent(true);
 
       // The customer copy is skipped server-side when no number is on the

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ApiError } from "./client";
+import { ApiError, SLOW_REQUEST_TIMEOUT_MS } from "./client";
 
 const post = vi.fn();
 vi.mock("./client", async () => {
@@ -12,6 +12,7 @@ vi.mock("../lib/geolocation", () => ({ getCurrentFix: () => getCurrentFix() }));
 
 const { authApi } = await import("./auth");
 
+const SLOW = { timeoutMs: SLOW_REQUEST_TIMEOUT_MS };
 const FIX = { latitude: 14.422606, longitude: 77.726799, accuracyMeters: 18.4 };
 const blocked = () =>
   new ApiError(403, "You appear to be about 1.1 km from Dharmavaram factory.", "GEOFENCE_BLOCKED");
@@ -31,7 +32,7 @@ describe("authApi location handling", () => {
 
     expect(getCurrentFix).not.toHaveBeenCalled();
     expect(post).toHaveBeenCalledTimes(1);
-    expect(post).toHaveBeenCalledWith("/auth/request-otp", { phone: "9999999999" });
+    expect(post).toHaveBeenCalledWith("/auth/request-otp", { phone: "9999999999" }, SLOW);
   });
 
   it("asks for a position only once the server says one is needed, then retries", async () => {
@@ -40,10 +41,12 @@ describe("authApi location handling", () => {
 
     await expect(authApi.requestOtp("9999999999")).resolves.toEqual({ success: true });
 
-    expect(post).toHaveBeenNthCalledWith(2, "/auth/request-otp", {
-      phone: "9999999999",
-      ...FIX,
-    });
+    expect(post).toHaveBeenNthCalledWith(
+      2,
+      "/auth/request-otp",
+      { phone: "9999999999", ...FIX },
+      SLOW
+    );
   });
 
   it("sends the code and the position together on the retried verify", async () => {
@@ -52,11 +55,12 @@ describe("authApi location handling", () => {
 
     await authApi.verifyOtp("9999999999", "123456");
 
-    expect(post).toHaveBeenNthCalledWith(2, "/auth/verify-otp", {
-      phone: "9999999999",
-      code: "123456",
-      ...FIX,
-    });
+    expect(post).toHaveBeenNthCalledWith(
+      2,
+      "/auth/verify-otp",
+      { phone: "9999999999", code: "123456", ...FIX },
+      SLOW
+    );
   });
 
   it("checks the location when switching into another portal", async () => {

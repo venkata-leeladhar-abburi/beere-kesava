@@ -1,4 +1,4 @@
-import { apiClient } from "./client";
+import { apiClient, SLOW_REQUEST_TIMEOUT_MS } from "./client";
 
 export interface WhatsAppMessage {
   id: string;
@@ -33,7 +33,9 @@ export const whatsappApi = {
     form.append("saleRefs", JSON.stringify(saleRefs));
     form.append("file", pdf, `${billRef}.pdf`);
     if (adminPdf) form.append("adminFile", adminPdf, `${billRef}-admin.pdf`);
-    return apiClient.postForm<SendSaleBillResult>("/whatsapp/send-sale-bill", form);
+    return apiClient.postForm<SendSaleBillResult>("/whatsapp/send-sale-bill", form, {
+      timeoutMs: SLOW_REQUEST_TIMEOUT_MS,
+    });
   },
 };
 
@@ -42,6 +44,7 @@ export interface SendSaleBillResult {
   mediaUrl: string;
   /** null when the customer has no phone number on file. */
   customer: WhatsAppMessage | null;
-  /** One per admin / super admin mobile and number on ADMIN_WHATSAPP_NUMBERS. */
-  admins: WhatsAppMessage[];
+  /** How many admin alerts were queued. They go out after this response
+   *  (see WhatsAppSalesService), each recording its own WhatsAppMessage row. */
+  adminAlerts: number;
 }

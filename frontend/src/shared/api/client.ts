@@ -13,6 +13,21 @@ const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
  */
 const REQUEST_TIMEOUT_MS = 30_000;
 
+/**
+ * For the few calls a person sits and waits on that can legitimately outlast
+ * REQUEST_TIMEOUT_MS: OTP login and the WhatsApp bill. The backend runs on
+ * Render's free plan, which sleeps when idle and takes 30-60s to wake; the
+ * first request after a quiet spell is held for that whole boot. At 30s the
+ * browser gave up mid-boot and showed "The server took too long to respond",
+ * even though the server was about to answer. Both calls also wait on
+ * AiSensy, which can take several seconds per message.
+ */
+export const SLOW_REQUEST_TIMEOUT_MS = 90_000;
+
+export interface RequestOptions {
+  timeoutMs?: number;
+}
+
 interface ApiSuccessBody<T> {
   success: true;
   statusCode: number;
@@ -202,12 +217,16 @@ function parseErrorBody(body: unknown, status: number): ApiError {
  * gives us for a dead network) into a typed NetworkError, so callers never
  * have to guess whether an unknown error was a connectivity problem.
  */
-async function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs = REQUEST_TIMEOUT_MS
+): Promise<Response> {
   // Wait for a free slot first (see requestQueue.ts) — the timeout and the
   // "still working…" hint only start once the request is actually sent.
   const release = await acquireSlot(isPriorityRequest(url, init.method));
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   const requestId = notifyRequestStarted();
 
   try {
@@ -246,33 +265,41 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return (body as ApiSuccessBody<T>).data;
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetchWithTimeout(`${API_BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...getAuthHeaders(),
-      ...init?.headers,
+async function request<T>(path: string, init?: RequestInit, opts?: RequestOptions): Promise<T> {
+  const res = await fetchWithTimeout(
+    `${API_BASE_URL}${path}`,
+    {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+        ...init?.headers,
+      },
     },
-  });
+    opts?.timeoutMs
+  );
 
   return handleResponse<T>(res);
 }
 
-async function requestForm<T>(path: string, formData: FormData): Promise<T> {
-  const res = await fetchWithTimeout(`${API_BASE_URL}${path}`, {
-    method: "POST",
-    headers: { ...getAuthHeaders() },
-    body: formData,
-  });
+async function requestForm<T>(path: string, formData: FormData, opts?: RequestOptions): Promise<T> {
+  const res = await fetchWithTimeout(
+    `${API_BASE_URL}${path}`,
+    {
+      method: "POST",
+      headers: { ...getAuthHeaders() },
+      body: formData,
+    },
+    opts?.timeoutMs
+  );
 
   return handleResponse<T>(res);
 }
 
 export const apiClient = {
   get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, payload: unknown) =>
-    request<T>(path, { method: "POST", body: JSON.stringify(payload) }),
+  post: <T>(path: string, payload: unknown, opts?: RequestOptions) =>
+    request<T>(path, { method: "POST", body: JSON.stringify(payload) }, opts),
   patch: <T>(path: string, payload: unknown) =>
     request<T>(path, { method: "PATCH", body: JSON.stringify(payload) }),
   // For endpoints that replace a record wholesale rather than merge fields
@@ -280,5 +307,6 @@ export const apiClient = {
   put: <T>(path: string, payload: unknown) =>
     request<T>(path, { method: "PUT", body: JSON.stringify(payload) }),
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
-  postForm: <T>(path: string, formData: FormData) => requestForm<T>(path, formData),
+  postForm: <T>(path: string, formData: FormData, opts?: RequestOptions) =>
+    requestForm<T>(path, formData, opts),
 };
