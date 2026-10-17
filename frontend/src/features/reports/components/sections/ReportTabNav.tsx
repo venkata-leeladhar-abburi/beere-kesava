@@ -16,20 +16,36 @@ import {
   BellRing,
   Wallet,
   ChevronDown,
+  Info,
 } from "lucide-react";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 
 import { T, F } from "../theme";
-import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
-import type { ReportTabKey, ReportTab } from "../types";
-import { PERIODS, type CustomDates, type PeriodKey } from "../period";
+import { Button, Select, SelectItem, Switch } from "../../../../shared/ui/primitives";
+import type { ReportTab } from "../types";
+import {
+  COMPARE_MODES,
+  PERIODS,
+  toISODate,
+  type CompareMode,
+  type CustomDates,
+  type PeriodKey,
+} from "../period";
 import { useReportPeriod } from "../PeriodContext";
+import { Chip } from "../common/compare";
 import { DatePicker } from "../../../../shared/ui/date";
 
-/** Local-date ISO (yyyy-mm-dd) — toISOString() would shift across the UTC boundary. */
-function toISODate(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+/** "2026-10-17" as a local calendar date — `new Date(iso)` would read it as UTC midnight. */
+function parseISODate(iso: string): Date {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y!, (m ?? 1) - 1, d ?? 1);
+}
+
+function customRangeHint(c: CustomDates): string | null {
+  if (!c.from || !c.to) return "Pick both dates — showing all time until then.";
+  if (c.to < c.from) return "The end date is before the start date — showing all time.";
+  return null;
 }
 
 export const REPORT_TABS: ReportTab[] = [
@@ -115,39 +131,30 @@ export const REPORT_TABS: ReportTab[] = [
   },
 ];
 
-// Tabs that show a live snapshot of "right now" — there is nothing dated to
-// filter, so the period selector is disabled rather than silently ignored.
-// "outstanding" is excluded: its items carry a received/batch date, so the
-// period filter narrows today's unsold list down to stock that arrived in
-// that window (still live — it's not a historical snapshot of what was
-// unsold as of a past date).
-const LIVE_ONLY_TABS: ReportTabKey[] = ["overdue", "outstanding-payments"];
-
-export function ReportTabNav({
-  activeTab,
-  setActiveTab,
-  activePeriod,
-  setActivePeriod,
-  custom,
-  setCustom,
-  compareOn,
-  setCompareOn,
-  periodLabel,
-  priorLabel,
-}: {
-  activeTab: ReportTabKey;
-  setActiveTab: (k: ReportTabKey) => void;
-  activePeriod: PeriodKey;
-  setActivePeriod: (p: PeriodKey) => void;
-  custom: CustomDates;
-  setCustom: (c: CustomDates) => void;
-  compareOn: boolean;
-  setCompareOn: (v: boolean) => void;
-  periodLabel: string;
-  priorLabel: string | null;
-}) {
+export function ReportTabNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { exportExcel, canExport } = useReportPeriod();
+  const {
+    activeTab,
+    setActiveTab,
+    isLiveTab,
+    period: activePeriod,
+    setPeriod: setActivePeriod,
+    custom,
+    setCustom,
+    compareOn,
+    setCompareOn,
+    compareMode,
+    setCompareMode,
+    compareActive,
+    compareBlockedReason,
+    compareLabel,
+    priorLabel,
+    label: periodLabel,
+    partial,
+    exportExcel,
+    canExport,
+    exportHint,
+  } = useReportPeriod();
   const activeReportTab = REPORT_TABS.find((t) => t.key === activeTab) ?? REPORT_TABS[0]!;
 
   return (
@@ -449,20 +456,19 @@ export function ReportTabNav({
       {/* ── Filter bar — ivory card (Aligned with page margins) ─────────────────── */}
       <div className="px-4 md:px-7 xl:px-14" style={{ marginBottom: 24 }}>
         <div
+          id="report-filter-bar"
+          className="flex flex-col lg:flex-row lg:items-center gap-4"
           style={{
             background: "#FFFFFF",
             borderRadius: 16,
             border: `1px solid ${T.borderDef}`,
             boxShadow: "0 2px 14px rgba(74,6,27,0.05)",
             padding: "14px 20px",
-            display: "flex",
-            alignItems: "center",
-            gap: 16,
-            flexWrap: "wrap" as const,
+            scrollMarginTop: 140,
           }}
         >
-          {/* Period dropdown */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          {/* Period dropdown + custom dates */}
+          <div className="flex flex-wrap items-center gap-2.5 min-w-0">
             <div
               style={{
                 width: 36,
@@ -473,11 +479,13 @@ export function ReportTabNav({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                flexShrink: 0,
               }}
             >
               <Calendar size={18} color={T.antiqueGold} />
             </div>
             <span
+              id="report-period-label"
               style={{
                 fontFamily: F.ui,
                 fontSize: 14,
@@ -492,9 +500,10 @@ export function ReportTabNav({
               size="sm"
               value={activePeriod}
               onValueChange={(v) => setActivePeriod(v as PeriodKey)}
-              disabled={LIVE_ONLY_TABS.includes(activeTab)}
+              disabled={isLiveTab}
+              aria-labelledby="report-period-label"
               containerClassName="w-auto shrink-0"
-              className="w-[145px] font-semibold text-[13px] rounded-[10px] bg-white border-[rgba(110,15,45,0.18)] shadow-xs"
+              className="w-[150px] font-semibold text-[13px] rounded-[10px] bg-white border-[rgba(110,15,45,0.18)] shadow-xs"
             >
               {PERIODS.map((p) => (
                 <SelectItem key={p} value={p}>
@@ -502,150 +511,148 @@ export function ReportTabNav({
                 </SelectItem>
               ))}
             </Select>
-          </div>
 
-          {activePeriod === "Custom Dates" && !LIVE_ONLY_TABS.includes(activeTab) && (
-            <div
-              style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}
-            >
-              <DatePicker
-                placeholder="Start date"
-                value={custom.from ? new Date(custom.from) : null}
-                onChange={(d) => setCustom({ ...custom, from: d ? toISODate(d) : undefined })}
-              />
-              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>to</span>
-              <DatePicker
-                placeholder="End date"
-                value={custom.to ? new Date(custom.to) : null}
-                onChange={(d) => setCustom({ ...custom, to: d ? toISODate(d) : undefined })}
-              />
-              {(!custom.from || !custom.to) && (
+            {activePeriod === "Custom Dates" && !isLiveTab && (
+              <div className="flex flex-wrap items-center gap-2">
+                <DatePicker
+                  placeholder="Start date"
+                  value={custom.from ? parseISODate(custom.from) : null}
+                  onChange={(d) => setCustom({ ...custom, from: d ? toISODate(d) : undefined })}
+                />
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>to</span>
+                <DatePicker
+                  placeholder="End date"
+                  value={custom.to ? parseISODate(custom.to) : null}
+                  onChange={(d) => setCustom({ ...custom, to: d ? toISODate(d) : undefined })}
+                />
+                {customRangeHint(custom) && (
+                  <span
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 12,
+                      fontStyle: "italic",
+                      color: T.antiqueGold,
+                    }}
+                  >
+                    {customRangeHint(custom)}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {!isLiveTab && activePeriod !== "Custom Dates" && activePeriod !== "All Time" && (
+              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{periodLabel}</span>
+            )}
+
+            {isLiveTab && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <AlertTriangle size={15} color={T.antiqueGold} />
                 <span
                   style={{
                     fontFamily: F.ui,
-                    fontSize: 12,
-                    fontStyle: "italic",
-                    color: T.antiqueGold,
-                  }}
-                >
-                  Pick both dates — showing all time until then.
-                </span>
-              )}
-            </div>
-          )}
-
-          {LIVE_ONLY_TABS.includes(activeTab) && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <AlertTriangle size={15} color={T.antiqueGold} />
-              <span
-                style={{
-                  fontFamily: F.ui,
-                  fontSize: 14,
-                  color: T.antiqueGold,
-                  fontStyle: "italic",
-                }}
-              >
-                Live status — no period filter applies.
-              </span>
-            </div>
-          )}
-
-          {/* Spacer */}
-          <div style={{ flex: 1 }} />
-
-          {/* Compare period toggle */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-            <span
-              style={{
-                fontFamily: F.ui,
-                fontSize: 14,
-                fontWeight: 500,
-                color: T.taupe,
-                whiteSpace: "nowrap" as const,
-              }}
-            >
-              Compare period
-            </span>
-            <div
-              onClick={() => setCompareOn(!compareOn)}
-              role="button"
-              tabIndex={0}
-              aria-label="Toggle compare period"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  (() => setCompareOn(!compareOn))?.();
-                }
-              }}
-              style={{
-                width: 50,
-                height: 28,
-                borderRadius: 14,
-                background: compareOn ? T.royalBurgundy : "rgba(110,15,45,0.12)",
-                cursor: "pointer",
-                position: "relative" as const,
-                transition: "background 0.22s",
-                flexShrink: 0,
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  top: 4,
-                  left: compareOn ? 26 : 4,
-                  width: 20,
-                  height: 20,
-                  borderRadius: "50%",
-                  background: "#fff",
-                  transition: "left 0.22s",
-                  boxShadow: "0 1px 5px rgba(0,0,0,0.25)",
-                }}
-              />
-            </div>
-            {compareOn && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 14,
-                    background: "rgba(110,15,45,0.08)",
-                    color: T.royalBurgundy,
-                    padding: "6px 14px",
-                    borderRadius: 99,
-                    fontWeight: 600,
-                  }}
-                >
-                  {periodLabel}
-                </span>
-                <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>vs</span>
-                <span
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 14,
-                    background: "rgba(200,155,71,0.13)",
+                    fontSize: 13,
                     color: "#8B6018",
-                    padding: "6px 14px",
-                    borderRadius: 99,
-                    fontWeight: 600,
+                    fontStyle: "italic",
                   }}
                 >
-                  {priorLabel ?? "no prior period"}
+                  Live status — the period and comparison don&apos;t apply to this report.
                 </span>
               </div>
             )}
           </div>
 
+          {/* Spacer */}
+          <div className="hidden lg:block" style={{ flex: 1 }} />
+
+          {/* Compare period */}
+          <div
+            className="flex flex-wrap items-center gap-2.5 pt-3 lg:pt-0 border-t lg:border-t-0"
+            style={{ borderColor: T.borderDef }}
+          >
+            <Switch
+              id="report-compare-switch"
+              checked={compareOn && !isLiveTab}
+              onCheckedChange={setCompareOn}
+              disabled={isLiveTab}
+              aria-describedby="report-compare-status"
+            />
+            <label
+              htmlFor="report-compare-switch"
+              style={{
+                fontFamily: F.ui,
+                fontSize: 14,
+                fontWeight: 600,
+                color: isLiveTab ? T.taupe : T.luxuryBrown,
+                whiteSpace: "nowrap" as const,
+                cursor: isLiveTab ? "not-allowed" : "pointer",
+              }}
+            >
+              Compare
+            </label>
+            {compareOn && !isLiveTab && (
+              <Select
+                size="sm"
+                value={compareMode}
+                onValueChange={(v) => setCompareMode(v as CompareMode)}
+                aria-label="Compare with"
+                containerClassName="w-auto shrink-0"
+                className="w-[190px] font-semibold text-[13px] rounded-[10px] bg-white border-[rgba(110,15,45,0.18)] shadow-xs"
+              >
+                {COMPARE_MODES.map((m) => (
+                  <SelectItem key={m.key} value={m.key}>
+                    vs {m.label.toLowerCase()}
+                  </SelectItem>
+                ))}
+              </Select>
+            )}
+            <span id="report-compare-status" className="flex flex-wrap items-center gap-1.5">
+              {compareActive ? (
+                <>
+                  <Chip tone="current">{compareLabel ?? periodLabel}</Chip>
+                  <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>vs</span>
+                  <Chip tone="prior">{priorLabel}</Chip>
+                  {partial && (
+                    <span
+                      title="The current period isn't over yet, so both sides cover the same number of days."
+                      style={{ display: "inline-flex", color: T.taupe, cursor: "help" }}
+                    >
+                      <Info
+                        size={14}
+                        aria-label="Like-for-like: same number of days on both sides"
+                      />
+                    </span>
+                  )}
+                </>
+              ) : compareBlockedReason ? (
+                <span
+                  style={{ fontFamily: F.ui, fontSize: 12, fontStyle: "italic", color: "#8B6018" }}
+                >
+                  {compareBlockedReason}
+                </span>
+              ) : !isLiveTab ? (
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                  See every figure against the previous period
+                </span>
+              ) : null}
+            </span>
+          </div>
+
           <DownloadGate>
             {/* Divider */}
-            <div style={{ width: 1, height: 32, background: T.borderDef, flexShrink: 0 }} />
+            <div
+              className="hidden lg:block"
+              style={{ width: 1, height: 32, background: T.borderDef, flexShrink: 0 }}
+            />
 
-            {/* Download buttons */}
-            <div style={{ display: "flex", gap: 9, flexShrink: 0 }}>
+            {/* Download button */}
+            <div className="flex shrink-0" title={exportHint}>
               <Button
                 variant="primary"
                 iconLeft={Download}
                 onClick={exportExcel}
                 disabled={!canExport}
+                aria-label={exportHint}
+                className="w-full lg:w-auto"
               >
                 Download Excel
               </Button>

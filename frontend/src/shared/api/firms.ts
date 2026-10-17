@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { fetchAllPages } from "./pages";
 
 export interface BackendFirm {
   id: string;
@@ -259,6 +260,17 @@ export const firmsApi = {
   listEntries: (firmId: string, pageSize = 200) =>
     apiClient.get<PaginatedResponse<BackendFinancialEntry>>(
       `/firms/${firmId}/entries?pageSize=${pageSize}`
+    ),
+  /** Every ledger entry for a firm (the server caps a page at 500). Feeds the
+   *  P&L totals, which a single 200-row page silently under-reported. */
+  listAllEntries: (firmId: string) =>
+    fetchAllPages(
+      (page) =>
+        apiClient.get<PaginatedResponse<BackendFinancialEntry>>(
+          `/firms/${firmId}/entries?page=${page}&pageSize=500`
+        ),
+      500,
+      { key: (e) => e.id }
     ),
   addEntry: (firmId: string, payload: CreateFinancialEntryPayload) =>
     apiClient.post<BackendFinancialEntry>(`/firms/${firmId}/entries`, payload),

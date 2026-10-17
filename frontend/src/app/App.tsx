@@ -145,7 +145,19 @@ export default function App() {
       <AuthProvider>
         <SharedContexts>
           <ConfirmProvider>
-            <BrowserRouter>
+            {/*
+              useTransitions={false}: by default React Router wraps every
+              router state update in React.startTransition. Every page here is
+              React.lazy, so a navigation to a not-yet-loaded page suspends
+              inside that transition, and React keeps painting the OLD page
+              (nav highlight included) until the chunk arrives — while the URL
+              has already changed. On a slow connection, or after a deploy
+              invalidates a chunk, the address bar and the screen disagree for
+              seconds or indefinitely. Opting out commits the new location
+              immediately, so the Suspense fallback shows right away and the UI
+              always matches the URL.
+            */}
+            <BrowserRouter useTransitions={false}>
               <ScrollToTop />
               <IdleLogout />
               <SkipLink />

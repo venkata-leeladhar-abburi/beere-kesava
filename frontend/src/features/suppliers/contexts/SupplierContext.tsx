@@ -334,8 +334,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     refetch: refetchPurchases,
   } = useQuery({
     queryKey: PURCHASES_KEY,
-    queryFn: async () =>
-      (await purchasesApi.list(100, 1, undefined, undefined, "summary")).items.map(toPurchase),
+    queryFn: async () => (await purchasesApi.listAll("summary")).map(toPurchase),
     enabled,
   });
   const {

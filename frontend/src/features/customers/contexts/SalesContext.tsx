@@ -33,6 +33,15 @@ const PURCHASE_STATUS: Record<BackendPurchase["status"], PurchaseSummary["status
 
 const SalesContext = createContext<SalesContextValue | null>(null);
 
+// Sales and returns arrive newest first, and a saree can have more than one
+// of each (sold, returned, sold again), so keep the first row seen per saree —
+// the latest. `new Map(rows)` would keep the last, i.e. the oldest.
+function latestBySaree<T extends { sareeId: string }>(rows: readonly T[] = []): Map<string, T> {
+  const map = new Map<string, T>();
+  for (const row of rows) if (!map.has(row.sareeId)) map.set(row.sareeId, row);
+  return map;
+}
+
 const QUERY_KEY = ["sales", "sarees"] as const;
 
 export function SalesProvider({ children }: { children: React.ReactNode }) {
@@ -65,7 +74,9 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
     refetch: refetchSales,
   } = useQuery({
     queryKey: ["backend-sales-list"],
-    queryFn: () => salesApi.list(100),
+    // Every sale, not the first page — the reports count sold and unsold
+    // stock from this, and a 100-row page silently undercounted both.
+    queryFn: () => salesApi.listAll(),
     enabled,
   });
 
@@ -77,7 +88,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
     refetch: refetchReturns,
   } = useQuery({
     queryKey: ["backend-returns-list"],
-    queryFn: () => salesApi.listReturns(100),
+    queryFn: () => salesApi.listAllReturns(),
     enabled,
   });
 
@@ -93,7 +104,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
     refetch: refetchPurchases,
   } = useQuery({
     queryKey: ["backend-purchases-list", "full"],
-    queryFn: () => purchasesApi.list(100, 1, undefined, undefined, "full"),
+    queryFn: () => purchasesApi.listAll("full"),
     enabled,
   });
 
@@ -108,11 +119,11 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
   }, [refetchInventory, refetchSales, refetchReturns, refetchPurchases]);
 
   const externalSarees = useMemo<UnifiedSaree[]>(() => {
-    if (!rawPurchases || rawPurchases.items.length === 0) return [];
-    const salesMap = new Map((rawSales?.items ?? []).map((s) => [s.sareeId, s]));
-    const returnsMap = new Map((rawReturns?.items ?? []).map((r) => [r.sareeId, r]));
+    if (!rawPurchases || rawPurchases.length === 0) return [];
+    const salesMap = latestBySaree(rawSales);
+    const returnsMap = latestBySaree(rawReturns);
 
-    return rawPurchases.items.flatMap((p) => {
+    return rawPurchases.flatMap((p) => {
       const supplier = p.supplier?.name ?? p.supplierName ?? "External Supplier";
       const location =
         p.location ??
@@ -167,8 +178,10 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
             sellPercent,
             finalAmount: computeFinalAmount(price, sellPercent, 1),
             // A piece returned to the supplier is no longer stock at all —
-            // outstanding-stock views should not count it as unsold.
+            // outstanding-stock views should not count it as unsold, and it
+            // is not a customer return either (see isCustomerReturn).
             status: returnedToSupplier ? "returned" : status,
+            returnedToSupplier,
             sale: sale
               ? {
                   saleRef: sale.saleRef,
@@ -192,7 +205,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
                   }),
                   reason: ret.reason ?? "",
                   refundAmount: Number(ret.refundAmount ?? 0),
-                  restocked: true,
+                  restocked: ret.restocked,
                 }
               : null,
             ageDays,
@@ -203,37 +216,54 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
   }, [rawPurchases, rawSales, rawReturns]);
 
   const purchases = useMemo<PurchaseSummary[]>(() => {
-    if (!rawPurchases || rawPurchases.items.length === 0) return SEED_PURCHASE_SUMMARIES;
-    return rawPurchases.items.map((p) => ({
-      id: p.id,
-      supplier: p.supplier?.name ?? p.supplierName ?? "External Supplier",
-      location:
-        p.location ??
-        (p.supplier
-          ? `${p.supplier.city ?? ""}, ${p.supplier.state ?? ""}`.replace(/^, |, $/, "")
-          : ""),
-      date: p.date?.split("T")[0] ?? "",
-      invoiceNumber: p.invoiceNumber ?? "—",
-      gstNumber: p.supplier?.gstCode ?? "—",
-      billAmount: Number(p.billAmount) || 0,
-      paidAmount: p.status === "PAID" ? Number(p.billAmount) || 0 : 0,
-      status: PURCHASE_STATUS[p.status],
-      // Pieces still with us, counted from the lines (same rule as the
-      // External Purchases table) — the stored aggregate is only a fallback.
-      sareeCount: p.sareeLines?.length
-        ? p.sareeLines.reduce(
-            (sum, l) =>
-              sum + Math.max(0, l.quantity - Math.min(l.returnedQuantity ?? 0, l.quantity)),
-            0
-          )
-        : p.sareeCount,
-    }));
+    if (!rawPurchases || rawPurchases.length === 0) return SEED_PURCHASE_SUMMARIES;
+    return rawPurchases.map((p) => {
+      const billAmount = Number(p.billAmount) || 0;
+      // Absent until the backend that sends it is deployed — fall back to the
+      // status alone then, without flagging anything.
+      const hasPaidAmount = p.paidAmount !== undefined;
+      const recordedPaid = hasPaidAmount
+        ? Number(p.paidAmount) || 0
+        : p.status === "PAID"
+          ? billAmount
+          : 0;
+      // Paid is what the supplier payments add up to. Older purchases have no
+      // linked payments and a status typed by hand — for those the PAID label
+      // is the only record, so it still counts, but is flagged as unconfirmed.
+      const paidWithoutRecord =
+        hasPaidAmount && recordedPaid === 0 && p.status === "PAID" && billAmount > 0;
+      return {
+        id: p.id,
+        supplier: p.supplier?.name ?? p.supplierName ?? "External Supplier",
+        location:
+          p.location ??
+          (p.supplier
+            ? `${p.supplier.city ?? ""}, ${p.supplier.state ?? ""}`.replace(/^, |, $/, "")
+            : ""),
+        date: p.date?.split("T")[0] ?? "",
+        invoiceNumber: p.invoiceNumber ?? "—",
+        gstNumber: p.supplier?.gstCode ?? "—",
+        billAmount,
+        paidAmount: paidWithoutRecord ? billAmount : Math.min(recordedPaid, billAmount),
+        status: PURCHASE_STATUS[p.status],
+        paidWithoutRecord,
+        // Pieces still with us, counted from the lines (same rule as the
+        // External Purchases table) — the stored aggregate is only a fallback.
+        sareeCount: p.sareeLines?.length
+          ? p.sareeLines.reduce(
+              (sum, l) =>
+                sum + Math.max(0, l.quantity - Math.min(l.returnedQuantity ?? 0, l.quantity)),
+              0
+            )
+          : p.sareeCount,
+      };
+    });
   }, [rawPurchases]);
 
   const sarees = useMemo<UnifiedSaree[]>(() => {
     if (!rawInventory || rawInventory.length === 0) return externalSarees;
-    const salesMap = new Map((rawSales?.items ?? []).map((s) => [s.sareeId, s]));
-    const returnsMap = new Map((rawReturns?.items ?? []).map((r) => [r.sareeId, r]));
+    const salesMap = latestBySaree(rawSales);
+    const returnsMap = latestBySaree(rawReturns);
 
     return [
       ...rawInventory.map((item): UnifiedSaree => {
@@ -318,7 +348,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
                 }),
                 reason: ret.reason ?? "",
                 refundAmount: Number(ret.refundAmount ?? 0),
-                restocked: true,
+                restocked: ret.restocked,
               }
             : null,
           ageDays,
@@ -359,14 +389,10 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
     [recordReturnMutation]
   );
 
-  // Best-effort: the sales endpoint caps pageSize at 100 (ListSaleQueryDto), so
-  // this covers the most recent 100 sales. It is a UI guard, not the authority —
+  // Every sale on record (rawSales walks every page). It is a UI guard, not the authority —
   // DispatchService.create still rejects a sold saree outright, and that error
   // is surfaced to the operator.
-  const soldSareeIds = useMemo(
-    () => new Set((rawSales?.items ?? []).map((s) => s.sareeId)),
-    [rawSales]
-  );
+  const soldSareeIds = useMemo(() => new Set((rawSales ?? []).map((s) => s.sareeId)), [rawSales]);
 
   const value = useMemo(
     () => ({

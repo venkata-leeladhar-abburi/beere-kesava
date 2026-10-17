@@ -101,6 +101,11 @@ export interface SalesSummaryReport {
   wholesaleTotalSales: number;
   wholesaleTotalQuantity: number;
   wholesaleCount: number;
+  /** Counter sales to wholesale customers — no dispatch or invoice behind
+   *  them. Absent on responses from before these fields. */
+  wholesaleCounterSales?: RetailSaleRow[];
+  wholesaleCounterTotalSales?: number;
+  wholesaleCounterCount?: number;
 }
 
 // Wholesale/retail-only reports — used by the scheduled Retail/Wholesale
@@ -118,9 +123,13 @@ export interface RetailSalesReport {
 
 export interface WholesaleSalesReport {
   wholesaleSales: WholesaleDispatchRow[];
+  wholesaleCounterSales?: RetailSaleRow[];
   totalSales: number;
   totalQuantity: number;
   count: number;
+  counterSalesTotal?: number;
+  counterSalesCount?: number;
+  combinedTotalSales?: number;
   periodStart: string | null;
   periodEnd: string | null;
 }
@@ -321,8 +330,16 @@ export const reportsApi = {
     apiClient.patch<ScheduledReportItem>(`/reports/schedules/${id}`, payload),
   deleteSchedule: (id: string) =>
     apiClient.delete<{ success: boolean }>(`/reports/schedules/${id}`),
-  listHistory: () =>
-    apiClient.get<{ items: ReportDownloadHistoryItem[]; total: number }>("/reports/history"),
+  /** Newest first. With no `take`, every recorded download. */
+  listHistory: (take?: number, skip?: number) => {
+    const q = new URLSearchParams();
+    if (take) q.set("take", String(take));
+    if (skip) q.set("skip", String(skip));
+    const qs = q.toString();
+    return apiClient.get<{ items: ReportDownloadHistoryItem[]; total: number }>(
+      `/reports/history${qs ? `?${qs}` : ""}`
+    );
+  },
   recordDownload: (payload: RecordDownloadPayload) =>
     apiClient.post<ReportDownloadHistoryItem>("/reports/history", payload),
 };

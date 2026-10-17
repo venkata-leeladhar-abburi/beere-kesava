@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Users,
   Scissors,
@@ -18,32 +18,54 @@ import { Button } from "../../../../shared/ui/primitives";
 
 // Wired to real backend: GET /reports/history (ReportDownloadHistory model),
 // recorded via POST /reports/history whenever a report is generated/downloaded.
-import { useQuery } from "@tanstack/react-query";
-import { reportsApi } from "../../../../shared/api/reports";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { reportsApi, type ReportDownloadHistoryItem } from "../../../../shared/api/reports";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
-import { toast } from "sonner";
+import { Pagination } from "../../../../shared/ui/DataPagination";
+import { useReportPeriod } from "../PeriodContext";
+
+const PAGE_SIZE = 8;
+
+/** "October 2026", plus "vs September 2026" when the download carried a comparison. */
+function periodOf(item: ReportDownloadHistoryItem): string | null {
+  const f = (item.filtersUsed ?? {}) as {
+    period?: string;
+    compare?: { priorLabel?: string | null } | null;
+  };
+  if (!f.period) return null;
+  return f.compare?.priorLabel ? `${f.period} vs ${f.compare.priorLabel}` : f.period;
+}
 
 export function DownloadHistorySection() {
   const downloadsAllowed = useDownloadsAllowed();
+  const { downloadAgain } = useReportPeriod();
+  const [page, setPage] = useState(1);
 
+  // Paged on the server: the list grows with every download, and used to be
+  // fetched and rendered in full.
   const {
     data: histRes,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["reports-download-history"],
-    queryFn: () => reportsApi.listHistory(),
+    queryKey: ["reports-download-history", "page", page],
+    queryFn: () => reportsApi.listHistory(PAGE_SIZE, (page - 1) * PAGE_SIZE),
     enabled: downloadsAllowed,
+    placeholderData: keepPreviousData,
   });
   const historyItems = histRes?.items ?? [];
+  const total = histRes?.total ?? 0;
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   if (!downloadsAllowed) return null;
   const dlIconMap: Record<string, React.ReactNode> = {
     "Weaver Payment Report": <Users size={24} color={T.antiqueGold} />,
-    "Production Report": <Scissors size={24} color={T.antiqueGold} />,
-    "Profit & Loss Report": <BarChart3 size={24} color={T.antiqueGold} />,
-    "Customer Dues Report": <UsersRound size={24} color={T.antiqueGold} />,
-    "Overdue Alerts": <BellRing size={24} color={T.antiqueGold} />,
+    "Saree Production Report": <Scissors size={24} color={T.antiqueGold} />,
+    "Profit and Loss Report": <BarChart3 size={24} color={T.antiqueGold} />,
+    "Customer Report": <UsersRound size={24} color={T.antiqueGold} />,
+    "Overdue and Alerts Report": <BellRing size={24} color={T.antiqueGold} />,
+    "Outstanding Stock Report": <Boxes size={24} color={T.antiqueGold} />,
+    "Outstanding Payments Report": <BellRing size={24} color={T.antiqueGold} />,
     "Raw Material Report": <Boxes size={24} color={T.antiqueGold} />,
     "Wholesale Sales Report": <Store size={24} color={T.antiqueGold} />,
     "Retail Sales Report": <Tag size={24} color={T.antiqueGold} />,
@@ -59,7 +81,7 @@ export function DownloadHistorySection() {
         <SectionCard
           icon={Download}
           title="Previously Downloaded Reports"
-          subtitle="All reports that were generated and downloaded. Click Download Again to get any previous report without regenerating it."
+          subtitle={`Every report that was downloaded${total ? ` — ${total} so far` : ""}. Download Again rebuilds the same report for the same dates from today's data.`}
         >
           <div
             className="grid grid-cols-1 md:grid-cols-2"
@@ -182,7 +204,13 @@ export function DownloadHistorySection() {
                             color: T.luxuryBrown,
                           }}
                         >
-                          {new Date(r.downloadedAt).toLocaleDateString("en-IN")}
+                          {new Date(r.downloadedAt).toLocaleString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </div>
                       </div>
                       {r.downloadedBy && (
@@ -218,6 +246,21 @@ export function DownloadHistorySection() {
                       >
                         {r.fileType}
                       </span>
+                      {periodOf(r) && (
+                        <span
+                          style={{
+                            padding: "3px 11px",
+                            borderRadius: 6,
+                            background: "rgba(200,155,71,0.12)",
+                            color: "#8B6018",
+                            fontFamily: F.ui,
+                            fontSize: 12,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {periodOf(r)}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -229,11 +272,10 @@ export function DownloadHistorySection() {
                     fullWidth
                     onClick={() => {
                       const url = resolveAssetUrl(r.downloadUrl);
+                      // Reports are built in the browser, so there is usually
+                      // no stored file — rebuild it for the same report and dates.
                       if (url) window.open(url, "_blank", "noopener");
-                      else
-                        toast.error(
-                          "This report was recorded before file storage was added — regenerate it from the report's own Download button instead."
-                        );
+                      else downloadAgain(r);
                     }}
                   >
                     Download Again
@@ -242,6 +284,20 @@ export function DownloadHistorySection() {
               ))
             )}
           </div>
+          {total > PAGE_SIZE && (
+            <div style={{ marginTop: 16 }}>
+              <Pagination
+                page={page}
+                pageCount={pageCount}
+                total={total}
+                pageSize={PAGE_SIZE}
+                start={(page - 1) * PAGE_SIZE}
+                onPageChange={setPage}
+                itemLabel="downloads"
+                targetId="rep-history"
+              />
+            </div>
+          )}
         </SectionCard>
       </FadeUp>
     </div>

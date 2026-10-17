@@ -1,115 +1,52 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { IndianRupee, TrendingDown, CheckCircle2, Users, BarChart2 } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
-import { useWeaverPayments } from "@/features/weavers";
+import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import { useWeaverPayments, type WeaverPaymentRecord } from "@/features/weavers";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { qcApi } from "../../../../shared/api/qc";
 import { T, F } from "../theme";
 import { FadeUp, SilkSumCard, SectionCard, ReportDLBar } from "../common/primitives";
+import { CompareStrip, metric, pick } from "../common/compare";
+import { TrendChart } from "../common/TrendChart";
 import { ChartCard, ChartBand, TrackBar, BAND } from "@/features/production";
 import { DataTable } from "../../../../shared/ui/data";
-import { semantic } from "../../../../design-system/tokens";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, useDataAccess } from "@/shared/ui/domain";
-import { useReportPeriod, useRegisterExport } from "../PeriodContext";
+import { useReportPeriod, useRegisterExport, usePeriodSplit } from "../PeriodContext";
+import { buildSeries, bucketPhrase } from "../timeSeries";
 
-interface MoneyChartTipPayloadEntry {
-  name?: string;
-  value?: number | string;
-  color?: string;
-  fill?: string;
-  stroke?: string;
-}
+/** When the payment was made — the ISO date, not the display string. */
+const paidOn = (p: WeaverPaymentRecord) => p.paidOn || p.uploadedAt;
 
-function MoneyChartTip({
-  active,
-  payload,
-  label,
-  canSeePayroll,
-}: {
-  active?: boolean;
-  payload?: MoneyChartTipPayloadEntry[];
-  label?: string;
-  canSeePayroll?: boolean;
-}) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div
-      style={{
-        background: "#FFFDF9",
-        border: `1px solid ${T.borderDef}`,
-        borderRadius: 9,
-        padding: "10px 14px",
-        boxShadow: "0 4px 16px rgba(74,6,27,0.12)",
-      }}
-    >
-      {label && (
-        <div
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 12,
-            color: T.taupe,
-            marginBottom: 5,
-            textTransform: "uppercase",
-          }}
-        >
-          {label}
-        </div>
-      )}
-      {payload.map((p) => (
-        <div
-          key={p.name}
-          style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}
-        >
-          <div
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              background: p.color || p.fill || p.stroke,
-            }}
-          />
-          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.name}:</span>
-          <span
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
-              fontWeight: 700,
-              color: T.luxuryBrown,
-            }}
-          >
-            {!canSeePayroll
-              ? "••••"
-              : typeof p.value === "number"
-                ? formatMoney(rupees(p.value))
-                : p.value}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
+function summarise(payments: WeaverPaymentRecord[]) {
+  const deductions = payments.reduce((s, p) => s + (p.deduction ?? 0), 0);
+  const net = payments.reduce((s, p) => s + p.amountPaid, 0);
+  return {
+    weavers: new Set(payments.map((p) => p.weaverId)).size,
+    payments: payments.length,
+    sarees: payments.reduce((s, p) => s + (p.noOfSarees ?? 0), 0),
+    gross: net + deductions,
+    deductions,
+    net,
+  };
 }
 
 export function WeaverPaymentReport() {
   const canSeePayroll = useDataAccess("payroll");
-  const { payments: allPayments } = useWeaverPayments();
-  const { inCurrent } = useReportPeriod();
-  const payments = useMemo(
-    () => allPayments.filter((p) => inCurrent(p.paymentDate || p.uploadedAt)),
-    [allPayments, inCurrent]
-  );
+  const { payments: allPayments, isLoading: paymentsLoading } = useWeaverPayments();
+  const {
+    current,
+    prior,
+    compareActive,
+    label: periodLabel,
+    compareLabel,
+    priorLabel,
+  } = useReportPeriod();
+  const split = usePeriodSplit(allPayments, paidOn);
+  const payments = split.cur;
+  const cur = useMemo(() => summarise(split.cur), [split]);
+  const pri = useMemo(() => (compareActive ? summarise(split.prev) : null), [compareActive, split]);
   const {
     data: weaversRes,
     isLoading: weaversLoading,
@@ -119,35 +56,48 @@ export function WeaverPaymentReport() {
     queryKey: ["reports", "weavers-roster"],
     queryFn: () => weaversApi.list(),
   });
+  // The full QC list (shared with the production tab's cache) — 200 records
+  // was a cap, so later defects never explained a deduction.
   const { data: qcRes } = useQuery({
-    queryKey: ["reports", "qc-deductions"],
-    queryFn: () => qcApi.list(200),
+    queryKey: ["reports", "qc-all"],
+    queryFn: () => qcApi.listAll(),
   });
 
   const weavers = useMemo(() => weaversRes?.items ?? [], [weaversRes]);
-  const qcItems = useMemo(() => qcRes?.items ?? [], [qcRes]);
+  const qcItems = useMemo(() => qcRes ?? [], [qcRes]);
 
-  // Keyed by year+month. The month name alone merged (say) Aug 2025 into
-  // Aug 2026 and ordered the bars by calendar month rather than by time.
-  const weaverPayMonthly = useMemo(() => {
-    const map = new Map<string, { month: string; amt: number }>();
+  const metrics = useMemo(
+    () => [
+      metric("weavers", "Weavers paid", "count", cur.weavers, pri?.weavers),
+      metric("payments", "Payments made", "count", cur.payments, pri?.payments),
+      metric("sarees", "Sarees paid for", "count", cur.sarees, pri?.sarees),
+      metric("gross", "Making charges", "money", cur.gross, pri?.gross, "neutral", "payroll"),
+      metric(
+        "deductions",
+        "Deductions",
+        "money",
+        cur.deductions,
+        pri?.deductions,
+        "down",
+        "payroll"
+      ),
+      metric("net", "Net paid", "money", cur.net, pri?.net, "neutral", "payroll"),
+    ],
+    [cur, pri]
+  );
 
-    for (const p of payments) {
-      const d = new Date(p.paymentDate || p.uploadedAt);
-      if (isNaN(d.getTime())) continue;
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      const label = d
-        .toLocaleString("en-US", { month: "short", year: "2-digit" })
-        .replace(" ", " '");
-      const entry = map.get(key) ?? { month: label, amt: 0 };
-      entry.amt += p.amountPaid + (p.deduction || 0);
-      map.set(key, entry);
-    }
-
-    return Array.from(map.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([, v]) => v);
-  }, [payments]);
+  const chargesSeries = useMemo(
+    () =>
+      buildSeries({
+        current,
+        prior,
+        currentItems: split.cur,
+        priorItems: split.prev,
+        dateOf: paidOn,
+        amountOf: (p) => p.amountPaid + (p.deduction ?? 0),
+      }),
+    [current, prior, split]
+  );
 
   const deductionBreakdown = useMemo(() => {
     let noDeductionCount = 0;
@@ -188,38 +138,46 @@ export function WeaverPaymentReport() {
       if (list) list.push(p);
       else byWeaver.set(p.weaverId, [p]);
     }
-    return weavers.map((w) => {
-      const list = (byWeaver.get(w.id) ?? [])
-        .slice()
-        .sort((a, b) => a.uploadedAt.localeCompare(b.uploadedAt));
-      const latest = list[list.length - 1];
-      const totalSarees = list.reduce((s, p) => s + (p.noOfSarees ?? 0), 0);
-      return {
-        code: w.code,
-        name: w.name,
-        village: w.village ?? "—",
-        totalSarees,
-        // Sarees were summed across every payment while the money columns
-        // showed only the most recent one — the two never added up. Money is
-        // now totalled the same way, with the latest payment's reference
-        // details kept in their own clearly-labelled columns.
-        totalPaid: list.reduce((s, p) => s + p.amountPaid, 0),
-        totalDeduction: list.reduce((s, p) => s + (p.deduction ?? 0), 0),
-        payments: list.length,
-        latest,
-      };
-    });
+    return (
+      weavers
+        .map((w) => {
+          const list = (byWeaver.get(w.id) ?? [])
+            .slice()
+            .sort((a, b) => paidOn(a).localeCompare(paidOn(b)));
+          const latest = list[list.length - 1];
+          const totalSarees = list.reduce((s, p) => s + (p.noOfSarees ?? 0), 0);
+          return {
+            code: w.code,
+            name: w.name,
+            village: w.village ?? "—",
+            totalSarees,
+            // Sarees were summed across every payment while the money columns
+            // showed only the most recent one — the two never added up. Money is
+            // now totalled the same way, with the latest payment's reference
+            // details kept in their own clearly-labelled columns.
+            totalPaid: list.reduce((s, p) => s + p.amountPaid, 0),
+            totalDeduction: list.reduce((s, p) => s + (p.deduction ?? 0), 0),
+            payments: list.length,
+            latest,
+          };
+        })
+        // Paid weavers first, largest amount first; the unpaid follow by name.
+        .sort((a, b) => b.totalPaid - a.totalPaid || a.name.localeCompare(b.name))
+    );
   }, [weavers, payments]);
 
+  // Payroll figures stay out of the file for roles that may not see them.
+  const money = (n: number) => (canSeePayroll ? n : null);
   useRegisterExport(
     useMemo(
       () => ({
         name: "Weaver Payment Report",
+        sheetName: "By Weaver",
         headers: [
           "Weaver ID",
           "Weaver Name",
           "Village",
-          "Sarees Produced",
+          "Sarees Paid For",
           "Payments",
           "Total Paid",
           "Total Deductions",
@@ -227,27 +185,88 @@ export function WeaverPaymentReport() {
           "Latest Batch No.",
           "Latest Payment Date",
         ],
+        columns: [
+          "text",
+          "text",
+          "text",
+          "number",
+          "number",
+          "money",
+          "money",
+          "text",
+          "text",
+          "date",
+        ],
+        totals: true,
         rows: weaverPayRows.map((r) => [
           r.code,
           r.name,
           r.village,
           r.totalSarees,
           r.payments,
-          r.totalPaid,
-          r.totalDeduction,
+          money(r.totalPaid),
+          money(r.totalDeduction),
           r.latest?.utrNumber ?? "",
           r.latest?.batchNo ?? "",
-          r.latest?.paymentDate ?? "",
+          r.latest ? paidOn(r.latest) : null,
         ]),
+        extraSheets: [
+          {
+            name: "Payments",
+            headers: [
+              "Payment Date",
+              "Weaver",
+              "UTR",
+              "Firm",
+              "Batch No.",
+              "Loom",
+              "Sarees",
+              "Making Charges",
+              "Deduction",
+              "Net Paid",
+            ],
+            columns: [
+              "date",
+              "text",
+              "text",
+              "text",
+              "text",
+              "text",
+              "number",
+              "money",
+              "money",
+              "money",
+            ],
+            totals: true,
+            rows: payments
+              .slice()
+              .sort((a, b) => paidOn(b).localeCompare(paidOn(a)))
+              .map((p) => [
+                paidOn(p),
+                p.weaverName,
+                p.utrNumber || "—",
+                p.firmName || "—",
+                p.batchNo ?? "—",
+                p.loomNumber ?? "—",
+                p.noOfSarees ?? null,
+                money(p.amountPaid + (p.deduction ?? 0)),
+                money(p.deduction ?? 0),
+                money(p.amountPaid),
+              ]),
+          },
+        ],
+        metrics: canSeePayroll ? metrics : metrics.filter((m) => m.unit !== "money"),
+        ready: !paymentsLoading && !weaversLoading,
       }),
-      [weaverPayRows]
+      // `money` closes over canSeePayroll only.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [weaverPayRows, payments, metrics, canSeePayroll, paymentsLoading, weaversLoading]
     )
   );
 
-  const paidWeaverIds = new Set(payments.map((p) => p.weaverId));
-  const totalDeductions = payments.reduce((s, p) => s + (p.deduction ?? 0), 0);
-  const totalNetPaid = payments.reduce((s, p) => s + p.amountPaid, 0);
-  const totalMakingCharges = totalNetPaid + totalDeductions;
+  const totalDeductions = cur.deductions;
+  const totalNetPaid = cur.net;
+  const totalMakingCharges = cur.gross;
 
   return (
     <div id="rep-weaver-payments" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
@@ -257,6 +276,7 @@ export function WeaverPaymentReport() {
         subtitle="Complete breakdown of making charges earned, deductions applied, and net amounts paid to every weaver. Download the monthly payment sheet for your records."
       >
         <ReportDLBar />
+        <CompareStrip metrics={metrics} />
 
         <div
           className="grid grid-cols-1 md:grid-cols-2"
@@ -266,70 +286,22 @@ export function WeaverPaymentReport() {
             <ChartBand
               tone="weavers"
               icon={<IndianRupee size={19} color={BAND.weavers.icon} />}
-              title="Total Making Charges Paid Each Month"
-              sub="Monthly breakdown from live payments"
+              title="Making Charges Paid Over Time"
+              sub={`${compareLabel ?? periodLabel} — ${bucketPhrase(chargesSeries.bucket)}`}
             />
             <div
               className="p-5 sm:p-6"
               style={{ display: "flex", flexDirection: "column", flex: 1 }}
             >
-              {weaverPayMonthly.length === 0 ? (
-                <div
-                  style={{
-                    padding: "40px 0",
-                    textAlign: "center" as const,
-                    fontFamily: F.ui,
-                    fontSize: 13,
-                    color: T.taupe,
-                  }}
-                >
-                  No payments recorded yet.
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={weaverPayMonthly}>
-                    <CartesianGrid
-                      key="wp-grid"
-                      strokeDasharray="3 3"
-                      stroke="rgba(110,15,45,0.07)"
-                      vertical={false}
-                    />
-                    <XAxis
-                      key="wp-x"
-                      dataKey="month"
-                      tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      key="wp-y"
-                      tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(v: number) =>
-                        canSeePayroll ? formatMoney(rupees(v)) : "••••"
-                      }
-                      width={55}
-                    />
-                    <Tooltip
-                      key="wp-tip"
-                      content={<MoneyChartTip canSeePayroll={canSeePayroll} />}
-                    />
-                    <Bar key="wp-amt" dataKey="amt" name="Making Charges">
-                      {weaverPayMonthly.map((e, i) => (
-                        <Cell
-                          key={`wp-cell-${e.month}`}
-                          fill={
-                            i === weaverPayMonthly.length - 1
-                              ? semantic.chart.series[0]
-                              : "rgba(154,45,74,0.35)"
-                          }
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
+              <TrendChart
+                points={chargesSeries.points}
+                unit="money"
+                gate="payroll"
+                height={200}
+                currentName={compareLabel ?? periodLabel}
+                priorName={priorLabel}
+                emptyText={paymentsLoading ? "Loading payments…" : `No payments in ${periodLabel}.`}
+              />
             </div>
           </ChartCard>
 
@@ -354,10 +326,10 @@ export function WeaverPaymentReport() {
                     color: T.taupe,
                   }}
                 >
-                  No payments recorded yet.
+                  No payments in {periodLabel}.
                 </div>
               ) : (
-                <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
                   <div style={{ position: "relative", flexShrink: 0 }}>
                     <PieChart width={160} height={160}>
                       <Pie
@@ -461,16 +433,18 @@ export function WeaverPaymentReport() {
           <SilkSumCard
             icon={<Users size={22} color={T.antiqueGold} />}
             label="Total Weavers Paid"
-            value={`${paidWeaverIds.size} of ${weavers.length}`}
-            sub={`${Math.max(weavers.length - paidWeaverIds.size, 0)} with no payments on record`}
+            value={`${cur.weavers} of ${weavers.length}`}
+            sub={`${Math.max(weavers.length - cur.weavers, 0)} with no payment in ${periodLabel}`}
             gid="wpr-w"
+            delta={pick(metrics, "weavers")}
           />
           <SilkSumCard
             icon={<IndianRupee size={22} color={T.antiqueGold} />}
             label="Total Making Charges"
             value={canSeePayroll ? formatMoney(rupees(totalMakingCharges)) : "••••"}
-            sub="Payments in the selected period"
+            sub={`${cur.payments} payment${cur.payments === 1 ? "" : "s"} in ${periodLabel}`}
             gid="wpr-c"
+            delta={pick(metrics, "gross")}
           />
           <SilkSumCard
             icon={<TrendingDown size={22} color={T.antiqueGold} />}
@@ -478,6 +452,7 @@ export function WeaverPaymentReport() {
             value={canSeePayroll ? formatMoney(rupees(totalDeductions)) : "••••"}
             sub="Deducted from making charges"
             gid="wpr-d"
+            delta={pick(metrics, "deductions")}
           />
           <SilkSumCard
             icon={<CheckCircle2 size={22} color={T.antiqueGold} />}
@@ -485,6 +460,7 @@ export function WeaverPaymentReport() {
             value={canSeePayroll ? formatMoney(rupees(totalNetPaid)) : "••••"}
             sub="After all deductions"
             gid="wpr-n"
+            delta={pick(metrics, "net")}
           />
         </div>
 
@@ -549,7 +525,7 @@ export function WeaverPaymentReport() {
                     },
                     {
                       id: "totalSarees",
-                      header: "Sarees Produced",
+                      header: "Sarees Paid For",
                       accessor: (r) => r.totalSarees,
                       cell: (_v, r) => (
                         <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
@@ -667,6 +643,11 @@ export function WeaverPaymentReport() {
                       id: "paymentDate",
                       header: "Latest Payment Date",
                       accessor: (r) => r.latest?.paymentDate,
+                      sortable: true,
+                      sortFn: (a, b) =>
+                        (a.latest ? paidOn(a.latest) : "").localeCompare(
+                          b.latest ? paidOn(b.latest) : ""
+                        ),
                       cell: (_v, r) => (
                         <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
                           {r.latest?.paymentDate ?? "—"}
@@ -680,6 +661,7 @@ export function WeaverPaymentReport() {
                   error={!!weaversError}
                   onRetry={() => void refetchWeavers()}
                   pagination
+                  itemLabel="weavers"
                 />
               </div>
             </div>

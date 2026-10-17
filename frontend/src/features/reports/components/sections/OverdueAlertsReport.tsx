@@ -24,6 +24,7 @@ import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
 import { useRegisterExport } from "../PeriodContext";
+import { metric } from "../common/compare";
 
 function daysBetween(a: Date, b: Date): number {
   return Math.max(0, Math.round((a.getTime() - b.getTime()) / 86400000));
@@ -62,8 +63,9 @@ export function OverdueAlertsReport() {
     isError: bulkOrdersError,
     refetch: refetchBulkOrders,
   } = useQuery({
-    queryKey: ["reports", "bulk-orders"],
-    queryFn: () => bulkOrdersApi.list(),
+    // Every page — the first 100 orders hid later at-risk ones.
+    queryKey: ["reports", "bulk-orders-all"],
+    queryFn: () => bulkOrdersApi.listAll(),
   });
   const {
     data: stockRes,
@@ -201,33 +203,49 @@ export function OverdueAlertsReport() {
         }
       }
     }
-    return Array.from(lateMap.values()).slice(0, 10);
+    // Every late weaver, most overdue first — the table paginates, so there
+    // is no reason to stop at ten and hide the rest.
+    return Array.from(lateMap.values()).sort((a, b) => b.days - a.days);
   }, [batchesRes, weaverMap, now]);
 
-  const overdueCustomers = (invoicesRes?.items ?? [])
-    .filter((inv) => inv.status === "OVERDUE")
-    .map((inv) => ({
-      customer: inv.customer?.name ?? customerNameById.get(inv.customerId) ?? "Unknown Customer",
-      inv: inv.code ?? inv.id,
-      total: Number(inv.total),
-      paid: Number(inv.paid),
-      overdue: Number(inv.total) - Number(inv.paid),
-      dueDate: inv.dueDate ? new Date(inv.dueDate).toLocaleDateString("en-IN") : "—",
-      days: inv.dueDate ? daysBetween(now, new Date(inv.dueDate)) : 0,
-    }));
+  // Memoised: recomputed every render, these fed the export registration a
+  // new array each time, which re-rendered the page in a loop.
+  const overdueCustomers = useMemo(
+    () =>
+      (invoicesRes?.items ?? [])
+        .filter((inv) => inv.status === "OVERDUE")
+        .map((inv) => ({
+          customer:
+            inv.customer?.name ?? customerNameById.get(inv.customerId) ?? "Unknown Customer",
+          inv: inv.code ?? inv.id,
+          total: Number(inv.total),
+          paid: Number(inv.paid),
+          overdue: Number(inv.total) - Number(inv.paid),
+          dueDate: inv.dueDate ? new Date(inv.dueDate).toLocaleDateString("en-IN") : "—",
+          dueIso: inv.dueDate,
+          days: inv.dueDate ? daysBetween(now, new Date(inv.dueDate)) : 0,
+        }))
+        .sort((a, b) => b.days - a.days),
+    [invoicesRes, customerNameById, now]
+  );
 
-  const atRiskOrders = (bulkOrdersRes?.items ?? [])
-    .filter((o) => o.status === "AT_RISK" || o.status === "OVERDUE")
-    .map((o) => ({
-      customer: customerNameById.get(o.customerId) ?? "Unknown Customer",
-      order: o.ref,
-      ordered: o.total,
-      produced: o.done,
-      shortage: o.shortage,
-      deadline: new Date(o.dueDate).toLocaleDateString("en-IN"),
-      daysLeft: daysBetween(new Date(o.dueDate), now),
-      status: o.status === "OVERDUE" ? "Overdue" : "At Risk",
-    }));
+  const atRiskOrders = useMemo(
+    () =>
+      (bulkOrdersRes ?? [])
+        .filter((o) => o.status === "AT_RISK" || o.status === "OVERDUE")
+        .map((o) => ({
+          customer: customerNameById.get(o.customerId) ?? "Unknown Customer",
+          order: o.ref,
+          ordered: o.total,
+          produced: o.done,
+          shortage: o.shortage,
+          deadline: new Date(o.dueDate).toLocaleDateString("en-IN"),
+          dueIso: o.dueDate,
+          daysLeft: daysBetween(new Date(o.dueDate), now),
+          status: o.status === "OVERDUE" ? "Overdue" : "At Risk",
+        })),
+    [bulkOrdersRes, customerNameById, now]
+  );
 
   // Alerts are live status, not a period report — the export mirrors the four
   // alert tables as one flat "what needs action now" sheet.
@@ -270,8 +288,124 @@ export function OverdueAlertsReport() {
             r.deadline,
           ]),
         ],
+        extraSheets: [
+          {
+            name: "Overdue Invoices",
+            headers: [
+              "Customer",
+              "Invoice",
+              "Total",
+              "Paid",
+              "Overdue",
+              "Due Date",
+              "Days Overdue",
+            ],
+            columns: ["text", "text", "money", "money", "money", "date", "figure"],
+            totals: true,
+            rows: overdueCustomers.map((r) => [
+              r.customer,
+              r.inv,
+              r.total,
+              r.paid,
+              r.overdue,
+              r.dueIso,
+              r.days,
+            ]),
+          },
+          {
+            name: "Low Stock",
+            headers: ["Material", "Item", "Current", "Minimum", "Shortage", "Unit", "Vendor"],
+            columns: ["text", "text", "number", "number", "number", "text", "text"],
+            rows: lowStockMaterials.map((r) => [
+              r.type,
+              r.sub,
+              r.current,
+              r.minimum,
+              r.shortage,
+              r.isJari ? "reels" : "kg",
+              r.lastOrder,
+            ]),
+          },
+          {
+            name: "Late Weavers",
+            headers: ["Weaver", "Code", "Batch", "Expected", "Days Late", "Done", "Remaining"],
+            columns: ["text", "text", "text", "text", "figure", "number", "number"],
+            rows: lateWeavers.map((r) => [
+              r.name,
+              r.code,
+              r.batch,
+              r.expected,
+              r.days,
+              r.done,
+              r.remaining,
+            ]),
+          },
+          {
+            name: "Bulk Orders at Risk",
+            headers: [
+              "Customer",
+              "Order",
+              "Ordered",
+              "Produced",
+              "Shortage",
+              "Deadline",
+              "Days Left",
+              "Status",
+            ],
+            columns: ["text", "text", "number", "number", "number", "date", "figure", "text"],
+            rows: atRiskOrders.map((r) => [
+              r.customer,
+              r.order,
+              r.ordered,
+              r.produced,
+              r.shortage,
+              r.dueIso,
+              r.daysLeft,
+              r.status,
+            ]),
+          },
+        ],
+        metrics: [
+          metric(
+            "overdueInvoices",
+            "Overdue invoices",
+            "count",
+            overdueCustomers.length,
+            null,
+            "down"
+          ),
+          metric(
+            "overdueAmount",
+            "Overdue amount",
+            "money",
+            overdueCustomers.reduce((s, r) => s + r.overdue, 0),
+            null,
+            "down"
+          ),
+          metric(
+            "lowStock",
+            "Materials below minimum",
+            "count",
+            lowStockMaterials.length,
+            null,
+            "down"
+          ),
+          metric("lateWeavers", "Late weaver batches", "count", lateWeavers.length, null, "down"),
+          metric("atRisk", "Bulk orders at risk", "count", atRiskOrders.length, null, "down"),
+        ],
+        live: true,
+        ready: !invoicesLoading && !bulkOrdersLoading && !stockLoading && !batchesLoading,
       }),
-      [overdueCustomers, lowStockMaterials, lateWeavers, atRiskOrders]
+      [
+        overdueCustomers,
+        lowStockMaterials,
+        lateWeavers,
+        atRiskOrders,
+        invoicesLoading,
+        bulkOrdersLoading,
+        stockLoading,
+        batchesLoading,
+      ]
     )
   );
 

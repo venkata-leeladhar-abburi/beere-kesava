@@ -23,6 +23,7 @@ import { DrilldownTabs, SareeDetailTable } from "./SareeDetailTable";
 import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { EntityCode } from "@/shared/ui/domain";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 // Sarees actually received on a purchase; the purchase record's own count is per line, not per piece.
 const boughtCount = (p: { sarees: UnifiedSaree[]; sareeCount: number }) =>
@@ -36,6 +37,7 @@ interface SupplierRollup {
   bought: number;
   unsold: number;
   returned: number;
+  supplierReturned: number;
   due: number;
   unsoldValue: number;
 }
@@ -88,6 +90,7 @@ export function ExternalOutstanding({
       )
       .sort((a, b) => b.unsoldSarees.length - a.unsoldSarees.length);
   }, [all, search, ageFilter]);
+  const pag = usePagination(rows, 10);
 
   const bySupplier = useMemo(() => {
     const m = new Map<
@@ -98,6 +101,7 @@ export function ExternalOutstanding({
         bought: number;
         unsold: number;
         returned: number;
+        supplierReturned: number;
         due: number;
         unsoldValue: number;
       }
@@ -111,6 +115,7 @@ export function ExternalOutstanding({
           bought: 0,
           unsold: 0,
           returned: 0,
+          supplierReturned: 0,
           due: 0,
           unsoldValue: 0,
         };
@@ -120,6 +125,7 @@ export function ExternalOutstanding({
       r.bought += boughtCount(p);
       r.unsold += p.unsoldCount;
       r.returned += p.returnedCount;
+      r.supplierReturned += p.supplierReturnedCount;
       r.due += p.dueAmount;
       r.unsoldValue += p.unsoldValue;
     });
@@ -130,15 +136,19 @@ export function ExternalOutstanding({
   const totSold = all.reduce((a, p) => a + p.soldCount, 0);
   const totUnsold = all.reduce((a, p) => a + p.unsoldCount, 0);
   const totReturned = all.reduce((a, p) => a + p.returnedCount, 0);
+  const totSupplierReturned = all.reduce((a, p) => a + p.supplierReturnedCount, 0);
   const totDue = all.reduce((a, p) => a + p.dueAmount, 0);
   const totUnsoldVal = all.reduce((a, p) => a + p.unsoldValue, 0);
+  // Bills counted as paid only because they were marked PAID by hand.
+  const unconfirmedPaid = all.filter((p) => p.paidWithoutRecord);
+  const unconfirmedPaidAmt = unconfirmedPaid.reduce((a, p) => a + p.paidAmount, 0);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <SectionCard
         icon={Truck}
         title="External Purchases — Outstanding by Purchase"
-        subtitle="Every purchase from every supplier, showing the sarees still unsold from that bill, the bill amount still due, and any sarees returned by customers after a retail sale."
+        subtitle="Every purchase from every supplier, showing the sarees still unsold from that bill, the bill amount still due, any sarees returned by customers after a sale, and any sent back to the supplier."
         actions={
           <ExportBtn
             onClick={() =>
@@ -152,11 +162,13 @@ export function ExternalOutstanding({
                   "Purchase Date",
                   "Bill Amount",
                   "Paid",
+                  "Paid Recorded",
                   "Bill Due",
                   "Sarees Bought",
                   "Sold",
                   "Unsold",
-                  "Returned",
+                  "Customer Returns",
+                  "Returned to Supplier",
                   "Unsold Cost",
                   "Unsold Sale Value",
                   "Refund Value",
@@ -170,11 +182,13 @@ export function ExternalOutstanding({
                   p.date,
                   p.billAmount,
                   p.paidAmount,
+                  p.paidWithoutRecord ? "No — marked paid, no payment recorded" : "Yes",
                   p.dueAmount,
                   boughtCount(p),
                   p.soldCount,
                   p.unsoldCount,
                   p.returnedCount,
+                  p.supplierReturnedCount,
                   p.unsoldCost,
                   p.unsoldValue,
                   p.refundValue,
@@ -247,6 +261,7 @@ export function ExternalOutstanding({
             { l: "Sold", v: String(totSold), c: T.green },
             { l: "Outstanding", v: String(totUnsold), c: T.crimson },
             { l: "Customer Returns", v: String(totReturned), c: T.orange },
+            { l: "Returned to Supplier", v: String(totSupplierReturned), c: T.taupe },
             { l: "Bill Amount Due", v: inr(totDue), c: T.royalBurgundy },
             { l: "Unsold Stock Value", v: inr(totUnsoldVal), c: T.green },
           ].map((k) => (
@@ -278,363 +293,412 @@ export function ExternalOutstanding({
           ))}
         </div>
 
+        {unconfirmedPaid.length > 0 && (
+          <div
+            style={{
+              fontFamily: F.ui,
+              fontSize: 13,
+              color: T.taupe,
+              background: "rgba(230,126,34,0.08)",
+              borderRadius: 10,
+              padding: "10px 14px",
+              marginTop: -6,
+              marginBottom: 18,
+            }}
+          >
+            {unconfirmedPaid.length} {unconfirmedPaid.length === 1 ? "bill is" : "bills are"} marked
+            paid with no supplier payment recorded ({inr(unconfirmedPaidAmt)}). Bill Amount Due
+            treats {unconfirmedPaid.length === 1 ? "it" : "them"} as paid — record the payments to
+            confirm.
+          </div>
+        )}
+
         {rows.length === 0 ? (
           <Empty msg="No purchases match the current filters." />
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {rows.map((p) => {
-              const isOpen = open === p.id;
-              return (
-                <div
-                  key={p.id}
-                  style={{
-                    border: `1px solid ${T.borderDef}`,
-                    borderRadius: 18,
-                    background: "#FFFFFF",
-                    overflow: "hidden",
-                    boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setOpen(isOpen ? null : p.id)}
+          <div>
+            <div
+              data-pagination-target
+              style={{ display: "flex", flexDirection: "column", gap: 10 }}
+            >
+              {pag.pageItems.map((p) => {
+                const isOpen = open === p.id;
+                return (
+                  <div
+                    key={p.id}
                     style={{
-                      width: "100%",
-                      padding: "16px 18px",
-                      background: isOpen ? "rgba(110,15,45,0.03)" : "#FFFFFF",
-                      border: "none",
-                      cursor: "pointer",
-                      textAlign: "left",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 14,
+                      border: `1px solid ${T.borderDef}`,
+                      borderRadius: 18,
+                      background: "#FFFFFF",
+                      overflow: "hidden",
+                      boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
                     }}
                   >
-                    {/* Top Header Row: Supplier Name, Badges & Subtitle on left, Chevron on right */}
-                    <div
+                    <button
+                      type="button"
+                      onClick={() => setOpen(isOpen ? null : p.id)}
                       style={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        justifyContent: "space-between",
-                        gap: 12,
                         width: "100%",
+                        padding: "16px 18px",
+                        background: isOpen ? "rgba(110,15,45,0.03)" : "#FFFFFF",
+                        border: "none",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 14,
                       }}
                     >
-                      <div style={{ flex: 1, minWidth: 0 }}>
+                      {/* Top Header Row: Supplier Name, Badges & Subtitle on left, Chevron on right */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          justifyContent: "space-between",
+                          gap: 12,
+                          width: "100%",
+                        }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontFamily: F.display,
+                                fontSize: 17,
+                                fontWeight: 700,
+                                color: T.luxuryBrown,
+                              }}
+                            >
+                              {p.supplier}
+                            </span>
+                            {p.returnedCount > 0 && (
+                              <Pill
+                                label={`${p.returnedCount} customer ${p.returnedCount === 1 ? "return" : "returns"}`}
+                                color={T.crimson}
+                                bg="rgba(192,57,43,0.10)"
+                              />
+                            )}
+                            {p.supplierReturnedCount > 0 && (
+                              <Pill
+                                label={`${p.supplierReturnedCount} sent back to supplier`}
+                                color={T.taupe}
+                                bg="rgba(110,15,45,0.06)"
+                              />
+                            )}
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                              flexWrap: "wrap",
+                              marginTop: 4,
+                            }}
+                          >
+                            <EntityCode type="purchaseOrder" value={p.id} size="sm" />
+                            <span
+                              style={{
+                                fontFamily: F.ui,
+                                fontSize: 13,
+                                color: T.taupe,
+                                wordBreak: "break-all",
+                              }}
+                            >
+                              · {p.invoiceNumber} · {p.date} · {p.location}
+                            </span>
+                          </div>
+                        </div>
                         <div
                           style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: "50%",
+                            background: "rgba(110,15,45,0.06)",
                             display: "flex",
                             alignItems: "center",
-                            gap: 8,
-                            flexWrap: "wrap",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            marginTop: 2,
                           }}
                         >
-                          <span
+                          {isOpen ? (
+                            <ChevronDown size={16} color={T.royalBurgundy} />
+                          ) : (
+                            <ChevronRight size={16} color={T.taupe} />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Horizontal Divider Line */}
+                      <div
+                        style={{ width: "100%", height: 1, background: "rgba(110,15,45,0.08)" }}
+                      />
+
+                      {/* Stat Badges Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full">
+                        <div
+                          style={{
+                            background: "#F6F4EF",
+                            borderRadius: 12,
+                            padding: "10px 12px",
+                            textAlign: "center",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontFamily: "var(--font-mono)",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              color: T.taupe,
+                              letterSpacing: "0.8px",
+                              textTransform: "uppercase",
+                              marginBottom: 4,
+                            }}
+                          >
+                            PURCHASED
+                          </div>
+                          <div
                             style={{
                               fontFamily: F.display,
-                              fontSize: 17,
+                              fontSize: 16,
                               fontWeight: 700,
                               color: T.luxuryBrown,
                             }}
                           >
-                            {p.supplier}
-                          </span>
-                          {p.returnedCount > 0 && (
-                            <Pill
-                              label={`${p.returnedCount} returned`}
-                              color={T.crimson}
-                              bg="rgba(192,57,43,0.10)"
-                            />
-                          )}
+                            {boughtCount(p)}
+                          </div>
                         </div>
                         <div
                           style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 6,
-                            flexWrap: "wrap",
-                            marginTop: 4,
+                            background: "#F6F4EF",
+                            borderRadius: 12,
+                            padding: "10px 12px",
+                            textAlign: "center",
                           }}
                         >
-                          <EntityCode type="purchaseOrder" value={p.id} size="sm" />
-                          <span
-                            style={{
-                              fontFamily: F.ui,
-                              fontSize: 13,
-                              color: T.taupe,
-                              wordBreak: "break-all",
-                            }}
-                          >
-                            · {p.invoiceNumber} · {p.date} · {p.location}
-                          </span>
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: "50%",
-                          background: "rgba(110,15,45,0.06)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                          marginTop: 2,
-                        }}
-                      >
-                        {isOpen ? (
-                          <ChevronDown size={16} color={T.royalBurgundy} />
-                        ) : (
-                          <ChevronRight size={16} color={T.taupe} />
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Horizontal Divider Line */}
-                    <div style={{ width: "100%", height: 1, background: "rgba(110,15,45,0.08)" }} />
-
-                    {/* Stat Badges Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full">
-                      <div
-                        style={{
-                          background: "#F6F4EF",
-                          borderRadius: 12,
-                          padding: "10px 12px",
-                          textAlign: "center",
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontFamily: "var(--font-mono)",
-                            fontSize: 11,
-                            fontWeight: 700,
-                            color: T.taupe,
-                            letterSpacing: "0.8px",
-                            textTransform: "uppercase",
-                            marginBottom: 4,
-                          }}
-                        >
-                          PURCHASED
-                        </div>
-                        <div
-                          style={{
-                            fontFamily: F.display,
-                            fontSize: 16,
-                            fontWeight: 700,
-                            color: T.luxuryBrown,
-                          }}
-                        >
-                          {boughtCount(p)}
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          background: "#F6F4EF",
-                          borderRadius: 12,
-                          padding: "10px 12px",
-                          textAlign: "center",
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontFamily: "var(--font-mono)",
-                            fontSize: 11,
-                            fontWeight: 700,
-                            color: T.taupe,
-                            letterSpacing: "0.8px",
-                            textTransform: "uppercase",
-                            marginBottom: 4,
-                          }}
-                        >
-                          SOLD
-                        </div>
-                        <div
-                          style={{
-                            fontFamily: F.display,
-                            fontSize: 16,
-                            fontWeight: 700,
-                            color: T.green,
-                          }}
-                        >
-                          {p.soldCount}
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          background: "rgba(192,57,43,0.06)",
-                          borderRadius: 12,
-                          padding: "10px 12px",
-                          textAlign: "center",
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontFamily: "var(--font-mono)",
-                            fontSize: 11,
-                            fontWeight: 700,
-                            color: T.crimson,
-                            letterSpacing: "0.8px",
-                            textTransform: "uppercase",
-                            marginBottom: 4,
-                          }}
-                        >
-                          OUTSTANDING
-                        </div>
-                        <div
-                          style={{
-                            fontFamily: F.display,
-                            fontSize: 16,
-                            fontWeight: 700,
-                            color: T.crimson,
-                          }}
-                        >
-                          {p.unsoldCount}
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          background:
-                            p.dueAmount > 0 ? "rgba(230,126,34,0.08)" : "rgba(30,102,64,0.08)",
-                          borderRadius: 12,
-                          padding: "10px 12px",
-                          textAlign: "center",
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontFamily: "var(--font-mono)",
-                            fontSize: 11,
-                            fontWeight: 700,
-                            color: p.dueAmount > 0 ? T.orange : T.green,
-                            letterSpacing: "0.8px",
-                            textTransform: "uppercase",
-                            marginBottom: 4,
-                          }}
-                        >
-                          BILL DUE
-                        </div>
-                        <div
-                          style={{
-                            fontFamily: F.display,
-                            fontSize: 16,
-                            fontWeight: 700,
-                            color: p.dueAmount > 0 ? T.orange : T.green,
-                          }}
-                        >
-                          {inr(p.dueAmount)}
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-
-                  <AnimatePresence initial={false}>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        style={{ overflow: "hidden", background: "#FFFDF9" }}
-                      >
-                        <div
-                          style={{
-                            padding: "10px 18px 18px",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 18,
-                          }}
-                        >
-                          {/* Bill detail */}
                           <div
                             style={{
-                              display: "grid",
-                              gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-                              gap: 10,
+                              fontFamily: "var(--font-mono)",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              color: T.taupe,
+                              letterSpacing: "0.8px",
+                              textTransform: "uppercase",
+                              marginBottom: 4,
                             }}
                           >
-                            {[
-                              { l: "GST Number", v: p.gstNumber },
-                              { l: "Bill Amount", v: inr(p.billAmount) },
-                              { l: "Paid", v: inr(p.paidAmount) },
-                              { l: "Bill Due", v: inr(p.dueAmount) },
-                              { l: "Unsold Cost", v: inr(p.unsoldCost) },
-                              { l: "Unsold Sale Value", v: inr(p.unsoldValue) },
-                            ].map((k) => (
-                              <div
-                                key={k.l}
-                                style={{
-                                  background: T.warmCream,
-                                  borderRadius: 10,
-                                  padding: "10px 13px",
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    fontFamily: F.ui,
-                                    fontSize: 12,
-                                    color: T.taupe,
-                                    textTransform: "uppercase",
-                                    letterSpacing: "0.8px",
-                                    marginBottom: 4,
-                                  }}
-                                >
-                                  {k.l}
-                                </div>
-                                <div
-                                  style={{
-                                    fontFamily: F.ui,
-                                    fontSize: 13,
-                                    fontWeight: 700,
-                                    color: T.luxuryBrown,
-                                  }}
-                                >
-                                  {k.v}
-                                </div>
-                              </div>
-                            ))}
+                            SOLD
                           </div>
+                          <div
+                            style={{
+                              fontFamily: F.display,
+                              fontSize: 16,
+                              fontWeight: 700,
+                              color: T.green,
+                            }}
+                          >
+                            {p.soldCount}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            background: "rgba(192,57,43,0.06)",
+                            borderRadius: 12,
+                            padding: "10px 12px",
+                            textAlign: "center",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontFamily: "var(--font-mono)",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              color: T.crimson,
+                              letterSpacing: "0.8px",
+                              textTransform: "uppercase",
+                              marginBottom: 4,
+                            }}
+                          >
+                            OUTSTANDING
+                          </div>
+                          <div
+                            style={{
+                              fontFamily: F.display,
+                              fontSize: 16,
+                              fontWeight: 700,
+                              color: T.crimson,
+                            }}
+                          >
+                            {p.unsoldCount}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            background:
+                              p.dueAmount > 0 ? "rgba(230,126,34,0.08)" : "rgba(30,102,64,0.08)",
+                            borderRadius: 12,
+                            padding: "10px 12px",
+                            textAlign: "center",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontFamily: "var(--font-mono)",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              color: p.dueAmount > 0 ? T.orange : T.green,
+                              letterSpacing: "0.8px",
+                              textTransform: "uppercase",
+                              marginBottom: 4,
+                            }}
+                          >
+                            BILL DUE
+                          </div>
+                          <div
+                            style={{
+                              fontFamily: F.display,
+                              fontSize: 16,
+                              fontWeight: 700,
+                              color: p.dueAmount > 0 ? T.orange : T.green,
+                            }}
+                          >
+                            {inr(p.dueAmount)}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
 
-                          <DrilldownTabs
-                            produced={p.sarees}
-                            sold={p.sarees.filter(isSold)}
-                            outstanding={p.unsoldSarees}
-                            producedLabel="Purchased"
-                          />
-
-                          {p.returnedSarees.length > 0 && (
-                            <div>
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 7,
-                                  marginBottom: 8,
-                                }}
-                              >
-                                <RotateCcw size={14} color={T.crimson} />
-                                <span
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          style={{ overflow: "hidden", background: "#FFFDF9" }}
+                        >
+                          <div
+                            style={{
+                              padding: "10px 18px 18px",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 18,
+                            }}
+                          >
+                            {/* Bill detail */}
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                                gap: 10,
+                              }}
+                            >
+                              {[
+                                { l: "GST Number", v: p.gstNumber },
+                                { l: "Bill Amount", v: inr(p.billAmount) },
+                                {
+                                  l: "Paid",
+                                  v: p.paidWithoutRecord
+                                    ? `${inr(p.paidAmount)} · marked paid, no payment recorded`
+                                    : inr(p.paidAmount),
+                                },
+                                { l: "Bill Due", v: inr(p.dueAmount) },
+                                { l: "Unsold Cost", v: inr(p.unsoldCost) },
+                                { l: "Unsold Sale Value", v: inr(p.unsoldValue) },
+                              ].map((k) => (
+                                <div
+                                  key={k.l}
                                   style={{
-                                    fontFamily: F.ui,
-                                    fontSize: 12,
-                                    fontWeight: 700,
-                                    color: T.crimson,
-                                    textTransform: "uppercase",
-                                    letterSpacing: "0.9px",
+                                    background: T.warmCream,
+                                    borderRadius: 10,
+                                    padding: "10px 13px",
                                   }}
                                 >
-                                  Customer returns ({p.returnedSarees.length}) · refund{" "}
-                                  {inr(p.refundValue)}
-                                </span>
-                              </div>
-                              <SareeDetailTable sarees={p.returnedSarees} showReturn />
+                                  <div
+                                    style={{
+                                      fontFamily: F.ui,
+                                      fontSize: 12,
+                                      color: T.taupe,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.8px",
+                                      marginBottom: 4,
+                                    }}
+                                  >
+                                    {k.l}
+                                  </div>
+                                  <div
+                                    style={{
+                                      fontFamily: F.ui,
+                                      fontSize: 13,
+                                      fontWeight: 700,
+                                      color: T.luxuryBrown,
+                                    }}
+                                  >
+                                    {k.v}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              );
-            })}
+
+                            <DrilldownTabs
+                              produced={p.sarees}
+                              sold={p.sarees.filter(isSold)}
+                              outstanding={p.unsoldSarees}
+                              producedLabel="Purchased"
+                            />
+
+                            {p.returnedSarees.length > 0 && (
+                              <div>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 7,
+                                    marginBottom: 8,
+                                  }}
+                                >
+                                  <RotateCcw size={14} color={T.crimson} />
+                                  <span
+                                    style={{
+                                      fontFamily: F.ui,
+                                      fontSize: 12,
+                                      fontWeight: 700,
+                                      color: T.crimson,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.9px",
+                                    }}
+                                  >
+                                    Customer returns ({p.returnedSarees.length}) · refund{" "}
+                                    {inr(p.refundValue)}
+                                  </span>
+                                </div>
+                                <SareeDetailTable sarees={p.returnedSarees} showReturn />
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+            <Pagination
+              page={pag.page}
+              pageCount={pag.pageCount}
+              total={pag.total}
+              pageSize={pag.pageSize}
+              start={pag.start}
+              onPageChange={pag.setPage}
+              onPageSizeChange={pag.setPageSize}
+              itemLabel="purchases"
+            />
           </div>
         )}
       </SectionCard>
@@ -909,12 +973,21 @@ const supplierRollupColumns: ColumnDef<SupplierRollup>[] = [
   },
   {
     id: "returned",
-    header: "Returned",
+    header: "Customer Returns",
     priority: 3,
     accessor: (r) => r.returned,
     align: "end",
     sortable: true,
     cell: (_v, r) => <span style={{ ...tdMono, color: T.orange }}>{r.returned}</span>,
+  },
+  {
+    id: "supplierReturned",
+    header: "To Supplier",
+    priority: 3,
+    accessor: (r) => r.supplierReturned,
+    align: "end",
+    sortable: true,
+    cell: (_v, r) => <span style={tdMono}>{r.supplierReturned}</span>,
   },
   {
     id: "unsoldValue",

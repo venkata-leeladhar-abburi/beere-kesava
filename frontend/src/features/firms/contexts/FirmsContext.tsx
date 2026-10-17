@@ -208,7 +208,8 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
     queryFn: async () => {
       const results = await Promise.all(
         backendFirms.map(async (firm) => {
-          const entries = await firmsApi.listEntries(firm.id).then((res) => res.items);
+          // Every page: P&L totals these, and 200 rows per firm was a cap.
+          const entries = await firmsApi.listAllEntries(firm.id);
           return groupEntriesIntoFinancials(firm.id, entries);
         })
       );

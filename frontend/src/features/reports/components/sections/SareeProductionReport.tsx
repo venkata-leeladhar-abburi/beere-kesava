@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from "react";
-import { semantic } from "../../../../design-system/tokens";
 import { useQuery } from "@tanstack/react-query";
 import {
   TrendingUp,
@@ -11,30 +10,14 @@ import {
   Truck,
   IndianRupee,
 } from "lucide-react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
+import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { T, F } from "../theme";
-import {
-  FadeUp,
-  SilkSumCard,
-  SectionCard,
-  ReportDLBar,
-  ChartTip,
-  StatusPill,
-} from "../common/primitives";
+import { FadeUp, SilkSumCard, SectionCard, ReportDLBar, StatusPill } from "../common/primitives";
+import { CompareStrip, metric, pick } from "../common/compare";
+import { TrendChart } from "../common/TrendChart";
 import { ChartCard, ChartBand, TrackBar, BAND } from "@/features/production";
 import { batchesApi } from "../../../../shared/api/batches";
-import { qcApi } from "../../../../shared/api/qc";
+import { qcApi, type BackendQcRecord } from "../../../../shared/api/qc";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { reportsApi } from "../../../../shared/api/reports";
 import { ratesApi } from "../../../../shared/api/rates";
@@ -43,7 +26,9 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, StatusPill as DomainStatusPill } from "@/shared/ui/domain";
 import type { StatusValueOf } from "@/lib/domain/status";
-import { useReportPeriod, useRegisterExport } from "../PeriodContext";
+import { useReportPeriod, useRegisterExport, usePeriodSplit } from "../PeriodContext";
+import { buildSeries, bucketPhrase } from "../timeSeries";
+import { latestVerdicts } from "../reportMath";
 
 // BackendPurchase.status ("PAID" | "PENDING" | "PARTIAL") normalized onto
 // the shared payment taxonomy (lib/domain/status.ts) per
@@ -54,13 +39,38 @@ const PURCHASE_STATUS_KEY: Record<string, StatusValueOf<"payment">> = {
   PENDING: "unpaid",
 };
 
-// Helper: sortable year-aware week key ("2026-W07") plus its short label
-// ("W7"). Keying on the week number alone merged the same week across
-// different years and sorted "W10" before "W2".
-function getWeekParts(d: Date): { key: string; label: string } {
-  const start = new Date(d.getFullYear(), 0, 1);
-  const week = Math.ceil(((d.getTime() - start.getTime()) / 86400000 + start.getDay() + 1) / 7);
-  return { key: `${d.getFullYear()}-W${String(week).padStart(2, "0")}`, label: `W${week}` };
+type Source = "all" | "factory" | "weaver";
+
+const qcMatchesSource = (q: BackendQcRecord, source: Source) =>
+  source === "all" ? true : source === "weaver" ? !!q.weaverId : !!q.factoryLoomId;
+
+function qcSummary(records: BackendQcRecord[]) {
+  const verdicts = latestVerdicts(records);
+  const passed = verdicts.filter((q) => q.result === "PASSED").length;
+  const semi = verdicts.filter((q) => q.result === "SEMI").length;
+  const rejected = verdicts.filter((q) => q.result === "DEFECTIVE").length;
+  const checked = verdicts.length;
+  return {
+    checked,
+    passed,
+    semi,
+    rejected,
+    passRate: checked > 0 ? (passed / checked) * 100 : 0,
+    rejectRate: checked > 0 ? (rejected / checked) * 100 : 0,
+    payable: verdicts.reduce((s, q) => s + Number(q.payable || 0), 0),
+  };
+}
+
+/** The external-purchases list, shared by its table and the report's export. */
+function useExternalPurchases() {
+  return useQuery({
+    queryKey: ["reports", "external-purchases"],
+    // "summary" — this table never shows saree photos, and the full view's
+    // sareeLines carry every purchase's base64 image data (see
+    // ListPurchasesQueryDto.view), which was stalling this request past the
+    // client's 30s timeout as more purchases piled up.
+    queryFn: () => purchasesApi.listAll("summary"),
+  });
 }
 
 // Helper: format date as "DD MMM YYYY"
@@ -70,26 +80,32 @@ function fmtDate(dateStr: string): string {
 }
 
 export function ExternalPurchasesSection() {
-  const {
-    data: purchasesRes,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["reports", "external-purchases"],
-    // "summary" — this table never shows saree photos, and the full view's
-    // sareeLines carry every purchase's base64 image data (see
-    // ListPurchasesQueryDto.view), which was stalling this request past the
-    // client's 30s timeout as more purchases piled up.
-    queryFn: () => purchasesApi.list(100, 1, undefined, undefined, "summary"),
-  });
+  const { data: purchasesRes, isLoading, isError } = useExternalPurchases();
 
-  const { inCurrent } = useReportPeriod();
-  const rows = useMemo(
-    () => (purchasesRes?.items ?? []).filter((r) => inCurrent(r.date)),
-    [purchasesRes, inCurrent]
-  );
+  const { compareActive, label: periodLabel } = useReportPeriod();
+  const split = usePeriodSplit(purchasesRes, (r) => r.date);
+  const rows = split.cur;
   const totalSarees = rows.reduce((s, r) => s + r.sareeCount, 0);
   const totalBill = rows.reduce((s, r) => s + Number(r.billAmount), 0);
+  const priorSarees = split.prev.reduce((s, r) => s + r.sareeCount, 0);
+  const priorBill = split.prev.reduce((s, r) => s + Number(r.billAmount), 0);
+  const sareesDelta = metric(
+    "ext-sarees",
+    "External sarees",
+    "count",
+    totalSarees,
+    compareActive ? priorSarees : null,
+    "neutral"
+  );
+  const billDelta = metric(
+    "ext-bill",
+    "Bill amount",
+    "money",
+    totalBill,
+    compareActive ? priorBill : null,
+    "neutral",
+    "cost"
+  );
 
   const purchaseColumns: ColumnDef<BackendPurchase>[] = [
     {
@@ -195,15 +211,17 @@ export function ExternalPurchasesSection() {
             icon={<Package size={22} color={T.antiqueGold} />}
             label="Total External Sarees Purchased"
             value={`${totalSarees} sarees`}
-            sub="All recorded purchases"
+            sub={`${rows.length} purchase${rows.length === 1 ? "" : "s"} in ${periodLabel}`}
             gid="ep-s"
+            delta={sareesDelta}
           />
           <SilkSumCard
             icon={<IndianRupee size={22} color={T.antiqueGold} />}
             label="Total Bill Amount"
             value={formatMoney(rupees(totalBill))}
-            sub="Across all suppliers"
+            sub={`Across ${new Set(rows.map((r) => r.supplier?.name ?? r.id)).size} suppliers`}
             gid="ep-b"
+            delta={billDelta}
           />
         </div>
 
@@ -224,8 +242,10 @@ export function ExternalPurchasesSection() {
                 getRowId={(r) => r.id}
                 loading={isLoading}
                 error={!!isError}
-                emptyTitle="No external purchases recorded yet."
+                emptyTitle={`No external purchases in ${periodLabel}.`}
                 emptyDescription="Add them from the External Purchases page."
+                pagination
+                itemLabel="purchases"
               />
             </div>
           </div>
@@ -245,7 +265,8 @@ export function SareeProductionReport() {
     data: qcRes,
     isLoading: qcLoading,
     isError: qcError,
-  } = useQuery({ queryKey: ["reports", "qc"], queryFn: () => qcApi.list() });
+    // Every QC record — a single 500-row page silently capped the counts.
+  } = useQuery({ queryKey: ["reports", "qc-all"], queryFn: () => qcApi.listAll() });
   const {
     data: weaversRes,
     isLoading: weaversLoading,
@@ -261,22 +282,29 @@ export function SareeProductionReport() {
   });
   // Saree-type codes on batch rows carry no human name; rates is the roster
   // that maps a code ("KS") to its type ("Kanchi Silk").
-  const { data: ratesRes } = useQuery({
-    queryKey: ["reports", "saree-types"],
-    queryFn: () => ratesApi.list(),
+  const { data: rates } = useQuery({
+    queryKey: ["reports", "saree-types-all"],
+    queryFn: () => ratesApi.listAll(),
   });
+  const { data: purchases } = useExternalPurchases();
 
   const isLoading = batchesLoading || qcLoading || weaversLoading || productionLoading;
   const isError = batchesError || qcError || weaversError || productionError;
 
-  const { inCurrent } = useReportPeriod();
+  const {
+    current,
+    prior,
+    compareActive,
+    label: periodLabel,
+    compareLabel,
+    priorLabel,
+  } = useReportPeriod();
   // The source chips were static <div>s that highlighted the first option and
-  // filtered nothing; they now drive every batch-derived figure below.
-  const [source, setSource] = useState<"all" | "factory" | "weaver">("all");
+  // filtered nothing; they now drive every figure below, QC included.
+  const [source, setSource] = useState<Source>("all");
 
-  // Batches are scoped by the selected period, and their rows by the selected
-  // production source, once — every chart and table below reads these.
-  const scopedBatches = useMemo(() => {
+  // Batch rows filtered by the selected production source, before any period.
+  const sourcedBatches = useMemo(() => {
     const keepRow = (recipientType: string | null | undefined) =>
       source === "all"
         ? true
@@ -284,26 +312,32 @@ export function SareeProductionReport() {
           ? recipientType === "WEAVER"
           : recipientType === "FACTORY_LOOM";
     return (batchesRes?.items ?? [])
-      .filter((b) => inCurrent(b.createdAt))
       .map((b) => ({ ...b, rows: b.rows.filter((r) => keepRow(r.recipientType)) }))
       .filter((b) => b.rows.length > 0);
-  }, [batchesRes, inCurrent, source]);
-
-  const scopedQc = useMemo(
-    () => (qcRes?.items ?? []).filter((q) => inCurrent(q.qcDate)),
-    [qcRes, inCurrent]
+  }, [batchesRes, source]);
+  const sourcedQc = useMemo(
+    () => (qcRes ?? []).filter((q) => qcMatchesSource(q, source)),
+    [qcRes, source]
   );
+
+  // Scoped by the selected period once — every chart and table below reads these.
+  const batchSplit = usePeriodSplit(sourcedBatches, (b) => b.createdAt);
+  const qcSplit = usePeriodSplit(sourcedQc, (q) => q.qcDate);
+  const scopedBatches = batchSplit.cur;
+  const scopedQc = qcSplit.cur;
 
   // Compute per-weaver production table from real batch rows + QC records
   const prodTableRows = useMemo(() => {
     const batches = scopedBatches;
-    const qcBySareeId = new Map(scopedQc.filter((q) => q.sareeId).map((q) => [q.sareeId, q]));
+    // The newest verdict per saree — building the map straight from the
+    // newest-first list let older rework rounds overwrite the final verdict.
+    const qcBySareeId = new Map(latestVerdicts(scopedQc).map((q) => [q.sareeId, q]));
     const weaverNameById = new Map((weaversRes?.items ?? []).map((w) => [w.id, w.name]));
     // Human-facing weaver code ("Ramarao-001") — what the report shows; the
     // UUID is only the grouping key.
     const weaverCodeById = new Map((weaversRes?.items ?? []).map((w) => [w.id, w.code]));
 
-    const typeNameByCode = new Map((ratesRes?.items ?? []).map((r) => [r.code, r.type]));
+    const typeNameByCode = new Map((rates ?? []).map((r) => [r.code, r.type]));
 
     interface Acc {
       batches: Set<string>;
@@ -356,7 +390,7 @@ export function SareeProductionReport() {
         charges: acc.charges,
       }))
       .sort((a, b) => b.produced - a.produced);
-  }, [scopedBatches, scopedQc, weaversRes, ratesRes]);
+  }, [scopedBatches, scopedQc, weaversRes, rates]);
 
   // Compute "Own Factory vs Outsourced" from live batch rows
   const productionSourceData = useMemo(() => {
@@ -380,7 +414,7 @@ export function SareeProductionReport() {
   // Compute "Where Sarees Are Right Now" pipeline stages from batch rows + finishing status
   const prodStageData = useMemo(() => {
     const batches = scopedBatches;
-    const qcItems = scopedQc;
+    const qcItems = latestVerdicts(scopedQc);
     const qcSareeIds = new Set(qcItems.map((q) => q.sareeId).filter(Boolean));
     const qcPassedIds = new Set(
       qcItems
@@ -445,37 +479,6 @@ export function SareeProductionReport() {
     sareeTypes: string;
     charges: number;
   }
-
-  useRegisterExport(
-    useMemo(
-      () => ({
-        name: "Saree Production Report",
-        headers: [
-          "Weaver Code",
-          "Weaver Name",
-          "Batches",
-          "Sarees Produced",
-          "QC Passed",
-          "QC Rejected",
-          "Pass Rate %",
-          "Saree Type / Code",
-          "Making Charges",
-        ],
-        rows: prodTableRows.map((r) => [
-          r.code,
-          r.name,
-          r.batches,
-          r.produced,
-          r.passed,
-          r.rejected,
-          r.passRate,
-          r.sareeTypes,
-          r.charges,
-        ]),
-      }),
-      [prodTableRows]
-    )
-  );
 
   const prodColumns: ColumnDef<ProdTableRow>[] = [
     {
@@ -571,77 +574,192 @@ export function SareeProductionReport() {
     },
   ];
 
-  // Compute weekly production trend from batch createdAt (last 4 weeks vs prior 4 weeks)
-  const prodWeeklyData = useMemo(() => {
-    const batches = scopedBatches;
-
-    // Build map of week key -> { label, count of saree rows assigned }
-    const weekMap = new Map<string, { label: string; count: number }>();
-    for (const batch of batches) {
-      const d = new Date(batch.createdAt);
-      if (isNaN(d.getTime())) continue;
-      const { key, label } = getWeekParts(d);
-      for (const row of batch.rows) {
-        if (row.recipientType) {
-          const entry = weekMap.get(key) ?? { label, count: 0 };
-          entry.count += 1;
-          weekMap.set(key, entry);
-        }
-      }
-    }
-
-    // The chart compares the last 4 weeks against the 4 weeks before them.
-    // Slicing the prior window off the *front* of the same 8-week list meant
-    // that with fewer than 8 recorded weeks the "prior" series repeated the
-    // current one — so the window is taken explicitly and padded with 0.
-    const allKeys = Array.from(weekMap.keys()).sort();
-    const recentFour = allKeys.slice(-4);
-    const priorFour = allKeys.slice(-8, -4);
-    const priorPadded = [...Array(Math.max(0, 4 - priorFour.length)).fill(null), ...priorFour];
-
-    return recentFour.map((key, i) => {
-      const offset = 4 - recentFour.length; // right-align short windows
-      const priorKey = priorPadded[i + offset];
-      return {
-        week: weekMap.get(key)!.label,
-        current: weekMap.get(key)?.count ?? 0,
-        prior: priorKey ? (weekMap.get(priorKey)?.count ?? 0) : 0,
-      };
-    });
-  }, [scopedBatches]);
-
-  // QC donut from production summary (live)
-  // Derived from the QC records in scope rather than the backend's all-time
-  // summary, so this donut answers the period the page is actually showing.
-  const qcDonutData = useMemo(
-    () => [
-      {
-        name: "Passed",
-        value: scopedQc.filter((q) => q.result === "PASSED").length,
-        color: T.green,
-      },
-      {
-        name: "Semi",
-        value: scopedQc.filter((q) => q.result === "SEMI").length,
-        color: T.antiqueGold,
-      },
-      {
-        name: "Rejected",
-        value: scopedQc.filter((q) => q.result === "DEFECTIVE").length,
-        color: T.crimson,
-      },
-    ],
-    [scopedQc]
+  // Sarees assigned over the period, bucketed to its length, with the prior
+  // period lined up alongside when comparing.
+  const assignedRows = useMemo(
+    () => ({
+      cur: scopedBatches.flatMap((b) =>
+        b.rows.filter((r) => r.recipientType).map(() => b.createdAt)
+      ),
+      prev: batchSplit.prev.flatMap((b) =>
+        b.rows.filter((r) => r.recipientType).map(() => b.createdAt)
+      ),
+    }),
+    [scopedBatches, batchSplit.prev]
   );
-  const totalQc = qcDonutData.reduce((s, d) => s + d.value, 0);
-  const passRatePct = totalQc > 0 ? Math.round((qcDonutData[0]!.value / totalQc) * 100) : 0;
+  const prodSeries = useMemo(
+    () =>
+      buildSeries({
+        current,
+        prior,
+        currentItems: assignedRows.cur,
+        priorItems: assignedRows.prev,
+        dateOf: (d) => d,
+      }),
+    [current, prior, assignedRows]
+  );
+
+  // Derived from the QC records in scope rather than the backend's all-time
+  // summary, so this donut answers the period (and source) the page shows.
+  const qcCur = useMemo(() => qcSummary(scopedQc), [scopedQc]);
+  const qcPri = useMemo(
+    () => (compareActive ? qcSummary(qcSplit.prev) : null),
+    [compareActive, qcSplit.prev]
+  );
+  const qcDonutData = [
+    { name: "Passed", value: qcCur.passed, color: T.green },
+    { name: "Semi", value: qcCur.semi, color: T.antiqueGold },
+    { name: "Rejected", value: qcCur.rejected, color: T.crimson },
+  ];
+  const totalQc = qcCur.checked;
+  const passRatePct = Math.round(qcCur.passRate);
   const dispatchedCount = production?.finishingByStatus?.["DISPATCHED"] ?? 0;
   // Counted from the batches in scope. `production.totalSareesProduced` is an
   // all-time backend figure and would ignore both the period and the source
   // filter that every other number on this tab now respects.
-  const scopedProduced = useMemo(
-    () => scopedBatches.reduce((sum, b) => sum + b.rows.filter((r) => r.recipientType).length, 0),
-    [scopedBatches]
+  const scopedProduced = assignedRows.cur.length;
+
+  const metrics = useMemo(
+    () => [
+      metric(
+        "produced",
+        "Sarees assigned",
+        "count",
+        scopedProduced,
+        compareActive ? assignedRows.prev.length : null
+      ),
+      metric(
+        "batches",
+        "Batches",
+        "count",
+        scopedBatches.length,
+        compareActive ? batchSplit.prev.length : null
+      ),
+      metric("checked", "Sarees quality-checked", "count", qcCur.checked, qcPri?.checked),
+      metric("passed", "Passed QC", "count", qcCur.passed, qcPri?.passed),
+      metric("semi", "Semi (rework)", "count", qcCur.semi, qcPri?.semi, "down"),
+      metric("rejected", "Rejected at QC", "count", qcCur.rejected, qcPri?.rejected, "down"),
+      metric("passRate", "Pass rate", "percent", qcCur.passRate, qcPri?.passRate),
+      metric(
+        "payable",
+        "Making charges payable",
+        "money",
+        qcCur.payable,
+        qcPri?.payable,
+        "neutral",
+        "payroll"
+      ),
+    ],
+    [
+      scopedProduced,
+      assignedRows.prev.length,
+      scopedBatches.length,
+      batchSplit.prev.length,
+      qcCur,
+      qcPri,
+      compareActive,
+    ]
+  );
+
+  const purchaseRows = usePeriodSplit(purchases, (r) => r.date).cur;
+  const weaverNameById = useMemo(
+    () => new Map((weaversRes?.items ?? []).map((w) => [w.id, `${w.name} (${w.code})`])),
+    [weaversRes]
+  );
+
+  useRegisterExport(
+    useMemo(
+      () => ({
+        name: "Saree Production Report",
+        sheetName: "By Weaver",
+        headers: [
+          "Weaver Code",
+          "Weaver Name",
+          "Batches",
+          "Sarees Produced",
+          "QC Passed",
+          "QC Rejected",
+          "Pass Rate %",
+          "Saree Type / Code",
+          "Making Charges",
+        ],
+        columns: [
+          "text",
+          "text",
+          "number",
+          "number",
+          "number",
+          "number",
+          "percent",
+          "text",
+          "money",
+        ],
+        totals: true,
+        rows: prodTableRows.map((r) => [
+          r.code,
+          r.name,
+          r.batches,
+          r.produced,
+          r.passed,
+          r.rejected,
+          r.passRate,
+          r.sareeTypes,
+          r.charges,
+        ]),
+        extraSheets: [
+          {
+            name: "QC Results",
+            headers: [
+              "Saree ID",
+              "QC Date",
+              "Result",
+              "Weaver / Loom",
+              "Batch",
+              "Defects",
+              "Making Charge",
+              "Deduction",
+              "Payable",
+            ],
+            columns: ["text", "date", "text", "text", "text", "text", "money", "money", "money"],
+            totals: true,
+            rows: latestVerdicts(scopedQc)
+              .sort((a, b) => b.qcDate.localeCompare(a.qcDate))
+              .map((q) => [
+                q.sareeId,
+                q.qcDate,
+                q.result === "DEFECTIVE" ? "Rejected" : q.result === "SEMI" ? "Semi" : "Passed",
+                q.weaverId
+                  ? (weaverNameById.get(q.weaverId) ?? "Weaver")
+                  : q.factoryLoomId
+                    ? "Factory loom"
+                    : "—",
+                q.batchId ?? "—",
+                q.defects.join(", "),
+                Number(q.makingCharge || 0),
+                Number(q.deduction || 0),
+                Number(q.payable || 0),
+              ]),
+          },
+          {
+            name: "External Purchases",
+            headers: ["Supplier", "Invoice", "Date", "Sarees", "Bill Amount", "Status"],
+            columns: ["text", "text", "date", "number", "money", "text"],
+            totals: true,
+            rows: purchaseRows.map((p) => [
+              p.supplier?.name ?? "—",
+              p.invoiceNumber || "—",
+              p.date,
+              p.sareeCount,
+              Number(p.billAmount),
+              p.status === "PAID" ? "Paid" : p.status === "PARTIAL" ? "Partially paid" : "Pending",
+            ]),
+          },
+        ],
+        metrics,
+        ready: !isLoading,
+      }),
+      [prodTableRows, scopedQc, weaverNameById, purchaseRows, metrics, isLoading]
+    )
   );
 
   return (
@@ -652,6 +770,7 @@ export function SareeProductionReport() {
         subtitle="Track how many sarees were produced, which weavers produced them, which saree types were made, and how many passed or failed quality check."
       >
         <ReportDLBar />
+        <CompareStrip metrics={metrics} />
 
         <div
           className="flex flex-wrap gap-2.5 mb-6"
@@ -694,95 +813,27 @@ export function SareeProductionReport() {
           className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4"
           style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}
         >
-          {/* Weekly production trend — computed from real batch createdAt */}
+          {/* Production trend — sarees assigned, bucketed to the period */}
           <ChartCard>
             <ChartBand
               tone="output"
               icon={<TrendingUp size={19} color={BAND.output.icon} />}
-              title="Sarees Produced Each Week"
-              sub="Current vs prior period"
+              title="Sarees Produced Over Time"
+              sub={`${compareLabel ?? periodLabel} — ${bucketPhrase(prodSeries.bucket)}`}
             />
             <div
               className="p-5 sm:p-6"
               style={{ display: "flex", flexDirection: "column", flex: 1 }}
             >
-              {prodWeeklyData.length === 0 ? (
-                <div
-                  style={{
-                    padding: "24px 0",
-                    textAlign: "center" as const,
-                    fontFamily: F.ui,
-                    fontSize: 13,
-                    color: T.taupe,
-                  }}
-                >
-                  {isLoading ? "Loading…" : "No batch data yet."}
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={prodWeeklyData}>
-                    <CartesianGrid
-                      key="prod-wk-grid"
-                      strokeDasharray="3 3"
-                      stroke="rgba(110,15,45,0.07)"
-                      vertical={false}
-                    />
-                    <XAxis
-                      key="prod-wk-x"
-                      dataKey="week"
-                      tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      key="prod-wk-y"
-                      tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }}
-                      axisLine={false}
-                      tickLine={false}
-                      width={30}
-                    />
-                    <Tooltip key="prod-wk-tip" content={<ChartTip suffix=" sarees" />} />
-                    <Line
-                      key="prod-wk-cur"
-                      type="monotone"
-                      dataKey="current"
-                      name="Current"
-                      stroke={T.royalBurgundy}
-                      strokeWidth={2.5}
-                      dot={{ fill: T.royalBurgundy, r: 4 }}
-                    />
-                    <Line
-                      key="prod-wk-pri"
-                      type="monotone"
-                      dataKey="prior"
-                      name="Prior"
-                      stroke={semantic.chart.series[1]}
-                      strokeWidth={2}
-                      strokeDasharray="5 4"
-                      dot={{ fill: semantic.chart.series[1], r: 3 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              )}
-              <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 4 }}>
-                {[
-                  { c: T.royalBurgundy, l: "Current Period", dash: false },
-                  { c: T.antiqueGold, l: "Prior Period", dash: true },
-                ].map((x) => (
-                  <div key={x.l} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <div
-                      style={{
-                        width: 18,
-                        height: 3,
-                        borderRadius: 2,
-                        background: x.c,
-                        borderTop: x.dash ? `2px dashed ${x.c}` : "none",
-                      }}
-                    />
-                    <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{x.l}</span>
-                  </div>
-                ))}
-              </div>
+              <TrendChart
+                points={prodSeries.points}
+                unit="count"
+                kind="line"
+                height={200}
+                currentName={compareLabel ?? periodLabel}
+                priorName={priorLabel}
+                emptyText={isLoading ? "Loading…" : `No sarees assigned in ${periodLabel}.`}
+              />
             </div>
           </ChartCard>
 
@@ -857,7 +908,7 @@ export function SareeProductionReport() {
               tone="orders"
               icon={<CheckCircle2 size={19} color={BAND.orders.icon} />}
               title="Quality Check This Period"
-              sub="Pass / reject breakdown"
+              sub="Final verdict per saree"
             />
             <div
               className="p-5 sm:p-6"
@@ -977,7 +1028,7 @@ export function SareeProductionReport() {
                           textAlign: "center" as const,
                         }}
                       >
-                        No QC records yet.
+                        No sarees quality-checked in {periodLabel}.
                       </div>
                     )}
                   </div>
@@ -992,7 +1043,7 @@ export function SareeProductionReport() {
               tone="weavers"
               icon={<Boxes size={19} color={BAND.weavers.icon} />}
               title="Own Factory vs Outsourced"
-              sub="Production source split — all batches"
+              sub={`Production source split — ${periodLabel}`}
             />
             <div
               className="p-5 sm:p-6"
@@ -1125,26 +1176,27 @@ export function SareeProductionReport() {
             icon={<Package size={22} color={T.antiqueGold} />}
             label="Total Sarees Produced"
             value={`${scopedProduced}`}
-            sub="Batches in the selected period"
+            sub={`${scopedBatches.length} batch${scopedBatches.length === 1 ? "" : "es"} in ${periodLabel}`}
             gid="spr-p"
+            delta={pick(metrics, "produced")}
           />
           <SilkSumCard
             icon={<CheckCircle2 size={22} color={T.antiqueGold} />}
             label="Passed Quality Check"
-            value={`${qcDonutData[0]!.value}`}
+            value={`${qcCur.passed}`}
             sub={totalQc > 0 ? `${passRatePct}% pass rate` : "No QC records yet"}
             gid="spr-q"
+            delta={pick(metrics, "passed")}
           />
           <SilkSumCard
             icon={<AlertTriangle size={22} color={T.antiqueGold} />}
             label="Rejected at Quality Check"
-            value={`${qcDonutData[2]!.value}`}
+            value={`${qcCur.rejected}`}
             sub={
-              totalQc > 0
-                ? `${Math.round((qcDonutData[2]!.value / totalQc) * 100)}% rejection rate`
-                : "No QC records yet"
+              totalQc > 0 ? `${Math.round(qcCur.rejectRate)}% rejection rate` : "No QC records yet"
             }
             gid="spr-r"
+            delta={pick(metrics, "rejected")}
           />
           <SilkSumCard
             icon={<Truck size={22} color={T.antiqueGold} />}

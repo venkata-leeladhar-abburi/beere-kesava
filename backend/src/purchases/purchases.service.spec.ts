@@ -1,5 +1,5 @@
 import { BadRequestException } from "@nestjs/common";
-import { PurchaseDiscountType } from "../generated/prisma/client";
+import { Prisma, PurchaseDiscountType } from "../generated/prisma/client";
 import { PurchasesService, computeBill, planLineChanges } from "./purchases.service";
 
 // Same figures as the frontend's computePurchaseBill tests — the two must agree
@@ -201,5 +201,33 @@ describe("PurchasesService — supplier must be registered", () => {
   it("still lets an older unlinked purchase be saved with its own name unchanged", async () => {
     await service.update("EXT-1", { supplierName: "RAVI SILKS", notes: "photo added" });
     expect(prisma.purchase.update).toHaveBeenCalled();
+  });
+});
+
+describe("PurchasesService.findAll — paid amount", () => {
+  it("sums each purchase's linked supplier payments, and orders ties on date by id", async () => {
+    const prisma: any = {
+      purchase: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: "EXT-1", sareeLines: [] },
+          { id: "EXT-2", sareeLines: [] },
+        ]),
+        count: jest.fn().mockResolvedValue(2),
+      },
+      supplierPayment: {
+        groupBy: jest.fn().mockResolvedValue([{ purchaseId: "EXT-1", _sum: { amount: new Prisma.Decimal("2500.5") } }]),
+      },
+    };
+    const service = new PurchasesService(prisma, {} as any, {} as any);
+
+    const res = await service.findAll({ page: 1, pageSize: 100 });
+
+    expect(res.items.map((p) => p.paidAmount)).toEqual(["2500.50", "0.00"]);
+    expect(prisma.supplierPayment.groupBy).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { purchaseId: { in: ["EXT-1", "EXT-2"] } } }),
+    );
+    expect(prisma.purchase.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ orderBy: [{ date: "desc" }, { id: "asc" }] }),
+    );
   });
 });

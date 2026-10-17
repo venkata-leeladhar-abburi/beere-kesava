@@ -55,6 +55,12 @@ export interface BackendPurchase {
   gstAmount: string;
   /** Follows the supplier payments linked to the purchase — never set by the form. */
   status: PurchasePaymentStatus;
+  /**
+   * Sum of the supplier payments linked to this purchase. "0.00" on older
+   * purchases whose status was set by hand — for those, `status` is the only
+   * record of what was paid. Absent on responses from before this field.
+   */
+  paidAmount?: string;
   notes: string | null;
   invoiceFileName: string | null;
   /** Server-relative path in cloud storage ("/uploads/receipts/<uuid>.jpg"). */
@@ -114,6 +120,8 @@ export type UpdatePurchasePayload = Partial<Omit<CreatePurchasePayload, "sarees"
   sarees?: CreatePurchaseSareeLinePayload[];
 };
 
+const ALL_PAGE_SIZE = 100;
+
 export const purchasesApi = {
   list: (
     pageSize = 100,
@@ -127,6 +135,32 @@ export const purchasesApi = {
     if (status) params.set("status", status);
     if (view) params.set("view", view);
     return apiClient.get<PaginatedResponse<BackendPurchase>>(`/purchases?${params.toString()}`);
+  },
+
+  /**
+   * Every purchase on record, walking the paginated endpoint (the server caps a
+   * page at 100, ListPurchasesQueryDto). Pages after the first are fetched in
+   * parallel. `maxPages` is a safety stop, not an expected limit.
+   */
+  listAll: async (view?: "full" | "summary", maxPages = 40): Promise<BackendPurchase[]> => {
+    const first = await purchasesApi.list(ALL_PAGE_SIZE, 1, undefined, undefined, view);
+    const pages = Math.min(Math.ceil(first.total / ALL_PAGE_SIZE), maxPages);
+    if (pages <= 1) return first.items;
+    const rest = await Promise.all(
+      Array.from({ length: pages - 1 }, (_, i) =>
+        purchasesApi.list(ALL_PAGE_SIZE, i + 2, undefined, undefined, view)
+      )
+    );
+    // A purchase recorded between two page fetches shifts every later page by
+    // one, so the same row can arrive twice — keep the first copy.
+    const seen = new Set<string>();
+    return [first, ...rest]
+      .flatMap((r) => r.items)
+      .filter((p) => {
+        if (seen.has(p.id)) return false;
+        seen.add(p.id);
+        return true;
+      });
   },
 
   /** Always "full" — includes every sareeLine's photos, unlike list()'s "summary" view. */

@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { OutstandingPage } from "@/features/payments";
+import React from "react";
 
 import { T, F } from "./theme";
 import type { ReportTabKey } from "./types";
@@ -14,6 +13,7 @@ import { ProfitLossReport } from "./sections/ProfitLossReport";
 import { CustomerReport } from "./sections/CustomerReport";
 import { OverdueAlertsReport } from "./sections/OverdueAlertsReport";
 import { OutstandingPaymentsReport } from "./sections/OutstandingPaymentsReport";
+import { OutstandingStockReport } from "./sections/OutstandingStockReport";
 import { LiveSummarySnapshot } from "./sections/LiveSummarySnapshot";
 import { ScheduledReportsSection } from "./sections/ScheduledReportsSection";
 import { DownloadHistorySection } from "./sections/DownloadHistorySection";
@@ -35,16 +35,14 @@ export function ReportsPage() {
 }
 
 function ReportsPageInner() {
-  const [activeTab, setActiveTab] = useState<ReportTabKey>("production");
-  // The period selection lives in context so every section can actually
-  // filter against it, rather than being local state nothing downstream read.
-  const { period, setPeriod, custom, setCustom, compareOn, setCompareOn, label, priorLabel } =
-    useReportPeriod();
+  // Tab, period and comparison live in context so every section can filter
+  // against them, and "Download Again" can switch to the report it rebuilds.
+  const { activeTab } = useReportPeriod();
 
   const TAB_CONTENT: Record<ReportTabKey, React.ReactNode> = {
     "raw-material": <RawMaterialReport />,
     production: <SareeProductionReport />,
-    outstanding: <OutstandingPage embedded />,
+    outstanding: <OutstandingStockReport />,
     "outstanding-payments": <OutstandingPaymentsReport />,
     "weaver-payment": <WeaverPaymentReport />,
     retail: <RetailSalesReport />,
@@ -69,18 +67,7 @@ function ReportsPageInner() {
         <ReportsStatsStrip />
         <LiveSummarySnapshot />
       </div>
-      <ReportTabNav
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        activePeriod={period}
-        setActivePeriod={setPeriod}
-        custom={custom}
-        setCustom={setCustom}
-        compareOn={compareOn}
-        setCompareOn={setCompareOn}
-        periodLabel={label}
-        priorLabel={priorLabel}
-      />
+      <ReportTabNav />
       <div style={{ background: T.silkCream, flex: 1 }}>
         {TAB_CONTENT[activeTab]}
         <ScheduledReportsSection />

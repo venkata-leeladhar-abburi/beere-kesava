@@ -10,7 +10,7 @@ import {
   Package,
   ShoppingBag,
 } from "lucide-react";
-import { useSales, isOutstanding } from "@/features/customers";
+import { useSales, isOutstanding, isCustomerReturn } from "@/features/customers";
 import { useReportPeriodOptional } from "@/features/reports";
 import type { IconComponent } from "../../../lib/icon";
 import { T, F } from "../theme";
@@ -77,7 +77,7 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
       loom: out.filter((s) => s.origin === "factoryLoom").length,
       external: out.filter((s) => s.origin === "external").length,
       batched: out.filter((s) => !!s.batchId).length,
-      returned: sarees.filter((s) => s.status === "returned").length,
+      returned: sarees.filter(isCustomerReturn).length,
       value: out.reduce((a, s) => a + s.finalAmount, 0),
       aged90: out.filter((s) => s.ageDays > 90).length,
     };

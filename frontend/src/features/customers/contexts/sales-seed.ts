@@ -343,7 +343,12 @@ export const SEED_UNIFIED_SAREES = buildDataset();
 
 // ─── Selectors (pure — usable from any page) ─────────────────────────────────
 export const isOutstanding = (s: UnifiedSaree) =>
-  s.status === "unsold" || (s.status === "returned" && s.ret?.restocked === true);
+  !s.returnedToSupplier &&
+  (s.status === "unsold" || (s.status === "returned" && s.ret?.restocked === true));
+
+/** Brought back by a customer after a sale — not a piece we sent back to the supplier. */
+export const isCustomerReturn = (s: UnifiedSaree) =>
+  s.status === "returned" && !s.returnedToSupplier;
 
 export const isSold = (s: UnifiedSaree) => s.status === "retail" || s.status === "wholesale";
 
@@ -422,7 +427,7 @@ export function rankSellers(sarees: UnifiedSaree[], origin: SareeOrigin): Seller
         r.sold++;
         r.revenue += s.sale?.amount || 0;
       }
-      if (s.status === "returned") {
+      if (isCustomerReturn(s)) {
         r.returned++;
         r.revenue -= s.ret?.refundAmount || 0;
       }
@@ -444,7 +449,8 @@ export interface PurchaseOutstanding extends PurchaseSummary {
   returnedSarees: UnifiedSaree[];
   soldCount: number;
   unsoldCount: number;
-  returnedCount: number;
+  returnedCount: number; // customer returns
+  supplierReturnedCount: number; // pieces sent back to the supplier
   unsoldValue: number; // at expected selling price
   unsoldCost: number; // money still locked in stock
   refundValue: number;
@@ -458,7 +464,7 @@ export function purchaseOutstanding(
   return purchases.map((p) => {
     const rows = sarees.filter((s) => s.purchaseId === p.id);
     const unsoldSarees = rows.filter(isOutstanding);
-    const returnedSarees = rows.filter((s) => s.status === "returned");
+    const returnedSarees = rows.filter(isCustomerReturn);
     return {
       ...p,
       // Count the sarees actually on this purchase, not the purchase line count.
@@ -469,6 +475,7 @@ export function purchaseOutstanding(
       soldCount: rows.filter(isSold).length,
       unsoldCount: unsoldSarees.length,
       returnedCount: returnedSarees.length,
+      supplierReturnedCount: rows.filter((s) => s.returnedToSupplier).length,
       unsoldValue: unsoldSarees.reduce((a, s) => a + s.finalAmount, 0),
       unsoldCost: unsoldSarees.reduce((a, s) => a + s.costPrice, 0),
       refundValue: returnedSarees.reduce((a, s) => a + (s.ret?.refundAmount || 0), 0),

@@ -7,7 +7,33 @@
 // valid ZIP — Excel, LibreOffice and Numbers all accept them — which keeps this
 // to a CRC-32 table and some XML rather than a deflate implementation.
 
-export type CellValue = string | number | null | undefined;
+/** A value with its own format, for tables whose rows mix units (a summary). */
+export interface TypedCell {
+  value: string | number | Date | null;
+  kind: ColumnKind;
+}
+
+export type CellValue = string | number | Date | TypedCell | null | undefined;
+
+/**
+ * How a column's values are written. Numbers stay numbers either way; the kind
+ * only picks the display format (₹ amounts get thousands separators, dates
+ * become real Excel dates that sort and filter by date, not as text).
+ * "figure" is a number that is never totalled — a rate, a day count.
+ */
+export type ColumnKind = "text" | "number" | "figure" | "money" | "percent" | "date";
+
+export interface SheetSpec {
+  name: string;
+  headers: string[];
+  rows: CellValue[][];
+  /** Per-column format, by index. Missing entries are inferred from the value. */
+  columns?: ColumnKind[];
+  /** Appends a "Total" row summing every "number" and "money" column. */
+  totals?: boolean;
+  /** Label/value lines written above the table (report name, period, …). */
+  preamble?: CellValue[][];
+}
 
 const CRC_TABLE = (() => {
   const table = new Uint32Array(256);
@@ -58,74 +84,233 @@ export function safeSheetName(name: string): string {
   return (cleaned || "Report").slice(0, 31);
 }
 
-const ENCODER = new TextEncoder();
-
-function cellXml(ref: string, value: CellValue, styleIndex: number): string {
-  const style = styleIndex ? ` s="${styleIndex}"` : "";
-  if (value === null || value === undefined || value === "") return `<c r="${ref}"${style}/>`;
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return `<c r="${ref}"${style}><v>${value}</v></c>`;
-  }
-  return `<c r="${ref}"${style} t="inlineStr"><is><t xml:space="preserve">${esc(String(value))}</t></is></c>`;
+/** Local calendar date/time as an Excel serial (days since 30 Dec 1899). */
+export function excelDateSerial(d: Date): number {
+  const utc = Date.UTC(
+    d.getFullYear(),
+    d.getMonth(),
+    d.getDate(),
+    d.getHours(),
+    d.getMinutes(),
+    d.getSeconds()
+  );
+  return (utc - Date.UTC(1899, 11, 30)) / 86_400_000;
 }
 
-function sheetXml(headers: string[], rows: CellValue[][]): string {
+const ENCODER = new TextEncoder();
+
+// Cell formats, by index into <cellXfs> in STYLES below.
+const S = {
+  plain: 0,
+  header: 1,
+  money: 2,
+  date: 3,
+  percent: 4,
+  totalLabel: 5,
+  totalMoney: 6,
+  totalNumber: 7,
+  title: 8,
+  label: 9,
+  integer: 10,
+} as const;
+
+type PlainValue = Exclude<CellValue, TypedCell>;
+
+const isTyped = (v: CellValue): v is TypedCell =>
+  typeof v === "object" && v !== null && !(v instanceof Date);
+
+function cellXml(ref: string, value: PlainValue, style: number, formula?: string): string {
+  const s = style ? ` s="${style}"` : "";
+  if (formula) {
+    const cached = typeof value === "number" && Number.isFinite(value) ? `<v>${value}</v>` : "";
+    return `<c r="${ref}"${s}><f>${esc(formula)}</f>${cached}</c>`;
+  }
+  if (value === null || value === undefined || value === "") return `<c r="${ref}"${s}/>`;
+  if (value instanceof Date) {
+    if (isNaN(value.getTime())) return `<c r="${ref}"${s}/>`;
+    return `<c r="${ref}"${s}><v>${excelDateSerial(value)}</v></c>`;
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return `<c r="${ref}"${s}><v>${value}</v></c>`;
+  }
+  return `<c r="${ref}"${s} t="inlineStr"><is><t xml:space="preserve">${esc(String(value))}</t></is></c>`;
+}
+
+/** Turns an ISO date string in a date column into a real Date; anything else passes through. */
+function coerceDate(value: CellValue): CellValue {
+  if (isTyped(value)) return value.kind === "date" ? coerceDate(value.value) : value;
+  if (typeof value !== "string" || !value) return value;
+  if (!/^\d{4}-\d{2}-\d{2}/.test(value)) return value;
+  // A bare yyyy-mm-dd is a calendar date, not UTC midnight (which would show
+  // as the previous day west of Greenwich, or carry a stray 05:30 here).
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  const d = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(value);
+  return isNaN(d.getTime()) ? value : d;
+}
+
+function bodyStyle(kind: ColumnKind | undefined, value: PlainValue): number {
+  if (value instanceof Date) return S.date;
+  if (typeof value !== "number") return S.plain;
+  if (kind === "money") return S.money;
+  if (kind === "percent") return S.percent;
+  if (kind === "number" && Number.isInteger(value)) return S.integer;
+  return S.plain;
+}
+
+function displayLength(cell: CellValue, columnKind: ColumnKind | undefined): number {
+  const value = isTyped(cell) ? cell.value : cell;
+  const kind = isTyped(cell) ? cell.kind : columnKind;
+  if (value instanceof Date) return 11;
+  if (typeof value === "number") {
+    const digits = Math.round(Math.abs(value)).toString().length;
+    // Thousands separators + two decimals on money columns.
+    return kind === "money" ? digits + Math.floor((digits - 1) / 3) + 3 : String(value).length;
+  }
+  return String(value ?? "").length;
+}
+
+function sheetXml(spec: SheetSpec): string {
+  const { headers, columns = [], totals = false, preamble = [] } = spec;
+  const rows = spec.rows.map((row) =>
+    row.map((v, c) => (columns[c] === "date" ? coerceDate(v) : v))
+  );
   const colCount = Math.max(headers.length, ...rows.map((r) => r.length), 1);
 
-  // Column widths sized to the widest value seen, within sane bounds.
+  // Column widths sized to the widest value seen, within sane bounds. The
+  // preamble's first column is a short label, so it only widens column A.
   const widths: number[] = [];
   for (let c = 0; c < colCount; c++) {
     let max = String(headers[c] ?? "").length;
-    for (const row of rows) {
-      const len = String(row[c] ?? "").length;
-      if (len > max) max = len;
-    }
+    for (const row of rows) max = Math.max(max, displayLength(row[c], columns[c]));
+    if (c === 0) for (const line of preamble) max = Math.max(max, String(line[0] ?? "").length);
     widths.push(Math.min(60, Math.max(10, max + 2)));
   }
   const cols = `<cols>${widths
     .map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`)
     .join("")}</cols>`;
 
-  const headerRow = `<row r="1">${Array.from({ length: colCount }, (_, c) =>
-    cellXml(`${columnName(c)}1`, headers[c] ?? "", 1)
-  ).join("")}</row>`;
+  const out: string[] = [];
+  let r = 0;
 
-  const bodyRows = rows
-    .map((row, r) => {
-      const n = r + 2;
-      const cells: string[] = [];
-      for (let c = 0; c < colCount; c++) {
-        const value = row[c];
-        // Empty cells are simply omitted — the row still lines up by ref.
-        if (value === null || value === undefined || value === "") continue;
-        cells.push(cellXml(`${columnName(c)}${n}`, value, 0));
-      }
-      return `<row r="${n}">${cells.join("")}</row>`;
-    })
-    .join("");
+  // Preamble: first line is the title, the rest are "Label | value" pairs.
+  preamble.forEach((line, i) => {
+    r += 1;
+    const cells = line
+      .map((cell, c) => {
+        const v = isTyped(cell) ? cell.value : cell;
+        if (v === null || v === undefined || v === "") return "";
+        const style = i === 0 ? S.title : c === 0 ? S.label : v instanceof Date ? S.date : S.plain;
+        return cellXml(`${columnName(c)}${r}`, v, style);
+      })
+      .join("");
+    out.push(`<row r="${r}">${cells}</row>`);
+  });
+  if (preamble.length) r += 1; // one blank line between the title block and the table
 
-  const lastRef = `${columnName(colCount - 1)}${rows.length + 1}`;
+  r += 1;
+  const headerRow = r;
+  out.push(
+    `<row r="${r}">${Array.from({ length: colCount }, (_, c) =>
+      cellXml(`${columnName(c)}${r}`, headers[c] ?? "", S.header)
+    ).join("")}</row>`
+  );
+
+  for (const row of rows) {
+    r += 1;
+    const cells: string[] = [];
+    for (let c = 0; c < colCount; c++) {
+      const value = row[c];
+      const kind = isTyped(value) ? value.kind : columns[c];
+      const plain = isTyped(value) ? value.value : value;
+      // Empty cells are simply omitted — the row still lines up by ref.
+      if (plain === null || plain === undefined || plain === "") continue;
+      cells.push(cellXml(`${columnName(c)}${r}`, plain, bodyStyle(kind, plain)));
+    }
+    out.push(`<row r="${r}">${cells.join("")}</row>`);
+  }
+  const lastDataRow = r;
+
+  if (totals && rows.length > 0) {
+    r += 1;
+    const cells: string[] = [cellXml(`A${r}`, "Total", S.totalLabel)];
+    for (let c = 1; c < colCount; c++) {
+      const kind = columns[c];
+      const numeric = kind === "money" || kind === "number";
+      if (!numeric) continue;
+      const sum = rows.reduce(
+        (s, row) => (typeof row[c] === "number" ? s + (row[c] as number) : s),
+        0
+      );
+      const col = columnName(c);
+      cells.push(
+        cellXml(
+          `${col}${r}`,
+          Math.round(sum * 100) / 100,
+          kind === "money" ? S.totalMoney : S.totalNumber,
+          `SUM(${col}${headerRow + 1}:${col}${lastDataRow})`
+        )
+      );
+    }
+    out.push(`<row r="${r}">${cells.join("")}</row>`);
+  }
+
+  const filterRef = `A${headerRow}:${columnName(colCount - 1)}${Math.max(lastDataRow, headerRow)}`;
+  const pane = `<pane ySplit="${headerRow}" topLeftCell="A${headerRow + 1}" activePane="bottomLeft" state="frozen"/>`;
 
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/>${cols}<sheetData>${headerRow}${bodyRows}</sheetData><autoFilter ref="A1:${lastRef}"/></worksheet>`;
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0">${pane}</sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/>${cols}<sheetData>${out.join("")}</sheetData><autoFilter ref="${filterRef}"/></worksheet>`;
 }
-
-const CONTENT_TYPES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`;
 
 const ROOT_RELS = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
 
-const WORKBOOK_RELS = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
-
-// Two cell formats: 0 = plain, 1 = bold on a light fill (the header row).
+// numFmt 4 is Excel's built-in "#,##0.00"; 164/165 are custom.
 const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FF4A061B"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF3E7D3"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="dd\\-mmm\\-yyyy"/><numFmt numFmtId="165" formatCode="0.0&quot;%&quot;"/></numFmts><fonts count="4"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FF4A061B"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="14"/><color rgb="FF4A061B"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF3E7D3"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left/><right/><top style="thin"><color rgb="FF4A061B"/></top><bottom style="double"><color rgb="FF4A061B"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="11"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="4" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"/><xf numFmtId="4" fontId="2" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"/><xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="3" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
 
-function workbookXml(sheetName: string): string {
+/** Sheet names must be unique within a workbook (case-insensitively). */
+function uniqueSheetNames(names: string[]): string[] {
+  const seen = new Set<string>();
+  return names.map((raw) => {
+    const base = safeSheetName(raw);
+    let name = base;
+    for (let n = 2; seen.has(name.toLowerCase()); n++) {
+      const suffix = ` (${n})`;
+      name = base.slice(0, 31 - suffix.length) + suffix;
+    }
+    seen.add(name.toLowerCase());
+    return name;
+  });
+}
+
+function contentTypes(sheetCount: number): string {
+  const sheets = Array.from(
+    { length: sheetCount },
+    (_, i) =>
+      `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`
+  ).join("");
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${esc(sheetName)}" sheetId="1" r:id="rId1"/></sheets></workbook>`;
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>${sheets}<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`;
+}
+
+function workbookRels(sheetCount: number): string {
+  const sheets = Array.from(
+    { length: sheetCount },
+    (_, i) =>
+      `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`
+  ).join("");
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets}<Relationship Id="rId${sheetCount + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+}
+
+function workbookXml(names: string[]): string {
+  const sheets = names
+    .map((n, i) => `<sheet name="${esc(n)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`)
+    .join("");
+  // fullCalcOnLoad: the totals row carries SUM formulas, recomputed on open
+  // (each also has a cached value for viewers that never recalculate).
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets}</sheets><calcPr calcId="0" fullCalcOnLoad="1"/></workbook>`;
 }
 
 interface ZipEntry {
@@ -194,14 +379,24 @@ function zip(entries: ZipEntry[]): Uint8Array {
   return out;
 }
 
+/** Builds a workbook with one sheet per spec, in order, as raw bytes. */
+export function buildWorkbook(sheets: SheetSpec[]): Uint8Array {
+  const list = sheets.length ? sheets : [{ name: "Report", headers: [], rows: [] }];
+  const names = uniqueSheetNames(list.map((s) => s.name));
+  return zip([
+    { name: "[Content_Types].xml", data: ENCODER.encode(contentTypes(list.length)) },
+    { name: "_rels/.rels", data: ENCODER.encode(ROOT_RELS) },
+    { name: "xl/workbook.xml", data: ENCODER.encode(workbookXml(names)) },
+    { name: "xl/_rels/workbook.xml.rels", data: ENCODER.encode(workbookRels(list.length)) },
+    { name: "xl/styles.xml", data: ENCODER.encode(STYLES) },
+    ...list.map((spec, i) => ({
+      name: `xl/worksheets/sheet${i + 1}.xml`,
+      data: ENCODER.encode(sheetXml(spec)),
+    })),
+  ]);
+}
+
 /** Builds a single-sheet .xlsx workbook as raw bytes. */
 export function buildXlsx(sheetName: string, headers: string[], rows: CellValue[][]): Uint8Array {
-  return zip([
-    { name: "[Content_Types].xml", data: ENCODER.encode(CONTENT_TYPES) },
-    { name: "_rels/.rels", data: ENCODER.encode(ROOT_RELS) },
-    { name: "xl/workbook.xml", data: ENCODER.encode(workbookXml(safeSheetName(sheetName))) },
-    { name: "xl/_rels/workbook.xml.rels", data: ENCODER.encode(WORKBOOK_RELS) },
-    { name: "xl/styles.xml", data: ENCODER.encode(STYLES) },
-    { name: "xl/worksheets/sheet1.xml", data: ENCODER.encode(sheetXml(headers, rows)) },
-  ]);
+  return buildWorkbook([{ name: sheetName, headers, rows }]);
 }

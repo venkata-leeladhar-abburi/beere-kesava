@@ -14,16 +14,69 @@ import {
 } from "recharts";
 import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
-import { useFirms } from "@/features/firms";
+import { useFirms, type FirmFinancials } from "@/features/firms";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { T, F } from "../theme";
 import { FadeUp, SectionCard, ReportDLBar } from "../common/primitives";
+import { CompareStrip, DeltaBadge, metric } from "../common/compare";
+import { metricChange } from "../reportExport";
 import { ChartCard, ChartBand, TrackBar, BAND } from "@/features/production";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { useReportPeriod, useRegisterExport } from "../PeriodContext";
+import { buildSeries, bucketPhrase } from "../timeSeries";
+import type { ReportMetric } from "../reportExport";
+
+/** Every ledger line's total for one window. */
+function computeLedger(financials: FirmFinancials[]) {
+  const income = (cat: string) =>
+    financials.reduce(
+      (s, f) => s + f.income.filter((e) => e.category === cat).reduce((a, e) => a + e.amount, 0),
+      0
+    );
+  const expense = (cat: string) =>
+    financials.reduce(
+      (s, f) => s + f.expenses.filter((e) => e.category === cat).reduce((a, e) => a + e.amount, 0),
+      0
+    );
+  const misc = (type: "income" | "expense") =>
+    financials.reduce(
+      (s, f) => s + f.misc.filter((m) => m.type === type).reduce((a, m) => a + m.amount, 0),
+      0
+    );
+  const l = {
+    wholesale: income("Wholesale Sale"),
+    retail: income("Retail Sale"),
+    otherIncome: income("Other") + misc("income"),
+    weaver: expense("Weaver Payments"),
+    material: expense("Material Purchase"),
+    shop: expense("Shop Maintenance"),
+    factory: expense("Factory Maintenance"),
+    salaries: expense("Salaries"),
+    otherExpenses: expense("Other") + misc("expense"),
+  };
+  const totalIncome = l.wholesale + l.retail + l.otherIncome;
+  const totalExpenses = l.weaver + l.material + l.shop + l.factory + l.salaries + l.otherExpenses;
+  return {
+    ...l,
+    totalIncome,
+    totalExpenses,
+    net: totalIncome - totalExpenses,
+    margin: totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome) * 100 : 0,
+  };
+}
+
+type Ledger = ReturnType<typeof computeLedger>;
+
+const filterFinancials = (all: FirmFinancials[], keep: (d: string) => boolean): FirmFinancials[] =>
+  all.map((f) => ({
+    ...f,
+    income: f.income.filter((e) => keep(e.date)),
+    expenses: f.expenses.filter((e) => keep(e.date)),
+    misc: f.misc.filter((m) => keep(m.date)),
+  }));
 
 // Same shape as reports/common/primitives.tsx's ChartTip, but routes the
 // value through the Money system (formatMoney/rupees) instead of a raw "₹"
@@ -95,21 +148,30 @@ function MoneyChartTip({
 
 export function ProfitLossReport() {
   const { firms, financials: allFinancials, isLoading, error, refetch } = useFirms();
-  const { inCurrent, exportExcel, canExport } = useReportPeriod();
+  const {
+    inCurrent,
+    inPrior,
+    compareActive,
+    current,
+    label: periodLabel,
+    compareLabel,
+    priorLabel,
+    exportExcel,
+    canExport,
+    exportHint,
+  } = useReportPeriod();
   const moneyVisible = useMoneyVisible();
 
   // Ledger entries are filtered to the selected period before anything is
   // summed, so the totals, the ledger, the per-firm table and the charts all
   // describe the same window.
   const financials = useMemo(
-    () =>
-      allFinancials.map((f) => ({
-        ...f,
-        income: f.income.filter((e) => inCurrent(e.date)),
-        expenses: f.expenses.filter((e) => inCurrent(e.date)),
-        misc: f.misc.filter((m) => inCurrent(m.date)),
-      })),
+    () => filterFinancials(allFinancials, inCurrent),
     [allFinancials, inCurrent]
+  );
+  const priorFinancials = useMemo(
+    () => (compareActive ? filterFinancials(allFinancials, inPrior) : null),
+    [allFinancials, inPrior, compareActive]
   );
   const inr = (n: number) => (moneyVisible ? formatMoney(rupees(n)) : "—");
 
@@ -117,47 +179,56 @@ export function ProfitLossReport() {
     (f) => f.income.length > 0 || f.expenses.length > 0 || f.misc.length > 0
   );
 
-  const sumIncomeByCategory = (cat: string) =>
-    financials.reduce(
-      (s, f) => s + f.income.filter((e) => e.category === cat).reduce((a, e) => a + e.amount, 0),
-      0
-    );
-  const sumExpenseByCategory = (cat: string) =>
-    financials.reduce(
-      (s, f) => s + f.expenses.filter((e) => e.category === cat).reduce((a, e) => a + e.amount, 0),
-      0
-    );
-  const sumMiscByType = (type: "income" | "expense") =>
-    financials.reduce(
-      (s, f) => s + f.misc.filter((m) => m.type === type).reduce((a, m) => a + m.amount, 0),
-      0
-    );
+  const L = useMemo(() => computeLedger(financials), [financials]);
+  const P = useMemo<Ledger | null>(
+    () => (priorFinancials ? computeLedger(priorFinancials) : null),
+    [priorFinancials]
+  );
+  const {
+    wholesale: wholesaleSales,
+    retail: retailSales,
+    otherIncome,
+    totalIncome,
+    weaver: weaverPayments,
+    material: materialPurchases,
+    shop: shopMaintenance,
+    factory: factoryMaintenance,
+    salaries,
+    otherExpenses,
+    totalExpenses,
+    net: netProfit,
+  } = L;
 
-  const wholesaleSales = sumIncomeByCategory("Wholesale Sale");
-  const retailSales = sumIncomeByCategory("Retail Sale");
-  const otherIncome = sumIncomeByCategory("Other") + sumMiscByType("income");
-  const totalIncome = wholesaleSales + retailSales + otherIncome;
-
-  const weaverPayments = sumExpenseByCategory("Weaver Payments");
-  const materialPurchases = sumExpenseByCategory("Material Purchase");
-  const shopMaintenance = sumExpenseByCategory("Shop Maintenance");
-  const factoryMaintenance = sumExpenseByCategory("Factory Maintenance");
-  const salaries = sumExpenseByCategory("Salaries");
-  const otherExpenses = sumExpenseByCategory("Other") + sumMiscByType("expense");
-  const totalExpenses =
-    weaverPayments +
-    materialPurchases +
-    shopMaintenance +
-    factoryMaintenance +
-    salaries +
-    otherExpenses;
-
-  const netProfit = totalIncome - totalExpenses;
+  const metrics = useMemo(
+    () => [
+      metric("income", "Total income", "money", L.totalIncome, P?.totalIncome, "up", "sell"),
+      metric(
+        "expenses",
+        "Total expenses",
+        "money",
+        L.totalExpenses,
+        P?.totalExpenses,
+        "down",
+        "cost"
+      ),
+      metric("net", "Net profit", "money", L.net, P?.net, "up", "margin"),
+      metric("margin", "Profit margin", "percent", L.margin, P?.margin, "up"),
+      metric("retail", "Retail sales", "money", L.retail, P?.retail, "up", "sell"),
+      metric("wholesale", "Wholesale sales", "money", L.wholesale, P?.wholesale, "up", "sell"),
+      metric("weaver", "Weaver payments", "money", L.weaver, P?.weaver, "down", "cost"),
+      metric("material", "Material purchases", "money", L.material, P?.material, "down", "cost"),
+    ],
+    [L, P]
+  );
 
   type LedgerRow = {
     id: string;
     label: string;
     amount: number | null;
+    /** The same line in the prior window, while comparing. */
+    prior?: number | null;
+    /** Rising is good for income lines, bad for expense lines. */
+    better?: "up" | "down";
     kind: "section" | "item" | "subtotal" | "net";
     color: string;
     bg: string;
@@ -294,15 +365,161 @@ export function ProfitLossReport() {
     ]
   );
 
-  useRegisterExport(
-    useMemo(
-      () => ({
-        name: "Profit and Loss Report",
-        headers: ["Line", "Amount"],
-        rows: ledgerRows.filter((r) => r.amount != null).map((r) => [r.label, r.amount ?? 0]),
+  // Each ledger line's prior-window figure, keyed the same way, while comparing.
+  const ledgerPrior = useMemo<Record<string, number> | null>(
+    () =>
+      P && {
+        wholesale: P.wholesale,
+        retail: P.retail,
+        "other-income": P.otherIncome,
+        "total-income": P.totalIncome,
+        "weaver-payments": P.weaver,
+        "material-purchases": P.material,
+        "shop-maintenance": P.shop,
+        "factory-maintenance": P.factory,
+        salaries: P.salaries,
+        "other-expenses": P.otherExpenses,
+        "total-expenses": P.totalExpenses,
+        net: P.net,
+      },
+    [P]
+  );
+  const ledgerWithPrior = useMemo<LedgerRow[]>(
+    () =>
+      ledgerRows.map((r) => {
+        if (r.amount == null) return r;
+        const isExpense = r.color === T.crimson && r.kind !== "net";
+        // The net row shows |net| with a Profit/Loss label; compare signed values.
+        if (r.id === "net") {
+          return { ...r, prior: ledgerPrior ? ledgerPrior.net : null, better: "up" as const };
+        }
+        return {
+          ...r,
+          prior: ledgerPrior ? (ledgerPrior[r.id] ?? 0) : null,
+          better: isExpense ? ("down" as const) : ("up" as const),
+        };
       }),
-      [ledgerRows]
-    )
+    [ledgerRows, ledgerPrior]
+  );
+
+  const perFirm = useMemo(
+    () =>
+      firms.map((firm) => {
+        const totals = (list: FirmFinancials[] | null) => {
+          const fin = list?.find((f) => f.firmId === firm.id);
+          if (!fin) return { income: 0, expenses: 0 };
+          const income =
+            fin.income.reduce((a, e) => a + (e.amount || 0), 0) +
+            fin.misc.filter((m) => m.type === "income").reduce((a, m) => a + (m.amount || 0), 0);
+          const expenses =
+            fin.expenses.reduce((a, e) => a + (e.amount || 0), 0) +
+            fin.misc.filter((m) => m.type === "expense").reduce((a, m) => a + (m.amount || 0), 0);
+          return { income, expenses };
+        };
+        const c = totals(financials);
+        const p = priorFinancials ? totals(priorFinancials) : null;
+        return {
+          name: firm.firmName,
+          income: c.income,
+          expenses: c.expenses,
+          net: c.income - c.expenses,
+          priorNet: p ? p.income - p.expenses : null,
+        };
+      }),
+    [firms, financials, priorFinancials]
+  );
+
+  const entryRows = useMemo(() => {
+    const nameById = new Map(firms.map((f) => [f.id, f.firmName]));
+    return financials
+      .flatMap((f) => [
+        ...f.income.map(
+          (e) =>
+            [
+              e.date,
+              nameById.get(f.firmId) ?? "—",
+              "Income",
+              e.category,
+              e.description,
+              e.amount,
+            ] as const
+        ),
+        ...f.expenses.map(
+          (e) =>
+            [
+              e.date,
+              nameById.get(f.firmId) ?? "—",
+              "Expense",
+              e.category,
+              e.description,
+              e.amount,
+            ] as const
+        ),
+        ...f.misc.map(
+          (m) =>
+            [
+              m.date,
+              nameById.get(f.firmId) ?? "—",
+              m.type === "income" ? "Income" : "Expense",
+              m.type === "income" ? "Misc Income" : "Misc Expense",
+              m.description,
+              m.amount,
+            ] as const
+        ),
+      ])
+      .sort((a, b) => String(b[0]).localeCompare(String(a[0])));
+  }, [financials, firms]);
+
+  useRegisterExport(
+    useMemo(() => {
+      const lines = ledgerWithPrior.filter((r) => r.amount != null);
+      // The net line is |net| on screen beside a Profit/Loss label; the sheet
+      // carries the signed figure so a loss reads as a negative number.
+      const signed = (r: LedgerRow) => (r.id === "net" ? L.net : (r.amount ?? 0));
+      return {
+        name: "Profit and Loss Report",
+        sheetName: "Profit and Loss",
+        headers: P
+          ? ["Line", compareLabel ?? periodLabel, priorLabel ?? "Prior", "Change", "Change %"]
+          : ["Line", "Amount"],
+        columns: P ? ["text", "money", "money", "money", "percent"] : ["text", "money"],
+        rows: lines.map((r) => {
+          const label = r.id === "net" ? "Net Profit / (Loss)" : r.label;
+          if (!P) return [label, signed(r)];
+          const priorValue = r.prior ?? 0;
+          const { diff, pct } = metricChange(signed(r), priorValue);
+          return [label, signed(r), priorValue, diff, pct];
+        }),
+        extraSheets: [
+          {
+            name: "Per Firm",
+            headers: ["Firm", "Income", "Expenses", "Net"],
+            columns: ["text", "money", "money", "money"],
+            totals: true,
+            rows: perFirm.map((f) => [f.name, f.income, f.expenses, f.net]),
+          },
+          {
+            name: "Ledger Entries",
+            headers: ["Date", "Firm", "Type", "Category", "Description", "Amount"],
+            columns: ["date", "text", "text", "text", "text", "money"],
+            rows: entryRows.map((e) => [...e]),
+          },
+        ],
+        metrics,
+        ready: !isLoading,
+      };
+    }, [
+      ledgerWithPrior,
+      P,
+      L.net,
+      perFirm,
+      entryRows,
+      metrics,
+      isLoading,
+      compareLabel,
+      periodLabel,
+      priorLabel,
+    ])
   );
 
   const ledgerColumns: ColumnDef<LedgerRow>[] = [
@@ -409,6 +626,47 @@ export function ProfitLossReport() {
     },
   ];
 
+  if (compareActive) {
+    ledgerColumns.push(
+      {
+        id: "prior",
+        header: priorLabel ?? "Prior",
+        type: "currency",
+        align: "end",
+        accessor: (r) => r.prior ?? null,
+        cell: (_v, r) =>
+          r.amount == null || r.prior == null ? null : (
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.taupe }}>
+              {r.id === "net"
+                ? `${r.prior < 0 ? "Loss " : ""}${inr(Math.abs(r.prior))}`
+                : inr(r.prior)}
+            </span>
+          ),
+      },
+      {
+        id: "change",
+        header: "Change",
+        align: "end",
+        accessor: (r) => (r.amount == null ? null : (r.amount ?? 0) - (r.prior ?? 0)),
+        cell: (_v, r) =>
+          r.amount == null || r.prior == null ? null : (
+            <DeltaBadge
+              size="sm"
+              metric={{
+                key: r.id,
+                label: r.label,
+                unit: "money",
+                current: r.id === "net" ? L.net : r.amount,
+                prior: r.prior,
+                better: r.better,
+              }}
+            />
+          ),
+      }
+    );
+    ledgerColumns[1] = { ...ledgerColumns[1]!, header: compareLabel ?? periodLabel };
+  }
+
   function ledgerRowClassName(r: LedgerRow): string | undefined {
     if (r.bg === T.greenBg) return "bg-[rgba(30,102,64,0.09)]";
     if (r.bg === T.crimsonBg) return "bg-[rgba(192,57,43,0.08)]";
@@ -421,6 +679,7 @@ export function ProfitLossReport() {
     income: number;
     expenses: number;
     net: number;
+    priorNet: number | null;
   }>[] = [
     {
       id: "name",
@@ -468,53 +727,79 @@ export function ProfitLossReport() {
         </span>
       ),
     },
+    ...(compareActive
+      ? [
+          {
+            id: "priorNet",
+            header: `Net · ${priorLabel ?? "prior"}`,
+            accessor: (f: { priorNet: number | null }) => f.priorNet,
+            type: "number" as const,
+            cell: (_v: unknown, f: { net: number; priorNet: number | null; name: string }) =>
+              f.priorNet == null ? null : (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontFamily: "var(--font-mono)", color: T.taupe }}>
+                    {inr(f.priorNet)}
+                  </span>
+                  <DeltaBadge
+                    size="sm"
+                    metric={
+                      {
+                        key: `firm-${f.name}`,
+                        label: f.name,
+                        unit: "money",
+                        current: f.net,
+                        prior: f.priorNet,
+                        better: "up",
+                      } satisfies ReportMetric
+                    }
+                  />
+                </span>
+              ),
+          },
+        ]
+      : []),
   ];
 
-  const perFirm = firms.map((firm) => {
-    const fin = financials.find((f) => f.firmId === firm.id) ?? {
-      income: [] as { amount: number }[],
-      expenses: [] as { amount: number }[],
-      misc: [] as { type: string; amount: number }[],
+  // Income vs expenses bucketed to the period. Misc entries count too — the
+  // totals above include them, and the chart used to leave them out.
+  const pnlSeries = useMemo(() => {
+    const incomeItems = financials.flatMap((f) => [
+      ...f.income,
+      ...f.misc.filter((m) => m.type === "income"),
+    ]);
+    const expenseItems = financials.flatMap((f) => [
+      ...f.expenses,
+      ...f.misc.filter((m) => m.type === "expense"),
+    ]);
+    type Entry = { date: string; amount: number };
+    const series = (items: Entry[]) =>
+      buildSeries<Entry>({
+        current,
+        prior: null,
+        currentItems: items,
+        dateOf: (e) => e.date,
+        amountOf: (e) => e.amount,
+      });
+    const inc = series(incomeItems);
+    const exp = series(expenseItems);
+    // All Time starts each axis at its own first entry; line both up on the
+    // earlier of the two.
+    const labels = inc.points.length >= exp.points.length ? inc.points : exp.points;
+    const byLabel = (pts: typeof inc.points) => new Map(pts.map((p) => [p.label, p.current]));
+    const incMap = byLabel(inc.points);
+    const expMap = byLabel(exp.points);
+    return {
+      bucket: inc.points.length >= exp.points.length ? inc.bucket : exp.bucket,
+      points: labels.map((p) => ({
+        month: p.label,
+        income: incMap.get(p.label) ?? 0,
+        expenses: expMap.get(p.label) ?? 0,
+      })),
     };
-    let income = 0;
-    fin.income.forEach((e) => (income += e.amount || 0));
-    fin.misc.filter((m) => m.type === "income").forEach((m) => (income += m.amount || 0));
-    let expenses = 0;
-    fin.expenses.forEach((e) => (expenses += e.amount || 0));
-    fin.misc.filter((m) => m.type === "expense").forEach((m) => (expenses += m.amount || 0));
-    return { name: firm.firmName, income, expenses, net: income - expenses };
-  });
-
-  // Dynamic monthly income vs expenses aggregated from real firm financial entries
-  const pnlMonthlyData = useMemo(() => {
-    // Keyed by year+month: a bare month name merged the same month across
-    // years and forced calendar order instead of chronological order.
-    const map = new Map<string, { month: string; income: number; expenses: number }>();
-    const bucket = (d: Date) => {
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      const label = d
-        .toLocaleString("en-US", { month: "short", year: "2-digit" })
-        .replace(" ", " '");
-      const entry = map.get(key) ?? { month: label, income: 0, expenses: 0 };
-      map.set(key, entry);
-      return entry;
-    };
-
-    for (const f of financials) {
-      for (const e of f.income) {
-        const d = new Date(e.date);
-        if (!isNaN(d.getTime())) bucket(d).income += e.amount;
-      }
-      for (const e of f.expenses) {
-        const d = new Date(e.date);
-        if (!isNaN(d.getTime())) bucket(d).expenses += e.amount;
-      }
-    }
-
-    return Array.from(map.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([, v]) => v);
-  }, [financials]);
+  }, [financials, current]);
+  const pnlMonthlyData = pnlSeries.points.some((p) => p.income || p.expenses)
+    ? pnlSeries.points
+    : [];
 
   // Dynamic expense breakdown pie chart
   const expenseDonut = useMemo(() => {
@@ -545,6 +830,7 @@ export function ProfitLossReport() {
         subtitle="A complete picture of the firm's income and expenses. See how much money came in from sales, how much went out to weavers and vendors, and what was left as profit."
       >
         <ReportDLBar />
+        <CompareStrip metrics={metrics} />
 
         <div
           className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr]"
@@ -554,8 +840,8 @@ export function ProfitLossReport() {
             <ChartBand
               tone="pipeline"
               icon={<BarChart2 size={19} color={BAND.pipeline.icon} />}
-              title="Income vs Expenses — Monthly"
-              sub="Green = income · Crimson = expenses"
+              title="Income vs Expenses Over Time"
+              sub={`${periodLabel} — ${bucketPhrase(pnlSeries.bucket)} · green = income, crimson = expenses`}
             />
             <div
               className="p-5 sm:p-6"
@@ -571,8 +857,8 @@ export function ProfitLossReport() {
                     color: T.taupe,
                   }}
                 >
-                  No financial entries recorded yet. Add ledger entries in Firms & Vendor
-                  Management.
+                  No income or expense entries in {periodLabel}. Add ledger entries in Firms &
+                  Vendor Management.
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={220}>
@@ -762,6 +1048,11 @@ export function ProfitLossReport() {
               >
                 Profit & Loss Summary — All Firms
               </div>
+              {compareActive && (
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 4 }}>
+                  {compareLabel ?? periodLabel} compared with {priorLabel}
+                </div>
+              )}
             </div>
 
             {!hasData && (
@@ -781,7 +1072,7 @@ export function ProfitLossReport() {
 
             {/* Mobile View: Fitted 100% to screen width where numbers come immediately after text */}
             <div className="block sm:hidden p-3.5 space-y-2">
-              {ledgerRows.map((r) => {
+              {ledgerWithPrior.map((r) => {
                 if (r.kind === "section") {
                   return (
                     <div
@@ -885,7 +1176,7 @@ export function ProfitLossReport() {
             <div className="hidden sm:block w-full overflow-hidden">
               <DataTable
                 columns={ledgerColumns}
-                data={ledgerRows}
+                data={ledgerWithPrior}
                 getRowId={(r) => r.id}
                 caption="Profit & Loss Summary — All Firms"
                 rowClassName={ledgerRowClassName}
@@ -917,6 +1208,7 @@ export function ProfitLossReport() {
                   className="ml-auto"
                   onClick={exportExcel}
                   disabled={!canExport}
+                  title={exportHint}
                 >
                   Download Ledger Excel
                 </Button>

@@ -64,9 +64,9 @@ export function LiveSummarySnapshot() {
     },
     {
       icon: <ShoppingBag size={18} color={T.antiqueGold} />,
-      label: "Wholesale Dispatched (Live)",
+      label: "Wholesale Sales (Live)",
       value: sales
-        ? `${formatMoney(rupees(sales.wholesaleTotalSales))} · ${sales.wholesaleCount} dispatches`
+        ? `${formatMoney(rupees(sales.wholesaleTotalSales + (sales.wholesaleCounterTotalSales ?? 0)))} · ${sales.wholesaleCount} dispatches${sales.wholesaleCounterCount ? ` + ${sales.wholesaleCounterCount} counter` : ""}`
         : "—",
     },
     {

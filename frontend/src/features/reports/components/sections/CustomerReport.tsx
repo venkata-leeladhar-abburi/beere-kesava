@@ -31,16 +31,19 @@ import {
   ChartTip,
   StatusPill,
 } from "../common/primitives";
+import { CompareStrip, metric, pick } from "../common/compare";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { ChartCard, ChartBand, TrackBar, BAND } from "@/features/production";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
-import { invoicesApi } from "../../../../shared/api/invoices";
-import { salesApi } from "../../../../shared/api/sales";
+import { invoicesApi, type BackendInvoice } from "../../../../shared/api/invoices";
+import { salesApi, type BackendSaleRecord } from "../../../../shared/api/sales";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { PAYMENT_STATUS, type StatusValueOf } from "@/lib/domain/status";
-import { useReportPeriod, useRegisterExport } from "../PeriodContext";
+import { useReportPeriod, useRegisterExport, usePeriodSplit } from "../PeriodContext";
+import { downloadWorkbook, exportFilename } from "../export";
 
 interface CustomerRow {
   id: string;
@@ -54,6 +57,8 @@ interface CustomerRow {
   spend: number;
   due: number;
   lastPurchase: string;
+  /** ISO date of the last purchase in the period, for sorting and the sheet. */
+  lastPurchaseAt: string | null;
   // "has an outstanding due, or not" — maps onto PAYMENT_STATUS's "overdue"
   // (has a due) and "paid" (fully settled / no outstanding balance) keys.
   // Rendering still goes through the local `StatusPill` in
@@ -63,30 +68,151 @@ interface CustomerRow {
   status: StatusValueOf<"payment">;
 }
 
-function downloadCustomerData(r: CustomerRow) {
-  const rows: string[][] = [
-    ["Field", "Value"],
-    ["Name", r.name],
-    ["Type", r.type],
-    ["Phone", r.phone],
-    ["Total Purchases", String(r.purchases)],
-    ["Total Spend (INR)", String(r.spend)],
-    ["Outstanding Due (INR)", String(r.due)],
-    ["Last Purchase Date", r.lastPurchase],
-    ["Status", PAYMENT_STATUS[r.status].label],
+/** One customer's statement for the period: their details, then every purchase. */
+function downloadCustomerData(
+  r: CustomerRow,
+  periodLabel: string,
+  invoices: BackendInvoice[],
+  sales: BackendSaleRecord[]
+) {
+  const purchases = [
+    ...invoices
+      .filter((i) => i.customerId === r.id)
+      .map((i) => [
+        i.invoiceDate,
+        "Invoice",
+        i.code ?? i.id,
+        Number(i.total),
+        Number(i.paid),
+        Math.max(0, Number(i.total) - Number(i.paid)),
+        i.status,
+      ]),
+    ...sales
+      .filter((x) => x.customerId === r.id)
+      .map((x) => [
+        x.saleDate,
+        x.channel === "WHOLESALE" ? "Counter sale" : "Retail sale",
+        x.saleRef,
+        Number(x.amount),
+        Number(x.amount),
+        0,
+        "Paid",
+      ]),
   ];
-  const csv = rows
-    .map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
-    .join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${r.name.replace(/\s+/g, "_")}_customer_data.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  downloadWorkbook(exportFilename(`${r.name} Customer Statement`, periodLabel), [
+    {
+      name: "Customer",
+      preamble: [[`${r.name} — Customer Statement`], ["Period", periodLabel]],
+      headers: ["Field", "Value"],
+      rows: [
+        ["Name", r.name],
+        ["Type", r.type],
+        ["Phone", r.phone],
+        ["City", r.city],
+        ["Address", r.address],
+        ["GST Code", r.gstCode],
+        ["Purchases in period", r.purchases],
+        ["Total spend (INR)", r.spend],
+        ["Outstanding due (INR)", r.due],
+        ["Last purchase", r.lastPurchase],
+        ["Status", PAYMENT_STATUS[r.status].label],
+      ],
+    },
+    {
+      name: "Purchases",
+      headers: ["Date", "Type", "Reference", "Amount", "Paid", "Due", "Status"],
+      columns: ["date", "text", "text", "money", "money", "money", "text"],
+      totals: true,
+      rows: purchases.sort((a, b) => String(b[0]).localeCompare(String(a[0]))),
+    },
+  ]);
+}
+
+const CARDS_PAGE_SIZE = 9;
+
+/** Per-customer figures for one window. */
+function buildCustomerRows(
+  customers: BackendCustomer[],
+  invoices: BackendInvoice[],
+  sales: BackendSaleRecord[]
+): CustomerRow[] {
+  const invoicesByCustomer = new Map<string, BackendInvoice[]>();
+  for (const i of invoices) {
+    const list = invoicesByCustomer.get(i.customerId);
+    if (list) list.push(i);
+    else invoicesByCustomer.set(i.customerId, [i]);
+  }
+  const salesByCustomer = new Map<string, BackendSaleRecord[]>();
+  for (const x of sales) {
+    if (!x.customerId) continue;
+    const list = salesByCustomer.get(x.customerId);
+    if (list) list.push(x);
+    else salesByCustomer.set(x.customerId, [x]);
+  }
+  const lastOf = (dates: string[]) =>
+    dates.length ? dates.reduce((a, b) => (a > b ? a : b)) : null;
+
+  return customers.map((c) => {
+    const base = {
+      id: c.id,
+      name: c.name,
+      phone: c.phone ?? "—",
+      city: c.city ?? "—",
+      address: c.address ?? "—",
+      gstCode: c.gstCode ?? "—",
+    };
+    if (c.type === "WHOLESALE") {
+      const custInvoices = invoicesByCustomer.get(c.id) ?? [];
+      const counterSales = salesByCustomer.get(c.id) ?? [];
+      // "Total Spend" is what the customer bought: invoiced value plus counter
+      // sales (paid on the spot). Summing `paid` instead reported only what
+      // they had settled so far, so a customer's spend shrank as dues grew.
+      const spend =
+        custInvoices.reduce((s, i) => s + Number(i.total), 0) +
+        counterSales.reduce((s, x) => s + Number(x.amount), 0);
+      const due = custInvoices.reduce(
+        (s, i) => s + Math.max(0, Number(i.total) - Number(i.paid)),
+        0
+      );
+      const last = lastOf([
+        ...custInvoices.map((i) => i.invoiceDate),
+        ...counterSales.map((x) => x.saleDate),
+      ]);
+      return {
+        ...base,
+        type: "Wholesale" as const,
+        purchases: custInvoices.length + counterSales.length,
+        spend,
+        due,
+        lastPurchase: last ? new Date(last).toLocaleDateString("en-IN") : "—",
+        lastPurchaseAt: last,
+        status: due > 0 ? ("overdue" as const) : ("paid" as const),
+      };
+    }
+    const custSales = salesByCustomer.get(c.id) ?? [];
+    const last = lastOf(custSales.map((x) => x.saleDate));
+    return {
+      ...base,
+      type: "Retail" as const,
+      purchases: custSales.length,
+      spend: custSales.reduce((s, x) => s + Number(x.amount), 0),
+      due: 0,
+      lastPurchase: last ? new Date(last).toLocaleDateString("en-IN") : "—",
+      lastPurchaseAt: last,
+      status: "paid" as const,
+    };
+  });
+}
+
+function summarise(rows: CustomerRow[], newCustomers: number) {
+  return {
+    active: rows.filter((r) => r.purchases > 0).length,
+    repeat: rows.filter((r) => r.purchases > 1).length,
+    spend: rows.reduce((s, r) => s + r.spend, 0),
+    withDues: rows.filter((r) => r.due > 0).length,
+    dues: rows.reduce((s, r) => s + r.due, 0),
+    newCustomers,
+  };
 }
 
 export function CustomerReport() {
@@ -99,7 +225,7 @@ export function CustomerReport() {
     "Has Outstanding Dues",
     "No Purchases This Month",
   ];
-  const { inCurrent } = useReportPeriod();
+  const { current, compareActive, label: periodLabel } = useReportPeriod();
 
   const {
     data: customersRes,
@@ -123,8 +249,9 @@ export function CustomerReport() {
     isError: salesError,
     refetch: refetchSales,
   } = useQuery({
-    queryKey: ["reports", "sales"],
-    queryFn: () => salesApi.list(),
+    // Every sale, not the first page of 100 — shared with the Retail tab.
+    queryKey: ["reports", "sales-all"],
+    queryFn: () => salesApi.listAll(),
   });
   const isError = customersError || invoicesError || salesError;
   const refetchAll = () => {
@@ -133,58 +260,23 @@ export function CustomerReport() {
     void refetchSales();
   };
 
-  const custRows: CustomerRow[] = useMemo(() => {
-    const customers = customersRes?.items ?? [];
-    const invoices = (invoicesRes?.items ?? []).filter((i) => inCurrent(i.invoiceDate));
-    const sales = (salesRes?.items ?? []).filter(
-      (s) => s.channel === "RETAIL" && inCurrent(s.saleDate)
-    );
+  const invoiceSplit = usePeriodSplit(invoicesRes?.items, (i) => i.invoiceDate);
+  // Both channels: a wholesale customer buying at the counter gets a
+  // WHOLESALE sale record and no invoice, so their spend needs both.
+  const saleSplit = usePeriodSplit(salesRes, (x) => x.saleDate);
+  const joinedSplit = usePeriodSplit(customersRes?.items, (c) => c.createdAt);
 
-    return customers.map((c: BackendCustomer) => {
-      if (c.type === "WHOLESALE") {
-        const custInvoices = invoices.filter((i) => i.customerId === c.id);
-        // "Total Spend" is what the customer bought, i.e. the invoiced value.
-        // Summing `paid` instead reported only what they had settled so far,
-        // so a customer's spend shrank as their dues grew.
-        const spend = custInvoices.reduce((s, i) => s + Number(i.total), 0);
-        const due = custInvoices.reduce((s, i) => s + (Number(i.total) - Number(i.paid)), 0);
-        const dates = custInvoices.map((i) => i.invoiceDate).sort();
-        return {
-          id: c.id,
-          name: c.name,
-          type: "Wholesale" as const,
-          phone: c.phone ?? "—",
-          city: c.city ?? "—",
-          address: c.address ?? "—",
-          gstCode: c.gstCode ?? "—",
-          purchases: custInvoices.length,
-          spend,
-          due,
-          lastPurchase:
-            dates.length > 0 ? new Date(dates[dates.length - 1]!).toLocaleDateString("en-IN") : "—",
-          status: due > 0 ? ("overdue" as const) : ("paid" as const),
-        };
-      }
-      const custSales = sales.filter((s) => s.customerId === c.id);
-      const spend = custSales.reduce((s, sale) => s + Number(sale.amount), 0);
-      const dates = custSales.map((s) => s.saleDate).sort();
-      return {
-        id: c.id,
-        name: c.name,
-        type: "Retail" as const,
-        phone: c.phone ?? "—",
-        city: c.city ?? "—",
-        address: c.address ?? "—",
-        gstCode: c.gstCode ?? "—",
-        purchases: custSales.length,
-        spend,
-        due: 0,
-        lastPurchase:
-          dates.length > 0 ? new Date(dates[dates.length - 1]!).toLocaleDateString("en-IN") : "—",
-        status: "paid" as const,
-      };
-    });
-  }, [customersRes, invoicesRes, salesRes, inCurrent]);
+  const custRows: CustomerRow[] = useMemo(
+    () => buildCustomerRows(customersRes?.items ?? [], invoiceSplit.cur, saleSplit.cur),
+    [customersRes, invoiceSplit, saleSplit]
+  );
+  const priorRows: CustomerRow[] | null = useMemo(
+    () =>
+      compareActive
+        ? buildCustomerRows(customersRes?.items ?? [], invoiceSplit.prev, saleSplit.prev)
+        : null,
+    [compareActive, customersRes, invoiceSplit, saleSplit]
+  );
 
   // Dynamic monthly New vs Returning customer acquisition
   const custMonthly = useMemo(() => {
@@ -194,7 +286,7 @@ export function CustomerReport() {
     // so the same month in different years no longer merges.
     const customers = customersRes?.items ?? [];
     const invoices = invoicesRes?.items ?? [];
-    const sales = salesRes?.items ?? [];
+    const sales = salesRes ?? [];
 
     const keyOf = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     const labelOf = (d: Date) =>
@@ -234,10 +326,14 @@ export function CustomerReport() {
       bucket(d).ret += 1;
     }
 
+    // Only the months the selected period covers.
+    const fromKey = current ? keyOf(current.from) : "";
+    const toKey = current ? keyOf(new Date(current.to.getTime() - 1)) : "9999-99";
     return Array.from(map.entries())
+      .filter(([k]) => k >= fromKey && k <= toKey)
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([, v]) => v);
-  }, [customersRes, invoicesRes, salesRes]);
+  }, [customersRes, invoicesRes, salesRes, current]);
 
   // Last purchase per customer, from *unfiltered* transactions: the
   // "No Purchases This Month" filter asks about this calendar month
@@ -252,7 +348,7 @@ export function CustomerReport() {
       if (!prev || d > prev) map.set(id, d);
     };
     for (const i of invoicesRes?.items ?? []) note(i.customerId, i.invoiceDate);
-    for (const sale of salesRes?.items ?? []) note(sale.customerId, sale.saleDate);
+    for (const sale of salesRes ?? []) note(sale.customerId, sale.saleDate);
     return map;
   }, [invoicesRes, salesRes]);
 
@@ -275,10 +371,41 @@ export function CustomerReport() {
     });
   }, [custRows, filter, search, lastPurchaseDateById]);
 
+  const cur = useMemo(() => summarise(custRows, joinedSplit.cur.length), [custRows, joinedSplit]);
+  const pri = useMemo(
+    () => (priorRows ? summarise(priorRows, joinedSplit.prev.length) : null),
+    [priorRows, joinedSplit]
+  );
+  const metrics = useMemo(
+    () => [
+      metric("active", "Customers who bought", "count", cur.active, pri?.active),
+      metric("repeat", "Bought more than once", "count", cur.repeat, pri?.repeat),
+      metric("new", "New customers", "count", cur.newCustomers, pri?.newCustomers),
+      metric("spend", "Total purchases", "money", cur.spend, pri?.spend),
+      metric("withDues", "Customers with dues", "count", cur.withDues, pri?.withDues, "down"),
+      metric("dues", "Dues on period invoices", "money", cur.dues, pri?.dues, "down"),
+    ],
+    [cur, pri]
+  );
+
   useRegisterExport(
     useMemo(
       () => ({
         name: "Customer Report",
+        sheetName: "Customers",
+        columns: [
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "number",
+          "money",
+          "money",
+          "date",
+          "text",
+        ],
+        totals: true,
         headers: [
           "Customer Name",
           "Type",
@@ -300,13 +427,45 @@ export function CustomerReport() {
           r.purchases,
           r.spend,
           r.due,
-          r.lastPurchase,
+          r.lastPurchaseAt,
           PAYMENT_STATUS[r.status].label,
         ]),
+        extraSheets: [
+          {
+            name: "Purchases",
+            headers: ["Date", "Customer", "Type", "Reference", "Amount", "Paid", "Due"],
+            columns: ["date", "text", "text", "text", "money", "money", "money"],
+            totals: true,
+            rows: [
+              ...invoiceSplit.cur.map((i) => [
+                i.invoiceDate,
+                i.customer?.name ?? "—",
+                "Wholesale invoice",
+                i.code ?? i.id,
+                Number(i.total),
+                Number(i.paid),
+                Math.max(0, Number(i.total) - Number(i.paid)),
+              ]),
+              ...saleSplit.cur.map((x) => [
+                x.saleDate,
+                x.customer?.name ?? "Walk-in Customer",
+                x.channel === "WHOLESALE" ? "Wholesale counter sale" : "Retail sale",
+                x.saleRef,
+                Number(x.amount),
+                Number(x.amount),
+                0,
+              ]),
+            ].sort((a, b) => String(b[0]).localeCompare(String(a[0]))),
+          },
+        ],
+        metrics,
+        ready: !isLoading,
       }),
-      [visibleRows]
+      [visibleRows, invoiceSplit, saleSplit, metrics, isLoading]
     )
   );
+
+  const cardsPager = usePagination(visibleRows, CARDS_PAGE_SIZE);
 
   const topCustomers = [...visibleRows]
     .sort((a, b) => b.spend - a.spend)
@@ -325,11 +484,6 @@ export function CustomerReport() {
   ].filter((d) => d.value > 0);
   const activeCount = visibleRows.filter((c) => c.purchases > 0).length;
   const overdueCount = visibleRows.filter((c) => c.status === "overdue").length;
-  const now = new Date();
-  const newThisMonthCount = (customersRes?.items ?? []).filter((c) => {
-    const d = new Date(c.createdAt);
-    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-  }).length;
 
   const customerColumns: ColumnDef<CustomerRow>[] = [
     {
@@ -430,6 +584,7 @@ export function CustomerReport() {
         subtitle="See all retail and wholesale customers — their purchase history, total spend, frequency of buying, and any outstanding dues. Find your best customers and track who owes money."
       >
         <ReportDLBar />
+        <CompareStrip metrics={metrics} />
 
         <div
           className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
@@ -440,7 +595,7 @@ export function CustomerReport() {
               tone="weavers"
               icon={<UsersRound size={19} color={BAND.weavers.icon} />}
               title="Top Customers by Total Purchase Value"
-              sub="All-time wholesale + retail combined"
+              sub={`${periodLabel} — wholesale + retail combined`}
             />
             <div
               className="p-5 sm:p-6"
@@ -468,7 +623,7 @@ export function CustomerReport() {
                 )}
                 {!isError && topCustomers.length === 0 && (
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "8px 0" }}>
-                    No customer purchases recorded yet.
+                    No customer purchases in {periodLabel}.
                   </div>
                 )}
                 {!isError &&
@@ -514,7 +669,7 @@ export function CustomerReport() {
               tone="output"
               icon={<BarChart2 size={19} color={BAND.output.icon} />}
               title="New vs Returning Customers Each Month"
-              sub="Monthly customer growth"
+              sub={`Monthly customer growth — ${periodLabel}`}
             />
             <div
               className="p-5 sm:p-6"
@@ -686,22 +841,29 @@ export function CustomerReport() {
             icon={<CheckCircle2 size={22} color={T.green} />}
             label="Active"
             value={`${activeCount} customers`}
-            sub="Made at least one purchase"
+            sub={`Bought at least once in ${periodLabel}`}
             greenHi
+            delta={
+              filter === "All Customers" && !search.trim() ? pick(metrics, "active") : undefined
+            }
           />
           <SumCard
             icon={<TrendingUp size={22} color={T.antiqueGold} />}
-            label="New This Month"
-            value={`${newThisMonthCount} customers`}
-            sub="Added to the roster"
+            label={current ? "New Customers" : "Customers on Roster"}
+            value={`${current ? cur.newCustomers : (customersRes?.items.length ?? 0)} customers`}
+            sub={current ? `Joined in ${periodLabel}` : "Every customer on record"}
             hi
+            delta={current ? pick(metrics, "new") : undefined}
           />
           <SumCard
             icon={<ShieldAlert size={22} color={T.crimson} />}
             label="Customers with Dues"
             value={`${overdueCount} customers`}
-            sub="Outstanding balance"
+            sub="Unpaid on invoices in this period"
             crimsonHi
+            delta={
+              filter === "All Customers" && !search.trim() ? pick(metrics, "withDues") : undefined
+            }
           />
         </div>
 
@@ -757,8 +919,9 @@ export function CustomerReport() {
                   loading={isLoading}
                   error={!!isError}
                   onRetry={refetchAll}
-                  emptyTitle="No customers on record yet."
+                  emptyTitle="No customers match this filter."
                   pagination
+                  itemLabel="customers"
                 />
               </div>
             </div>
@@ -779,8 +942,21 @@ export function CustomerReport() {
             >
               Customer Details
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 16 }}>
-              {visibleRows.map((r) => (
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: "-6px 0 12px" }}>
+              Per-customer statement for {periodLabel}
+              {visibleRows.length > 0 ? ` · ${visibleRows.length} customers` : ""}
+            </div>
+            {visibleRows.length === 0 && (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "8px 0" }}>
+                No customers match this filter.
+              </div>
+            )}
+            <div
+              id="customer-detail-cards"
+              className="grid grid-cols-1 md:grid-cols-3"
+              style={{ gap: 16 }}
+            >
+              {cardsPager.pageItems.map((r) => (
                 <div
                   key={r.id}
                   style={{
@@ -869,15 +1045,31 @@ export function CustomerReport() {
                       variant="secondary"
                       size="sm"
                       fullWidth
-                      onClick={() => downloadCustomerData(r)}
+                      onClick={() =>
+                        downloadCustomerData(r, periodLabel, invoiceSplit.cur, saleSplit.cur)
+                      }
                       className="mt-auto"
                     >
-                      ↓ Download Data
+                      ↓ Download Statement (Excel)
                     </Button>
                   </DownloadGate>
                 </div>
               ))}
             </div>
+            {visibleRows.length > CARDS_PAGE_SIZE && (
+              <div style={{ marginTop: 16 }}>
+                <Pagination
+                  page={cardsPager.page}
+                  pageCount={cardsPager.pageCount}
+                  total={cardsPager.total}
+                  pageSize={cardsPager.pageSize}
+                  start={cardsPager.start}
+                  onPageChange={cardsPager.setPage}
+                  itemLabel="customers"
+                  targetId="customer-detail-cards"
+                />
+              </div>
+            )}
           </div>
         </FadeUp>
       </SectionCard>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildXlsx, columnName, safeSheetName } from "./xlsx";
+import { buildWorkbook, buildXlsx, columnName, excelDateSerial, safeSheetName } from "./xlsx";
 
 const decoder = new TextDecoder();
 
@@ -83,5 +83,71 @@ describe("buildXlsx", () => {
 
   it("names the sheet after the report", () => {
     expect(readEntry(bytes, "xl/workbook.xml")).toContain('name="Retail Sales Report"');
+  });
+});
+
+describe("buildWorkbook", () => {
+  const bytes = buildWorkbook([
+    {
+      name: "Summary",
+      preamble: [["Retail Sales Report"], ["Period", "October 2026"]],
+      headers: ["Measure", "Value"],
+      rows: [
+        ["Net revenue", { value: 125000, kind: "money" }],
+        ["Sarees sold", { value: 42, kind: "number" }],
+      ],
+    },
+    {
+      name: "Retail Sales",
+      headers: ["Sale", "Date", "Amount"],
+      columns: ["text", "date", "money"],
+      totals: true,
+      rows: [
+        ["S-1", "2026-10-01", 1000],
+        ["S-2", "2026-10-02T10:30:00", 2500.5],
+      ],
+    },
+    { name: "Retail Sales", headers: ["Duplicate name"], rows: [] },
+  ]);
+
+  it("writes one worksheet part per sheet, with unique names", () => {
+    const wb = readEntry(bytes, "xl/workbook.xml");
+    expect(wb).toContain('name="Summary"');
+    expect(wb).toContain('name="Retail Sales"');
+    expect(wb).toContain('name="Retail Sales (2)"');
+    expect(readEntry(bytes, "[Content_Types].xml")).toContain("/xl/worksheets/sheet3.xml");
+    expect(readEntry(bytes, "xl/_rels/workbook.xml.rels")).toContain('Target="styles.xml"');
+  });
+
+  it("puts the title block above the table and freezes below the header", () => {
+    const sheet = readEntry(bytes, "xl/worksheets/sheet1.xml");
+    expect(sheet).toContain("Retail Sales Report");
+    // Title, period, a blank line, then the header on row 4.
+    expect(sheet).toContain('<pane ySplit="4" topLeftCell="A5"');
+    expect(sheet).toContain('<c r="B5" s="2"><v>125000</v></c>'); // money format
+    expect(sheet).toContain('<c r="B6" s="10"><v>42</v></c>'); // whole number
+  });
+
+  it("writes ISO dates as real Excel dates on the calendar day given", () => {
+    const sheet = readEntry(bytes, "xl/worksheets/sheet2.xml");
+    // 1 Oct 2026 is serial 46296; a bare date must not drift to 30 Sep.
+    expect(sheet).toContain('<c r="B2" s="3"><v>46296</v></c>');
+    expect(sheet).toMatch(/<c r="B3" s="3"><v>46297\.4375<\/v><\/c>/);
+  });
+
+  it("adds a totals row with SUM formulas and cached values", () => {
+    const sheet = readEntry(bytes, "xl/worksheets/sheet2.xml");
+    expect(sheet).toContain('<c r="A4" s="5"');
+    expect(sheet).toContain('<c r="C4" s="6"><f>SUM(C2:C3)</f><v>3500.5</v></c>');
+    // The filter covers the data only, not the totals row.
+    expect(sheet).toContain('<autoFilter ref="A1:C3"/>');
+    expect(readEntry(bytes, "xl/workbook.xml")).toContain('fullCalcOnLoad="1"');
+  });
+});
+
+describe("excelDateSerial", () => {
+  it("counts days from 30 Dec 1899", () => {
+    expect(excelDateSerial(new Date(1900, 0, 1))).toBe(2);
+    expect(excelDateSerial(new Date(2026, 9, 17, 12))).toBe(46312.5);
   });
 });

@@ -39,12 +39,15 @@ import {
   type ScheduledReportItem,
 } from "../../../../shared/api/reports";
 import { useAuth } from "../../../../contexts/AuthContext";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { useConfirm } from "../../../../shared/ui/overlay";
 import {
   patchEnvelopeItems,
   prependToEnvelope,
   removeFromEnvelopeWhere,
 } from "../../../../lib/cacheUpdates";
+
+const SCHEDULES_PAGE_SIZE = 6;
 
 // Every entry here must have a matching key in the backend's
 // ReportSchedulerService.REPORT_NAME_HANDLERS (the exact label string,
@@ -169,6 +172,7 @@ export function ScheduledReportsSection() {
     queryFn: () => reportsApi.listSchedules(),
   });
   const schedules = schedRes?.items ?? [];
+  const schedulePager = usePagination(schedules, SCHEDULES_PAGE_SIZE);
 
   // Live "you'll receive it on…" dates for the schedule being composed.
   const { data: previewRes, isFetching: previewLoading } = useQuery({
@@ -344,11 +348,11 @@ export function ScheduledReportsSection() {
                 one.
               </div>
             ) : (
-              schedules.map((s, i) => (
+              schedulePager.pageItems.map((s, i) => (
                 <ScheduleCard
                   key={s.id}
                   schedule={s}
-                  icon={scheduleIcons[i % scheduleIcons.length]!}
+                  icon={scheduleIcons[(schedulePager.start + i) % scheduleIcons.length]!}
                   myNumber={myNumber}
                   expanded={expandedId === s.id}
                   onToggleExpand={() => setExpandedId(expandedId === s.id ? null : s.id)}
@@ -368,6 +372,20 @@ export function ScheduledReportsSection() {
               ))
             )}
           </div>
+          {schedules.length > SCHEDULES_PAGE_SIZE && (
+            <div style={{ marginTop: 16 }}>
+              <Pagination
+                page={schedulePager.page}
+                pageCount={schedulePager.pageCount}
+                total={schedulePager.total}
+                pageSize={schedulePager.pageSize}
+                start={schedulePager.start}
+                onPageChange={schedulePager.setPage}
+                itemLabel="schedules"
+                scrollToTop={false}
+              />
+            </div>
+          )}
 
           {/* Add Schedule form (collapsible) */}
           {showForm && (

@@ -211,6 +211,41 @@ describe("purchaseOutstanding", () => {
     expect(row.dueAmount).toBe(row.billAmount - row.paidAmount);
   });
 
+  it("counts pieces sent back to the supplier apart from customer returns", () => {
+    const purchaseId = SEED_PURCHASE_SUMMARIES[0].id;
+    const sarees: UnifiedSaree[] = [
+      makeSaree({ sareeId: "S1", origin: "external", purchaseId, status: "unsold" }),
+      makeSaree({
+        sareeId: "S2",
+        origin: "external",
+        purchaseId,
+        status: "returned",
+        returnedToSupplier: true,
+      }),
+      makeSaree({
+        sareeId: "S3",
+        origin: "external",
+        purchaseId,
+        status: "returned",
+        ret: { returnRef: "R1", date: "x", reason: "x", refundAmount: 0, restocked: true },
+      }),
+      makeSaree({
+        sareeId: "S4",
+        origin: "external",
+        purchaseId,
+        status: "returned",
+        ret: { returnRef: "R2", date: "x", reason: "x", refundAmount: 0, restocked: false },
+      }),
+    ];
+    const row = purchaseOutstanding(sarees).find((r) => r.id === purchaseId)!;
+
+    expect(row.supplierReturnedCount).toBe(1);
+    expect(row.returnedCount).toBe(2);
+    // Unsold, plus the customer return put back on sale; the held return and
+    // the piece back with the supplier are not stock.
+    expect(row.unsoldSarees.map((s) => s.sareeId)).toEqual(["S1", "S3"]);
+  });
+
   it("returns one row per seeded purchase even with no matching sarees", () => {
     const result = purchaseOutstanding([]);
     expect(result).toHaveLength(SEED_PURCHASE_SUMMARIES.length);

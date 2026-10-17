@@ -12,6 +12,7 @@ vi.mock("../../../shared/api/bulk-orders", async (importOriginal) => {
     ...mod,
     bulkOrdersApi: {
       list: vi.fn(),
+      listAll: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
       findOne: vi.fn(),
@@ -224,12 +225,7 @@ function renderHarness() {
 describe("BulkOrderContext", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(bulkOrdersApi.list).mockResolvedValue({
-      items: MOCK_BACKEND_ORDERS,
-      total: 6,
-      page: 1,
-      pageSize: 100,
-    });
+    vi.mocked(bulkOrdersApi.listAll).mockResolvedValue(MOCK_BACKEND_ORDERS);
     vi.mocked(customersApi.list).mockResolvedValue({
       items: [{ id: "CUST-001", name: "Test Customer" } as BackendCustomer],
       total: 1,

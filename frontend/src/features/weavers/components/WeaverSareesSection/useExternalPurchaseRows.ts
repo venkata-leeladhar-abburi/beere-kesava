@@ -54,7 +54,7 @@ export function useExternalPurchaseRows(enabled: boolean): {
     queryKey: ["purchases", "external-inventory"],
     // "full" so sareeLines (and their photos) come back — the default
     // "summary" view strips exactly the fields this table exists to show.
-    queryFn: () => purchasesApi.list(100, 1, undefined, undefined, "full"),
+    queryFn: () => purchasesApi.listAll("full"),
     enabled: enabled && allowed,
     staleTime: 60_000,
   });
@@ -63,7 +63,7 @@ export function useExternalPurchaseRows(enabled: boolean): {
     () => ({
       isLoading,
       isError,
-      rows: (data?.items ?? []).flatMap((p) =>
+      rows: (data ?? []).flatMap((p) =>
         purchaseRows(p, dispatchedSareeIds, wholesaleSareeIds, soldSareeIds)
       ),
     }),

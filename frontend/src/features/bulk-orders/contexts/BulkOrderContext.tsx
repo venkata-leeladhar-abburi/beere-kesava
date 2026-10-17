@@ -181,14 +181,14 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
     queryKey: QUERY_KEY,
     enabled,
     queryFn: async () => {
-      const [ordersRes, customersRes] = await Promise.all([
-        bulkOrdersApi.list(),
+      // Every page: a single capped page dropped the oldest orders from the
+      // wholesale report's totals once there were more than 100.
+      const [orders, customersRes] = await Promise.all([
+        bulkOrdersApi.listAll(),
         customersApi.list(),
       ]);
       const customerLookup = new Map(customersRes.items.map((c) => [c.id, c.name]));
-      return ordersRes.items.map((o) =>
-        backendOrderToFrontend(o, customerLookup, getSareeTypeByCode)
-      );
+      return orders.map((o) => backendOrderToFrontend(o, customerLookup, getSareeTypeByCode));
     },
   });
 

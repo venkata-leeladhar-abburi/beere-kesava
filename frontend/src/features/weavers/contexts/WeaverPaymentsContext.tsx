@@ -18,7 +18,10 @@ export interface WeaverPaymentRecord {
   amountPaid: number;
   utrNumber: string;
   firmName: string;
+  /** Display form ("17 Oct 2026") — not parseable everywhere; use `paidOn` to compare. */
   paymentDate: string;
+  /** The payment date as the backend's ISO timestamp, for filtering and sorting. */
+  paidOn?: string;
   uploadedAt: string;
 
   // New ledger fields
@@ -67,6 +70,7 @@ function backendPaymentToFrontend(
       month: "short",
       year: "numeric",
     }),
+    paidOn: p.paymentDate,
     uploadedAt: p.uploadedAt,
     batchNo: p.batchNo ?? undefined,
     loomNumber: p.loomNumber ?? undefined,
@@ -101,8 +105,10 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
     queryKey: QUERY_KEY,
     enabled,
     queryFn: async () => {
-      const [paymentsRes, weaversRes, firmsRes] = await Promise.all([
-        weaverPaymentsApi.list(),
+      const [payments, weaversRes, firmsRes] = await Promise.all([
+        // Every page — the weaver payment report totals these, and one capped
+        // page of 100 under-reported "Total Paid" past that.
+        weaverPaymentsApi.listAll(),
         // Shared cache — see WEAVERS_LIST_QUERY_KEY — instead of a second
         // independent GET /weavers alongside BatchContext's and
         // useCurrentWeaver's, all three of which need this same roster.
@@ -117,7 +123,7 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
       ]);
       const weaverLookup = new Map(weaversRes.items.map((w) => [w.id, w.name]));
       const firmLookup = new Map(firmsRes.items.map((f) => [f.id, f.firmName]));
-      return paymentsRes.items.map((p) => backendPaymentToFrontend(p, weaverLookup, firmLookup));
+      return payments.map((p) => backendPaymentToFrontend(p, weaverLookup, firmLookup));
     },
   });
 

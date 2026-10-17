@@ -1,83 +1,95 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Tag, Banknote, Percent, RefreshCcw, Store } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
-import type { TooltipProps } from "recharts";
-import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { T, F } from "../theme";
 import { semantic } from "../../../../design-system/tokens";
-import { FadeUp, SilkSumCard, SectionCard, ReportDLBar } from "../common/primitives";
+import { FadeUp, SilkSumCard, SectionCard, ReportDLBar, StatusPill } from "../common/primitives";
+import { CompareStrip, metric, pick } from "../common/compare";
+import { TrendChart } from "../common/TrendChart";
 import { ChartCard, ChartBand, TrackBar, BAND } from "@/features/production";
-import { salesApi } from "../../../../shared/api/sales";
+import {
+  salesApi,
+  type BackendSaleRecord,
+  type BackendSaleReturn,
+} from "../../../../shared/api/sales";
 import { saleGstAmount, saleGstRate } from "../../../../lib/domain/saleGst";
 import { customersApi } from "../../../../shared/api/customers";
-import { batchesApi } from "../../../../shared/api/batches";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
-import { useReportPeriod, useRegisterExport } from "../PeriodContext";
+import { useReportPeriod, useRegisterExport, usePeriodSplit } from "../PeriodContext";
+import { buildSeries, bucketPhrase } from "../timeSeries";
+import { matchReturnsToSales } from "../reportMath";
 
 interface RetailSaleRow {
   id: string;
-  date: string;
+  billId: string;
+  saleDate: string;
   customer: string;
   phone: string;
   sarId: string;
+  design: string;
+  type: string;
+  paymentMethod: string;
   price: number;
-  /** GST inside `price` (0 when none was charged, or on a return row). */
+  /** GST inside `price` (0 when none was charged). */
   gst: number;
   gstRate: number | null;
   customerGstin: string;
+  returnedOn: string | null;
+  refund: number;
 }
 
-function RetailWeeklyTooltip({ active, payload, label }: TooltipProps<ValueType, NameType>) {
-  if (!active || !payload || !payload.length) return null;
-  const d = payload[0]!.payload;
-  return (
-    <div
-      style={{
-        background: "#FFFFFF",
-        border: `1px solid ${T.borderDef}`,
-        borderRadius: 8,
-        padding: "8px 12px",
-        boxShadow: "0 4px 16px rgba(74,6,27,0.12)",
-      }}
-    >
-      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>
-        {label} — {d.sarees} sarees sold — {formatMoney(rupees(d.revenue))} revenue
-      </span>
-    </div>
-  );
+const designOf = (s: BackendSaleRecord) => s.saree?.designCode || "No design code";
+const typeOf = (s: BackendSaleRecord) =>
+  s.saree?.sareeType?.type || s.externalSareeType || s.saree?.sareeTypeCode || "Other";
+
+const fmtDay = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+
+interface RetailReturn {
+  ret: BackendSaleReturn;
+  sale: BackendSaleRecord;
+}
+
+/** Headline figures for one window: sales by sale date, refunds by return date. */
+function summarise(sales: BackendSaleRecord[], returns: RetailReturn[]) {
+  const gross = sales.reduce((s, x) => s + Number(x.amount), 0);
+  const refunds = returns.reduce((s, r) => s + Number(r.ret.refundAmount ?? 0), 0);
+  const bills = new Set(sales.map((s) => s.billId || s.saleRef)).size;
+  return {
+    sold: sales.length,
+    bills,
+    gross,
+    refunds,
+    net: gross - refunds,
+    returns: returns.length,
+    avg: sales.length ? gross / sales.length : 0,
+    gst: sales.reduce((s, x) => s + saleGstAmount(x), 0),
+  };
 }
 
 export function RetailSalesReport() {
   const {
-    data: salesRes,
+    data: allSales,
     isLoading: salesLoading,
     isError: salesError,
     refetch: refetchSales,
   } = useQuery({
-    queryKey: ["reports", "sales"],
-    queryFn: () => salesApi.list(),
+    queryKey: ["reports", "sales-all"],
+    // Every sale, not the first page of 100 — the report under-counted as
+    // soon as the shop had made more sales than that.
+    queryFn: () => salesApi.listAll(),
   });
   const {
-    data: returnsRes,
+    data: allReturns,
+    isLoading: returnsLoading,
     isError: returnsError,
     refetch: refetchReturns,
   } = useQuery({
-    queryKey: ["reports", "sale-returns"],
-    queryFn: () => salesApi.listReturns(),
+    queryKey: ["reports", "sale-returns-all"],
+    queryFn: () => salesApi.listAllReturns(),
   });
   const {
     data: customersRes,
@@ -87,11 +99,8 @@ export function RetailSalesReport() {
     queryKey: ["reports", "customers-roster"],
     queryFn: () => customersApi.list(),
   });
-  const { data: batchesRes } = useQuery({
-    queryKey: ["reports", "batches-design-type"],
-    queryFn: () => batchesApi.list(),
-  });
 
+  const isLoading = salesLoading || returnsLoading;
   const isError = salesError || returnsError || customersError;
   const refetchAll = () => {
     void refetchSales();
@@ -99,152 +108,236 @@ export function RetailSalesReport() {
     void refetchCustomers();
   };
 
-  const { inCurrent, label: periodLabel } = useReportPeriod();
+  const {
+    current,
+    prior,
+    compareActive,
+    label: periodLabel,
+    compareLabel,
+    priorLabel,
+  } = useReportPeriod();
 
-  const retailSales = useMemo(() => {
-    return (salesRes?.items ?? []).filter((s) => s.channel === "RETAIL" && inCurrent(s.saleDate));
-  }, [salesRes, inCurrent]);
-
-  const customerById = useMemo(() => {
-    return new Map((customersRes?.items ?? []).map((c) => [c.id, c]));
-  }, [customersRes]);
-
-  const returnBySareeId = useMemo(() => {
-    return new Map((returnsRes?.items ?? []).map((r) => [r.sareeId, r]));
-  }, [returnsRes]);
-
-  const sareeInfoMap = useMemo(() => {
-    const map = new Map<string, { designCode: string | null; sareeTypeCode: string | null }>();
-    if (batchesRes?.items) {
-      for (const b of batchesRes.items) {
-        for (const r of b.rows) {
-          if (r.sareeId) {
-            map.set(r.sareeId, { designCode: r.designCode, sareeTypeCode: r.sareeTypeCode });
-          }
-        }
-      }
+  const retailAll = useMemo(
+    () => (allSales ?? []).filter((s) => s.channel === "RETAIL"),
+    [allSales]
+  );
+  const returnBySaleRef = useMemo(
+    () => matchReturnsToSales(allSales ?? [], allReturns ?? []),
+    [allSales, allReturns]
+  );
+  // Returns of retail sales, carrying the sale they undo.
+  const retailReturnsAll = useMemo(() => {
+    const saleByRef = new Map(retailAll.map((s) => [s.saleRef, s]));
+    const out: RetailReturn[] = [];
+    for (const [ref, ret] of returnBySaleRef) {
+      const sale = saleByRef.get(ref);
+      if (sale) out.push({ ret, sale });
     }
-    return map;
-  }, [batchesRes]);
+    return out;
+  }, [retailAll, returnBySaleRef]);
 
-  const retailRows = useMemo(() => {
-    return retailSales
-      .slice()
-      .sort((a, b) => b.saleDate.localeCompare(a.saleDate))
-      .map((s) => {
-        const ret = returnBySareeId.get(s.sareeId);
-        const customer = s.customerId ? customerById.get(s.customerId) : undefined;
-        return {
-          id: s.saleRef,
-          date: new Date(s.saleDate).toLocaleDateString("en-IN"),
-          customer: ret ? "RETURN" : (customer?.name ?? "Walk-in Customer"),
-          phone: customer?.phone ?? "—",
-          sarId: s.sareeId,
-          price: ret ? -Number(ret.refundAmount) : Number(s.amount),
-          gst: ret ? 0 : saleGstAmount(s),
-          gstRate: ret ? null : saleGstRate(s),
-          customerGstin: ret ? "" : (s.customerGstin ?? ""),
-        };
-      });
-  }, [retailSales, returnBySareeId, customerById]);
+  const salesSplit = usePeriodSplit(retailAll, (s) => s.saleDate);
+  const returnsSplit = usePeriodSplit(retailReturnsAll, (r) => r.ret.returnDate);
 
-  const totalRevenue = retailRows.filter((r) => r.price > 0).reduce((s, r) => s + r.price, 0);
-  const refundTotal = retailRows.filter((r) => r.price < 0).reduce((s, r) => s - r.price, 0);
-  const netRevenue = totalRevenue - refundTotal;
-  const returnsTotal = retailRows.filter((r) => r.price < 0).length;
-  const avgSale =
-    retailRows.length - returnsTotal > 0 ? totalRevenue / (retailRows.length - returnsTotal) : 0;
+  const cur = useMemo(
+    () => summarise(salesSplit.cur, returnsSplit.cur),
+    [salesSplit.cur, returnsSplit.cur]
+  );
+  const pri = useMemo(
+    () => (compareActive ? summarise(salesSplit.prev, returnsSplit.prev) : null),
+    [compareActive, salesSplit.prev, returnsSplit.prev]
+  );
 
-  // Day-of-month buckets over whatever period is selected. These used to
-  // match every sale ever recorded on those days regardless of month or year,
-  // so the chart and its summary strip showed all-time figures under a
-  // current-month heading.
-  const retailWeeklyData = useMemo(() => {
-    const weeks = [
-      { label: "Week 1 (1–7)", from: 1, to: 7 },
-      { label: "Week 2 (8–15)", from: 8, to: 15 },
-      { label: "Week 3 (16–22)", from: 16, to: 22 },
-      { label: "Week 4 (23–31)", from: 23, to: 31 },
-    ];
-    return weeks.map((w) => {
-      const inWeek = retailSales.filter((s) => {
-        const day = new Date(s.saleDate).getDate();
-        return day >= w.from && day <= w.to;
-      });
-      return {
-        week: w.label,
-        sarees: inWeek.length,
-        revenue: inWeek.reduce((s, sale) => s + Number(sale.amount), 0),
-      };
-    });
-  }, [retailSales]);
+  const metrics = useMemo(
+    () => [
+      metric("sold", "Sarees sold", "count", cur.sold, pri?.sold),
+      metric("bills", "Bills", "count", cur.bills, pri?.bills),
+      metric("gross", "Gross sales", "money", cur.gross, pri?.gross),
+      metric("refunds", "Refunds", "money", cur.refunds, pri?.refunds, "down"),
+      metric("net", "Net revenue", "money", cur.net, pri?.net),
+      metric("avg", "Average sale value", "money", cur.avg, pri?.avg),
+      metric("returns", "Sarees returned", "count", cur.returns, pri?.returns, "down"),
+      metric("gst", "GST collected", "money", cur.gst, pri?.gst, "neutral"),
+    ],
+    [cur, pri]
+  );
+
+  const customerById = useMemo(
+    () => new Map((customersRes?.items ?? []).map((c) => [c.id, c])),
+    [customersRes]
+  );
+
+  const retailRows = useMemo<RetailSaleRow[]>(
+    () =>
+      salesSplit.cur
+        .slice()
+        .sort((a, b) => b.saleDate.localeCompare(a.saleDate))
+        .map((s) => {
+          const ret = returnBySaleRef.get(s.saleRef);
+          const customer = s.customerId ? customerById.get(s.customerId) : undefined;
+          return {
+            id: s.saleRef,
+            billId: s.billId ?? "",
+            saleDate: s.saleDate,
+            customer: s.customer?.name ?? customer?.name ?? "Walk-in Customer",
+            phone: s.customer?.phone ?? customer?.phone ?? "—",
+            sarId: s.sareeId,
+            design: designOf(s),
+            type: typeOf(s),
+            paymentMethod: s.paymentMethod ?? "—",
+            price: Number(s.amount),
+            gst: saleGstAmount(s),
+            gstRate: saleGstRate(s),
+            customerGstin: s.customerGstin ?? "",
+            returnedOn: ret?.returnDate ?? null,
+            refund: ret ? Number(ret.refundAmount ?? 0) : 0,
+          };
+        }),
+    [salesSplit.cur, returnBySaleRef, customerById]
+  );
+
+  const series = useMemo(
+    () => ({
+      count: buildSeries({
+        current,
+        prior,
+        currentItems: salesSplit.cur,
+        priorItems: salesSplit.prev,
+        dateOf: (s) => s.saleDate,
+      }),
+      revenue: buildSeries({
+        current,
+        prior,
+        currentItems: salesSplit.cur,
+        priorItems: salesSplit.prev,
+        dateOf: (s) => s.saleDate,
+        amountOf: (s) => Number(s.amount),
+      }),
+    }),
+    [current, prior, salesSplit.cur, salesSplit.prev]
+  );
 
   const retailDesignSales = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const sale of retailSales) {
-      const info = sareeInfoMap.get(sale.sareeId);
-      const code = info?.designCode ?? "General Design";
-      counts[code] = (counts[code] || 0) + 1;
+    const counts = new Map<string, { current: number; prior: number }>();
+    for (const sale of salesSplit.cur) {
+      const e = counts.get(designOf(sale)) ?? { current: 0, prior: 0 };
+      e.current += 1;
+      counts.set(designOf(sale), e);
     }
-
-    return Object.entries(counts)
-      .map(([design, count]) => ({ design, count }))
-      .sort((a, b) => b.count - a.count)
+    for (const sale of salesSplit.prev) {
+      const e = counts.get(designOf(sale));
+      if (e) e.prior += 1;
+    }
+    return Array.from(counts.entries())
+      .map(([design, c]) => ({ design, ...c }))
+      .sort((a, b) => b.current - a.current)
       .slice(0, 5);
-  }, [retailSales, sareeInfoMap]);
+  }, [salesSplit.cur, salesSplit.prev]);
 
   const retailRevenueDonut = useMemo(() => {
-    const typeMap: Record<string, number> = {};
+    const typeMap = new Map<string, number>();
     const colors = semantic.chart.series;
-
-    for (const sale of retailSales) {
+    for (const sale of salesSplit.cur) {
       // A returned saree brought in no revenue, so it must not inflate its
-      // type's slice — the headline revenue figure already nets refunds out.
-      if (returnBySareeId.has(sale.sareeId)) continue;
-      const info = sareeInfoMap.get(sale.sareeId);
-      const type = info?.sareeTypeCode ?? "Silk Saree";
-      typeMap[type] = (typeMap[type] || 0) + Number(sale.amount);
+      // type's slice.
+      if (returnBySaleRef.has(sale.saleRef)) continue;
+      typeMap.set(typeOf(sale), (typeMap.get(typeOf(sale)) ?? 0) + Number(sale.amount));
     }
+    return Array.from(typeMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value], i) => ({ name, value, color: colors[i % colors.length]! }));
+  }, [salesSplit.cur, returnBySaleRef]);
 
-    const entries = Object.entries(typeMap);
-    if (entries.length === 0) return [];
-    return entries.map(([name, value], i) => ({
-      name,
-      value,
-      color: colors[i % colors.length]!,
-    }));
-  }, [retailSales, sareeInfoMap, returnBySareeId]);
-
-  const maxDesignCount = Math.max(1, ...retailDesignSales.map((d) => d.count));
+  const maxDesignCount = Math.max(1, ...retailDesignSales.map((d) => d.current));
 
   useRegisterExport(
     useMemo(
       () => ({
         name: "Retail Sales Report",
+        sheetName: "Retail Sales",
         headers: [
           "Sale ID",
+          "Bill",
           "Sale Date",
           "Customer",
           "Phone",
           "Saree ID",
+          "Design",
+          "Saree Type",
+          "Payment",
           "GST %",
           "GST",
           "Customer GSTIN",
-          "Retail Price",
+          "Amount",
+          "Returned On",
+          "Refund",
         ],
+        columns: [
+          "text",
+          "text",
+          "date",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "figure",
+          "money",
+          "text",
+          "money",
+          "date",
+          "money",
+        ],
+        totals: true,
         rows: retailRows.map((r) => [
           r.id,
-          r.date,
+          r.billId,
+          r.saleDate,
           r.customer,
           r.phone,
           r.sarId,
+          r.design,
+          r.type,
+          r.paymentMethod,
           r.gstRate ?? "",
           r.gst,
           r.customerGstin,
           r.price,
+          r.returnedOn,
+          r.refund || null,
         ]),
+        extraSheets: [
+          {
+            name: "Returns",
+            headers: [
+              "Return Ref",
+              "Returned On",
+              "Sale ID",
+              "Sold On",
+              "Saree ID",
+              "Reason",
+              "Restocked",
+              "Refund",
+            ],
+            columns: ["text", "date", "text", "date", "text", "text", "text", "money"],
+            totals: true,
+            rows: returnsSplit.cur.map(({ ret, sale }) => [
+              ret.returnRef,
+              ret.returnDate,
+              sale.saleRef,
+              sale.saleDate,
+              ret.sareeId,
+              ret.reason ?? "",
+              ret.restocked ? "Yes" : "No",
+              Number(ret.refundAmount ?? 0),
+            ]),
+          },
+        ],
+        metrics,
+        ready: !isLoading,
       }),
-      [retailRows]
+      [retailRows, returnsSplit.cur, metrics, isLoading]
     )
   );
 
@@ -262,9 +355,10 @@ export function RetailSalesReport() {
     {
       id: "date",
       header: "Sale Date",
-      accessor: (r) => r.date,
+      accessor: (r) => r.saleDate,
+      sortable: true,
       cell: (_v, r) => (
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{r.date}</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{fmtDay(r.saleDate)}</span>
       ),
     },
     {
@@ -286,6 +380,7 @@ export function RetailSalesReport() {
       cell: (_v, r) => (
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
           {r.sarId}
+          <div style={{ fontFamily: F.ui, fontSize: 11 }}>{r.design}</div>
         </span>
       ),
     },
@@ -311,17 +406,33 @@ export function RetailSalesReport() {
       header: "Retail Price",
       accessor: (r) => r.price,
       align: "end",
+      sortable: true,
       cell: (_v, r) => (
         <span
           style={{
             fontFamily: "var(--font-mono)",
             fontWeight: 700,
-            color: r.price < 0 ? T.crimson : T.green,
+            color: r.returnedOn ? T.taupe : T.green,
+            textDecoration: r.returnedOn ? "line-through" : undefined,
           }}
         >
-          <Money value={rupees(r.price)} sign={r.price < 0} />
+          <Money value={rupees(r.price)} />
         </span>
       ),
+    },
+    {
+      id: "status",
+      header: "Status",
+      accessor: (r) => (r.returnedOn ? "Returned" : "Sold"),
+      align: "center",
+      cell: (_v, r) =>
+        r.returnedOn ? (
+          <span title={`Refunded ${formatMoney(rupees(r.refund))} on ${fmtDay(r.returnedOn)}`}>
+            <StatusPill label={`Returned ${fmtDay(r.returnedOn)}`} type="bad" />
+          </span>
+        ) : (
+          <StatusPill label="Sold" type="ok" />
+        ),
     },
   ];
 
@@ -333,14 +444,15 @@ export function RetailSalesReport() {
         subtitle="Track all sales at the retail shop — how many sarees were sold, to which customers, at what prices, and what the total revenue was."
       >
         <ReportDLBar />
+        <CompareStrip metrics={metrics} />
 
         <FadeUp>
           <ChartCard style={{ marginBottom: 24 }}>
             <ChartBand
               tone="output"
               icon={<Store size={19} color={BAND.output.icon} />}
-              title="Sarees Sold Each Week"
-              sub={`${periodLabel} — weekly breakdown`}
+              title="Sarees Sold Over Time"
+              sub={`${compareActive ? (compareLabel ?? periodLabel) : periodLabel} — ${bucketPhrase(series.count.bucket)}`}
             />
             <div
               className="p-5 sm:p-6"
@@ -349,98 +461,61 @@ export function RetailSalesReport() {
               <div
                 style={{
                   display: "flex",
-                  alignItems: "center",
                   justifyContent: "flex-end",
                   marginBottom: 14,
                   flexWrap: "wrap",
-                  gap: 12,
+                  gap: 24,
                 }}
               >
-                <div style={{ display: "flex", gap: 24 }}>
-                  <div>
-                    <div
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: 12,
-                        color: T.taupe,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
-                      }}
-                    >
-                      Sarees Sold
-                    </div>
-                    <div
-                      style={{
-                        fontFamily: F.display,
-                        fontSize: 20,
-                        fontWeight: 700,
-                        color: T.royalBurgundy,
-                      }}
-                    >
-                      {retailWeeklyData.reduce((s, w) => s + w.sarees, 0)}
-                    </div>
+                <div>
+                  <div
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 12,
+                      color: T.taupe,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                    }}
+                  >
+                    Sarees Sold
                   </div>
-                  <div>
-                    <div
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: 12,
-                        color: T.taupe,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
-                      }}
-                    >
-                      Revenue
-                    </div>
-                    <div
-                      style={{
-                        fontFamily: F.display,
-                        fontSize: 20,
-                        fontWeight: 700,
-                        color: T.green,
-                      }}
-                    >
-                      <Money value={rupees(retailWeeklyData.reduce((s, w) => s + w.revenue, 0))} />
-                    </div>
+                  <div
+                    style={{
+                      fontFamily: F.display,
+                      fontSize: 20,
+                      fontWeight: 700,
+                      color: T.royalBurgundy,
+                    }}
+                  >
+                    {cur.sold.toLocaleString("en-IN")}
+                  </div>
+                </div>
+                <div>
+                  <div
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 12,
+                      color: T.taupe,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                    }}
+                  >
+                    Gross Sales
+                  </div>
+                  <div
+                    style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}
+                  >
+                    <Money value={rupees(cur.gross)} />
                   </div>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={retailWeeklyData}>
-                  <CartesianGrid
-                    key="retw-grid"
-                    strokeDasharray="3 3"
-                    stroke="rgba(110,15,45,0.07)"
-                    vertical={false}
-                  />
-                  <XAxis
-                    key="retw-x"
-                    dataKey="week"
-                    tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    key="retw-y"
-                    tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }}
-                    axisLine={false}
-                    tickLine={false}
-                    width={30}
-                  />
-                  <Tooltip
-                    key="retw-tip"
-                    content={<RetailWeeklyTooltip />}
-                    cursor={{ fill: "rgba(110,15,45,0.04)" }}
-                  />
-                  <Bar
-                    key="retw-bar"
-                    dataKey="sarees"
-                    name="Sarees Sold"
-                    fill={T.royalBurgundy}
-                    radius={[6, 6, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <TrendChart
+                points={series.count.points}
+                unit="count"
+                currentName={compareLabel ?? periodLabel}
+                priorName={priorLabel}
+                emptyText={isLoading ? "Loading sales…" : `No retail sales in ${periodLabel}.`}
+              />
             </div>
           </ChartCard>
         </FadeUp>
@@ -470,7 +545,7 @@ export function RetailSalesReport() {
                     color: T.taupe,
                   }}
                 >
-                  No retail sales recorded yet.
+                  No retail sales in {periodLabel}.
                 </div>
               ) : (
                 <div
@@ -484,6 +559,7 @@ export function RetailSalesReport() {
                           justifyContent: "space-between",
                           alignItems: "baseline",
                           marginBottom: 4,
+                          gap: 8,
                         }}
                       >
                         <span
@@ -502,13 +578,20 @@ export function RetailSalesReport() {
                             fontSize: 12,
                             fontWeight: 700,
                             color: T.luxuryBrown,
+                            whiteSpace: "nowrap",
                           }}
                         >
-                          {d.count} sarees
+                          {d.current} sarees
+                          {compareActive && (
+                            <span style={{ fontWeight: 500, color: T.taupe }}>
+                              {" "}
+                              · was {d.prior}
+                            </span>
+                          )}
                         </span>
                       </div>
                       <TrackBar
-                        pct={Math.round((d.count / maxDesignCount) * 100)}
+                        pct={Math.round((d.current / maxDesignCount) * 100)}
                         fill={T.royalBurgundy}
                         height={9}
                         delay={i * 0.08}
@@ -525,7 +608,7 @@ export function RetailSalesReport() {
               tone="orders"
               icon={<Percent size={19} color={BAND.orders.icon} />}
               title="Revenue by Saree Type"
-              sub="Retail revenue split"
+              sub="Retail revenue split, returned sarees excluded"
             />
             <div
               className="p-5 sm:p-6"
@@ -541,14 +624,13 @@ export function RetailSalesReport() {
                     color: T.taupe,
                   }}
                 >
-                  No retail sales recorded yet.
+                  No retail sales in {periodLabel}.
                 </div>
               ) : (
                 <>
                   <ResponsiveContainer width="100%" height={150}>
                     <PieChart>
                       <Pie
-                        key="ret-rev-pie"
                         data={retailRevenueDonut}
                         cx="50%"
                         cy="50%"
@@ -563,7 +645,6 @@ export function RetailSalesReport() {
                         ))}
                       </Pie>
                       <Tooltip
-                        key="ret-rev-tip"
                         formatter={(v: number | string, n: string) => [
                           formatMoney(rupees(Number(v))),
                           n,
@@ -623,34 +704,42 @@ export function RetailSalesReport() {
           <SilkSumCard
             icon={<Tag size={22} color={T.antiqueGold} />}
             label="Total Sarees Sold at Shop"
-            value={`${retailRows.length - returnsTotal} sarees`}
-            sub="Retail sales in the selected period"
+            value={`${cur.sold.toLocaleString("en-IN")} sarees`}
+            sub={`${cur.bills.toLocaleString("en-IN")} bills in ${periodLabel}`}
             gid="rsr-s"
+            delta={pick(metrics, "sold")}
           />
           <SilkSumCard
             icon={<Banknote size={22} color={T.antiqueGold} />}
-            label="Total Retail Revenue"
-            value={formatMoney(rupees(netRevenue))}
+            label="Net Retail Revenue"
+            value={formatMoney(rupees(cur.net))}
             sub={
-              refundTotal > 0
-                ? `After ${formatMoney(rupees(refundTotal))} refunded`
-                : "All-time, net of returns"
+              cur.refunds > 0
+                ? `${formatMoney(rupees(cur.gross))} sold − ${formatMoney(rupees(cur.refunds))} refunded`
+                : "No refunds in this period"
             }
             gid="rsr-r"
+            delta={pick(metrics, "net")}
           />
           <SilkSumCard
             icon={<Percent size={22} color={T.antiqueGold} />}
             label="Average Sale Value"
-            value={avgSale > 0 ? formatMoney(rupees(avgSale)) : "—"}
-            sub="Per saree"
+            value={cur.avg > 0 ? formatMoney(rupees(cur.avg)) : "—"}
+            sub="Per saree sold"
             gid="rsr-a"
+            delta={pick(metrics, "avg")}
           />
           <SilkSumCard
             icon={<RefreshCcw size={22} color={T.antiqueGold} />}
             label="Total Returns at Shop"
-            value={`${returnsTotal} sarees`}
-            sub={refundTotal > 0 ? `${formatMoney(rupees(refundTotal))} refunded` : "All-time"}
+            value={`${cur.returns} sarees`}
+            sub={
+              cur.refunds > 0
+                ? `${formatMoney(rupees(cur.refunds))} refunded`
+                : "No refunds in this period"
+            }
             gid="rsr-t"
+            delta={pick(metrics, "returns")}
           />
         </div>
 
@@ -664,17 +753,18 @@ export function RetailSalesReport() {
               boxShadow: "0 2px 14px rgba(74,6,27,0.06)",
             }}
           >
-            <div className="w-full">
-              <div className="min-w-[850px]">
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[900px]">
                 <DataTable
                   columns={retailColumns}
                   data={retailRows}
                   getRowId={(r) => r.id + r.sarId}
-                  loading={salesLoading}
+                  loading={isLoading}
                   error={!!isError}
                   onRetry={refetchAll}
-                  emptyTitle="No retail sales recorded yet."
+                  emptyTitle={`No retail sales in ${periodLabel}.`}
                   pagination
+                  itemLabel="sales"
                 />
               </div>
             </div>

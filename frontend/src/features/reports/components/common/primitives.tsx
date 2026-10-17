@@ -7,6 +7,8 @@ import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F, EASE } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
 import { useReportPeriod } from "../PeriodContext";
+import type { ReportMetric } from "../reportExport";
+import { Chip, DeltaBadge, PriorValue } from "./compare";
 
 export function FadeUp({
   children,
@@ -255,12 +257,15 @@ export function SilkSumCard({
   value,
   sub,
   gid,
+  delta,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   sub: string;
   gid: string;
+  /** While comparing: this card's figure for both windows, shown as a change pill. */
+  delta?: ReportMetric;
 }) {
   return (
     <div
@@ -416,6 +421,21 @@ export function SilkSumCard({
         >
           {value}
         </div>
+        {delta && delta.prior != null && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              flexWrap: "wrap",
+              marginTop: 10,
+            }}
+          >
+            <DeltaBadge metric={delta} size="sm" />
+            <PriorValue metric={delta} />
+          </div>
+        )}
 
         {/* ── Thin divider with diamond ── */}
         <div
@@ -542,6 +562,7 @@ export function SumCard({
   hi = false,
   crimsonHi = false,
   greenHi = false,
+  delta,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -550,6 +571,8 @@ export function SumCard({
   hi?: boolean;
   crimsonHi?: boolean;
   greenHi?: boolean;
+  /** While comparing: this card's figure for both windows, shown as a change pill. */
+  delta?: ReportMetric;
 }) {
   const valColor = hi ? T.antiqueGold : crimsonHi ? T.crimson : greenHi ? T.green : T.luxuryBrown;
   const iconBg = hi
@@ -618,6 +641,12 @@ export function SumCard({
       >
         <AnimCount raw={value} />
       </div>
+      {delta && delta.prior != null && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <DeltaBadge metric={delta} size="sm" />
+          <PriorValue metric={delta} />
+        </div>
+      )}
       {sub && (
         <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginTop: "auto" }}>
           {sub}
@@ -628,16 +657,17 @@ export function SumCard({
 }
 
 /**
- * Per-section period banner + download buttons. The period and comparison
+ * Per-section period banner + download button. The period and comparison
  * labels used to be hard-coded props defaulting to "May 2026" / "April 2026"
  * regardless of what the page was actually showing; they now come from the
- * live period selection, and the buttons export the visible section's rows.
+ * live period selection, and the button exports the visible section's rows.
  */
 export function ReportDLBar({ note }: { note?: string }) {
-  const { label, priorLabel, compareOn, exportExcel, canExport } = useReportPeriod();
+  const { label, compareLabel, priorLabel, compareActive, exportExcel, canExport, exportHint } =
+    useReportPeriod();
   return (
     <div
-      className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0"
+      className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
       style={{
         background: T.warmIvory,
         borderRadius: 12,
@@ -647,7 +677,7 @@ export function ReportDLBar({ note }: { note?: string }) {
         boxShadow: "0 2px 8px rgba(74,6,27,0.04)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
         <div
           style={{
             width: 36,
@@ -663,31 +693,49 @@ export function ReportDLBar({ note }: { note?: string }) {
         >
           <Calendar size={17} color={T.antiqueGold} />
         </div>
-        <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-          Showing:{" "}
-          <span style={{ fontFamily: F.display, fontWeight: 700, color: T.luxuryBrown }}>
-            {label}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexWrap: "wrap",
+            fontFamily: F.ui,
+            fontSize: 14,
+            color: T.taupe,
+            minWidth: 0,
+          }}
+        >
+          <span>
+            Showing:{" "}
+            <span style={{ fontFamily: F.display, fontWeight: 700, color: T.luxuryBrown }}>
+              {label}
+            </span>
           </span>
-          {compareOn && priorLabel && (
-            <>
-              {" "}
-              · Compared with:{" "}
-              <span style={{ fontFamily: F.display, fontWeight: 700, color: T.antiqueGold }}>
-                {priorLabel}
-              </span>
-            </>
+          {compareActive && priorLabel && (
+            <span
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}
+            >
+              <span>· Comparing</span>
+              <Chip tone="current">{compareLabel ?? label}</Chip>
+              <span>vs</span>
+              <Chip tone="prior">{priorLabel}</Chip>
+            </span>
           )}
-          {note && <span style={{ fontStyle: "italic" }}> · {note}</span>}
-        </span>
+          {note && <span style={{ fontStyle: "italic" }}>· {note}</span>}
+        </div>
       </div>
       <DownloadGate>
-        <div className="w-full sm:w-auto flex flex-wrap gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-[rgba(110,15,45,0.08)] sm:border-transparent mt-1 sm:mt-0">
+        <div
+          className="w-full sm:w-auto flex flex-wrap gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-[rgba(110,15,45,0.08)] sm:border-transparent mt-1 sm:mt-0"
+          title={exportHint}
+        >
           <Button
             variant="primary"
             size="sm"
             iconLeft={Download}
             onClick={exportExcel}
             disabled={!canExport}
+            aria-label={exportHint}
           >
             Download Excel
           </Button>
@@ -965,33 +1013,6 @@ export function MiniDonut({
             {badge}
           </span>
         )}
-      </div>
-    </div>
-  );
-}
-
-// ── Table pagination footer ───────────────────────────────────────────────────
-export function TablePager({ total, showing }: { total: number; showing: number }) {
-  return (
-    <div
-      style={{
-        padding: "14px 20px",
-        borderTop: `1px solid ${T.borderDef}`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        background: T.warmIvory,
-      }}
-    >
-      <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-        Showing {showing} of {total} records
-      </span>
-      <div style={{ display: "flex", gap: 5 }}>
-        {["Prev", "1", "2", "3", "Next"].map((p) => (
-          <Button key={p} variant={p === "1" ? "primary" : "secondary"} size="sm">
-            {p}
-          </Button>
-        ))}
       </div>
     </div>
   );

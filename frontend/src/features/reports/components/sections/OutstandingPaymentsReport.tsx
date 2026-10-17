@@ -10,6 +10,8 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, StatusPill } from "@/shared/ui/domain";
 import type { StatusValueOf } from "@/lib/domain/status";
 import { useRegisterExport } from "../PeriodContext";
+import { metric } from "../common/compare";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 const SOURCE_LABEL: Record<string, string> = { invoice: "Invoice", bulk_order: "Bulk Order" };
 
@@ -30,6 +32,8 @@ export function OutstandingPaymentsReport() {
   });
 
   const items = useMemo(() => data?.items ?? [], [data]);
+  // The card view (phones) listed every record at once; it pages like the table.
+  const cardPager = usePagination(items, 10);
   const invoiceCount = items.filter((i) => i.source === "invoice").length;
   const bulkOrderCount = items.filter((i) => i.source === "bulk_order").length;
 
@@ -39,28 +43,73 @@ export function OutstandingPaymentsReport() {
     useMemo(
       () => ({
         name: "Outstanding Payments Report",
+        sheetName: "Outstanding",
         headers: [
           "Source",
           "Reference",
+          "Customer Code",
           "Customer",
+          "Raised By",
+          "Raised On",
+          "Sarees",
           "Total",
           "Paid",
           "Outstanding",
           "Due Date",
           "Status",
         ],
+        columns: [
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "date",
+          "number",
+          "money",
+          "money",
+          "money",
+          "date",
+          "text",
+        ],
+        totals: true,
         rows: items.map((r) => [
           SOURCE_LABEL[r.source] ?? r.source,
           r.id,
+          r.customerCode,
           r.customerName,
+          r.raisedBy,
+          r.raisedAt,
+          r.quantity,
           r.total,
           r.paid,
           r.outstanding,
-          r.dueDate ?? "",
-          r.status,
+          r.dueDate,
+          r.status === "OVERDUE" ? "Overdue" : r.status === "PARTIAL" ? "Partially paid" : "Unpaid",
         ]),
+        metrics: [
+          metric("count", "Unpaid invoices and orders", "count", items.length, null, "down"),
+          metric(
+            "outstanding",
+            "Total outstanding",
+            "money",
+            items.reduce((s, r) => s + r.outstanding, 0),
+            null,
+            "down"
+          ),
+          metric(
+            "overdue",
+            "Overdue",
+            "count",
+            items.filter((r) => r.status === "OVERDUE").length,
+            null,
+            "down"
+          ),
+        ],
+        live: true,
+        ready: !isLoading,
       }),
-      [items]
+      [items, isLoading]
     )
   );
 
@@ -241,7 +290,7 @@ export function OutstandingPaymentsReport() {
           <div
             className={`grid grid-cols-1 gap-3.5 ${viewMode === "card" ? "block md:hidden" : "hidden"}`}
           >
-            {items.map((r) => (
+            {cardPager.pageItems.map((r) => (
               <div
                 key={`${r.source}-${r.id}`}
                 style={{
@@ -427,6 +476,15 @@ export function OutstandingPaymentsReport() {
                 </div>
               </div>
             ))}
+            <Pagination
+              page={cardPager.page}
+              pageCount={cardPager.pageCount}
+              total={cardPager.total}
+              pageSize={cardPager.pageSize}
+              start={cardPager.start}
+              onPageChange={cardPager.setPage}
+              itemLabel="records"
+            />
           </div>
 
           {/* Desktop Table View & Mobile Table Mode */}
@@ -441,8 +499,9 @@ export function OutstandingPaymentsReport() {
                 getRowId={(r) => `${r.source}-${r.id}`}
                 loading={isLoading}
                 error={!!isError}
-                emptyTitle="No outstanding balance records match your search."
+                emptyTitle="No outstanding balances — everything is paid."
                 pagination
+                itemLabel="records"
               />
             </div>
           </div>

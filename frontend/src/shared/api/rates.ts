@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { fetchAllPages } from "./pages";
 
 export interface BackendRate {
   code: string;
@@ -39,6 +40,13 @@ export type UpdateRatePayload = Partial<Omit<CreateRatePayload, "code">>;
 export const ratesApi = {
   list: (pageSize = 100) =>
     apiClient.get<PaginatedResponse<BackendRate>>(`/rates?pageSize=${pageSize}`),
+  /** Every rate row (the server caps a page at 100). */
+  listAll: () =>
+    fetchAllPages(
+      (page) => apiClient.get<PaginatedResponse<BackendRate>>(`/rates?page=${page}&pageSize=100`),
+      100,
+      { key: (r) => r.code }
+    ),
   create: (payload: CreateRatePayload) => apiClient.post<BackendRate>("/rates", payload),
   update: (code: string, payload: UpdateRatePayload) =>
     apiClient.patch<BackendRate>(`/rates/${encodeURIComponent(code)}`, payload),

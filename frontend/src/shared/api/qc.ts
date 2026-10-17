@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { fetchAllPages } from "./pages";
 
 export type BackendQcResult = "PASSED" | "SEMI" | "DEFECTIVE";
 
@@ -56,6 +57,14 @@ export interface BackendReadyForFinishingRecord extends BackendQcRecord {
 export const qcApi = {
   list: (pageSize = 500) =>
     apiClient.get<PaginatedResponse<BackendQcRecord>>(`/qc?pageSize=${pageSize}`),
+
+  /** Every QC record (the server caps a page at 500). Newest first. */
+  listAll: () =>
+    fetchAllPages(
+      (page) => apiClient.get<PaginatedResponse<BackendQcRecord>>(`/qc?page=${page}&pageSize=500`),
+      500,
+      { key: (q) => q.id }
+    ),
 
   findOne: (sareeId: string) => apiClient.get<BackendQcRecord>(`/qc/${sareeId}`),
 

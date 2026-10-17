@@ -232,7 +232,7 @@ export class PurchasesService {
 
   async findAll(
     query: ListPurchasesQueryDto,
-  ): Promise<PaginatedResult<Prisma.PurchaseGetPayload<{ include: typeof include }>>> {
+  ): Promise<PaginatedResult<Prisma.PurchaseGetPayload<{ include: typeof include }> & { paidAmount: string }>> {
     const where: Prisma.PurchaseWhereInput = {
       supplierId: query.supplierId,
       status: query.status,
@@ -245,11 +245,26 @@ export class PurchasesService {
         where,
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
-        orderBy: { date: "desc" },
+        // Many purchases share a date, so date alone leaves their order up to
+        // Postgres — and it can differ between two page requests, which makes
+        // a client walking every page see some purchases twice and others never.
+        orderBy: [{ date: "desc" }, { id: "asc" }],
         include: summary ? summaryInclude : include,
       }),
       this.prisma.purchase.count({ where }),
     ]);
+
+    // What has actually been paid against each purchase, so a PARTIAL bill
+    // reports its real balance rather than all-or-nothing from `status`.
+    const paidRows = items.length
+      ? await this.prisma.supplierPayment.groupBy({
+          by: ["purchaseId"],
+          where: { purchaseId: { in: items.map((i) => i.id) } },
+          _sum: { amount: true },
+        })
+      : [];
+    const paidByPurchase = new Map(paidRows.map((r) => [r.purchaseId, r._sum.amount]));
+    const paidAmount = (id: string) => (paidByPurchase.get(id) ?? new Prisma.Decimal(0)).toFixed(2);
 
     // "summary" sareeLines are missing imageUrl/pieceImageUrls (see
     // summarySareeLineSelect) — filled in with empty placeholders so the
@@ -259,8 +274,12 @@ export class PurchasesService {
       ? items.map((item) => ({
           ...item,
           sareeLines: item.sareeLines.map((l) => ({ ...l, imageUrl: null, pieceImageUrls: [] as string[] })),
+          paidAmount: paidAmount(item.id),
         }))
-      : (items as Prisma.PurchaseGetPayload<{ include: typeof include }>[]);
+      : (items as Prisma.PurchaseGetPayload<{ include: typeof include }>[]).map((item) => ({
+          ...item,
+          paidAmount: paidAmount(item.id),
+        }));
 
     return { items: shaped, total, page: query.page, pageSize: query.pageSize };
   }

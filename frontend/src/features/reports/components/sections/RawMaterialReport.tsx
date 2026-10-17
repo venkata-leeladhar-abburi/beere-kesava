@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Package, Scissors, BarChart2 } from "lucide-react";
 import { T, F } from "../theme";
 import { FadeUp, SectionCard, ReportDLBar } from "../common/primitives";
+import { CompareStrip, metric } from "../common/compare";
 import {
   ChartCard,
   ChartBand,
@@ -17,24 +18,62 @@ import {
   BAND,
   NUM,
 } from "../../../production";
-import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
-import { materialIssuesApi } from "../../../../shared/api/material-issues";
+import { rawMaterialsApi, type GrnReceiptItem } from "../../../../shared/api/rawMaterials";
+import {
+  materialIssuesApi,
+  type BackendMaterialIssueRecord,
+} from "../../../../shared/api/material-issues";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
-import { useReportPeriod, useRegisterExport } from "../PeriodContext";
+import { useReportPeriod, useRegisterExport, usePeriodSplit } from "../PeriodContext";
+import { round2 } from "../reportExport";
 
 const bunsAndReels = formatBunsReels;
 
 interface RawMaterialStockRow {
   type: string;
   sub: string;
-  open: number;
-  recv: number;
-  given: number;
   close: number;
   change: string;
   oos: boolean;
   unit: string;
+}
+
+type MaterialLabel = "Warp" | "Resham" | "Jari";
+const labelOf = (t: string): MaterialLabel =>
+  t === "WARP" ? "Warp" : t === "RESHAM" ? "Resham" : "Jari";
+
+/** What actually entered stock on a GRN line — rejected pieces never did. */
+const receivedQty = (item: GrnReceiptItem["items"][number]) =>
+  Number(item.receivedQuantity ?? item.quantity ?? 0);
+
+/** Jari is always tallied in reels — never sum raw quantities of mismatched units. */
+function receiptTotals(grns: GrnReceiptItem[]) {
+  const t = { Warp: 0, Resham: 0, Jari: 0, spend: 0, lines: 0 };
+  for (const g of grns) {
+    for (const item of g.items) {
+      const type = labelOf(item.materialType);
+      t[type] +=
+        type === "Jari" ? jariToReels(receivedQty(item), item.unit ?? "KG") : receivedQty(item);
+      t.spend += Number(item.totalPrice || 0);
+      t.lines += 1;
+    }
+  }
+  return { ...t, receipts: grns.length, kg: round2(t.Warp + t.Resham), reels: round2(t.Jari) };
+}
+
+function issueTotals(issues: BackendMaterialIssueRecord[]) {
+  const t = { Warp: 0, Resham: 0, Jari: 0 };
+  for (const issue of issues) {
+    for (const item of issue.items) {
+      const type = labelOf(item.materialType);
+      t[type] +=
+        type === "Jari"
+          ? jariToReels(Number(item.quantity || 0), item.unit ?? "REEL")
+          : Number(item.quantity || 0);
+    }
+  }
+  return { ...t, issues: issues.length, kg: round2(t.Warp + t.Resham), reels: round2(t.Jari) };
 }
 
 interface RawMaterialReceiptRow {
@@ -43,10 +82,12 @@ interface RawMaterialReceiptRow {
   dateReceived: string;
   vendor: string;
   firmName: string;
-  materialType: "Warp" | "Resham" | "Jari";
+  materialType: MaterialLabel;
   description: string;
-  quantity: string;
+  quantity: number;
+  rejected: number;
   unit: string;
+  amount: number;
   poReference: string;
   notes: string;
 }
@@ -61,6 +102,8 @@ export function RawMaterialReport() {
     queryKey: ["grn-receipts"],
     queryFn: () => rawMaterialsApi.listGrns(),
   });
+  // listGrns() with no limit already returns every receipt, and
+  // materialIssuesApi.list walks every page, so both are complete lists.
 
   const {
     data: issuesRes,
@@ -82,17 +125,51 @@ export function RawMaterialReport() {
     queryFn: () => rawMaterialsApi.listStock(),
   });
 
-  const { inCurrent } = useReportPeriod();
+  const { compareActive, label: periodLabel } = useReportPeriod();
 
   // Everything flow-based (received / issued) is scoped to the selected
   // period; closing stock is a live snapshot and has no date to filter on.
-  const grnsInPeriod = useMemo(
-    () => (rawGrns?.items ?? []).filter((g) => inCurrent(g.receivedDate)),
-    [rawGrns, inCurrent]
+  const grnSplit = usePeriodSplit(rawGrns?.items, (g) => g.receivedDate);
+  const issueSplit = usePeriodSplit(issuesRes?.items, (i) => i.issuedAt);
+  const grnsInPeriod = grnSplit.cur;
+  const issuesInPeriod = issueSplit.cur;
+
+  const recv = useMemo(() => receiptTotals(grnSplit.cur), [grnSplit]);
+  const recvPrior = useMemo(
+    () => (compareActive ? receiptTotals(grnSplit.prev) : null),
+    [compareActive, grnSplit]
   );
-  const issuesInPeriod = useMemo(
-    () => (issuesRes?.items ?? []).filter((i) => inCurrent(i.issuedAt)),
-    [issuesRes, inCurrent]
+  const given = useMemo(() => issueTotals(issueSplit.cur), [issueSplit]);
+  const givenPrior = useMemo(
+    () => (compareActive ? issueTotals(issueSplit.prev) : null),
+    [compareActive, issueSplit]
+  );
+
+  const metrics = useMemo(
+    () => [
+      metric("recvKg", "Warp + Resham received", "kg", recv.kg, recvPrior?.kg, "neutral"),
+      metric("recvReels", "Jari received", "reels", recv.reels, recvPrior?.reels, "neutral"),
+      metric(
+        "receipts",
+        "Deliveries (GRNs)",
+        "count",
+        recv.receipts,
+        recvPrior?.receipts,
+        "neutral"
+      ),
+      metric("spend", "Material bought", "money", recv.spend, recvPrior?.spend, "neutral", "cost"),
+      metric("givenKg", "Warp + Resham issued", "kg", given.kg, givenPrior?.kg, "neutral"),
+      metric("givenReels", "Jari issued", "reels", given.reels, givenPrior?.reels, "neutral"),
+      metric(
+        "issues",
+        "Issues to weavers / looms",
+        "count",
+        given.issues,
+        givenPrior?.issues,
+        "neutral"
+      ),
+    ],
+    [recv, recvPrior, given, givenPrior]
   );
 
   const receiptRows = useMemo<RawMaterialReceiptRow[]>(() => {
@@ -100,99 +177,44 @@ export function RawMaterialReport() {
     return grnsInPeriod.flatMap((g) =>
       g.items.map((item) => {
         const isJari = item.materialType === "JARI";
-        const reels = isJari ? jariToReels(item.quantity, item.unit ?? "KG") : null;
+        const qty = receivedQty(item);
         return {
           itemId: item.id,
-          batchId: g.id,
-          dateReceived: g.receivedDate
-            ? new Date(g.receivedDate).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })
-            : "Recent",
+          batchId: item.itemCode ?? g.id,
+          dateReceived: g.receivedDate,
           vendor: g.supplierName ?? "Vendor",
           firmName: g.firm?.firmName ?? "—",
-          materialType: (item.materialType === "WARP"
-            ? "Warp"
-            : item.materialType === "RESHAM"
-              ? "Resham"
-              : "Jari") as "Warp" | "Resham" | "Jari",
-          description: item.name,
-          quantity: isJari ? String(reels) : String(item.quantity),
-          unit: isJari ? "Reels" : (item.unit ?? "kg").toLowerCase(),
-          poReference: g.invoiceNo ?? `PO-${g.id.slice(-6)}`,
+          materialType: labelOf(item.materialType),
+          description: [item.name, item.color, item.grade].filter(Boolean).join(" - "),
+          quantity: round2(isJari ? jariToReels(qty, item.unit ?? "KG") : qty),
+          rejected: round2(
+            isJari
+              ? jariToReels(Number(item.rejectedQuantity || 0), item.unit ?? "KG")
+              : Number(item.rejectedQuantity || 0)
+          ),
+          unit: isJari ? "reels" : (item.unit ?? "kg").toLowerCase(),
+          amount: Number(item.totalPrice || 0),
+          poReference: g.purchaseOrders?.map((po) => po.poNumber).join(", ") || g.invoiceNo || "—",
           notes: g.notes ?? "",
         };
       })
     );
   }, [grnsInPeriod]);
 
-  // Dynamic calculation for Received from Vendors chart (by Material Type)
-  const rawReceivedData = useMemo(() => {
-    const totals: Record<string, { current: number; prior: number }> = {
-      Warp: { current: 0, prior: 0 },
-      Resham: { current: 0, prior: 0 },
-      Jari: { current: 0, prior: 0 },
-    };
-
-    {
-      for (const grn of grnsInPeriod) {
-        for (const item of grn.items) {
-          const type =
-            item.materialType === "WARP"
-              ? "Warp"
-              : item.materialType === "RESHAM"
-                ? "Resham"
-                : "Jari";
-          // Jari is always tallied in Reels — never sum raw quantities of
-          // mismatched units (a GRN row might store it as KG).
-          totals[type]!.current +=
-            type === "Jari"
-              ? jariToReels(item.quantity, item.unit ?? "KG")
-              : Number(item.quantity || 0);
-        }
-      }
-    }
-
-    return [
-      { material: "Warp", current: totals.Warp!.current, prior: totals.Warp!.prior },
-      { material: "Resham", current: totals.Resham!.current, prior: totals.Resham!.prior },
-      { material: "Jari", current: totals.Jari!.current, prior: totals.Jari!.prior },
-    ];
-  }, [grnsInPeriod]);
-
-  // Dynamic calculation for Material Given to Weavers chart
-  const rawGivenData = useMemo(() => {
-    const totals: Record<string, { current: number; prior: number }> = {
-      Warp: { current: 0, prior: 0 },
-      Resham: { current: 0, prior: 0 },
-      Jari: { current: 0, prior: 0 },
-    };
-
-    {
-      for (const issue of issuesInPeriod) {
-        for (const item of issue.items) {
-          const type =
-            item.materialType === "WARP"
-              ? "Warp"
-              : item.materialType === "RESHAM"
-                ? "Resham"
-                : "Jari";
-          totals[type]!.current +=
-            type === "Jari"
-              ? jariToReels(Number(item.quantity || 0), item.unit ?? "REEL")
-              : Number(item.quantity || 0);
-        }
-      }
-    }
-
-    return [
-      { material: "Warp", current: totals.Warp!.current, prior: totals.Warp!.prior },
-      { material: "Resham", current: totals.Resham!.current, prior: totals.Resham!.prior },
-      { material: "Jari", current: totals.Jari!.current, prior: totals.Jari!.prior },
-    ];
-  }, [issuesInPeriod]);
+  // Received from vendors / given to weavers, by material type.
+  const rawReceivedData = useMemo(
+    () =>
+      (["Warp", "Resham", "Jari"] as const).map((m) => ({ material: m, current: round2(recv[m]) })),
+    [recv]
+  );
+  const rawGivenData = useMemo(
+    () =>
+      (["Warp", "Resham", "Jari"] as const).map((m) => ({
+        material: m,
+        current: round2(given[m]),
+      })),
+    [given]
+  );
 
   // Dynamic calculation for Stock Items & Mini Donut cards
   const stockItems = useMemo(() => stockRes?.items ?? [], [stockRes]);
@@ -237,10 +259,7 @@ export function RawMaterialReport() {
       return {
         type: item.materialType,
         sub,
-        open: Math.max(0, close), // derived stock
-        recv: 0,
-        given: 0,
-        close,
+        close: round2(close),
         change: oos ? "— Out of Stock" : "Healthy",
         oos,
         unit: isJari ? "reels" : item.unit.toLowerCase(),
@@ -250,40 +269,57 @@ export function RawMaterialReport() {
 
   // Warp/Resham are kg, Jari is reels — the two must never be added into a
   // single "units" figure, so every total is kept split by its own unit.
-  const totalsSummary = useMemo(() => {
-    const kgOf = (rows: { material: string; current: number }[]) =>
-      rows.filter((r) => r.material !== "Jari").reduce((s, r) => s + r.current, 0);
-    const reelsOf = (rows: { material: string; current: number }[]) =>
-      rows.filter((r) => r.material === "Jari").reduce((s, r) => s + r.current, 0);
+  const totalsSummary = useMemo(
+    () => ({
+      recvKg: recv.kg,
+      recvReels: recv.reels,
+      givenKg: given.kg,
+      givenReels: given.reels,
+      closeKg: round2(
+        rawMaterialRows.filter((r) => r.unit !== "reels").reduce((s, r) => s + r.close, 0)
+      ),
+      closeReels: round2(
+        rawMaterialRows.filter((r) => r.unit === "reels").reduce((s, r) => s + r.close, 0)
+      ),
+    }),
+    [recv, given, rawMaterialRows]
+  );
 
-    return {
-      recvKg: kgOf(rawReceivedData),
-      recvReels: reelsOf(rawReceivedData),
-      givenKg: kgOf(rawGivenData),
-      givenReels: reelsOf(rawGivenData),
-      closeKg: rawMaterialRows.filter((r) => r.unit !== "reels").reduce((s, r) => s + r.close, 0),
-      closeReels: rawMaterialRows
-        .filter((r) => r.unit === "reels")
-        .reduce((s, r) => s + r.close, 0),
-    };
-  }, [rawReceivedData, rawGivenData, rawMaterialRows]);
+  const isLoading = grnLoading || issuesLoading || stockLoading;
 
   // Feeds the toolbar's "Download Excel" button with exactly what is on screen.
   useRegisterExport(
     useMemo(
       () => ({
         name: "Raw Material Report",
+        sheetName: "Received",
         headers: [
-          "Batch ID",
+          "GRN Line",
           "Date Received",
           "Vendor",
           "Firm",
           "Material Type",
           "Description",
-          "Quantity",
+          "Quantity Received",
+          "Rejected",
           "Unit",
-          "PO Reference",
+          "Amount",
+          "PO / Invoice",
           "Notes",
+        ],
+        columns: [
+          "text",
+          "date",
+          "text",
+          "text",
+          "text",
+          "text",
+          "number",
+          "number",
+          "text",
+          "money",
+          "text",
+          "text",
         ],
         rows: receiptRows.map((r) => [
           r.batchId,
@@ -293,16 +329,74 @@ export function RawMaterialReport() {
           r.materialType,
           r.description,
           r.quantity,
+          r.rejected || null,
           r.unit,
+          r.amount,
           r.poReference,
           r.notes,
         ]),
+        extraSheets: [
+          {
+            name: "Issued",
+            headers: [
+              "Issued On",
+              "Issued To",
+              "Batch",
+              "Material",
+              "Item",
+              "Quantity",
+              "Unit",
+              "Status",
+            ],
+            columns: ["date", "text", "text", "text", "text", "number", "text", "text"],
+            rows: issuesInPeriod.flatMap((issue) =>
+              issue.items.map((item) => {
+                const isJari = item.materialType === "JARI";
+                return [
+                  issue.issuedAt,
+                  issue.weaver
+                    ? `${issue.weaver.name} (${issue.weaver.code})`
+                    : issue.loomNumber
+                      ? `Loom ${issue.loomNumber}`
+                      : "—",
+                  issue.batchId ?? "—",
+                  labelOf(item.materialType),
+                  item.grnItem?.name ??
+                    ([item.warpSubtype, item.jariType, item.jariGrade, item.jariColor]
+                      .filter(Boolean)
+                      .join(" - ") ||
+                      "—"),
+                  round2(
+                    isJari
+                      ? jariToReels(Number(item.quantity || 0), item.unit ?? "REEL")
+                      : Number(item.quantity || 0)
+                  ),
+                  isJari ? "reels" : (item.unit ?? "kg").toLowerCase(),
+                  issue.status,
+                ];
+              })
+            ),
+          },
+          {
+            name: "Closing Stock (live)",
+            headers: ["Material Type", "Sub-type / Color / Grade", "Stock", "Unit", "Status"],
+            columns: ["text", "text", "number", "text", "text"],
+            rows: rawMaterialRows.map((r) => [
+              r.type,
+              r.sub,
+              r.close,
+              r.unit,
+              r.oos ? "Out of stock" : "In stock",
+            ]),
+          },
+        ],
+        metrics,
+        ready: !isLoading,
       }),
-      [receiptRows]
+      [receiptRows, issuesInPeriod, rawMaterialRows, metrics, isLoading]
     )
   );
 
-  const isLoading = grnLoading || issuesLoading || stockLoading;
   const isError = grnError || issuesError || stockError;
   const refetchAll = () => {
     void refetchGrns();
@@ -382,7 +476,7 @@ export function RawMaterialReport() {
   const receiptColumns: ColumnDef<RawMaterialReceiptRow>[] = [
     {
       id: "batchId",
-      header: "Batch ID",
+      header: "GRN Line",
       accessor: (r) => r.batchId,
       cell: (_v, r) => (
         <span
@@ -402,7 +496,15 @@ export function RawMaterialReport() {
       header: "Date Received",
       accessor: (r) => r.dateReceived,
       cell: (_v, r) => (
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{r.dateReceived}</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
+          {r.dateReceived
+            ? new Date(r.dateReceived).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+            : "—"}
+        </span>
       ),
     },
     { id: "vendor", header: "Vendor", accessor: (r) => r.vendor },
@@ -473,6 +575,7 @@ export function RawMaterialReport() {
         subtitle="Track everything about raw material — how much was received from vendors, how much was given to weavers, and how much is still in the factory. Warp, Resham, and Jari tracked separately."
       >
         <ReportDLBar note="closing stock is always live, not period-scoped" />
+        <CompareStrip metrics={metrics} />
 
         {/* Charts row */}
         <div
@@ -485,7 +588,7 @@ export function RawMaterialReport() {
               tone="pipeline"
               icon={<Package size={19} color={BAND.pipeline.icon} />}
               title="Raw Material Received"
-              sub="Current Period"
+              sub={periodLabel}
             />
             <div
               className="p-5 sm:p-6"
@@ -534,7 +637,7 @@ export function RawMaterialReport() {
               tone="weavers"
               icon={<Scissors size={19} color={BAND.weavers.icon} />}
               title="Material Given to Weavers"
-              sub="Current Period"
+              sub={periodLabel}
             />
             <div
               className="p-5 sm:p-6"
@@ -787,7 +890,7 @@ export function RawMaterialReport() {
                   loading={grnLoading}
                   error={grnError}
                   onRetry={refetchGrns}
-                  emptyTitle="No recent material issues."
+                  emptyTitle={`No material received in ${periodLabel}.`}
                   pagination
                 />
               </div>

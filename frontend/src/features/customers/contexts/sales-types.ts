@@ -81,6 +81,12 @@ export interface UnifiedSaree {
   status: SareeSaleStatus;
   sale: SaleInfo | null;
   ret: ReturnInfo | null;
+  /**
+   * External pieces only: sent back to the supplier (PurchaseSareeLine
+   * returnedQuantity). Such a piece also carries status "returned", but it is
+   * not a customer return and is no longer our stock.
+   */
+  returnedToSupplier?: boolean;
   /** days the saree has been sitting unsold (for ageing buckets) */
   ageDays: number;
 }
@@ -102,6 +108,12 @@ export interface PurchaseSummary {
   // edited by another concurrent agent right now. Retyping here without
   // updating that consumer would break it. Left as a documented exception.
   status: "Paid" | "Pending" | "Partial";
+  /**
+   * Marked PAID by hand (purchases from before status followed payments) with
+   * no supplier payment recorded against it — `paidAmount` then rests on that
+   * label alone, so the bill's "paid" is unconfirmed.
+   */
+  paidWithoutRecord?: boolean;
   sareeCount: number;
 }
 

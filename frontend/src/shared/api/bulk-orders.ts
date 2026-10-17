@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { fetchAllPages } from "./pages";
 import type { BackendActorSummary } from "./batches";
 
 export type BackendBulkOrderStatus = "ON_TRACK" | "AT_RISK" | "OVERDUE";
@@ -67,6 +68,17 @@ export interface UpdateBulkOrderPayload {
 export const bulkOrdersApi = {
   list: (pageSize = 100) =>
     apiClient.get<PaginatedResponse<BackendBulkOrder>>(`/bulk-orders?pageSize=${pageSize}`),
+
+  /** Every bulk order (the server caps a page at 100). Newest first. */
+  listAll: () =>
+    fetchAllPages(
+      (page) =>
+        apiClient.get<PaginatedResponse<BackendBulkOrder>>(
+          `/bulk-orders?page=${page}&pageSize=100`
+        ),
+      100,
+      { key: (o) => o.ref }
+    ),
 
   findOne: (ref: string) => apiClient.get<BackendBulkOrder>(`/bulk-orders/${ref}`),
 

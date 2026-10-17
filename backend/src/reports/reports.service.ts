@@ -1,5 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { DispatchType, InvoiceStatus, OrderPaymentStatus, Prisma, QcResult, ReportFrequency } from "../generated/prisma/client";
+import {
+  DispatchType,
+  InvoiceStatus,
+  OrderPaymentStatus,
+  Prisma,
+  QcResult,
+  ReportFrequency,
+  SalesChannel,
+} from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { computeNextRunAt, listUpcomingRuns, parseDeliveryTime } from "./report-schedule-timing";
@@ -131,7 +139,14 @@ export class ReportsService {
   async getProductionSummary() {
     const [totalSarees, qcCounts, finishingCounts, sarees] = await Promise.all([
       this.getProducedSareeCount(),
-      this.prisma.qcRecord.groupBy({ by: ["result"], _count: { _all: true } }),
+      // One verdict per saree — its newest. A saree re-inspected after SEMI
+      // rework carries a record per round, and grouping records counted it
+      // once per round (SEMI *and* PASSED).
+      this.prisma.qcRecord.findMany({
+        distinct: ["sareeId"],
+        orderBy: [{ sareeId: "asc" }, { qcDate: "desc" }],
+        select: { result: true },
+      }),
       this.prisma.finishingAssignment.groupBy({ by: ["status"], _count: { _all: true } }),
       this.prisma.saree.findMany({
         include: { weaver: true, factoryLoom: true, design: true, sareeType: true },
@@ -145,7 +160,7 @@ export class ReportsService {
       [QcResult.DEFECTIVE]: 0,
     };
     for (const row of qcCounts) {
-      qcByResult[row.result] = row._count._all;
+      qcByResult[row.result] += 1;
     }
 
     // Every produced saree, full record — foreign keys shown as our own
@@ -186,11 +201,15 @@ export class ReportsService {
   // used to just say "₹X, N sales" with no way to trace a single one of
   // them back to a person or a date).
   async getSalesSummary() {
-    const [retailSales, wholesaleDispatches] = await Promise.all([
+    const [retailSales, counterSales, wholesaleDispatches] = await Promise.all([
+      // RETAIL only: wholesale counter sales are SaleRecords too, and were
+      // being counted here as retail.
       this.prisma.saleRecord.findMany({
+        where: { channel: SalesChannel.RETAIL },
         include: { customer: true, soldBy: true },
         orderBy: { date: "desc" },
       }),
+      this.wholesaleCounterSales(),
       this.prisma.dispatchRecord.findMany({
         where: { type: DispatchType.WHOLESALE },
         include: { customer: true, dispatchedBy: true, sarees: true },
@@ -236,7 +255,30 @@ export class ReportsService {
       wholesaleTotalSales: wholesaleRows.reduce((sum, r) => sum + r.amount, 0),
       wholesaleTotalQuantity: wholesaleRows.reduce((sum, r) => sum + r.quantity, 0),
       wholesaleCount: wholesaleRows.length,
+      // Sold to a wholesale customer at the counter — no dispatch, no invoice,
+      // so nothing else counts these.
+      wholesaleCounterSales: counterSales,
+      wholesaleCounterTotalSales: counterSales.reduce((sum, r) => sum + r.amount, 0),
+      wholesaleCounterCount: counterSales.length,
     };
+  }
+
+  /** Wholesale SaleRecords (counter sales to wholesale customers), newest first. */
+  private async wholesaleCounterSales() {
+    const sales = await this.prisma.saleRecord.findMany({
+      where: { channel: SalesChannel.WHOLESALE },
+      include: { customer: true, soldBy: true },
+      orderBy: { date: "desc" },
+    });
+    return sales.map((sale) => ({
+      saleRef: sale.saleRef,
+      soldBy: sale.soldBy ? `${sale.soldBy.firstName} ${sale.soldBy.lastName}`.trim() : "—",
+      soldAt: sale.date,
+      customerName: sale.customer.name,
+      sareeId: sale.sareeId,
+      quantity: 1,
+      amount: Number(sale.amount),
+    }));
   }
 
   /** Retail-only version of getSalesSummary — used by the "Retail Sales
@@ -246,6 +288,7 @@ export class ReportsService {
    *  getSalesSummary and got the combined retail+wholesale shape back). */
   async getRetailSalesReport() {
     const retailSales = await this.prisma.saleRecord.findMany({
+      where: { channel: SalesChannel.RETAIL },
       include: { customer: true, soldBy: true },
       orderBy: { date: "desc" },
     });
@@ -274,11 +317,14 @@ export class ReportsService {
    *  for why this exists as a separate method rather than reusing the
    *  combined one. */
   async getWholesaleSalesReport() {
-    const dispatches = await this.prisma.dispatchRecord.findMany({
-      where: { type: DispatchType.WHOLESALE },
-      include: { customer: true, dispatchedBy: true, firm: true, sarees: true },
-      orderBy: { dispatchDate: "desc" },
-    });
+    const [dispatches, counterSales] = await Promise.all([
+      this.prisma.dispatchRecord.findMany({
+        where: { type: DispatchType.WHOLESALE },
+        include: { customer: true, dispatchedBy: true, firm: true, sarees: true },
+        orderBy: { dispatchDate: "desc" },
+      }),
+      this.wholesaleCounterSales(),
+    ]);
 
     // dispatchId shown as our own human-facing reference (invoice number,
     // falling back to the delivery challan number) rather than the raw
@@ -312,11 +358,18 @@ export class ReportsService {
       notes: dispatch.notes ?? dispatch.specialInstructions ?? "—",
     }));
 
+    const dispatchTotal = rows.reduce((sum, r) => sum + r.amount, 0);
+    const counterTotal = counterSales.reduce((sum, r) => sum + r.amount, 0);
     return {
       wholesaleSales: rows,
-      totalSales: rows.reduce((sum, r) => sum + r.amount, 0),
+      // Its own sheet: counter sales have no dispatch or invoice behind them.
+      wholesaleCounterSales: counterSales,
+      totalSales: dispatchTotal,
       totalQuantity: rows.reduce((sum, r) => sum + r.quantity, 0),
       count: rows.length,
+      counterSalesTotal: counterTotal,
+      counterSalesCount: counterSales.length,
+      combinedTotalSales: dispatchTotal + counterTotal,
       periodStart: rows.length ? rows[rows.length - 1].dispatchedAt : null,
       periodEnd: rows.length ? rows[0].dispatchedAt : null,
     };
@@ -435,13 +488,17 @@ export class ReportsService {
    *  payments) as one line per source, so "who/what/when/how much" is
    *  traceable the same way the other reports are, not just a net figure. */
   async getProfitAndLossReport() {
-    const [retailAgg, wholesaleAgg, materialAgg, receiptDateAgg, weaverAgg] = await Promise.all([
+    const saleAgg = (channel: SalesChannel) =>
       this.prisma.saleRecord.aggregate({
+        where: { channel },
         _sum: { amount: true },
         _count: { _all: true },
         _min: { date: true },
         _max: { date: true },
-      }),
+      });
+    const [retailAgg, counterAgg, wholesaleAgg, materialAgg, receiptDateAgg, weaverAgg] = await Promise.all([
+      saleAgg(SalesChannel.RETAIL),
+      saleAgg(SalesChannel.WHOLESALE),
       this.prisma.dispatchRecord.aggregate({
         where: { type: DispatchType.WHOLESALE },
         _sum: { grandTotal: true },
@@ -463,10 +520,11 @@ export class ReportsService {
     ]);
 
     const retailRevenue = Number(retailAgg._sum.amount ?? 0);
+    const counterRevenue = Number(counterAgg._sum.amount ?? 0);
     const wholesaleRevenue = Number(wholesaleAgg._sum.grandTotal ?? 0);
     const materialCost = Number(materialAgg._sum.totalPrice ?? 0);
     const weaverCost = Number(weaverAgg._sum.amountPaid ?? 0);
-    const totalRevenue = retailRevenue + wholesaleRevenue;
+    const totalRevenue = retailRevenue + counterRevenue + wholesaleRevenue;
     const totalCost = materialCost + weaverCost;
 
     // Each line covers "from this time to this time" — the earliest and
@@ -479,6 +537,14 @@ export class ReportsService {
         amount: retailRevenue,
         periodStart: retailAgg._min.date,
         periodEnd: retailAgg._max.date,
+      },
+      {
+        source: "Wholesale counter sales",
+        type: "Revenue" as const,
+        quantity: counterAgg._count._all,
+        amount: counterRevenue,
+        periodStart: counterAgg._min.date,
+        periodEnd: counterAgg._max.date,
       },
       {
         source: "Wholesale dispatches",
