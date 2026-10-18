@@ -346,3 +346,35 @@ describe("DispatchService.create — challan numbering", () => {
     });
   });
 });
+
+describe("DispatchService.listWholesalePieces", () => {
+  it("lists every piece on a WHOLESALE dispatch with the pre-GST subtotal shared across them", async () => {
+    const prisma: any = {
+      dispatchRecord: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: "d1",
+            dispatchDate: new Date("2026-10-01T00:00:00.000Z"),
+            invoiceNumber: "INV-ACME-001",
+            totalAmount: "10000.00",
+            customer: { name: "Acme Silks" },
+            sarees: [{ sareeId: "EXT-1-01" }, { sareeId: "EXT-1-02" }, { sareeId: "RAMARAO-L1-001" }],
+          },
+          { id: "d2", dispatchDate: new Date("2026-09-01T00:00:00.000Z"), invoiceNumber: null, totalAmount: "0", customer: null, sarees: [] },
+        ]),
+      },
+    };
+    const service = new DispatchService(prisma, {} as any, {} as any, notificationsStub(), passthroughSareeCodes);
+
+    const pieces = await service.listWholesalePieces();
+
+    expect(prisma.dispatchRecord.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { type: DispatchType.WHOLESALE } }),
+    );
+    expect(pieces).toEqual([
+      { sareeId: "EXT-1-01", dispatchId: "d1", dispatchDate: "2026-10-01T00:00:00.000Z", invoiceNumber: "INV-ACME-001", customerName: "Acme Silks", amount: 3333.33 },
+      { sareeId: "EXT-1-02", dispatchId: "d1", dispatchDate: "2026-10-01T00:00:00.000Z", invoiceNumber: "INV-ACME-001", customerName: "Acme Silks", amount: 3333.33 },
+      { sareeId: "RAMARAO-L1-001", dispatchId: "d1", dispatchDate: "2026-10-01T00:00:00.000Z", invoiceNumber: "INV-ACME-001", customerName: "Acme Silks", amount: 3333.33 },
+    ]);
+  });
+});

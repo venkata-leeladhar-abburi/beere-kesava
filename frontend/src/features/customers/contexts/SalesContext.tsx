@@ -17,6 +17,8 @@ import { SEED_PURCHASE_SUMMARIES } from "./sales-seed";
 
 import { inventoryApi } from "../../../shared/api/inventory";
 import { salesApi } from "../../../shared/api/sales";
+import { dispatchApi } from "../../../shared/api/dispatch";
+import { resolveSaleStatus } from "./sale-status";
 import { purchasesApi, type BackendPurchase } from "../../../shared/api/purchases";
 import {
   pieceCodeFromLineCode,
@@ -108,20 +110,42 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
     enabled,
   });
 
+  // Pieces that left on a WHOLESALE dispatch. Those are wholesale sales with
+  // no SaleRecord, so without this every one of them read as unsold stock.
+  // Not part of isError: the figures are still right for everything sold
+  // over the counter if this read fails, so it shouldn't blank the screens.
+  const {
+    data: rawWholesalePieces,
+    isLoading: isWholesalePiecesLoading,
+    refetch: refetchWholesalePieces,
+  } = useQuery({
+    queryKey: ["backend-dispatch-wholesale-pieces"],
+    queryFn: () => dispatchApi.listWholesalePieces(),
+    enabled,
+  });
+
   const isError = isInventoryError || isSalesError || isReturnsError || isPurchasesError;
   const error = inventoryError ?? salesError ?? returnsError ?? purchasesError ?? null;
-  const isLoading = isInventoryLoading || isSalesLoading || isReturnsLoading || isPurchasesLoading;
+  const isLoading =
+    isInventoryLoading ||
+    isSalesLoading ||
+    isReturnsLoading ||
+    isPurchasesLoading ||
+    isWholesalePiecesLoading;
   const refetch = useCallback(() => {
     void refetchInventory();
     void refetchSales();
     void refetchReturns();
     void refetchPurchases();
-  }, [refetchInventory, refetchSales, refetchReturns, refetchPurchases]);
+    void refetchWholesalePieces();
+  }, [refetchInventory, refetchSales, refetchReturns, refetchPurchases, refetchWholesalePieces]);
 
   const externalSarees = useMemo<UnifiedSaree[]>(() => {
     if (!rawPurchases || rawPurchases.length === 0) return [];
     const salesMap = latestBySaree(rawSales);
     const returnsMap = latestBySaree(rawReturns);
+    // Newest dispatch first, so this keeps the latest one per saree.
+    const dispatchMap = latestBySaree(rawWholesalePieces);
 
     return rawPurchases.flatMap((p) => {
       const supplier = p.supplier?.name ?? p.supplierName ?? "External Supplier";
@@ -145,17 +169,14 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
         return Array.from({ length: qty }, (_, i): UnifiedSaree => {
           const pieceNo = i + 1;
           const sareeId = pieceCodeFromLineCode(line.code, pieceNo);
-          const sale = salesMap.get(sareeId);
           const ret = returnsMap.get(sareeId);
+          const { status, sale } = resolveSaleStatus(
+            salesMap.get(sareeId),
+            ret,
+            dispatchMap.get(sareeId)
+          );
           // Same rule as useExternalPurchaseRows.ts and the purchase screens.
           const returnedToSupplier = returnedSet.has(pieceNo);
-          const status: SareeSaleStatus = ret
-            ? "returned"
-            : sale
-              ? sale.channel === "WHOLESALE"
-                ? "wholesale"
-                : "retail"
-              : "unsold";
           const ageDays = purchaseDate
             ? Math.max(0, Math.floor((Date.now() - new Date(purchaseDate).getTime()) / 86_400_000))
             : 0;
@@ -182,19 +203,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
             // is not a customer return either (see isCustomerReturn).
             status: returnedToSupplier ? "returned" : status,
             returnedToSupplier,
-            sale: sale
-              ? {
-                  saleRef: sale.saleRef,
-                  channel: sale.channel === "WHOLESALE" ? "wholesale" : "retail",
-                  date: new Date(sale.saleDate).toLocaleDateString("en-IN", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  }),
-                  customer: "Counter Customer",
-                  amount: Number(sale.amount),
-                }
-              : null,
+            sale,
             ret: ret
               ? {
                   returnRef: ret.returnRef,
@@ -213,7 +222,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
         });
       });
     });
-  }, [rawPurchases, rawSales, rawReturns]);
+  }, [rawPurchases, rawSales, rawReturns, rawWholesalePieces]);
 
   const purchases = useMemo<PurchaseSummary[]>(() => {
     if (!rawPurchases || rawPurchases.length === 0) return SEED_PURCHASE_SUMMARIES;

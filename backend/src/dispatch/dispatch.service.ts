@@ -21,6 +21,17 @@ const include = {
   dispatchedBy: { select: { id: true, firstName: true, lastName: true } },
 } satisfies Prisma.DispatchRecordInclude;
 
+/** A saree that left on a WHOLESALE dispatch, as the sales views read it. */
+export interface WholesaleDispatchPiece {
+  sareeId: string;
+  dispatchId: string;
+  dispatchDate: string;
+  invoiceNumber: string | null;
+  customerName: string | null;
+  /** Pre-GST subtotal divided equally across the dispatch's pieces. */
+  amount: number;
+}
+
 @Injectable()
 export class DispatchService {
   private readonly logger = new Logger(DispatchService.name);
@@ -381,6 +392,40 @@ export class DispatchService {
     ]);
 
     return { items, total, page: query.page, pageSize: query.pageSize };
+  }
+
+  /**
+   * One row per saree that went out on a WHOLESALE dispatch. A wholesale
+   * dispatch IS the sale (no SaleRecord is written for it), so the sales
+   * views need this to count those pieces as sold rather than still in stock.
+   *
+   * There is no per-piece price line on a dispatch, so each piece's amount is
+   * the pre-GST subtotal shared equally across the pieces on it.
+   */
+  async listWholesalePieces(): Promise<WholesaleDispatchPiece[]> {
+    const dispatches = await this.prisma.dispatchRecord.findMany({
+      where: { type: DispatchType.WHOLESALE },
+      select: {
+        id: true,
+        dispatchDate: true,
+        invoiceNumber: true,
+        totalAmount: true,
+        customer: { select: { name: true } },
+        sarees: { select: { sareeId: true } },
+      },
+      orderBy: { dispatchDate: "desc" },
+    });
+    return dispatches.flatMap((d) => {
+      const amount = d.sarees.length > 0 ? Number(d.totalAmount) / d.sarees.length : 0;
+      return d.sarees.map((s) => ({
+        sareeId: s.sareeId,
+        dispatchId: d.id,
+        dispatchDate: d.dispatchDate.toISOString(),
+        invoiceNumber: d.invoiceNumber,
+        customerName: d.customer?.name ?? null,
+        amount: Math.round(amount * 100) / 100,
+      }));
+    });
   }
 
   async findOne(id: string) {

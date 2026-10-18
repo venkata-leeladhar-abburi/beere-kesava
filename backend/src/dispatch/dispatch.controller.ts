@@ -24,6 +24,15 @@ export class DispatchController {
     return this.dispatchService.findAll(query);
   }
 
+  // Every piece that left on a WHOLESALE dispatch — the sales views
+  // (SalesContext) count these as sold, and those are read by ACCOUNTANT too.
+  // Declared before ":id" so "wholesale-pieces" is never read as an id.
+  @Get("wholesale-pieces")
+  @RequireRoles(UserRole.SHOP, UserRole.ACCOUNTANT)
+  listWholesalePieces() {
+    return this.dispatchService.listWholesalePieces();
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.dispatchService.findOne(id);

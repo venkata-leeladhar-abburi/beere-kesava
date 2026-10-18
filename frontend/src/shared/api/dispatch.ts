@@ -54,6 +54,17 @@ export interface BackendDispatchRecord {
   sarees: BackendDispatchSaree[];
 }
 
+/** A saree that left on a WHOLESALE dispatch — GET /dispatch/wholesale-pieces. */
+export interface WholesaleDispatchPiece {
+  sareeId: string;
+  dispatchId: string;
+  dispatchDate: string;
+  invoiceNumber: string | null;
+  customerName: string | null;
+  /** Pre-GST subtotal shared equally across the dispatch's pieces. */
+  amount: number;
+}
+
 interface PaginatedResponse<T> {
   items: T[];
   total: number;
@@ -115,6 +126,10 @@ export interface UpdateDispatchPayload {
 export const dispatchApi = {
   list: (pageSize = 100) =>
     apiClient.get<PaginatedResponse<BackendDispatchRecord>>(`/dispatch?pageSize=${pageSize}`),
+
+  /** Every piece on a WHOLESALE dispatch, newest dispatch first. */
+  listWholesalePieces: () =>
+    apiClient.get<WholesaleDispatchPiece[]>("/dispatch/wholesale-pieces"),
 
   findOne: (id: string) => apiClient.get<BackendDispatchRecord>(`/dispatch/${id}`),
 

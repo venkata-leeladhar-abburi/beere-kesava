@@ -145,12 +145,15 @@ function RankTable({
   filter,
   unitLabel,
   icon,
+  countLabel = "Produced",
 }: {
   title: string;
   sub: string;
   filter: RankFilter;
   unitLabel: string;
   icon: LucideIcon;
+  /** What the piece count is called — a supplier's sarees are bought, not made. */
+  countLabel?: string;
 }) {
   const { ranks } = filter;
 
@@ -238,7 +241,7 @@ function RankTable({
     },
     {
       id: "produced",
-      header: "Produced",
+      header: countLabel,
       priority: 3,
       accessor: (r) => r.produced,
       align: "end",
@@ -347,7 +350,7 @@ function RankTable({
               [
                 unitLabel,
                 "Reference",
-                "Produced",
+                countLabel,
                 "Sold",
                 "Retail",
                 "Wholesale",
@@ -553,7 +556,7 @@ function RankTable({
                     marginBottom: 2,
                   }}
                 >
-                  PRODUCED
+                  {countLabel}
                 </div>
                 <div
                   style={{
@@ -856,6 +859,7 @@ export function TopSellers({ sarees }: { sarees: UnifiedSaree[] }) {
         filter={supplierF}
         unitLabel="Supplier"
         icon={Truck}
+        countLabel="Purchased"
       />
     </div>
   );
