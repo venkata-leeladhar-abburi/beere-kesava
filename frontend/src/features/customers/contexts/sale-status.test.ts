@@ -55,16 +55,16 @@ describe("resolveSaleStatus", () => {
   });
 
   it("falls back to the dispatch id when no invoice was raised", () => {
-    const { sale: info } = resolveSaleStatus(undefined, undefined, dispatch({ invoiceNumber: null }));
+    const { sale: info } = resolveSaleStatus(
+      undefined,
+      undefined,
+      dispatch({ invoiceNumber: null })
+    );
     expect(info?.saleRef).toBe("d1");
   });
 
   it("does not count a piece the buyer sent back off the dispatch as sold", () => {
-    const { status } = resolveSaleStatus(
-      undefined,
-      ret("2026-10-05T00:00:00.000Z"),
-      dispatch()
-    );
+    const { status } = resolveSaleStatus(undefined, ret("2026-10-05T00:00:00.000Z"), dispatch());
     expect(status).toBe("returned");
   });
 

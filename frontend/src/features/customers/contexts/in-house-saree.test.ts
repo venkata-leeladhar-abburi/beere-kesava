@@ -56,7 +56,12 @@ const dispatch = (sareeId: string): WholesaleDispatchPiece => ({
 describe("toInHouseSaree", () => {
   it("leaves a woven saree with no sale or wholesale dispatch unsold", () => {
     const s = toInHouseSaree(woven("A"), undefined, undefined, undefined);
-    expect(s).toMatchObject({ origin: "weaver", weaverId: "wv-1", weaverLoom: 2, status: "unsold" });
+    expect(s).toMatchObject({
+      origin: "weaver",
+      weaverId: "wv-1",
+      weaverLoom: 2,
+      status: "unsold",
+    });
     expect(s.sale).toBeNull();
     expect(isOutstanding(s)).toBe(true);
   });
@@ -69,7 +74,11 @@ describe("toInHouseSaree", () => {
 
   it("counts a saree on a WHOLESALE dispatch as a wholesale sale", () => {
     const s = toInHouseSaree(loomSaree("A"), undefined, undefined, dispatch("A"));
-    expect(s).toMatchObject({ origin: "factoryLoom", factoryLoomId: "Loom-002", status: "wholesale" });
+    expect(s).toMatchObject({
+      origin: "factoryLoom",
+      factoryLoomId: "Loom-002",
+      status: "wholesale",
+    });
     expect(s.sale).toMatchObject({ channel: "wholesale", customer: "Acme Silks", amount: 4200 });
   });
 

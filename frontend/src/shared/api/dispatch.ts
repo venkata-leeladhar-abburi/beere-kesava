@@ -128,8 +128,7 @@ export const dispatchApi = {
     apiClient.get<PaginatedResponse<BackendDispatchRecord>>(`/dispatch?pageSize=${pageSize}`),
 
   /** Every piece on a WHOLESALE dispatch, newest dispatch first. */
-  listWholesalePieces: () =>
-    apiClient.get<WholesaleDispatchPiece[]>("/dispatch/wholesale-pieces"),
+  listWholesalePieces: () => apiClient.get<WholesaleDispatchPiece[]>("/dispatch/wholesale-pieces"),
 
   findOne: (id: string) => apiClient.get<BackendDispatchRecord>(`/dispatch/${id}`),
 
