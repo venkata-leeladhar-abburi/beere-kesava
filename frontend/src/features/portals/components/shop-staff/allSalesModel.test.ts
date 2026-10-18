@@ -25,6 +25,7 @@ function line(saleRef: string, offsetSec: number, over: Partial<Line> = {}): Lin
     payKey: "cash",
     pay: "Cash",
     payRef: null,
+    payments: [{ method: "cash", amount: 1000, reference: null }],
     billId: null,
     amount: 1000,
     taxable: 1000,
@@ -49,6 +50,29 @@ describe("groupIntoBills", () => {
     expect(bills[0].pieces).toBe(3);
     expect(bills[0].total).toBe(3000);
     expect(lines.every((l) => l.billRef === "R-001")).toBe(true);
+  });
+
+  it("sums a split bill's methods across its sarees", () => {
+    const split = (saleRef: string, cash: number, upi: number) =>
+      line(saleRef, 0, {
+        billId: "b1",
+        payKey: "split",
+        pay: "Split",
+        amount: cash + upi,
+        payments: [
+          { method: "cash", amount: cash, reference: null },
+          { method: "upi", amount: upi, reference: "T9" },
+        ],
+      });
+    const { bills } = groupIntoBills([split("R-001", 400, 600), split("R-002", 200, 300)]);
+    expect(bills).toHaveLength(1);
+    expect(bills[0].total).toBe(1500);
+    expect(bills[0].payments).toEqual([
+      { method: "cash", amount: 600, reference: null },
+      { method: "upi", amount: 900, reference: "T9" },
+    ]);
+    expect(bills[0].pay).toBe("Split · Cash ₹600 + UPI ₹900");
+    expect(bills[0].payRef).toBe("T9");
   });
 
   it("splits sales far apart in time into separate bills", () => {

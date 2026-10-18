@@ -15,7 +15,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { SareeCodesService } from "../saree-codes/saree-codes.service";
 import { returnedPieceSet } from "../purchases/returned-pieces";
 import { CreateReturnDto } from "./dto/create-return.dto";
-import { CreateSaleDto } from "./dto/create-sale.dto";
+import { CreateSaleDto, SPLIT_PAYMENT_METHOD } from "./dto/create-sale.dto";
 import { ListReturnQueryDto } from "./dto/list-return-query.dto";
 import { ListSaleQueryDto } from "./dto/list-sale-query.dto";
 import { RegisterDispatchedReturnsDto } from "./dto/register-dispatched-returns.dto";
@@ -41,12 +41,49 @@ interface BillLine {
   amount: number;
   /** This piece's share of the bill's GST (0 when none was charged). */
   gstAmount: number;
+  /** This piece's share of each method on a split bill; null otherwise. */
+  payments?: PaymentLeg[] | null;
+}
+
+/** One method's share of a split payment, as the admin feed carries it. */
+interface PaymentLeg {
+  method: string;
+  amount: number;
+  reference: string | null;
+}
+
+/**
+ * A split bill's legs, summed across its sarees by method — what the
+ * customer actually handed over in each. Summed in paise so the feed never
+ * shows ₹600.0000000001.
+ */
+function mergePaymentLegs(lines: BillLine[]): PaymentLeg[] | null {
+  const byMethod = new Map<string, { paise: number; refs: string[] }>();
+  for (const line of lines) {
+    for (const leg of line.payments ?? []) {
+      const entry = byMethod.get(leg.method) ?? { paise: 0, refs: [] };
+      entry.paise += Math.round(Number(leg.amount) * 100);
+      if (leg.reference && !entry.refs.includes(leg.reference)) entry.refs.push(leg.reference);
+      byMethod.set(leg.method, entry);
+    }
+  }
+  if (byMethod.size === 0) return null;
+  return [...byMethod].map(([method, e]) => ({
+    method,
+    amount: e.paise / 100,
+    reference: e.refs.join(", ") || null,
+  }));
 }
 
 const saleInclude = {
   saree: { include: { sareeType: true } },
   customer: true,
   soldBy: { select: { id: true, firstName: true, lastName: true, role: true } },
+  // The legs of a split payment, largest first; empty for a single-method sale.
+  payments: {
+    select: { method: true, amount: true, reference: true },
+    orderBy: [{ amount: "desc" }, { method: "asc" }],
+  },
 } satisfies Prisma.SaleRecordInclude;
 
 const returnInclude = {
@@ -159,6 +196,63 @@ export class SalesService {
     };
   }
 
+  /**
+   * The payment columns a new sale carries. A single-method sale is its
+   * method and reference, exactly as before. A bill paid with several methods
+   * sends this saree's share of each as `payments`: the legs must add up to
+   * the saree's amount to the paisa, one leg per method, and the sale is
+   * recorded as "split" with one SalePayment row per leg.
+   *
+   * Every saree on a split bill is recorded as split, even one whose share
+   * happened to come from a single method — the counter says so by sending
+   * paymentMethod "split" — so the bill reads the same on all its rows. A
+   * single leg without that is simply a single-method sale.
+   */
+  private paymentFields(dto: CreateSaleDto) {
+    const legs = dto.payments ?? [];
+    if (legs.length === 0) {
+      if (dto.paymentMethod === SPLIT_PAYMENT_METHOD) {
+        throw new BadRequestException("A split payment must list how much was paid by each method");
+      }
+      return { paymentMethod: dto.paymentMethod, paymentRef: dto.paymentRef };
+    }
+    const methods = legs.map((l) => l.method);
+    const repeated = methods.find((m, i) => methods.indexOf(m) !== i);
+    if (repeated) {
+      throw new BadRequestException(`Payment method "${repeated}" is listed twice — enter it once with the full amount`);
+    }
+    // Compared in paise: the amounts carry paise once GST is on the bill.
+    const paise = (v: number) => Math.round(Number(v) * 100);
+    const legsPaise = legs.reduce((sum, l) => sum + paise(l.amount), 0);
+    if (legsPaise !== paise(dto.amount)) {
+      throw new BadRequestException(
+        `Payments add up to ₹${(legsPaise / 100).toFixed(2)} but the sale amount is ₹${Number(dto.amount).toFixed(2)}`,
+      );
+    }
+    const explicitSplit = dto.paymentMethod === SPLIT_PAYMENT_METHOD;
+    if (legs.length === 1 && !explicitSplit) {
+      const [only] = legs;
+      if (dto.paymentMethod && dto.paymentMethod !== only.method) {
+        throw new BadRequestException(
+          `paymentMethod "${dto.paymentMethod}" conflicts with a payment made by "${only.method}"`,
+        );
+      }
+      return { paymentMethod: only.method, paymentRef: only.reference ?? dto.paymentRef ?? null };
+    }
+    if (dto.paymentMethod && !explicitSplit) {
+      throw new BadRequestException(
+        `paymentMethod "${dto.paymentMethod}" conflicts with a payment split across ${legs.length} methods`,
+      );
+    }
+    return {
+      paymentMethod: SPLIT_PAYMENT_METHOD,
+      paymentRef: null,
+      payments: {
+        create: legs.map((l) => ({ method: l.method, amount: l.amount, reference: l.reference ?? null })),
+      },
+    } satisfies Pick<Prisma.SaleRecordCreateInput, "paymentMethod" | "paymentRef" | "payments">;
+  }
+
   async createSale(input: CreateSaleDto) {
     // A tag printed before its supplier short name / invoice number changed
     // still carries the old code — sell the saree it now belongs to.
@@ -246,6 +340,7 @@ export class SalesService {
         : customer.code ?? nameSegment(customer.name, "Customer");
     // Validated before a sale ref is spent on a bill that would be rejected.
     const gst = await this.gstFields(dto);
+    const payment = this.paymentFields(dto);
     const saleRef = await this.idGenerator.nextScoped(salePrefix, saleSegment);
     const sareeStatus = dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL";
     const firmLink = await this.retailFirmLink(dto.channel);
@@ -274,8 +369,7 @@ export class SalesService {
           channel: dto.channel,
           customerId: dto.customerId,
           amount: dto.amount,
-          paymentMethod: dto.paymentMethod,
-          paymentRef: dto.paymentRef,
+          ...payment,
           soldById: dto.actorId,
           billId: dto.billId,
           ...gst,
@@ -366,6 +460,7 @@ export class SalesService {
     }
 
     const gst = await this.gstFields(dto);
+    const payment = this.paymentFields(dto);
     const salePrefix = dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL";
     const saleSegment =
       dto.channel === SalesChannel.WHOLESALE
@@ -396,8 +491,7 @@ export class SalesService {
           channel: dto.channel,
           customerId: dto.customerId,
           amount: dto.amount,
-          paymentMethod: dto.paymentMethod,
-          paymentRef: dto.paymentRef,
+          ...payment,
           soldById: dto.actorId,
           billId: dto.billId,
           ...gst,
@@ -463,6 +557,7 @@ export class SalesService {
         : customer.code ?? nameSegment(customer.name, "Customer");
     // Validated before a sale ref is spent on a bill that would be rejected.
     const gst = await this.gstFields(dto);
+    const payment = this.paymentFields(dto);
     const saleRef = await this.idGenerator.nextScoped(salePrefix, saleSegment);
     const sareeStatus = dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL";
     const firmLink = await this.retailFirmLink(dto.channel);
@@ -476,8 +571,7 @@ export class SalesService {
           channel: dto.channel,
           customerId: dto.customerId,
           amount: dto.amount,
-          paymentMethod: dto.paymentMethod,
-          paymentRef: dto.paymentRef,
+          ...payment,
           soldById: dto.actorId,
           billId: dto.billId,
           ...gst,
@@ -540,6 +634,15 @@ export class SalesService {
     ]);
     const amount = Number(dto.amount);
     const gstAmount = Number(dto.gstAmount ?? 0);
+    const payment = this.paymentFields(dto);
+    const legs: PaymentLeg[] | null =
+      payment.payments
+        ? payment.payments.create.map((l) => ({
+            method: l.method,
+            amount: Number(l.amount),
+            reference: l.reference,
+          }))
+        : null;
     // The discount is what came off the retail rate, so it is measured
     // against the price before GST was added on top.
     const taxable = amount - gstAmount;
@@ -554,13 +657,14 @@ export class SalesService {
       discountNote: dto.discountNote ?? null,
       amount,
       gstAmount,
+      payments: legs,
     };
     const header = {
       channel: dto.channel,
       customerName: customer.name,
       customerPhone: customer.phone,
-      paymentMethod: dto.paymentMethod ?? null,
-      paymentRef: dto.paymentRef ?? null,
+      paymentMethod: payment.paymentMethod ?? null,
+      paymentRef: payment.paymentRef ?? null,
       soldByName: soldBy ? `${soldBy.firstName} ${soldBy.lastName}`.trim() : null,
       gstRate: dto.gstRate ?? null,
       customerGstin: dto.customerGstin ?? null,
@@ -583,6 +687,8 @@ export class SalesService {
         const taxable = (totalPaise - gstPaise) / 100;
         return {
           ...header,
+          // The whole bill's split, not just this saree's share of it.
+          payments: mergePaymentLegs(lines),
           // The bill is numbered after its first sale, as the printed bill is.
           billRef: lines[0].saleRef,
           sareeCount: lines.length,

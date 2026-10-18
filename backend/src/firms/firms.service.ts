@@ -259,6 +259,11 @@ export class FirmsService {
     soldBy: { select: { id: true, firstName: true, lastName: true } },
     firmLinkedBy: { select: { id: true, firstName: true, lastName: true } },
     firm: { select: { id: true, firmName: true } },
+    // The legs of a split payment; empty for a single-method sale.
+    payments: {
+      select: { method: true, amount: true, reference: true },
+      orderBy: [{ amount: "desc" }, { method: "asc" }],
+    },
   } satisfies Prisma.SaleRecordInclude;
 
   /** Date-window + free-text filter shared by both retail-sale listings. */
@@ -303,7 +308,18 @@ export class FirmsService {
     await this.findOne(firmId);
     const where: Prisma.SaleRecordWhereInput = { ...this.retailSaleWhere(query), firmId };
 
-    if (query.paymentMethod) where.paymentMethod = query.paymentMethod;
+    if (query.paymentMethod) {
+      // A split sale counts under every method it was partly paid by, so
+      // "Cash" also finds the bill paid part cash, part UPI.
+      where.AND = [
+        {
+          OR: [
+            { paymentMethod: query.paymentMethod },
+            { payments: { some: { method: query.paymentMethod } } },
+          ],
+        },
+      ];
+    }
     if (query.soldById) where.soldById = query.soldById;
     // "auto" and "manual" are the two halves of a boolean, so an unset
     // linkType (or "all") must not add a clause at all.

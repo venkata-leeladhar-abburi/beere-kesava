@@ -8,14 +8,15 @@ import {
   type RetailBillGst,
 } from "../../../../shared/ui/document";
 import { toBillLine, type SaleLine } from "./sale-cart";
+import type { PaymentLeg } from "../../../../lib/domain/salePayment";
 
 interface NewSaleBillModalProps {
   lines: SaleLine[];
   custName: string;
   phone: string;
   custAddress?: string;
-  payment: "cash" | "upi" | "card" | "other" | null;
-  payRef?: string;
+  /** How the bill is paid — one leg, or one per method on a split. */
+  payments: PaymentLeg[];
   total: number;
   /** Discount on the whole bill (after per-saree discounts), when one was given. */
   billDiscount?: { amount: number; note?: string };
@@ -40,8 +41,7 @@ export function NewSaleBillModal({
   custName,
   phone,
   custAddress,
-  payment,
-  payRef,
+  payments,
   total,
   billDiscount,
   gst,
@@ -92,8 +92,7 @@ export function NewSaleBillModal({
           total={total}
           billDiscount={billDiscount}
           gst={gst}
-          paymentMethod={payment ?? undefined}
-          paymentRef={payRef}
+          payments={payments}
           saleRefs={saleRefs}
         />
       </DocumentViewer>

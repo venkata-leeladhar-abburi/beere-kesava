@@ -759,7 +759,8 @@ export function SummaryPanel({
 /**
  * Selectable tile for payment methods and return reasons. One shared control
  * so selection reads the same everywhere: accent border, tinted fill, and a
- * filled check in the corner. Renders as a real radio for screen readers.
+ * filled check in the corner. Renders as a real radio for screen readers, or
+ * as a checkbox when several can be picked at once (`multi`).
  */
 export function OptionCard({
   icon: Icon,
@@ -769,6 +770,7 @@ export function OptionCard({
   onSelect,
   accent,
   name,
+  multi = false,
 }: {
   icon: LucideIcon;
   label: string;
@@ -777,6 +779,7 @@ export function OptionCard({
   onSelect: () => void;
   accent: FlowAccent;
   name: string;
+  multi?: boolean;
 }) {
   return (
     <div
@@ -790,7 +793,7 @@ export function OptionCard({
       <Button
         variant="tertiary"
         fullWidth
-        role="radio"
+        role={multi ? "checkbox" : "radio"}
         aria-checked={selected}
         name={name}
         onClick={onSelect}

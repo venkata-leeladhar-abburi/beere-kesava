@@ -3,6 +3,13 @@ import type { BackendActorSummary } from "./batches";
 
 export type SalesChannel = "RETAIL" | "WHOLESALE";
 
+/** One method's share of a split counter payment (SalePayment row). */
+export interface BackendSalePaymentLeg {
+  method: string;
+  amount: string; // Prisma Decimal serialised as string
+  reference: string | null;
+}
+
 // Raw shapes exactly as Prisma serialises SaleRecord / ReturnRecord — kept
 // private so a backend field-name change can only ever break this one file.
 interface RawSaleRecord {
@@ -12,8 +19,11 @@ interface RawSaleRecord {
   date: string;
   customerId: string | null;
   amount: string; // Prisma Decimal serialised as string
+  /** "cash" | "upi" | "card" | "other", or "split" — see lib/domain/salePayment. */
   paymentMethod: string | null;
   paymentRef: string | null;
+  /** This saree's share of each method on a split bill; empty otherwise. */
+  payments?: BackendSalePaymentLeg[];
   /** Shared by every saree on one counter bill; null on older rows. */
   billId?: string | null;
   /** GST rate (%) on the bill this sale belongs to; null when none was charged. */
@@ -67,8 +77,11 @@ export interface BackendSaleRecord {
   customerId: string | null;
   amount: string;
   saleDate: string;
+  /** "cash" | "upi" | "card" | "other", or "split" — see lib/domain/salePayment. */
   paymentMethod: string | null;
   paymentRef: string | null;
+  /** This saree's share of each method on a split bill; empty otherwise. */
+  payments?: BackendSalePaymentLeg[];
   /** Shared by every saree on one counter bill; null on older rows. */
   billId?: string | null;
   /** GST rate (%) on the bill this sale belongs to; null when none was charged. */
@@ -135,6 +148,9 @@ export interface CreateSalePayload {
   paymentMethod?: string;
   /** UPI transaction id or last-4 card digits, when the method has one. */
   paymentRef?: string;
+  /** A bill paid with several methods: this saree's share of each, adding up
+   *  to `amount`. Sent with `paymentMethod: "split"`. */
+  payments?: { method: string; amount: number; reference?: string }[];
   /** Retail rate before the counter discount, and "10%" when it was a
    *  percentage — shown in the admin notification, not stored on the sale. */
   originalPrice?: number;

@@ -20,6 +20,7 @@ import { SectionCard } from "@/shared/ui/SectionCard";
 import { Modal } from "@/shared/ui/overlay";
 import { DocumentViewer, RetailBillDocument, DEFAULT_LETTERHEAD_FIRM } from "@/shared/ui/document";
 import { billGstFromSales, saleGstAmount, saleGstRate, saleTaxable } from "@/lib/domain/saleGst";
+import { saleLegs } from "@/lib/domain/salePayment";
 
 interface RetailPurchaseRow {
   saleRef: string;
@@ -649,6 +650,7 @@ export function RetailDetailSection({
                 gst={billGstFromSales([billSale])}
                 paymentMethod={billSale.paymentMethod ?? undefined}
                 paymentRef={billSale.paymentRef ?? undefined}
+                payments={saleLegs(billSale)}
                 soldBy={
                   [billSale.soldBy?.firstName, billSale.soldBy?.lastName]
                     .filter(Boolean)

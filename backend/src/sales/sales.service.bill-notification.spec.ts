@@ -87,6 +87,31 @@ describe("SalesService — one notification per counter bill", () => {
     });
   });
 
+  it("totals a split bill's payment legs by method across its sarees", async () => {
+    await notify("RETAIL-Chetan-001-001", sale("RAMOJI-L1-B001-008", 1000, {
+      billId: "b1", paymentMethod: "split",
+      payments: [{ method: "cash", amount: 400 }, { method: "upi", amount: 600, reference: "TXN9" }],
+    }));
+    await notify("RETAIL-Chetan-001-002", sale("RAMOJI-L1-B001-009", 500, {
+      billId: "b1", paymentMethod: "split",
+      payments: [{ method: "cash", amount: 200 }, { method: "upi", amount: 300, reference: "TXN9" }],
+    }));
+
+    expect(stored).toMatchObject({
+      paymentMethod: "split",
+      paymentRef: null,
+      total: 1500,
+      payments: [
+        { method: "cash", amount: 600, reference: null },
+        { method: "upi", amount: 900, reference: "TXN9" },
+      ],
+      lines: [
+        { amount: 1000, payments: [{ method: "cash", amount: 400 }, { method: "upi", amount: 600 }] },
+        { amount: 500, payments: [{ method: "cash", amount: 200 }, { method: "upi", amount: 300 }] },
+      ],
+    });
+  });
+
   it("never lists the same sale twice if it is reported again", async () => {
     const dto = sale("RAMOJI-L1-B001-008", 1500, { billId: "b1" });
     await notify("RETAIL-Chetan-001-001", dto);

@@ -19,6 +19,7 @@ import { DSH } from "./DSH";
 import { Button } from "../../../../../shared/ui/primitives";
 import { LoadingState, ErrorState } from "../../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { salePaymentText } from "@/lib/domain/salePayment";
 import { sareeTypeText } from "../stock-format";
 
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
@@ -31,13 +32,6 @@ function dateLabel(iso: string) {
   }
   return d.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
 }
-
-const PAYMENT_LABEL: Record<string, string> = {
-  cash: "Cash",
-  upi: "UPI",
-  card: "Card",
-  other: "Other",
-};
 
 export function HomeSection({
   isTablet,
@@ -116,7 +110,7 @@ export function HomeSection({
       sareeTypeCode: s.saree?.sareeTypeCode ?? null,
       sareeTypeLabel: s.saree?.sareeType?.type ?? s.externalSareeType ?? null,
     }),
-    pay: s.paymentMethod ? (PAYMENT_LABEL[s.paymentMethod] ?? s.paymentMethod) : "—",
+    pay: salePaymentText(s),
     amt: formatMoney(rupees(Number(s.amount))),
     time: dateLabel(s.saleDate),
     color: "#6E0F2D",

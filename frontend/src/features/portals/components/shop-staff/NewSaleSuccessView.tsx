@@ -4,6 +4,7 @@ import { Check, Printer, MessageSquare, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { C, F, Card, Btn, HeroHeader } from "./theme";
 import { toBillLine, type SaleLine } from "./sale-cart";
+import { legsSummary, type PaymentLeg } from "../../../../lib/domain/salePayment";
 import { isApiError } from "../../../../shared/api/client";
 import { whatsappApi } from "../../../../shared/api/whatsapp";
 import {
@@ -19,8 +20,8 @@ interface NewSaleSuccessViewProps {
   /** As captured on step 1 — "—" or empty when the walk-in gave no number. */
   phone: string;
   custAddress?: string;
-  payment: "cash" | "upi" | "card" | "other" | null;
-  payRef?: string;
+  /** How the bill is paid — one leg, or one per method on a split. */
+  payments: PaymentLeg[];
   total: number;
   /** Discount on the whole bill (after per-saree discounts), when one was given. */
   billDiscount?: { amount: number; note?: string };
@@ -48,8 +49,7 @@ export function NewSaleSuccessView({
   custName,
   phone,
   custAddress,
-  payment,
-  payRef,
+  payments,
   total,
   billDiscount,
   gst,
@@ -92,8 +92,7 @@ export function NewSaleSuccessView({
           total={total}
           billDiscount={billDiscount}
           gst={gst}
-          paymentMethod={payment ?? undefined}
-          paymentRef={payRef}
+          payments={payments}
           saleRefs={saleRefs}
         />
       );
@@ -237,7 +236,7 @@ export function NewSaleSuccessView({
                 }),
                 true,
               ],
-              ["Payment", payment?.toUpperCase() ?? "—", true],
+              ["Payment", legsSummary(payments), true],
             ].map(([k, v, mono]) => (
               <div
                 key={k as string}

@@ -21,6 +21,7 @@ import { PartyBlock, type MetaField } from "./PartyBlock";
 import { LineItemTable } from "./LineItemTable";
 import { TotalsBlock, type TotalsRow } from "./TotalsBlock";
 import { amountInWords, formatPaise, toPaise } from "../../../lib/gst";
+import { paymentMethodLabel, type PaymentLeg } from "../../../lib/domain/salePayment";
 
 export interface RetailBillLineItem {
   /** The physical saree tag — what the customer can point at. */
@@ -76,6 +77,10 @@ export interface RetailBillDocumentProps {
   gst?: RetailBillGst;
   paymentMethod?: string;
   paymentRef?: string;
+  /** How the bill was paid, as legs (lib/domain/salePayment). Takes over from
+   *  `paymentMethod`/`paymentRef` when given; with more than one leg the bill
+   *  reads "Split" and lists what each method paid under the total. */
+  payments?: PaymentLeg[];
   soldBy?: string;
   /** Every SaleRecord reference on this bill — listed when the basket has more than one. */
   saleRefs?: string[];
@@ -87,9 +92,7 @@ export interface RetailBillDocumentProps {
 
 /** "upi" → "UPI", "cash" → "Cash". */
 function paymentLabel(method?: string): string {
-  if (!method) return "—";
-  const upper = method.toUpperCase();
-  return upper === "UPI" ? "UPI" : upper.charAt(0) + method.slice(1).toLowerCase();
+  return paymentMethodLabel(method) || "—";
 }
 
 export function RetailBillDocument({
@@ -105,6 +108,7 @@ export function RetailBillDocument({
   gst,
   paymentMethod,
   paymentRef,
+  payments,
   soldBy,
   saleRefs,
   pageInfo,
@@ -129,12 +133,22 @@ export function RetailBillDocument({
   const discount = retailTotal - taxablePaise / 100;
   const letterheadFirm = gst?.sellerGstin ? { ...firm, gstin: gst.sellerGstin } : firm;
 
+  // A single leg is just a method and reference; several make a split bill.
+  const splitLegs = payments && payments.length > 1 ? payments : null;
+  const method = payments?.length === 1 ? payments[0]!.method : paymentMethod;
+  const reference = payments?.length === 1 ? (payments[0]!.reference ?? undefined) : paymentRef;
+
   const meta: MetaField[] = [
     { label: "Bill No", value: billRef, code: true },
     { label: "Date", value: billDate },
-    { label: "Payment", value: paymentLabel(paymentMethod) },
+    {
+      label: "Payment",
+      value: splitLegs
+        ? `Split · ${splitLegs.map((l) => paymentLabel(l.method)).join(" + ")}`
+        : paymentLabel(method),
+    },
     { label: "Sarees", value: String(lines.length) },
-    ...(paymentRef ? [{ label: "Reference", value: paymentRef, code: true }] : []),
+    ...(!splitLegs && reference ? [{ label: "Reference", value: reference, code: true }] : []),
     ...(gst ? [{ label: "GST", value: `${+gst.rate.toFixed(2)}%` }] : []),
   ];
 
@@ -169,6 +183,11 @@ export function RetailBillDocument({
         ]
       : []),
     { label: "Total Paid", amount: formatPaise(totalPaise), grand: true },
+    // What each method paid towards the total, with its reference.
+    ...(splitLegs ?? []).map((l) => ({
+      label: `Paid by ${paymentLabel(l.method)}${l.reference ? ` (${l.reference})` : ""}`,
+      amount: formatPaise(toPaise(l.amount)),
+    })),
   ];
 
   const admin = copy === "admin";

@@ -162,6 +162,24 @@ describe("sale notifications", () => {
     expect(byLabel["Phone"]).toBeUndefined();
   });
 
+  it("shows each method of a split bill with its amount and reference", () => {
+    const n = toUnifiedNotif(
+      notif("RETAIL_SALE_RECORDED", {
+        saleRef: "RETAIL-Chetan-001-001",
+        customerName: "Chetan",
+        amount: 1600,
+        paymentMethod: "split",
+        paymentRef: null,
+        payments: [
+          { method: "cash", amount: 600, reference: null },
+          { method: "upi", amount: 1000, reference: "T9" },
+        ],
+      })
+    );
+    const byLabel = Object.fromEntries((n.details ?? []).map((d) => [d.label, d.value]));
+    expect(byLabel["Payment"]).toBe("Split · Cash ₹600 + UPI ₹1,000 (UPI T9)");
+  });
+
   it("lists every saree of a wholesale dispatch with its type and source", () => {
     const n = toUnifiedNotif(
       notif("WHOLESALE_DISPATCH_RECORDED", {

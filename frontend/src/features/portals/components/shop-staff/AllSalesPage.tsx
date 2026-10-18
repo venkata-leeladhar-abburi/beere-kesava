@@ -1215,6 +1215,7 @@ function BillModal({ bill, onClose }: { bill: BillRow; onClose: () => void }) {
             }
             paymentMethod={bill.payKey === "none" ? undefined : bill.payKey}
             paymentRef={bill.payRef ?? undefined}
+            payments={bill.payments.length ? bill.payments : undefined}
             soldBy={bill.soldBy ?? undefined}
             saleRefs={saleRefs.length > 1 ? saleRefs : undefined}
           />

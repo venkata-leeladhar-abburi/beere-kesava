@@ -22,6 +22,32 @@ const DEFAULT_OUTLET_NAME = "Main Showroom";
  *   bk_retail_bill_       → the customer, their own receipt
  *   bk_admin_sale_alert_  → admins and super admins, the owners' live feed
  */
+/**
+ * How the bill was paid, as the receipt and admin alert print it: "CASH", or
+ * "CASH ₹600 + UPI ₹1,000" for a bill split across methods — the legs summed
+ * over every saree on the bill, in paise so no float drift reaches a message.
+ */
+function billPaymentText(
+  sales: { paymentMethod: string | null; payments: { method: string; amount: unknown }[] }[],
+): string {
+  const byMethod = new Map<string, number>();
+  for (const sale of sales) {
+    for (const leg of sale.payments) {
+      byMethod.set(
+        leg.method,
+        (byMethod.get(leg.method) ?? 0) + Math.round(Number(leg.amount) * 100),
+      );
+    }
+  }
+  if (byMethod.size === 0) return (sales[0]?.paymentMethod || "other").toUpperCase();
+  const rupees = (paise: number) =>
+    `₹${(paise / 100).toLocaleString("en-IN", { minimumFractionDigits: paise % 100 ? 2 : 0, maximumFractionDigits: 2 })}`;
+  return [...byMethod]
+    .sort((a, b) => b[1] - a[1])
+    .map(([method, paise]) => `${method.toUpperCase()} ${rupees(paise)}`)
+    .join(" + ");
+}
+
 @Injectable()
 export class WhatsAppSalesService {
   private readonly logger = new Logger(WhatsAppSalesService.name);
@@ -76,6 +102,7 @@ export class WhatsAppSalesService {
       include: {
         customer: true,
         soldBy: { select: { firstName: true, lastName: true } },
+        payments: { select: { method: true, amount: true } },
       },
       orderBy: { date: "asc" },
     });
@@ -100,7 +127,7 @@ export class WhatsAppSalesService {
     const billRef = first.saleRef;
     const total = sales.reduce((sum, s) => sum + Number(s.amount), 0);
     const pieces = `${sales.length} saree${sales.length === 1 ? "" : "s"}`;
-    const payment = (first.paymentMethod || "other").toUpperCase();
+    const payment = billPaymentText(sales);
     const staffName = first.soldBy
       ? `${first.soldBy.firstName} ${first.soldBy.lastName}`.trim()
       : "Shop Staff";

@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { useLocation } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { customersApi } from "../../../../shared/api/customers";
-import { IndianRupee, Plus, Wallet, CreditCard, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { useRatesPricing } from "@/features/pricing";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import { C, F, Card, Chip, ShopDesktopHero, SILK_BG } from "./theme";
@@ -12,7 +12,6 @@ import {
   StepBody,
   FlowActions,
   SummaryPanel,
-  OptionCard,
   ConsequenceNote,
   ACCENT_SALE,
   type FlowStep,
@@ -20,6 +19,8 @@ import {
 } from "./flow-kit";
 import { NewSaleBillModal } from "./NewSaleBillModal";
 import { NewSaleSuccessView } from "./NewSaleSuccessView";
+import { SalePaymentPicker } from "./SalePaymentPicker";
+import { checkSplit, deductRecorded, type SplitDraftRow } from "./splitPaymentDraft";
 import { CustomerSelectStep, Customer, isPhoneEntryComplete } from "./CustomerSelectStep";
 import { ScanSareeStep } from "./ScanSareeStep";
 import {
@@ -46,16 +47,29 @@ import {
 import { ApiError } from "../../../../shared/api/client";
 import { scanApi } from "../../../../shared/api/scan";
 import { salesApi } from "../../../../shared/api/sales";
-import { Button, Input } from "../../../../shared/ui/primitives";
-import { rupees, formatMoney } from "@/lib/domain/money";
+import { Button } from "../../../../shared/ui/primitives";
+import { rupees, formatMoney, formatMoneyExact } from "@/lib/domain/money";
+import {
+  allocateLegs,
+  legsShortfall,
+  legsSummary,
+  paymentMethodLabel,
+  SPLIT_PAYMENT,
+  type CounterPaymentMethod,
+  type PaymentLeg,
+} from "@/lib/domain/salePayment";
 
 export function NewSaleFlow() {
   const { isMobile, isTablet } = useResponsive();
   const { getSareeTypeByCode } = useRatesPricing();
   const [step, setStep] = useState<1 | 2 | 3 | 4 | "success">(1);
   const [manualId, setManualId] = useState("");
-  const [payment, setPayment] = useState<"cash" | "upi" | "card" | "other" | null>(null);
+  const [payment, setPayment] = useState<CounterPaymentMethod | null>(null);
   const [payRef, setPayRef] = useState("");
+  // A bill paid with more than one method — part cash, part UPI. `splitRows`
+  // is the operator's entry: which methods, and how much of the bill each.
+  const [splitPay, setSplitPay] = useState(false);
+  const [splitRows, setSplitRows] = useState<SplitDraftRow[]>([]);
   const [phone, setPhone] = useState("");
   const [custName, setCustName] = useState("");
   const [custAddress, setCustAddress] = useState("");
@@ -98,6 +112,37 @@ export function NewSaleFlow() {
   const priceDiscount = originalTotal - taxable;
   const billGst = tax ? toBillGst(tax, gst.gstin, sellerGstin) : undefined;
   const fmtPrice = (n: number) => formatMoney(rupees(n));
+
+  // How the bill is being paid, as legs — one for a single method, one per
+  // method on a split. `paymentProblem` says why the payment step can't be
+  // left yet (nothing chosen, or a split that doesn't add up to the total).
+  const split = splitPay ? checkSplit(splitRows, total) : null;
+  const payLegs: PaymentLeg[] = split
+    ? split.legs
+    : payment
+      ? [{ method: payment, amount: total, reference: payRef.trim() || null }]
+      : [];
+  const paymentProblem = split
+    ? split.problem
+    : payment
+      ? null
+      : "Choose a payment method to continue";
+  const payMethodsText = payLegs.map((l) => paymentMethodLabel(l.method)).join(" + ");
+
+  /** Turning split on starts from the method already picked; off keeps the first. */
+  const handleSplitChange = (on: boolean) => {
+    if (on) {
+      setSplitRows(payment ? [{ method: payment, amount: "", reference: payRef }] : []);
+    } else {
+      const first = splitRows[0];
+      if (first) {
+        setPayment(first.method);
+        setPayRef(first.reference);
+      }
+      setSplitRows([]);
+    }
+    setSplitPay(on);
+  };
 
   const queryClient = useQueryClient();
 
@@ -347,6 +392,8 @@ export function NewSaleFlow() {
     setManualId("");
     setPayment(null);
     setPayRef("");
+    setSplitPay(false);
+    setSplitRows([]);
     setPhone("");
     setCustName("");
     setCustAddress("");
@@ -372,8 +419,7 @@ export function NewSaleFlow() {
         custName={custName}
         phone={phone}
         custAddress={custAddress}
-        payment={payment}
-        payRef={payRef}
+        payments={payLegs}
         total={total}
         billDiscount={
           billOff ? { amount: billOff, note: billDiscountLabel(billDiscount) } : undefined
@@ -395,8 +441,7 @@ export function NewSaleFlow() {
         custName={custName}
         phone={phone}
         custAddress={custAddress}
-        payment={payment}
-        payRef={payRef}
+        payments={payLegs}
         total={total}
         billDiscount={
           billOff ? { amount: billOff, note: billDiscountLabel(billDiscount) } : undefined
@@ -421,7 +466,7 @@ export function NewSaleFlow() {
     },
     {
       label: "Payment",
-      summary: payment ? `${payment.toUpperCase()} · ${fmtPrice(total)}` : undefined,
+      summary: !paymentProblem ? `${payMethodsText} · ${fmtPrice(total)}` : undefined,
     },
     { label: "Confirm" },
   ];
@@ -645,75 +690,18 @@ export function NewSaleFlow() {
               </div>
             </Card>
 
-            <div
-              style={{
-                fontFamily: F.u,
-                fontWeight: 600,
-                fontSize: 15,
-                color: C.text,
-                marginBottom: 12,
-              }}
-            >
-              How is the customer paying?
-            </div>
-            <div
-              role="radiogroup"
-              aria-label="Payment method"
-              style={{
-                display: "grid",
-                gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)",
-                gap: 14,
-                marginBottom: 20,
-              }}
-            >
-              {[
-                { id: "cash" as const, label: "Cash", sub: "Physical currency", icon: IndianRupee },
-                { id: "upi" as const, label: "UPI", sub: "GPay, PhonePe, etc.", icon: Wallet },
-                { id: "card" as const, label: "Card", sub: "Debit or credit", icon: CreditCard },
-                { id: "other" as const, label: "Other", sub: "Cheque / transfer", icon: Plus },
-              ].map((p) => (
-                <OptionCard
-                  key={p.id}
-                  name="payment-method"
-                  icon={p.icon}
-                  label={p.label}
-                  sub={p.sub}
-                  selected={payment === p.id}
-                  onSelect={() => setPayment(p.id)}
-                  accent={ACCENT_SALE}
-                />
-              ))}
-            </div>
-
-            {/* The reference field only exists for the methods that have one —
-                showing it always would be four fields of dead space. */}
-            {(payment === "upi" || payment === "card") && (
-              <div className="max-w-[340px]">
-                <label
-                  htmlFor="pay-ref"
-                  style={{
-                    fontFamily: F.u,
-                    fontWeight: 500,
-                    fontSize: 14,
-                    color: C.text,
-                    display: "block",
-                    marginBottom: 8,
-                  }}
-                >
-                  {payment === "upi" ? "UPI reference" : "Card last 4 digits"}
-                  <span style={{ color: C.muted, fontWeight: 400 }}> (optional)</span>
-                </label>
-                <Input
-                  id="pay-ref"
-                  value={payRef}
-                  onChange={(e) => setPayRef(e.target.value)}
-                  maxLength={payment === "card" ? 4 : undefined}
-                  placeholder={payment === "upi" ? "Transaction ID" : "e.g. 4872"}
-                  size="lg"
-                  className="w-full font-mono"
-                />
-              </div>
-            )}
+            <SalePaymentPicker
+              total={total}
+              isMobile={isMobile}
+              split={splitPay}
+              onSplitChange={handleSplitChange}
+              payment={payment}
+              onPaymentChange={setPayment}
+              payRef={payRef}
+              onPayRefChange={setPayRef}
+              rows={splitRows}
+              onRowsChange={setSplitRows}
+            />
           </StepBody>
 
           <FlowActions
@@ -721,8 +709,8 @@ export function NewSaleFlow() {
             onBack={() => setStep(2)}
             primaryLabel={`Next — Confirm ${fmtPrice(total)}`}
             onPrimary={() => setStep(4)}
-            primaryDisabled={!payment}
-            hint="Choose a payment method to continue"
+            primaryDisabled={!!paymentProblem}
+            hint={paymentProblem ?? undefined}
           />
         </>
       )}
@@ -744,20 +732,32 @@ export function NewSaleFlow() {
                   { label: "Phone", value: phone ? `+91 ${phone}` : "—", mono: true },
                   ...(custAddress.trim() ? [{ label: "Address", value: custAddress.trim() }] : []),
                   { label: "Sarees", value: `${cart.length} piece${cart.length !== 1 ? "s" : ""}` },
-                  {
-                    label: "Payment method",
-                    value: payment ? payment.toUpperCase() : "—",
-                    mono: true,
-                  },
-                  ...(payRef
+                  ...(split
                     ? [
+                        { label: "Payment method", value: "Split payment" },
+                        // One row per method: what it covers, and its reference.
+                        ...payLegs.map((l) => ({
+                          label: `Paid by ${paymentMethodLabel(l.method)}`,
+                          value: `${formatMoneyExact(rupees(l.amount))}${l.reference ? ` · ${l.reference}` : ""}`,
+                          mono: true,
+                        })),
+                      ]
+                    : [
                         {
-                          label: payment === "upi" ? "UPI reference" : "Card ending",
-                          value: payRef,
+                          label: "Payment method",
+                          value: payment ? payment.toUpperCase() : "—",
                           mono: true,
                         },
-                      ]
-                    : []),
+                        ...(payment && payRef.trim()
+                          ? [
+                              {
+                                label: payment === "upi" ? "UPI reference" : "Card ending",
+                                value: payRef.trim(),
+                                mono: true,
+                              },
+                            ]
+                          : []),
+                      ]),
                   {
                     label: "GST",
                     value: tax ? `${tax.rate}% · ${fmtPrice(tax.gst)}` : "Not applied",
@@ -866,7 +866,7 @@ export function NewSaleFlow() {
                       }}
                     >
                       <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
-                        Paying by {payment ? payment.toUpperCase() : "—"}
+                        Paying by {legsSummary(payLegs)}
                       </span>
                       {priceDiscount > 0 && (
                         <Chip
@@ -918,6 +918,11 @@ export function NewSaleFlow() {
                 setSubmitError(gstProblem);
                 return;
               }
+              // Prices may have been edited after the split was entered.
+              if (paymentProblem) {
+                setSubmitError(`Payment: ${paymentProblem}`);
+                return;
+              }
               setIsSubmitting(true);
               setSubmitError(null);
               try {
@@ -961,20 +966,65 @@ export function NewSaleFlow() {
                 // GST adds up to exactly what the bill prints.
                 const lineTaxable = cart.map((l, i) => l.soldPrice - billShares[i]!);
                 const gstShares = tax ? allocateByWeight(lineTaxable, tax.gst) : [];
+                // What each saree is recorded at — GST included.
+                const lineAmounts = cart.map(
+                  (_l, i) => lineTaxable[i]! + (tax ? gstShares[i]! : 0)
+                );
+                // A split bill is shared out so every saree carries the bill's
+                // mix of methods and its shares add up to its own amount. The
+                // legs were checked against the total on screen; any paisa of
+                // rounding between that and the recorded amounts goes on the
+                // largest leg, so what is stored always adds up.
+                let legShares: PaymentLeg[][] = [];
+                if (split) {
+                  const drift = -legsShortfall(
+                    lineAmounts.reduce((a, b) => a + b, 0),
+                    payLegs
+                  );
+                  if (Math.abs(drift) > 1) {
+                    throw new Error(
+                      "The bill total changed — go back to Payment and check the split adds up."
+                    );
+                  }
+                  const largest = payLegs.reduce(
+                    (best, l, i) => (l.amount > payLegs[best]!.amount ? i : best),
+                    0
+                  );
+                  const legs = payLegs.map((l, i) =>
+                    i === largest ? { ...l, amount: Math.round((l.amount - drift) * 100) / 100 } : l
+                  );
+                  legShares = allocateLegs(lineAmounts, legs);
+                }
                 const customerGstin =
                   tax && gst.gstin.trim() ? normalizeGstin(gst.gstin) : undefined;
                 let recordedSellerGstin: string | undefined;
                 try {
                   for (const [i, line] of cart.entries()) {
                     const lineGst = tax ? gstShares[i]! : 0;
+                    const shares = legShares[i] ?? [];
                     const sale = await salesApi.create({
                       sareeId: line.id,
                       channel: "RETAIL",
                       // What was paid for this saree — GST included.
-                      amount: lineTaxable[i]! + lineGst,
+                      amount: lineAmounts[i]!,
                       customerId,
-                      paymentMethod: payment ?? undefined,
-                      paymentRef: payRef.trim() || undefined,
+                      ...(split
+                        ? shares.length > 0
+                          ? {
+                              paymentMethod: SPLIT_PAYMENT,
+                              payments: shares.map((l) => ({
+                                method: l.method,
+                                amount: l.amount,
+                                reference: l.reference ?? undefined,
+                              })),
+                            }
+                          : // A free piece on a split bill has nothing to share
+                            // out; it is booked to the bill's main method.
+                            { paymentMethod: payLegs[0]?.method }
+                        : {
+                            paymentMethod: payment ?? undefined,
+                            paymentRef: payRef.trim() || undefined,
+                          }),
                       originalPrice: line.originalPrice,
                       discountNote:
                         [discountLabel(line), billShares[i] ? billNote : undefined]
@@ -998,6 +1048,13 @@ export function NewSaleFlow() {
                       setBillDiscount({ mode: "amount", value: Math.max(0, billOff - used) });
                     }
                     setCart((prev) => prev.filter((l) => !recorded.includes(l.id)));
+                    // Likewise only what the recorded sarees did not already
+                    // cover is left to collect on each method.
+                    if (split) {
+                      setSplitRows((prev) =>
+                        deductRecorded(prev, legShares.slice(0, recorded.length).flat(), total)
+                      );
+                    }
                     throw new Error(
                       `Recorded ${recorded.length} of ${cart.length} sarees (${recorded.join(", ")}). ` +
                         `The rest are still on this sale — try confirming again.`
