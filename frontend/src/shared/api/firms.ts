@@ -163,6 +163,8 @@ interface RawFirmRetailSale {
   date: string;
   paymentMethod: string | null;
   paymentRef: string | null;
+  /** This saree's share of each method on a split bill; empty otherwise. */
+  payments?: { method: string; amount: string; reference: string | null }[];
   firmId: string | null;
   firmLinkedAt: string | null;
   firmLinkNote: string | null;

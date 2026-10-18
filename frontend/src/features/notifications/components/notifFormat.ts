@@ -1,4 +1,10 @@
 import { formatMoney, rupees } from "@/lib/domain/money";
+import {
+  isSplitPayment,
+  legsSummary,
+  paymentMethodLabel,
+  type PaymentLeg,
+} from "@/lib/domain/salePayment";
 import type { BackendNotification } from "@/shared/api/notifications";
 import type { NotifDetail, NotifSaree, Priority, UnifiedNotif } from "./notifTypes";
 
@@ -56,13 +62,28 @@ function sourceText(v: unknown): string | null {
   return [SOURCE_KIND[String(src.kind)] ?? null, name, str(src.detail)].filter(Boolean).join(" · ");
 }
 
+/** "Cash · ref", or "Split · Cash ₹600 + UPI ₹1,000 (UPI T9)" for a split bill. */
 const paymentText = (p: Payload): string | null => {
   const method = str(p.paymentMethod);
   if (!method) return null;
-  const label =
-    method.toUpperCase() === "UPI"
-      ? "UPI"
-      : method.charAt(0).toUpperCase() + method.slice(1).toLowerCase();
+  const legs: PaymentLeg[] = Array.isArray(p.payments)
+    ? (p.payments as Payload[])
+        .filter((l) => str(l?.method))
+        .map((l) => ({
+          method: String(l.method),
+          amount: num(l.amount),
+          reference: str(l.reference),
+        }))
+    : [];
+  if (isSplitPayment(method)) {
+    if (legs.length === 0) return "Split";
+    const refs = legs
+      .filter((l) => l.reference)
+      .map((l) => `${paymentMethodLabel(l.method)} ${l.reference}`)
+      .join(", ");
+    return `Split · ${legsSummary(legs)}${refs ? ` (${refs})` : ""}`;
+  }
+  const label = paymentMethodLabel(method);
   return p.paymentRef ? `${label} · ${String(p.paymentRef)}` : label;
 };
 

@@ -15,6 +15,7 @@ import type { ColumnDef } from "../../../../shared/ui/data";
 import { IconButton } from "../../../../shared/ui/primitives";
 import type { FirmRetailSale } from "../../../../shared/api/firms";
 import { T, F } from "../theme";
+import { salePaymentText } from "@/lib/domain/salePayment";
 
 export function actorName(actor: FirmRetailSale["soldBy"]): string | null {
   if (!actor) return null;
@@ -91,7 +92,7 @@ const baseColumns = (): ColumnDef<FirmRetailSale>[] => [
   {
     id: "pay",
     header: "Payment",
-    accessor: (r) => paymentLabel(r.paymentMethod),
+    accessor: (r) => salePaymentText(r, "Counter"),
     type: "text",
     width: 130,
     sortable: true,

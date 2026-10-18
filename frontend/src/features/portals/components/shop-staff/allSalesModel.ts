@@ -15,6 +15,11 @@
  *
  * GST: `amount` is what was paid for the saree and includes its share of the
  * bill's GST, when GST was charged — see lib/domain/saleGst.
+ *
+ * Payment: a bill paid with several methods is "split", and each saree carries
+ * its share of each method — see lib/domain/salePayment. The bill shows the
+ * methods summed across its sarees ("Cash ₹600 + UPI ₹1,000"), and filtering
+ * by a method also finds the split bills it was part of.
  */
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -36,6 +41,15 @@ import {
   saleTaxable,
 } from "../../../../lib/domain/saleGst";
 import { dateFilterLabel } from "./salesReportModel";
+import {
+  billLegs,
+  isSplitPayment,
+  legsSummary,
+  mergeLegs,
+  paymentMethodLabel,
+  saleLegs,
+  type PaymentLeg,
+} from "../../../../lib/domain/salePayment";
 
 const BILL_WINDOW_MS = 5 * 60 * 1000;
 
@@ -60,6 +74,8 @@ export interface SaleLineRow {
   payKey: string;
   pay: string;
   payRef: string | null;
+  /** How this saree was paid, as legs — several on a split bill. */
+  payments: PaymentLeg[];
   /** Counter bill id stamped at checkout; null on older rows. */
   billId: string | null;
   /** What was paid for the saree — GST included when the bill charged it. */
@@ -92,6 +108,8 @@ export interface BillRow {
   pay: string;
   payKey: string;
   payRef: string | null;
+  /** The bill's payment summed by method across its sarees. */
+  payments: PaymentLeg[];
   soldBy: string | null;
   lines: SaleLineRow[];
   pieces: number;
@@ -137,14 +155,13 @@ export const DEFAULT_FILTERS: AllSalesFilters = {
 };
 
 function paymentLabel(method: string | null | undefined): string {
-  const m = (method ?? "").trim();
-  if (!m) return "Not recorded";
-  if (m.toLowerCase() === "upi") return "UPI";
-  return m
-    .toLowerCase()
-    .split(/[\s_]+/)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
+  return paymentMethodLabel(method) || "Not recorded";
+}
+
+/** "Cash", or "Split · Cash ₹600 + UPI ₹1,000" for a split payment. */
+function payText(method: string | null | undefined, legs: PaymentLeg[]): string {
+  if (!isSplitPayment(method)) return paymentLabel(method);
+  return legs.length ? `Split · ${legsSummary(legs)}` : "Split";
 }
 
 function actorName(actor: BackendSaleRecord["soldBy"]): string | null {
@@ -201,8 +218,14 @@ function toLine(
     sareeType: typeText,
     design: s.saree?.designCode ?? null,
     payKey: (s.paymentMethod ?? "").trim().toLowerCase() || "none",
-    pay: paymentLabel(s.paymentMethod),
-    payRef: s.paymentRef ?? null,
+    pay: payText(s.paymentMethod, saleLegs(s)),
+    payRef: isSplitPayment(s.paymentMethod)
+      ? billLegs([s])
+          .map((l) => l.reference)
+          .filter(Boolean)
+          .join(", ") || null
+      : (s.paymentRef ?? null),
+    payments: saleLegs(s),
     billId: s.billId ?? null,
     amount: Number(s.amount) || 0,
     taxable: saleTaxable(s),
@@ -252,6 +275,7 @@ export function groupIntoBills(lines: Omit<SaleLineRow, "billRef">[]): {
         pay: l.pay,
         payKey: l.payKey,
         payRef: l.payRef,
+        payments: [],
         soldBy: l.soldBy,
         lines: [],
         pieces: 0,
@@ -274,6 +298,15 @@ export function groupIntoBills(lines: Omit<SaleLineRow, "billRef">[]): {
   // Money totals on paise: GST shares carry paise, and float sums would not.
   for (const bill of bills) {
     bill.total = bill.lines.reduce((sum, l) => sum + Math.round(l.amount * 100), 0) / 100;
+    bill.payments = mergeLegs(bill.lines.flatMap((l) => l.payments));
+    if (isSplitPayment(bill.payKey)) {
+      bill.pay = payText(bill.payKey, bill.payments);
+      bill.payRef =
+        bill.payments
+          .map((l) => l.reference)
+          .filter(Boolean)
+          .join(", ") || null;
+    }
     const tax = billGstFromSales(
       bill.lines.map((l) => ({
         amount: l.amount,
@@ -302,7 +335,13 @@ function lineMatches(
 ): boolean {
   if (!matchesDateFilter(l.date, f.date)) return false;
   if (f.channel !== ALL && l.channel !== f.channel) return false;
-  if (f.payment !== ALL && l.payKey !== f.payment) return false;
+  if (
+    f.payment !== ALL &&
+    l.payKey !== f.payment &&
+    // A split bill also counts under each method it was partly paid by.
+    !l.payments.some((p) => p.method === f.payment)
+  )
+    return false;
   if (f.customer !== ALL && (l.customerId ?? "") !== f.customer) return false;
   if (f.sareeType !== ALL && l.sareeType !== f.sareeType) return false;
   if (f.soldBy !== ALL && (l.soldById ?? "none") !== f.soldBy) return false;
@@ -394,7 +433,8 @@ export function useAllSalesModel(canSeePrices: boolean) {
     const types = new Map<string, number>();
     const staff = new Map<string, string>();
     for (const l of allLines) {
-      pay.set(l.payKey, l.pay);
+      pay.set(l.payKey, isSplitPayment(l.payKey) ? "Split" : l.pay);
+      for (const p of l.payments) pay.set(p.method, paymentLabel(p.method));
       const cid = l.customerId ?? "";
       const c = cust.get(cid);
       if (c) c.count += 1;

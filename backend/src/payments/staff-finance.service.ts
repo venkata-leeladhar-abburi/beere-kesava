@@ -315,6 +315,7 @@ export class StaffFinanceService {
             include: {
               customer: { select: { code: true, name: true } },
               soldBy: actorSelect,
+              payments: { select: { id: true, method: true, amount: true, reference: true } },
             },
           })
         : [],
@@ -365,20 +366,38 @@ export class StaffFinanceService {
         recordedById: p.recordedById,
         recordedBy: p.recordedBy,
       })),
-      ...retailSales.map<StaffLedgerRow>((s) => ({
-        id: `sale:${s.saleRef}`,
-        kind: "RETAIL_SALE",
-        direction: "IN",
-        date: s.date.toISOString(),
-        amount: toNumber(s.amount),
-        partyName: s.customer?.name ?? null,
-        partyCode: s.customer?.code ?? null,
-        reference: s.paymentRef ?? s.saleRef,
-        method: s.paymentMethod,
-        firmName: null,
-        recordedById: s.soldById,
-        recordedBy: s.soldBy,
-      })),
+      // A split sale is several money movements — one row per method, so
+      // the cash and the UPI each land under their own method.
+      ...retailSales.flatMap<StaffLedgerRow>((s) => {
+        const base = {
+          kind: "RETAIL_SALE" as const,
+          direction: "IN" as const,
+          date: s.date.toISOString(),
+          partyName: s.customer?.name ?? null,
+          partyCode: s.customer?.code ?? null,
+          firmName: null,
+          recordedById: s.soldById,
+          recordedBy: s.soldBy,
+        };
+        if (s.payments.length === 0) {
+          return [
+            {
+              ...base,
+              id: `sale:${s.saleRef}`,
+              amount: toNumber(s.amount),
+              reference: s.paymentRef ?? s.saleRef,
+              method: s.paymentMethod,
+            },
+          ];
+        }
+        return s.payments.map((p) => ({
+          ...base,
+          id: `sale:${s.saleRef}:${p.id}`,
+          amount: toNumber(p.amount),
+          reference: p.reference ?? s.saleRef,
+          method: p.method,
+        }));
+      }),
     ];
 
     rows.sort((a, b) => b.date.localeCompare(a.date));

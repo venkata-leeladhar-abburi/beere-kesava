@@ -24,6 +24,7 @@ import {
   type DateFilterState,
 } from "../../../../shared/ui/DateFilterBar";
 import { saleGstAmount, saleGstRate } from "../../../../lib/domain/saleGst";
+import { salePaymentText } from "../../../../lib/domain/salePayment";
 
 export function dateLabel(iso: string) {
   const d = new Date(iso);
@@ -106,15 +107,6 @@ export interface ReturnReportRow {
   amount: number;
 }
 
-function paymentLabel(method: string | null | undefined) {
-  if (!method) return "Counter";
-  return method
-    .toLowerCase()
-    .split(/[\s_]+/)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
 export function useSalesReportModel() {
   const [filter, setFilter] = React.useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
@@ -168,7 +160,7 @@ export function useSalesReportModel() {
             : "Walk-in Customer",
           design: s.channel === "WHOLESALE" ? "Wholesale" : "Retail",
           channel: s.channel,
-          pay: paymentLabel(s.paymentMethod),
+          pay: salePaymentText(s, "Counter"),
           amount: Number(s.amount) || 0,
           gst: saleGstAmount(s),
           gstRate: saleGstRate(s),

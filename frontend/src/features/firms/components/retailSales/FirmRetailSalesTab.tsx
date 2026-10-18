@@ -35,6 +35,7 @@ import {
   type DateFilterState,
 } from "../../../../shared/ui/DateFilterBar";
 import { filterToRange } from "./dateRange";
+import { saleLegs } from "@/lib/domain/salePayment";
 
 function StatTile({
   label,
@@ -167,11 +168,18 @@ export function FirmRetailSalesTab({ firm, firms }: { firm: Firm; firms: Firm[] 
   const paymentMix = React.useMemo(() => {
     const map = new Map<string, { method: string; count: number; total: number }>();
     for (const s of sales) {
-      const method = paymentLabel(s.paymentMethod);
-      const entry = map.get(method) ?? { method, count: 0, total: 0 };
-      entry.count += 1;
-      entry.total += Number(s.amount) || 0;
-      map.set(method, entry);
+      // A split sale adds each method's share to that method, so the mix
+      // shows where the money actually came in.
+      const legs = saleLegs(s);
+      const parts = legs.length
+        ? legs.map((l) => ({ method: paymentLabel(l.method), amount: l.amount }))
+        : [{ method: paymentLabel(s.paymentMethod), amount: Number(s.amount) || 0 }];
+      for (const part of parts) {
+        const entry = map.get(part.method) ?? { method: part.method, count: 0, total: 0 };
+        entry.count += 1;
+        entry.total += part.amount;
+        map.set(part.method, entry);
+      }
     }
     return Array.from(map.values()).sort((a, b) => b.total - a.total);
   }, [sales]);

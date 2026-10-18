@@ -42,6 +42,7 @@ import { salesApi, type BackendSaleRecord } from "@/shared/api/sales";
 import { DocumentViewer, RetailBillDocument, DEFAULT_LETTERHEAD_FIRM } from "@/shared/ui/document";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { billGstFromSales, saleGstAmount, saleGstRate, saleTaxable } from "@/lib/domain/saleGst";
+import { saleLegs, salePaymentText } from "@/lib/domain/salePayment";
 import { toInitials } from "@/shared/lib/initials";
 import { useResponsive } from "@/hooks/useResponsive";
 
@@ -73,9 +74,7 @@ function actorName(actor: BackendSaleRecord["soldBy"]) {
 }
 
 function paymentLabel(sale: BackendSaleRecord) {
-  const method = (sale.paymentMethod ?? "").trim();
-  if (!method) return "Counter";
-  return method.charAt(0).toUpperCase() + method.slice(1).toLowerCase();
+  return salePaymentText(sale, "Counter");
 }
 
 export function CustomerProfilePage({
@@ -525,6 +524,7 @@ function BillViewModal({
             gst={billGstFromSales([sale])}
             paymentMethod={sale.paymentMethod ?? undefined}
             paymentRef={sale.paymentRef ?? undefined}
+            payments={saleLegs(sale)}
             soldBy={actorName(sale.soldBy) ?? undefined}
           />
         </DocumentViewer>

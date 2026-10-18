@@ -34,7 +34,10 @@ export class ListFirmRetailSalesQueryDto {
   @IsString()
   to?: string;
 
-  /** Exact SaleRecord.paymentMethod, e.g. "cash" | "upi" | "card". */
+  /**
+   * SaleRecord.paymentMethod, e.g. "cash" | "upi" | "card" | "split". A method
+   * also matches split sales that were partly paid by it.
+   */
   @IsOptional()
   @IsString()
   paymentMethod?: string;

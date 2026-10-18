@@ -21,6 +21,7 @@ import { Money } from "@/shared/ui/domain";
 import { useReportPeriod, useRegisterExport, usePeriodSplit } from "../PeriodContext";
 import { buildSeries, bucketPhrase } from "../timeSeries";
 import { matchReturnsToSales } from "../reportMath";
+import { salePaymentText } from "@/lib/domain/salePayment";
 
 interface RetailSaleRow {
   id: string;
@@ -184,7 +185,7 @@ export function RetailSalesReport() {
             sarId: s.sareeId,
             design: designOf(s),
             type: typeOf(s),
-            paymentMethod: s.paymentMethod ?? "—",
+            paymentMethod: salePaymentText(s),
             price: Number(s.amount),
             gst: saleGstAmount(s),
             gstRate: saleGstRate(s),
