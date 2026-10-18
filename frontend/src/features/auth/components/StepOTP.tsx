@@ -24,12 +24,19 @@ const F = {
   mono: "'JetBrains Mono', monospace",
 };
 
-function useTimer(initial: number, active: boolean) {
+/** Matches AuthService.otpTtlMs — the countdown used to say 1:48 for a code the
+ *  server kept valid for five minutes. */
+const OTP_TTL_SECONDS = 5 * 60;
+/** How long after a code is sent before another can be asked for. The server
+ *  has no cooldown; this only stops a double-tap sending two WhatsApp codes. */
+const RESEND_AFTER_SECONDS = 30;
+
+function useTimer(initial: number, active: boolean, restartKey = 0) {
   const [seconds, setSeconds] = useState(initial);
   useEffect(() => {
     if (!active) return;
     setSeconds(initial);
-  }, [active, initial]);
+  }, [active, initial, restartKey]);
   useEffect(() => {
     if (!active || seconds <= 0) return;
     const id = setInterval(() => setSeconds((s) => s - 1), 1000);
@@ -64,7 +71,36 @@ export function StepOTP({
   // each box needs the value at the instant of focus, and `digits` state
   // lags a render behind when auto-advance fires focus() right after setDigits.
   const digitsRef = useRef(digits);
-  const timer = useTimer(108, true);
+  const [sentAt, setSentAt] = useState(0); // bumped on each resend to restart the countdown
+  const timer = useTimer(OTP_TTL_SECONDS, true, sentAt);
+  const [resending, setResending] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const canResend = !resending && OTP_TTL_SECONDS - timer.seconds >= RESEND_AFTER_SECONDS;
+
+  // The Resend button had no click handler, so it did nothing at all.
+  const handleResend = useCallback(async () => {
+    if (!canResend) return;
+    setResending(true);
+    setNotice(null);
+    try {
+      await authApi.requestOtp(phone);
+      const empty = Array(6).fill("");
+      digitsRef.current = empty;
+      setDigits(empty);
+      setError(false);
+      setSentAt((n) => n + 1);
+      setNotice("A new code has been sent to your WhatsApp. Earlier codes no longer work.");
+      inputRefs.current[0]?.focus();
+      setFocused(0);
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error ? err.message : "Could not send a new code. Please try again."
+      );
+      setError(true);
+    } finally {
+      setResending(false);
+    }
+  }, [canResend, phone]);
 
   const formatted = `+91 ${phone.slice(0, 5)} ${phone.slice(5)}`;
 
@@ -276,6 +312,29 @@ export function StepOTP({
       </motion.div>
 
       <AnimatePresence>
+        {notice && !error && (
+          <motion.div
+            role="status"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            style={{
+              background: "rgba(30,102,64,0.08)",
+              border: "1px solid rgba(30,102,64,0.22)",
+              borderRadius: 10,
+              padding: "12px 16px",
+              marginBottom: 14,
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+            }}
+          >
+            <Check size={16} color={C.green} style={{ flexShrink: 0 }} />
+            <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: C.green }}>
+              {notice}
+            </div>
+          </motion.div>
+        )}
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
@@ -327,10 +386,15 @@ export function StepOTP({
           <Button
             variant="link"
             size="sm"
-            disabled={!timer.expired}
-            className={timer.expired ? "underline" : "no-underline"}
+            onClick={handleResend}
+            disabled={!canResend}
+            className={canResend ? "underline" : "no-underline"}
           >
-            Resend
+            {resending
+              ? "Sending…"
+              : canResend
+                ? "Resend"
+                : `Resend in ${RESEND_AFTER_SECONDS - (OTP_TTL_SECONDS - timer.seconds)}s`}
           </Button>
         </div>
       </div>
@@ -358,12 +422,11 @@ export function StepOTP({
         }}
       >
         <MessageSquare size={15} color={C.green} />
+        {/* Codes only ever go out on WhatsApp — the old "Not receiving SMS? Send
+            via WhatsApp" link implied an SMS that never existed, and did nothing. */}
         <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: C.textMuted }}>
-          Not receiving SMS?{" "}
+          The code comes on WhatsApp — check your WhatsApp chats.
         </span>
-        <Button variant="link" size="sm">
-          Send via WhatsApp
-        </Button>
       </div>
     </motion.div>
   );
