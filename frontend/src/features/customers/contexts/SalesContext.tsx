@@ -219,6 +219,9 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
     if (!rawPurchases || rawPurchases.length === 0) return SEED_PURCHASE_SUMMARIES;
     return rawPurchases.map((p) => {
       const billAmount = Number(p.billAmount) || 0;
+      // Sarees sent back to the supplier are credited off the bill.
+      const creditedAmount = Math.min(Number(p.creditedAmount) || 0, billAmount);
+      const owed = billAmount - creditedAmount;
       // Absent until the backend that sends it is deployed — fall back to the
       // status alone then, without flagging anything.
       const hasPaidAmount = p.paidAmount !== undefined;
@@ -231,7 +234,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
       // linked payments and a status typed by hand — for those the PAID label
       // is the only record, so it still counts, but is flagged as unconfirmed.
       const paidWithoutRecord =
-        hasPaidAmount && recordedPaid === 0 && p.status === "PAID" && billAmount > 0;
+        hasPaidAmount && recordedPaid === 0 && p.status === "PAID" && owed > 0;
       return {
         id: p.id,
         supplier: p.supplier?.name ?? p.supplierName ?? "External Supplier",
@@ -244,7 +247,8 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
         invoiceNumber: p.invoiceNumber ?? "—",
         gstNumber: p.supplier?.gstCode ?? "—",
         billAmount,
-        paidAmount: paidWithoutRecord ? billAmount : Math.min(recordedPaid, billAmount),
+        creditedAmount,
+        paidAmount: paidWithoutRecord ? owed : Math.min(recordedPaid, owed),
         status: PURCHASE_STATUS[p.status],
         paidWithoutRecord,
         // Pieces still with us, counted from the lines (same rule as the

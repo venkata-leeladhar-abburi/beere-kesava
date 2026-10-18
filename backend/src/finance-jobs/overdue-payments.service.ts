@@ -9,7 +9,8 @@ import { fromPaise, toPaise } from "../common/money.util";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 
-const OVERDUE_THRESHOLD_DAYS = 45;
+/** Days past its due date before an unpaid invoice or bulk order counts as overdue. */
+export const OVERDUE_THRESHOLD_DAYS = 45;
 
 @Injectable()
 export class OverduePaymentsService {

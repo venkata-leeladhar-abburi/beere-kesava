@@ -31,6 +31,7 @@ describe("InvoicesService", () => {
         findUnique: jest.fn().mockResolvedValue(invoice()),
         create: jest.fn().mockResolvedValue({ id: "inv1", dueDate: null }),
       },
+      dispatchRecord: { findUnique: jest.fn().mockResolvedValue({ invoiceNumber: null }) },
       $transaction: jest.fn((fn: (t: unknown) => unknown) => fn(tx)),
     };
     idGenerator = { nextScoped: jest.fn().mockResolvedValue("INV-RAJ-001") };
@@ -54,6 +55,18 @@ describe("InvoicesService", () => {
       await service.create({ customerId: "c1", dispatchId: "d1", total: 500 });
 
       expect(prisma.invoice.create).not.toHaveBeenCalled();
+    });
+
+    it("reuses the number a dispatch already printed instead of allocating a second one", async () => {
+      prisma.invoice.findUnique.mockResolvedValueOnce(null);
+      prisma.dispatchRecord.findUnique.mockResolvedValue({ invoiceNumber: "INV-RAJ-007" });
+
+      await service.create({ customerId: "c1", dispatchId: "d1", total: 500 });
+
+      expect(idGenerator.nextScoped).not.toHaveBeenCalled();
+      expect(prisma.invoice.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ code: "INV-RAJ-007", dispatchId: "d1" }),
+      });
     });
 
     it("numbers the invoice by customer and tells accountants", async () => {

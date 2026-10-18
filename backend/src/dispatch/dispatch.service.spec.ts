@@ -225,6 +225,45 @@ describe("DispatchService.create — challan numbering", () => {
     });
   });
 
+  it("books the invoice row under the dispatch's own number and tells accountants", async () => {
+    idGenerator.nextScoped.mockResolvedValue("INV-Sree-001");
+
+    await service.create({
+      type: DispatchType.WHOLESALE,
+      sareeIds: ["S-1"],
+      customerId: "c1",
+      raiseInvoice: true, firmId: "FIRM-001",
+      pricePerSaree: 2000, gstPct: 5,
+      paymentDueDate: "2026-11-30",
+    });
+
+    expect(idGenerator.nextScoped).toHaveBeenCalledTimes(1);
+    expect(prisma.dispatchRecord.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        invoice: {
+          create: expect.objectContaining({
+            code: "INV-Sree-001",
+            customerId: "c1",
+            total: 2100,
+            dueDate: new Date("2026-11-30"),
+          }),
+        },
+      }),
+    });
+    expect(notifications.notifyRole).toHaveBeenCalledWith("ACCOUNTANT", "INVOICE_CREATED", expect.objectContaining({
+      invoiceNumber: "INV-Sree-001",
+      total: 2100,
+    }));
+  });
+
+  it("books no invoice for a shop dispatch", async () => {
+    await service.create({ type: DispatchType.SHOP, sareeIds: ["S-1"] });
+
+    expect(prisma.dispatchRecord.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ invoice: undefined }),
+    });
+  });
+
   it("files a wholesale dispatch in the admin feed with each saree's type and source", async () => {
     idGenerator.nextScoped.mockResolvedValue("INV-Sree-001");
     prisma.inventoryRecord.findMany.mockResolvedValue([{ sareeId: "RAMOJI-L1-B001-008", status: "FINISHING_COMPLETE" }]);

@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
 import { F, T } from "../../theme";
-import { Supplier, Purchase, PurchaseBillBreakdown, parseINR } from "@/features/suppliers";
+import { Supplier, Purchase, PurchaseBillBreakdown, owedOn } from "@/features/suppliers";
 import { useFirms } from "@/features/firms";
 import {
   Button,
@@ -55,7 +55,7 @@ export function SupplierPayNowModal({
   const [reference, setReference] = useState("");
   const [purchaseId, setPurchaseId] = useState<string>("");
   const selectedPurchase = openPurchases.find((p) => p.id === purchaseId) ?? null;
-  const balanceOf = (p: Purchase) => Math.max(0, parseINR(p.billAmount) - paidFor(p.id));
+  const balanceOf = (p: Purchase) => Math.max(0, owedOn(p) - paidFor(p.id));
   // A purchase is paid only by the firm it is booked to, so picking one fixes
   // the paying firm. The picker stays open for a general payment, and for a
   // purchase recorded before firms were tracked on purchases.

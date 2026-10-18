@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { useSuppliers } from "@/features/suppliers";
 import { useFirms } from "@/features/firms";
 import { ViewSelector } from "@/shared/ui/ViewSelector";
-import { Supplier, Purchase, parseINR } from "@/features/suppliers";
+import { Supplier, Purchase, owedOn } from "@/features/suppliers";
 import { F, T, EASE } from "../../theme";
 import {
   DateFilterBar,
@@ -112,7 +112,7 @@ export function SupplierPaymentsSection() {
       if (filterFirmId) {
         const scoped = own.filter((p) => p.firmId === filterFirmId);
         if (scoped.length === 0) return [];
-        const totalPurchased = scoped.reduce((sum, p) => sum + parseINR(p.billAmount), 0);
+        const totalPurchased = scoped.reduce((sum, p) => sum + owedOn(p), 0);
         const totalPaid = scoped.reduce((sum, p) => sum + (paidByPurchase.get(p.id) ?? 0), 0);
         stats = {
           ...stats,

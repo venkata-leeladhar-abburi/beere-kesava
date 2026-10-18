@@ -229,6 +229,8 @@ export class DispatchService {
     const invoiceNumber = dto.raiseInvoice
       ? await this.idGenerator.nextScoped("INV", customer!.code ?? businessSegment(customer!.name, "Customer"))
       : undefined;
+    const invoiceDate = invoiceNumber ? new Date() : undefined;
+    const paymentDueDate = dto.paymentDueDate ? new Date(dto.paymentDueDate) : undefined;
 
     // A SHOP dispatch bills nobody, so it raises a Delivery Challan rather than
     // a tax invoice. Its number is allocated here for the same reason invoice
@@ -249,14 +251,30 @@ export class DispatchService {
         driverName: dto.driverName,
         customerId: dto.customerId,
         invoiceNumber,
-        invoiceDate: invoiceNumber ? new Date() : undefined,
+        invoiceDate,
+        // The receivable is booked in the same write, under the same number
+        // printed on the dispatch. It used to be created only when someone
+        // opened Payments → Wholesale Collections (and under a second, freshly
+        // allocated number), so until then the sale was missing from
+        // Outstanding Payments entirely.
+        invoice: invoiceNumber
+          ? {
+              create: {
+                code: invoiceNumber,
+                customerId: dto.customerId!,
+                invoiceDate,
+                dueDate: paymentDueDate,
+                total: grandTotal,
+              },
+            }
+          : undefined,
         challanNumber,
         pricePerSaree: dto.pricePerSaree,
         totalAmount,
         gstPct: dto.gstPct,
         grandTotal,
         firmId: dto.firmId,
-        paymentDueDate: dto.paymentDueDate ? new Date(dto.paymentDueDate) : undefined,
+        paymentDueDate,
         bulkOrderRef: dto.bulkOrderRef,
         quotationRef: dto.quotationRef,
         pendingTransport: dto.pendingTransport ?? false,
@@ -325,6 +343,21 @@ export class DispatchService {
         });
       } catch (err) {
         this.logger.warn(`Wholesale dispatch ${created.id} saved but its notification failed: ${String(err)}`);
+      }
+    }
+
+    // Accountants are told about the invoice the dispatch just raised, the
+    // same notice InvoicesService.create sends for one raised by hand.
+    if (invoiceNumber) {
+      try {
+        await this.notifications.notifyRole(UserRole.ACCOUNTANT, "INVOICE_CREATED", {
+          invoiceNumber,
+          customerName: customer?.name ?? null,
+          total: grandTotal,
+          dueDate: paymentDueDate ?? null,
+        });
+      } catch (err) {
+        this.logger.warn(`Invoice ${invoiceNumber} saved but its notification failed: ${String(err)}`);
       }
     }
 

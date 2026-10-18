@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  owedOn,
   parseINR,
   computePurchaseBill,
   supplierPrefix,
@@ -36,6 +37,17 @@ describe("parseINR", () => {
     expect(parseINR(null)).toBe(0);
     expect(parseINR("")).toBe(0);
     expect(parseINR("—")).toBe(0);
+  });
+});
+
+describe("owedOn", () => {
+  it("is the bill less the credit for sarees sent back to the supplier", () => {
+    expect(owedOn({ billAmount: "₹10,000.00", creditedAmount: 3000 })).toBe(7000);
+  });
+
+  it("is the whole bill with no credit, and never below zero", () => {
+    expect(owedOn({ billAmount: "₹10,000.00" })).toBe(10000);
+    expect(owedOn({ billAmount: "₹9,000.00", creditedAmount: 9500 })).toBe(0);
   });
 });
 

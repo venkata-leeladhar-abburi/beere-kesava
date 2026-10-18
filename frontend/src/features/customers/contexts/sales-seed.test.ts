@@ -246,6 +246,19 @@ describe("purchaseOutstanding", () => {
     expect(row.unsoldSarees.map((s) => s.sareeId)).toEqual(["S1", "S3"]);
   });
 
+  it("takes sarees sent back on an approved debit note off the bill due", () => {
+    const base = SEED_PURCHASE_SUMMARIES[0];
+    const purchases = [
+      { ...base, id: "EXT-A", billAmount: 10_000, creditedAmount: 3_000, paidAmount: 5_000 },
+      // Everything sent back: nothing left to pay, never a negative due.
+      { ...base, id: "EXT-B", billAmount: 9_000, creditedAmount: 9_000, paidAmount: 0 },
+    ];
+    const [a, b] = purchaseOutstanding([], purchases);
+
+    expect(a.dueAmount).toBe(2_000);
+    expect(b.dueAmount).toBe(0);
+  });
+
   it("returns one row per seeded purchase even with no matching sarees", () => {
     const result = purchaseOutstanding([]);
     expect(result).toHaveLength(SEED_PURCHASE_SUMMARIES.length);

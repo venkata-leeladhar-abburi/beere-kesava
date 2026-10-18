@@ -104,6 +104,65 @@ export function computeBill(
   };
 }
 
+/**
+ * What approved supplier returns take off a purchase's bill. The supplier's
+ * invoice (billAmount) never shrinks when a piece goes back — the debit note
+ * is a credit against it instead, worth the returned pieces' share of the
+ * bill by buying value, so the discount and GST come off in the same
+ * proportion they went on. What we still owe is billAmount − this − paid.
+ * A purchase with every piece returned is credited its whole bill.
+ */
+export function creditedAmount(
+  billAmount: number | Prisma.Decimal,
+  lines: { price: number | Prisma.Decimal; quantity?: number | null; returnedQuantity?: number | null }[],
+): number {
+  const bill = Number(billAmount) || 0;
+  let total = 0;
+  let returned = 0;
+  for (const l of lines) {
+    // Same quantity rule as computeBill, so a full return credits exactly the bill.
+    const qty = l.quantity && l.quantity > 0 ? l.quantity : 1;
+    const price = Number(l.price) || 0;
+    total += price * qty;
+    returned += price * Math.min(Math.max(l.returnedQuantity ?? 0, 0), qty);
+  }
+  if (bill <= 0 || total <= 0 || returned <= 0) return 0;
+  return Math.min(bill, toPaise((bill * returned) / total));
+}
+
+/**
+ * The payment status a purchase should carry: paid against what is owed —
+ * billAmount less the credit from approved supplier returns. Null means
+ * "leave the stored status alone": older purchases had their status set by
+ * hand and have no linked payments to derive it from, and a return can
+ * settle such a bill outright (every piece sent back) but must not otherwise
+ * rewrite it — a hand-marked PAID bill isn't PENDING because a piece went back.
+ */
+export function paymentStatusFor(
+  billAmount: number | Prisma.Decimal,
+  lines: Parameters<typeof creditedAmount>[1],
+  paidTotal: number,
+  paymentCount: number,
+): PurchasePaymentStatus | null {
+  const bill = Number(billAmount) || 0;
+  const owed = toPaise(bill - creditedAmount(bill, lines));
+  const status =
+    paidTotal >= owed
+      ? PurchasePaymentStatus.PAID
+      : paidTotal > 0
+        ? PurchasePaymentStatus.PARTIAL
+        : PurchasePaymentStatus.PENDING;
+  if (paymentCount === 0 && status !== PurchasePaymentStatus.PAID) return null;
+  return status;
+}
+
+/** Adds the purchase's debit-note credit to an API response, as a 2dp string like paidAmount. */
+function withCredit<T extends { billAmount: Prisma.Decimal; sareeLines: Parameters<typeof creditedAmount>[1] }>(
+  purchase: T,
+): T & { creditedAmount: string } {
+  return { ...purchase, creditedAmount: creditedAmount(purchase.billAmount, purchase.sareeLines).toFixed(2) };
+}
+
 function lineData(l: CreatePurchaseSareeLineDto, idx: number) {
   const price = l.price;
   const sellPercent = l.sellPercent ?? 0;
@@ -226,13 +285,15 @@ export class PurchasesService {
         },
       });
       await this.sareeCodes.recodePurchases(tx, [id]);
-      return tx.purchase.findUniqueOrThrow({ where: { id }, include });
+      return withCredit(await tx.purchase.findUniqueOrThrow({ where: { id }, include }));
     });
   }
 
   async findAll(
     query: ListPurchasesQueryDto,
-  ): Promise<PaginatedResult<Prisma.PurchaseGetPayload<{ include: typeof include }> & { paidAmount: string }>> {
+  ): Promise<
+    PaginatedResult<Prisma.PurchaseGetPayload<{ include: typeof include }> & { paidAmount: string; creditedAmount: string }>
+  > {
     const where: Prisma.PurchaseWhereInput = {
       supplierId: query.supplierId,
       status: query.status,
@@ -271,15 +332,16 @@ export class PurchasesService {
     // response shape matches "full" and BackendPurchase.sareeLines can stay
     // a plain (non-optional) array on the frontend.
     const shaped = summary
-      ? items.map((item) => ({
-          ...item,
-          sareeLines: item.sareeLines.map((l) => ({ ...l, imageUrl: null, pieceImageUrls: [] as string[] })),
-          paidAmount: paidAmount(item.id),
-        }))
-      : (items as Prisma.PurchaseGetPayload<{ include: typeof include }>[]).map((item) => ({
-          ...item,
-          paidAmount: paidAmount(item.id),
-        }));
+      ? items.map((item) =>
+          withCredit({
+            ...item,
+            sareeLines: item.sareeLines.map((l) => ({ ...l, imageUrl: null, pieceImageUrls: [] as string[] })),
+            paidAmount: paidAmount(item.id),
+          }),
+        )
+      : (items as Prisma.PurchaseGetPayload<{ include: typeof include }>[]).map((item) =>
+          withCredit({ ...item, paidAmount: paidAmount(item.id) }),
+        );
 
     return { items: shaped, total, page: query.page, pageSize: query.pageSize };
   }
@@ -314,7 +376,7 @@ export class PurchasesService {
     if (!purchase) {
       throw new NotFoundException(`Purchase ${id} not found`);
     }
-    return purchase;
+    return withCredit(purchase);
   }
 
   /**
@@ -449,7 +511,7 @@ export class PurchasesService {
       // everywhere they're recorded (see SareeCodesService), in this same
       // transaction.
       await this.sareeCodes.recodePurchases(tx, [id]);
-      return tx.purchase.findUniqueOrThrow({ where: { id }, include });
+      return withCredit(await tx.purchase.findUniqueOrThrow({ where: { id }, include }));
     });
 
     // A changed bill moves the line between paid and owed: payments already
@@ -475,13 +537,18 @@ export class PurchasesService {
 
   /**
    * Derives and persists a purchase's payment status from the sum of
-   * SupplierPayments linked to it vs its billAmount — mirrors
+   * SupplierPayments linked to it vs what is owed — its billAmount less the
+   * credit from approved supplier returns (creditedAmount) — mirroring
    * VendorBillsService.recomputeStatus. Called whenever a supplier payment
-   * against a purchase is created, so status is never a manual/approval
-   * step; it always reflects what has actually been paid.
+   * against a purchase is created and whenever a return against it is
+   * approved, so status is never a manual/approval step; it always reflects
+   * what has actually been paid and sent back.
    */
   async recomputeStatus(purchaseId: string): Promise<void> {
-    const purchase = await this.prisma.purchase.findUnique({ where: { id: purchaseId } });
+    const purchase = await this.prisma.purchase.findUnique({
+      where: { id: purchaseId },
+      include: { sareeLines: { select: { price: true, quantity: true, returnedQuantity: true } } },
+    });
     if (!purchase) {
       throw new NotFoundException(`Purchase ${purchaseId} not found`);
     }
@@ -489,20 +556,16 @@ export class PurchasesService {
     const paidAggregate = await this.prisma.supplierPayment.aggregate({
       where: { purchaseId },
       _sum: { amount: true },
+      _count: { _all: true },
     });
-    const paidTotal = Number(paidAggregate._sum.amount || 0);
-    const billAmount = Number(purchase.billAmount);
+    const status = paymentStatusFor(
+      purchase.billAmount,
+      purchase.sareeLines,
+      Number(paidAggregate._sum.amount || 0),
+      paidAggregate._count._all,
+    );
 
-    let status: PurchasePaymentStatus;
-    if (paidTotal >= billAmount) {
-      status = PurchasePaymentStatus.PAID;
-    } else if (paidTotal > 0) {
-      status = PurchasePaymentStatus.PARTIAL;
-    } else {
-      status = PurchasePaymentStatus.PENDING;
-    }
-
-    if (status !== purchase.status) {
+    if (status && status !== purchase.status) {
       await this.prisma.purchase.update({ where: { id: purchaseId }, data: { status } });
     }
   }

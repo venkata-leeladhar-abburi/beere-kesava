@@ -240,7 +240,7 @@ export function FirmRetailSalesTab({ firm, firms }: { firm: Firm; firms: Firm[] 
           <StatTile
             label="Customers"
             value={String(uniqueCustomers)}
-            sub="Distinct, on this page"
+            sub="Distinct, across these sales"
             icon={Users}
           />
         </div>
@@ -270,7 +270,7 @@ export function FirmRetailSalesTab({ firm, firms }: { firm: Firm; firms: Firm[] 
                 marginBottom: 10,
               }}
             >
-              <Wallet size={14} color={T.antiqueGold} /> Payment mix (this page)
+              <Wallet size={14} color={T.antiqueGold} /> Payment mix (all listed sales)
             </div>
             <div className="flex flex-wrap gap-2.5">
               {paymentMix.map((p) => (
@@ -379,6 +379,9 @@ export function FirmRetailSalesTab({ firm, firms }: { firm: Firm; firms: Firm[] 
           onRetry={refetch}
           isFiltered={isFiltered}
           onClearFilters={clearFilters}
+          pagination
+          pageSize={25}
+          itemLabel="sales"
           emptyTitle="No retail sales connected yet"
           emptyDescription={`Use “Connect Retail Sales” above to book counter sales into ${firm.firmName}'s income.`}
         />

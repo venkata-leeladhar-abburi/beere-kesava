@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
+import { creditedAmount } from "../purchases/purchases.service";
 
 /**
  * Firm activity — the "why is this number what it is" view behind a firm's
@@ -155,6 +156,7 @@ export class FirmActivityService {
         include: {
           supplier: { select: { name: true } },
           payments: { select: { amount: true } },
+          sareeLines: { select: { price: true, quantity: true, returnedQuantity: true } },
         },
       }),
       this.prisma.dispatchRecord.findMany({
@@ -265,9 +267,13 @@ export class FirmActivityService {
     }
 
     // An external purchase is settled by the supplier payments linked to it,
-    // the same way a purchase order is settled through its bills.
+    // the same way a purchase order is settled through its bills. Sarees
+    // sent back on an approved debit note are credited off the bill, so the
+    // amount here is what the purchase costs net of returns.
     for (const purchase of purchases) {
-      const amount = num(purchase.billAmount);
+      const amount = Math.round(
+        (num(purchase.billAmount) - creditedAmount(purchase.billAmount, purchase.sareeLines)) * 100,
+      ) / 100;
       const paid = purchase.payments.reduce((s, p) => s + num(p.amount), 0);
       documents.push({
         id: purchase.id,
@@ -281,7 +287,8 @@ export class FirmActivityService {
         amount,
         paidAmount: paid,
         outstanding: Math.max(0, amount - paid),
-        status: statusOf(amount, paid),
+        // Every piece sent back settles the bill with nothing paid.
+        status: amount <= 0 ? "PAID" : statusOf(amount, paid),
         category: "Saree Purchase",
       });
     }

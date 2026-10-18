@@ -187,17 +187,6 @@ export function OutstandingPaymentsReport() {
       ),
     },
     {
-      id: "outstanding",
-      header: "Outstanding",
-      accessor: (r) => r.outstanding,
-      align: "end",
-      cell: (_v, r) => (
-        <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.crimson }}>
-          <Money value={rupees(r.outstanding)} />
-        </span>
-      ),
-    },
-    {
       id: "dueDate",
       header: "Due Date",
       accessor: (r) => r.dueDate,
@@ -245,14 +234,14 @@ export function OutstandingPaymentsReport() {
             icon={<Receipt size={22} color={T.antiqueGold} />}
             label="Unpaid Invoices"
             value={`${invoiceCount}`}
-            sub="From /invoices"
+            sub="Invoices with a balance due"
             gid="opr-i"
           />
           <SilkSumCard
             icon={<ShoppingBag size={22} color={T.antiqueGold} />}
             label="Unpaid Bulk Orders"
             value={`${bulkOrderCount}`}
-            sub="From /bulk-orders"
+            sub="Orders with a balance due"
             gid="opr-b"
           />
         </div>

@@ -10,6 +10,7 @@ import { IdGeneratorService, businessSegment } from "../id-generator/id-generato
 import { Prisma, SupplierReturnStatus, UserRole } from "../generated/prisma/client";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { PurchasesService } from "../purchases/purchases.service";
 import { SareeCodesService } from "../saree-codes/saree-codes.service";
 import { returnedPieceSet } from "../purchases/returned-pieces";
 import { CreateSupplierDebitNoteDto } from "./dto/create-supplier-debit-note.dto";
@@ -94,6 +95,7 @@ export class SupplierDebitNotesService {
     private readonly auditLog: AuditLogService,
     private readonly notifications: NotificationsService,
     private readonly sareeCodes: SareeCodesService,
+    private readonly purchases: PurchasesService,
   ) {}
 
   async create(dto: CreateSupplierDebitNoteDto): Promise<SupplierDebitNoteWithRelations> {
@@ -415,7 +417,9 @@ export class SupplierDebitNotesService {
    * Settles every line of the note at once. Approved pieces leave the
    * purchase's stock exactly as a single approved return request does —
    * PurchaseSareeLine.returnedQuantity goes up and Purchase.sareeCount comes
-   * down by the approved count — and refused pieces stay with us.
+   * down by the approved count — and refused pieces stay with us. The
+   * approved pieces are credited against the purchase's bill (see
+   * creditedAmount), so its payment status is re-derived afterwards.
    */
   async decide(
     id: string,
@@ -537,6 +541,10 @@ export class SupplierDebitNotesService {
         }
       }
     });
+
+    if (approvedTotal > 0) {
+      await this.purchases.recomputeStatus(note.purchaseId);
+    }
 
     await this.auditLog.recordAction({
       actorId: dto.decidedById,

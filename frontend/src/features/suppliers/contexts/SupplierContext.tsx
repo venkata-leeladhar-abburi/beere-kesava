@@ -15,7 +15,7 @@ import {
   initialsOf,
   totalPieces,
   purchasePieces,
-  parseINR,
+  owedOn,
 } from "./supplier-types";
 import { BackendSupplier, suppliersApi } from "../../../shared/api/suppliers";
 import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
@@ -109,6 +109,7 @@ function toPurchase(p: BackendPurchase): Purchase {
     // Exact to the paise — a GST-inclusive bill often has them, and the
     // paid-vs-owed comparisons parse this string back.
     billAmount: formatMoneyExact(rupees(Number(p.billAmount))),
+    creditedAmount: Number(p.creditedAmount ?? 0),
     subtotal: p.subtotal != null ? Number(p.subtotal) : undefined,
     discountType:
       p.discountType === "PERCENT" ? "percent" : p.discountType === "AMOUNT" ? "amount" : undefined,
@@ -664,7 +665,8 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
       const mine = purchases.filter(
         (p) => p.supplierId === supplierId || (!!supplier && p.supplier === supplier.name)
       );
-      const totalPurchased = mine.reduce((sum, p) => sum + parseINR(p.billAmount), 0);
+      // Net of sarees sent back on approved debit notes (owedOn).
+      const totalPurchased = mine.reduce((sum, p) => sum + owedOn(p), 0);
       const totalPaid = payments
         .filter((p) => p.supplierId === supplierId)
         .reduce((sum, p) => sum + p.amount, 0);

@@ -38,6 +38,7 @@ export class InvoicesService {
     if (customer.type !== CustomerType.WHOLESALE) {
       throw new BadRequestException(`Invoices can only be raised for wholesale customers (${customer.name} is retail)`);
     }
+    let dispatchInvoiceNumber: string | null = null;
     if (dto.dispatchId) {
       const existing = await this.prisma.invoice.findUnique({
         where: { dispatchId: dto.dispatchId },
@@ -45,9 +46,19 @@ export class InvoicesService {
       if (existing) {
         return this.findOne(existing.id);
       }
+      const dispatch = await this.prisma.dispatchRecord.findUnique({
+        where: { id: dto.dispatchId },
+        select: { invoiceNumber: true },
+      });
+      dispatchInvoiceNumber = dispatch?.invoiceNumber ?? null;
     }
 
-    const code = await this.idGenerator.nextScoped("INV", customer.code ?? businessSegment(customer.name, "Customer"));
+    // A dispatch already printed its invoice number — the invoice row must
+    // carry that same number rather than burning a second one in the series.
+    // Only older dispatches reach here (new ones book the invoice themselves).
+    const code =
+      dispatchInvoiceNumber ??
+      (await this.idGenerator.nextScoped("INV", customer.code ?? businessSegment(customer.name, "Customer")));
 
     const created = await this.prisma.invoice.create({
       data: {

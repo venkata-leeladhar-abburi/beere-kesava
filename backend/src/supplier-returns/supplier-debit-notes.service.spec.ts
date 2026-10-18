@@ -6,6 +6,7 @@ import { passthroughSareeCodes } from "../saree-codes/testing";
 describe("SupplierDebitNotesService", () => {
   let prisma: any;
   let idGenerator: any;
+  let purchases: { recomputeStatus: jest.Mock };
   let service: SupplierDebitNotesService;
 
   const supplier = { id: "supplier-1", name: "Ravi Silks", code: "RaviSilks-001" };
@@ -41,7 +42,8 @@ describe("SupplierDebitNotesService", () => {
       $transaction: jest.fn().mockImplementation((fn: any) => fn(prisma)),
     };
     idGenerator = { nextScoped: jest.fn().mockImplementation((p: string) => `${p}-RaviSilks-001-00${++counter}`) };
-    service = new SupplierDebitNotesService(prisma, idGenerator, { recordAction: jest.fn() } as any, notificationsStub(), passthroughSareeCodes);
+    purchases = { recomputeStatus: jest.fn() };
+    service = new SupplierDebitNotesService(prisma, idGenerator, { recordAction: jest.fn() } as any, notificationsStub(), passthroughSareeCodes, purchases as any);
   });
 
   describe("decisionStatus", () => {
@@ -110,6 +112,7 @@ describe("SupplierDebitNotesService", () => {
   const pendingNote = () => ({
     id: "DN-RaviSilks-001-001",
     status: "PENDING",
+    purchaseId: "EXT-2026-001",
     requestedById: "user-1",
     supplier,
     requests: [{ id: "RR-1", status: "PENDING", sareeLineId: "line-a", quantity: 4, pieceNos: [1, 2, 3, 4], sareeLine: lineA }],
@@ -142,6 +145,8 @@ describe("SupplierDebitNotesService", () => {
           data: expect.objectContaining({ status: "PARTIALLY_APPROVED" }),
         }),
       );
+      // The approved pieces are credited off the bill, so its status is re-derived.
+      expect(purchases.recomputeStatus).toHaveBeenCalledWith("EXT-2026-001");
     });
 
     it("moves no stock when a concurrent decision got there first", async () => {
@@ -171,6 +176,7 @@ describe("SupplierDebitNotesService", () => {
       await service.decide("DN-RaviSilks-001-001", { decidedById: "user-1", lines: [] });
 
       expect(prisma.purchaseSareeLine.update).not.toHaveBeenCalled();
+      expect(purchases.recomputeStatus).not.toHaveBeenCalled();
       expect(prisma.supplierDebitNote.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({ data: expect.objectContaining({ status: "REJECTED" }) }),
       );

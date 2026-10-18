@@ -61,6 +61,13 @@ export interface BackendPurchase {
    * record of what was paid. Absent on responses from before this field.
    */
   paidAmount?: string;
+  /**
+   * What approved supplier returns (debit notes) take off billAmount — the
+   * returned pieces' share of the bill, discount and GST included. Still
+   * owed = billAmount − creditedAmount − paidAmount. Absent on responses
+   * from before this field.
+   */
+  creditedAmount?: string;
   notes: string | null;
   invoiceFileName: string | null;
   /** Server-relative path in cloud storage ("/uploads/receipts/<uuid>.jpg"). */

@@ -53,7 +53,7 @@ const FACTORY_LOOMS = [
 ];
 
 /** Mirrors ExternalPurchasesPage INITIAL_RAW — same ids, invoices and bill amounts. */
-const PURCHASES_RAW: (Omit<PurchaseSummary, "billAmount" | "paidAmount"> & {
+const PURCHASES_RAW: (Omit<PurchaseSummary, "billAmount" | "creditedAmount" | "paidAmount"> & {
   billAmount: number;
   paidPct: number;
   sareeType: string;
@@ -146,6 +146,7 @@ export const SEED_PURCHASE_SUMMARIES: PurchaseSummary[] = PURCHASES_RAW.map((p) 
   invoiceNumber: p.invoiceNumber,
   gstNumber: p.gstNumber,
   billAmount: p.billAmount,
+  creditedAmount: 0,
   paidAmount: Math.round(p.billAmount * p.paidPct),
   status: p.status,
   sareeCount: p.sareeCount,
@@ -454,7 +455,7 @@ export interface PurchaseOutstanding extends PurchaseSummary {
   unsoldValue: number; // at expected selling price
   unsoldCost: number; // money still locked in stock
   refundValue: number;
-  dueAmount: number; // bill outstanding
+  dueAmount: number; // bill outstanding, net of supplier-return credit
 }
 
 export function purchaseOutstanding(
@@ -479,7 +480,8 @@ export function purchaseOutstanding(
       unsoldValue: unsoldSarees.reduce((a, s) => a + s.finalAmount, 0),
       unsoldCost: unsoldSarees.reduce((a, s) => a + s.costPrice, 0),
       refundValue: returnedSarees.reduce((a, s) => a + (s.ret?.refundAmount || 0), 0),
-      dueAmount: p.billAmount - p.paidAmount,
+      // Sarees sent back on an approved debit note are no longer owed for.
+      dueAmount: Math.max(0, p.billAmount - p.creditedAmount - p.paidAmount),
     };
   });
 }

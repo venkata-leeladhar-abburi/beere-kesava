@@ -9,6 +9,7 @@ import {
   SalesChannel,
 } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { OVERDUE_THRESHOLD_DAYS } from "../finance-jobs/overdue-payments.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { computeNextRunAt, listUpcomingRuns, parseDeliveryTime } from "./report-schedule-timing";
 
@@ -110,6 +111,13 @@ export class ReportsService {
       status: invoice.status,
     }));
 
+    // BulkOrder.paymentStatus has no OVERDUE value (unlike Invoice.status,
+    // which the daily scan flips), so the same rule is applied here: unpaid
+    // more than OVERDUE_THRESHOLD_DAYS past its due date. Without it a long
+    // overdue order showed as plain "Unpaid" beside an overdue invoice.
+    const overdueCutoff = new Date();
+    overdueCutoff.setDate(overdueCutoff.getDate() - OVERDUE_THRESHOLD_DAYS);
+
     const bulkOrderRows = bulkOrders.map((order) => ({
       source: "bulk_order" as const,
       id: order.ref,
@@ -122,7 +130,7 @@ export class ReportsService {
       total: Number(order.amountDue),
       paid: Number(order.amountPaid),
       outstanding: Number(order.amountDue) - Number(order.amountPaid),
-      status: order.paymentStatus,
+      status: order.dueDate < overdueCutoff ? ("OVERDUE" as const) : order.paymentStatus,
     }));
 
     const rows = [...invoiceRows, ...bulkOrderRows].sort(

@@ -98,6 +98,7 @@ describe("FirmActivityService — committed money", () => {
             date: new Date("2026-03-01"),
             billAmount: 50_000,
             payments: [{ amount: 20_000 }],
+            sareeLines: [{ price: 5_000, quantity: 10, returnedQuantity: 0 }],
           },
         ]),
       },
@@ -119,13 +120,44 @@ describe("FirmActivityService — committed money", () => {
     expect(totals.pendingExpense).toBe(30_000);
   });
 
+  it("takes sarees returned on an approved debit note off what the purchase still owes", async () => {
+    const prisma = buildPrisma({
+      purchase: {
+        findMany: jest.fn().mockResolvedValue([
+          // ₹50,000 bill for 10 pieces at ₹5,000; 4 sent back → ₹20,000 credited.
+          {
+            id: "EXT-Ravi-001", supplierId: "SUP-1", supplier: { name: "Ravi Silks" }, supplierName: null,
+            date: new Date("2026-03-01"), billAmount: 50_000, payments: [{ amount: 20_000 }],
+            sareeLines: [{ price: 5_000, quantity: 10, returnedQuantity: 4 }],
+          },
+          // Everything sent back, nothing paid — settled by the credit alone.
+          {
+            id: "EXT-Ravi-002", supplierId: "SUP-1", supplier: { name: "Ravi Silks" }, supplierName: null,
+            date: new Date("2026-03-02"), billAmount: 9_000, payments: [],
+            sareeLines: [{ price: 3_000, quantity: 3, returnedQuantity: 3 }],
+          },
+        ]),
+      },
+    });
+
+    const { documents, totals } = await new FirmActivityService(prisma as any).getActivity("FIRM-001");
+
+    expect(documents.find((d) => d.id === "EXT-Ravi-001")).toMatchObject({
+      amount: 30_000, paidAmount: 20_000, outstanding: 10_000, status: "PARTIAL",
+    });
+    expect(documents.find((d) => d.id === "EXT-Ravi-002")).toMatchObject({
+      amount: 0, outstanding: 0, status: "PAID",
+    });
+    expect(totals.pendingExpense).toBe(10_000);
+  });
+
   it("groups documents and payments by the party they are with", async () => {
     const prisma = buildPrisma({
       purchase: {
         findMany: jest.fn().mockResolvedValue([
-          { id: "EXT-1", supplierId: "SUP-1", supplier: { name: "Ravi Silks" }, supplierName: null, date: new Date("2026-03-01"), billAmount: 50_000, payments: [{ amount: 20_000 }] },
+          { id: "EXT-1", supplierId: "SUP-1", supplier: { name: "Ravi Silks" }, supplierName: null, date: new Date("2026-03-01"), billAmount: 50_000, payments: [{ amount: 20_000 }], sareeLines: [] },
           // An unregistered supplier has no record to group under.
-          { id: "EXT-2", supplierId: null, supplier: null, supplierName: "Walk-in trader", date: new Date("2026-03-02"), billAmount: 9_000, payments: [] },
+          { id: "EXT-2", supplierId: null, supplier: null, supplierName: "Walk-in trader", date: new Date("2026-03-02"), billAmount: 9_000, payments: [], sareeLines: [] },
         ]),
       },
       supplierPayment: {

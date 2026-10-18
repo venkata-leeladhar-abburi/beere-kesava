@@ -5,6 +5,7 @@ import { IdGeneratorService, businessSegment } from "../id-generator/id-generato
 import { Prisma, SupplierReturnStatus, UserRole } from "../generated/prisma/client";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { PurchasesService } from "../purchases/purchases.service";
 import { CreateSupplierReturnRequestDto } from "./dto/create-supplier-return-request.dto";
 import { DecideSupplierReturnRequestDto } from "./dto/decide-supplier-return-request.dto";
 import { ListSupplierReturnRequestsQueryDto } from "./dto/list-supplier-return-requests-query.dto";
@@ -24,6 +25,7 @@ export class SupplierReturnsService {
     private readonly idGenerator: IdGeneratorService,
     private readonly auditLog: AuditLogService,
     private readonly notifications: NotificationsService,
+    private readonly purchases: PurchasesService,
   ) {}
 
   async create(dto: CreateSupplierReturnRequestDto) {
@@ -169,7 +171,9 @@ export class SupplierReturnsService {
    * list already reads to mark a piece "Returned" (see expandSareePieces on
    * the frontend), so incrementing it here is what makes the pieces disappear
    * from that list; the request itself, now APPROVED, is the permanent record
-   * in the Supplier Returns section. Rejecting leaves the line untouched.
+   * in the Supplier Returns section. The returned pieces are credited
+   * against the purchase's bill (see creditedAmount), so its payment status
+   * is re-derived. Rejecting leaves the line untouched.
    */
   async decide(id: string, dto: DecideSupplierReturnRequestDto) {
     const request = await this.findOne(id);
@@ -232,6 +236,10 @@ export class SupplierReturnsService {
 
       return tx.supplierReturnRequest.findUniqueOrThrow({ where: { id }, include });
     });
+
+    if (dto.decision === SupplierReturnStatus.APPROVED) {
+      await this.purchases.recomputeStatus(request.purchaseId);
+    }
 
     await this.auditLog.recordAction({
       actorId: dto.decidedById,

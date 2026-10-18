@@ -8,6 +8,7 @@ describe("SupplierReturnsService", () => {
   let prisma: any;
   let idGenerator: any;
   let auditLog: any;
+  let purchases: { recomputeStatus: jest.Mock };
   let service: SupplierReturnsService;
 
   const purchase = { id: "EXT-2026-001", supplierId: "supplier-1", supplier: { id: "supplier-1", name: "Ravi Silks", code: "RaviSilks-001" } };
@@ -46,7 +47,8 @@ describe("SupplierReturnsService", () => {
     };
     idGenerator = { nextScoped: jest.fn().mockResolvedValue("RR-RaviSilks-001-001") };
     auditLog = { recordAction: jest.fn() };
-    service = new SupplierReturnsService(prisma, idGenerator, auditLog, notificationsStub());
+    purchases = { recomputeStatus: jest.fn() };
+    service = new SupplierReturnsService(prisma, idGenerator, auditLog, notificationsStub(), purchases as any);
   });
 
   describe("create", () => {
@@ -108,6 +110,7 @@ describe("SupplierReturnsService", () => {
     const pendingRequest = {
       id: "RR-RaviSilks-001-001",
       status: "PENDING",
+      purchaseId: "EXT-2026-001",
       sareeLineId: "line-1",
       quantity: 3,
       supplier: purchase.supplier,
@@ -161,6 +164,8 @@ describe("SupplierReturnsService", () => {
         where: { id: line.purchaseId },
         data: { sareeCount: { decrement: 3 } },
       });
+      // …and credits them off the bill, re-deriving its payment status.
+      expect(purchases.recomputeStatus).toHaveBeenCalledWith("EXT-2026-001");
     });
 
     it("leaves the saree line untouched on rejection", async () => {
@@ -168,6 +173,7 @@ describe("SupplierReturnsService", () => {
 
       expect(prisma.purchaseSareeLine.update).not.toHaveBeenCalled();
       expect(prisma.purchase.update).not.toHaveBeenCalled();
+      expect(purchases.recomputeStatus).not.toHaveBeenCalled();
     });
 
     it("refuses to decide a request that isn't PENDING", async () => {

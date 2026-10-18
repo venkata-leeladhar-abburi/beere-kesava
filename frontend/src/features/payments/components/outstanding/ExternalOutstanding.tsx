@@ -161,6 +161,7 @@ export function ExternalOutstanding({
                   "GST No",
                   "Purchase Date",
                   "Bill Amount",
+                  "Returns Credit",
                   "Paid",
                   "Paid Recorded",
                   "Bill Due",
@@ -181,6 +182,7 @@ export function ExternalOutstanding({
                   p.gstNumber,
                   p.date,
                   p.billAmount,
+                  p.creditedAmount,
                   p.paidAmount,
                   p.paidWithoutRecord ? "No — marked paid, no payment recorded" : "Yes",
                   p.dueAmount,
@@ -602,6 +604,14 @@ export function ExternalOutstanding({
                               {[
                                 { l: "GST Number", v: p.gstNumber },
                                 { l: "Bill Amount", v: inr(p.billAmount) },
+                                ...(p.creditedAmount > 0
+                                  ? [
+                                      {
+                                        l: "Returns Credit",
+                                        v: `− ${inr(p.creditedAmount)} · ${p.supplierReturnedCount} sent back`,
+                                      },
+                                    ]
+                                  : []),
                                 {
                                   l: "Paid",
                                   v: p.paidWithoutRecord

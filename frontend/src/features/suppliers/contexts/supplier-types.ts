@@ -52,6 +52,9 @@ export interface Purchase {
   invoiceNumber: string;
   /** What we owe the supplier — subtotal − discount + GST (see computePurchaseBill). */
   billAmount: string;
+  /** Rupees taken off billAmount for sarees sent back on approved debit
+   *  notes (server-side creditedAmount). See owedOn. */
+  creditedAmount?: number;
   /** Sarees' buying total before discount/GST. Undefined on older purchases
    *  whose bill was typed in by hand. */
   subtotal?: number;
@@ -163,6 +166,13 @@ export function parseINR(s: string | undefined | null): number {
   if (!s) return 0;
   const n = parseFloat(String(s).replace(/[^0-9.]/g, ""));
   return isNaN(n) ? 0 : n;
+}
+
+/** What a purchase costs us net of supplier returns — the bill less the
+ *  debit-note credit. Paid is measured against this, not the raw bill. */
+export function owedOn(p: Pick<Purchase, "billAmount" | "creditedAmount">): number {
+  const bill = parseINR(p.billAmount);
+  return Math.max(0, bill - Math.min(p.creditedAmount ?? 0, bill));
 }
 
 /**

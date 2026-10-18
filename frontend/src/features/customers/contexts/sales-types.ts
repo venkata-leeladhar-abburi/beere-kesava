@@ -99,6 +99,9 @@ export interface PurchaseSummary {
   invoiceNumber: string;
   gstNumber: string;
   billAmount: number;
+  /** Taken off the bill for sarees sent back on approved debit notes. */
+  creditedAmount: number;
+  /** Capped at billAmount − creditedAmount. */
   paidAmount: number;
   // PAYMENT_STATUS-shaped ("Paid"→paid, "Pending"→unpaid, "Partial"→partial)
   // but already consumed via direct string comparison and raw-label

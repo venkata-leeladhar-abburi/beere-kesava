@@ -56,6 +56,34 @@ describe("ReportsService", () => {
     service = new ReportsService(prisma, {} as any);
   });
 
+  it("marks a bulk order unpaid long past its due date as overdue, like an invoice", async () => {
+    const daysAgo = (n: number) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
+    const order = (ref: string, dueDate: Date) => ({
+      ref,
+      customerId: "c1",
+      customer: { code: "RAJ", name: "Raja Silks" },
+      createdBy: null,
+      createdDate: daysAgo(90),
+      dueDate,
+      total: 10,
+      amountDue: "5000",
+      amountPaid: "1000",
+      paymentStatus: "PARTIAL",
+    });
+    prisma.invoice = { findMany: jest.fn().mockResolvedValue([]) };
+    prisma.bulkOrder = {
+      findMany: jest.fn().mockResolvedValue([order("ORD-1", daysAgo(60)), order("ORD-2", daysAgo(10))]),
+    };
+
+    const res = await service.getOutstandingPayments();
+
+    expect(res.items.map((r) => [r.id, r.status])).toEqual([
+      ["ORD-1", "OVERDUE"],
+      ["ORD-2", "PARTIAL"],
+    ]);
+    expect(res.totalOutstanding).toBe(8000);
+  });
+
   it("counts each saree once in the QC split, by its newest verdict", async () => {
     // distinct sareeId, newest first — what a SEMI-then-PASSED saree reduces to.
     prisma.qcRecord.findMany.mockResolvedValue([{ result: "PASSED" }, { result: "DEFECTIVE" }]);

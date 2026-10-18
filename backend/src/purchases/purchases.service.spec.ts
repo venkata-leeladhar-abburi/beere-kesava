@@ -1,6 +1,6 @@
 import { BadRequestException } from "@nestjs/common";
 import { Prisma, PurchaseDiscountType } from "../generated/prisma/client";
-import { PurchasesService, computeBill, planLineChanges } from "./purchases.service";
+import { PurchasesService, computeBill, creditedAmount, planLineChanges } from "./purchases.service";
 
 // Same figures as the frontend's computePurchaseBill tests — the two must agree
 // or the bill shown on the form won't be the bill that's saved.
@@ -229,5 +229,114 @@ describe("PurchasesService.findAll — paid amount", () => {
     expect(prisma.purchase.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ orderBy: [{ date: "desc" }, { id: "asc" }] }),
     );
+  });
+});
+
+describe("creditedAmount", () => {
+  const lines = [
+    { price: 15000, quantity: 2, returnedQuantity: 0 },
+    { price: 4000, quantity: 1, returnedQuantity: 0 },
+  ];
+
+  it("is nothing when no piece has gone back", () => {
+    expect(creditedAmount(34000, lines)).toBe(0);
+  });
+
+  it("is the returned pieces' buying value on a plain bill", () => {
+    expect(creditedAmount(34000, [{ ...lines[0], returnedQuantity: 1 }, lines[1]])).toBe(15000);
+  });
+
+  it("takes the discount and GST off in proportion", () => {
+    // 5% off then 5% GST: bill 33,915 on a 34,000 subtotal. One ₹15,000 piece
+    // back = 15,000 × 0.95 × 1.05.
+    const bill = computeBill(lines, PurchaseDiscountType.PERCENT, 5, 5).billAmount;
+    expect(creditedAmount(bill, [{ ...lines[0], returnedQuantity: 1 }, lines[1]])).toBe(14962.5);
+  });
+
+  it("credits the whole bill when every piece has gone back", () => {
+    const bill = computeBill(lines, PurchaseDiscountType.AMOUNT, 1500, 12).billAmount;
+    expect(creditedAmount(bill, lines.map((l) => ({ ...l, returnedQuantity: l.quantity })))).toBe(bill);
+  });
+
+  it("never counts more returned pieces than the line has", () => {
+    expect(creditedAmount(34000, [{ ...lines[0], returnedQuantity: 9 }, lines[1]])).toBe(30000);
+  });
+});
+
+describe("PurchasesService.recomputeStatus — returns credit the bill", () => {
+  let prisma: any;
+  let service: PurchasesService;
+
+  // ₹10,000 bill for 10 pieces at ₹1,000.
+  const purchaseWith = (returnedQuantity: number, status = "PENDING") => ({
+    id: "EXT-1",
+    billAmount: new Prisma.Decimal(10000),
+    status,
+    sareeLines: [{ price: new Prisma.Decimal(1000), quantity: 10, returnedQuantity }],
+  });
+  const paid = (amount: number, count: number) => ({ _sum: { amount: new Prisma.Decimal(amount) }, _count: { _all: count } });
+
+  beforeEach(() => {
+    prisma = {
+      purchase: { findUnique: jest.fn(), update: jest.fn() },
+      supplierPayment: { aggregate: jest.fn() },
+    };
+    service = new PurchasesService(prisma, {} as any, {} as any);
+  });
+
+  it("marks a part-paid bill PAID once returns cover the rest", async () => {
+    prisma.purchase.findUnique.mockResolvedValue(purchaseWith(3, "PARTIAL"));
+    prisma.supplierPayment.aggregate.mockResolvedValue(paid(7000, 1));
+
+    await service.recomputeStatus("EXT-1");
+
+    expect(prisma.purchase.update).toHaveBeenCalledWith({ where: { id: "EXT-1" }, data: { status: "PAID" } });
+  });
+
+  it("keeps a bill PARTIAL while something is still owed after returns", async () => {
+    prisma.purchase.findUnique.mockResolvedValue(purchaseWith(2, "PENDING"));
+    prisma.supplierPayment.aggregate.mockResolvedValue(paid(7000, 1));
+
+    await service.recomputeStatus("EXT-1");
+
+    expect(prisma.purchase.update).toHaveBeenCalledWith({ where: { id: "EXT-1" }, data: { status: "PARTIAL" } });
+  });
+
+  it("marks an unpaid bill PAID when every piece has gone back", async () => {
+    prisma.purchase.findUnique.mockResolvedValue(purchaseWith(10, "PENDING"));
+    prisma.supplierPayment.aggregate.mockResolvedValue(paid(0, 0));
+
+    await service.recomputeStatus("EXT-1");
+
+    expect(prisma.purchase.update).toHaveBeenCalledWith({ where: { id: "EXT-1" }, data: { status: "PAID" } });
+  });
+
+  it("leaves a hand-set status alone when a partial return leaves no linked payment to derive from", async () => {
+    prisma.purchase.findUnique.mockResolvedValue(purchaseWith(2, "PAID"));
+    prisma.supplierPayment.aggregate.mockResolvedValue(paid(0, 0));
+
+    await service.recomputeStatus("EXT-1");
+
+    expect(prisma.purchase.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("PurchasesService.findAll — credited amount", () => {
+  it("reports each purchase's credit from approved returns", async () => {
+    const prisma: any = {
+      purchase: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: "EXT-1", billAmount: new Prisma.Decimal(10000), sareeLines: [{ price: 1000, quantity: 10, returnedQuantity: 3 }] },
+          { id: "EXT-2", billAmount: new Prisma.Decimal(5000), sareeLines: [{ price: 5000, quantity: 1, returnedQuantity: 0 }] },
+        ]),
+        count: jest.fn().mockResolvedValue(2),
+      },
+      supplierPayment: { groupBy: jest.fn().mockResolvedValue([]) },
+    };
+    const service = new PurchasesService(prisma, {} as any, {} as any);
+
+    const res = await service.findAll({ page: 1, pageSize: 100, view: "summary" });
+
+    expect(res.items.map((p) => p.creditedAmount)).toEqual(["3000.00", "0.00"]);
   });
 });
