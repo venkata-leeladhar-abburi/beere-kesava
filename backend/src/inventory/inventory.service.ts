@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { Prisma } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { sellingPerPiece } from "../sales/saree-details";
 
@@ -38,6 +39,13 @@ export interface StockItem {
   saleRef: string | null;
   customer: string | null;
 }
+
+/**
+ * One woven saree as the sales views read it — a StockItem with no status,
+ * because it may since have been sold or dispatched. The client works out
+ * where it stands from the sales, returns and wholesale dispatches.
+ */
+export type WovenSaree = Omit<StockItem, "status">;
 
 /**
  * One saree standing on the shop floor. Same fields the admin inventory shows,
@@ -146,8 +154,24 @@ export class InventoryService {
    *   - assignedBy / assignedAt (no actor-tracking on InventoryRecord yet)
    */
   async findAll(): Promise<StockItem[]> {
-    // One database query does everything: the exclusions (dispatched / sold /
-    // damaged) as NOT EXISTS on the sareeId indexes, the joins, and the latest
+    const rows = await this.queryWoven(false);
+    return rows.map((row): StockItem => ({ ...row, status: "available" }));
+  }
+
+  /**
+   * Every QC-passed woven saree, including the ones already sold or
+   * dispatched — `findAll()` drops those, so it cannot say how many a weaver
+   * or factory loom has sold. Backs SalesContext (the weaver and loom
+   * rankings on Outstanding). Damaged pieces stay out, as in `findAll()`.
+   */
+  async findWoven(): Promise<WovenSaree[]> {
+    return this.queryWoven(true);
+  }
+
+  /** The shared query behind findAll() and findWoven(). */
+  private async queryWoven(includeGone: boolean): Promise<WovenSaree[]> {
+    // One database query does everything: the exclusions (damaged, plus
+    // dispatched / sold unless includeGone) as NOT EXISTS on the sareeId indexes, the joins, and the latest
     // QC per saree. Previously this loaded every QC-passed saree with five
     // joins, sent the whole id list back in three IN (...) queries (which also
     // breaks past ~32k ids — PostgreSQL's bind-parameter limit) and filtered in
@@ -156,6 +180,9 @@ export class InventoryService {
     //
     // Latest QC is selected column-by-column on purpose: some legacy
     // QcRecord.photoUrl values are inline base64 blobs, never pulled here.
+    const stillHere = Prisma.sql`
+        AND NOT EXISTS (SELECT 1 FROM "DispatchSaree" d WHERE d."sareeId" = b."sareeId")
+        AND NOT EXISTS (SELECT 1 FROM "SaleRecord" s WHERE s."sareeId" = b."sareeId")`;
     const rows = await this.prisma.$queryRaw<
       {
         sareeId: string;
@@ -191,15 +218,14 @@ export class InventoryService {
       ) q ON true
       WHERE b."qcPassed" = true
         AND b."sareeId" IS NOT NULL
-        AND NOT EXISTS (SELECT 1 FROM "DispatchSaree" d WHERE d."sareeId" = b."sareeId")
-        AND NOT EXISTS (SELECT 1 FROM "SaleRecord" s WHERE s."sareeId" = b."sareeId")
+        ${includeGone ? Prisma.empty : stillHere}
         AND NOT EXISTS (
           SELECT 1 FROM "InventoryRecord" i
           WHERE i."sareeId" = b."sareeId" AND i."status" = 'DAMAGED_REVIEW_NEEDED'
         )`;
 
     return rows
-      .map((row): StockItem => {
+      .map((row): WovenSaree => {
         const isFactory = row.recipientType === "FACTORY_LOOM" || row.factoryLoomId != null;
         const source: StockSource = isFactory ? "factory" : "outsourced";
         // The human-facing loom code ("Loom-002") when this saree came off a
@@ -210,7 +236,6 @@ export class InventoryService {
         return {
           sareeId: row.sareeId,
           source,
-          status: "available",
           weaverName: row.weaverFirstName != null ? `${row.weaverFirstName} ${row.weaverLastName ?? ""}`.trim() : null,
           weaverId: row.weaverId ?? null,
           weaverCode: row.weaverCode ?? null,

@@ -14,6 +14,15 @@ export class InventoryController {
     return this.inventoryService.findAll();
   }
 
+  /** Every QC-passed woven saree, sold and dispatched ones included — the
+   *  sales views count a weaver's or loom's sales from this. GET /inventory
+   *  keeps listing only what is still in the factory. */
+  @Get("woven")
+  @RequireRoles(UserRole.SHOP, UserRole.ACCOUNTANT, UserRole.ADMIN, UserRole.SUPERADMIN)
+  findWoven() {
+    return this.inventoryService.findWoven();
+  }
+
   /** Stock physically standing in the shop — everything delivered by a SHOP
    *  dispatch and not yet sold. Declared before no other :param route exists
    *  here, but kept explicit so a future one cannot shadow it. */

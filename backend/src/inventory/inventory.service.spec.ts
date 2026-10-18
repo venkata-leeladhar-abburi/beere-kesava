@@ -94,3 +94,62 @@ describe("InventoryService.findProductionCatalog", () => {
     expect(select.qcRecords.select.photoUrl).toBeUndefined();
   });
 });
+
+describe("InventoryService.findAll / findWoven", () => {
+  const dbRow = {
+    sareeId: "RAMA-L2-B1-001",
+    recipientType: "WEAVER",
+    factoryLoomId: null,
+    weaverId: "wv-1",
+    designCode: "D-01",
+    sareeTypeCode: "ST-01",
+    createdAt: new Date("2026-09-01"),
+    weaverFirstName: "Rama",
+    weaverLastName: "Rao",
+    weaverCode: "Ramarao-001",
+    loomCode: null,
+    loomLabel: null,
+    sareeTypeName: "Kanchi Silk",
+    qcDate: new Date("2026-09-05"),
+    qcLoomNumber: "2",
+  };
+
+  let queryRaw: jest.Mock;
+  let service: InventoryService;
+
+  beforeEach(() => {
+    queryRaw = jest.fn().mockResolvedValue([dbRow]);
+    service = new InventoryService({ $queryRaw: queryRaw } as never);
+  });
+
+  /** The SQL text a tagged $queryRaw call would send, fragments expanded. */
+  function sentSql(): string {
+    const [strings, ...values] = queryRaw.mock.calls[0] as [TemplateStringsArray, ...unknown[]];
+    return strings
+      .map((s, i) => {
+        const v = values[i] as { sql?: string } | undefined;
+        return s + (v && typeof v.sql === "string" ? v.sql : "");
+      })
+      .join("");
+  }
+
+  it("findAll lists only what is still here, as available stock", async () => {
+    const items = await service.findAll();
+    expect(sentSql()).toContain(`FROM "DispatchSaree"`);
+    expect(sentSql()).toContain(`FROM "SaleRecord"`);
+    expect(sentSql()).toContain("DAMAGED_REVIEW_NEEDED");
+    expect(items).toEqual([
+      expect.objectContaining({ sareeId: "RAMA-L2-B1-001", source: "outsourced", status: "available" }),
+    ]);
+  });
+
+  it("findWoven keeps sold and dispatched sarees and claims no status", async () => {
+    const items = await service.findWoven();
+    expect(sentSql()).not.toContain(`FROM "DispatchSaree"`);
+    expect(sentSql()).not.toContain(`FROM "SaleRecord"`);
+    expect(sentSql()).toContain("DAMAGED_REVIEW_NEEDED");
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ sareeId: "RAMA-L2-B1-001", weaverName: "Rama Rao", loomNumber: "2" });
+    expect(items[0]).not.toHaveProperty("status");
+  });
+});

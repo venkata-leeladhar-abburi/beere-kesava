@@ -25,6 +25,10 @@ export interface BackendStockItem {
   customer: string | null;
 }
 
+/** GET /inventory/woven — a woven saree that may since have been sold or
+ *  dispatched, so it carries no stock status. Mirrors WovenSaree. */
+export type WovenSaree = Omit<BackendStockItem, "status">;
+
 /** The SHOP dispatch that delivered a saree to the shop floor. */
 export interface ShopDispatchInfo {
   dispatchId: string;
@@ -92,6 +96,10 @@ export interface ProductionCatalogItem {
 export const inventoryApi = {
   /** GET /inventory — all QC-passed woven sarees still in the factory. */
   list: () => apiClient.get<BackendStockItem[]>("/inventory"),
+
+  /** GET /inventory/woven — every QC-passed woven saree, sold and dispatched
+   *  ones included. The sales views resolve where each one stands. */
+  listWoven: () => apiClient.get<WovenSaree[]>("/inventory/woven"),
 
   /** GET /inventory/shop — what is physically in the shop: every saree an
    *  admin dispatched to it that has not since been sold. This is the shop

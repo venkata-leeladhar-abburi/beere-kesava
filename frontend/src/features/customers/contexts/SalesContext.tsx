@@ -9,8 +9,6 @@ import {
   SaleInfo,
   ReturnInfo,
   SalesContextValue,
-  SareeOrigin,
-  SareeSaleStatus,
   PurchaseSummary,
 } from "./sales-types";
 import { SEED_PURCHASE_SUMMARIES } from "./sales-seed";
@@ -19,6 +17,7 @@ import { inventoryApi } from "../../../shared/api/inventory";
 import { salesApi } from "../../../shared/api/sales";
 import { dispatchApi } from "../../../shared/api/dispatch";
 import { resolveSaleStatus } from "./sale-status";
+import { toInHouseSaree } from "./in-house-saree";
 import { purchasesApi, type BackendPurchase } from "../../../shared/api/purchases";
 import {
   pieceCodeFromLineCode,
@@ -63,8 +62,12 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
     isLoading: isInventoryLoading,
     refetch: refetchInventory,
   } = useQuery({
-    queryKey: ["backend-inventory-list"],
-    queryFn: () => inventoryApi.list(),
+    // Every woven saree, sold and dispatched ones too — GET /inventory drops
+    // those, which left weavers and looms with no sales on the rankings.
+    // Under the same key prefix, so invalidating "backend-inventory-list"
+    // (NewSaleFlow) still refreshes it.
+    queryKey: ["backend-inventory-list", "woven"],
+    queryFn: () => inventoryApi.listWoven(),
     enabled,
   });
 
@@ -277,99 +280,20 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
     if (!rawInventory || rawInventory.length === 0) return externalSarees;
     const salesMap = latestBySaree(rawSales);
     const returnsMap = latestBySaree(rawReturns);
+    const dispatchMap = latestBySaree(rawWholesalePieces);
 
     return [
-      ...rawInventory.map((item): UnifiedSaree => {
-        const sale = salesMap.get(item.sareeId);
-        const ret = returnsMap.get(item.sareeId);
-        const isExt = item.source === "external";
-        const isWvr = item.source === "outsourced";
-
-        const origin: SareeOrigin = isExt ? "external" : isWvr ? "weaver" : "factoryLoom";
-        const status: SareeSaleStatus = ret
-          ? "returned"
-          : item.status === "sold"
-            ? "retail"
-            : item.status === "wholesale"
-              ? "wholesale"
-              : "unsold";
-
-        const ageDays = item.qcDate
-          ? Math.max(
-              0,
-              Math.floor((Date.now() - new Date(item.qcDate).getTime()) / (1000 * 60 * 60 * 24))
-            )
-          : 5;
-
-        return {
-          sareeId: item.sareeId,
-          origin,
-          weaverId: item.weaverId,
-          weaverName: item.weaverName,
-          // For a weaver saree, loomNumber is the weaver's own loom digit. For a
-          // factory-loom saree it's now the loom's display code ("Loom-002"),
-          // which is already the label — don't parse it or re-prefix it.
-          weaverLoom:
-            origin === "weaver" && item.loomNumber
-              ? Number.parseInt(item.loomNumber, 10) || null
-              : null,
-          factoryLoomId: origin === "factoryLoom" && item.loomNumber ? item.loomNumber : null,
-          factoryLoomNumber: origin === "factoryLoom" && item.loomNumber ? item.loomNumber : null,
-          operatorName: item.weaverName,
-          loomLocation: "Factory Floor",
-          purchaseId: isExt ? `EXT-${item.sareeId.slice(0, 6)}` : null,
-          supplier: item.customer ?? (isExt ? "External Supplier" : null),
-          supplierLocation: isExt ? "Dharmavaram" : null,
-          invoiceNumber: isExt ? `INV-${item.sareeId.slice(0, 6)}` : null,
-          purchaseDate: item.qcDate,
-          batchId: null,
-          designCode: item.designCode ?? "",
-          sareeTypeCode: item.sareeTypeCode ?? "ST-001",
-          sareeTypeName: item.sareeTypeLabel ?? "Pure Silk Saree",
-          weight: "850g",
-          qcDate: item.qcDate
-            ? new Date(item.qcDate).toLocaleDateString("en-IN", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })
-            : "Recent",
-          costPrice: 5000,
-          sellPercent: 20,
-          finalAmount: 8500,
-          status,
-          sale: sale
-            ? {
-                saleRef: sale.saleRef,
-                channel: sale.channel === "WHOLESALE" ? "wholesale" : "retail",
-                date: new Date(sale.saleDate).toLocaleDateString("en-IN", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                }),
-                customer: item.customer ?? "Counter Customer",
-                amount: Number(sale.amount),
-              }
-            : null,
-          ret: ret
-            ? {
-                returnRef: ret.returnRef,
-                date: new Date(ret.returnDate).toLocaleDateString("en-IN", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                }),
-                reason: ret.reason ?? "",
-                refundAmount: Number(ret.refundAmount ?? 0),
-                restocked: ret.restocked,
-              }
-            : null,
-          ageDays,
-        };
-      }),
+      ...rawInventory.map((item) =>
+        toInHouseSaree(
+          item,
+          salesMap.get(item.sareeId),
+          returnsMap.get(item.sareeId),
+          dispatchMap.get(item.sareeId)
+        )
+      ),
       ...externalSarees,
     ];
-  }, [rawInventory, rawSales, rawReturns, externalSarees]);
+  }, [rawInventory, rawSales, rawReturns, rawWholesalePieces, externalSarees]);
 
   const recordSaleMutation = useMutation({
     mutationFn: (args: { sareeId: string; sale: SaleInfo }) => Promise.resolve(args),
