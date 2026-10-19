@@ -178,6 +178,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const roles = toRoles(user?.roles, normalizedRole);
     // Cookie mode: the session is an httpOnly cookie the login response set.
     const effectiveToken = COOKIE_AUTH ? null : token || "demo-token-" + Date.now();
+    // Written now, not left to saveState: that effect runs after the data
+    // providers' own effects, which start their queries on this very render
+    // — and the API client reads the token from storage. (switchPortal below
+    // does the same for the same reason.)
+    if (effectiveToken) {
+      try {
+        localStorage.setItem("token", effectiveToken);
+      } catch {
+        /* ignore */
+      }
+    }
     setState({
       isAuthenticated: true,
       role: roles.length > 1 ? null : normalizedRole,

@@ -124,17 +124,45 @@ export function isRetryable(error: unknown): boolean {
   );
 }
 
+/** The bearer token in storage right now, or null (always null in cookie mode). */
+function storedToken(): string | null {
+  if (COOKIE_AUTH || typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem("token") || sessionStorage.getItem("token");
+  } catch {
+    return null;
+  }
+}
+
 function getAuthHeaders(): Record<string, string> {
   // Cookie mode: the browser attaches the httpOnly session cookie itself. The
   // CSRF header proves to the backend that the request came from this app
   // (see backend auth/session.ts), and X-Auth-Mode asks login and
   // switch-role to answer with a cookie instead of a token in the body.
   if (COOKIE_AUTH) return { "X-BK-CSRF": "1", "X-Auth-Mode": "cookie" };
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("token") || sessionStorage.getItem("token")
-      : null;
+  const token = storedToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+/**
+ * Sends a request, and sends it once more if it went out with no token but a
+ * token has been stored while it was in flight.
+ *
+ * Signing in sets the token in React state first and storage a moment later,
+ * and the data providers mounted above the router start their queries in that
+ * gap. Those requests left with no Authorization header and came back 401
+ * AUTH_REQUIRED — and, since a token existed by the time the answer arrived,
+ * nothing signed anyone out either: the query just sat in "Please sign in"
+ * for the rest of the session (auth errors are never retried). A 401 is
+ * returned before any handler runs, so sending again is safe for writes too.
+ */
+async function sendAuthenticated(send: () => Promise<Response>): Promise<Response> {
+  const sentWithToken = storedToken() !== null;
+  const res = await send();
+  if (res.status === 401 && !COOKIE_AUTH && !sentWithToken && storedToken() !== null) {
+    return send();
+  }
+  return res;
 }
 
 function clearSession() {
@@ -266,31 +294,35 @@ async function handleResponse<T>(res: Response): Promise<T> {
 }
 
 async function request<T>(path: string, init?: RequestInit, opts?: RequestOptions): Promise<T> {
-  const res = await fetchWithTimeout(
-    `${API_BASE_URL}${path}`,
-    {
-      ...init,
-      headers: {
-        "Content-Type": "application/json",
-        ...getAuthHeaders(),
-        ...init?.headers,
+  const res = await sendAuthenticated(() =>
+    fetchWithTimeout(
+      `${API_BASE_URL}${path}`,
+      {
+        ...init,
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+          ...init?.headers,
+        },
       },
-    },
-    opts?.timeoutMs
+      opts?.timeoutMs
+    )
   );
 
   return handleResponse<T>(res);
 }
 
 async function requestForm<T>(path: string, formData: FormData, opts?: RequestOptions): Promise<T> {
-  const res = await fetchWithTimeout(
-    `${API_BASE_URL}${path}`,
-    {
-      method: "POST",
-      headers: { ...getAuthHeaders() },
-      body: formData,
-    },
-    opts?.timeoutMs
+  const res = await sendAuthenticated(() =>
+    fetchWithTimeout(
+      `${API_BASE_URL}${path}`,
+      {
+        method: "POST",
+        headers: { ...getAuthHeaders() },
+        body: formData,
+      },
+      opts?.timeoutMs
+    )
   );
 
   return handleResponse<T>(res);
