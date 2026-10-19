@@ -15,7 +15,10 @@ import {
   isSold,
   ageBucket,
   purchaseOutstanding,
+  boughtCount,
+  supplierRollup,
   useSales,
+  type SupplierRollup,
 } from "@/features/customers";
 import { Empty, ExportBtn, Pill, SectionCard, exportCsv, inr, tdMono } from "./primitives";
 import type { AgeKey } from "./primitives";
@@ -25,22 +28,7 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { EntityCode } from "@/shared/ui/domain";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
-// Sarees actually received on a purchase; the purchase record's own count is per line, not per piece.
-const boughtCount = (p: { sarees: UnifiedSaree[]; sareeCount: number }) =>
-  p.sarees.length || p.sareeCount;
-
 const ALL = "__all__";
-
-interface SupplierRollup {
-  supplier: string;
-  purchases: number;
-  bought: number;
-  unsold: number;
-  returned: number;
-  supplierReturned: number;
-  due: number;
-  unsoldValue: number;
-}
 
 // ── External purchases outstanding — purchase-wise, per supplier ─────────────
 export function ExternalOutstanding({
@@ -92,45 +80,7 @@ export function ExternalOutstanding({
   }, [all, search, ageFilter]);
   const pag = usePagination(rows, 10);
 
-  const bySupplier = useMemo(() => {
-    const m = new Map<
-      string,
-      {
-        supplier: string;
-        purchases: number;
-        bought: number;
-        unsold: number;
-        returned: number;
-        supplierReturned: number;
-        due: number;
-        unsoldValue: number;
-      }
-    >();
-    all.forEach((p) => {
-      let r = m.get(p.supplier);
-      if (!r) {
-        r = {
-          supplier: p.supplier,
-          purchases: 0,
-          bought: 0,
-          unsold: 0,
-          returned: 0,
-          supplierReturned: 0,
-          due: 0,
-          unsoldValue: 0,
-        };
-        m.set(p.supplier, r);
-      }
-      r.purchases++;
-      r.bought += boughtCount(p);
-      r.unsold += p.unsoldCount;
-      r.returned += p.returnedCount;
-      r.supplierReturned += p.supplierReturnedCount;
-      r.due += p.dueAmount;
-      r.unsoldValue += p.unsoldValue;
-    });
-    return [...m.values()].sort((a, b) => b.unsold - a.unsold);
-  }, [all]);
+  const bySupplier = useMemo(() => supplierRollup(all), [all]);
 
   const totBought = all.reduce((a, p) => a + boughtCount(p), 0);
   const totSold = all.reduce((a, p) => a + p.soldCount, 0);
@@ -718,6 +668,36 @@ export function ExternalOutstanding({
         icon={Building2}
         title="Supplier Roll-up"
         subtitle="Same numbers grouped by supplier across all their purchases."
+        actions={
+          <ExportBtn
+            onClick={() =>
+              exportCsv("outstanding-supplier-rollup.csv", [
+                [
+                  "Supplier",
+                  "Purchases",
+                  "Sarees Bought",
+                  "Sold",
+                  "Unsold",
+                  "Customer Returns",
+                  "Returned to Supplier",
+                  "Unsold Sale Value",
+                  "Bill Due",
+                ],
+                ...bySupplier.map((r) => [
+                  r.supplier,
+                  r.purchases,
+                  r.bought,
+                  r.sold,
+                  r.unsold,
+                  r.returned,
+                  r.supplierReturned,
+                  r.unsoldValue,
+                  r.due,
+                ]),
+              ])
+            }
+          />
+        }
       >
         {/* Mobile View Toggle */}
         <div className="flex md:hidden justify-end mb-3">
@@ -792,8 +772,9 @@ export function ExternalOutstanding({
                 </span>
               </div>
               <div style={{ width: "100%", height: 1, background: "rgba(110,15,45,0.08)" }} />
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-6 gap-2.5">
                 <div
+                  className="col-span-2"
                   style={{
                     background: "#F6F4EF",
                     borderRadius: 12,
@@ -826,6 +807,40 @@ export function ExternalOutstanding({
                   </div>
                 </div>
                 <div
+                  className="col-span-2"
+                  style={{
+                    background: "rgba(30,102,64,0.08)",
+                    borderRadius: 12,
+                    padding: "8px 10px",
+                    textAlign: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: T.green,
+                      letterSpacing: "0.7px",
+                      textTransform: "uppercase",
+                      marginBottom: 2,
+                    }}
+                  >
+                    SOLD
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: F.display,
+                      fontSize: 15,
+                      fontWeight: 700,
+                      color: T.green,
+                    }}
+                  >
+                    {r.sold}
+                  </div>
+                </div>
+                <div
+                  className="col-span-2"
                   style={{
                     background: "rgba(192,57,43,0.06)",
                     borderRadius: 12,
@@ -858,6 +873,7 @@ export function ExternalOutstanding({
                   </div>
                 </div>
                 <div
+                  className="col-span-3"
                   style={{
                     background: "#F6F4EF",
                     borderRadius: 12,
@@ -890,6 +906,7 @@ export function ExternalOutstanding({
                   </div>
                 </div>
                 <div
+                  className="col-span-3"
                   style={{
                     background: r.due > 0 ? "rgba(230,126,34,0.08)" : "rgba(30,102,64,0.08)",
                     borderRadius: 12,
@@ -930,7 +947,7 @@ export function ExternalOutstanding({
         <div
           className={`w-full overflow-x-auto section-nav-scroll border border-[#E8DCC4] rounded-xl bg-white p-2 ${supplierViewMode === "table" ? "block" : "hidden md:block"}`}
         >
-          <div className="min-w-[700px]">
+          <div className="min-w-[780px]">
             <DataTable<SupplierRollup>
               responsive={false}
               columns={supplierRollupColumns}
@@ -972,6 +989,14 @@ const supplierRollupColumns: ColumnDef<SupplierRollup>[] = [
     align: "end",
     sortable: true,
     cell: (_v, r) => <span style={tdMono}>{r.bought}</span>,
+  },
+  {
+    id: "sold",
+    header: "Sold",
+    accessor: (r) => r.sold,
+    align: "end",
+    sortable: true,
+    cell: (_v, r) => <span style={{ ...tdMono, color: T.green }}>{r.sold}</span>,
   },
   {
     id: "unsold",

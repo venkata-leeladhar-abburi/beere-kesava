@@ -5,6 +5,8 @@ import {
   ageBucket,
   rankSellers,
   purchaseOutstanding,
+  supplierRollup,
+  currentReturn,
   SEED_PURCHASE_SUMMARIES,
 } from "./sales-seed";
 import type { UnifiedSaree } from "./sales-types";
@@ -266,5 +268,86 @@ describe("purchaseOutstanding", () => {
       expect(r.unsoldCount).toBe(0);
       expect(r.sarees).toEqual([]);
     });
+  });
+});
+
+describe("currentReturn", () => {
+  const ret = { returnRef: "R1", returnDate: "2026-09-10T10:00:00.000Z" };
+
+  it("keeps a return with no sale on record", () => {
+    expect(currentReturn(ret, undefined)).toBe(ret);
+  });
+
+  it("keeps a return made after the latest sale", () => {
+    expect(currentReturn(ret, { saleDate: "2026-09-01T10:00:00.000Z" })).toBe(ret);
+  });
+
+  it("drops a return the saree has since been sold again after", () => {
+    expect(currentReturn(ret, { saleDate: "2026-09-20T10:00:00.000Z" })).toBeUndefined();
+  });
+
+  it("is undefined when there is no return", () => {
+    expect(currentReturn(undefined, { saleDate: "2026-09-01T10:00:00.000Z" })).toBeUndefined();
+  });
+});
+
+describe("supplierRollup", () => {
+  const base = SEED_PURCHASE_SUMMARIES[0];
+  const purchases = [
+    { ...base, id: "EXT-A", supplier: "Alpha Silks", billAmount: 10_000, paidAmount: 4_000 },
+    { ...base, id: "EXT-B", supplier: "Alpha Silks", billAmount: 5_000, paidAmount: 5_000 },
+    { ...base, id: "EXT-C", supplier: "Beta Weaves", billAmount: 2_000, paidAmount: 0 },
+  ].map((p) => ({ ...p, creditedAmount: 0 }));
+  const ext = (sareeId: string, purchaseId: string, o: Partial<UnifiedSaree> = {}) =>
+    makeSaree({ sareeId, origin: "external", purchaseId, ...o });
+  const restockedReturn = {
+    returnRef: "R1",
+    date: "x",
+    reason: "x",
+    refundAmount: 0,
+    restocked: true,
+  };
+  const heldReturn = { ...restockedReturn, returnRef: "R2", restocked: false };
+  const sarees: UnifiedSaree[] = [
+    ext("A1", "EXT-A", { status: "retail" }),
+    ext("A2", "EXT-A", { status: "wholesale" }),
+    ext("A3", "EXT-A", { status: "unsold", finalAmount: 700 }),
+    ext("A4", "EXT-A", { status: "returned", ret: restockedReturn, finalAmount: 900 }),
+    ext("A5", "EXT-A", { status: "returned", ret: heldReturn }),
+    ext("B1", "EXT-B", { status: "retail" }),
+    ext("B2", "EXT-B", { status: "returned", returnedToSupplier: true }),
+    ext("C1", "EXT-C", { status: "unsold" }),
+  ];
+  const rollup = supplierRollup(purchaseOutstanding(sarees, purchases));
+  const alpha = rollup.find((r) => r.supplier === "Alpha Silks")!;
+
+  it("groups purchases by supplier, most outstanding first", () => {
+    expect(rollup.map((r) => r.supplier)).toEqual(["Alpha Silks", "Beta Weaves"]);
+    expect(alpha.purchases).toBe(2);
+  });
+
+  it("counts retail and wholesale as sold, and customer returns as not sold", () => {
+    expect(alpha.sold).toBe(3);
+    expect(alpha.returned).toBe(2);
+    expect(alpha.unsold).toBe(2);
+    expect(alpha.supplierReturned).toBe(1);
+  });
+
+  it("reconciles: bought = sold + outstanding + to supplier + held customer returns", () => {
+    rollup.forEach((r) => {
+      const supplierSarees = sarees.filter((s) =>
+        purchases.some((p) => p.id === s.purchaseId && p.supplier === r.supplier)
+      );
+      const held = supplierSarees.filter(
+        (s) => s.status === "returned" && !s.returnedToSupplier && !s.ret?.restocked
+      ).length;
+      expect(r.bought).toBe(r.sold + r.unsold + r.supplierReturned + held);
+    });
+    expect(alpha.bought).toBe(7);
+  });
+
+  it("sums bill due and unsold value across the supplier's purchases", () => {
+    expect(alpha.due).toBe(6_000);
+    expect(alpha.unsoldValue).toBe(1_600);
   });
 });

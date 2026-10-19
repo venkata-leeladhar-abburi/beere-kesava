@@ -353,6 +353,19 @@ export const isCustomerReturn = (s: UnifiedSaree) =>
 
 export const isSold = (s: UnifiedSaree) => s.status === "retail" || s.status === "wholesale";
 
+/**
+ * The saree's latest customer return, if it still stands. A piece that was
+ * returned, restocked and then sold again is sold — the return is history.
+ * Same rule the backend applies before it allows that second sale.
+ */
+export function currentReturn<R extends { returnDate: string }>(
+  ret: R | undefined,
+  sale: { saleDate: string } | undefined
+): R | undefined {
+  if (!ret || !sale) return ret;
+  return new Date(ret.returnDate).getTime() > new Date(sale.saleDate).getTime() ? ret : undefined;
+}
+
 export function ageBucket(days: number): "0-30" | "31-60" | "61-90" | "90+" {
   if (days <= 30) return "0-30";
   if (days <= 60) return "31-60";
@@ -484,4 +497,55 @@ export function purchaseOutstanding(
       dueAmount: Math.max(0, p.billAmount - p.creditedAmount - p.paidAmount),
     };
   });
+}
+
+/** Sarees actually received on a purchase; the purchase record's own count is per line, not per piece. */
+export const boughtCount = (p: { sarees: UnifiedSaree[]; sareeCount: number }) =>
+  p.sarees.length || p.sareeCount;
+
+export interface SupplierRollup {
+  supplier: string;
+  purchases: number;
+  bought: number;
+  sold: number; // retail + wholesale, net of customer returns
+  unsold: number;
+  returned: number; // customer returns
+  supplierReturned: number;
+  due: number;
+  unsoldValue: number;
+}
+
+/**
+ * Purchase rows grouped by supplier, most outstanding stock first. Every
+ * piece is in exactly one state, so per supplier:
+ * bought = sold + unsold + supplierReturned + (customer returns not restocked).
+ */
+export function supplierRollup(rows: PurchaseOutstanding[]): SupplierRollup[] {
+  const m = new Map<string, SupplierRollup>();
+  rows.forEach((p) => {
+    let r = m.get(p.supplier);
+    if (!r) {
+      r = {
+        supplier: p.supplier,
+        purchases: 0,
+        bought: 0,
+        sold: 0,
+        unsold: 0,
+        returned: 0,
+        supplierReturned: 0,
+        due: 0,
+        unsoldValue: 0,
+      };
+      m.set(p.supplier, r);
+    }
+    r.purchases++;
+    r.bought += boughtCount(p);
+    r.sold += p.soldCount;
+    r.unsold += p.unsoldCount;
+    r.returned += p.returnedCount;
+    r.supplierReturned += p.supplierReturnedCount;
+    r.due += p.dueAmount;
+    r.unsoldValue += p.unsoldValue;
+  });
+  return [...m.values()].sort((a, b) => b.unsold - a.unsold);
 }

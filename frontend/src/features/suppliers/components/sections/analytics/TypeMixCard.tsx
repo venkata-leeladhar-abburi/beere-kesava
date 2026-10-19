@@ -103,6 +103,11 @@ export interface ByTypeEntry {
   fill: string;
 }
 
+/** Slices shown before the rest are folded into "Other" — 120+ types made the
+ *  donut a ring of hairlines and the legend an endless list. */
+const TOP_TYPES = 7;
+const OTHER_FILL = "#CBBFB4";
+
 export function TypeMixCard({
   card,
   tip,
@@ -114,34 +119,56 @@ export function TypeMixCard({
   tip: React.CSSProperties;
   byType: ByTypeEntry[];
 }) {
+  const totalCost = byType.reduce((s, d) => s + d.cost, 0);
+  const totalQty = byType.reduce((s, d) => s + d.qty, 0);
+  const top = byType.slice(0, TOP_TYPES);
+  const rest = byType.slice(TOP_TYPES);
+  const slices: (Pick<ByTypeEntry, "type" | "cost" | "qty" | "fill"> & { other?: number })[] = [
+    ...top,
+    ...(rest.length
+      ? [
+          {
+            type: `Other ${rest.length} types`,
+            cost: rest.reduce((s, d) => s + d.cost, 0),
+            qty: rest.reduce((s, d) => s + d.qty, 0),
+            fill: OTHER_FILL,
+            other: rest.length,
+          },
+        ]
+      : []),
+  ];
+  const share = (cost: number) => (totalCost > 0 ? Math.round((cost / totalCost) * 100) : 0);
+
   return (
-    <div style={card}>
+    <div style={{ ...card, height: "100%" }}>
       <CardBloom />
       <CardHeader
         icon={Layers}
         title="Purchase Mix by Saree Type"
-        subtitle="Where the sourcing budget goes"
+        subtitle="Share of purchase value, largest first"
       />
       <ChartFigure
         title="Purchase Mix by Saree Type"
-        summary={`${byType.length} saree types: ${byType.map((d) => `${d.type} ${d.qty} pcs`).join(", ")}.`}
+        summary={`${byType.length} saree types: ${slices
+          .map((d) => `${d.type} ${share(d.cost)}%`)
+          .join(", ")}.`}
       >
-        <div style={{ position: "relative", marginTop: 6 }}>
-          <ResponsiveContainer width="100%" height={168}>
+        <div style={{ position: "relative" }}>
+          <ResponsiveContainer width="100%" height={176}>
             <PieChart>
               <Pie
-                data={byType}
+                data={slices}
                 dataKey="cost"
                 nameKey="type"
                 cx="50%"
                 cy="50%"
-                innerRadius={48}
-                outerRadius={74}
-                paddingAngle={6}
-                cornerRadius={14}
-                stroke="none"
+                innerRadius={56}
+                outerRadius={80}
+                paddingAngle={slices.length > 1 ? 2 : 0}
+                stroke="#FFFFFF"
+                strokeWidth={2}
               >
-                {byType.map((d) => (
+                {slices.map((d) => (
                   <Cell key={d.type} fill={d.fill} />
                 ))}
               </Pie>
@@ -179,53 +206,93 @@ export function TypeMixCard({
               {byType.length}
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>
-              types
+              types · {totalQty.toLocaleString("en-IN")} pcs
             </div>
           </div>
         </div>
       </ChartFigure>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
-        {byType.map((d) => (
-          <div
-            key={d.type}
-            style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
+        {slices.map((d) => {
+          const pct = share(d.cost);
+          return (
+            <div key={d.type} title={`${d.type}: ${formatMoney(rupees(d.cost))}`}>
               <div
                 style={{
-                  width: 9,
-                  height: 9,
-                  borderRadius: "50%",
-                  background: d.fill,
-                  flexShrink: 0,
-                }}
-              />
-              <span
-                style={{
-                  fontFamily: F.ui,
-                  fontSize: 12,
-                  color: T.taupe,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
+                  display: "grid",
+                  gridTemplateColumns: "minmax(0,1fr) auto auto",
+                  alignItems: "center",
+                  gap: 10,
+                  marginBottom: 4,
                 }}
               >
-                {d.type}
-              </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                  <span
+                    style={{
+                      width: 9,
+                      height: 9,
+                      borderRadius: "50%",
+                      background: d.fill,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontFamily: F.ui,
+                      fontSize: 12.5,
+                      color: d.other ? T.taupe : T.luxuryBrown,
+                      fontStyle: d.other ? "italic" : undefined,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {d.type}
+                  </span>
+                </div>
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 12,
+                    color: T.taupe,
+                    textAlign: "right",
+                    minWidth: 56,
+                  }}
+                >
+                  {d.qty.toLocaleString("en-IN")} pcs
+                </span>
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: T.luxuryBrown,
+                    textAlign: "right",
+                    minWidth: 36,
+                  }}
+                >
+                  {pct}%
+                </span>
+              </div>
+              <div
+                style={{
+                  height: 5,
+                  borderRadius: 99,
+                  background: "rgba(110,15,45,0.07)",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${Math.max(pct, 1)}%`,
+                    height: "100%",
+                    borderRadius: 99,
+                    background: d.fill,
+                  }}
+                />
+              </div>
             </div>
-            <span
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 12,
-                fontWeight: 600,
-                color: T.luxuryBrown,
-                flexShrink: 0,
-              }}
-            >
-              {d.qty} pcs
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

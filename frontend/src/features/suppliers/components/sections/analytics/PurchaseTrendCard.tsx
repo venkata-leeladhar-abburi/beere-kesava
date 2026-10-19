@@ -125,8 +125,18 @@ export function PurchaseTrendCard({
   monthly: { month: string; spend: number; pieces: number; orders: number }[];
   trendDelta: number | null;
 }) {
+  const peak = monthly.reduce<(typeof monthly)[number] | null>(
+    (best, m) => (!best || m.spend > best.spend ? m : best),
+    null
+  );
+  const stats = [
+    { label: "Avg per saree", value: pieces ? formatMoney(rupees(billed / pieces)) : "—" },
+    { label: "Avg per invoice", value: buysCount ? formatMoney(rupees(billed / buysCount)) : "—" },
+    { label: "Busiest month", value: peak ? peak.month : "—" },
+    { label: "Months", value: String(monthly.length) },
+  ];
   return (
-    <div style={card}>
+    <div style={{ ...card, height: "100%" }}>
       <CardBloom />
       <CardHeader
         icon={TrendingUp}
@@ -169,54 +179,107 @@ export function PurchaseTrendCard({
       >
         {formatMoney(rupees(billed))}
       </div>
-      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 8 }}>
-        {buysCount} invoices · {pieces} sarees
+      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 14 }}>
+        {buysCount} invoices · {pieces.toLocaleString("en-IN")} sarees
       </div>
-      <ChartFigure
-        title="Purchase Value & Volume"
-        summary={`${formatMoney(rupees(billed))} billed across ${buysCount} invoices, ${pieces} sarees received.`}
+      <div
+        className="grid grid-cols-2 sm:grid-cols-4"
+        style={{
+          gap: 1,
+          background: "rgba(200,155,71,0.22)",
+          border: "1px solid rgba(200,155,71,0.22)",
+          borderRadius: 12,
+          overflow: "hidden",
+          marginBottom: 16,
+        }}
       >
-        <ResponsiveContainer width="100%" height={205}>
-          <ComposedChart data={monthly} barSize={26}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(200,155,71,0.15)" vertical={false} />
-            <XAxis
-              dataKey="month"
-              tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis yAxisId="l" hide />
-            <YAxis yAxisId="r" orientation="right" hide />
-            <RechartsTooltip
-              contentStyle={tip}
-              formatter={(v: number, n: string) =>
-                n === "Purchased" ? [formatMoney(rupees(v)), n] : [`${v} sarees`, n]
-              }
-            />
-            <Legend
-              iconType="circle"
-              iconSize={8}
-              wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }}
-            />
-            <Bar
-              yAxisId="l"
-              name="Purchased"
-              dataKey="spend"
-              fill={T.royalBurgundy}
-              radius={[10, 10, 10, 10]}
-            />
-            <Line
-              yAxisId="r"
-              name="Sarees"
-              dataKey="pieces"
-              stroke={semantic.chart.series[1]}
-              strokeWidth={2.5}
-              dot={{ r: 4, fill: semantic.chart.series[1], strokeWidth: 0 }}
-              activeDot={{ r: 6 }}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
-      </ChartFigure>
+        {stats.map((st) => (
+          <div key={st.label} style={{ background: "#FFFCF6", padding: "10px 14px" }}>
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontSize: 11,
+                fontWeight: 600,
+                color: T.taupe,
+                textTransform: "uppercase",
+                letterSpacing: "0.6px",
+              }}
+            >
+              {st.label}
+            </div>
+            <div
+              style={{
+                fontFamily: F.display,
+                fontSize: 17,
+                fontWeight: 700,
+                color: T.luxuryBrown,
+                marginTop: 3,
+              }}
+            >
+              {st.value}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ flex: 1, minHeight: 240, display: "flex", flexDirection: "column" }}>
+        <ChartFigure
+          className="flex-1 flex flex-col"
+          title="Purchase Value & Volume"
+          summary={`${formatMoney(rupees(billed))} billed across ${buysCount} invoices, ${pieces} sarees received.`}
+        >
+          <ResponsiveContainer width="100%" height="100%" minHeight={240}>
+            <ComposedChart data={monthly} barSize={monthly.length <= 3 ? 44 : 26}>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="rgba(200,155,71,0.15)"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="month"
+                tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                yAxisId="l"
+                tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }}
+                axisLine={false}
+                tickLine={false}
+                width={52}
+                tickFormatter={(v: number) => formatMoney(rupees(v), { compact: true })}
+              />
+              <YAxis yAxisId="r" orientation="right" hide />
+              <RechartsTooltip
+                contentStyle={tip}
+                formatter={(v: number, n: string) =>
+                  n === "Purchased" ? [formatMoney(rupees(v)), n] : [`${v} sarees`, n]
+                }
+              />
+              <Legend
+                iconType="circle"
+                iconSize={8}
+                wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }}
+              />
+              <Bar
+                yAxisId="l"
+                name="Purchased"
+                dataKey="spend"
+                fill={T.royalBurgundy}
+                radius={[8, 8, 0, 0]}
+              />
+              <Line
+                yAxisId="r"
+                name="Sarees"
+                dataKey="pieces"
+                stroke={semantic.chart.series[1]}
+                strokeWidth={2.5}
+                dot={{ r: 4, fill: semantic.chart.series[1], strokeWidth: 0 }}
+                activeDot={{ r: 6 }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </ChartFigure>
+      </div>
     </div>
   );
 }

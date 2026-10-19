@@ -11,7 +11,7 @@ import {
   SalesContextValue,
   PurchaseSummary,
 } from "./sales-types";
-import { SEED_PURCHASE_SUMMARIES } from "./sales-seed";
+import { SEED_PURCHASE_SUMMARIES, currentReturn } from "./sales-seed";
 
 import { inventoryApi } from "../../../shared/api/inventory";
 import { salesApi } from "../../../shared/api/sales";
@@ -172,12 +172,9 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
         return Array.from({ length: qty }, (_, i): UnifiedSaree => {
           const pieceNo = i + 1;
           const sareeId = pieceCodeFromLineCode(line.code, pieceNo);
-          const ret = returnsMap.get(sareeId);
-          const { status, sale } = resolveSaleStatus(
-            salesMap.get(sareeId),
-            ret,
-            dispatchMap.get(sareeId)
-          );
+          const latestSale = salesMap.get(sareeId);
+          const ret = currentReturn(returnsMap.get(sareeId), latestSale);
+          const { status, sale } = resolveSaleStatus(latestSale, ret, dispatchMap.get(sareeId));
           // Same rule as useExternalPurchaseRows.ts and the purchase screens.
           const returnedToSupplier = returnedSet.has(pieceNo);
           const ageDays = purchaseDate
@@ -287,7 +284,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
         toInHouseSaree(
           item,
           salesMap.get(item.sareeId),
-          returnsMap.get(item.sareeId),
+          currentReturn(returnsMap.get(item.sareeId), salesMap.get(item.sareeId)),
           dispatchMap.get(item.sareeId)
         )
       ),
