@@ -193,16 +193,18 @@ export class PaymentsService {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`supplier-payment:${dto.supplierId}`}))`;
 
       if (dto.purchaseId) {
-        const [purchase, paidOnPurchase] = await Promise.all([
+        // Paid on the purchase = payments naming it plus its share of the
+        // supplier's general payments — the figure the screens show.
+        const [purchase, allocation] = await Promise.all([
           tx.purchase.findUnique({
             where: { id: dto.purchaseId },
             select: { billAmount: true, sareeLines: { select: { price: true, quantity: true, returnedQuantity: true } } },
           }),
-          tx.supplierPayment.aggregate({ where: { purchaseId: dto.purchaseId }, _sum: { amount: true } }),
+          loadSupplierAllocation(tx, [dto.supplierId]),
         ]);
         if (purchase) {
           const owed = toPaise(Number(purchase.billAmount) - creditedAmount(purchase.billAmount, purchase.sareeLines));
-          const remaining = Math.max(0, owed - toPaise(paidOnPurchase._sum.amount));
+          const remaining = Math.max(0, owed - toPaise(allocation.paidByPurchase.get(dto.purchaseId) ?? 0));
           if (amountPaise > remaining) {
             throw new BadRequestException(
               remaining === 0

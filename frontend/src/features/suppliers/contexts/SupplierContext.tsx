@@ -115,6 +115,7 @@ function toPurchase(p: BackendPurchase): Purchase {
     // paid-vs-owed comparisons parse this string back.
     billAmount: formatMoneyExact(rupees(Number(p.billAmount))),
     creditedAmount: Number(p.creditedAmount ?? 0),
+    paidAmount: Number(p.paidAmount ?? 0),
     subtotal: p.subtotal != null ? Number(p.subtotal) : undefined,
     discountType:
       p.discountType === "PERCENT" ? "percent" : p.discountType === "AMOUNT" ? "amount" : undefined,
@@ -301,6 +302,7 @@ function toSupplierPayments(res: { items: BackendSupplierPayment[] }): SupplierP
     purchaseId: p.purchaseId ?? undefined,
     firmId: p.firmId ?? undefined,
     recordedBy: p.recordedBy ?? null,
+    appliedTo: p.appliedTo ?? [],
   }));
 }
 const REQUESTS_KEY = ["suppliers", "requests"] as const;

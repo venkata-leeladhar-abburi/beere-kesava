@@ -99,14 +99,12 @@ export function SupplierPaymentsSection() {
   const { firms } = useFirms();
   const [firmFilter, setFirmFilter] = useState(ALL_FIRMS);
   const filterFirmId = firms.find((f) => f.firmName === firmFilter)?.id;
-  // Paid so far against each purchase — the sum of its linked payments.
-  const paidByPurchase = useMemo(() => {
-    const m = new Map<string, number>();
-    payments.forEach((p) => {
-      if (p.purchaseId) m.set(p.purchaseId, (m.get(p.purchaseId) ?? 0) + p.amount);
-    });
-    return m;
-  }, [payments]);
+  // Paid so far against each purchase — its linked payments plus its share
+  // of the supplier's general payments, as the server allocates them.
+  const paidByPurchase = useMemo(
+    () => new Map(purchases.map((p) => [p.id, p.paidAmount ?? 0])),
+    [purchases]
+  );
   const paidFor = (purchaseId: string) => paidByPurchase.get(purchaseId) ?? 0;
 
   const rows: SupplierRow[] = useMemo(() => {

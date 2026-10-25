@@ -40,7 +40,7 @@ describe("PaymentsService", () => {
   beforeEach(() => {
     prisma = {
       weaver: { findUnique: jest.fn(), findMany: jest.fn().mockResolvedValue([]) },
-      supplier: { findUnique: jest.fn() },
+      supplier: { findUnique: jest.fn(), findMany: jest.fn().mockResolvedValue([{ id: "s-1", name: "Ravi Silks" }]) },
       purchase: { findUnique: jest.fn(), findMany: jest.fn().mockResolvedValue([]) },
       vendor: { findUnique: jest.fn() },
       vendorBill: { findUnique: jest.fn() },
@@ -55,6 +55,7 @@ describe("PaymentsService", () => {
       supplierPayment: {
         create: jest.fn().mockResolvedValue({ id: "sp-1" }),
         aggregate: jest.fn().mockResolvedValue({ _sum: { amount: null } }),
+        findMany: jest.fn().mockResolvedValue([]),
       },
       vendorPayment: {
         create: jest.fn().mockResolvedValue({ id: "vp-1" }),
@@ -179,7 +180,14 @@ describe("PaymentsService", () => {
   });
 
   describe("createSupplierPayment", () => {
-    const bill = { billAmount: 1000, sareeLines: [{ price: 1000, quantity: 1, returnedQuantity: 0 }] };
+    const bill = {
+      id: "EXT-1",
+      supplierId: "s-1",
+      supplierName: null,
+      date: new Date("2026-10-01"),
+      billAmount: 1000,
+      sareeLines: [{ price: 1000, quantity: 1, returnedQuantity: 0 }],
+    };
 
     beforeEach(() => {
       prisma.supplier.findUnique.mockResolvedValue({ id: "s-1", name: "Ravi Silks", code: "Ravi-001" });
@@ -211,9 +219,15 @@ describe("PaymentsService", () => {
       expect(prisma.supplierPayment.create).not.toHaveBeenCalled();
     });
 
-    it("refuses to pay more than is left on the chosen purchase", async () => {
-      prisma.purchase.findUnique.mockResolvedValue({ id: "EXT-1", supplierId: "s-1", firmId: null, ...bill });
-      prisma.purchase.findMany.mockResolvedValue([bill, bill]);
+    it("refuses to pay a purchase a general payment already settled", async () => {
+      // EXT-1 (older) and EXT-2 owe ₹1,000 each; a ₹1,000 general payment
+      // settled EXT-1, so ₹1,000 is still owed to the supplier — on EXT-2.
+      const newer = { ...bill, id: "EXT-2", date: new Date("2026-10-05") };
+      prisma.purchase.findUnique.mockResolvedValue({ ...bill, firmId: null });
+      prisma.purchase.findMany.mockResolvedValue([bill, newer]);
+      prisma.supplierPayment.findMany.mockResolvedValue([
+        { id: "SP-0", supplierId: "s-1", firmId: null, purchaseId: null, date: new Date("2026-10-06"), amount: 1000 },
+      ]);
       prisma.supplierPayment.aggregate.mockResolvedValue({ _sum: { amount: 1000 } });
 
       await expect(
@@ -231,7 +245,7 @@ describe("PaymentsService", () => {
     });
 
     it("books a purchase payment to the purchase's firm when none is named", async () => {
-      prisma.purchase.findUnique.mockResolvedValue({ id: "EXT-1", supplierId: "s-1", firmId: "FIRM-001", ...bill });
+      prisma.purchase.findUnique.mockResolvedValue({ ...bill, firmId: "FIRM-001" });
 
       await service.createSupplierPayment({ supplierId: "s-1", amount: 500, purchaseId: "EXT-1" });
 
@@ -241,7 +255,7 @@ describe("PaymentsService", () => {
     });
 
     it("refuses to pay a purchase from a different firm", async () => {
-      prisma.purchase.findUnique.mockResolvedValue({ id: "EXT-1", supplierId: "s-1", firmId: "FIRM-001", ...bill });
+      prisma.purchase.findUnique.mockResolvedValue({ ...bill, firmId: "FIRM-001" });
 
       await expect(
         service.createSupplierPayment({ supplierId: "s-1", amount: 500, purchaseId: "EXT-1", firmId: "FIRM-002" }),
@@ -251,7 +265,7 @@ describe("PaymentsService", () => {
     });
 
     it("lets the accountant choose the firm for a purchase recorded without one", async () => {
-      prisma.purchase.findUnique.mockResolvedValue({ id: "EXT-1", supplierId: "s-1", firmId: null, ...bill });
+      prisma.purchase.findUnique.mockResolvedValue({ ...bill, firmId: null });
 
       await service.createSupplierPayment({ supplierId: "s-1", amount: 500, purchaseId: "EXT-1", firmId: "FIRM-002" });
 

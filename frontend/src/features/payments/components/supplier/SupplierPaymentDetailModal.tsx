@@ -15,7 +15,7 @@ import { F, T } from "../../theme";
 import { IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { EntityCode, Money } from "@/shared/ui/domain";
-import { rupees } from "@/lib/domain/money";
+import { formatMoneyExact, rupees } from "@/lib/domain/money";
 import { parseISODay } from "@/lib/date";
 import { formatDate } from "../../../../shared/ui/date";
 import { formatRecordedBy } from "@/lib/domain/actor";
@@ -285,7 +285,25 @@ export function SupplierPaymentDetailModal({
                         label="Paid from firm"
                         value={firmLabel(p.firmId) ?? "Not specified"}
                       />
-                      <PaymentFact label="Applied to" value={p.purchaseId ?? "General payment"} />
+                      <PaymentFact
+                        label={p.purchaseId ? "Applied to" : "General payment — settled"}
+                        value={
+                          p.appliedTo && p.appliedTo.length > 0 ? (
+                            <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                              {p.appliedTo.map((a) => (
+                                <span key={a.purchaseId}>
+                                  <span style={{ fontFamily: "var(--font-mono)" }}>
+                                    {a.purchaseId}
+                                  </span>{" "}
+                                  · {formatMoneyExact(rupees(a.amount))}
+                                </span>
+                              ))}
+                            </span>
+                          ) : (
+                            (p.purchaseId ?? "General payment")
+                          )
+                        }
+                      />
                       <PaymentFact
                         label="Recorded by"
                         value={
@@ -388,7 +406,8 @@ export function SupplierPaymentDetailModal({
                             color: T.luxuryBrown,
                           }}
                         >
-                          <Money value={rupees(parseINR(p.billAmount))} />
+                          {/* Exact to the paise, matching "Final bill" below. */}
+                          {formatMoneyExact(rupees(parseINR(p.billAmount)))}
                         </div>
                       </div>
                     </div>
@@ -496,7 +515,9 @@ export function SupplierPaymentDetailModal({
                                   {s.sareeType || "—"}
                                   {s.color ? ` · ${s.color}` : ""}
                                   {s.quantity && s.quantity > 1 ? ` × ${s.quantity}` : ""} ·{" "}
-                                  <Money value={rupees(s.finalAmount)} />
+                                  {/* finalAmount is the selling value (buying price
+                                      plus sell %) — not what this bill charges. */}
+                                  Sells for <Money value={rupees(s.finalAmount)} />
                                 </div>
                               </div>
                             </div>

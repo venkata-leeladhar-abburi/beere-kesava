@@ -9,6 +9,7 @@
 
 import { Purchase, parseINR, invoicedBuying } from "../../contexts/supplier-types";
 import { formatMoneyExact, rupees } from "@/lib/domain/money";
+import { fromPaise, toPaise } from "@/lib/gst";
 import { T, F } from "../theme";
 
 const pct = (n: number) => `${Number(n.toFixed(2))}%`;
@@ -18,7 +19,8 @@ export function PurchaseBillBreakdown({
   paid,
 }: {
   purchase: Purchase;
-  /** Paid against this purchase so far — shows Paid and Balance rows when given. */
+  /** Paid against this purchase so far (linked payments plus its share of
+   *  general ones — Purchase.paidAmount). Shows Paid and Balance rows when given. */
   paid?: number;
 }) {
   const bill = parseINR(purchase.billAmount);
@@ -37,6 +39,13 @@ export function PurchaseBillBreakdown({
   const gstAmount = hasBreakdown ? (purchase.gstAmount ?? 0) : 0;
   const taxable = subtotal - discountAmount;
   const unitemised = hasBreakdown ? 0 : bill - linesTotal;
+  // Sarees sent back on approved debit notes come off what is owed (the
+  // server's creditedAmount) — the bill itself never shrinks. Compared in
+  // paise so a fully settled bill can't show a stray paisa due.
+  const credited = Math.min(purchase.creditedAmount ?? 0, bill);
+  const returnedPieces = purchase.sarees.reduce((n, s) => n + (s.returnedQuantity ?? 0), 0);
+  const payable = fromPaise(toPaise(bill) - toPaise(credited));
+  const balance = fromPaise(Math.max(0, toPaise(payable) - toPaise(paid ?? 0)));
 
   const discountLabel = !discountAmount
     ? "Discount (none)"
@@ -176,15 +185,22 @@ export function PurchaseBillBreakdown({
         )}
       </div>
 
-      {/* ── Final bill, paid, balance ── */}
+      {/* ── Final bill, returns credit, paid, balance ── */}
       <div style={rule}>
         {row("Final bill", money(bill), T.royalBurgundy, true)}
+        {credited > 0 &&
+          row(
+            `Returned sarees credit (${returnedPieces} piece${returnedPieces === 1 ? "" : "s"})`,
+            `− ${money(credited)}`,
+            T.greenMid
+          )}
+        {credited > 0 && row("Payable after returns", money(payable), T.luxuryBrown, true)}
         {paid !== undefined && row("Paid", money(paid), T.greenMid)}
         {paid !== undefined &&
           row(
             "Balance",
-            money(Math.max(0, bill - paid)),
-            bill - paid > 0 ? T.crimson : T.greenMid,
+            balance > 0 ? money(balance) : `${money(0)} · Settled`,
+            balance > 0 ? T.crimson : T.greenMid,
             true
           )}
       </div>

@@ -595,9 +595,7 @@ export function SupplierProfile({
           supplier={supplier}
           outstanding={stats.outstanding}
           openPurchases={myPurchases.filter((p) => p.status !== "Paid")}
-          paidFor={(purchaseId) =>
-            myPayments.reduce((sum, p) => sum + (p.purchaseId === purchaseId ? p.amount : 0), 0)
-          }
+          paidFor={(purchaseId) => myPurchases.find((p) => p.id === purchaseId)?.paidAmount ?? 0}
           saving={savingPayment}
           onClose={() => setPayModalOpen(false)}
           onSave={async (payload) => {

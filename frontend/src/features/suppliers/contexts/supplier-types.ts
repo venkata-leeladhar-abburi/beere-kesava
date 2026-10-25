@@ -55,6 +55,9 @@ export interface Purchase {
   /** Rupees taken off billAmount for sarees sent back on approved debit
    *  notes (server-side creditedAmount). See owedOn. */
   creditedAmount?: number;
+  /** Paid against this purchase: payments that name it plus its oldest-first
+   *  share of the supplier's general payments (server-side allocation). */
+  paidAmount?: number;
   /** Sarees' buying total before discount/GST. Undefined on older purchases
    *  whose bill was typed in by hand. */
   subtotal?: number;
@@ -91,6 +94,8 @@ export interface SupplierPayment {
   notes?: string;
   /** Accountant / Admin who recorded this payment; undefined if unattributed. */
   recordedBy?: { firstName: string; lastName: string; role: string } | null;
+  /** Purchases this payment settled, and how much went to each. */
+  appliedTo?: { purchaseId: string; amount: number }[];
 }
 
 /** An external-purchase request raised by an admin, awaiting superadmin approval. */
