@@ -34,6 +34,7 @@ import {
   weaverPaymentsApi,
   vendorPaymentsApi,
   supplierPaymentsApi,
+  SUPPLIER_PAYMENTS_QUERY_KEY,
 } from "../../../../shared/api/payments";
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { Button } from "../../../../shared/ui/primitives";
@@ -114,7 +115,7 @@ export function PaymentAnalyticsSection() {
     queryFn: () => vendorPaymentsApi.list(),
   });
   const { data: supplierPaymentsRes } = useQuery({
-    queryKey: ["analytics-supplier-payments"],
+    queryKey: SUPPLIER_PAYMENTS_QUERY_KEY,
     queryFn: () => supplierPaymentsApi.list(),
   });
 

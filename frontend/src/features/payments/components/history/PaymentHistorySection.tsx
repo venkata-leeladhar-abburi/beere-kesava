@@ -37,6 +37,7 @@ import {
   vendorPaymentsApi,
   weaverPaymentsApi,
   supplierPaymentsApi,
+  SUPPLIER_PAYMENTS_QUERY_KEY,
   type BackendActorSummary,
 } from "../../../../shared/api/payments";
 import { invoicesApi } from "../../../../shared/api/invoices";
@@ -117,7 +118,7 @@ export function PaymentHistorySection() {
     isError: supplierPayError,
     refetch: refetchSupplierPay,
   } = useQuery({
-    queryKey: ["history-supplier-payments"],
+    queryKey: SUPPLIER_PAYMENTS_QUERY_KEY,
     queryFn: () => supplierPaymentsApi.list(),
   });
   const {

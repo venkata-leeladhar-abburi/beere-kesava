@@ -7,6 +7,7 @@ import {
   weaverPaymentsApi,
   vendorPaymentsApi,
   supplierPaymentsApi,
+  SUPPLIER_PAYMENTS_QUERY_KEY,
 } from "../../../shared/api/payments";
 import { invoicesApi } from "../../../shared/api/invoices";
 import { EASE } from "../theme";
@@ -40,7 +41,7 @@ export function StatsStrip() {
     isLoading: supplierPaymentsLoading,
     isError: supplierPaymentsError,
   } = useQuery({
-    queryKey: ["analytics-supplier-payments"],
+    queryKey: SUPPLIER_PAYMENTS_QUERY_KEY,
     queryFn: () => supplierPaymentsApi.list(),
   });
   const {

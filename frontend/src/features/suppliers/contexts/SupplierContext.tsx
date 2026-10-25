@@ -19,7 +19,11 @@ import {
 } from "./supplier-types";
 import { BackendSupplier, suppliersApi } from "../../../shared/api/suppliers";
 import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
-import { supplierPaymentsApi } from "../../../shared/api/payments";
+import {
+  SUPPLIER_PAYMENTS_QUERY_KEY,
+  supplierPaymentsApi,
+  type BackendSupplierPayment,
+} from "../../../shared/api/payments";
 import {
   BackendPurchaseRequest,
   purchaseRequestsApi,
@@ -283,7 +287,22 @@ export function useSuppliers() {
 
 const SUPPLIERS_KEY = ["suppliers", "list"] as const;
 const PURCHASES_KEY = ["suppliers", "purchases"] as const;
-const PAYMENTS_KEY = ["suppliers", "payments"] as const;
+// Supplier payments live under the shared SUPPLIER_PAYMENTS_QUERY_KEY (raw
+// API rows); this context only maps them, so it always agrees with Payment
+// History and the payment stats.
+function toSupplierPayments(res: { items: BackendSupplierPayment[] }): SupplierPayment[] {
+  return res.items.map((p) => ({
+    id: p.id,
+    supplierId: p.supplierId,
+    date: calendarDay(p.date),
+    amount: Number(p.amount),
+    mode: (p.method as SupplierPayment["mode"]) ?? "Bank Transfer",
+    reference: p.utr ?? "",
+    purchaseId: p.purchaseId ?? undefined,
+    firmId: p.firmId ?? undefined,
+    recordedBy: p.recordedBy ?? null,
+  }));
+}
 const REQUESTS_KEY = ["suppliers", "requests"] as const;
 
 function toPurchaseRequest(r: BackendPurchaseRequest, supplierName: string): PurchaseRequest {
@@ -349,21 +368,9 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     error: paymentsError,
     refetch: refetchPayments,
   } = useQuery({
-    queryKey: PAYMENTS_KEY,
-    queryFn: async () => {
-      const res = await supplierPaymentsApi.list();
-      return res.items.map((p): SupplierPayment => ({
-        id: p.id,
-        supplierId: p.supplierId,
-        date: calendarDay(p.date),
-        amount: Number(p.amount),
-        mode: (p.method as SupplierPayment["mode"]) ?? "Bank Transfer",
-        reference: p.utr ?? "",
-        purchaseId: p.purchaseId ?? undefined,
-        firmId: p.firmId ?? undefined,
-        recordedBy: p.recordedBy ?? null,
-      }));
-    },
+    queryKey: SUPPLIER_PAYMENTS_QUERY_KEY,
+    queryFn: () => supplierPaymentsApi.list(),
+    select: toSupplierPayments,
     enabled,
   });
   const {
@@ -388,8 +395,6 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     qc.setQueryData<Supplier[]>(SUPPLIERS_KEY, (prev) => updater(prev ?? []));
   const setPurchases = (updater: (prev: Purchase[]) => Purchase[]) =>
     qc.setQueryData<Purchase[]>(PURCHASES_KEY, (prev) => updater(prev ?? []));
-  const setPayments = (updater: (prev: SupplierPayment[]) => SupplierPayment[]) =>
-    qc.setQueryData<SupplierPayment[]>(PAYMENTS_KEY, (prev) => updater(prev ?? []));
   const setRawRequests = (updater: (prev: BackendPurchaseRequest[]) => BackendPurchaseRequest[]) =>
     qc.setQueryData<BackendPurchaseRequest[]>(REQUESTS_KEY, (prev) => updater(prev ?? []));
 
@@ -529,36 +534,21 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         purchaseId: p.purchaseId,
         firmId: p.firmId,
       }),
-    onSuccess: (created) => {
-      setPayments((prev) => [
-        {
-          id: created.id,
-          supplierId: created.supplierId,
-          date: calendarDay(created.date),
-          amount: Number(created.amount),
-          mode: (created.method as SupplierPayment["mode"]) ?? "Bank Transfer",
-          reference: created.utr ?? "",
-          purchaseId: created.purchaseId ?? undefined,
-          firmId: created.firmId ?? undefined,
-          recordedBy: created.recordedBy ?? null,
-        },
-        ...prev.filter((p) => p.id !== created.id),
-      ]);
-      // A payment linked to a purchase may have flipped that purchase's
-      // Pending/Partial/Paid status server-side (PurchasesService.
-      // recomputeStatus) — the cached purchase list doesn't know that yet.
-      if (created.purchaseId) {
-        void qc.invalidateQueries({ queryKey: PURCHASES_KEY });
-      }
-      // Payment History, the stats strip and analytics read their own copies.
-      for (const key of [
-        "history-supplier-payments",
-        "analytics-supplier-payments",
-        "analytics-cash-flow-monthly",
-      ]) {
-        void qc.invalidateQueries({ queryKey: [key] });
-      }
-    },
+    // Returned promise: addPayment() resolves only once every screen's data
+    // is refreshed, so the modal never closes onto stale figures.
+    onSuccess: () =>
+      Promise.all([
+        // One refetch updates Supplier Payments, Payment History, the stats
+        // strip and Analytics together, with the bills each payment settled.
+        qc.invalidateQueries({ queryKey: SUPPLIER_PAYMENTS_QUERY_KEY }),
+        // Any payment — general ones too — can flip purchase statuses
+        // server-side (recomputeSupplierStatuses).
+        qc.invalidateQueries({ queryKey: PURCHASES_KEY }),
+        qc.invalidateQueries({ queryKey: ["analytics-cash-flow-monthly"] }),
+        // Every firm's ledger and connected parties (prefix match).
+        qc.invalidateQueries({ queryKey: ["firms", "activity"] }),
+        qc.invalidateQueries({ queryKey: ["firms", "connections"] }),
+      ]),
     onError: (err: unknown) => {
       toast.error(err instanceof Error ? err.message : "Failed to record payment");
     },

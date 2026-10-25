@@ -49,6 +49,14 @@ interface PaginatedResponse<T> {
   pageSize: number;
 }
 
+/**
+ * The one cache entry for supplier payments. Supplier Payments, Payment
+ * History, the stats strip and Analytics all read it, so they can never show
+ * two different versions of the same payment (they used to cache it
+ * separately, and a screen loaded earlier kept its old copy for minutes).
+ */
+export const SUPPLIER_PAYMENTS_QUERY_KEY = ["supplier-payments"] as const;
+
 const SUPPLIER_PAYMENTS_PAGE_SIZE = 100; // the backend's @Max
 
 const supplierPaymentsPage = (page: number, supplierId?: string) =>
