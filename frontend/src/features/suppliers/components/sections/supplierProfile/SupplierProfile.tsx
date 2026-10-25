@@ -600,22 +600,27 @@ export function SupplierProfile({
           }
           saving={savingPayment}
           onClose={() => setPayModalOpen(false)}
-          onSave={(payload) => {
+          onSave={async (payload) => {
             setSavingPayment(true);
-            addPayment({
-              supplierId: supplier.id,
-              date: payload.date,
-              amount: payload.amount,
-              mode: payload.mode,
-              reference: payload.reference,
-              purchaseId: payload.purchaseId,
-              firmId: payload.firmId,
-            });
-            toast.success(
-              `Payment of ${formatMoney(rupees(payload.amount))} recorded for ${supplier.name}`
-            );
-            setSavingPayment(false);
-            setPayModalOpen(false);
+            try {
+              await addPayment({
+                supplierId: supplier.id,
+                date: payload.date,
+                amount: payload.amount,
+                mode: payload.mode,
+                reference: payload.reference,
+                purchaseId: payload.purchaseId,
+                firmId: payload.firmId,
+              });
+              toast.success(
+                `Payment of ${formatMoney(rupees(payload.amount))} recorded for ${supplier.name}`
+              );
+              setPayModalOpen(false);
+            } catch {
+              // Already toasted by the mutation; the modal stays open to retry.
+            } finally {
+              setSavingPayment(false);
+            }
           }}
         />
       )}

@@ -21,6 +21,14 @@ import {
   matchesDateFilter,
 } from "../../../shared/ui/DateFilterBar";
 import { Modal } from "../../../shared/ui/overlay";
+import {
+  DOC_STATUS,
+  DocumentDetailModal,
+  FigureTiles,
+  Note,
+  PaymentDetailModal,
+  fmtDay,
+} from "./FirmLedgerDetails";
 
 type PartyType = FirmConnection["partyType"];
 
@@ -35,6 +43,8 @@ const GROUPS: {
   amountLabel: string;
   paidLabel: string;
   outstandingLabel: string;
+  /** What this firm itself paid the party (or received from them). */
+  firmPaidLabel: string;
 }[] = [
   {
     type: "SUPPLIER",
@@ -45,6 +55,7 @@ const GROUPS: {
     amountLabel: "Purchased",
     paidLabel: "Paid",
     outstandingLabel: "Balance Due",
+    firmPaidLabel: "Paid from this firm",
   },
   {
     type: "VENDOR",
@@ -55,6 +66,7 @@ const GROUPS: {
     amountLabel: "Ordered",
     paidLabel: "Paid",
     outstandingLabel: "Balance Due",
+    firmPaidLabel: "Paid from this firm",
   },
   {
     type: "CUSTOMER",
@@ -65,6 +77,7 @@ const GROUPS: {
     amountLabel: "Invoiced",
     paidLabel: "Collected",
     outstandingLabel: "Yet to Collect",
+    firmPaidLabel: "Received by this firm",
   },
 ];
 
@@ -75,11 +88,7 @@ const DOCUMENT_LABEL: Record<FirmDocumentType, string> = {
   DISPATCH_INVOICE: "Invoice",
 };
 
-const STATUS: Record<FirmDocument["status"], { tone: StatusTone; label: string }> = {
-  PENDING: { tone: "warning", label: "Pending" },
-  PARTIAL: { tone: "info", label: "Part paid" },
-  PAID: { tone: "success", label: "Settled" },
-};
+const STATUS: Record<FirmDocument["status"], { tone: StatusTone; label: string }> = DOC_STATUS;
 
 /** A connection narrowed to the chosen period, with its figures recomputed. */
 interface PartyRow {
@@ -87,8 +96,11 @@ interface PartyRow {
   documents: FirmDocument[];
   payments: FirmPayment[];
   amount: number;
+  /** Paid against this firm's documents with the party — from any firm. */
   paid: number;
   outstanding: number;
+  /** Money this firm itself paid the party (or received from them). */
+  paidFromFirm: number;
   lastActivity: string;
 }
 
@@ -120,8 +132,9 @@ export function FirmConnectionsTab({ firm }: { firm: Firm }) {
             documents,
             payments,
             amount: documents.reduce((s, d) => s + d.amount, 0),
-            paid: payments.reduce((s, p) => s + p.amount, 0),
+            paid: documents.reduce((s, d) => s + d.paidAmount, 0),
             outstanding: documents.reduce((s, d) => s + d.outstanding, 0),
+            paidFromFirm: payments.reduce((s, p) => s + p.amount, 0),
             lastActivity: dates[dates.length - 1] ?? "—",
           },
         ];
@@ -156,7 +169,11 @@ export function FirmConnectionsTab({ firm }: { firm: Firm }) {
         and wholesale customer with an external purchase, purchase order or invoice raised under{" "}
         <strong style={{ color: T.luxuryBrown }}>{firm.firmName}</strong>. The firm is chosen on
         each document, so the same party can appear under more than one firm — each firm shows only
-        its own documents and payments.
+        its own documents and payments. <strong style={{ color: T.luxuryBrown }}>Paid</strong> is
+        what has been paid against those documents (from any firm);{" "}
+        <strong style={{ color: T.luxuryBrown }}>Paid from this firm</strong> is the money this firm
+        itself sent, which can also cover bills booked to another firm. Click a party to see every
+        bill and payment.
       </div>
 
       <div className="bg-[#FFFDF9] border border-[#E8DCC4] rounded-xl p-3.5 flex flex-wrap items-center gap-3 mb-5">
@@ -230,12 +247,32 @@ export function FirmConnectionsTab({ firm }: { firm: Firm }) {
             ),
           },
           {
+            id: "paidFromFirm",
+            header: group.firmPaidLabel,
+            type: "currency",
+            align: "end",
+            priority: 2,
+            accessor: (r) => r.paidFromFirm,
+            cell: (_v, r) => (
+              <span style={{ ...mono, color: r.paidFromFirm > 0 ? T.luxuryBrown : T.taupe }}>
+                {fmtFull(r.paidFromFirm)}
+                {r.payments.length > 0 && (
+                  <span style={{ display: "block", fontSize: 11, color: T.taupe }}>
+                    {r.payments.length} payment{r.payments.length === 1 ? "" : "s"}
+                  </span>
+                )}
+              </span>
+            ),
+          },
+          {
             id: "lastActivity",
             header: "Last Activity",
             accessor: (r) => r.lastActivity,
             priority: 3,
             cell: (_v, r) => (
-              <span style={{ ...mono, fontSize: 12, color: T.taupe }}>{r.lastActivity}</span>
+              <span style={{ ...mono, fontSize: 12, color: T.taupe }}>
+                {r.lastActivity === "—" ? "—" : fmtDay(r.lastActivity)}
+              </span>
             ),
           },
           {
@@ -247,7 +284,10 @@ export function FirmConnectionsTab({ firm }: { firm: Firm }) {
               <Button
                 variant="tertiary"
                 size="sm"
-                onClick={() => setOpenKey(keyOf(r))}
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  setOpenKey(keyOf(r));
+                }}
                 className="whitespace-nowrap"
               >
                 View history
@@ -324,6 +364,20 @@ function PartyHistoryModal({
       ].sort((a, b) => b.date.localeCompare(a.date)),
     [row]
   );
+  const [doc, setDoc] = useState<FirmDocument | null>(null);
+  const [pay, setPay] = useState<FirmPayment | null>(null);
+
+  if (doc) return <DocumentDetailModal doc={doc} firmId={firm.id} onClose={() => setDoc(null)} />;
+  if (pay) {
+    return (
+      <PaymentDetailModal
+        payment={pay}
+        firmId={firm.id}
+        firmName={firm.firmName}
+        onClose={() => setPay(null)}
+      />
+    );
+  }
 
   return (
     <Modal open onOpenChange={(o) => !o && onClose()} size="lg">
@@ -358,42 +412,47 @@ function PartyHistoryModal({
       </div>
 
       <div style={{ padding: "20px 28px 24px", overflowY: "auto", flex: 1, minHeight: 0 }}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-          {[
+        <FigureTiles
+          tiles={[
             { label: group.amountLabel, value: fmtFull(row.amount), color: T.luxuryBrown },
             { label: group.paidLabel, value: fmtFull(row.paid), color: T.green },
             {
               label: group.outstandingLabel,
-              value: fmtFull(row.outstanding),
+              value: row.outstanding > 0 ? fmtFull(row.outstanding) : "Settled ✓",
               color: row.outstanding > 0 ? T.crimson : T.green,
             },
-          ].map((s) => (
-            <div
-              key={s.label}
-              style={{
-                background: T.bgGold,
-                border: `1px solid ${T.borderGold}`,
-                borderRadius: 10,
-                padding: "12px 14px",
-              }}
-            >
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>
-                {s.label}
-              </div>
-              <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: s.color }}>
-                {s.value}
-              </div>
-            </div>
-          ))}
-        </div>
+            {
+              label: group.firmPaidLabel,
+              value: fmtFull(row.paidFromFirm),
+              color: T.luxuryBrown,
+              hint: `${row.payments.length} payment${row.payments.length === 1 ? "" : "s"}`,
+            },
+          ]}
+        />
+        {Math.round((row.paidFromFirm - row.paid) * 100) > 0 && (
+          <Note>
+            {firm.firmName} paid {fmtFull(row.paidFromFirm)} to {row.connection.name}, of which{" "}
+            {fmtFull(row.paidFromFirm - row.paid)} went to bills booked to another firm or is held
+            as an advance. Open a payment to see exactly where it went.
+          </Note>
+        )}
+        {Math.round((row.paid - row.paidFromFirm) * 100) > 0 && (
+          <Note>
+            {fmtFull(row.paid - row.paidFromFirm)} of what was paid on these bills came from another
+            firm. Open a bill to see who paid it.
+          </Note>
+        )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {timeline.map((entry) => {
             const isDoc = entry.kind === "document";
             const Icon = isDoc ? FileText : Wallet;
             return (
-              <div
+              <button
+                type="button"
                 key={isDoc ? `d-${entry.doc.type}-${entry.doc.id}` : `p-${entry.pay.id}`}
+                onClick={() => (isDoc ? setDoc(entry.doc) : setPay(entry.pay))}
+                className="hover:bg-[rgba(200,155,71,0.08)]"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -403,6 +462,9 @@ function PartyHistoryModal({
                   borderRadius: 10,
                   padding: "10px 14px",
                   background: "#FFFFFF",
+                  textAlign: "left",
+                  width: "100%",
+                  cursor: "pointer",
                 }}
               >
                 <Icon
@@ -412,17 +474,21 @@ function PartyHistoryModal({
                 />
                 <div style={{ flex: 1, minWidth: 180 }}>
                   <div style={{ ...mono, fontWeight: 700, color: T.royalBurgundy }}>
-                    {isDoc ? entry.doc.reference : entry.pay.reference}
+                    {isDoc ? entry.doc.reference : entry.pay.id}
                   </div>
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>
                     {isDoc
-                      ? DOCUMENT_LABEL[entry.doc.type]
-                      : entry.pay.documentRef
-                        ? `Payment against ${entry.pay.documentRef}`
-                        : "Payment — not against a specific document"}
+                      ? `${DOCUMENT_LABEL[entry.doc.type]} · ${fmtFull(entry.doc.paidAmount)} paid${
+                          entry.doc.outstanding > 0 ? `, ${fmtFull(entry.doc.outstanding)} due` : ""
+                        }`
+                      : `${entry.pay.method ?? "Payment"}${entry.pay.utr ? ` · UTR ${entry.pay.utr}` : ""} · ${
+                          entry.pay.appliedTo.length === 0
+                            ? "not against a specific document"
+                            : `for ${entry.pay.appliedTo.map((a) => a.documentRef).join(", ")}`
+                        }`}
                   </div>
                 </div>
-                <span style={{ ...mono, fontSize: 12, color: T.taupe }}>{entry.date}</span>
+                <span style={{ ...mono, fontSize: 12, color: T.taupe }}>{fmtDay(entry.date)}</span>
                 <span
                   style={{
                     ...mono,
@@ -443,7 +509,7 @@ function PartyHistoryModal({
                 ) : (
                   <StatusPill tone="success" label="Paid" size="sm" />
                 )}
-              </div>
+              </button>
             );
           })}
         </div>

@@ -1,3 +1,4 @@
+import type React from "react";
 import { X, Receipt, ShoppingBag, Image as ImageIcon, User, FileText, Link2 } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
@@ -15,6 +16,8 @@ import { IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { EntityCode, Money } from "@/shared/ui/domain";
 import { rupees } from "@/lib/domain/money";
+import { parseISODay } from "@/lib/date";
+import { formatDate } from "../../../../shared/ui/date";
 import { formatRecordedBy } from "@/lib/domain/actor";
 import { resolveAssetUrl } from "@/shared/api/uploads";
 
@@ -29,6 +32,7 @@ export function SupplierPaymentDetailModal({
   purchases,
   payments,
   firmNames,
+  totals,
   paidFor,
   onClose,
 }: {
@@ -37,6 +41,8 @@ export function SupplierPaymentDetailModal({
   payments: SupplierPayment[];
   /** Firms this supplier's purchases are booked to — each purchase names its own. */
   firmNames: string[];
+  /** The supplier's figures as the Supplier Payments row shows them. */
+  totals: { purchased: number; paid: number; outstanding: number };
   /** Paid so far against one purchase (sum of its linked payments). */
   paidFor: (purchaseId: string) => number;
   onClose: () => void;
@@ -44,7 +50,10 @@ export function SupplierPaymentDetailModal({
   const { firms } = useFirms();
   const firmLabel = (id?: string) => (id ? (firms.find((f) => f.id === id)?.firmName ?? id) : null);
   const sortedPurchases = [...purchases].sort((a, b) => (a.date < b.date ? 1 : -1));
-  const sortedPayments = [...payments].sort((a, b) => (a.date < b.date ? 1 : -1));
+  const sortedPayments = [...payments].sort(
+    (a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id)
+  );
+  const paymentsTotal = payments.reduce((sum, p) => sum + p.amount, 0);
 
   return (
     <Modal open onOpenChange={(o) => !o && onClose()} size="lg">
@@ -126,6 +135,171 @@ export function SupplierPaymentDetailModal({
             minHeight: 0,
           }}
         >
+          {/* ── Totals ── */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+              gap: 10,
+            }}
+          >
+            {[
+              { label: "Total Purchased", value: totals.purchased, color: T.luxuryBrown },
+              { label: "Paid", value: totals.paid, color: T.green },
+              {
+                label: "Balance Due",
+                value: totals.outstanding,
+                color: totals.outstanding > 0 ? T.antiqueGold : T.green,
+              },
+            ].map((t) => (
+              <div
+                key={t.label}
+                style={{
+                  background: "#FFFFFF",
+                  borderRadius: 10,
+                  border: `1px solid ${T.borderDef}`,
+                  padding: "10px 14px",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: F.ui,
+                    fontSize: 11,
+                    color: T.taupe,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  {t.label}
+                </div>
+                <div
+                  style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: t.color }}
+                >
+                  {t.label === "Balance Due" && t.value === 0 && totals.purchased > 0 ? (
+                    "Paid ✓"
+                  ) : (
+                    <Money value={rupees(t.value)} />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Payment History ── */}
+          <div>
+            <div
+              style={{
+                fontFamily: F.ui,
+                fontWeight: 700,
+                fontSize: 13,
+                color: T.luxuryBrown,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 10,
+              }}
+            >
+              <Receipt size={16} color={T.royalBurgundy} /> Payment History
+              {payments.length > 0 && (
+                <span style={{ fontWeight: 500, color: T.taupe }}>
+                  · {payments.length} payment{payments.length !== 1 ? "s" : ""} ·{" "}
+                  <Money value={rupees(paymentsTotal)} />
+                </span>
+              )}
+            </div>
+            {sortedPayments.length === 0 ? (
+              <div
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: 12,
+                  color: T.taupe,
+                  fontStyle: "italic",
+                  textAlign: "center",
+                  padding: "16px 0",
+                  background: "#FFFFFF",
+                  borderRadius: 10,
+                  border: `1px solid ${T.borderDef}`,
+                }}
+              >
+                No payments recorded yet.
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {sortedPayments.map((p) => (
+                  <div
+                    key={p.id}
+                    style={{
+                      background: "#FFFFFF",
+                      borderRadius: 10,
+                      border: `1px solid ${T.borderDef}`,
+                      borderLeft: `4px solid ${T.green}`,
+                      padding: "12px 14px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 8,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        flexWrap: "wrap",
+                        gap: 8,
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontFamily: F.display,
+                            fontWeight: 700,
+                            fontSize: 16,
+                            color: T.royalBurgundy,
+                          }}
+                        >
+                          <Money value={rupees(p.amount)} />
+                        </div>
+                        <div
+                          style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}
+                        >
+                          Paid on{" "}
+                          <strong style={{ color: T.luxuryBrown }}>
+                            {formatDate(parseISODay(p.date), "cell")}
+                          </strong>{" "}
+                          · {p.mode}
+                        </div>
+                      </div>
+                      <EntityCode type="payment" value={p.id} size="sm" copyable />
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                        gap: 8,
+                        borderTop: `1px solid ${T.borderDef}`,
+                        paddingTop: 8,
+                      }}
+                    >
+                      <PaymentFact label="UTR / Reference" value={p.reference || "—"} />
+                      <PaymentFact
+                        label="Paid from firm"
+                        value={firmLabel(p.firmId) ?? "Not specified"}
+                      />
+                      <PaymentFact label="Applied to" value={p.purchaseId ?? "General payment"} />
+                      <PaymentFact
+                        label="Recorded by"
+                        value={
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                            <User size={11} /> {formatRecordedBy(p.recordedBy)}
+                          </span>
+                        }
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           {/* ── Purchase Orders (invoice amount + image + sarees) ── */}
           <div>
             <div
@@ -335,117 +509,37 @@ export function SupplierPaymentDetailModal({
               </div>
             )}
           </div>
-
-          {/* ── Payment History ── */}
-          <div>
-            <div
-              style={{
-                fontFamily: F.ui,
-                fontWeight: 700,
-                fontSize: 13,
-                color: T.luxuryBrown,
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                marginBottom: 10,
-              }}
-            >
-              <Receipt size={16} color={T.royalBurgundy} /> Payment History
-            </div>
-            {sortedPayments.length === 0 ? (
-              <div
-                style={{
-                  fontFamily: F.ui,
-                  fontSize: 12,
-                  color: T.taupe,
-                  fontStyle: "italic",
-                  textAlign: "center",
-                  padding: "16px 0",
-                  background: "#FFFFFF",
-                  borderRadius: 10,
-                  border: `1px solid ${T.borderDef}`,
-                }}
-              >
-                No payments recorded yet.
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {sortedPayments.map((p) => (
-                  <div
-                    key={p.id}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      flexWrap: "wrap",
-                      gap: 10,
-                      background: "#FFFFFF",
-                      borderRadius: 10,
-                      border: `1px solid ${T.borderDef}`,
-                      borderLeft: `4px solid ${T.antiqueGold}`,
-                      padding: "10px 14px",
-                    }}
-                  >
-                    <div>
-                      <div
-                        style={{
-                          fontFamily: F.display,
-                          fontWeight: 700,
-                          fontSize: 14,
-                          color: T.royalBurgundy,
-                        }}
-                      >
-                        <Money value={rupees(p.amount)} />
-                      </div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
-                        {p.mode} · {p.date}
-                        {firmLabel(p.firmId) ? ` · from ${firmLabel(p.firmId)}` : ""}
-                        {p.purchaseId ? ` · for ${p.purchaseId}` : ""}
-                      </div>
-                    </div>
-                    <div>
-                      <div
-                        style={{
-                          fontFamily: F.ui,
-                          fontSize: 11,
-                          color: T.taupe,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.5px",
-                        }}
-                      >
-                        UTR / Reference
-                      </div>
-                      <div
-                        style={{
-                          fontFamily: F.ui,
-                          fontSize: 12,
-                          color: p.reference ? T.green : T.taupe,
-                          fontWeight: 700,
-                          fontVariantNumeric: "tabular-nums",
-                        }}
-                      >
-                        {p.reference || "—"}
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 4,
-                        fontFamily: F.ui,
-                        fontSize: 12,
-                        color: T.taupe,
-                      }}
-                    >
-                      <User size={11} /> {formatRecordedBy(p.recordedBy)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </Modal>
+  );
+}
+
+function PaymentFact({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div>
+      <div
+        style={{
+          fontFamily: F.ui,
+          fontSize: 10,
+          color: T.taupe,
+          textTransform: "uppercase",
+          letterSpacing: "0.5px",
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontFamily: F.ui,
+          fontSize: 12,
+          fontWeight: 600,
+          color: T.luxuryBrown,
+          wordBreak: "break-word",
+        }}
+      >
+        {value}
+      </div>
+    </div>
   );
 }

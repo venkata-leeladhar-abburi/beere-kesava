@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { creditedAmount } from "../purchases/purchases.service";
+import { loadSupplierAllocation } from "../purchases/supplier-allocation";
 
 /**
  * Firm activity — the "why is this number what it is" view behind a firm's
@@ -61,6 +62,32 @@ export interface FirmDocument {
   status: FirmActivityStatus;
   /** Which ledger bucket this lands in once paid. */
   category: string;
+  /** The payments that settled it — what, when, how, and from which firm. */
+  settlements: FirmSettlement[];
+}
+
+/** One payment's share of a document. */
+export interface FirmSettlement {
+  paymentId: string;
+  date: string;
+  amount: number;
+  method: string | null;
+  utr: string | null;
+  /** Firm the money came from; null when the payment named none. */
+  fromFirmId: string | null;
+  fromFirmName: string | null;
+  /** LINKED — the payment named this document; GENERAL — a payment against
+   *  no particular document, applied to the oldest open ones first. */
+  appliedAs: "LINKED" | "GENERAL";
+}
+
+/** Where (part of) a payment went. */
+export interface FirmPaymentApplication {
+  documentRef: string;
+  amount: number;
+  /** Firm the document is booked to — may differ from the paying firm. */
+  documentFirmId: string | null;
+  documentFirmName: string | null;
 }
 
 export interface FirmPayment {
@@ -77,6 +104,13 @@ export interface FirmPayment {
   date: string;
   amount: number;
   category: string;
+  method: string | null;
+  utr: string | null;
+  recordedBy: string | null;
+  /** The documents this payment settled, and how much went to each. */
+  appliedTo: FirmPaymentApplication[];
+  /** Paid beyond everything owed — an advance held against future bills. */
+  unapplied: number;
 }
 
 /** One supplier, vendor or wholesale customer this firm has dealt with, and
@@ -91,15 +125,22 @@ export interface FirmConnection {
     documentCount: number;
     /** Value of every document raised between the firm and this party. */
     amount: number;
-    /** Money that actually moved between this firm and the party. */
+    /** Paid against those documents — from this firm or any other. */
     paid: number;
     outstanding: number;
+    /** Money this firm itself paid to (or received from) the party — can
+     *  cover documents booked to another firm. */
+    paidFromFirm: number;
     /** Most recent document or payment, yyyy-mm-dd. */
     lastActivity: string;
   };
 }
 
 const num = (v: unknown): number => Number(v ?? 0);
+const round2 = (v: number): number => Math.round(v * 100) / 100;
+const actor = (u: { firstName: string; lastName: string } | null | undefined): string | null =>
+  u ? `${u.firstName} ${u.lastName}`.trim() : null;
+const recordedBySelect = { select: { firstName: true, lastName: true } } as const;
 const iso = (d: Date | null | undefined): string =>
   (d ?? new Date()).toISOString().slice(0, 10);
 
@@ -137,7 +178,11 @@ export class FirmActivityService {
         where: { firmId, status: { not: "REJECTED" } },
         include: {
           vendor: { select: { name: true } },
-          vendorBills: { include: { payments: { select: { amount: true } } } },
+          vendorBills: {
+            include: {
+              payments: { select: { id: true, amount: true, date: true, method: true, utr: true, firmId: true } },
+            },
+          },
         },
       }),
       // A GRN raised against a purchase order restates the same money the PO
@@ -155,7 +200,6 @@ export class FirmActivityService {
         where: { firmId },
         include: {
           supplier: { select: { name: true } },
-          payments: { select: { amount: true } },
           sareeLines: { select: { price: true, quantity: true, returnedQuantity: true } },
         },
       }),
@@ -163,28 +207,34 @@ export class FirmActivityService {
         where: { firmId },
         include: {
           customer: { select: { name: true } },
-          invoice: { include: { payments: { select: { amount: true } } } },
+          invoice: {
+            include: {
+              payments: { select: { id: true, amount: true, date: true, method: true, utr: true, firmId: true } },
+            },
+          },
         },
       }),
       this.prisma.weaverPayment.findMany({
         where: { firmId },
-        include: { weaver: { select: { name: true } } },
+        include: { weaver: { select: { name: true } }, recordedBy: recordedBySelect },
       }),
       this.prisma.vendorPayment.findMany({
         where: { firmId },
         include: {
           vendor: { select: { name: true } },
-          bill: { select: { purchaseOrder: { select: { poNumber: true } } } },
+          bill: { select: { purchaseOrder: { select: { poNumber: true, firmId: true } } } },
+          recordedBy: recordedBySelect,
         },
       }),
       this.prisma.supplierPayment.findMany({
         where: { firmId },
-        include: { supplier: { select: { name: true } } },
+        include: { supplier: { select: { name: true } }, recordedBy: recordedBySelect },
       }),
       this.prisma.invoicePayment.findMany({
         where: { firmId },
         include: {
-          invoice: { include: { customer: { select: { name: true } } } },
+          invoice: { include: { customer: { select: { name: true } }, dispatch: { select: { firmId: true } } } },
+          recordedBy: recordedBySelect,
         },
       }),
       // Counter sales an accountant has connected to this firm. Money already
@@ -196,14 +246,39 @@ export class FirmActivityService {
       }),
     ]);
 
+    // Every supplier this firm bought from or paid: their payments are
+    // allocated across all their purchases, whichever firm each is booked to,
+    // so "settled" here matches the Supplier Payments page exactly.
+    const [firms, allocation] = await Promise.all([
+      this.prisma.firm.findMany({ select: { id: true, firmName: true } }),
+      loadSupplierAllocation(this.prisma, [
+        ...purchases.flatMap((p) => (p.supplierId ? [p.supplierId] : [])),
+        ...supplierPayments.map((p) => p.supplierId),
+      ]),
+    ]);
+    const firmName = (id: string | null | undefined) =>
+      id ? (firms.find((f) => f.id === id)?.firmName ?? id) : null;
+    const settlement = (
+      p: { id: string; date: Date; amount: unknown; method?: string | null; utr?: string | null; firmId: string | null },
+      appliedAs: FirmSettlement["appliedAs"],
+      amount = num(p.amount),
+    ): FirmSettlement => ({
+      paymentId: p.id,
+      date: iso(p.date),
+      amount: round2(amount),
+      method: p.method ?? null,
+      utr: p.utr || null,
+      fromFirmId: p.firmId,
+      fromFirmName: firmName(p.firmId),
+      appliedAs,
+    });
+
     const documents: FirmDocument[] = [];
 
     for (const po of purchaseOrders) {
       const amount = num(po.totalValue);
-      const paid = po.vendorBills.reduce(
-        (sum, bill) => sum + bill.payments.reduce((s, p) => s + num(p.amount), 0),
-        0,
-      );
+      const poPayments = po.vendorBills.flatMap((bill) => bill.payments);
+      const paid = poPayments.reduce((s, p) => s + num(p.amount), 0);
       documents.push({
         id: po.id,
         type: "PURCHASE_ORDER",
@@ -218,6 +293,7 @@ export class FirmActivityService {
         outstanding: Math.max(0, amount - paid),
         status: statusOf(amount, paid),
         category: "Material Purchase",
+        settlements: poPayments.map((p) => settlement(p, "LINKED")),
       });
     }
 
@@ -231,14 +307,14 @@ export class FirmActivityService {
     // that settles no specific bill) are applied to that vendor's ad-hoc
     // receipts oldest-first. Payments that DO name a bill are excluded: those
     // already settle a purchase order above, and would otherwise pay twice.
-    const unallocatedByVendor = new Map<string, number>();
-    for (const p of vendorPayments) {
+    const unallocatedByVendor = new Map<string, { payment: (typeof vendorPayments)[number]; left: number }[]>();
+    for (const p of [...vendorPayments].sort((a, b) => a.date.getTime() - b.date.getTime())) {
       if (p.billId) continue;
-      unallocatedByVendor.set(
-        p.vendorId,
-        (unallocatedByVendor.get(p.vendorId) ?? 0) + num(p.amount),
-      );
+      const pool = unallocatedByVendor.get(p.vendorId) ?? [];
+      pool.push({ payment: p, left: num(p.amount) });
+      unallocatedByVendor.set(p.vendorId, pool);
     }
+    const vendorApplied = new Map<string, FirmPaymentApplication[]>();
 
     const adhocReceipts = grnReceipts
       .filter((grn) => grn.purchaseOrders.length === 0)
@@ -246,9 +322,18 @@ export class FirmActivityService {
 
     for (const grn of adhocReceipts) {
       const amount = grn.items.reduce((s, i) => s + num(i.totalPrice), 0);
-      const pool = unallocatedByVendor.get(grn.vendorId) ?? 0;
-      const paid = Math.min(pool, amount);
-      unallocatedByVendor.set(grn.vendorId, pool - paid);
+      let paid = 0;
+      const grnSettlements: FirmSettlement[] = [];
+      for (const slot of unallocatedByVendor.get(grn.vendorId) ?? []) {
+        const take = Math.min(slot.left, amount - paid);
+        if (take <= 0) continue;
+        slot.left -= take;
+        paid += take;
+        grnSettlements.push(settlement(slot.payment, "GENERAL", take));
+        const list = vendorApplied.get(slot.payment.id) ?? [];
+        list.push({ documentRef: grn.id, amount: round2(take), documentFirmId: firmId, documentFirmName: firm.firmName });
+        vendorApplied.set(slot.payment.id, list);
+      }
       documents.push({
         id: grn.id,
         type: "GOODS_RECEIPT",
@@ -263,6 +348,7 @@ export class FirmActivityService {
         outstanding: Math.max(0, amount - paid),
         status: statusOf(amount, paid),
         category: "Material Purchase",
+        settlements: grnSettlements,
       });
     }
 
@@ -270,11 +356,14 @@ export class FirmActivityService {
     // the same way a purchase order is settled through its bills. Sarees
     // sent back on an approved debit note are credited off the bill, so the
     // amount here is what the purchase costs net of returns.
+    const allocatedPayment = new Map(allocation.payments.map((p) => [p.id, p]));
     for (const purchase of purchases) {
       const amount = Math.round(
         (num(purchase.billAmount) - creditedAmount(purchase.billAmount, purchase.sareeLines)) * 100,
       ) / 100;
-      const paid = purchase.payments.reduce((s, p) => s + num(p.amount), 0);
+      // Linked payments plus this purchase's share of general ones.
+      const slices = allocation.allocations.filter((a) => a.purchaseId === purchase.id);
+      const paid = round2(slices.reduce((s, a) => s + a.amount, 0));
       documents.push({
         id: purchase.id,
         type: "EXTERNAL_PURCHASE",
@@ -290,14 +379,17 @@ export class FirmActivityService {
         // Every piece sent back settles the bill with nothing paid.
         status: amount <= 0 ? "PAID" : statusOf(amount, paid),
         category: "Saree Purchase",
+        settlements: slices.flatMap((a) => {
+          const p = allocatedPayment.get(a.paymentId);
+          return p ? [settlement(p, p.purchaseId === purchase.id ? "LINKED" : "GENERAL", a.amount)] : [];
+        }),
       });
     }
 
     for (const d of dispatches) {
       const amount = num(d.invoice?.total ?? d.grandTotal);
-      const paid = d.invoice
-        ? d.invoice.payments.reduce((s, p) => s + num(p.amount), 0)
-        : 0;
+      const invoicePays = d.invoice?.payments ?? [];
+      const paid = invoicePays.reduce((s, p) => s + num(p.amount), 0);
       documents.push({
         id: d.id,
         type: "DISPATCH_INVOICE",
@@ -312,15 +404,32 @@ export class FirmActivityService {
         outstanding: Math.max(0, amount - paid),
         status: statusOf(amount, paid),
         category: d.type === "SHOP" ? "Retail Sale" : "Wholesale Sale",
+        settlements: invoicePays.map((p) => settlement(p, "LINKED")),
       });
     }
+
+    // Where each of this firm's supplier payments went — possibly to purchases
+    // booked to another firm (the money still left this firm's account).
+    const purchaseFirm = new Map<string, string | null>(
+      (await this.prisma.purchase.findMany({
+        where: { id: { in: [...new Set(allocation.allocations.map((a) => a.purchaseId))] } },
+        select: { id: true, firmId: true },
+      })).map((p) => [p.id, p.firmId]),
+    );
+    const supplierApplied = (paymentId: string): FirmPaymentApplication[] =>
+      allocation.allocations
+        .filter((a) => a.paymentId === paymentId)
+        .map((a) => {
+          const docFirm = purchaseFirm.get(a.purchaseId) ?? null;
+          return { documentRef: a.purchaseId, amount: a.amount, documentFirmId: docFirm, documentFirmName: firmName(docFirm) };
+        });
 
     const payments: FirmPayment[] = [
       ...weaverPayments.map((p) => ({
         id: p.id,
         type: "WEAVER" as const,
         direction: "EXPENSE" as const,
-        reference: p.utrNumber ?? p.id,
+        reference: p.id,
         party: p.weaver.name,
         partyType: "WEAVER" as const,
         partyId: p.weaverId,
@@ -328,46 +437,90 @@ export class FirmActivityService {
         date: iso(p.paymentDate),
         amount: num(p.amountPaid),
         category: "Weaver Payments",
+        method: null,
+        utr: p.utrNumber || null,
+        recordedBy: actor(p.recordedBy),
+        appliedTo: p.batchNo
+          ? [{ documentRef: p.batchNo, amount: num(p.amountPaid), documentFirmId: firmId, documentFirmName: firm.firmName }]
+          : [],
+        unapplied: 0,
       })),
-      ...vendorPayments.map((p) => ({
-        id: p.id,
-        type: "VENDOR" as const,
-        direction: "EXPENSE" as const,
-        reference: p.utr ?? p.id,
-        party: p.vendor.name,
-        partyType: "VENDOR" as const,
-        partyId: p.vendorId,
-        documentRef: p.bill?.purchaseOrder?.poNumber ?? null,
-        date: iso(p.date),
-        amount: num(p.amount),
-        category: "Material Purchase",
-      })),
-      ...supplierPayments.map((p) => ({
-        id: p.id,
-        type: "SUPPLIER" as const,
-        direction: "EXPENSE" as const,
-        reference: p.utr ?? p.id,
-        party: p.supplier.name,
-        partyType: "SUPPLIER" as const,
-        partyId: p.supplierId,
-        documentRef: p.purchaseId ?? null,
-        date: iso(p.date),
-        amount: num(p.amount),
-        category: "Saree Purchase",
-      })),
-      ...invoicePayments.map((p) => ({
-        id: p.id,
-        type: "INVOICE" as const,
-        direction: "INCOME" as const,
-        reference: p.utr ?? p.invoice.code ?? p.id,
-        party: p.invoice.customer.name,
-        partyType: "CUSTOMER" as const,
-        partyId: p.invoice.customerId,
-        documentRef: p.invoice.code ?? null,
-        date: iso(p.date),
-        amount: num(p.amount),
-        category: "Wholesale Sale",
-      })),
+      ...vendorPayments.map((p) => {
+        const poNumber = p.bill?.purchaseOrder?.poNumber ?? null;
+        const appliedTo: FirmPaymentApplication[] = poNumber
+          ? [{
+              documentRef: poNumber,
+              amount: num(p.amount),
+              documentFirmId: p.bill?.purchaseOrder?.firmId ?? null,
+              documentFirmName: firmName(p.bill?.purchaseOrder?.firmId),
+            }]
+          : (vendorApplied.get(p.id) ?? []);
+        return {
+          id: p.id,
+          type: "VENDOR" as const,
+          direction: "EXPENSE" as const,
+          reference: p.id,
+          party: p.vendor.name,
+          partyType: "VENDOR" as const,
+          partyId: p.vendorId,
+          documentRef: poNumber,
+          date: iso(p.date),
+          amount: num(p.amount),
+          category: "Material Purchase",
+          method: p.method ?? null,
+          utr: p.utr || null,
+          recordedBy: actor(p.recordedBy),
+          appliedTo,
+          unapplied: round2(Math.max(0, num(p.amount) - appliedTo.reduce((s, a) => s + a.amount, 0))),
+        };
+      }),
+      ...supplierPayments.map((p) => {
+        const appliedTo = supplierApplied(p.id);
+        return {
+          id: p.id,
+          type: "SUPPLIER" as const,
+          direction: "EXPENSE" as const,
+          reference: p.id,
+          party: p.supplier.name,
+          partyType: "SUPPLIER" as const,
+          partyId: p.supplierId,
+          documentRef: p.purchaseId ?? null,
+          date: iso(p.date),
+          amount: num(p.amount),
+          category: "Saree Purchase",
+          method: p.method ?? null,
+          utr: p.utr || null,
+          recordedBy: actor(p.recordedBy),
+          appliedTo,
+          unapplied: allocation.unallocatedByPayment.get(p.id) ?? 0,
+        };
+      }),
+      ...invoicePayments.map((p) => {
+        const docFirm = p.invoice.dispatch?.firmId ?? null;
+        return {
+          id: p.id,
+          type: "INVOICE" as const,
+          direction: "INCOME" as const,
+          reference: p.id,
+          party: p.invoice.customer.name,
+          partyType: "CUSTOMER" as const,
+          partyId: p.invoice.customerId,
+          documentRef: p.invoice.code ?? null,
+          date: iso(p.date),
+          amount: num(p.amount),
+          category: "Wholesale Sale",
+          method: p.method ?? null,
+          utr: p.utr || null,
+          recordedBy: actor(p.recordedBy),
+          appliedTo: [{
+            documentRef: p.invoice.code ?? p.invoiceId,
+            amount: num(p.amount),
+            documentFirmId: docFirm,
+            documentFirmName: firmName(docFirm),
+          }],
+          unapplied: 0,
+        };
+      }),
       ...retailSales.map((sale) => ({
         id: sale.saleRef,
         type: "RETAIL_SALE" as const,
@@ -380,6 +533,11 @@ export class FirmActivityService {
         date: iso(sale.date),
         amount: num(sale.amount),
         category: "Retail Sale",
+        method: null,
+        utr: null,
+        recordedBy: null,
+        appliedTo: [],
+        unapplied: 0,
       })),
     ];
 
@@ -447,7 +605,7 @@ export class FirmActivityService {
           name: row.party,
           documents: [],
           payments: [],
-          totals: { documentCount: 0, amount: 0, paid: 0, outstanding: 0, lastActivity: "" },
+          totals: { documentCount: 0, amount: 0, paid: 0, outstanding: 0, paidFromFirm: 0, lastActivity: "" },
         };
         byParty.set(key, connection);
       }
@@ -463,6 +621,7 @@ export class FirmActivityService {
       connection.documents.push(document);
       connection.totals.documentCount += 1;
       connection.totals.amount += document.amount;
+      connection.totals.paid += document.paidAmount;
       connection.totals.outstanding += document.outstanding;
       touch(connection, document.date);
     }
@@ -471,8 +630,15 @@ export class FirmActivityService {
       const connection = connectionFor(payment);
       if (!connection) continue;
       connection.payments.push(payment);
-      connection.totals.paid += payment.amount;
+      connection.totals.paidFromFirm += payment.amount;
       touch(connection, payment.date);
+    }
+
+    for (const c of byParty.values()) {
+      c.totals.amount = round2(c.totals.amount);
+      c.totals.paid = round2(c.totals.paid);
+      c.totals.outstanding = round2(c.totals.outstanding);
+      c.totals.paidFromFirm = round2(c.totals.paidFromFirm);
     }
 
     return {

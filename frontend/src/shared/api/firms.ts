@@ -95,6 +95,31 @@ export interface FirmDocument {
   outstanding: number;
   status: FirmActivityStatus;
   category: string;
+  /** The payments that settled it — what, when, how, and from which firm. */
+  settlements: FirmSettlement[];
+}
+
+/** One payment's share of a document. */
+export interface FirmSettlement {
+  paymentId: string;
+  date: string;
+  amount: number;
+  method: string | null;
+  utr: string | null;
+  fromFirmId: string | null;
+  fromFirmName: string | null;
+  /** LINKED — the payment named this document; GENERAL — a payment against no
+   *  particular document, applied to the oldest open ones first. */
+  appliedAs: "LINKED" | "GENERAL";
+}
+
+/** Where (part of) a payment went. */
+export interface FirmPaymentApplication {
+  documentRef: string;
+  amount: number;
+  /** Firm the document is booked to — may differ from the paying firm. */
+  documentFirmId: string | null;
+  documentFirmName: string | null;
 }
 
 export interface FirmPayment {
@@ -110,6 +135,13 @@ export interface FirmPayment {
   date: string;
   amount: number;
   category: string;
+  method: string | null;
+  utr: string | null;
+  recordedBy: string | null;
+  /** The documents this payment settled, and how much went to each. */
+  appliedTo: FirmPaymentApplication[];
+  /** Paid beyond everything owed — an advance held against future bills. */
+  unapplied: number;
 }
 
 /** One supplier, vendor or wholesale customer a firm has dealt with, and
@@ -123,8 +155,11 @@ export interface FirmConnection {
   totals: {
     documentCount: number;
     amount: number;
+    /** Paid against those documents — from this firm or any other. */
     paid: number;
     outstanding: number;
+    /** What this firm itself paid the party (or received from them). */
+    paidFromFirm: number;
     lastActivity: string;
   };
 }

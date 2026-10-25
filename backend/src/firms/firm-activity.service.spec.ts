@@ -9,9 +9,15 @@ import { FirmActivityService } from "./firm-activity.service";
  */
 describe("FirmActivityService — committed money", () => {
   const FIRM = { id: "FIRM-001", firmName: "Kesava Silks" };
+  const OTHER_FIRM = { id: "FIRM-002", firmName: "Vysnawi Handlooms" };
+  const supplierPayment = (id: string, amount: number, purchaseId: string | null, day: string, firmId = "FIRM-001") => ({
+    id, supplierId: "SUP-1", supplier: { name: "Ravi Silks" }, purchaseId, amount, date: new Date(day),
+    utr: "UTR9", method: "Bank Transfer", firmId, recordedBy: { firstName: "Asha", lastName: "K" },
+  });
 
   const buildPrisma = (over: Record<string, unknown> = {}) => ({
-    firm: { findUnique: jest.fn().mockResolvedValue(FIRM) },
+    firm: { findUnique: jest.fn().mockResolvedValue(FIRM), findMany: jest.fn().mockResolvedValue([FIRM, OTHER_FIRM]) },
+    supplier: { findMany: jest.fn().mockResolvedValue([{ id: "SUP-1", name: "Ravi Silks" }]) },
     purchaseOrder: { findMany: jest.fn().mockResolvedValue([]) },
     grnReceipt: { findMany: jest.fn().mockResolvedValue([]) },
     purchase: { findMany: jest.fn().mockResolvedValue([]) },
@@ -97,11 +103,12 @@ describe("FirmActivityService — committed money", () => {
             supplierName: null,
             date: new Date("2026-03-01"),
             billAmount: 50_000,
-            payments: [{ amount: 20_000 }],
+            firmId: "FIRM-001",
             sareeLines: [{ price: 5_000, quantity: 10, returnedQuantity: 0 }],
           },
         ]),
       },
+      supplierPayment: { findMany: jest.fn().mockResolvedValue([supplierPayment("SP-1", 20_000, "EXT-Ravi-001", "2026-03-05")]) },
     });
 
     const { documents, totals } = await new FirmActivityService(prisma as any).getActivity("FIRM-001");
@@ -116,6 +123,7 @@ describe("FirmActivityService — committed money", () => {
       paidAmount: 20_000,
       outstanding: 30_000,
       status: "PARTIAL",
+      settlements: [expect.objectContaining({ paymentId: "SP-1", amount: 20_000, appliedAs: "LINKED", fromFirmName: "Kesava Silks" })],
     });
     expect(totals.pendingExpense).toBe(30_000);
   });
@@ -127,17 +135,18 @@ describe("FirmActivityService — committed money", () => {
           // ₹50,000 bill for 10 pieces at ₹5,000; 4 sent back → ₹20,000 credited.
           {
             id: "EXT-Ravi-001", supplierId: "SUP-1", supplier: { name: "Ravi Silks" }, supplierName: null,
-            date: new Date("2026-03-01"), billAmount: 50_000, payments: [{ amount: 20_000 }],
+            date: new Date("2026-03-01"), billAmount: 50_000, firmId: "FIRM-001",
             sareeLines: [{ price: 5_000, quantity: 10, returnedQuantity: 4 }],
           },
           // Everything sent back, nothing paid — settled by the credit alone.
           {
             id: "EXT-Ravi-002", supplierId: "SUP-1", supplier: { name: "Ravi Silks" }, supplierName: null,
-            date: new Date("2026-03-02"), billAmount: 9_000, payments: [],
+            date: new Date("2026-03-02"), billAmount: 9_000, firmId: "FIRM-001",
             sareeLines: [{ price: 3_000, quantity: 3, returnedQuantity: 3 }],
           },
         ]),
       },
+      supplierPayment: { findMany: jest.fn().mockResolvedValue([supplierPayment("SP-1", 20_000, "EXT-Ravi-001", "2026-03-05")]) },
     });
 
     const { documents, totals } = await new FirmActivityService(prisma as any).getActivity("FIRM-001");
@@ -155,14 +164,14 @@ describe("FirmActivityService — committed money", () => {
     const prisma = buildPrisma({
       purchase: {
         findMany: jest.fn().mockResolvedValue([
-          { id: "EXT-1", supplierId: "SUP-1", supplier: { name: "Ravi Silks" }, supplierName: null, date: new Date("2026-03-01"), billAmount: 50_000, payments: [{ amount: 20_000 }], sareeLines: [] },
+          { id: "EXT-1", supplierId: "SUP-1", supplier: { name: "Ravi Silks" }, supplierName: null, date: new Date("2026-03-01"), billAmount: 50_000, firmId: "FIRM-001", sareeLines: [] },
           // An unregistered supplier has no record to group under.
-          { id: "EXT-2", supplierId: null, supplier: null, supplierName: "Walk-in trader", date: new Date("2026-03-02"), billAmount: 9_000, payments: [], sareeLines: [] },
+          { id: "EXT-2", supplierId: null, supplier: null, supplierName: "Walk-in trader", date: new Date("2026-03-02"), billAmount: 9_000, firmId: "FIRM-001", sareeLines: [] },
         ]),
       },
       supplierPayment: {
         findMany: jest.fn().mockResolvedValue([
-          { id: "SP-1", supplierId: "SUP-1", supplier: { name: "Ravi Silks" }, purchaseId: "EXT-1", amount: 20_000, date: new Date("2026-03-05"), utr: "UTR9" },
+          supplierPayment("SP-1", 20_000, "EXT-1", "2026-03-05"),
         ]),
       },
       weaverPayment: {
@@ -179,9 +188,40 @@ describe("FirmActivityService — committed money", () => {
       partyType: "SUPPLIER",
       partyId: "SUP-1",
       name: "Ravi Silks",
-      totals: { documentCount: 1, amount: 50_000, paid: 20_000, outstanding: 30_000, lastActivity: "2026-03-05" },
+      totals: { documentCount: 1, amount: 50_000, paid: 20_000, outstanding: 30_000, paidFromFirm: 20_000, lastActivity: "2026-03-05" },
     });
     expect(connections[0].payments[0]).toMatchObject({ documentRef: "EXT-1" });
+  });
+
+  it("settles purchases from a general payment — this firm's first, then another firm's", async () => {
+    // Firm FIRM-001 bought ₹1,795; FIRM-002 bought ₹1,23,201 from the same
+    // supplier. FIRM-001 then paid ₹1,24,996 against no particular purchase.
+    const own = { id: "EXT-4", supplierId: "SUP-1", supplier: { name: "Ravi Silks" }, supplierName: null, date: new Date("2026-10-24"), billAmount: 1_795, firmId: "FIRM-001", sareeLines: [] };
+    const other = { id: "EXT-1", supplierId: "SUP-1", supplier: { name: "Ravi Silks" }, supplierName: null, date: new Date("2026-10-18"), billAmount: 123_201, firmId: "FIRM-002", sareeLines: [] };
+    const payment = supplierPayment("SP-1", 124_996, null, "2026-10-24");
+    const prisma = buildPrisma({
+      purchase: {
+        findMany: jest.fn().mockImplementation(({ where }: { where: { firmId?: string } }) =>
+          Promise.resolve(where.firmId ? [own] : [own, other]),
+        ),
+      },
+      supplierPayment: { findMany: jest.fn().mockResolvedValue([payment]) },
+    });
+
+    const service = new FirmActivityService(prisma as any);
+    const { documents, payments, totals } = await service.getActivity("FIRM-001");
+
+    expect(documents[0]).toMatchObject({ id: "EXT-4", paidAmount: 1_795, outstanding: 0, status: "PAID" });
+    expect(documents[0].settlements[0]).toMatchObject({ paymentId: "SP-1", amount: 1_795, appliedAs: "GENERAL" });
+    expect(totals.pendingExpense).toBe(0);
+    expect(payments[0].appliedTo).toEqual([
+      { documentRef: "EXT-4", amount: 1_795, documentFirmId: "FIRM-001", documentFirmName: "Kesava Silks" },
+      { documentRef: "EXT-1", amount: 123_201, documentFirmId: "FIRM-002", documentFirmName: "Vysnawi Handlooms" },
+    ]);
+    expect(payments[0].unapplied).toBe(0);
+
+    const { connections } = await service.getConnections("FIRM-001");
+    expect(connections[0].totals).toMatchObject({ amount: 1_795, paid: 1_795, outstanding: 0, paidFromFirm: 124_996 });
   });
 
   it("never reports a quotation — an unaccepted offer is not part of a firm's ledger", async () => {
