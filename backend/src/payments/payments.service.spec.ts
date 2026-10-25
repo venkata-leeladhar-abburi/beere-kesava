@@ -274,7 +274,7 @@ describe("PaymentsService", () => {
 
       const { items } = await service.findAllSupplierPayments({ page: 1, pageSize: 20 });
 
-      expect(items[0]!.appliedTo).toEqual([
+      expect(items[0].appliedTo).toEqual([
         { purchaseId: "EXT-1", amount: 1000 },
         { purchaseId: "EXT-2", amount: 500 },
       ]);

@@ -33,7 +33,7 @@ const poFormSchema = z
     data.materials.forEach((m, i) => {
       if (!m.quantity || m.quantity <= 0) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "Required",
           path: ["materials", i, "quantity"],
         });

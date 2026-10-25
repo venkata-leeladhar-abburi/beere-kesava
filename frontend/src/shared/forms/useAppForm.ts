@@ -9,7 +9,13 @@
  * neither points at which field is wrong. See shared/api/errors.ts (the
  * ErrorCode contract) and design-system/10-UI-STATES.md.
  */
-import { useForm, type FieldValues, type UseFormProps, type UseFormReturn } from "react-hook-form";
+import {
+  useForm,
+  type FieldValues,
+  type Resolver,
+  type UseFormProps,
+  type UseFormReturn,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ZodType } from "zod";
 import { isApiError, isValidationError } from "../api/client";
@@ -37,7 +43,9 @@ export function useAppForm<TSchema extends FieldValues>({
 }: UseAppFormOptions<TSchema>): AppFormReturn<TSchema> {
   const form = useForm<TSchema>({
     ...formOptions,
-    resolver: zodResolver(schema),
+    // @hookform/resolvers v5 types a schema's input and output separately;
+    // every schema here validates to the same shape it takes in.
+    resolver: zodResolver(schema) as Resolver<TSchema>,
   });
 
   const applyServerError = (error: unknown) => {
