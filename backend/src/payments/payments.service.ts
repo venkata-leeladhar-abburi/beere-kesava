@@ -8,7 +8,7 @@ import { Prisma, UserRole } from "../generated/prisma/client";
 import { businessSegment, IdGeneratorService } from "../id-generator/id-generator.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
-import { PurchasesService } from "../purchases/purchases.service";
+import { creditedAmount, PurchasesService } from "../purchases/purchases.service";
 import { VendorBillsService } from "../vendor-bills/vendor-bills.service";
 import { CreateSupplierPaymentDto } from "./dto/create-supplier-payment.dto";
 import { CreateVendorPaymentDto } from "./dto/create-vendor-payment.dto";
@@ -57,6 +57,32 @@ export function documentFirm(
     );
   }
   return documentFirmId;
+}
+
+/**
+ * A supplier payment's date is a calendar day, not an instant. "yyyy-MM-dd"
+ * is stored as that day's UTC midnight so every reader gets the same day back
+ * from its first ten characters, whatever timezone the browser is in. A date
+ * later than today anywhere in the world (UTC+14) is refused — a payment
+ * can't have gone out tomorrow, and a typo there would sort it above every
+ * real one.
+ */
+export function paymentCalendarDate(raw: string | undefined, now: Date = new Date()): Date | undefined {
+  if (!raw) return undefined;
+  const day = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : raw.slice(0, 10);
+  const date = new Date(`${day}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== day) {
+    throw new BadRequestException(`"${raw}" is not a valid payment date`);
+  }
+  const latestToday = new Date(now.getTime() + 14 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  if (day > latestToday) {
+    throw new BadRequestException("The payment date can't be in the future");
+  }
+  return date;
+}
+
+function formatRupees(paise: number): string {
+  return `₹${fromPaise(paise).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 }
 
 @Injectable()
@@ -140,6 +166,8 @@ export class PaymentsService {
       throw new NotFoundException(`Supplier ${dto.supplierId} not found`);
     }
     let firmId = dto.firmId;
+    const date = paymentCalendarDate(dto.date);
+    const amountPaise = toPaise(dto.amount);
 
     if (dto.purchaseId) {
       // Validates existence and supplier ownership up front so a payment is
@@ -157,24 +185,76 @@ export class PaymentsService {
       firmId = documentFirm(purchase.firmId, dto.firmId, `purchase ${purchase.id}`);
     }
 
-    const supplierPaymentId = await this.idGenerator.nextScoped("SP", supplier.code ?? businessSegment(supplier.name, "Supplier"));
-    const payment = await this.prisma.supplierPayment.create({
-      data: {
-        id: supplierPaymentId,
-        supplierId: dto.supplierId,
-        amount: dto.amount,
-        date: dto.date ? new Date(dto.date) : undefined,
-        utr: dto.utr,
-        method: dto.method,
-        firmId,
-        purchaseId: dto.purchaseId,
-        recordedById: dto.recordedById,
-      },
+    // The balance check and the insert run under one per-supplier lock, so a
+    // double-clicked Confirm (or two accountants paying the same supplier at
+    // once) can't both pass the check and pay the bill twice.
+    const payment = await this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`supplier-payment:${dto.supplierId}`}))`;
+
+      if (dto.purchaseId) {
+        const [purchase, paidOnPurchase] = await Promise.all([
+          tx.purchase.findUnique({
+            where: { id: dto.purchaseId },
+            select: { billAmount: true, sareeLines: { select: { price: true, quantity: true, returnedQuantity: true } } },
+          }),
+          tx.supplierPayment.aggregate({ where: { purchaseId: dto.purchaseId }, _sum: { amount: true } }),
+        ]);
+        if (purchase) {
+          const owed = toPaise(Number(purchase.billAmount) - creditedAmount(purchase.billAmount, purchase.sareeLines));
+          const remaining = Math.max(0, owed - toPaise(paidOnPurchase._sum.amount));
+          if (amountPaise > remaining) {
+            throw new BadRequestException(
+              remaining === 0
+                ? `Purchase ${dto.purchaseId} is already fully paid.`
+                : `${formatRupees(amountPaise)} is more than the ${formatRupees(remaining)} still owed on purchase ${dto.purchaseId}.`,
+            );
+          }
+        }
+      }
+
+      // Same figure the Supplier Payments page shows as Balance Due: every
+      // purchase from this supplier (older ones matched by the typed name),
+      // net of returns, less everything already paid to them.
+      const [purchases, paidToSupplier] = await Promise.all([
+        tx.purchase.findMany({
+          where: { OR: [{ supplierId: dto.supplierId }, { supplierId: null, supplierName: supplier.name }] },
+          select: { billAmount: true, sareeLines: { select: { price: true, quantity: true, returnedQuantity: true } } },
+        }),
+        tx.supplierPayment.aggregate({ where: { supplierId: dto.supplierId }, _sum: { amount: true } }),
+      ]);
+      const owedToSupplier = purchases.reduce(
+        (sum, p) => sum + toPaise(Number(p.billAmount) - creditedAmount(p.billAmount, p.sareeLines)),
+        0,
+      );
+      const outstanding = Math.max(0, owedToSupplier - toPaise(paidToSupplier._sum.amount));
+      if (amountPaise > outstanding) {
+        throw new BadRequestException(
+          outstanding === 0
+            ? `Nothing is owed to ${supplier.name} — every purchase is already paid.`
+            : `${formatRupees(amountPaise)} is more than the ${formatRupees(outstanding)} still owed to ${supplier.name}.`,
+        );
+      }
+
+      const supplierPaymentId = await this.idGenerator.nextScoped("SP", supplier.code ?? businessSegment(supplier.name, "Supplier"));
+      return tx.supplierPayment.create({
+        data: {
+          id: supplierPaymentId,
+          supplierId: dto.supplierId,
+          amount: dto.amount,
+          date,
+          utr: dto.utr?.trim() || undefined,
+          method: dto.method,
+          firmId,
+          purchaseId: dto.purchaseId,
+          recordedById: dto.recordedById,
+        },
+        include: { recordedBy: { select: { id: true, firstName: true, lastName: true, role: true } } },
+      });
     });
 
-    if (dto.purchaseId) {
-      await this.purchasesService.recomputeStatus(dto.purchaseId);
-    }
+    // Even a general payment settles purchases (oldest first), so every one
+    // of this supplier's purchase statuses is re-derived, not just one.
+    await this.purchasesService.recomputeSupplierStatuses(dto.supplierId);
 
     await this.auditLog.recordAction({
       actorId: dto.actorId,
@@ -210,7 +290,9 @@ export class PaymentsService {
         where,
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
-        orderBy: { date: "desc" },
+        // Payments share a calendar-day date, so the id (a per-supplier
+        // running number) keeps same-day rows in a stable order across pages.
+        orderBy: [{ date: "desc" }, { id: "desc" }],
         include: { recordedBy: { select: { id: true, firstName: true, lastName: true, role: true } } },
       }),
       this.prisma.supplierPayment.count({ where }),

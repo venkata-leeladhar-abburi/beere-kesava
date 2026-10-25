@@ -31,6 +31,7 @@ import { SupplierPaymentDetailModal } from "./SupplierPaymentDetailModal";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { todayISO } from "@/lib/date";
 import { EntityCode, Money } from "@/shared/ui/domain";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
@@ -182,7 +183,7 @@ export function SupplierPaymentsSection() {
     ? payments.filter((p) => p.supplierId === detailFor.supplier.id)
     : [];
 
-  const handleSave = (payload: {
+  const handleSave = async (payload: {
     amount: number;
     date: string;
     mode: "Cash" | "Bank Transfer" | "UPI" | "Cheque";
@@ -190,22 +191,27 @@ export function SupplierPaymentsSection() {
     purchaseId?: string;
     firmId?: string;
   }) => {
-    if (!payFor) return;
+    if (!payFor || saving) return;
     setSaving(true);
-    addPayment({
-      supplierId: payFor.supplier.id,
-      date: payload.date,
-      amount: payload.amount,
-      mode: payload.mode,
-      reference: payload.reference,
-      purchaseId: payload.purchaseId,
-      firmId: payload.firmId,
-    });
-    toast.success(
-      `Payment of ${formatMoney(rupees(payload.amount))} recorded for ${payFor.supplier.name}`
-    );
-    setSaving(false);
-    setPayForId(null);
+    try {
+      await addPayment({
+        supplierId: payFor.supplier.id,
+        date: payload.date,
+        amount: payload.amount,
+        mode: payload.mode,
+        reference: payload.reference,
+        purchaseId: payload.purchaseId,
+        firmId: payload.firmId,
+      });
+      toast.success(
+        `Payment of ${formatMoney(rupees(payload.amount))} recorded for ${payFor.supplier.name}`
+      );
+      setPayForId(null);
+    } catch {
+      // Already toasted by the mutation; the modal stays open to retry.
+    } finally {
+      setSaving(false);
+    }
   };
 
   const supplierTableColumns: ColumnDef<SupplierRow>[] = [
@@ -327,13 +333,17 @@ export function SupplierPaymentsSection() {
             View Details
           </Button>
           {r.outstanding === 0 ? (
+            // A settled supplier still has a payment trail worth seeing — the
+            // badge opens it rather than sitting there disabled.
             <Button
               variant="secondary"
               size="sm"
-              disabled
-              className="rounded-[7px] border-[rgba(30,102,64,0.20)] bg-[rgba(30,102,64,0.09)] text-[#1E6640] disabled:bg-[rgba(30,102,64,0.09)] disabled:text-[#1E6640] disabled:opacity-100"
+              disabled={r.totalPaid === 0}
+              onClick={() => setDetailForId(r.supplier.id)}
+              title={r.totalPaid > 0 ? "See the payments made to this supplier" : undefined}
+              className="rounded-[7px] border-[rgba(30,102,64,0.20)] bg-[rgba(30,102,64,0.09)] text-[#1E6640] hover:bg-[rgba(30,102,64,0.16)] disabled:bg-[rgba(30,102,64,0.09)] disabled:text-[#1E6640] disabled:opacity-100"
             >
-              {r.totalPurchased > 0 ? "Paid" : "No Dues"}
+              {r.totalPurchased > 0 ? "Paid ✓" : "No Dues"}
             </Button>
           ) : (
             <Button
@@ -704,7 +714,7 @@ export function SupplierPaymentsSection() {
                     if (mode === "day")
                       setDateFilter({
                         mode,
-                        day: new Date().toISOString().slice(0, 10),
+                        day: todayISO(),
                         from: "",
                         to: "",
                         month: "",
@@ -1243,9 +1253,15 @@ export function SupplierPaymentsSection() {
                             Details
                           </Button>
                           {isPaid ? (
-                            <div className="flex-1 flex items-center justify-center rounded-xl bg-[rgba(46,125,50,0.08)] border border-[rgba(46,125,50,0.2)] text-[12px] font-bold color-[#2E7D32] py-2 text-[#2E7D32]">
-                              No Dues
-                            </div>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              disabled={r.totalPaid === 0}
+                              onClick={() => setDetailForId(r.supplier.id)}
+                              className="flex-1 justify-center rounded-xl bg-[rgba(46,125,50,0.08)] border border-[rgba(46,125,50,0.2)] hover:bg-[rgba(46,125,50,0.14)] text-[12px] font-bold py-2 text-[#2E7D32] disabled:opacity-100"
+                            >
+                              {r.totalPaid > 0 ? "View Payments" : "No Dues"}
+                            </Button>
                           ) : (
                             <Button
                               variant="primary"
@@ -1354,6 +1370,11 @@ export function SupplierPaymentsSection() {
               purchases={purchasesForDetail}
               payments={paymentsForDetail}
               firmNames={detailFor.firmNames}
+              totals={{
+                purchased: detailFor.totalPurchased,
+                paid: detailFor.totalPaid,
+                outstanding: detailFor.outstanding,
+              }}
               paidFor={paidFor}
               onClose={() => setDetailForId(null)}
             />

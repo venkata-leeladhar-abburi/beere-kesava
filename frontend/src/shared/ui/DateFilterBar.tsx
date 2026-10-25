@@ -97,7 +97,10 @@ export function matchesDateFilter(
   filter: DateFilterState
 ): boolean {
   if (filter.mode === "all" || !dateStr) return true;
-  const d = new Date(dateStr);
+  // A bare "yyyy-MM-dd" is a calendar day — read it as local midnight, not UTC.
+  const d = /^\d{4}-\d{2}-\d{2}$/.test(dateStr)
+    ? new Date(`${dateStr}T00:00:00`)
+    : new Date(dateStr);
   if (isNaN(d.getTime())) return true;
   if (filter.mode === "day") {
     if (!filter.day) return true;

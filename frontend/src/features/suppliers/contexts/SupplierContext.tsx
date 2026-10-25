@@ -34,6 +34,7 @@ import {
   purchasesApi,
 } from "../../../shared/api/purchases";
 import { rupees, formatMoneyExact } from "@/lib/domain/money";
+import { calendarDay } from "@/lib/date";
 
 // suppliers + payments + requests are wired to the real backend; purchases
 // keep their rich per-saree line-item detail (price/photo/weight per piece)
@@ -243,7 +244,8 @@ interface SupplierContextValue {
    * wipe photos that were already stored. */
   updatePurchaseSarees: (id: string, apply: (sarees: SareeTag[]) => SareeTag[]) => Promise<void>;
 
-  addPayment: (p: Omit<SupplierPayment, "id">) => void;
+  /** Resolves once the payment is saved; rejects (after an error toast) if it wasn't. */
+  addPayment: (p: Omit<SupplierPayment, "id">) => Promise<void>;
   raiseRequest: (r: Omit<PurchaseRequest, "id" | "status">) => void;
   decideRequest: (
     id: string,
@@ -350,7 +352,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
       return res.items.map((p): SupplierPayment => ({
         id: p.id,
         supplierId: p.supplierId,
-        date: p.date,
+        date: calendarDay(p.date),
         amount: Number(p.amount),
         mode: (p.method as SupplierPayment["mode"]) ?? "Bank Transfer",
         reference: p.utr ?? "",
@@ -529,14 +531,15 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         {
           id: created.id,
           supplierId: created.supplierId,
-          date: created.date,
+          date: calendarDay(created.date),
           amount: Number(created.amount),
           mode: (created.method as SupplierPayment["mode"]) ?? "Bank Transfer",
           reference: created.utr ?? "",
           purchaseId: created.purchaseId ?? undefined,
           firmId: created.firmId ?? undefined,
+          recordedBy: created.recordedBy ?? null,
         },
-        ...prev,
+        ...prev.filter((p) => p.id !== created.id),
       ]);
       // A payment linked to a purchase may have flipped that purchase's
       // Pending/Partial/Paid status server-side (PurchasesService.
@@ -544,7 +547,14 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
       if (created.purchaseId) {
         void qc.invalidateQueries({ queryKey: PURCHASES_KEY });
       }
-      toast.success("Payment recorded");
+      // Payment History, the stats strip and analytics read their own copies.
+      for (const key of [
+        "history-supplier-payments",
+        "analytics-supplier-payments",
+        "analytics-cash-flow-monthly",
+      ]) {
+        void qc.invalidateQueries({ queryKey: [key] });
+      }
     },
     onError: (err: unknown) => {
       toast.error(err instanceof Error ? err.message : "Failed to record payment");
@@ -648,7 +658,8 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const addPayment = (p: Omit<SupplierPayment, "id">) => addPaymentMutation.mutate(p);
+  const addPayment = (p: Omit<SupplierPayment, "id">) =>
+    addPaymentMutation.mutateAsync(p).then(() => undefined);
   const raiseRequest = (r: Omit<PurchaseRequest, "id" | "status">) =>
     raiseRequestMutation.mutate(r);
   const decideRequest = (

@@ -50,12 +50,16 @@ import {
 import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/data";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { calendarDay, parseISODay, todayISO } from "@/lib/date";
 import { Money, StatusPill, EntityCode } from "@/shared/ui/domain";
 import type { PaymentStatus } from "@/lib/domain/status";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
-function formatHistDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-IN", {
+// The day a payment is dated, not the instant: payment dates are stored as
+// that day's UTC midnight, which read back through the local clock can land
+// on the day before (anywhere west of Greenwich) — see calendarDay.
+function formatHistDate(day: string): string {
+  return parseISODay(day).toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -151,7 +155,8 @@ export function PaymentHistorySection() {
 
     const vendorRows: PayHistRecord[] = (vendorPaymentsRes?.items ?? []).map((p) => ({
       id: `VP-${p.id}`,
-      date: formatHistDate(p.date),
+      day: calendarDay(p.date),
+      date: formatHistDate(calendarDay(p.date)),
       type: "Vendor Payment",
       party: vendorNameById.get(p.vendorId) ?? p.vendorId,
       refNo: p.id,
@@ -165,7 +170,8 @@ export function PaymentHistorySection() {
 
     const supplierRows: PayHistRecord[] = (supplierPaymentsRes?.items ?? []).map((p) => ({
       id: `SUP-${p.id}`,
-      date: formatHistDate(p.date),
+      day: calendarDay(p.date),
+      date: formatHistDate(calendarDay(p.date)),
       type: "Supplier Payment",
       party: supplierNameById.get(p.supplierId) ?? p.supplierId,
       refNo: p.id,
@@ -179,7 +185,8 @@ export function PaymentHistorySection() {
 
     const weaverRows: PayHistRecord[] = (weaverPaymentsRes?.items ?? []).map((p) => ({
       id: `WP-${p.id}`,
-      date: formatHistDate(p.paymentDate),
+      day: calendarDay(p.paymentDate),
+      date: formatHistDate(calendarDay(p.paymentDate)),
       type: "Weaver Payment",
       party: weaverNameById.get(p.weaverId) ?? p.weaverId,
       refNo: p.id,
@@ -198,7 +205,8 @@ export function PaymentHistorySection() {
     const customerRows: PayHistRecord[] = (invoicesRes?.items ?? []).flatMap((inv) =>
       inv.payments.map((pay) => ({
         id: `INV-${pay.id}`,
-        date: formatHistDate(pay.date),
+        day: calendarDay(pay.date),
+        date: formatHistDate(calendarDay(pay.date)),
         type: "Customer Receipt" as const,
         party: inv.customer?.name ?? "Unknown Customer",
         refNo: inv.code ?? inv.id,
@@ -217,8 +225,9 @@ export function PaymentHistorySection() {
       }))
     );
 
+    // Newest day first; same-day rows by reference so the order is stable.
     return [...vendorRows, ...supplierRows, ...weaverRows, ...customerRows].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      (a, b) => (b.day ?? "").localeCompare(a.day ?? "") || b.refNo.localeCompare(a.refNo)
     );
   }, [
     vendorPaymentsRes,
@@ -233,7 +242,7 @@ export function PaymentHistorySection() {
   const filtered = PAY_HISTORY_LIVE.filter((r) => {
     if (typeFilter !== "All Payment Types" && r.type !== typeFilter) return false;
     if (statusFilter !== "All Statuses" && r.status !== statusFilter) return false;
-    if (!matchesDateFilter(r.date, dateFilter)) return false;
+    if (!matchesDateFilter(r.day ?? r.date, dateFilter)) return false;
     if (
       search &&
       !r.party.toLowerCase().includes(search.toLowerCase()) &&
@@ -266,7 +275,7 @@ export function PaymentHistorySection() {
     {
       id: "date",
       header: "Date",
-      accessor: (r) => r.date,
+      accessor: (r) => r.day ?? r.date,
       cell: (_v, r) => (
         <div className="w-[120px] min-w-[120px] whitespace-nowrap font-semibold text-[#3B2314] text-[13px]">
           {r.date}
@@ -792,7 +801,7 @@ export function PaymentHistorySection() {
                     if (mode === "day")
                       setDateFilter({
                         mode,
-                        day: new Date().toISOString().slice(0, 10),
+                        day: todayISO(),
                         from: "",
                         to: "",
                         month: "",

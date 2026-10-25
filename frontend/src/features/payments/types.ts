@@ -172,7 +172,10 @@ export type PayHistStatus = "Paid" | "Partial" | "Pending";
 
 export interface PayHistRecord {
   id: string;
+  /** Display date, e.g. "24 Oct 2026". */
   date: string;
+  /** The same day as "yyyy-MM-dd" — what sorting and date filters use. */
+  day?: string;
   type: PayHistType;
   party: string;
   refNo: string;

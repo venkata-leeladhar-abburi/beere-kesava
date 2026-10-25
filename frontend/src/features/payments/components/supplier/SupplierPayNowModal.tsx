@@ -16,9 +16,10 @@ import {
 } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { DatePicker, formatDate } from "../../../../shared/ui/date";
-import { rupees } from "@/lib/domain/money";
+import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { toPaise, fromPaise } from "@/lib/gst";
+import { parseISODay, todayISO } from "@/lib/date";
 
 export function SupplierPayNowModal({
   supplier,
@@ -50,7 +51,7 @@ export function SupplierPayNowModal({
   // Only used for a payment the purchase doesn't decide — see `payingFirmId`.
   const [chosenFirmId, setChosenFirmId] = useState<string>("");
   const [amount, setAmount] = useState(String(outstanding > 0 ? outstanding : ""));
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(todayISO);
   const [mode, setMode] = useState<"Cash" | "Bank Transfer" | "UPI" | "Cheque">("Bank Transfer");
   const [reference, setReference] = useState("");
   const [purchaseId, setPurchaseId] = useState<string>("");
@@ -74,7 +75,26 @@ export function SupplierPayNowModal({
 
   const numericAmount =
     amount === "" || isNaN(Number(amount)) ? NaN : fromPaise(toPaise(Number(amount)));
-  const canSave = !!amount && !isNaN(numericAmount) && numericAmount > 0 && !saving;
+  // The most this payment can be: what's left on the chosen bill, or on the
+  // supplier as a whole. The server refuses anything over it too.
+  const maxPayable = selectedPurchase
+    ? Math.min(balanceOf(selectedPurchase), outstanding)
+    : outstanding;
+  const amountError =
+    amount === "" || isNaN(numericAmount)
+      ? null
+      : numericAmount <= 0
+        ? "Enter an amount greater than zero"
+        : toPaise(numericAmount) > toPaise(maxPayable)
+          ? `This is more than the ${formatMoney(rupees(maxPayable))} still owed${selectedPurchase ? ` on ${selectedPurchase.id}` : ""}`
+          : null;
+  const dateError = !date
+    ? "Pick the date the payment was made"
+    : date > todayISO()
+      ? "The payment date can't be in the future"
+      : null;
+  const canSave =
+    !!amount && !isNaN(numericAmount) && numericAmount > 0 && !amountError && !dateError && !saving;
 
   return (
     <Modal open onOpenChange={(o) => !o && onClose()} size="md">
@@ -179,17 +199,28 @@ export function SupplierPayNowModal({
           </div>
         )}
 
-        {/* eslint-disable-next-line no-restricted-syntax -- form field label text, not a money value display */}
-        <Field label="Amount to Pay (₹)" required id="supplier-amount-to-pay">
+        <Field
+          // eslint-disable-next-line no-restricted-syntax -- form field label text, not a money value display
+          label="Amount to Pay (₹)"
+          required
+          id="supplier-amount-to-pay"
+          error={amountError ?? undefined}
+        >
           <CurrencyInput
             value={amount === "" ? "" : Number(amount)}
             onValueChange={(v) => setAmount(v === "" ? "" : String(v))}
           />
         </Field>
-        <Field label="Payment Date" required id="supplier-payment-date">
+        <Field
+          label="Payment Date"
+          required
+          id="supplier-payment-date"
+          error={dateError ?? undefined}
+        >
           <DatePicker
-            value={date ? new Date(date) : null}
+            value={date ? parseISODay(date) : null}
             onChange={(d) => setDate(d ? formatDate(d, "iso") : "")}
+            max={parseISODay(todayISO())}
           />
         </Field>
         <Field label="Payment Mode" id="supplier-payment-mode">

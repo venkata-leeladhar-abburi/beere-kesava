@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
+import { IsISO8601, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
 
 export class CreateSupplierPaymentDto {
   // No auth yet — the acting user's id is supplied explicitly for the action
@@ -21,8 +21,11 @@ export class CreateSupplierPaymentDto {
   @Min(0.01)
   amount!: number;
 
+  // The calendar day the money went out, as "yyyy-MM-dd" (a full ISO
+  // timestamp is still accepted from older callers). Stored as that day's UTC
+  // midnight — see paymentCalendarDate in PaymentsService.
   @IsOptional()
-  @IsString()
+  @IsISO8601({ strict: true }, { message: "date must be a valid date (yyyy-MM-dd)" })
   date?: string;
 
   @IsOptional()

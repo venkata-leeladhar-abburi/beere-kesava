@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
   ArrowLeft,
@@ -33,6 +33,14 @@ import { FinSection, MiscSection } from "./FirmFinanceSections";
 import { FirmRetailSalesTab } from "./retailSales/FirmRetailSalesTab";
 import { FirmConnectionsTab } from "./FirmConnectionsTab";
 import {
+  BreakdownModal,
+  DocumentDetailModal,
+  PaymentDetailModal,
+  PAYMENT_LABEL,
+  fmtDay,
+  type BreakdownKind,
+} from "./FirmLedgerDetails";
+import {
   Button,
   Select,
   SelectItem,
@@ -62,14 +70,6 @@ const STATUS_TONE: Record<FirmActivityStatus, StatusTone> = {
   PENDING: "warning",
   PARTIAL: "info",
   PAID: "success",
-};
-
-const PAYMENT_LABEL: Record<FirmPayment["type"], string> = {
-  WEAVER: "Weaver Payment",
-  VENDOR: "Vendor Payment",
-  SUPPLIER: "Supplier Payment",
-  INVOICE: "Customer Receipt",
-  RETAIL_SALE: "Retail Sale",
 };
 
 type DirectionFilter = "all" | "INCOME" | "EXPENSE";
@@ -123,6 +123,7 @@ function MoneyCard({
   bg,
   border,
   icon,
+  onOpen,
 }: {
   label: string;
   caption: string;
@@ -132,11 +133,16 @@ function MoneyCard({
   bg: string;
   border: string;
   icon: React.ReactNode;
+  /** Opens the rows behind this figure. */
+  onOpen: () => void;
 }) {
   return (
-    <div
-      className="rounded-2xl p-4 sm:p-5"
-      style={{ background: bg, border: `1.5px solid ${border}` }}
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`${label}: ${fmtFull(val)} — view breakdown`}
+      className="group rounded-2xl p-4 sm:p-5 text-left w-full transition-shadow hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6E0F2D]"
+      style={{ background: bg, border: `1.5px solid ${border}`, cursor: "pointer" }}
     >
       <div className="flex items-center gap-2 mb-2">
         <span
@@ -192,8 +198,14 @@ function MoneyCard({
             {count} doc{count === 1 ? "" : "s"}
           </span>
         )}
+        <span
+          className="ml-auto inline-flex items-center gap-1 group-hover:underline"
+          style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}
+        >
+          View breakdown <ArrowUpRight size={12} />
+        </span>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -205,7 +217,9 @@ function SummaryStrip({
   pendingExpense,
   receivableCount,
   payableCount,
+  onOpen,
 }: {
+  onOpen: (kind: BreakdownKind) => void;
   income: number;
   expense: number;
   net: number;
@@ -234,6 +248,7 @@ function SummaryStrip({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <MoneyCard
           label="Income Received"
+          onOpen={() => onOpen("income")}
           caption="Payments actually banked"
           val={income}
           color={T.green}
@@ -243,6 +258,7 @@ function SummaryStrip({
         />
         <MoneyCard
           label="Expenses Paid"
+          onOpen={() => onOpen("expense")}
           caption="Payments actually made"
           val={expense}
           color={T.crimson}
@@ -252,6 +268,7 @@ function SummaryStrip({
         />
         <MoneyCard
           label="Net Balance"
+          onOpen={() => onOpen("net")}
           caption="Income received minus expenses paid"
           val={net}
           color={net >= 0 ? T.green : T.crimson}
@@ -288,6 +305,7 @@ function SummaryStrip({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <MoneyCard
           label="Receivable"
+          onOpen={() => onOpen("receivable")}
           caption="Owed to this firm on unpaid invoices"
           val={pendingIncome}
           count={receivableCount}
@@ -298,6 +316,7 @@ function SummaryStrip({
         />
         <MoneyCard
           label="Payable"
+          onOpen={() => onOpen("payable")}
           caption="This firm owes on open purchase documents"
           val={pendingExpense}
           count={payableCount}
@@ -343,6 +362,18 @@ export function FirmDetailPage({
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [direction, setDirection] = useState<DirectionFilter>("all");
   const [status, setStatus] = useState<"all" | FirmActivityStatus>("all");
+  const [breakdown, setBreakdown] = useState<BreakdownKind | null>(null);
+  const [openDoc, setOpenDoc] = useState<FirmDocument | null>(null);
+  const [openPayment, setOpenPayment] = useState<FirmPayment | null>(null);
+  // Opening a row from inside a breakdown swaps the breakdown for that row.
+  const showDoc = useCallback((d: FirmDocument) => {
+    setBreakdown(null);
+    setOpenDoc(d);
+  }, []);
+  const showPayment = useCallback((p: FirmPayment) => {
+    setBreakdown(null);
+    setOpenPayment(p);
+  }, []);
 
   const matches = (row: { date: string; direction: string }) =>
     matchesDateFilter(row.date, dateFilter) && (direction === "all" || row.direction === direction);
@@ -469,7 +500,7 @@ export function FirmDetailPage({
       priority: 3,
       cell: (_v, d) => (
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
-          {d.date}
+          {fmtDay(d.date)}
         </span>
       ),
     },
@@ -539,6 +570,13 @@ export function FirmDetailPage({
               {fmtFull(d.outstanding)} due
             </div>
           )}
+          {d.settlements.length > 0 && (
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>
+              {d.settlements.length === 1
+                ? `via ${d.settlements[0]!.paymentId}`
+                : `${d.settlements.length} payments`}
+            </div>
+          )}
         </div>
       ),
     },
@@ -568,12 +606,19 @@ export function FirmDetailPage({
                   variant="tertiary"
                   size="sm"
                   iconRight={ArrowUpRight}
-                  onClick={onGoToPayments}
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    onGoToPayments();
+                  }}
                   className="whitespace-nowrap"
                 >
                   Record payment
                 </Button>
-              ) : null,
+              ) : (
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy }}>
+                  View payments
+                </span>
+              ),
           } as ColumnDef<FirmDocument>,
         ]
       : []),
@@ -626,7 +671,7 @@ export function FirmDetailPage({
       priority: 3,
       cell: (_v, p) => (
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
-          {p.date}
+          {fmtDay(p.date)}
         </span>
       ),
     },
@@ -653,6 +698,55 @@ export function FirmDetailPage({
           {p.category}
         </span>
       ),
+    },
+    {
+      id: "method",
+      header: "Mode / UTR",
+      accessor: (p) => p.method ?? "",
+      priority: 3,
+      cell: (_v, p) => (
+        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+          <div>{p.method ?? "—"}</div>
+          {p.utr && (
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: T.taupe }}>
+              {p.utr}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: "appliedTo",
+      header: "Applied To",
+      accessor: (p) => p.appliedTo.map((a) => a.documentRef).join(", "),
+      priority: 2,
+      cell: (_v, p) => {
+        const other = p.appliedTo.filter((a) => a.documentFirmId && a.documentFirmId !== firm.id);
+        return (
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, maxWidth: 260 }}>
+            {p.appliedTo.length === 0 ? (
+              <span style={{ color: T.taupe }}>
+                {p.type === "RETAIL_SALE" ? "Counter sale" : "No document"}
+              </span>
+            ) : p.appliedTo.length === 1 ? (
+              <span style={{ fontFamily: "var(--font-mono)" }}>{p.appliedTo[0]!.documentRef}</span>
+            ) : (
+              <span>{p.appliedTo.length} documents</span>
+            )}
+            {other.length > 0 && (
+              <div style={{ fontSize: 11, color: T.antiqueGold, marginTop: 2 }}>
+                incl. {fmtFull(other.reduce((s, a) => s + a.amount, 0))} for{" "}
+                {[...new Set(other.map((a) => a.documentFirmName ?? "another firm"))].join(", ")}
+              </div>
+            )}
+            {p.unapplied > 0 && (
+              <div style={{ fontSize: 11, color: T.antiqueGold, marginTop: 2 }}>
+                {fmtFull(p.unapplied)} advance
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
       id: "amount",
@@ -990,11 +1084,13 @@ export function FirmDetailPage({
                       Purchase orders, goods receipts, external purchases and dispatch invoices that
                       name this firm appear automatically under{" "}
                       <strong style={{ color: T.luxuryBrown }}>Linked Documents</strong> as soon as
-                      they&rsquo;re raised — as <em>committed</em>, not yet spent or earned. When a
-                      payment is recorded against one, it moves into{" "}
-                      <strong style={{ color: T.luxuryBrown }}>Recorded Payments</strong> under its
-                      category and counts toward the net balance. Anything outside that flow can
-                      still be captured by hand below.
+                      they&rsquo;re raised — as <em>committed</em>, not yet spent or earned. Every
+                      payment shows under{" "}
+                      <strong style={{ color: T.luxuryBrown }}>Recorded Payments</strong> and counts
+                      toward the net balance. A payment made against a bill settles that bill; a
+                      general payment (against no bill) settles the party&rsquo;s oldest unpaid
+                      bills first. Click any card, document or payment to see exactly how it adds
+                      up. Anything outside that flow can still be captured by hand below.
                     </div>
                   </div>
 
@@ -1049,6 +1145,7 @@ export function FirmDetailPage({
                     pendingExpense={filtered.pendingExpense}
                     receivableCount={filtered.receivableCount}
                     payableCount={filtered.payableCount}
+                    onOpen={setBreakdown}
                   />
                 </div>
               </div>
@@ -1074,7 +1171,7 @@ export function FirmDetailPage({
               <SectionShell
                 icon={Link2}
                 title="Linked Documents"
-                subtitle="Raised against this firm — automatically tracked, no manual entry needed"
+                subtitle="Raised against this firm — click a row to see every payment that settled it"
                 right={
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                     {visibleDocs.length} document{visibleDocs.length === 1 ? "" : "s"}
@@ -1110,6 +1207,7 @@ export function FirmDetailPage({
                     columns={docColumns}
                     data={visibleDocs}
                     getRowId={(d) => `${d.type}-${d.id}`}
+                    onRowClick={(d) => setOpenDoc(d)}
                     pagination
                   />
                 )}
@@ -1119,7 +1217,7 @@ export function FirmDetailPage({
               <SectionShell
                 icon={Wallet}
                 title="Recorded Payments"
-                subtitle="Money that actually moved — counts toward the net balance above"
+                subtitle="Money that actually moved — click a row to see what it paid for"
                 right={
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                     {visiblePayments.length} payment{visiblePayments.length === 1 ? "" : "s"}
@@ -1155,6 +1253,7 @@ export function FirmDetailPage({
                     columns={paymentColumns}
                     data={visiblePayments}
                     getRowId={(p) => `${p.type}-${p.id}`}
+                    onRowClick={(p) => setOpenPayment(p)}
                     pagination
                   />
                 )}
@@ -1217,6 +1316,30 @@ export function FirmDetailPage({
             </>
           )}
         </motion.div>
+        {breakdown && (
+          <BreakdownModal
+            kind={breakdown}
+            payments={visiblePayments}
+            documents={visibleDocs}
+            manualIncome={manualIncome}
+            manualExpenses={manualExpenses}
+            manualMisc={manualMisc}
+            onClose={() => setBreakdown(null)}
+            onOpenPayment={showPayment}
+            onOpenDocument={showDoc}
+          />
+        )}
+        {openDoc && (
+          <DocumentDetailModal doc={openDoc} firmId={firm.id} onClose={() => setOpenDoc(null)} />
+        )}
+        {openPayment && (
+          <PaymentDetailModal
+            payment={openPayment}
+            firmId={firm.id}
+            firmName={firm.firmName}
+            onClose={() => setOpenPayment(null)}
+          />
+        )}
       </div>
     </div>
   );

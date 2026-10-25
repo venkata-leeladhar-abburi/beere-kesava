@@ -1,6 +1,7 @@
 // ─── Firms feature — pure helpers ─────────────────────────────────────────────
 
 import { formatMoney, rupees } from "../../../lib/domain/money";
+import { todayISO } from "../../../lib/date";
 
 export function fmtAmt(n: number): string {
   return formatMoney(rupees(n), { compact: true });
@@ -30,6 +31,7 @@ export function cardColor(id: string): string {
   return palette[hash % palette.length]!;
 }
 
+/** Today in the user's own timezone — the UTC day is still yesterday in India until 05:30. */
 export function today(): string {
-  return new Date().toISOString().slice(0, 10);
+  return todayISO();
 }

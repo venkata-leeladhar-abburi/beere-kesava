@@ -8,6 +8,7 @@ import { CreatePurchaseDto } from "./dto/create-purchase.dto";
 import { CreatePurchaseSareeLineDto } from "./dto/create-purchase-saree-line.dto";
 import { ListPurchasesQueryDto } from "./dto/list-purchases-query.dto";
 import { UpdatePurchaseDto } from "./dto/update-purchase.dto";
+import { loadSupplierAllocation } from "./supplier-allocation";
 
 const EXT_PURCHASE_ID_PREFIX = "EXT";
 
@@ -260,7 +261,7 @@ export class PurchasesService {
     // stale cached short name would otherwise mint a mismatched code) and
     // retires any alias that pointed at one of these codes.
     const lines = dto.sarees.map((l, idx) => lineData(l, idx));
-    return this.prisma.$transaction(async (tx) => {
+    const created = await this.prisma.$transaction(async (tx) => {
       await this.sareeCodes.assertCodesFree(tx, lines.map((l) => l.code));
       await tx.purchase.create({
         data: {
@@ -287,6 +288,11 @@ export class PurchasesService {
       await this.sareeCodes.recodePurchases(tx, [id]);
       return withCredit(await tx.purchase.findUniqueOrThrow({ where: { id }, include }));
     });
+    // Money already paid to this supplier beyond everything they were owed
+    // (an advance) goes towards the new purchase straight away.
+    const changed = await this.recomputeSupplierStatuses(dto.supplierId);
+    const own = changed.find((c) => c.id === id);
+    return own ? { ...created, status: own.to as PurchasePaymentStatus } : created;
   }
 
   async findAll(
@@ -324,8 +330,15 @@ export class PurchasesService {
           _sum: { amount: true },
         })
       : [];
-    const paidByPurchase = new Map(paidRows.map((r) => [r.purchaseId, r._sum.amount]));
-    const paidAmount = (id: string) => (paidByPurchase.get(id) ?? new Prisma.Decimal(0)).toFixed(2);
+    const paidByPurchase = new Map(paidRows.map((r) => [r.purchaseId, Number(r._sum.amount ?? 0)]));
+    // A registered supplier's general payments (no purchase named) count
+    // towards their purchases too, oldest first — see supplier-allocation.ts.
+    const allocation = await loadSupplierAllocation(
+      this.prisma,
+      items.flatMap((i) => (i.supplierId ? [i.supplierId] : [])),
+    );
+    for (const [id, amount] of allocation.paidByPurchase) paidByPurchase.set(id, amount);
+    const paidAmount = (id: string) => (paidByPurchase.get(id) ?? 0).toFixed(2);
 
     // "summary" sareeLines are missing imageUrl/pieceImageUrls (see
     // summarySareeLineSelect) — filled in with empty placeholders so the
@@ -519,10 +532,19 @@ export class PurchasesService {
     // PENDING / PARTIAL / PAID status is re-derived against the new total.
     // Older purchases whose status was set by hand have no linked payments
     // to derive from — their status is left as it was.
-    const linkedPayments = bill && Number(existing.billAmount) !== bill.billAmount
+    // A registered supplier's general payments are spread over all their
+    // purchases, so any bill change for one of them re-derives them all.
+    const billChanged = !!bill && Number(existing.billAmount) !== bill.billAmount;
+    const linkedPayments = billChanged && !existing.supplierId
       ? await this.prisma.supplierPayment.count({ where: { purchaseId: id } })
       : 0;
-    if (linkedPayments > 0) {
+    // Moving a purchase to another supplier takes it out of one supplier's
+    // allocation and into the other's.
+    const supplierMoved = !!dto.supplierId && dto.supplierId !== existing.supplierId;
+    if (supplierMoved && existing.supplierId) {
+      await this.recomputeSupplierStatuses(existing.supplierId);
+    }
+    if (supplierMoved || (billChanged && (existing.supplierId || linkedPayments > 0))) {
       await this.recomputeStatus(id);
       return this.findOne(id);
     }
@@ -530,9 +552,11 @@ export class PurchasesService {
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    const existing = await this.findOne(id);
     // sareeLines cascade with the purchase (onDelete: Cascade).
     await this.prisma.purchase.delete({ where: { id } });
+    // General payments that covered this purchase now go to the next one.
+    if (existing.supplierId) await this.recomputeSupplierStatuses(existing.supplierId);
   }
 
   /**
@@ -552,6 +576,13 @@ export class PurchasesService {
     if (!purchase) {
       throw new NotFoundException(`Purchase ${purchaseId} not found`);
     }
+    // A registered supplier's payments can settle any of their purchases
+    // (general payments are spread oldest-first), so one change re-derives
+    // every one of that supplier's purchases together.
+    if (purchase.supplierId) {
+      await this.recomputeSupplierStatuses(purchase.supplierId);
+      return;
+    }
 
     const paidAggregate = await this.prisma.supplierPayment.aggregate({
       where: { purchaseId },
@@ -569,4 +600,42 @@ export class PurchasesService {
       await this.prisma.purchase.update({ where: { id: purchaseId }, data: { status } });
     }
   }
+
+  /**
+   * Re-derives the status of every purchase from one supplier from what has
+   * been paid against each — payments that name it plus its oldest-first
+   * share of the supplier's general payments (supplier-allocation.ts).
+   * Returns the purchases whose status changed.
+   */
+  async recomputeSupplierStatuses(supplierId: string): Promise<{ id: string; from: string; to: string }[]> {
+    const allocation = await loadSupplierAllocation(this.prisma, [supplierId]);
+    if (allocation.purchases.length === 0) return [];
+    const rows = await this.prisma.purchase.findMany({
+      where: { id: { in: allocation.purchases.map((p) => p.id) } },
+      select: {
+        id: true,
+        status: true,
+        billAmount: true,
+        sareeLines: { select: { price: true, quantity: true, returnedQuantity: true } },
+      },
+    });
+    const sliceCount = new Map<string, number>();
+    for (const a of allocation.allocations) sliceCount.set(a.purchaseId, (sliceCount.get(a.purchaseId) ?? 0) + 1);
+
+    const changed: { id: string; from: string; to: string }[] = [];
+    for (const row of rows) {
+      const status = paymentStatusFor(
+        row.billAmount,
+        row.sareeLines,
+        allocation.paidByPurchase.get(row.id) ?? 0,
+        sliceCount.get(row.id) ?? 0,
+      );
+      if (status && status !== row.status) {
+        await this.prisma.purchase.update({ where: { id: row.id }, data: { status } });
+        changed.push({ id: row.id, from: row.status, to: status });
+      }
+    }
+    return changed;
+  }
+
 }

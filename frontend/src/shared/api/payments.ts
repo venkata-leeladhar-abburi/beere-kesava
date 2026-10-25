@@ -46,13 +46,36 @@ interface PaginatedResponse<T> {
   pageSize: number;
 }
 
+const SUPPLIER_PAYMENTS_PAGE_SIZE = 100; // the backend's @Max
+
+const supplierPaymentsPage = (page: number, supplierId?: string) =>
+  apiClient.get<PaginatedResponse<BackendSupplierPayment>>(
+    `/payments/suppliers?pageSize=${SUPPLIER_PAYMENTS_PAGE_SIZE}&page=${page}${supplierId ? `&supplierId=${supplierId}` : ""}`
+  );
+
 export const supplierPaymentsApi = {
   create: (payload: CreateSupplierPaymentPayload) =>
     apiClient.post<BackendSupplierPayment>("/payments/suppliers", payload),
-  list: (supplierId?: string) =>
-    apiClient.get<PaginatedResponse<BackendSupplierPayment>>(
-      `/payments/suppliers?pageSize=100${supplierId ? `&supplierId=${supplierId}` : ""}`
-    ),
+  /**
+   * Every supplier payment, across all pages. Paid / Balance Due and the
+   * payments dashboards are sums over this list — stopping at the first 100
+   * silently showed suppliers as owing money they had already been paid.
+   */
+  list: async (supplierId?: string): Promise<PaginatedResponse<BackendSupplierPayment>> => {
+    const first = await supplierPaymentsPage(1, supplierId);
+    const pages = Math.ceil(first.total / SUPPLIER_PAYMENTS_PAGE_SIZE);
+    if (pages <= 1) return first;
+    const rest = await Promise.all(
+      Array.from({ length: pages - 1 }, (_, i) => supplierPaymentsPage(i + 2, supplierId))
+    );
+    // A payment recorded between two page fetches shifts later pages by one,
+    // so the same row can arrive twice — keep the first copy.
+    const seen = new Set<string>();
+    const items = [first, ...rest]
+      .flatMap((r) => r.items)
+      .filter((p) => (seen.has(p.id) ? false : (seen.add(p.id), true)));
+    return { items, total: items.length, page: 1, pageSize: items.length };
+  },
 };
 
 export interface CreateWeaverPaymentPayload {
