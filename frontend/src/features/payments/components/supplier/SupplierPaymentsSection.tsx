@@ -31,7 +31,8 @@ import { SupplierPaymentDetailModal } from "./SupplierPaymentDetailModal";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { todayISO } from "@/lib/date";
+import { parseISODay, todayISO } from "@/lib/date";
+import { formatDate } from "../../../../shared/ui/date";
 import { EntityCode, Money } from "@/shared/ui/domain";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
@@ -48,7 +49,14 @@ interface SupplierRow {
   totalPaid: number;
   outstanding: number;
   lastPurchaseDate: string;
+  /** When this supplier was last paid — the date Payment History shows. */
+  lastPaymentDate: string;
   status: SupplierStatusKey;
+}
+
+/** "2026-10-15" → "15 Oct 2026"; "—" stays as is. */
+function fmtDay(day: string): string {
+  return day && day !== "—" ? formatDate(parseISODay(day), "cell") : "—";
 }
 
 const STATUS_CFG: Record<SupplierStatusKey, { color: string; bg: string }> = {
@@ -125,6 +133,13 @@ export function SupplierPaymentsSection() {
               .map((p) => p.date)
               .sort()
               .pop() ?? "—",
+          // Payments made from the chosen firm.
+          lastPaymentDate:
+            payments
+              .filter((p) => p.supplierId === s.id && p.firmId === filterFirmId)
+              .map((p) => p.date)
+              .sort()
+              .pop() ?? "—",
         };
       }
       let status: SupplierStatusKey;
@@ -139,11 +154,12 @@ export function SupplierPaymentsSection() {
           totalPaid: stats.totalPaid,
           outstanding: stats.outstanding,
           lastPurchaseDate: stats.lastPurchaseDate,
+          lastPaymentDate: stats.lastPaymentDate,
           status,
         },
       ];
     });
-  }, [suppliers, purchases, firms, filterFirmId, paidByPurchase, statsFor]);
+  }, [suppliers, purchases, payments, firms, filterFirmId, paidByPurchase, statsFor]);
 
   const totalSupplierPaymentsRecorded = payments.reduce((s, p) => s + p.amount, 0);
   const totalInvoiced = rows.reduce((s, r) => s + r.totalPurchased, 0);
@@ -307,7 +323,27 @@ export function SupplierPaymentsSection() {
       header: "Last Purchase",
       accessor: (r) => r.lastPurchaseDate,
       cell: (_v, r) => (
-        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.lastPurchaseDate}</span>
+        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, whiteSpace: "nowrap" }}>
+          {fmtDay(r.lastPurchaseDate)}
+        </span>
+      ),
+    },
+    {
+      id: "lastPaymentDate",
+      header: "Last Payment",
+      accessor: (r) => r.lastPaymentDate,
+      cell: (_v, r) => (
+        <span
+          style={{
+            fontFamily: F.ui,
+            fontSize: 13,
+            whiteSpace: "nowrap",
+            color: r.lastPaymentDate === "—" ? T.taupe : T.green,
+            fontWeight: r.lastPaymentDate === "—" ? 400 : 600,
+          }}
+        >
+          {r.lastPaymentDate === "—" ? "Not paid yet" : fmtDay(r.lastPaymentDate)}
+        </span>
       ),
     },
     {
@@ -970,8 +1006,9 @@ export function SupplierPaymentsSection() {
                             }}
                           >
                             {r.lastPurchaseDate && r.lastPurchaseDate !== "—"
-                              ? r.lastPurchaseDate
+                              ? `Bought ${fmtDay(r.lastPurchaseDate)}`
                               : "Active"}
+                            {r.lastPaymentDate !== "—" && ` · Paid ${fmtDay(r.lastPaymentDate)}`}
                           </span>
                         </div>
 

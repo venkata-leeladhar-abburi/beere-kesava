@@ -261,6 +261,26 @@ describe("PaymentsService", () => {
     });
   });
 
+  describe("findAllSupplierPayments", () => {
+    it("names the purchases a general payment settled, oldest first", async () => {
+      const payment = { id: "SP-1", supplierId: "s-1", firmId: null, purchaseId: null, date: new Date("2026-10-24"), amount: 1500 };
+      prisma.supplierPayment.findMany = jest.fn().mockResolvedValue([payment]);
+      prisma.supplierPayment.count = jest.fn().mockResolvedValue(1);
+      prisma.supplier.findMany = jest.fn().mockResolvedValue([{ id: "s-1", name: "Ravi Silks" }]);
+      prisma.purchase.findMany.mockResolvedValue([
+        { id: "EXT-2", supplierId: "s-1", supplierName: null, firmId: null, date: new Date("2026-10-15"), billAmount: 1000, sareeLines: [] },
+        { id: "EXT-1", supplierId: "s-1", supplierName: null, firmId: null, date: new Date("2026-10-10"), billAmount: 1000, sareeLines: [] },
+      ]);
+
+      const { items } = await service.findAllSupplierPayments({ page: 1, pageSize: 20 });
+
+      expect(items[0]!.appliedTo).toEqual([
+        { purchaseId: "EXT-1", amount: 1000 },
+        { purchaseId: "EXT-2", amount: 500 },
+      ]);
+    });
+  });
+
   describe("getPaymentSummary", () => {
     it("returns zeros rather than NaN when every ledger is empty", async () => {
       const summary = await service.getPaymentSummary();

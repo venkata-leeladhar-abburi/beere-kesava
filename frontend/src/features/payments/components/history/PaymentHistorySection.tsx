@@ -175,7 +175,14 @@ export function PaymentHistorySection() {
       type: "Supplier Payment",
       party: supplierNameById.get(p.supplierId) ?? p.supplierId,
       refNo: p.id,
-      description: "Supplier payment",
+      description: p.purchaseId
+        ? "Supplier payment"
+        : p.appliedTo?.length
+          ? "General supplier payment — settled oldest bills"
+          : "General supplier payment",
+      invoicePO: p.appliedTo?.length
+        ? p.appliedTo.map((a) => a.purchaseId).join(", ")
+        : (p.purchaseId ?? undefined),
       amount: Number(p.amount),
       status: "Paid",
       mode: p.method ?? "—",
@@ -347,8 +354,9 @@ export function PaymentHistorySection() {
       priority: 3,
       accessor: (r) => r.invoicePO,
       cell: (_v, r) => (
-        <div className="w-[180px] min-w-[180px] whitespace-nowrap text-[12px] text-[#8C7A6B]">
-          {r.invoicePO ? r.invoicePO : "—"}
+        // A general payment can settle several bills — one id per line.
+        <div className="w-[200px] min-w-[200px] text-[12px] text-[#8C7A6B] font-mono leading-5 break-all">
+          {r.invoicePO ? r.invoicePO.split(", ").map((ref) => <div key={ref}>{ref}</div>) : "—"}
         </div>
       ),
     },

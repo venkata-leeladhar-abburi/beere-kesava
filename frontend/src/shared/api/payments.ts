@@ -37,6 +37,9 @@ export interface BackendSupplierPayment {
   purchaseId?: string | null;
   /** Accountant / Shop Staff who recorded this payment. */
   recordedBy?: BackendActorSummary | null;
+  /** Purchases this payment settled — its own purchase, or for a general
+   *  payment the supplier's oldest unpaid ones. Absent on create responses. */
+  appliedTo?: { purchaseId: string; amount: number }[];
 }
 
 interface PaginatedResponse<T> {

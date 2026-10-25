@@ -9,6 +9,7 @@ import { businessSegment, IdGeneratorService } from "../id-generator/id-generato
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { creditedAmount, PurchasesService } from "../purchases/purchases.service";
+import { loadSupplierAllocation } from "../purchases/supplier-allocation";
 import { VendorBillsService } from "../vendor-bills/vendor-bills.service";
 import { CreateSupplierPaymentDto } from "./dto/create-supplier-payment.dto";
 import { CreateVendorPaymentDto } from "./dto/create-vendor-payment.dto";
@@ -280,7 +281,13 @@ export class PaymentsService {
 
   async findAllSupplierPayments(
     query: ListSupplierPaymentsQueryDto,
-  ): Promise<PaginatedResult<Prisma.SupplierPaymentGetPayload<{ include: { recordedBy: { select: { id: true; firstName: true; lastName: true; role: true } } } }>>> {
+  ): Promise<
+    PaginatedResult<
+      Prisma.SupplierPaymentGetPayload<{ include: { recordedBy: { select: { id: true; firstName: true; lastName: true; role: true } } } }> & {
+        appliedTo: { purchaseId: string; amount: number }[];
+      }
+    >
+  > {
     const where: Prisma.SupplierPaymentWhereInput = {
       supplierId: query.supplierId,
       firmId: query.firmId,
@@ -297,7 +304,20 @@ export class PaymentsService {
       }),
       this.prisma.supplierPayment.count({ where }),
     ]);
-    return { items, total, page: query.page, pageSize: query.pageSize };
+    // Which purchases each payment settled — a general payment (no purchase
+    // named) is spread over the supplier's oldest unpaid purchases, so the
+    // payment history can name the bills it paid instead of showing "—".
+    const allocation = await loadSupplierAllocation(this.prisma, items.map((p) => p.supplierId));
+    const appliedTo = (paymentId: string) =>
+      allocation.allocations
+        .filter((a) => a.paymentId === paymentId)
+        .map((a) => ({ purchaseId: a.purchaseId, amount: a.amount }));
+    return {
+      items: items.map((p) => ({ ...p, appliedTo: appliedTo(p.id) })),
+      total,
+      page: query.page,
+      pageSize: query.pageSize,
+    };
   }
 
   async createVendorPayment(dto: CreateVendorPaymentDto) {

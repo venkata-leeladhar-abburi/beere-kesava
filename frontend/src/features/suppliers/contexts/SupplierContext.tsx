@@ -261,7 +261,10 @@ interface SupplierContextValue {
     totalPaid: number;
     outstanding: number;
     sareeCount: number;
+    /** Latest purchase date, "yyyy-MM-dd", or "—". */
     lastPurchaseDate: string;
+    /** Latest payment date, "yyyy-MM-dd", or "—". */
+    lastPaymentDate: string;
   };
 
   isError: boolean;
@@ -678,16 +681,18 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
       );
       // Net of sarees sent back on approved debit notes (owedOn).
       const totalPurchased = mine.reduce((sum, p) => sum + owedOn(p), 0);
-      const totalPaid = payments
-        .filter((p) => p.supplierId === supplierId)
-        .reduce((sum, p) => sum + p.amount, 0);
+      const paidToSupplier = payments.filter((p) => p.supplierId === supplierId);
+      const totalPaid = paidToSupplier.reduce((sum, p) => sum + p.amount, 0);
+      // Latest by date, not list order — both are "yyyy-MM-dd" calendar days.
+      const latest = (dates: string[]) => dates.reduce((a, b) => (b > a ? b : a), "") || "—";
       return {
         purchases: mine,
         totalPurchased,
         totalPaid,
         outstanding: Math.max(0, totalPurchased - totalPaid),
         sareeCount: mine.reduce((sum, p) => sum + purchasePieces(p), 0),
-        lastPurchaseDate: mine[0]?.date ?? "—",
+        lastPurchaseDate: latest(mine.map((p) => p.date)),
+        lastPaymentDate: latest(paidToSupplier.map((p) => p.date)),
       };
     },
     [purchases, payments, suppliers]
