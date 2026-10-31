@@ -49,7 +49,11 @@ import {
 } from "./sale-cart";
 import { ApiError, isRetryable } from "../../../../shared/api/client";
 import { scanApi } from "../../../../shared/api/scan";
-import { salesApi, type CreateSalePayload, type BackendSaleRecord } from "../../../../shared/api/sales";
+import {
+  salesApi,
+  type CreateSalePayload,
+  type BackendSaleRecord,
+} from "../../../../shared/api/sales";
 import { Button } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney, formatMoneyExact } from "@/lib/domain/money";
 import {

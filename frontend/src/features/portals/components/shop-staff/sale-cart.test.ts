@@ -161,7 +161,12 @@ describe("the bill after a dropped connection", () => {
   it("gathers a split bill's per-saree shares back into one line per method", () => {
     const bill = snapshotBill(
       [
-        rec("A", 1000, { legs: [{ method: "cash", amount: 600, reference: null }, { method: "upi", amount: 400, reference: "TXN1" }] }),
+        rec("A", 1000, {
+          legs: [
+            { method: "cash", amount: 600, reference: null },
+            { method: "upi", amount: 400, reference: "TXN1" },
+          ],
+        }),
         rec("B", 500, { legs: [{ method: "upi", amount: 500, reference: "TXN1" }] }),
       ],
       { ...cash, split: true, method: null }
