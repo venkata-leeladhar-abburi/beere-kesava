@@ -36,6 +36,7 @@ import {
   gstIssue,
   normalizeGstin,
   toBillGst,
+  snapshotBill,
   NO_BILL_DISCOUNT,
   NO_GST,
   type SaleLine,
@@ -43,10 +44,12 @@ import {
   type BillDiscount,
   type BillGst,
   type GstBreakdown,
+  type RecordedLine,
+  type BillSnapshot,
 } from "./sale-cart";
-import { ApiError } from "../../../../shared/api/client";
+import { ApiError, isRetryable } from "../../../../shared/api/client";
 import { scanApi } from "../../../../shared/api/scan";
-import { salesApi } from "../../../../shared/api/sales";
+import { salesApi, type CreateSalePayload, type BackendSaleRecord } from "../../../../shared/api/sales";
 import { Button } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney, formatMoneyExact } from "@/lib/domain/money";
 import {
@@ -58,6 +61,29 @@ import {
   type CounterPaymentMethod,
   type PaymentLeg,
 } from "@/lib/domain/salePayment";
+
+/**
+ * Writes one saree's sale, sending it again when the connection failed rather
+ * than the server. Safe to repeat because the write is idempotent per bill:
+ * a request the server committed before its answer was lost comes back as
+ * that same sale (see SalesService.createSale). This is what carries a bill
+ * over the shop's Wi-Fi dropping to mobile data mid-checkout, instead of
+ * leaving the sarees that were in flight off the bill.
+ */
+async function createSaleResilient(
+  payload: CreateSalePayload,
+  attempts = 3
+): Promise<BackendSaleRecord> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await salesApi.create(payload);
+    } catch (err) {
+      if (attempt >= attempts || !isRetryable(err)) throw err;
+      // Long enough for a network hand-over to finish settling.
+      await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
+    }
+  }
+}
 
 export function NewSaleFlow() {
   const { isMobile, isTablet } = useResponsive();
@@ -98,6 +124,11 @@ export function NewSaleFlow() {
   // several refs. The success screen needs all of them: they name the bill
   // the WhatsApp send re-reads its figures from.
   const [saleRefs, setSaleRefs] = useState<string[]>([]);
+  // The bill as recorded, printed in place of the basket. A connection that
+  // drops mid-checkout records the sarees that did go through and takes them
+  // out of the basket, so the basket on its own is no longer the bill —
+  // printing it would hand the customer a bill missing exactly those pieces.
+  const [billSnapshot, setBillSnapshot] = useState<BillSnapshot | null>(null);
 
   // retail total → less per-saree discounts = subtotal → less bill discount
   // = taxable → plus GST (when charged) = total
@@ -381,9 +412,23 @@ export function NewSaleFlow() {
   // created with — editing either one means a different customer.
   const createdCustomer = useRef<{ key: string; id: string } | null>(null);
 
+  // Every saree recorded against this bill so far, kept across a retry after
+  // a partial failure so the bill prints complete rather than showing only
+  // whatever went through on the last attempt.
+  const recordedLines = useRef<RecordedLine[]>([]);
+  // The bill discount as it was labelled on the first attempt — a later
+  // attempt only carries whatever the recorded sarees left of it.
+  const recordedNote = useRef<string | undefined>(undefined);
+  // The shop's own GSTIN, as the first recorded saree reported it.
+  const recordedSeller = useRef<string | undefined>(undefined);
+
   const resetSale = () => {
     billId.current = null;
     createdCustomer.current = null;
+    recordedLines.current = [];
+    recordedNote.current = undefined;
+    recordedSeller.current = undefined;
+    setBillSnapshot(null);
     setStep(1);
     setCart([]);
     setBillDiscount(NO_BILL_DISCOUNT);
@@ -415,16 +460,20 @@ export function NewSaleFlow() {
   if (showBill) {
     return (
       <NewSaleBillModal
-        lines={cart}
+        lines={billSnapshot?.lines ?? cart}
         custName={custName}
         phone={phone}
         custAddress={custAddress}
-        payments={payLegs}
-        total={total}
+        payments={billSnapshot?.payments ?? payLegs}
+        total={billSnapshot?.total ?? total}
         billDiscount={
-          billOff ? { amount: billOff, note: billDiscountLabel(billDiscount) } : undefined
+          billSnapshot
+            ? billSnapshot.billDiscount
+            : billOff
+              ? { amount: billOff, note: billDiscountLabel(billDiscount) }
+              : undefined
         }
-        gst={billGst}
+        gst={billSnapshot?.gst ?? billGst}
         billRef={saleRefs[0]}
         saleRefs={saleRefs}
         isMobile={isMobile}
@@ -437,16 +486,20 @@ export function NewSaleFlow() {
   if (step === "success") {
     return (
       <NewSaleSuccessView
-        lines={cart}
+        lines={billSnapshot?.lines ?? cart}
         custName={custName}
         phone={phone}
         custAddress={custAddress}
-        payments={payLegs}
-        total={total}
+        payments={billSnapshot?.payments ?? payLegs}
+        total={billSnapshot?.total ?? total}
         billDiscount={
-          billOff ? { amount: billOff, note: billDiscountLabel(billDiscount) } : undefined
+          billSnapshot
+            ? billSnapshot.billDiscount
+            : billOff
+              ? { amount: billOff, note: billDiscountLabel(billDiscount) }
+              : undefined
         }
-        gst={billGst}
+        gst={billSnapshot?.gst ?? billGst}
         saleRefs={saleRefs}
         fmtPrice={fmtPrice}
         onShowBill={() => setShowBill(true)}
@@ -923,6 +976,15 @@ export function NewSaleFlow() {
                 setSubmitError(`Payment: ${paymentProblem}`);
                 return;
               }
+              // A bill is written one saree at a time, so starting one with
+              // no connection at all only gets part of it recorded. Say so
+              // before anything is written rather than after.
+              if (typeof navigator !== "undefined" && navigator.onLine === false) {
+                setSubmitError(
+                  "You appear to be offline — reconnect before confirming, or only part of this bill will be recorded."
+                );
+                return;
+              }
               setIsSubmitting(true);
               setSubmitError(null);
               try {
@@ -951,8 +1013,11 @@ export function NewSaleFlow() {
                 // is submitted line by line. Sequential, not parallel: each
                 // call mutates that saree's inventory status, and a partial
                 // failure has to name exactly which pieces did go through.
+                // Ids recorded on THIS attempt — what the basket and the
+                // discounts have to be trimmed by if the attempt fails part
+                // way. The bill itself is built from `recordedLines`, which
+                // also holds whatever earlier attempts got through.
                 const recorded: string[] = [];
-                const refs: string[] = [];
                 billId.current ??= crypto.randomUUID();
                 // The bill discount is shared out across the sarees so each
                 // saree's recorded amount is what was really paid for it, and
@@ -961,6 +1026,7 @@ export function NewSaleFlow() {
                 const billNote = billOff
                   ? `bill discount ${billDiscountLabel(billDiscount) ?? fmtPrice(billOff)}`
                   : undefined;
+                recordedNote.current ??= billNote;
                 // GST is worked out once on the whole bill, then shared
                 // across the sarees by their taxable value, so the recorded
                 // GST adds up to exactly what the bill prints.
@@ -997,12 +1063,11 @@ export function NewSaleFlow() {
                 }
                 const customerGstin =
                   tax && gst.gstin.trim() ? normalizeGstin(gst.gstin) : undefined;
-                let recordedSellerGstin: string | undefined;
                 try {
                   for (const [i, line] of cart.entries()) {
                     const lineGst = tax ? gstShares[i]! : 0;
                     const shares = legShares[i] ?? [];
-                    const sale = await salesApi.create({
+                    const sale = await createSaleResilient({
                       sareeId: line.id,
                       channel: "RETAIL",
                       // What was paid for this saree — GST included.
@@ -1034,8 +1099,15 @@ export function NewSaleFlow() {
                       ...(tax ? { gstRate: tax.rate, gstAmount: lineGst, customerGstin } : {}),
                     });
                     recorded.push(line.id);
-                    refs.push(sale.saleRef);
-                    recordedSellerGstin ??= sale.sellerGstin ?? undefined;
+                    recordedLines.current.push({
+                      line,
+                      saleRef: sale.saleRef,
+                      amount: lineAmounts[i]!,
+                      billShare: billShares[i]!,
+                      gstShare: lineGst,
+                      legs: shares,
+                    });
+                    recordedSeller.current ??= sale.sellerGstin ?? undefined;
                   }
                 } catch (err) {
                   if (recorded.length > 0) {
@@ -1056,8 +1128,9 @@ export function NewSaleFlow() {
                       );
                     }
                     throw new Error(
-                      `Recorded ${recorded.length} of ${cart.length} sarees (${recorded.join(", ")}). ` +
-                        `The rest are still on this sale — try confirming again.`
+                      `Recorded ${recorded.length} of ${cart.length} sarees (${recorded.join(", ")}) — ` +
+                        `they stay on this bill. The rest are still on this sale: once you are back ` +
+                        `online, confirm again and they join the same bill.`
                     );
                   }
                   throw err;
@@ -1066,8 +1139,19 @@ export function NewSaleFlow() {
                 // Inventory tab and the next sale's picker agree with the bill
                 // that was just raised.
                 refreshStock();
-                setSellerGstin(recordedSellerGstin);
-                setSaleRefs(refs);
+                setSellerGstin(recordedSeller.current);
+                setBillSnapshot(
+                  snapshotBill(recordedLines.current, {
+                    billNote: recordedNote.current,
+                    gstRate: gst.rate,
+                    customerGstin,
+                    sellerGstin: recordedSeller.current,
+                    split: split !== null,
+                    method: payment,
+                    reference: payRef,
+                  })
+                );
+                setSaleRefs(recordedLines.current.map((r) => r.saleRef));
                 setStep("success");
               } catch (err) {
                 setSubmitError(

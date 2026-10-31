@@ -8,6 +8,8 @@ import {
   gstIssue,
   isValidGstin,
   NO_GST,
+  snapshotBill,
+  type RecordedLine,
   type SaleLine,
 } from "./sale-cart";
 
@@ -106,5 +108,75 @@ describe("bill GST", () => {
     expect(shares.sort()).toEqual([33, 33, 34]);
     expect(allocateByWeight([27000], 1350)).toEqual([1350]);
     expect(allocateByWeight([0, 0], 10)).toEqual([0, 0]);
+  });
+});
+
+/**
+ * A counter bill is written one saree at a time, so a connection that drops
+ * mid-checkout records some of the sarees and leaves the rest on the basket.
+ * The bill the customer is handed is assembled from everything recorded
+ * against it, across both attempts — printing the basket alone would leave
+ * off exactly the pieces that were already charged.
+ */
+describe("the bill after a dropped connection", () => {
+  const rec = (id: string, amount: number, extra: Partial<RecordedLine> = {}): RecordedLine => ({
+    line: line(id, amount),
+    saleRef: `RETAIL-Chetan-${id}`,
+    amount,
+    billShare: 0,
+    gstShare: 0,
+    legs: [],
+    ...extra,
+  });
+
+  const cash = { gstRate: 0, split: false, method: "cash" as const, reference: "" };
+
+  it("prints every saree recorded on the bill, not just the last attempt's", () => {
+    // Two sarees went through before the Wi-Fi dropped; the third on a retry.
+    const bill = snapshotBill([rec("A", 34000), rec("B", 30000), rec("C", 12000)], cash);
+
+    expect(bill.lines.map((l) => l.id)).toEqual(["A", "B", "C"]);
+    expect(bill.total).toBe(76000);
+    expect(bill.payments).toEqual([{ method: "cash", amount: 76000, reference: null }]);
+  });
+
+  it("adds up the bill discount and the GST the recorded sarees carry", () => {
+    const bill = snapshotBill(
+      [
+        rec("A", 10500, { billShare: 300, gstShare: 500 }),
+        rec("B", 21000, { billShare: 700, gstShare: 1000 }),
+      ],
+      { ...cash, gstRate: 5, billNote: "bill discount ₹1,000", sellerGstin: "37AABCB1234C1Z5" }
+    );
+
+    expect(bill.billDiscount).toEqual({ amount: 1000, note: "bill discount ₹1,000" });
+    expect(bill.gst).toEqual({
+      rate: 5,
+      amount: 1500,
+      customerGstin: undefined,
+      sellerGstin: "37AABCB1234C1Z5",
+    });
+  });
+
+  it("gathers a split bill's per-saree shares back into one line per method", () => {
+    const bill = snapshotBill(
+      [
+        rec("A", 1000, { legs: [{ method: "cash", amount: 600, reference: null }, { method: "upi", amount: 400, reference: "TXN1" }] }),
+        rec("B", 500, { legs: [{ method: "upi", amount: 500, reference: "TXN1" }] }),
+      ],
+      { ...cash, split: true, method: null }
+    );
+
+    expect(bill.payments).toEqual([
+      { method: "cash", amount: 600, reference: null },
+      { method: "upi", amount: 900, reference: "TXN1" },
+    ]);
+    expect(bill.total).toBe(1500);
+  });
+
+  it("leaves a discount and GST off a bill that carried neither", () => {
+    const bill = snapshotBill([rec("A", 2000)], cash);
+    expect(bill.billDiscount).toBeUndefined();
+    expect(bill.gst).toBeUndefined();
   });
 });

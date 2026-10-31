@@ -1,3 +1,5 @@
+import type { CounterPaymentMethod, PaymentLeg } from "@/lib/domain/salePayment";
+
 /**
  * One line of a counter sale. A retail sale is now a basket — the customer
  * walks up with however many sarees they are buying, and each one carries its
@@ -243,3 +245,78 @@ export const toBillGst = (b: GstBreakdown, customerGstin?: string, sellerGstin?:
   customerGstin: customerGstin?.trim() ? normalizeGstin(customerGstin) : undefined,
   sellerGstin: sellerGstin || undefined,
 });
+
+/** One saree as it was actually recorded against the bill. */
+export interface RecordedLine {
+  line: SaleLine;
+  /** The SaleRecord the backend wrote for it. */
+  saleRef: string;
+  /** What the saree was recorded at — GST included. */
+  amount: number;
+  /** Its share of the bill discount. */
+  billShare: number;
+  /** Its share of the bill's GST. */
+  gstShare: number;
+  /** Its share of each payment method, on a split bill; empty otherwise. */
+  legs: PaymentLeg[];
+}
+
+/** The bill as recorded — what gets printed once the sale goes through. */
+export interface BillSnapshot {
+  lines: SaleLine[];
+  total: number;
+  billDiscount?: { amount: number; note?: string };
+  gst?: ReturnType<typeof toBillGst>;
+  payments: PaymentLeg[];
+}
+
+/**
+ * Gathers every saree recorded against the bill — across however many
+ * confirm attempts the checkout took — back into one bill to print.
+ */
+export function snapshotBill(
+  recorded: RecordedLine[],
+  opts: {
+    billNote?: string;
+    gstRate: number;
+    customerGstin?: string;
+    sellerGstin?: string;
+    split: boolean;
+    method: CounterPaymentMethod | null;
+    reference: string;
+  }
+): BillSnapshot {
+  const total = recorded.reduce((a, r) => a + r.amount, 0);
+  const billOff = recorded.reduce((a, r) => a + r.billShare, 0);
+  const gstAmount = recorded.reduce((a, r) => a + r.gstShare, 0);
+  const payments: PaymentLeg[] = [];
+  if (opts.split) {
+    // Each saree carries its own share of every method; the bill shows one
+    // line per method again.
+    for (const leg of recorded.flatMap((r) => r.legs)) {
+      const seen = payments.find((p) => p.method === leg.method);
+      if (!seen) payments.push({ ...leg });
+      else {
+        seen.amount = Math.round((seen.amount + leg.amount) * 100) / 100;
+        seen.reference ??= leg.reference ?? null;
+      }
+    }
+  } else if (opts.method) {
+    payments.push({ method: opts.method, amount: total, reference: opts.reference.trim() || null });
+  }
+  return {
+    lines: recorded.map((r) => r.line),
+    total,
+    billDiscount: billOff ? { amount: billOff, note: opts.billNote } : undefined,
+    gst: gstAmount
+      ? {
+          rate: opts.gstRate,
+          amount: gstAmount,
+          customerGstin: opts.customerGstin,
+          sellerGstin: opts.sellerGstin,
+        }
+      : undefined,
+    payments,
+  };
+}
+

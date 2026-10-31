@@ -257,6 +257,21 @@ export class SalesService {
     // A tag printed before its supplier short name / invoice number changed
     // still carries the old code — sell the saree it now belongs to.
     const dto = { ...input, sareeId: await this.sareeCodes.resolve(input.sareeId) };
+    // A counter bill is written one saree at a time, so the till has to be
+    // able to confirm the same bill twice. A POST the server committed can
+    // still lose its answer on the way back — the shop switching Wi-Fi to
+    // mobile data mid-bill does exactly that — and the till then sends the
+    // piece again. Keyed on (billId, sareeId) that resend returns the sale
+    // already written instead of rejecting the piece as "already sold", so a
+    // bill always ends up with every saree on it however many times it is
+    // confirmed, and never with the same saree twice.
+    if (dto.billId) {
+      const already = await this.prisma.saleRecord.findFirst({
+        where: { billId: dto.billId, sareeId: dto.sareeId },
+        select: { saleRef: true },
+      });
+      if (already) return this.findOneSale(already.saleRef);
+    }
     // The real production pipeline (BatchSareeRow → QcRecord) never writes a
     // `Saree` row — that table only exists to satisfy SaleRecord/ReturnRecord's
     // FK. So availability is decided the same way InventoryService.findAll()
